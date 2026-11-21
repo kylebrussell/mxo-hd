@@ -1,0 +1,26 @@
+{
+  "abilities": {
+    "34": {
+      "checks": {
+        "pets": {
+          "source": "DetonateProxyProc in tempmods.py reapplies the internal viral effect 1109 at the pet. The GOB stores a pet-centered eight-metre selector, and StopProxy1_Test requires the caster's own simulacrum.",
+          "runtime": "CoderPets uses pet-level typed resistance and the existing legal hostile player selector at the pet's position, then retires only the detonating pet.",
+          "test": "StarterCoderPetBuffsAndDetonateMode probes an eligible player, a nearby ally, a hostile outside the radius, and the foreign pet. Native PR622 confirms 123 on QAEnemy, NotOpponent on QAFriend, radius exclusion on QAFar, and one caster pet removal. https://github.com/kylebrussell/mxo-hd/pull/622#issuecomment-7058854753"
+        }
+      }
+    },
+    "694": {
+      "checks": {
+        "damage": {
+          "source": "GOB 694 stores an instant one-point Viral health modifier, reapplied by Static Field.",
+          "runtime": "AbilityAuras applies the derived hit to NPC and player Viral Resistance before publishing damage to health.",
+          "test": "StarterPathogenistAuraResistanceMode observes two neutral one-point hits and two points absorbed by Empty Mind's +75 Viral Resistance. Native PR621 confirmed the same pulse results. https://github.com/kylebrussell/mxo-hd/pull/621#issuecomment-7058773978"
+        }
+      }
+    }
+  },
+  "notes": {
+    "60": "Native PR621 shows 9 damage each to QAEnemy and QAFar after Empty Mind had ended. The earlier stock-form headless run exercised the resisted splash. https://github.com/kylebrussell/mxo-hd/pull/621#issuecomment-7058773978",
+    "701": "Native PR621 confirms -14 to stats 1009 and 1010, with matching five-second removals on both hostiles. The native reapplication hit/deflect predicate remains open. https://github.com/kylebrussell/mxo-hd/pull/621#issuecomment-7058773978"
+  }
+}
