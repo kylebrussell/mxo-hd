@@ -386,8 +386,9 @@ namespace hds
             string petRefusal = pet ? CoderPets.Prepare(Store.currentClient, AbilityID, currentTargetViewId, targetSpawn, out ownPet, out petRefusalReason) : null;
             if (petRefusal != null)
             {
-                // The stock client supplies the range line from reason 34.
-                Deny(AbilityID, petRefusal, petRefusalReason, sendServerText: petRefusalReason != AbilityRefusals.TargetOutOfRange);
+                // The client supplies its own lines for range and combat-state refusals.
+                Deny(AbilityID, petRefusal, petRefusalReason, sendServerText:
+                    petRefusalReason != AbilityRefusals.TargetOutOfRange && petRefusalReason != AbilityRefusals.MustBeOutsideCombat);
                 return;
             }
             bool derez = AbilityID == CoderPets.DerezAbility;

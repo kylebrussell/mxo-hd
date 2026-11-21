@@ -119,7 +119,8 @@ public static partial class Scenarios
         owner.SendRpc("3d 01");
         owner.SendRpc($"41 {Le(dummy.ViewId)} {Le((ushort)dummy.SpawnId)}");
         await Task.Delay(500);
-        Cast(owner,25); await owner.WaitForTextAsync("You cannot use Power Boost in combat");
+        Cast(owner,25);
+        await owner.WaitForRpcAsync("80 ba 19 00 00 00 6b 15 00 00 00 00 00 00 00 00 00 00 00");
         Cast(owner,19); await owner.WaitForTextAsync("Your simulacrum has been destroyed");
         owner.SendChat("?pet summon 594"); await owner.WaitForRpcAsync("81 76"); await owner.WaitForTextAsync("is next to you");
         owner.SendChat("?pet"); await owner.WaitForTextAsync("power melee/ballistic 0/0");
