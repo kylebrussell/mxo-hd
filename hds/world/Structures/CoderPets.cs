@@ -116,6 +116,7 @@ namespace hds
         /// <summary>Seconds between a simulacrum's attacks. Client var Simulacra_AttackActionPeriod exists; its value is unknown.</summary>
         public const double AttackPeriodSeconds = 3.0;
         public const string FortifyExpiryQa = "MXO_PET_FORTIFY_EXPIRY_QA";
+        public const string DrainDamageQa = "MXO_SIMULACRUM_QA_DRAIN_DAMAGE";
         public const string RifleProxyQa = "MXO_SIMULACRUM_QA_RIFLE";
         public const double FollowDistanceMetres = 2.5, MeleeRangeMetres = 2.5, RangedRangeMetres = 15.0, LeashMetres = 60.0;
         public const double StepMetres = 5.0;
@@ -321,10 +322,11 @@ namespace hds
             int casterLevel = owner.playerInstance.Level.getValue()[0];
             int level = SimLevel(summon, casterLevel);
             UInt32 charId = owner.playerData.getCharID();
-            bool fixtureRifle = ability == 28 && charId == 110 && Environment.GetEnvironmentVariable(RifleProxyQa) == "1" &&
-                QaLoadout.Allowed(Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS"), Store.config?.dbParams?.DatabaseName,
+            bool fixtureOwner = charId == 110 && QaLoadout.Allowed(Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS"), Store.config?.dbParams?.DatabaseName,
                     charId, owner.playerData.getOnWorld() && !owner.playerData.worldChangePending,
                     owner.playerData.isDead || owner.playerData.duelDeath);
+            bool fixtureRifle = fixtureOwner && ability == 28 && Environment.GetEnvironmentVariable(RifleProxyQa) == "1";
+            bool fixtureDrain = fixtureOwner && ability == 27 && Environment.GetEnvironmentVariable(DrainDamageQa) == "1";
             string sheet;
             bool female;
             lock (random)
@@ -353,7 +355,7 @@ namespace hds
             mob.setDistrictName(owner.playerData.getDistrict());
             mob.setName(NameOf(summon.Kind, sheet));
             mob.setLevel((UInt16)level);
-            UInt16 max = MaxHealthAt(level);
+            UInt16 max = fixtureDrain ? (UInt16)9000 : MaxHealthAt(level);
             mob.setHealthM(max);
             mob.setHealthC(max);
             mob.setRsiHex(WireHex(DescriptionOf(summon.Kind, level, female)));
@@ -851,11 +853,19 @@ namespace hds
             }
             else if (id == DrainCode)
             {
-                // Drain Code (Decoy1Ability): 8000 (damage type 5) to the simulacrum, +50 Current Inner Strength to the caster
-                DamagePet(pet, 8000, 0);
+                // Drain Code's target health effect and caster IS effect are separate instant GOB records.
+                var hit = entry.Modifiers.Single(mod => mod.Target == 108 && mod.Number("WhenEnabled") == 2);
+                var restore = entry.Modifiers.Single(mod => mod.Target == 111 && mod.Number("WhenEnabled") == 1);
+                int damage = (int)hit.Number("MinValue");
+                int gain = (int)restore.Number("MinValue");
+                ushort health = pet.Mob.getHealthC();
+                DamagePetLocked(pet, damage, 0);
                 UInt16 max = AbilityHandler.MaxInnerStrength(caster);
-                UInt16 next = (UInt16)Math.Min(max, AbilityHandler.CurrentInnerStrength(caster) + 50);
+                UInt16 current = AbilityHandler.CurrentInnerStrength(caster);
+                UInt16 next = (UInt16)Math.Min(max, current + gain);
                 caster.playerInstance.InnerStrengthAvailable.setValue(next);
+                Output.WriteDebugLog($"[PET] Drain Code (19) pet={pet.SimulacraId} type={hit.Number("DamageType")} " +
+                    $"damage={damage} HP {health}->{pet.Mob.getHealthC()} IS {current}->{next}");
                 new ServerPackets().sendISCurrent(caster, next);
                 caster.FlushQueue();
             }
