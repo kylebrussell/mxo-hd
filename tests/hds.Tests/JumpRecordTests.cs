@@ -42,6 +42,27 @@ public class JumpRecordTests
         var start=new JumpRecords.Start(default,0,1,sample);
         Assert.True(JumpRecords.TryStart(JumpRecords.Encode(start),out var decoded));Assert.Equal(sample,decoded.TimeStamp);
     }
+    [Fact]
+    public void ImmediateSameFloorAndPolygonReportDoesNotMatchALaterOrAirborneCancel()
+    {
+        var client = new ClientData();
+        client.setDistrictId(1);
+        var origin = Coordinates(17100, 495, 6400);
+        var takeoff = new JumpRecords.Takeoff(origin, 10, client);
+        Assert.True(takeoff.Matches(Coordinates(17101, 495, 6400), 10, client));
+        Assert.True(takeoff.Matches(Coordinates(17101, 495, 6400), 10.9f, client));
+        Assert.False(takeoff.Matches(Coordinates(17101, 495, 6400), 11.01f, client));
+        Assert.False(takeoff.Matches(Coordinates(17101, 505, 6400), 10.1f, client));
+        Assert.False(takeoff.Matches(Coordinates(17110, 495, 6400), 10.1f, client));
+        Assert.False(takeoff.Matches(Coordinates(17101, 495, 6400, 4), 10.1f, client));
+        client.worldGeneration++;
+        Assert.False(takeoff.Matches(Coordinates(17101, 495, 6400), 10.1f, client));
+
+        static JumpRecords.Destination Coordinates(double x, double y, double z, ushort polygon = 1) =>
+            new(unchecked((ulong)BitConverter.DoubleToInt64Bits(x)), unchecked((ulong)BitConverter.DoubleToInt64Bits(y)),
+                unchecked((ulong)BitConverter.DoubleToInt64Bits(z)), 1250, 18, polygon);
+    }
+
     [Theory]
     [InlineData(0,0xfffffff0u)] [InlineData(1,0x80000000u)] [InlineData(284,0u)] [InlineData(65535,0xffffffffu)]
     public void ActualMovementPreservesResourcesAndCancelDoesNotResampleClock(int inner,uint sample)
@@ -50,20 +71,37 @@ public class JumpRecordTests
         try
         {
             var c=(WorldClient)System.Runtime.CompilerServices.RuntimeHelpers.GetUninitializedObject(typeof(WorldClient));
+            typeof(WorldClient).GetField("<TransportFence>k__BackingField",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic)!.SetValue(c,new WorldSendFence());
             c.playerData=new();c.playerData.setCharID(110);c.playerData.setDistrictId(1);c.playerData.setOnWorld(true);
             c.playerInstance=new();c.messageQueue=new();c.viewMan=new();c.playerInstance.InnerStrengthAvailable.setValue((ushort)inner);
+            c.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(17100, 495, 6400));
+            c.playerInstance.RealLastName.setValue("Tester");
             Store.currentClient=c;Store.world=(WorldServer)System.Runtime.CompilerServices.RuntimeHelpers.GetUninitializedObject(typeof(WorldServer));
             byte[] start=Convert.FromHexString(RetailStart)[2..],cancel=Convert.FromHexString(RetailCancel)[2..];
             System.Buffers.Binary.BinaryPrimitives.WriteUInt32LittleEndian(start.AsSpan(35),sample);
             var handler=new AbilityHandler();handler.ProcessJump(ref start);
             Assert.Equal((ushort)inner,AbilityHandler.CurrentInnerStrength(c));
-            byte[] movement=Assert.Single(c.messageQueue.ObjectMessagesQueue.Cast<SequencedMessage>()).content;
+            var rpc=Assert.Single(c.messageQueue.RPCMessagesQueue.Cast<SequencedMessage>());
+            Assert.Empty(c.messageQueue.ObjectMessagesQueue);
+            var packet=new WorldPacket(c.playerData);
+            Assert.True(packet.addRPCContent(rpc));
+            Assert.True(packet.timed);
+            byte[] movement=Assert.Single(packet.ObjectMessages).content;
+            Assert.Same(rpc,Assert.Single(packet.RPCMessages));
             int mask=movement.AsSpan().IndexOf(Convert.FromHexString("0200030108008080bc"));Assert.True(mask>=0);
             int resource=mask+9+4+2+4+24;Assert.Equal(0x10,movement[resource]);
             Assert.Equal((ushort)inner,BitConverter.ToUInt16(movement,resource+1));
+            int snapshot = mask + 46;
+            Assert.Equal(Convert.FromHexString("020003090800"), movement.AsSpan(snapshot, 6).ToArray());
+            Assert.Equal(17100f, BitConverter.ToSingle(movement, snapshot + 6));
+            Assert.Equal(495f, BitConverter.ToSingle(movement, snapshot + 10));
+            Assert.Equal(6400f, BitConverter.ToSingle(movement, snapshot + 14));
+            Assert.Equal(0xff, movement[snapshot + 22]);
+            Assert.Equal(Convert.FromHexString("0654657374657200"), movement.AsSpan(snapshot + 37, 8).ToArray());
+            Assert.False(c.playerInstance.RealFirstName.isActive());
             handler.processHyperJumpCancel(ref cancel);
             Assert.Equal((ushort)inner,AbilityHandler.CurrentInnerStrength(c));
-            var rpc=Assert.Single(c.messageQueue.RPCMessagesQueue.Cast<SequencedMessage>());
+            Assert.Same(rpc,Assert.Single(c.messageQueue.RPCMessagesQueue.Cast<SequencedMessage>()));
             Assert.Equal(new byte[]{0x80,0xc3}.Concat(BitConverter.GetBytes(sample)).ToArray(),rpc.content.Skip(1).ToArray());
             double x=0,y=0,z=0;NumericalUtils.LtVector3dToDoubles(c.playerInstance.Position.getValue(),ref x,ref y,ref z);
             JumpRecords.TryCancel(Convert.FromHexString(RetailCancel),out var expected);

@@ -873,24 +873,47 @@ namespace hds
             double z = 0;
             byte[] Ltvector3d = Store.currentClient.playerInstance.Position.getValue();
             NumericalUtils.LtVector3dToDoubles(Ltvector3d, ref x, ref y, ref z);
-            int rotation = (int) Store.currentClient.playerInstance.YawInterval.getValue()[0];
-            float xPos = (float) x;
-            float yPos = (float) y;
-            float zPos = (float) z;
-
-            // ToDo: maybe remove or improve (i am not sure how this is written)
-            //HyperJumpCalculatedStepMovement(xPos, yPos, zPos, xDest, yDest, zDest, clientJumpIdUnknown, maybeMaxHeight);
-
             // JumpEndTime is server sim time in milliseconds (retail: the 0x82 packet sim time x 1000 plus
             // ~9 s for a hyperjump). This used to be Unix seconds, decades ahead of the sim clock, so the
             // client stayed in the air for good and stopped sending movement.
             float peak = BitConverter.ToSingle(BitConverter.GetBytes(peakHeight), 0);
-            UInt32 endTime = JumpEndTime(TimeUtils.GetSimTimeSeconds(), peak);
+            double dx = xDest - x, dz = zDest - z;
+            float simSeconds = TimeUtils.GetSimTimeSeconds();
+            UInt32 endTime = JumpTravelEndTime(simSeconds, peak, Math.Sqrt(dx * dx + dz * dz));
+            (float X, float Y, float Z, uint SimMillis)? fullPeakOrigin = null;
+            ClientData data = Store.currentClient.playerData;
+            data.PendingJumpTakeoff = null;
+            if (request.IsHyperJump == 1 && peak == CapturedFullPeak)
+            {
+                fullPeakOrigin = ((float)x, (float)y, (float)z, (uint)Math.Round(simSeconds * 1000.0));
+                if (NavMesh.Locate((ushort)data.getDistrictId(), x, y, z, out var origin) &&
+                    Math.Abs(y - (origin.floorY + 95)) <= 4)
+                {
+                    var takeoff = new JumpRecords.Destination(unchecked((ulong)BitConverter.DoubleToInt64Bits(x)),
+                        unchecked((ulong)BitConverter.DoubleToInt64Bits(y)), unchecked((ulong)BitConverter.DoubleToInt64Bits(z)),
+                        origin.sector, origin.region, origin.polygon);
+                    data.PendingJumpTakeoff = new JumpRecords.Takeoff(takeoff, simSeconds, data);
+                }
+            }
 
             ServerPackets packets = new ServerPackets();
-            packets.SendHyperJumpID(clientTickSample);
-            packets.SendHyperJumpWithOneStep((float)xDest,(float)yDest,(float)zDest, peakHeight, endTime);
+            packets.SendHyperJumpWithOneStep((float)xDest, (float)yDest, (float)zDest, peakHeight, endTime,
+                clientTickSample, fullPeakOrigin);
             Store.currentClient.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(xDest, yDest, zDest));
+        }
+
+        private const float CapturedFullPeak = 10300;
+
+        // The retained full-peak starts cross 63–79 metres in about 8–10 seconds. Use their
+        // observed horizontal rate for that packet family; short and vertical arcs use the existing timer.
+        internal static UInt32 JumpTravelEndTime(float simTimeSeconds, float peakHeight, double horizontalDistance)
+        {
+            const double TravelUnitsPerSecond = 800;
+            const double MaximumStockTravel = 8000;
+            if (peakHeight != CapturedFullPeak || !double.IsFinite(horizontalDistance) ||
+                horizontalDistance < TravelUnitsPerSecond / 2 || horizontalDistance > MaximumStockTravel)
+                return JumpEndTime(simTimeSeconds, peakHeight);
+            return (UInt32)Math.Round((simTimeSeconds + horizontalDistance / TravelUnitsPerSecond) * 1000.0);
         }
 
         /// <summary>Gravity in world units (centimetres) per second squared.</summary>
@@ -964,6 +987,15 @@ namespace hds
         {
             if (!ControlActions.CanMove(Store.currentClient)) { ControlActions.CorrectPosition(Store.currentClient); return; }
             if (!JumpRecords.TryCancelBody(rpcData, out var request)) return;
+            float simSeconds = TimeUtils.GetSimTimeSeconds();
+            ClientData data = Store.currentClient.playerData;
+            if (data.PendingJumpTakeoff is { } takeoff && takeoff.Matches(request.Destination, simSeconds, data))
+            {
+                Output.WriteDebugLog("[NAV] Jump takeoff report " + request.Destination.X + "," +
+                    request.Destination.Y + "," + request.Destination.Z);
+                return;
+            }
+            data.PendingJumpTakeoff = null;
             double xDest = request.Destination.X, yDest = request.Destination.Y, zDest = request.Destination.Z;
             Output.WriteDebugLog("[NAV] Jump cancel to " + xDest + "," + yDest + "," + zDest + ": client " +
                 request.Destination.Sector + "/" + request.Destination.Prefab + "/" + request.Destination.NavPoly);
@@ -981,7 +1013,6 @@ namespace hds
 
             // Start/end are server sim time in ms, like JumpEndTime (these used to be Unix seconds). The fall to
             // the new destination is timed as a drop from the current height above it.
-            float simSeconds = TimeUtils.GetSimTimeSeconds();
             UInt32 startTime = (UInt32)Math.Round(simSeconds * 1000.0);
             // A straight drop of H takes sqrt(2H/g), which is JumpEndTime's up-and-down time for a peak of H/4.
             UInt32 endTime = JumpEndTime(simSeconds, (float)Math.Max(0.0, yPos - yDest) / 4f);

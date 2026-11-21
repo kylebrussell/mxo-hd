@@ -36,3 +36,31 @@ One fresh `hyperjump-resource-records` case passed in 51.7 seconds, held exit 0,
 Actual Debug source SHA256 `BB53C879302FC6FEA95EB548ADECC5595E4A791E92E4FE0CB3627962B4B90EAA`; Release driver `9BC7D73674B12BFD40CC7C9E7ADE389F5187C41C3101FB3B31A327EAC36F4568`; Release NativeQa `16C6BA013C563D12A15635C4FB48C1016569234707520D8AB08E877052297E2A`. Raw proof SHA256 `D221FE218FEAE0CA90DD1951BC159F88B7222EBF5CA1BB23EBBF316959938FB4`.
 
 Proof and independent cleanup are under `Temp/mxo-pr-triage-20261115`. Exact schemas `mxotest_run_1_6512090488` and `mxotest_bootstrap_b2b0354d1c` are absent, and all 6 + 8 recorded creation identities are gone with no PID reuse. Polling cannot establish complete short-lived process history. No real client, client lock or main-database reset was used. Claude still qualifies native Actions/hotbar, aiming, cancel, relog and rendering; retail fee and trajectory parity remain unproved.
+
+## PR689 full-peak timing comparison
+
+The failed 1250/18/1 attempt (SSEQ 156) agrees with retail on the 82 time stamp, view 2, 03 01 08 00, mask 80 80 bc, 10300 peak, the exact requested XYZ and the echoed 32-bit tick. Server jump flags are 4 in this frame and in proxy_024, proxy_026 and session 009. Niobe has flags 2 for its separate sample. Available IS is the actual character value, 500 in the fixture and 284 or 374 in these captures. In every response the field order is peak, flags, end time, destination XYZ, available IS, then the ordered clock echo.
+
+| Capture | Datagram stamp (s) | JumpEndTime (ms) | Remaining time (s) | Horizontal distance (m) | Distance/time (m/s) |
+|---|---:|---:|---:|---:|---:|
+| PR689 SSEQ 156 | 108.5782 | 117742 | 9.164 | 38.50 | 4.20 |
+| proxy_024 SSEQ 30 | 87106.4375 | 87116339 | 9.902 | 78.46 | 7.92 |
+| proxy_026 SSEQ 2033 | 89282.9219 | 89291808 | 8.886 | 70.53 | 7.94 |
+| niobe3dualduality SSEQ 84 | 135158.8125 | 135168600 | 9.788 | 78.21 | 7.99 |
+| session 009 SSEQ 1911 | 8326.6953 | 8334668 | 7.973 | 63.54 | 7.97 |
+
+Retail takeoff coordinates are approximated from the immediately following 03 09 08 self update, which carries the in-flight position and sim time. Those samples can be a fraction into the jump. All four have that subsequent update. The timing candidate changes only the full-peak travel timer to horizontal distance at 800 units/s and retains the established short, vertical and cancel paths. The target at 38.5 m now gets about 4.813 s, the 41.5 m target about 5.188 s. The timing candidate still reproduced the instant cancel at x=17101 after SSEQ 156.
+
+## PR689 positional self-view candidate
+
+All four captured full-peak starts above have a following server view update with header `02 00 03 09 08 00`, float32 XYZ, and a uint32 simulation time in milliseconds. Its seven masks include all 48 self-view attributes. The two name fields are byte-length-prefixed; peak, flags, end, destination and available IS repeat the earlier delta. In the failed PR689 attempt the first positional self update was the cancel response, sent after the stock client had already sent `80 c4`.
+
+This candidate adds the full positional self view after the existing `03 01` start delta in the same timed view list before the `80 c3` echo. It captures the player's actual takeoff position and admission clock, uses the live self-view fields, and leaves the previous timing, short-jump and cancel paths in place. The capture sends the positional view in a following datagram. The combined reply tests its presence before the reported immediate cancel.
+
+## PR689 takeoff reports and actual cancels
+
+The stock retest at 8bfe176f sent 80 c4 with the takeoff polygon and x+1 on three forward starts. Rank 10 landed at 20950 when the snap-back reply preceded the combined jump reply. Both rank-11 starts stayed at their takeoff positions when the snap-back reply followed it. Native rank 10 put 80 c2 and 80 c4 in the same incoming datagram. A rank-11 sample put them in separate datagrams within one second.
+
+The matched successful full-peak retail starts above have no immediate 80 c4 at takeoff. Three have a later 80 c4 near the destination, after roughly the jump duration, with no immediate own-view 03 09 reply. The retail stream also contains actual mid-flight interrupts: proxy_026 CSEQ 2559/2561 received SSEQ 2442 with flags 0x14, a current airborne position and a route to the requested ground point. The Niobe CSEQ 178/181 pair likewise received an airborne response changing its destination, with flags 0x12. Both are evidence for retaining an interrupt path. They do not establish what every 80 c4 means.
+
+For the reproduced stock case, suppress a 80 c4 reply only within one second of a flag-1 full-peak start on mapped ground, in the same world/life, with the exact takeoff polygon and within four centimetres of the original XYZ. Keep the assigned destination and its one clock echo. Different coordinates, unmapped origin, a different polygon, or a later request retain the existing cancel path. The headless fixture replays both bundled and separate stock takeoff reports. The full snapshot also uses the shipped ordinary RSI selector when the server field has not been initialized.

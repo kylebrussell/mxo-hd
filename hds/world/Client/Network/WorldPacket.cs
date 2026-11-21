@@ -44,6 +44,14 @@ namespace hds
                 return false;
             }
 
+            if (rpcMessage.TimedViewWithRpc is { } view)
+            {
+                // Leave earlier RPC counters in their own packet; the paired view starts this datagram.
+                if (!IsEmpty) return false;
+                addObjectContent(view);
+                timed = true;
+            }
+
             this.RPCMessages.Add(rpcMessage);
             bufferSize = (UInt16)Math.Min(UInt16.MaxValue, bufferSize + rpcMessage.content.Length + 2);
             return true;
@@ -72,8 +80,15 @@ namespace hds
             return false;
         }
 
-        internal void PruneUnassignedWorldRpcs(int world,long transport) =>
-            RPCMessages.RemoveAll(message=>message.DiscardUnassignedWorldRpc(world,transport));
+        internal void PruneUnassignedWorldRpcs(int world,long transport)
+        {
+            RPCMessages.RemoveAll(message =>
+            {
+                if (!message.DiscardUnassignedWorldRpc(world, transport)) return false;
+                if (message.TimedViewWithRpc is { } view) ObjectMessages.Remove(view);
+                return true;
+            });
+        }
 
         public byte[] getFinalData(ClientData playerData)
         {

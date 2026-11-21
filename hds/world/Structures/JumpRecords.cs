@@ -26,6 +26,37 @@ namespace hds
             public readonly Destination Destination;
             public Cancel(Destination destination){Destination=destination;}
         }
+        internal readonly struct Takeoff
+        {
+            private readonly Destination origin;
+            private readonly float startedAt;
+            private readonly int world;
+            private readonly int life;
+            private readonly uint district;
+
+            public Takeoff(Destination origin, float startedAt, ClientData owner)
+            {
+                this.origin = origin;
+                this.startedAt = startedAt;
+                world = owner.worldGeneration;
+                life = owner.lifeGeneration;
+                district = owner.getDistrictId();
+            }
+
+            // Stock sends a start-polygon position about one centimetre from takeoff even on successful forward jumps.
+            internal bool Matches(Destination position, float now, ClientData owner)
+            {
+                float elapsed = now - startedAt;
+                if (elapsed < 0 || elapsed > 1 || owner.worldGeneration != world || owner.lifeGeneration != life ||
+                    owner.getDistrictId() != district || position.Sector != origin.Sector ||
+                    position.Prefab != origin.Prefab || position.NavPoly != origin.NavPoly)
+                    return false;
+
+                double dx = position.X - origin.X, dy = position.Y - origin.Y, dz = position.Z - origin.Z;
+                return dx * dx + dy * dy + dz * dz <= 16;
+            }
+        }
+
         static Destination ReadDestination(ReadOnlySpan<byte> b) => new Destination(
             BinaryPrimitives.ReadUInt64LittleEndian(b), BinaryPrimitives.ReadUInt64LittleEndian(b[8..]),
             BinaryPrimitives.ReadUInt64LittleEndian(b[16..]), BinaryPrimitives.ReadUInt16LittleEndian(b[24..]),
