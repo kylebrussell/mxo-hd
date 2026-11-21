@@ -1,0 +1,23 @@
+{
+  "abilities": {
+    "12": {
+      "note": "PR662 recorded nominal two-second Sneak/Invisibility movement before and after Speed. These establish ordinary projected +0.45 movement in both active stances; independent stat 877/878 consumption remains open."
+    },
+    "184": {
+      "note": "PR662 measured the last-applied +0.15 projection with both buffs active in Sneak and Invisibility. Sprint spent 25 while each stance stayed active. The movement sample does not isolate the stance modifiers."
+    },
+    "603": {
+      "checks": {
+        "script": {
+          "source": "Catalog 603 is AcousticDecoy1. Its shipped GetRange callback returns 5000 world units times the selection-range debuff factor; MessageCloud_DirectObject records the reduction as a percentage.",
+          "runtime": "CoderPets.InAbilityRange uses the scripted range for Charge preparation and landing. Its range reads stat 214 as a percent decrease; Fortify and Repair retain their independent catalog ranges.",
+          "test": "CoderPetTests sets a live reduction and checks the 50 m and 10 m boundaries. StarterPetRangeAndFortifyExpiryMode and native PR663 accept 603 at about 15.6 m and refuse it beyond 50 m without debit. The base pet budget approximation remains a source-parity item. https://github.com/kylebrussell/mxo-hd/pull/663#issuecomment-7063875869"
+        }
+      }
+    }
+  },
+  "notes": {
+    "PR662": "At stock head 4658d376, first-stop displacements from the fixed stand were 11.982/17.371/13.961 m in Sneak and 12.147/17.318/13.794 m in Invisibility. Approximate rates at the reported 2 s hold were 5.991/8.685/6.981 and 6.074/8.659/6.897 m/s. Packet headers have whole-second resolution. QAFriend received all six same endpoints. https://github.com/kylebrussell/mxo-hd/pull/662#issuecomment-7064060621",
+    "PR663": "Native same-pet Charge costs 35 IS at the prior refusal stand and applies -20% cost/+50% regen for 600 s. It refuses beyond 50 m with no IS change. Fortify expiry preserves Charge and publishes 224/224 to QAFriend (PacketLog 4048–4050), after the owner 494→224 max-HP change. https://github.com/kylebrussell/mxo-hd/pull/663#issuecomment-7063875869"
+  }
+}
