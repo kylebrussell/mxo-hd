@@ -11,9 +11,12 @@ public static class AbilitySweepHotbar
     private const int Slots = 10;
     private const int SlotRecordsStart = 16;
     private const int SelectionLength = 32;
+    internal const uint SingleItemDescriptor = 0x0c000000; // Margin 05 descriptor for one ordinary bag item.
+
+    public sealed record InventoryShortcut(byte BagSlot, uint Goid, string Label);
 
     public static byte[]? FromEnvironment(IReadOnlyList<ushort> loadout, bool required, bool includeWithdraw = false,
-        IReadOnlyList<ushort>? pageThree = null)
+        IReadOnlyList<ushort>? pageThree = null, IReadOnlyList<InventoryShortcut>? inventory = null)
     {
         string? path = Environment.GetEnvironmentVariable(TemplateVariable);
         if (string.IsNullOrWhiteSpace(path))
@@ -32,21 +35,25 @@ public static class AbilitySweepHotbar
             throw new InvalidDataException("The stock UI template does not fit the client's character UI buffer.");
         byte[] template = new byte[(int)file.Length];
         file.ReadExactly(template);
-        return Seed(template, loadout, includeWithdraw, pageThree);
+        return Seed(template, loadout, includeWithdraw, pageThree, inventory);
     }
 
-    internal static void Validate(IReadOnlyList<ushort> abilities, bool includeWithdraw = false)
+    internal static void Validate(IReadOnlyList<ushort> abilities, bool includeWithdraw = false,
+        IReadOnlyList<InventoryShortcut>? inventory = null)
     {
-        int slotCount = abilities.Count + (includeWithdraw ? 1 : 0);
+        int slotCount = abilities.Count + (includeWithdraw ? 1 : 0) + (inventory?.Count ?? 0);
         if (slotCount is < 1 or > Slots || abilities.Distinct().Count() != abilities.Count ||
             abilities.Any(id => id is 0 or >= 4096))
-            throw new ArgumentException("The hotbar requires one to ten slots and distinct canonical ability IDs.", nameof(abilities));
+            throw new ArgumentException("The hotbar requires one to ten shortcuts with distinct canonical ability IDs.", nameof(abilities));
+        if (inventory != null && (inventory.Select(item => item.BagSlot).Distinct().Count() != inventory.Count ||
+            inventory.Any(item => item.BagSlot is < 1 or > 96 || item.Goid == 0 || string.IsNullOrWhiteSpace(item.Label))))
+            throw new ArgumentException("Inventory shortcuts require named items in distinct backpack slots 1 through 96.", nameof(inventory));
     }
 
     public static byte[] Seed(byte[] template, IReadOnlyList<ushort> abilities, bool includeWithdraw = false,
-        IReadOnlyList<ushort>? pageThree = null)
+        IReadOnlyList<ushort>? pageThree = null, IReadOnlyList<InventoryShortcut>? inventory = null)
     {
-        Validate(abilities, includeWithdraw);
+        Validate(abilities, includeWithdraw, inventory);
         if (pageThree is { Count: > 0 }) Validate(pageThree);
         if (template.Length is < SlotRecordsStart + SelectionLength or > QaCharacterUi.MaxLength ||
             Read(template, 0) != 2 || Read(template, 8) != 1)
@@ -81,6 +88,23 @@ public static class AbilitySweepHotbar
             // Stock tactic type 7 stores mode, setting and tactic. The Withdraw button selects 2/0/4.
             // client.dll 62262380 reads the tuple, and 62262310 -> 6219ece0 sends 44 01 while engaged.
             records[(Page, slot)] = new byte[] { Page, slot, 7, 0, 0, 0, 2, 0, 4 };
+        }
+        if (inventory != null)
+        {
+            byte slot = (byte)(abilities.Count + (includeWithdraw ? 1 : 0));
+            foreach (var item in inventory)
+            {
+                // client.dll 62262c90 constructs type 1. 62262970/622629b0 write/read slot, GOID and instance data.
+                byte[] record = new byte[18];
+                record[0] = Page;
+                record[1] = slot;
+                record[2] = 1;
+                BinaryPrimitives.WriteUInt32LittleEndian(record.AsSpan(6), item.BagSlot);
+                BinaryPrimitives.WriteUInt32LittleEndian(record.AsSpan(10), item.Goid);
+                BinaryPrimitives.WriteUInt32LittleEndian(record.AsSpan(14), SingleItemDescriptor);
+                records[(Page, slot)] = record;
+                slot++;
+            }
         }
 
         int recordBytes = records.Values.Sum(record => record.Length);

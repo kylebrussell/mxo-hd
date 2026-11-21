@@ -101,6 +101,23 @@ public class AbilitySweepHotbarTests
     }
 
     [Fact]
+    public void DetectionPlanSeedsBothToolShortcutsWithTheirStockDescriptors()
+    {
+        var plan = new NativeQa.Modes.AwakenedDetectionBoundaryMode().Plan;
+        byte[] untouched = { 1, 4, 0, 0, 0, 0, 99, 0, 0, 0 };
+        byte[] tail = Enumerable.Range(0, 48).Select(i => (byte)i).ToArray();
+        byte[] template = Template(tail, untouched);
+        byte[] seeded = AbilitySweepHotbar.Seed(template, plan.HotbarAbilities, inventory: plan.HotbarInventory);
+
+        Assert.Equal(3u, BinaryPrimitives.ReadUInt32LittleEndian(seeded.AsSpan(12)));
+        Assert.Equal(Convert.FromHexString("01000100000008000000540900000000000c"), seeded[16..34]);
+        Assert.Equal(Convert.FromHexString("01010100000001000000a60100000000000c"), seeded[34..52]);
+        Assert.Equal(untouched.Concat(tail).ToArray(), seeded[52..]);
+        Assert.Contains("slot 1 = Concealment Countermeasure Tool (bag slot 8, GOID 2388)", plan.ReadyMessages);
+        Assert.Equal(seeded, AbilitySweepHotbar.Seed(seeded, plan.HotbarAbilities, inventory: plan.HotbarInventory));
+    }
+
+    [Fact]
     public void RefusesMalformedMacroAndUnrecognizedShortcutTypes()
     {
         byte[] tail = new byte[48];
