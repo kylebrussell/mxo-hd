@@ -1,0 +1,49 @@
+{
+  "notes": {
+    "19": "Native PR593 confirms zero-IS activation, sacrifice of the live selected own pet, and caster IS 400 → 450 with regeneration held. The first stock packet log line 2629 shows the 58 s reuse start. Exact replay also refuses a stale pet view and checks final view deletion. Both the 60 s DecoyDuration behavior and the remaining damage/resistance check stay open. https://github.com/kylebrussell/mxo-hd/pull/593#issuecomment-7055349055 https://github.com/kylebrussell/mxo-hd/pull/593#issuecomment-7055499766"
+  },
+  "abilities": {
+    "22": {
+      "checks": {
+        "script": {
+          "source": "The Logic Daemon 1.0 Subject callback creates a Nuker simulacrum at the owner level clamped to 4–7. Its Deactivate callback destroys the current simulacrum.",
+          "runtime": "CoderPets.SpawnFor assigns owner/master fields, registers one pet and replaces an existing pet. CoderPets.Order handles stock Deactivate through Dismiss and removes the pet window and view.",
+          "test": "StarterSimulacrumDismissMode checks creation with 337 max HP at the top of this tier, cross-type replacement and the shared Deactivate wire. Native PR593 exercises the summon, replacement and stock /ordersimulacra All Deactivate. https://github.com/kylebrussell/mxo-hd/pull/593#issuecomment-7055349055 https://github.com/kylebrussell/mxo-hd/pull/593#issuecomment-7055499766"
+        },
+        "behavior-tests": {
+          "source": "The summon template and Subject/Deactivate callbacks specify 50 IS, an eight-second cast, 10-second reuse, the pet role, its level clamp, registration and removal behavior.",
+          "runtime": "AbilityHandler applies the cast and cooldown, and CoderPets publishes owned creation, registration, orders and cleanup over the common simulacrum lifecycle.",
+          "test": "StarterSimulacrumDismissMode asserts exact wire, cost, duration, reuse, owner, master, window replacement and removal. CoderPetTests checks level limits, role, retail construction and order layout. The native pass verifies the replacement and stock Deactivate routing. https://github.com/kylebrussell/mxo-hd/pull/593#issuecomment-7055349055 https://github.com/kylebrussell/mxo-hd/pull/593#issuecomment-7055499766"
+        }
+      }
+    },
+    "27": {
+      "checks": {
+        "script": {
+          "source": "The Remote Proxy 1.0 Subject callback creates a random proxy sheet simulacrum at the owner level clamped to 1–4. Its Deactivate callback destroys the current simulacrum.",
+          "runtime": "CoderPets.SpawnFor assigns owner/master fields, registers one pet and replaces an existing pet. CoderPets.Order handles stock Deactivate through Dismiss and removes the pet window and view.",
+          "test": "StarterSimulacrumDismissMode checks creation with 224 max HP at the top of this tier, cross-type replacement and the shared Deactivate wire. Native PR593 exercises the summon, replacement and stock /ordersimulacra All Deactivate. https://github.com/kylebrussell/mxo-hd/pull/593#issuecomment-7055349055 https://github.com/kylebrussell/mxo-hd/pull/593#issuecomment-7055499766"
+        },
+        "behavior-tests": {
+          "source": "The summon template and Subject/Deactivate callbacks specify 50 IS, an eight-second cast, 8-second reuse, the pet role, its level clamp, registration and removal behavior.",
+          "runtime": "AbilityHandler applies the cast and cooldown, and CoderPets publishes owned creation, registration, orders and cleanup over the common simulacrum lifecycle.",
+          "test": "StarterSimulacrumDismissMode asserts exact wire, cost, duration, reuse, owner, master, window replacement and removal. CoderPetTests checks level limits, role, retail construction and order layout. The native pass verifies the replacement and stock Deactivate routing. https://github.com/kylebrussell/mxo-hd/pull/593#issuecomment-7055349055 https://github.com/kylebrussell/mxo-hd/pull/593#issuecomment-7055499766"
+        }
+      }
+    },
+    "169": {
+      "checks": {
+        "script": {
+          "source": "The GOB 169 HOT callback stores 14 health, a 15 s lifetime and a 2.5 s interval. The script rounds heal per tick from the stored total divided by duration.",
+          "runtime": "AbilitySupport snapshots the scaled heal and creates a TimedEffects HOT; the periodic executor applies rounded ticks to the friendly target, clamps to missing HP and stops at expiry.",
+          "test": "HotTicksAtTheScriptIntervalAndDoesNotTickAtExpiry and EmergencyRepairsClampsTheRuntimeTickAndLeavesFullHealthUntouched cover cadence and the cap. In native PR594, the stored total is 16, with five +3 ticks and no immediate or sixth tick. https://github.com/kylebrussell/mxo-hd/pull/594#issuecomment-7055400431"
+        },
+        "behavior-tests": {
+          "source": "The shipped template specifies 10 IS, a 2 s cast, 13 s own reuse, 4 s family reuse and a 15 s friendly HOT affected by caster healing influence.",
+          "runtime": "AbilityHandler checks the cast and cooldowns. AbilitySupport lands the buff and the TimedEffects lifecycle emits its bounded ticks and removes it.",
+          "test": "StarterEmergencyRepairsMode checks the stock request, cast and reuse, snapshot value, all five recipient HP updates and linked removal. TypedHealingInfluenceChangesStoredHotTotalButNotUntypedInhaler covers caster influence. The native session confirms each pulse. https://github.com/kylebrussell/mxo-hd/pull/594#issuecomment-7055400431"
+        }
+      }
+    }
+  }
+}

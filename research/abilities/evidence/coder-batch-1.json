@@ -21,7 +21,7 @@
         "stats": {
           "source": "GOB 19 stores +50 Current Inner Strength and 8000 damage. simulacra.py Decoy1_Test checks selected owner identity.",
           "runtime": "CoderPets.Prepare checks the current owned live simulacrum and exact view/spawn if supplied. LandOnPet debits pet HP and publishes bounded caster IS.",
-          "test": "ability-parity-coder-sweep sees no timer without an own pet and +50 IS with a selected own pet and a 58 s reuse. CoderPetTests.OwnPetSelectionRequiresMatchingVisibleViewAndStockSpawn checks mismatched view and spawn."
+          "test": "ability-parity-coder-sweep sees no timer without an own pet and +50 IS with a selected own pet and a 58 s reuse. CoderPetTests.OwnPetSelectionRequiresMatchingVisibleViewAndStockSpawn checks mismatched view and spawn. StarterSimulacrumDismissMode verifies an exact 50-point increase distinct from activation or regen. The stock client received 400 → 450 after the selected pet's removal. https://github.com/kylebrussell/mxo-hd/pull/593#issuecomment-7055499766"
         },
         "targeting": {
           "source": "GOB 19 stores +50 Current Inner Strength and 8000 damage. simulacra.py Decoy1_Test checks selected owner identity.",
