@@ -7,7 +7,7 @@ public sealed class StarterGunmanResistanceMode : NativeQaMode
 {
     private const int Level = 50, Rank = 19;
     // Full stock requests from PR394 and the native PR404 weapon samples, also used by StarterGunSpecialAdmissionMode.
-    private static readonly Sample[] Samples =
+    internal static readonly Sample[] Samples =
     {
         new(126, 129, "handgun", CombatFixtureWeapons.Handgun, 1, 8, 9522,
             "80b981000400020000000000000000000000000000000000000000000000000000000000086b0000000000",
