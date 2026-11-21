@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading;
+using hds.shared;
 
 namespace hds
 {
@@ -71,6 +72,14 @@ namespace hds
         private static void RegenerateInnerStrength(WorldClient thisclient)
         {
             if (thisclient == null || !thisclient.playerData.getOnWorld())
+            {
+                return;
+            }
+
+            if (Environment.GetEnvironmentVariable("MXO_SIMULACRUM_QA_HOLD_IS") == "1" &&
+                thisclient.playerData.getCharID() == 110 &&
+                QaLoadout.Allowed(Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS"),
+                    Store.config?.dbParams?.DatabaseName, 110, thisclient.playerData.getOnWorld(), thisclient.playerData.isDead))
             {
                 return;
             }

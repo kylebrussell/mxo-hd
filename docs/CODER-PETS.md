@@ -60,7 +60,7 @@ The Simulacra window (`viewsimulacra.cpp`) maps its buttons to FourCC messages (
 | Aggressive | `SAgr` | `81 7c fe 05 01` |
 | Passive | `SPas` | `81 7c fe 05 02` |
 
-The `/ordersimulacra` chat handler (62257c40) uses the same command numbers 0-5, with a SimulacraID instead of `0xfe`. Command 4 is never sent.
+The stock `/ordersimulacra` handler reads the recipient first and the localized command name second. In English, `/ordersimulacra All Deactivate` uses `81 7a fe 01`. `/ordersimulacra 1 Deactivate` uses `81 7a 01 01` if SimulacraID 1 is registered. The client compares the first argument with the `All` string (ID `01000039`) at 62257bd6, and the second with the command-name table at 62257c00. `Deactivate` is string ID `6a000002`. Use the localized command name as the second argument.
 
 PR440 stock capture `d148595f0aa3` lines 1652 and 1940 records command 1 from the control displaying the Stay tooltip. The DLL dispatches `SDea` through 620f00c1 with command 1 and `SSty` through 620f0204 with command 0. Both paths use 620efa60 to write the command byte. The native range fixture uses `?pet stay` to park the pet before testing from its far stand.
 
