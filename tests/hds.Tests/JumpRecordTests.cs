@@ -42,6 +42,27 @@ public class JumpRecordTests
         var start=new JumpRecords.Start(default,0,1,sample);
         Assert.True(JumpRecords.TryStart(JumpRecords.Encode(start),out var decoded));Assert.Equal(sample,decoded.TimeStamp);
     }
+    [Fact]
+    public void ImmediateSameFloorAndPolygonReportDoesNotMatchALaterOrAirborneCancel()
+    {
+        var client = new ClientData();
+        client.setDistrictId(1);
+        var origin = Coordinates(17100, 495, 6400);
+        var takeoff = new JumpRecords.Takeoff(origin, 10, client);
+        Assert.True(takeoff.Matches(Coordinates(17101, 495, 6400), 10, client));
+        Assert.True(takeoff.Matches(Coordinates(17101, 495, 6400), 10.9f, client));
+        Assert.False(takeoff.Matches(Coordinates(17101, 495, 6400), 11.01f, client));
+        Assert.False(takeoff.Matches(Coordinates(17101, 505, 6400), 10.1f, client));
+        Assert.False(takeoff.Matches(Coordinates(17110, 495, 6400), 10.1f, client));
+        Assert.False(takeoff.Matches(Coordinates(17101, 495, 6400, 4), 10.1f, client));
+        client.worldGeneration++;
+        Assert.False(takeoff.Matches(Coordinates(17101, 495, 6400), 10.1f, client));
+
+        static JumpRecords.Destination Coordinates(double x, double y, double z, ushort polygon = 1) =>
+            new(unchecked((ulong)BitConverter.DoubleToInt64Bits(x)), unchecked((ulong)BitConverter.DoubleToInt64Bits(y)),
+                unchecked((ulong)BitConverter.DoubleToInt64Bits(z)), 1250, 18, polygon);
+    }
+
     [Theory]
     [InlineData(0,0xfffffff0u)] [InlineData(1,0x80000000u)] [InlineData(284,0u)] [InlineData(65535,0xffffffffu)]
     public void ActualMovementPreservesResourcesAndCancelDoesNotResampleClock(int inner,uint sample)

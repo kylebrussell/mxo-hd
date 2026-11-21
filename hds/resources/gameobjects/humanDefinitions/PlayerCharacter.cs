@@ -104,11 +104,18 @@ namespace hds
 		
         internal byte[] GetFullSelfViewAttributeGroups()
         {
-            var attributes = attributesSelfView.Select((attribute, index) =>
-                (index, attribute == RealFirstName || attribute == RealLastName
-                    ? EncodeSelfViewName(attribute.getValue())
-                    : attribute.getValue())).ToArray();
+            var attributes = attributesSelfView.Select((attribute, index) => (index, ValueOf(attribute))).ToArray();
             return PlayerViewAttributes.Build(attributes)[1..];
+
+            byte[] ValueOf(Attribute attribute)
+            {
+                if (attribute == RealFirstName || attribute == RealLastName)
+                    return EncodeSelfViewName(attribute.getValue());
+                // Object12's ordinary RSI selector defaults to 1. Zero is meaningful while disguised.
+                if (attribute == UseRSIDescription && !attribute.isActive())
+                    return new byte[] { 1 };
+                return attribute.getValue();
+            }
         }
 
         private static byte[] EncodeSelfViewName(byte[] value)
