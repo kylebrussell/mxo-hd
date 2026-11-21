@@ -7,6 +7,7 @@ namespace NativeQa.Modes;
 public sealed class StarterPetRangeAndFortifyExpiryMode : NativeQaMode
 {
     private const int Level = 18, X = 24800, Y = 495, Z = -1498, BoundaryZ = Z - 1550, OutsideChargeZ = Z - 5100;
+    private const int OutsideShortRangeZ = Z - 2000;
     private const ushort Coder = 1008, Proxy = 27, Fortify = 20, Repair = 30, Charge = 603;
     private static readonly ushort[] Loadout = StockAbilityProfile.Profile(2, 17, Coder, Proxy, Fortify, Repair, Charge).Order().ToArray();
     // PR619 Proxy, PR333 e963ca7e868a:4424–4425 Repair, PR603:836 Charge.
@@ -31,8 +32,9 @@ public sealed class StarterPetRangeAndFortifyExpiryMode : NativeQaMode
         readyMessages: new[]
         {
             "Full level-18 profile. Page 2 Coder Style/27/20/30/603. Use style and summon, then enter ?pet passive and ?pet stay. The L4 Proxy is 1.5 m ahead on clear ground with 224/224 HP. QAFriend observes from the southeast.",
-            $"Keep the Proxy selected and move to ?tp {X} {Y} {BoundaryZ} 0 0 0. The pet is about 15.6 m away. Use 20 first: [VITALS] 224 → 494, +36 resistances, and 2 s cast / 8 s reuse. Use 603 from the same stand, where PR636 saw a server refusal. Expect a 4 s cast, 30 s reuse and 35 IS spent. The pet gets 600 s of -20% action cost and +50% regen. Type ?pet for cost 8.",
-            $"Return to ?tp {X} {Y} {Z} 0 0 0. Slot 4 heals 224 → 244 while the maximum stays 494. IS is 700 → 650 → 620 → 585 → 565. After all other checks, optionally try Charge beyond its sourced 50 m boundary using ?tp {X} {Y} {OutsideChargeZ} 0 0 0, once the 30 s reuse expires. Expect stock suppression or an out-of-range refusal, with no cast or IS debit.",
+            $"Leave selection clear and move to ?tp {X} {Y} {OutsideChargeZ} 0 0 0. At about 51 m, press slot 5 for Charge. Then move to ?tp {X} {Y} {OutsideShortRangeZ} 0 0 0 and try slots 3/4 for Fortify and Repair. If stock sends a request, expect only the native range refusal (80 ba reason 34), with no tactic line, cast bar, timer or IS spending. Record stock-local suppression separately.",
+            $"Return to ?tp {X} {Y} {BoundaryZ} 0 0 0. The pet is about 15.6 m away. Use 20 first: [VITALS] 224 → 494, +36 resistances, and 2 s cast / 8 s reuse. Use 603 from the same stand. Expect a 4 s cast, 30 s reuse and 35 IS spent. The pet gets 600 s of -20% action cost and +50% regen. Type ?pet for cost 8.",
+            $"Return to ?tp {X} {Y} {Z} 0 0 0. Slot 4 heals 224 → 244 while the maximum stays 494. IS is 700 → 650 → 620 → 585 → 565.",
             "Enter ?pet fixture-expire-fortify. This advances only the pet's Fortify expiry. The ordinary tick sends [VITALS] 494 → 224 and clamps current HP to 224 in the owner's and observer's views. Charge remains active (cost 8) and Fortify resistance reads 0 in ?pet."
         });
 
@@ -56,7 +58,6 @@ public sealed class StarterPetRangeAndFortifyExpiryMode : NativeQaMode
         await CastAsync(Proxy, WireFormat.FromHex(Summon), 8, 8, 650);
         var registration = await actor.WaitForRpcAsync("81 76");
         byte sim = registration.Bytes[3];
-        var local = await PetViewAsync(actor);
         var remote = await PetViewAsync(observer);
         actor.SendChat("?pet passive");
         await actor.WaitForTextAsync("Passive.");
@@ -64,26 +65,23 @@ public sealed class StarterPetRangeAndFortifyExpiryMode : NativeQaMode
         await actor.WaitForTextAsync("Staying.");
 
         await MoveAsync(OutsideChargeZ);
-        int refused = actor.World.RpcSnapshot().Count;
-        int refusedViews = actor.World.ViewSnapshot().Count;
-        actor.SendRpc(Selected(ChargeUse, local));
-        await actor.WaitForTextAsync("Your simulacrum is out of range.");
-        await StockAbilityProfile.ObserveAsync(actor, refused,
-            frame => AbilityRefusals.TryDecode(frame.Bytes, out var notice) && notice.AbilityID == Charge, "Charge range refusal");
-        Check.That(!actor.World.RpcSnapshot().Skip(refused).Any(frame => BytePattern.Parse("80 ac 5b 02").IsMatch(frame.Bytes)) &&
-            !actor.World.ViewSnapshot().Skip(refusedViews).SelectMany(AbilityParityCoderSweepMode.InnerStrengthUpdates).Any(isNow => isNow < 650),
-            "Beyond the scripted 50 m range Charge never starts a cast or spends IS");
+        await RefusedAsync(Charge, ChargeUse);
+        await MoveAsync(OutsideShortRangeZ);
+        await RefusedAsync(Fortify, FortifyStock);
+        await RefusedAsync(Repair, RepairUse);
         await MoveAsync(BoundaryZ);
         int raised = actor.World.ViewSnapshot().Count;
-        await CastAsync(Fortify, Selected(FortifyStock, local), 2, 8, 620);
+        await CastAsync(Fortify, StarterHackerControlTargetMode.WithHandle(FortifyStock, 0), 2, 8, 620);
+        var local = await PetViewAsync(actor);
         await PetHealthAsync(actor, raised, local.ViewId, 224, 494);
         Check.That(server.DebugLog().Contains($"Fortify Simulacra (20) pet={sim} maxHP=494 resistance=36 duration=600"),
             "Fortify is admitted within its independent 16 m limit");
 
-        await CastAsync(Charge, Selected(ChargeUse, local), 4, 30, 585);
+        await CastAsync(Charge, StarterHackerControlTargetMode.WithHandle(ChargeUse, 0), 4, 30, 585);
         await MoveAsync(Z);
         int repairAt = actor.World.RpcSnapshot().Count;
-        await CastAsync(Repair, Selected(RepairUse, local), 2, 13, 565);
+        await CastAsync(Repair, StarterHackerControlTargetMode.WithHandle(RepairUse, 0), 2, 13, 565);
+        local = await PetViewAsync(actor);
         await StockAbilityProfile.ObserveAsync(actor, repairAt, frame => BytePattern.Parse($"81 78 {sim:x2} 00 f4 00 ee 01").IsMatch(frame.Bytes),
             "Repair leaves the pet at 244/494 HP");
         int ownerAt = actor.World.ViewSnapshot().Count;
@@ -123,10 +121,30 @@ public sealed class StarterPetRangeAndFortifyExpiryMode : NativeQaMode
             await actor.WaitUntilAsync(() => actor.World.ViewSnapshot().Skip(views).SelectMany(AbilityParityCoderSweepMode.InnerStrengthUpdates)
                 .Any(isNow => isNow == expectedIs), $"{id} leaves {expectedIs} IS", HeadlessPlayer.DefaultTimeout);
         }
-    }
 
-    private static byte[] Selected(string capture, ViewCreation pet) =>
-        StarterHackerControlTargetMode.WithHandle(capture, DuelPackets.Handle(pet.ViewId, pet.SpawnId));
+        async Task RefusedAsync(ushort id, string request)
+        {
+            int from = actor.World.RpcSnapshot().Count;
+            int views = actor.World.ViewSnapshot().Count;
+            // The ordinary unselected form still resolves the caster's own pet after teleport.
+            actor.SendRpc(StarterHackerControlTargetMode.WithHandle(request, 0));
+            await StockAbilityProfile.ObserveAsync(actor, from,
+                frame => AbilityRefusals.TryDecode(frame.Bytes, out var notice) && notice.AbilityID == id &&
+                    notice.ErrorID == AbilityRefusals.TargetOutOfRange, $"Native range refusal for {id}");
+            int barrier = actor.World.RpcSnapshot().Count;
+            actor.SendRpc("81 48");
+            await StockAbilityProfile.ObserveAsync(actor, barrier, frame => BytePattern.Parse("81 49").IsMatch(frame.Bytes), "Post-refusal barrier");
+            string wireId = EvidenceRetestWire.Le(id);
+            var frames = actor.World.RpcSnapshot().Skip(from).ToArray();
+            Check.Equal(1, frames.Count(frame => AbilityRefusals.TryDecode(frame.Bytes, out var notice) && notice.AbilityID == id),
+                "The client receives one refusal");
+            Check.That(!frames.Any(frame => BytePattern.Parse($"80 ac {wireId}").IsMatch(frame.Bytes) ||
+                BytePattern.Parse($"80 bd 01 {wireId}").IsMatch(frame.Bytes) ||
+                System.Text.Encoding.ASCII.GetString(frame.Bytes).Contains("Your simulacrum is out of range.", StringComparison.Ordinal)) &&
+                !actor.World.ViewSnapshot().Skip(views).SelectMany(AbilityParityCoderSweepMode.InnerStrengthUpdates).Any(isNow => isNow < 650),
+                "Range refusal sends no extra chat, starts no cast or reuse, and spends no IS");
+        }
+    }
 
     private static Task PetHealthAsync(HeadlessPlayer player, int cursor, ushort view, ushort hp, ushort maximum) =>
         EvidenceRetestWire.ViewSinceAsync(player, cursor, view, WireFormat.ToHex(CoderPets.BuildHealthUpdate(hp, maximum)));
