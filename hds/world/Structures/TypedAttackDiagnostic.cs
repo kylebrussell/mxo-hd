@@ -14,14 +14,27 @@ namespace hds
                 !Allowed(Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS"),Store.config?.dbParams?.DatabaseName,
                     caller.playerData.getCharID(),caller.playerData.getOnWorld(),caller.playerData.isDead,TimedEffects.PlayerName(caller)))
                 return "Special attack diagnostic requires MXO_DEV_COMMANDS=1, strict mxotest_ and a live character other than 2/TheNeo.";
+            if (args.Length == 1 && args[0] == "totals")
+            {
+                int melee = Total(caller, 197), ballistic = Total(caller, 105), thrown = Total(caller, 134);
+                string sample = $"[ATTACK-TOTALS] melee={melee} ballistic={ballistic} thrown={thrown}";
+                Output.WriteDebugLog(sample);
+                return sample;
+            }
             if (args.Length != 2 || !ushort.TryParse(args[1],out ushort id) || (id != 105 && id != 134 && id != 197 && id != 33))
                 return "Usage: ?combatdepth specialattack <105|134|197|33> (33 diagnostic only; positive cast is not queued).";
-            var move = new AbilityItem(); move.setAbilityID(id);
-            int total = AbilityStats.SpecialAttack(caller,move), hits = 0;
+            int total = Total(caller, id), hits = 0;
             var rng = new Random(731);
             for (int i=0;i<1000;i++)
                 if (CombatInterlock.RollHit(rng,CombatTactic.Speed,50,CombatTactic.Speed,50,out _,out _,CombatTacticType.Normal,total,0)) hits++;
             return "Special attack " + id + " total " + total + "; seeded landed " + hits + "/1000; read-only diagnostic, no live roll/HP changed.";
+        }
+
+        private static int Total(WorldClient caller, ushort ability)
+        {
+            var move = new AbilityItem();
+            move.setAbilityID(ability);
+            return AbilityStats.SpecialAttack(caller, move);
         }
     }
 }

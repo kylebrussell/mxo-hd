@@ -37,13 +37,13 @@ public sealed class StarterPatcherTradeoffMode : NativeQaMode
             ["MXO_AGGRO"] = "0", ["MXO_MOB_WANDER"] = "0", ["MXO_PVP_SERVER"] = "1", ["MXO_PVP_MAX_SAFE_LEVEL"] = "15",
             ["MXO_DESPERATION_QA_HOLD_HEALTH"] = "1", ["MXO_FREECAST_VIRAL_QA"] = "1",
             ["MXO_FREECAST_VIRAL_QA_ATTACK15"] = "32766", ["MXO_FREECAST_VIRAL_QA_DEFENSE15"] = "0"
-        }, extraQaMetadata: new() { ["ScopedStockRows"] = "55,56,57", ["MemoryUsed"] = Memory, ["NativeCloseableRows"] = 0 },
+        }, extraQaMetadata: new() { ["ScopedStockRows"] = "55,56,57", ["MemoryUsed"] = Memory, ["NativeCloseableRows"] = 1 },
         readyMessages: new[]
         {
             $"Level {Level}, {Memory}/{AbilityMemory.ForLevel(Level)} memory. CSR ({X},{Y},{Z}) faces hostile QAEnemy ({X},{Y},{EnemyZ}), 3 m ahead. QAFriend ({FriendX},{Y},{FriendZ}) is 2.24 m away. All three start at 100 HP with natural HP regeneration held. No bag actions.",
-            """Send helper request {"actor":"QAFriend","action":"invite","target":"CSR_Tester"}, then accept. Select Hacker Style (page 2 slot 1), keep normal Speed and select QAEnemy. Press slot 4 Logic Barrage and wait for its 4 s reuse. Expect [FREECAST-VIRAL] attack input 34.""",
+            """Send helper request {"actor":"QAFriend","action":"invite","target":"CSR_Tester"}, then accept. Select Hacker Style (page 2 slot 1), keep normal Speed and select QAEnemy. Type ?cd totals for the baseline [ATTACK-TOTALS] line. Press slot 4 Logic Barrage and wait for its 4 s reuse. Expect [FREECAST-VIRAL] attack input 34.""",
             "Keep QAEnemy selected and press slot 2 Patcher. Expect 22 IS, 43 s own reuse, [ABILITY] Heal 55 -> CSR_Tester for 23 (100 -> 123), and [MODIFIER] char=110 source=55 stat=522/-25, 524/-18, 1032/-18 and 342/-25, all add for 10 s. Neither helper receives a heal or a modifier from 55.",
-            "Immediately use slot 4 again before 55 expires. Expect [FREECAST-VIRAL] attack input 5. After the four source-55 modifiers remove naturally, use slot 4 a third time for input 34. Keep the same target and Speed tactic.",
+            "Immediately after slot 2, type ?cd totals. Expect [ATTACK-TOTALS] melee=0 ballistic=0 thrown=0 at baseline, then melee=-25 ballistic=-18 thrown=-18. Press slot 4 before 55 expires for [FREECAST-VIRAL] attack input 5. After the four modifiers remove naturally, type ?cd totals and cast slot 4 again. All three physical totals return to zero and the viral input returns to 34. Keep the same target and Speed tactic.",
             "Clear selection and use slot 3 Group Repairs with QAFriend in the team. Expect 4 s cast and +9 HP on CSR (123 -> 132) and QAFriend (100 -> 109). QAEnemy gets no 56 heal. There are no maximum [VITALS] changes or [PVP] interlock rounds."
         });
 
@@ -75,6 +75,7 @@ public sealed class StarterPatcherTradeoffMode : NativeQaMode
         await actor.WaitForViewUpdateAsync(2, "02 80 80 80 80 80 10 ee 03 00 00");
         actor.SendRpc($"81 51 {WireFormat.ToHex(BitConverter.GetBytes(selected))}");
 
+        var baselinePhysical = await PhysicalTotalsAsync();
         int baseline = await BarrageAsync();
         Check.Equal(34, baseline, "Baseline Logic Barrage uses the normal Speed input");
         int patchAt = actor.World.RpcSnapshot().Count;
@@ -84,9 +85,13 @@ public sealed class StarterPatcherTradeoffMode : NativeQaMode
         await EvidenceRetestWire.ViewSinceAsync(actor, patchViews, 2, $"02 80 80 80 40 {EvidenceRetestWire.Le(123)}");
         await EvidenceRetestWire.TimerAsync(actor, patchAt, Patcher, AbilityCooldowns.OwnTimer, 43);
         await ModifiersAsync(false);
+        var penalizedPhysical = await PhysicalTotalsAsync();
+        Check.Equal((baselinePhysical.Melee - 25, baselinePhysical.Ballistic - 18, baselinePhysical.Thrown - 18),
+            penalizedPhysical, "Patcher reaches all three typed physical accuracy formulas");
         int penalized = await BarrageAsync();
         Check.Equal(5, penalized, "Patcher subtracts 25 before the Speed multiplier");
         await ModifiersAsync(true);
+        Check.Equal(baselinePhysical, await PhysicalTotalsAsync(), "Expiry restores all three physical attack totals");
         Check.Equal(baseline, await BarrageAsync(), "Expiry restores the original viral accuracy input");
 
         actor.SendRpc("81 51 00 00 00 00");
@@ -104,7 +109,8 @@ public sealed class StarterPatcherTradeoffMode : NativeQaMode
         Check.That(context.Helpers.Values.All(helper => !helper.World.RpcSnapshot().Any(frame =>
             ManageBonusRecord.TryDecode(frame.Bytes, out var bonus) && bonus!.SourceId == Patcher)), "Patcher penalties stay on CSR");
         Check.Equal(0, actor.World.Problems.Count + friend.World.Problems.Count + enemy.World.Problems.Count, "Patcher batch framing");
-        Console.WriteLine($"PATCHER PASS: 55 HP 100 -> 123, 57 attack input {baseline} -> {penalized} -> {baseline}, 56 HP 132/109.");
+        Console.WriteLine($"PATCHER PASS: 55 HP 100 -> 123, physical {baselinePhysical} -> {penalizedPhysical} -> {baselinePhysical}, " +
+            $"57 input {baseline} -> {penalized} -> {baseline}, 56 HP 132/109.");
         return Array.Empty<byte>();
 
         async Task ModifiersAsync(bool remove)
@@ -113,6 +119,17 @@ public sealed class StarterPatcherTradeoffMode : NativeQaMode
                 await StockAbilityProfile.ObserveAsync(actor, patchAt,
                     frame => StockAbilityProfile.Bonus(frame, Patcher, stat, value, 10, remove),
                     $"Patcher stat {stat} value {value}, remove={remove}");
+        }
+
+        async Task<(int Melee, int Ballistic, int Thrown)> PhysicalTotalsAsync()
+        {
+            int logAt = server.DebugLog().Length;
+            actor.SendChat("?cd totals");
+            var sample = new Regex(@"\[ATTACK-TOTALS\] melee=(-?\d+) ballistic=(-?\d+) thrown=(-?\d+)");
+            await actor.WaitUntilAsync(() => sample.IsMatch(server.DebugLog()[logAt..]), "Read-only physical accuracy sample",
+                HeadlessPlayer.DefaultTimeout);
+            var match = sample.Match(server.DebugLog()[logAt..]);
+            return (int.Parse(match.Groups[1].Value), int.Parse(match.Groups[2].Value), int.Parse(match.Groups[3].Value));
         }
 
         async Task<int> BarrageAsync()
