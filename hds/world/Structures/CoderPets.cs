@@ -115,6 +115,7 @@ namespace hds
         public const double TickSeconds = 1.0;
         /// <summary>Seconds between a simulacrum's attacks. Client var Simulacra_AttackActionPeriod exists; its value is unknown.</summary>
         public const double AttackPeriodSeconds = 3.0;
+        public const string FortifyExpiryQa = "MXO_PET_FORTIFY_EXPIRY_QA";
         public const double FollowDistanceMetres = 2.5, MeleeRangeMetres = 2.5, RangedRangeMetres = 15.0, LeashMetres = 60.0;
         public const double StepMetres = 5.0;
 
@@ -1216,6 +1217,22 @@ namespace hds
                     if (exhausted == null) return "No simulacrum.";
                     lock (exhausted) { exhausted.InnerStrength = 0; exhausted.LastResourceTick = TimeUtils.GetSimTimeSeconds(); }
                     return "Simulacrum IS exhausted (dev fixture).";
+                case "fixture-expire-fortify":
+                    if (Environment.GetEnvironmentVariable(FortifyExpiryQa) != "1" ||
+                        !QaLoadout.Allowed(Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS"),
+                            Store.config?.dbParams?.DatabaseName, client.playerData.getCharID(),
+                            client.playerData.getOnWorld(), client.playerData.isDead))
+                        return "Fortify expiry is available only in its disposable fixture.";
+                    var fortified = Of(client);
+                    if (fortified == null) return "No simulacrum.";
+                    lock (fortified)
+                    {
+                        double now = TimeUtils.GetSimTimeSeconds();
+                        if (fortified.Gone || fortified.Mob.getIsDead() || fortified.FortifyUntil <= now)
+                            return "The simulacrum has no active Fortify.";
+                        fortified.FortifyUntil = now;
+                    }
+                    return "Fortify expiry armed for the next pet tick.";
                 case "abilities":
                     return "Simulacrum abilities: " + string.Join(", ", DevAbilities.Select(a => a + " " + (DataLoader.getInstance().getAbilityByID(a)?.getAbilityName() ?? "?")));
                 default:
