@@ -977,6 +977,9 @@ namespace hds
             lastCaster = caster ?? lastCaster;
             string casterName = added.Count > 0 ? added[0].CasterName ?? "" : "";
             string name = mob.getName() ?? "";
+            LogModifiers(replaced, added: false);
+            LogModifiers(added, added: true);
+            if (immunity != null) LogModifier(immunity, "add");
 
             foreach (TimedEffects.Active m in added)
             {
@@ -1037,8 +1040,19 @@ namespace hds
             return !mob.getIsDead();
         }
 
+        private void LogModifiers(List<TimedEffects.Active> mods, bool added)
+        {
+            string operation = added ? "add" : "remove";
+            foreach (var mod in mods) LogModifier(mod, operation);
+        }
+
+        private void LogModifier(TimedEffects.Active mod, string operation) =>
+            Output.WriteDebugLog(FormattableString.Invariant(
+                $"[MODIFIER] mob='{mob.getName()}' entity={mob.getEntityId()} source={mod.Parent} stat={mod.Target} {operation} value={mod.Value:+0;-0;0} duration={mod.Seconds:G}s"));
+
         internal override void Ended(List<TimedEffects.Active> ended)
         {
+            LogModifiers(ended, added: false);
             // Damage may have broken a hold; expired controls no longer keep a damaged passive NPC idle.
             if (mob.getHealthC() > 0 && mob.getHealthC() < mob.getHealthM()) MobAggro.Retaliate(lastCaster, mob);
         }
