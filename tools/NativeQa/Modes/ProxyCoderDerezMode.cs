@@ -7,61 +7,97 @@ namespace NativeQa.Modes;
 
 public sealed class ProxyCoderDerezMode : NativeQaMode
 {
-    private const ushort Derez = 26;
-    private const byte Level = 18;
-    private static readonly (string Name, int X, int Z)[] Stands =
+    private const ushort Derez = 26, Coder = 1008, Daemon = 22;
+    private const int Level = 18, X = 17000, Y = 495, Z = 6400, DummyZ = 6950, FarZ = 7300;
+    // Complete stock Logic Daemon request from the PR593 dismissal batch.
+    private const string StockDaemon = "80b916000000000000000000000000000000000000000000000000000090767241086b0000000000";
+    private static readonly ushort[] HelperLoadout = StockAbilityProfile.Profile(2, 17, Coder, Daemon).Order().ToArray();
+    private const string FaceFriend = "?tp 17000 495 6400 4e2 12 4 - C0";
+    private const string FaceDummy = "?tp 17000 495 6400 4e2 12 4 - 00";
+    private const string FaceEnemy = "?tp 17000 495 6400 4e2 12 4 - 40";
+    private const string FaceFar = "?tp 17000 495 7300 4e2 10 1 - 40";
+    private static readonly (string Name, int X, int Z, int ParkZ, string ParkNav)[] Stands =
     {
-        ("QAFriend", 25300, -1850), ("QAEnemy", 24300, -1850), ("QAFar", 26420, -1498)
+        ("QAFriend", 16400, Z, 7000, "11 0"),
+        ("QAEnemy", 17300, Z, 7000, "12 2"),
+        ("QAFar", 18600, FarZ, 6800, "6 0")
     };
 
     public override string Name => "ability-parity-proxy-coder-derez";
-    public override NativeQaModePlan Plan { get; } = new(new ushort[] { 2, 17, 1008, 22, Derez }, 24800, -1498,
+    public override NativeQaModePlan Plan { get; } = new(new ushort[] { 2, 17, Coder, Daemon, Derez }, X, Z,
         Array.Empty<string>(), Array.Empty<string>(), new[]
         {
             $"UPDATE characters SET level={Level},exp={PlayerProgression.ExperienceForLevel(Level)},y=495,healthC=1000,healthM=1000,innerStrC=200,innerStrM=200,pvpflag=0 WHERE charId IN (110,6111,6112,6114)",
             $"UPDATE char_abilities SET level={Level} WHERE char_id=110",
             "UPDATE characters SET alignment=1 WHERE charId IN (110,6111)",
             "UPDATE characters SET alignment=2 WHERE charId IN (6112,6114)",
-            "UPDATE characters SET x=31000+100*(charId-6111),z=-1498 WHERE charId IN (6111,6112,6114)",
-            "DELETE FROM char_abilities WHERE char_id IN (6111,6114)"
-        }, DevCommands: true, loadAbilityAncestors: true, testMobFixture: CombatFixtureLoadout.MeleeCsv, environmentOverrides: new()
+            "UPDATE characters SET rotation=64 WHERE charId=110",
+            "DELETE FROM char_abilities WHERE char_id IN (6111,6112,6114)",
+            "INSERT INTO char_abilities (char_id,slot,ability_id,level,is_loaded) VALUES " +
+                string.Join(",", new[] { 6111, 6112, 6114 }.SelectMany(id => HelperLoadout.Select((ability, slot) =>
+                    $"({id},{400 + slot},{0x80000000u | ((uint)ability << 10)},{Level},1)")))
+        }.Concat(Stands.Select(stand => $"UPDATE characters SET x={stand.X},z={stand.Z} WHERE handle='{stand.Name}'")).ToArray(),
+        DevCommands: true, loadAbilityAncestors: true, hotbarAbilities: new[] { Coder, Derez },
+        testMobFixture: "starter-proxy-coder-derez.csv", environmentOverrides: new()
         {
             ["MXO_AGGRO"] = "0", ["MXO_MOB_WANDER"] = "0",
-            ["MXO_PVP_SERVER"] = "1", ["MXO_PVP_MAX_SAFE_LEVEL"] = "10"
-        }, readyMessages: new[]
+            ["MXO_PVP_SERVER"] = "1", ["MXO_PVP_MAX_SAFE_LEVEL"] = "15", ["MXO_SIMULACRUM_QA_HOLD_IS"] = "1"
+        }, extraQaMetadata: new() { ["ScopedStockRows"] = "22,26,1008", ["NativeCloseableRows"] = 0 }, readyMessages: new[]
         {
-            "After CSR is fully in world, use helper chat requests to move QAFriend to ?tp 25300 495 -1850 0 0 0 and QAEnemy to ?tp 24300 495 -1850 0 0 0. Also move hostile QAFar to ?tp 26420 495 -1498 0 0 0. Have all three helpers use ?pet summon 22. Their Nuker Simulacra spawn 1.5 m east of the distinct stands, putting QAFar's 17.7 m away.",
-            "Use Coder Style outside interlock. Try Proxy Coder with no selection, Melee Dummy, QAFriend's pet and QAFar's pet. For each sent request expect one native line for invalid target, wrong target type or range, with no cast or reuse.",
-            "Select QAEnemy's Nuker Simulacrum and use Proxy Coder. Capture the full request, 40 IS, 2s cast, 13.5s own reuse, the derezzes line, and pet death/removal. QAEnemy and the friendly simulacrum stay alive."
+            "All stands and summon positions are on outdoor NAV floor 400. The helpers move at least 5 m sideways after their Nukers stay, leaving the models separated. The far pet also has its own sightline. Confirm the intended name in the target panel before using the slot.",
+            $"Choose Coder Style (page 2 slot 1) outside interlock. No selection is reason 24 (already passed). Use {FaceDummy} to face the Melee Dummy at (17000,495,6950). Then {FaceFriend} to face the friendly Nuker at (16550,495,6400). Try slot 2 on each, expecting reason 36. Use {FaceFar} to face the separate far Nuker at (18750,495,7300), 17.5 m away; expect reason 34 if stock sends. Refusals do not start a cast or reuse or debit IS.",
+            $"Use {FaceEnemy} to return and face the near Nuker at (17450,495,6400). Select it and press slot 2. Expect 2 s cast, 13.5 s own reuse, [VITALS] IS 200 to 160 and [PET] Proxy Coder derezzed Nuker Simulacrum of QAEnemy for 13000. Only that pet disappears. QAEnemy and both other pets remain alive, with no maximum player [VITALS] change or [PVP] rounds."
         });
 
     public override async Task<byte[]> AfterStartAsync(NativeQaBootstrapContext context)
     {
         var server = context.ActualServer ?? throw new InvalidOperationException("Expected the disposable Proxy Coder server.");
+        string root = context.RepositoryRoot ?? throw new InvalidOperationException("Proxy Coder needs repository NAV data.");
+        SectorProperties.Load(Path.Combine(root, "data", "sector_properties.csv"));
+        NavMesh.UseDirectory(Path.Combine(root, "data", "navmesh"));
+        foreach (var (x, z) in Stands.SelectMany(stand => new[] { (stand.X, stand.Z), (stand.X + 150, stand.Z), (stand.X, stand.ParkZ) })
+            .Append((X, Z)).Append((X, DummyZ)).Append((X, FarZ)))
+            Check.That(NavMesh.Locate(1, x, Y, z, out var at) && !at.indoors && Math.Abs(at.floorY + 95 - Y) < 1,
+                $"Proxy Coder stand ({x},{Y},{z}) is on outdoor NAV");
         foreach (var stand in Stands)
         {
             var helper = await HeadlessPlayer.LoginAsync(context.Address, stand.Name, stand.Name, stockCharacterLoad: true);
             context.Helpers.Add(stand.Name, helper);
-            await helper.EnterWorldAsync();
+            await PvpOpponentsFixture.EnterAsync(helper);
+            NativeQaReadiness.RequireNoAmbientAggro(server, helper);
+            helper.SendRpc(StarterCoderPetBuffsAndDetonateMode.CoderStock);
+            await helper.WaitForViewUpdateAsync(2, "02 80 80 80 80 80 10 f0 03 00 00");
+            helper.SendRpc(StockDaemon);
+            await EvidenceRetestWire.CastBarAsync(helper, Daemon, 8);
+            await helper.WaitForRpcAsync("81 76");
+            var pet = await SeePetAsync(helper, helper.CharId);
+            Check.That(EngageFoesFixture.Position(pet).SequenceEqual(new double[] { stand.X + 150, Y, stand.Z }),
+                $"{stand.Name} has a live Nuker on the verified spawn");
+            helper.SendChat("?pet passive");
+            await helper.WaitForTextAsync("Passive.");
+            helper.SendChat("?pet stay");
+            await helper.WaitForTextAsync("Staying.");
+            helper.SendChat($"?tp {stand.X} {Y} {stand.ParkZ} 4e2 {stand.ParkNav}");
+            await helper.WaitForTextAsync("Teleported to 4e2/" + stand.ParkNav.Split(' ')[0]);
         }
         if (context.StockProbe is not { } caster) return Array.Empty<byte>();
-        await caster.EnterWorldAsync();
-        caster.SendRpc("3e 6b f0 03 00 00 00 00");
+        await PvpOpponentsFixture.EnterAsync(caster);
+        NativeQaReadiness.RequireNoAmbientAggro(server, caster);
+        caster.SendRpc(StarterCoderPetBuffsAndDetonateMode.CoderStock);
         await caster.WaitForViewUpdateAsync(2, "02 80 80 80 80 80 10 f0 03 00 00");
-        foreach (var stand in Stands)
-        {
-            var helper = context.Helpers[stand.Name];
-            helper.SendChat($"?tp {stand.X} 495 {stand.Z} 0 0 0");
-            await caster.WaitForViewNamedAsync(stand.Name);
-            helper.SendChat("?pet summon 22");
-            await helper.WaitForRpcAsync("81 76");
-        }
         var friend = context.Helpers["QAFriend"];
         var enemy = context.Helpers["QAEnemy"];
         var friendPet = await SeePetAsync(caster, friend.CharId);
         var enemyPet = await SeePetAsync(caster, enemy.CharId);
         var far = context.Helpers["QAFar"];
         var farPet = await SeePetAsync(caster, far.CharId);
+        foreach (var (stand, pet) in Stands.Zip(new[] { friendPet, enemyPet, farPet }))
+        {
+            var owner = await caster.WaitForViewNamedAsync(stand.Name);
+            Check.That(EngageFoesFixture.Position(pet).SequenceEqual(new double[] { stand.X + 150, Y, stand.Z }) &&
+                EngageFoesFixture.Position(owner).SequenceEqual(new double[] { stand.X, Y, stand.ParkZ }),
+                $"CSR sees {stand.Name} separated from its stationary Nuker");
+        }
         var npc = await caster.WaitForViewNamedAsync(CombatFixtureLoadout.DummyName);
         var nonPetPlayer = await caster.WaitForViewNamedAsync(far.Handle);
         var refusals = new List<string>();
@@ -71,6 +107,16 @@ public sealed class ProxyCoderDerezMode : NativeQaMode
             (Handle(farPet), 34u), (Handle(enemyPet) ^ 0x10000, 24u)
         })
         {
+            if (handle == Handle(farPet))
+            {
+                caster.SendChat(FaceFar);
+                await caster.WaitForTextAsync("Teleported to 4e2/10");
+            }
+            else if (reason == 24 && handle != 0)
+            {
+                caster.SendChat(FaceEnemy);
+                await caster.WaitForTextAsync("Teleported to 4e2/12");
+            }
             int start = caster.World.RpcSnapshot().Count;
             caster.SendRpc(Use(handle));
             var denial = await StockAbilityProfile.ObserveAsync(caster, start,
