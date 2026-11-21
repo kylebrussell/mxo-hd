@@ -261,7 +261,11 @@ public class AbilityHostileTests
     {
         var victim = Client();
         var subject = TimedEffects.ForPlayer(victim);
-        var root = Assert.Single(Land(victim, 40));
+        var applied = Land(victim, 40);
+        var root = Assert.Single(applied, mod => mod.Target == TempMods.RootedAbility);
+        var force = Assert.Single(applied, mod => mod.Target == 519);
+        Assert.Equal(-20, force.Value);
+        Assert.Equal(25, force.Seconds);
         Assert.Equal(TempMods.RootedAbility, root.Target);
         Assert.Equal(25, root.Seconds);
         Assert.False(ControlActions.CanMove(subject.Effects));
@@ -270,6 +274,7 @@ public class AbilityHostileTests
         Assert.False(ControlActions.CanMove(subject.Effects));
         TimedEffects.HealthChanged(subject, 1, true, damageEvent: true);
         Assert.True(ControlActions.CanMove(subject.Effects));
+        Assert.Equal(0, AbilityStats.Player(victim, 519));
     }
 
     [Fact]
