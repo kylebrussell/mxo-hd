@@ -1,0 +1,25 @@
+{
+  "abilities": {
+    "215": {
+      "note": "In PR686 the stock handheld retains the 30 m tool range, spends 5 IS and clears its marker after about ten seconds. It leaves the ally and distant opposing helper concealed after the Countermeasure stage. This does not exercise direct mastery 621. https://github.com/kylebrussell/mxo-hd/pull/686#issuecomment-7067494677"
+    },
+    "276": {
+      "note": "PR687 confirms the previously headless-only reloaded success natively. While 276 is unloaded, the local refusal leaves the newly compiled pill. Reload restores +18 707 and the same pill is decompiled via 81 31, recipe 81 30, success 81 2f and 10 s reuse. https://github.com/kylebrussell/mxo-hd/pull/687#issuecomment-7067575003"
+    },
+    "298": {
+      "checks": {
+        "area": {
+          "source": "GOB 298 carries the caster-area selector with a 12 metre radius and no restrictive authored angle. Detection_Test and Detection_DirectObject apply the opposed concealment contest after admission.",
+          "runtime": "ConcealmentDetection enumerates hostile players without requiring their visible views, then uses AbilityTargets.WithinArea on the caster-centred radius without a facing restriction.",
+          "test": "PR686 sends one stock Countermeasure request facing north and reveals both hostile 1116 recipients at exactly 12 m ahead and behind. The opposing helper at 12.006 m and the same-org helper at 5 m never enter the contest. The stock-frame bootstrap pins their selective removal and FX. NPC-specific callback and broader behavior coverage remain open. https://github.com/kylebrussell/mxo-hd/pull/686#issuecomment-7067494677"
+        }
+      }
+    },
+    "969": {
+      "note": "PR687 explicitly activates the bag Compiler, materializes the written Health Pill 1.0 in 3 s, spends 8 Info and reduces its code from 10 to 9 charges. Closing removes the linked 968 record. https://github.com/kylebrussell/mxo-hd/pull/687#issuecomment-7067575003"
+    },
+    "970": {
+      "note": "PR687 explicitly activates the bag Analyser. The stock Writer consumes the five selected ingredients, spends 6 Info and creates the ten-charge Health Pill 1.0 code. https://github.com/kylebrussell/mxo-hd/pull/687#issuecomment-7067575003"
+    }
+  }
+}
