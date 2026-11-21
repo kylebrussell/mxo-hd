@@ -656,7 +656,8 @@ namespace hds
             var subject=ForPlayer(client);
             Apply(subject, effect, TimeUtils.GetSimTimeSeconds(), caster, casterName,
                 configure:AbilityReverseBulldog.Bind(reverseBulldog,subject,abilityId),
-                fixtureProc:MartialPlayerControlQa.ModifierProc(caster, client, abilityId));
+                fixtureProc:MartialPlayerControlQa.ModifierProc(caster, client, abilityId) ||
+                    StarterInterlockControlQa.ModifierProc(caster, client, abilityId));
             return true;
         }
 
