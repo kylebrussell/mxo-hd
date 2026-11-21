@@ -1,0 +1,20 @@
+{
+  "notes": {
+    "12": "PR655 confirms source 12 adds +45 movement and +12/+12 stance movement. Owner and QAFriend fall back to scale 0.45 with flag 0x1000 on Sprint shortfall. At 07:49:44, PacketLog SSEQ 282 to CSR and SSEQ 426 to QAFriend both show zero scale after dismissal. Sneak and invisibility movement consumption remain open. https://github.com/kylebrussell/mxo-hd/pull/655#issuecomment-7062851649",
+    "184": "PR655 confirms activation costs 25 IS, sends +15/+15/+15 and the stat-0 drain record, then spends exactly 25 on the first tick. The next tick at 10 IS removes all four records, starts 5 s reuse and leaves 10 IS and Evade intact. The stance movement consumers remain open. https://github.com/kylebrussell/mxo-hd/pull/655#issuecomment-7062851649",
+    "197": "PR656 verifies Head Butt hits for 17 after the fixture applied Daze. DebugLog lines 668–669 record source 884 stat 199 and a 30 s Daze before the stock 197 request at line 671. The hit sends no Power Shot return. https://github.com/kylebrussell/mxo-hd/pull/656#issuecomment-7062900925",
+    "198": "PR656 verifies Cheap Shot deals 7 and spends 20 IS without an additional Power Shot return. https://github.com/kylebrussell/mxo-hd/pull/656#issuecomment-7062900925",
+    "217": "PR655 confirms the shield survives the Sprint shortfall and Hyper-Speed dismissal. Evade's own toggle removes 624 and starts 30 s reuse. This does not exercise shield damage or the retail evasion roll. https://github.com/kylebrussell/mxo-hd/pull/655#issuecomment-7062851649"
+  },
+  "abilities": {
+    "14": {
+      "checks": {
+        "behavior-tests": {
+          "source": "Shipped 14 defines separate instantaneous 10–100 opponent health damage and caster Inner Strength modifiers.",
+          "runtime": "AwakenedPowerShot reads both function-4 ranges and samples the caster-only return independently on a landed interlock special. RestoreInnerStrength caps the granted amount at the caster maximum.",
+          "test": "AwakenedPowerShotTests verifies the sampled ranges, capped return and no dead-caster return. PR656 confirms the native debit from 140 to 120, a raw roll of 25 capped to 20, an actual own-view return to 140, 76 damage and a 60-second timer. The retained disposable miss witness (server 38256) shows a queued failure, the 120 IS update and timer, with no return line or RPC. That miss is headless evidence; the native pass only sampled a hit. Retail cost and scaling remain under source-parity. https://github.com/kylebrussell/mxo-hd/pull/656#issuecomment-7062900925"
+        }
+      }
+    }
+  }
+}
