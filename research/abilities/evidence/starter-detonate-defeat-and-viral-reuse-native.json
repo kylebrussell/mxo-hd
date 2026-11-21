@@ -1,0 +1,49 @@
+{
+  "abilities": {
+    "34": {
+      "checks": {
+        "behavior-tests": {
+          "source": "GOB 34 and DetonateProxyProc/DetonateProxyEnd specify an own-pet trigger, HP-clamped internal viral payload centered on the pet, and delayed destruction of that pet.",
+          "runtime": "CoderPets validates ownership and current spawn, commits the cast and reuse, applies the pet-centered typed blast to eligible NPCs and players, credits the owner, and removes the original pet.",
+          "test": "CoderPetTests, StarterCoderPetBuffsAndDetonateMode and native PR619/622 cover the clamp, timing, selection refusals and NPC damage, resistance and credit. StarterDetonatePlayerDefeatMode and native PR630 cover pet-level resistance on an eligible PvP target, owner attribution on a lethal player hit, ally and radius exclusions, and the original pet's delayed removal. https://github.com/kylebrussell/mxo-hd/pull/630#issuecomment-7059562217"
+        }
+      }
+    },
+    "53": {
+      "checks": {
+        "behavior-tests": {
+          "source": "GOB 53 stores twelve base viral damage, a four-second selected-hostile cast, 18 IS, eight-second own reuse and four-second family reuse.",
+          "runtime": "The ordinary hostile cast selects one legal enemy; damage, typed resistance, the viral contest and reuse are handled by the standard executors.",
+          "test": "StarterHackerViralDamageAndAdmissionMode and StarterHarmfulCodeDeflectionMode exercise selected damage, hostile admission, sight/range refusal, resistance and deflection. StarterViralSharedReuseMode and PR631 verify the eight-second own timer outlasts the four-second family timer, one successful 14 hit and exactly one 18 IS debit. The native early own click was suppressed. https://github.com/kylebrussell/mxo-hd/pull/631#issuecomment-7059598993"
+        }
+      }
+    },
+    "57": {
+      "checks": {
+        "behavior-tests": {
+          "source": "GOB 57 stores eight base viral damage, a two-second selected-hostile cast, 5 IS and four-second own and family reuse.",
+          "runtime": "The direct viral cast admits one target, applies the damage and deflect paths, and refuses use while group 682 or its own timer is running.",
+          "test": "StarterHackerViralDamageMode, StarterHarmfulCodeDeflectionMode and StarterHackerViralSightMode exercise selected damage, deflection and scope. StarterViralSharedReuseMode and PR631 confirm an early stock request is refused, then the ready cast hits once for 9 and spends 5 IS. https://github.com/kylebrussell/mxo-hd/pull/631#issuecomment-7059598993"
+        }
+      }
+    },
+    "58": {
+      "checks": {
+        "behavior-tests": {
+          "source": "GOB 58 stores eleven base viral damage, a two-second selected-hostile cast, 6 IS and four-second own and family reuse.",
+          "runtime": "The direct viral cast admits one target and shares group 682 without replacing its own reuse record.",
+          "test": "StarterHackerViralDamageAndAdmissionMode, StarterHarmfulCodeDeflectionMode and StarterHackerViralSightMode cover damage, resistance, deflection and scope. StarterViralSharedReuseMode exercises an early server refusal; stock PR631 suppresses the early click and confirms one ready hit for 12 and 6 IS. https://github.com/kylebrussell/mxo-hd/pull/631#issuecomment-7059598993"
+        }
+      }
+    },
+    "59": {
+      "checks": {
+        "behavior-tests": {
+          "source": "GOB 59 stores seventeen base viral damage, a two-second selected-hostile cast, 7 IS and four-second own and family reuse.",
+          "runtime": "The direct viral cast uses the ordinary hostile target, typed damage and reuse pipeline.",
+          "test": "StarterHackerViralDamageAndAdmissionMode and StarterHackerViralSightMode cover damage, resistance and sight/range boundaries. PR628 confirms the single recipient. StarterViralSharedReuseMode and PR631 confirm an early stock request is refused, then the ready cast lands once for 19 and spends 7 IS. https://github.com/kylebrussell/mxo-hd/pull/628#issuecomment-7059322614 https://github.com/kylebrussell/mxo-hd/pull/631#issuecomment-7059598993"
+        }
+      }
+    }
+  }
+}
