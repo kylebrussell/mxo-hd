@@ -262,7 +262,8 @@ try
                     var pending = await actor.WaitForRpcAsync("81 88");
                     byte[] reply = fixtureMode is NativeQa.Modes.AbilityHealthParityMode
                         ? NativeQa.Modes.AbilityHealthParityMode.RejuvenateReply(pending.Bytes)
-                        : new byte[54];
+                        : fixtureMode is NativeQa.Modes.StarterPersonalFirewallAndRestoreMode
+                            ? Scenarios.NativeRejuvenateConsent() : new byte[54];
                     reply[0] = 0x81; reply[1] = 0x88;
                     Array.Copy(pending.Bytes, 2, reply, 2, 4);
                     reply[6] = q.TryGetProperty("timeout", out var timeout) && timeout.GetBoolean() ? (byte)1 : (byte)0;
