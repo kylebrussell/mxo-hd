@@ -1,0 +1,60 @@
+{
+  "abilities": {
+    "29": {
+      "checks": {
+        "script": {
+          "source": "simulacra.py RemoteProxy3_Subject creates a proxy combat sheet, clamping owner level to 8–17. RemoteProxy3_Deactivate destroys the current owned summon.",
+          "runtime": "CoderPets.SpawnFor assigns the pet owner and master and publishes the window. CoderPets.Order dispatches stock Deactivate to Dismiss, removing the matching window and view.",
+          "test": "StarterSimulacrumTiersMode checks owned creation at level 17 and removal of that view and its 81 77 window. Stock PR596 summon 3 created the expected level and was removed by /ordersimulacra All Deactivate. https://github.com/kylebrussell/mxo-hd/pull/596#issuecomment-7055889572"
+        },
+        "behavior-tests": {
+          "source": "GOB 29 specifies 50 IS, an eight-second cast and 8 s own reuse. The Subject and Deactivate callbacks define the role, level clamp and owner lifecycle.",
+          "runtime": "AbilityHandler runs the cast, debit and timer. CoderPets supplies the role, level, vitals, owner, master, registration and dismissal.",
+          "test": "StarterSimulacrumTiersMode replays the exact PR596 requests and asserts cast, reuse, debit, level 17, 712 HP, ownership, a unique 81 76 window and final deletion. The native PacketLog confirms the cast and reuse and the 81 76 HP fields. The native run also confirms the IS sequence and stock dismissal for all four tiers. https://github.com/kylebrussell/mxo-hd/pull/596#issuecomment-7055889572"
+        }
+      }
+    },
+    "586": {
+      "checks": {
+        "script": {
+          "source": "simulacra.py RemoteProxy4_Subject creates a proxy combat sheet, clamping owner level to 18–34. RemoteProxy4_Deactivate destroys the current owned summon.",
+          "runtime": "CoderPets.SpawnFor assigns the pet owner and master and publishes the window. CoderPets.Order dispatches stock Deactivate to Dismiss, removing the matching window and view.",
+          "test": "StarterSimulacrumTiersMode checks owned creation at level 34 and removal of that view and its 81 77 window. Stock PR596 summon 1 created the expected level and was removed by /ordersimulacra All Deactivate. https://github.com/kylebrussell/mxo-hd/pull/596#issuecomment-7055889572"
+        },
+        "behavior-tests": {
+          "source": "GOB 586 specifies 75 IS, an eight-second cast and 8 s own reuse. The Subject and Deactivate callbacks define the role, level clamp and owner lifecycle.",
+          "runtime": "AbilityHandler runs the cast, debit and timer. CoderPets supplies the role, level, vitals, owner, master, registration and dismissal.",
+          "test": "StarterSimulacrumTiersMode replays the exact PR596 requests and asserts cast, reuse, debit, level 34, 1350 HP, ownership, a unique 81 76 window and final deletion. The native PacketLog confirms the cast and reuse and the 81 76 HP fields. The native run also confirms the IS sequence and stock dismissal for all four tiers. https://github.com/kylebrussell/mxo-hd/pull/596#issuecomment-7055889572"
+        }
+      }
+    },
+    "601": {
+      "checks": {
+        "script": {
+          "source": "simulacra.py LogicDaemon2_Subject creates a Nuker, clamping owner level to 8–17. LogicDaemon2_Deactivate destroys the current owned summon.",
+          "runtime": "CoderPets.SpawnFor assigns the pet owner and master and publishes the window. CoderPets.Order dispatches stock Deactivate to Dismiss, removing the matching window and view.",
+          "test": "StarterSimulacrumTiersMode checks owned creation at level 17 and removal of that view and its 81 77 window. Stock PR596 summon 4 created the expected level and was removed by /ordersimulacra All Deactivate. https://github.com/kylebrussell/mxo-hd/pull/596#issuecomment-7055889572"
+        },
+        "behavior-tests": {
+          "source": "GOB 601 specifies 90 IS, an eight-second cast and 10 s own reuse. The Subject and Deactivate callbacks define the role, level clamp and owner lifecycle.",
+          "runtime": "AbilityHandler runs the cast, debit and timer. CoderPets supplies the role, level, vitals, owner, master, registration and dismissal.",
+          "test": "StarterSimulacrumTiersMode replays the exact PR596 requests and asserts cast, reuse, debit, level 17, 712 HP, ownership, a unique 81 76 window and final deletion. The native PacketLog confirms the cast and reuse and the 81 76 HP fields. The native run also confirms the IS sequence and stock dismissal for all four tiers. https://github.com/kylebrussell/mxo-hd/pull/596#issuecomment-7055889572"
+        }
+      }
+    },
+    "611": {
+      "checks": {
+        "script": {
+          "source": "simulacra.py LogicDaemon3_Subject creates a Nuker, clamping owner level to 18–34. LogicDaemon3_Deactivate destroys the current owned summon.",
+          "runtime": "CoderPets.SpawnFor assigns the pet owner and master and publishes the window. CoderPets.Order dispatches stock Deactivate to Dismiss, removing the matching window and view.",
+          "test": "StarterSimulacrumTiersMode checks owned creation at level 34 and removal of that view and its 81 77 window. Stock PR596 summon 2 created the expected level and was removed by /ordersimulacra All Deactivate. https://github.com/kylebrussell/mxo-hd/pull/596#issuecomment-7055889572"
+        },
+        "behavior-tests": {
+          "source": "GOB 611 specifies 110 IS, an eight-second cast and 10 s own reuse. The Subject and Deactivate callbacks define the role, level clamp and owner lifecycle.",
+          "runtime": "AbilityHandler runs the cast, debit and timer. CoderPets supplies the role, level, vitals, owner, master, registration and dismissal.",
+          "test": "StarterSimulacrumTiersMode replays the exact PR596 requests and asserts cast, reuse, debit, level 34, 1350 HP, ownership, a unique 81 76 window and final deletion. The native PacketLog confirms the cast and reuse and the 81 76 HP fields. The native run also confirms the IS sequence and stock dismissal for all four tiers. https://github.com/kylebrussell/mxo-hd/pull/596#issuecomment-7055889572"
+        }
+      }
+    }
+  }
+}
