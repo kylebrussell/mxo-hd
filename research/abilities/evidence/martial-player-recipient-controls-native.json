@@ -1,0 +1,162 @@
+{
+  "abilities": {
+    "259": {
+      "checks": {
+        "controls": {
+          "source": "The template requires Daze and the landed Dim Mak Strike effect applies Powerless. The shared player control executor carries state and separate immunity records.",
+          "runtime": "TimedEffects applies the Powerless state to the player recipient and schedules its removal and the separate immunity removal. ControlActions refuses Cheap Shot while the state is active.",
+          "test": "PR579 records Powerless for 6.12 s and separate immunity for 6 s on QAEnemy, refusal of Cheap Shot while controlled, removal of both records and acceptance after release. The disclosed Daze prep made the stock slot available. MartialPlayerControlMode replays the same recipient checks. https://github.com/kylebrussell/mxo-hd/pull/579#issuecomment-7053026058"
+        },
+        "behavior-tests": {
+          "source": "The template requires Daze and the landed Dim Mak Strike effect applies Powerless. The shipped interlock move, physical damage and reuse data are recorded in the earlier resistance batch.",
+          "runtime": "The owned opponent and style gates select the interlock move, the contest applies typed melee damage, and TimedEffects resolves the Powerless refusal and expiry.",
+          "test": "PR555 and KungFuMasterResistanceTests cover the damage/reuse behavior and stored proc expectation; PR576 exercises the stock interlock admission matrix; PR579 covers the real player recipient, refused action and recovery. https://github.com/kylebrussell/mxo-hd/pull/555 https://github.com/kylebrussell/mxo-hd/pull/576 https://github.com/kylebrussell/mxo-hd/pull/579#issuecomment-7053026058"
+        }
+      }
+    },
+    "262": {
+      "checks": {
+        "controls": {
+          "source": "The template requires Stagger and stores a 40% four-second Stun proc. The shared player control executor carries state and separate immunity records.",
+          "runtime": "TimedEffects applies the Stun state to the player recipient and schedules its removal and the separate immunity removal. ControlActions refuses Cheap Shot while the state is active.",
+          "test": "PR579 records Stun for 4.4 s and separate immunity for 4 s on QAEnemy, refusal of Cheap Shot while controlled, removal of both records and acceptance after release. The disclosed Stagger prep made the stock slot available. MartialPlayerControlMode replays the same recipient checks. https://github.com/kylebrussell/mxo-hd/pull/579#issuecomment-7053026058"
+        },
+        "behavior-tests": {
+          "source": "The template requires Stagger and stores a 40% four-second Stun proc. The shipped interlock move, physical damage and reuse data are recorded in the earlier resistance batch.",
+          "runtime": "The owned opponent and style gates select the interlock move, the contest applies typed melee damage, and TimedEffects resolves the Stun refusal and expiry.",
+          "test": "PR555 and KungFuMasterResistanceTests cover the damage/reuse behavior and stored proc expectation; PR576 exercises the stock interlock admission matrix; PR579 covers the real player recipient, refused action and recovery. https://github.com/kylebrussell/mxo-hd/pull/555 https://github.com/kylebrussell/mxo-hd/pull/576 https://github.com/kylebrussell/mxo-hd/pull/579#issuecomment-7053026058"
+        }
+      }
+    },
+    "265": {
+      "checks": {
+        "controls": {
+          "source": "The template requires Stagger and has a 30% terminal Stun action. The shared player control executor carries state and separate immunity records.",
+          "runtime": "TimedEffects applies the Stun state to the player recipient and schedules its removal and the separate immunity removal. ControlActions refuses Cheap Shot while the state is active.",
+          "test": "PR579 records Stun for 4 s and separate immunity for 4 s on QAEnemy, refusal of Cheap Shot while controlled, removal of both records and acceptance after release. The disclosed Stagger prep made the stock slot available. MartialPlayerControlMode replays the same recipient checks. https://github.com/kylebrussell/mxo-hd/pull/579#issuecomment-7053026058"
+        },
+        "behavior-tests": {
+          "source": "The template requires Stagger and has a 30% terminal Stun action. The shipped interlock move, physical damage and reuse data are recorded in the earlier resistance batch.",
+          "runtime": "The owned opponent and style gates select the interlock move, the contest applies typed melee damage, and TimedEffects resolves the Stun refusal and expiry.",
+          "test": "PR557 and KarateMasterResistanceTests cover the damage/reuse behavior and stored proc expectation; PR576 exercises the stock interlock admission matrix; PR579 covers the real player recipient, refused action and recovery. https://github.com/kylebrussell/mxo-hd/pull/557 https://github.com/kylebrussell/mxo-hd/pull/576 https://github.com/kylebrussell/mxo-hd/pull/579#issuecomment-7053026058"
+        }
+      }
+    },
+    "273": {
+      "checks": {
+        "controls": {
+          "source": "Counter Throw requires Off Balance and applies a four-second Confuse.",
+          "runtime": "TimedEffects publishes the Confuse state and linked record. ControlActions refuses special moves until Confuse expires, then the same Cheap Shot request is admitted.",
+          "test": "PR583 sent stock 273 to QAEnemy. The stock hotbar lit after a damaging Grab round published Off Balance. The recipient received Confuse for 4 s, Cheap Shot was refused, and the state was removed after 3.97 s. The same action then succeeded. MartialConfuseMode replays the add, refusal, both removals and recovery. https://github.com/kylebrussell/mxo-hd/pull/583#issuecomment-7053659678"
+        },
+        "behavior-tests": {
+          "source": "Counter Throw requires Off Balance and applies a four-second Confuse. The original native batch verifies interlock move 779 and the damage/reuse behavior.",
+          "runtime": "The stock special-move request uses the shared opponent/style admission and combat damage paths. The landed move evaluates its modifier and Confuse is applied and cleared through the player control executor.",
+          "test": "PR558 verifies move 779, damage and reuse. PR576 covers the interlock admission matrix, and PR583 and MartialConfuseTests verify the native recipient duration and headless refusal/expiry/recovery. https://github.com/kylebrussell/mxo-hd/pull/558 https://github.com/kylebrussell/mxo-hd/pull/576 https://github.com/kylebrussell/mxo-hd/pull/583#issuecomment-7053659678"
+        }
+      }
+    },
+    "296": {
+      "checks": {
+        "controls": {
+          "source": "Aikido Spinning Clay Pigeon requires Off Balance, applies eight-second Confuse and has 40 s own reuse.",
+          "runtime": "TimedEffects publishes the Confuse state and linked record. ControlActions refuses special moves until Confuse expires, then the same Cheap Shot request is admitted.",
+          "test": "PR583 sent stock 296 to QAEnemy. The stock hotbar lit after a damaging Grab round published Off Balance. The recipient received Confuse for 8 s, Cheap Shot was refused, and the state was removed after 8.03 s. The same action then succeeded. MartialConfuseMode replays the add, refusal, both removals and recovery. https://github.com/kylebrussell/mxo-hd/pull/583#issuecomment-7053659678"
+        },
+        "behavior-tests": {
+          "source": "Aikido Spinning Clay Pigeon requires Off Balance, applies eight-second Confuse and has 40 s own reuse. The original native batch verifies interlock move 741 and the damage/reuse behavior.",
+          "runtime": "The stock special-move request uses the shared opponent/style admission and combat damage paths. The landed move evaluates its modifier and Confuse is applied and cleared through the player control executor.",
+          "test": "PR558 verifies move 741, damage and reuse. PR576 covers the interlock admission matrix, and PR583 and MartialConfuseTests verify the native recipient duration and headless refusal/expiry/recovery. https://github.com/kylebrussell/mxo-hd/pull/558 https://github.com/kylebrussell/mxo-hd/pull/576 https://github.com/kylebrussell/mxo-hd/pull/583#issuecomment-7053659678"
+        }
+      }
+    },
+    "427": {
+      "checks": {
+        "controls": {
+          "source": "The template requires Off Balance and the Triple Front Kick effect applies Powerless. The shared player control executor carries state and separate immunity records.",
+          "runtime": "TimedEffects applies the Powerless state to the player recipient and schedules its removal and the separate immunity removal. ControlActions refuses Cheap Shot while the state is active.",
+          "test": "PR579 records Powerless for 6.12 s and separate immunity for 6 s on QAEnemy, refusal of Cheap Shot while controlled, removal of both records and acceptance after release. The disclosed Off Balance prep made the stock slot available. MartialPlayerControlMode replays the same recipient checks. https://github.com/kylebrussell/mxo-hd/pull/579#issuecomment-7053026058"
+        },
+        "behavior-tests": {
+          "source": "The template requires Off Balance and the Triple Front Kick effect applies Powerless. The shipped interlock move, physical damage and reuse data are recorded in the earlier resistance batch.",
+          "runtime": "The owned opponent and style gates select the interlock move, the contest applies typed melee damage, and TimedEffects resolves the Powerless refusal and expiry.",
+          "test": "PR559 and KungFuGrandmasterResistanceTests cover the damage/reuse behavior and stored proc expectation; PR576 exercises the stock interlock admission matrix; PR579 covers the real player recipient, refused action and recovery. https://github.com/kylebrussell/mxo-hd/pull/559 https://github.com/kylebrussell/mxo-hd/pull/576 https://github.com/kylebrussell/mxo-hd/pull/579#issuecomment-7053026058"
+        }
+      }
+    },
+    "428": {
+      "checks": {
+        "controls": {
+          "source": "Suicidal Butterfly stores a 30% four-second Confuse modifier with no opponent-condition gate.",
+          "runtime": "TimedEffects publishes the Confuse state and linked record. ControlActions refuses special moves until Confuse expires, then the same Cheap Shot request is admitted.",
+          "test": "PR583 sent stock 428 to QAEnemy. The disposable fixture forced the positive modifier roll. The recipient received Confuse for 4 s, Cheap Shot was refused, and the state was removed after 3.95 s. The same action then succeeded. MartialConfuseMode replays the add, refusal, both removals and recovery. https://github.com/kylebrussell/mxo-hd/pull/583#issuecomment-7053659678"
+        },
+        "behavior-tests": {
+          "source": "Suicidal Butterfly stores a 30% four-second Confuse modifier with no opponent-condition gate. The original native batch verifies interlock move 8084 and the damage/reuse behavior.",
+          "runtime": "The stock special-move request uses the shared opponent/style admission and combat damage paths. The landed move evaluates its modifier and Confuse is applied and cleared through the player control executor.",
+          "test": "PR559 verifies move 8084, damage and reuse. PR576 covers the interlock admission matrix, and PR583 and MartialConfuseTests verify the native recipient duration and headless refusal/expiry/recovery. https://github.com/kylebrussell/mxo-hd/pull/559 https://github.com/kylebrussell/mxo-hd/pull/576 https://github.com/kylebrussell/mxo-hd/pull/583#issuecomment-7053659678"
+        }
+      }
+    },
+    "429": {
+      "checks": {
+        "controls": {
+          "source": "The template stores a 10% terminal Stun proc without a target-condition requirement. The shared player control executor carries state and separate immunity records.",
+          "runtime": "TimedEffects applies the Stun state to the player recipient and schedules its removal and the separate immunity removal. ControlActions refuses Cheap Shot while the state is active.",
+          "test": "PR579 records Stun for 4 s and separate immunity for 4 s on QAEnemy, refusal of Cheap Shot while controlled, removal of both records and acceptance after release. MartialPlayerControlMode replays the same recipient checks. https://github.com/kylebrussell/mxo-hd/pull/579#issuecomment-7053026058"
+        },
+        "behavior-tests": {
+          "source": "The template stores a 10% terminal Stun proc without a target-condition requirement. The shipped interlock move, physical damage and reuse data are recorded in the earlier resistance batch.",
+          "runtime": "The owned opponent and style gates select the interlock move, the contest applies typed melee damage, and TimedEffects resolves the Stun refusal and expiry.",
+          "test": "PR559 and KungFuGrandmasterResistanceTests cover the damage/reuse behavior and stored proc expectation; PR576 exercises the stock interlock admission matrix; PR579 covers the real player recipient, refused action and recovery. https://github.com/kylebrussell/mxo-hd/pull/559 https://github.com/kylebrussell/mxo-hd/pull/576 https://github.com/kylebrussell/mxo-hd/pull/579#issuecomment-7053026058"
+        }
+      }
+    },
+    "430": {
+      "checks": {
+        "controls": {
+          "source": "The template requires Daze and stores a six-second Powerless effect. The shared player control executor carries state and separate immunity records.",
+          "runtime": "TimedEffects applies the Powerless state to the player recipient and schedules its removal and the separate immunity removal. ControlActions refuses Cheap Shot while the state is active.",
+          "test": "PR579 records Powerless for 6.12 s and separate immunity for 6 s on QAEnemy, refusal of Cheap Shot while controlled, removal of both records and acceptance after release. The disclosed Daze prep made the stock slot available. MartialPlayerControlMode replays the same recipient checks. https://github.com/kylebrussell/mxo-hd/pull/579#issuecomment-7053026058"
+        },
+        "behavior-tests": {
+          "source": "The template requires Daze and stores a six-second Powerless effect. The shipped interlock move, physical damage and reuse data are recorded in the earlier resistance batch.",
+          "runtime": "The owned opponent and style gates select the interlock move, the contest applies typed melee damage, and TimedEffects resolves the Powerless refusal and expiry.",
+          "test": "PR559 and KungFuGrandmasterResistanceTests cover the damage/reuse behavior and stored proc expectation; PR576 exercises the stock interlock admission matrix; PR579 covers the real player recipient, refused action and recovery. https://github.com/kylebrussell/mxo-hd/pull/559 https://github.com/kylebrussell/mxo-hd/pull/576 https://github.com/kylebrussell/mxo-hd/pull/579#issuecomment-7053026058"
+        }
+      }
+    },
+    "532": {
+      "checks": {
+        "controls": {
+          "source": "The template requires Daze and carries the Machinegun Kick terminal Stun action. The shared player control executor carries state and separate immunity records.",
+          "runtime": "TimedEffects applies the Stun state to the player recipient and schedules its removal and the separate immunity removal. ControlActions refuses Cheap Shot while the state is active.",
+          "test": "PR579 records Stun for 4 s and separate immunity for 4 s on QAEnemy, refusal of Cheap Shot while controlled, removal of both records and acceptance after release. The disclosed Daze prep made the stock slot available. MartialPlayerControlMode replays the same recipient checks. https://github.com/kylebrussell/mxo-hd/pull/579#issuecomment-7053026058"
+        }
+      }
+    },
+    "534": {
+      "checks": {
+        "controls": {
+          "source": "The template stores a 40% terminal Stun proc without a target-condition requirement. The shared player control executor carries state and separate immunity records.",
+          "runtime": "TimedEffects applies the Stun state to the player recipient and schedules its removal and the separate immunity removal. ControlActions refuses Cheap Shot while the state is active.",
+          "test": "PR579 records Stun for 4 s and separate immunity for 4 s on QAEnemy, refusal of Cheap Shot while controlled, removal of both records and acceptance after release. MartialPlayerControlMode replays the same recipient checks. https://github.com/kylebrussell/mxo-hd/pull/579#issuecomment-7053026058"
+        }
+      }
+    },
+    "536": {
+      "checks": {
+        "controls": {
+          "source": "The template requires Stagger and stores a 50% six-second Powerless proc. The shared player control executor carries state and separate immunity records.",
+          "runtime": "TimedEffects applies the Powerless state to the player recipient and schedules its removal and the separate immunity removal. ControlActions refuses Cheap Shot while the state is active.",
+          "test": "PR579 records Powerless for 6 s and separate immunity for 6 s on QAEnemy, refusal of Cheap Shot while controlled, removal of both records and acceptance after release. The disclosed Stagger prep made the stock slot available. MartialPlayerControlMode replays the same recipient checks. https://github.com/kylebrussell/mxo-hd/pull/579#issuecomment-7053026058"
+        },
+        "behavior-tests": {
+          "source": "The template requires Stagger and stores a 50% six-second Powerless proc. The shipped interlock move, physical damage and reuse data are recorded in the earlier resistance batch.",
+          "runtime": "The owned opponent and style gates select the interlock move, the contest applies typed melee damage, and TimedEffects resolves the Powerless refusal and expiry.",
+          "test": "PR561 and KarateGrandmasterResistanceTests cover the damage/reuse behavior and stored proc expectation; PR576 exercises the stock interlock admission matrix; PR579 covers the real player recipient, refused action and recovery. https://github.com/kylebrussell/mxo-hd/pull/561 https://github.com/kylebrussell/mxo-hd/pull/576 https://github.com/kylebrussell/mxo-hd/pull/579#issuecomment-7053026058"
+        }
+      }
+    }
+  }
+}
