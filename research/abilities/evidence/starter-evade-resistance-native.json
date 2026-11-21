@@ -1,0 +1,7 @@
+{
+  "abilities": {
+    "217": {
+      "note": "PR702 native QA shows 217 costing 40 IS and enabling the shield. Five refused melee requests each spend 10 IS, including with Phage unloaded/reloaded and Gaussian Blur on/off. The next request at 8 IS is still refused, disables 217/624, preserves 8 IS and starts 30 s reuse. Blur is gated again, and the next ordinary request opens interlock. Unit tests cover the shipped 2–10 IS level curve, exact balance, shortfall and no debit for stale or successful entry. The retail contest and shield-health pool remain open. https://github.com/kylebrussell/mxo-hd/pull/702#issuecomment-7070258176"
+    }
+  }
+}
