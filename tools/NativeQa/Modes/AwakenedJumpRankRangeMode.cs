@@ -7,8 +7,10 @@ namespace NativeQa.Modes;
 public sealed class AwakenedJumpRankRangeMode : NativeQaMode
 {
     private const int Level = 18, X = 17000, Y = 495, Z = 6400, NearX = 18800, FarX = 21150;
+    private const int InteriorX = 17100, Rank10X = 20850, Rank11X = 21150;
     private const ushort Jump = 11, Sprint = 184;
     private const string Return = "?tp 17000 495 6400 4e2 12 4 - 40";
+    private const string InteriorStand = "?tp 17100 495 6400 4e2 12 1 - 40";
     // PR689 PacketLog lines 762–763 and 1424–1425, the complete cancelled forward requests.
     private const string Rank10Forward = "80 c2 00 00 00 00 80 5c d4 40 00 00 00 00 00 f0 7e 40 00 00 00 00 00 00 b9 40 e2 04 02 00 00 00 00 f0 20 46 01 62 6e 88 16";
     private const string Rank11Forward = "80 c2 00 00 00 00 80 a7 d4 40 00 00 00 00 00 f0 7e 40 00 00 00 20 00 00 b9 40 e2 04 01 00 00 00 00 f0 20 46 01 d4 3b 89 16";
@@ -33,6 +35,7 @@ public sealed class AwakenedJumpRankRangeMode : NativeQaMode
         readyMessages: new[]
         {
             $"CSR ({X},{Y},{Z}) faces QA Jump Near ({NearX},{Y},{Z}) and QA Jump Far ({FarX},{Y},{Z}) on the same outdoor NAV floor. Stand still with no selection and leave Sprint off. Both forward trials start from the normal standing view. The near marker is for the optional aimed jump only.",
+            $"Diagnostic first, before training. Spawn X=17000 is the west edge of the 25-unit-wide start polygon (NAV 1250/18/4). Type {InteriorStand} to stand inside polygon 1250/18/1 on the same floor and heading. Press Ctrl+Space from the normal view, wait 12 s, then strafe once. Rank 10 should request X=20950, still destination region 1250/2. Report landing or the first 80 c4 and cancel location. This isolates the immediate start seam; it is a route check.",
             $"At rank 10 confirm [MODIFIER] source=11 stat=567 +30. From normal standing view, press Ctrl+Space once. Leave the jump hotbar button alone before takeoff so no aim mode remains pending. Release both keys, then wait 12 seconds with no further input. A successful landing is a normal strafe near x=20850, 38.5 m from start. Save the first post-landing movement XYZ and any 80 c4 cancel. One flag-1 80 c2 and one matching 80 c3 echo in the same timed datagram as the jump view update.",
             $"Return with {Return}. In Upgrade, train Hyper-Jump 10→11 for 24,200 Info; source=11 stat=567 +30 removes and +33 adds. Close Upgrade before using the same normal-view Ctrl+Space. Wait 12 seconds again. The expected ground destination is near x=21150, 41.5 m from start. Capture the first ordinary strafe after the landing. If either attempt cancels to start, report the 80 c4 and its destination.",
             $"Optional control: return with {Return}, press page 2 slot 2, and repeat the rank-11 near jump. Expect 184/115,877,878 +15 with no removals during the jump. One clock echo, no maximum [VITALS] changes or [PVP] rounds. Stop Sprint after landing."
@@ -43,7 +46,12 @@ public sealed class AwakenedJumpRankRangeMode : NativeQaMode
         string root = context.RepositoryRoot ?? throw new InvalidOperationException("Jump range needs repository NAV data.");
         SectorProperties.Load(Path.Combine(root, "data", "sector_properties.csv"));
         NavMesh.UseDirectory(Path.Combine(root, "data", "navmesh"));
-        for (int x = X; x <= FarX; x += 100) Ground(x);
+        for (int x = X; x <= Rank11X + InteriorX - X; x += 50) Ground(x);
+        Check.That(Ground(X).polygon == 4 && Ground(InteriorX) is { sector: 1250, region: 18, polygon: 1 },
+            "Diagnostic takeoff remains in region 18 and leaves the original boundary polygon");
+        Check.That(Ground(Rank10X).region == 2 && Ground(Rank10X + InteriorX - X).region == 2 &&
+            Ground(Rank11X).region == 1 && Ground(Rank11X + InteriorX - X).region == 1,
+            "The shifted takeoff preserves each landing region");
         if (context.StockProbe is not { } actor) return Array.Empty<byte>();
         var rows = AbilityMemoryUiFixture.Decode(actor.CharacterData[6]).Where(row => AbilityMemory.IsAbility(row.Descriptor))
             .ToDictionary(row => AbilityCatalog.IdOf(row.Descriptor));
@@ -57,7 +65,11 @@ public sealed class AwakenedJumpRankRangeMode : NativeQaMode
         await BonusAsync(0, Jump, 567, 30, 0, false);
         await JumpAsync(NearX);
         await ReturnAsync();
-        await ReplayForwardAsync(Rank10Forward, 20850);
+        await ReplayForwardAsync(Rank10Forward, Rank10X);
+        actor.SkipReceived();
+        actor.SendChat(InteriorStand);
+        await actor.WaitForTextAsync("Teleported to 4e2/12");
+        await ReplayForwardAsync(Rank10Forward, Rank10X, shift: InteriorX - X);
         await ReturnAsync();
 
         int trainAt = actor.World.RpcSnapshot().Count;
@@ -95,7 +107,7 @@ public sealed class AwakenedJumpRankRangeMode : NativeQaMode
             await actor.WaitForTextAsync("Teleported to 4e2/12");
         }
 
-        async Task ReplayForwardAsync(string capturedHex, int expectedX)
+        async Task ReplayForwardAsync(string capturedHex, int expectedX, int shift = 0)
         {
             byte[] bytes = WireFormat.FromHex(capturedHex);
             Check.That(JumpRecords.TryStart(bytes, out var request) && request.IsHyperJump == 1,
@@ -106,6 +118,14 @@ public sealed class AwakenedJumpRankRangeMode : NativeQaMode
             var ground = Ground(expectedX);
             Check.That(request.Destination.Sector == ground.sector && request.Destination.Prefab == ground.region &&
                 request.Destination.NavPoly == ground.polygon, "Stock and server agree on forward landing NAV");
+            if (shift != 0)
+            {
+                // This diagnostic keeps the captured peak, client clock and destination region.
+                var shifted = new JumpRecords.Destination(Bits(expectedX + shift), request.Destination.YBits,
+                    request.Destination.ZBits, ground.sector, ground.region, ground.polygon);
+                request = new JumpRecords.Start(shifted, request.PeakBits, request.IsHyperJump, request.TimeStamp);
+                bytes = JumpRecords.Encode(request);
+            }
             await ObserveJumpAsync(bytes, request);
         }
 
