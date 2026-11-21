@@ -116,6 +116,7 @@ namespace hds
         /// <summary>Seconds between a simulacrum's attacks. Client var Simulacra_AttackActionPeriod exists; its value is unknown.</summary>
         public const double AttackPeriodSeconds = 3.0;
         public const string FortifyExpiryQa = "MXO_PET_FORTIFY_EXPIRY_QA";
+        public const string RifleProxyQa = "MXO_SIMULACRUM_QA_RIFLE";
         public const double FollowDistanceMetres = 2.5, MeleeRangeMetres = 2.5, RangedRangeMetres = 15.0, LeashMetres = 60.0;
         public const double StepMetres = 5.0;
 
@@ -319,6 +320,11 @@ namespace hds
             Dismiss(owner, false);
             int casterLevel = owner.playerInstance.Level.getValue()[0];
             int level = SimLevel(summon, casterLevel);
+            UInt32 charId = owner.playerData.getCharID();
+            bool fixtureRifle = ability == 28 && charId == 110 && Environment.GetEnvironmentVariable(RifleProxyQa) == "1" &&
+                QaLoadout.Allowed(Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS"), Store.config?.dbParams?.DatabaseName,
+                    charId, owner.playerData.getOnWorld() && !owner.playerData.worldChangePending,
+                    owner.playerData.isDead || owner.playerData.duelDeath);
             string sheet;
             bool female;
             lock (random)
@@ -331,7 +337,7 @@ namespace hds
             NumericalUtils.LtVector3dToDoubles(owner.playerInstance.Position.getValue(), ref x, ref y, ref z);
             x += 150;
 
-            UInt32 charId = owner.playerData.getCharID();
+            if (fixtureRifle) sheet = "Rifle";
             byte simId;
             lock (simulacraCounters)
             {
