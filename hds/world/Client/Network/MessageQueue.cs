@@ -65,7 +65,11 @@ namespace hds
 
         // Explicit world-lifetime producers. No validity callbacks or owner locks in the queue.
         internal void AddWorldBoundRpc(byte[] messageBlock,int world,long transport) => QueueRpc(messageBlock,world,transport);
-        private void QueueRpc(byte[] messageBlock,int? world,long transport)
+        // The view and its clock sample are one reliable response, including on retransmission.
+        internal void AddTimedViewWithRpc(byte[] view, byte[] rpc, int world, long transport) =>
+            QueueRpc(rpc, world, transport, new SequencedMessage(view));
+
+        private void QueueRpc(byte[] messageBlock,int? world,long transport, SequencedMessage timedView = null)
         {
             byte[] rpcSizeByte;
             if (messageBlock.Length > 127)
@@ -80,7 +84,7 @@ namespace hds
             content.append(rpcSizeByte);
             content.append(messageBlock);
 
-            SequencedMessage message = new SequencedMessage(content.getBytes()) { RpcWorldGeneration=world, RpcTransportEpoch=transport };
+            SequencedMessage message = new SequencedMessage(content.getBytes()) { RpcWorldGeneration=world, RpcTransportEpoch=transport, TimedViewWithRpc=timedView };
             // Same lock as the flush and ack code: the flush thread enumerates this list while packet
             // handlers add to it, and an unlocked Add crashed the server ("Collection was modified").
             lock (RPCMessagesQueue.SyncRoot)

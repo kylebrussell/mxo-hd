@@ -9,6 +9,8 @@ public sealed record RpcRecord(ushort ListCounter, int Index, byte[] Bytes)
 {
     /// <summary>The opcode as the server's headers number them: 0x28 for `28`, 0x187 for `81 87`.</summary>
     public ushort? DatagramSequence { get; init; }
+    public float? DatagramSimTime { get; init; }
+    public byte[]? DatagramViewSection { get; init; }
 
     public int Opcode => WireFormat.OpcodeOf(Bytes);
 
@@ -104,9 +106,8 @@ public static class WireFormat
     }
 
     /// <summary>
-    /// Reads a decrypted server packet. The server closes a packet's 03 list before starting RPCs
-    /// (WorldClient.FlushQueue), so a list is the rest of the packet and ends in `00 00`; its view updates have no
-    /// lengths, so it stays raw. An error in the RPC part throws: a real client would misread it too.
+    /// Reads a decrypted server packet. View-only lists remain raw because view updates have no length prefix.
+    /// The captured combined jump response has a fixed attribute layout preceding the ordered RPC section.
     /// </summary>
     public static WorldPayload ParsePayload(byte[] plain)
     {
@@ -125,12 +126,25 @@ public static class WireFormat
         if (offset < plain.Length && plain[offset] == ViewSection)
         {
             offset++;
-            if (plain.Length - offset < 2 || plain[^1] != 0 || plain[^2] != 0)
+            // Retail proxy_024: view 2, action 8, mask 80 80 bc, peak/flags/end/XYZ/IS.
+            // Decode that fixed boundary so a zero or 04 inside a coordinate cannot look like a terminator.
+            const int jumpViewLength = 46;
+            ReadOnlySpan<byte> jumpPrefix = stackalloc byte[] { 2, 0, 3, 1, 8, 0, 0x80, 0x80, 0xbc };
+            int jumpEnd = offset + jumpViewLength;
+            if (payload.SimTime.HasValue && jumpEnd + 2 < plain.Length &&
+                plain.AsSpan(offset).StartsWith(jumpPrefix) &&
+                plain[jumpEnd] == 0 && plain[jumpEnd + 1] == 0 && plain[jumpEnd + 2] == RpcSection)
             {
-                throw new FormatException("03 list doesn't end in view id 0: " + ToHex(plain));
+                payload.ViewSection = plain[offset..jumpEnd];
+                offset = jumpEnd + 2;
             }
-            payload.ViewSection = plain[offset..^2];
-            return payload;
+            else
+            {
+                if (plain.Length - offset < 2 || plain[^1] != 0 || plain[^2] != 0)
+                    throw new FormatException("03 list doesn't end in view id 0: " + ToHex(plain));
+                payload.ViewSection = plain[offset..^2];
+                return payload;
+            }
         }
         if (offset < plain.Length && plain[offset] == RpcSection)
         {

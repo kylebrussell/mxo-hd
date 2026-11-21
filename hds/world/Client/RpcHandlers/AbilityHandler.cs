@@ -888,8 +888,7 @@ namespace hds
             UInt32 endTime = JumpEndTime(TimeUtils.GetSimTimeSeconds(), peak);
 
             ServerPackets packets = new ServerPackets();
-            packets.SendHyperJumpID(clientTickSample);
-            packets.SendHyperJumpWithOneStep((float)xDest,(float)yDest,(float)zDest, peakHeight, endTime);
+            packets.SendHyperJumpWithOneStep((float)xDest,(float)yDest,(float)zDest, peakHeight, endTime, clientTickSample);
             Store.currentClient.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(xDest, yDest, zDest));
         }
 

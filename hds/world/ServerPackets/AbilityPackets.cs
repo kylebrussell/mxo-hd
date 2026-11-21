@@ -122,7 +122,7 @@ namespace hds
 
         public void SendHyperJumpWithOneStep(float xDestPos,
             float yDestPos,
-            float zDestPos, UInt32 peakHeight, UInt32 endTime)
+            float zDestPos, UInt32 peakHeight, UInt32 endTime, UInt32 clientTickSample)
         {
             
             List<Attribute> updateAttributes = new List<Attribute>();
@@ -151,7 +151,9 @@ namespace hds
             myselfStateData.AddByteArray(
                 Store.currentClient.playerInstance.GetSelfUpdateAttributes(updateAttributes, false));
 
-            Store.world.SendSelfViewUpdate(myselfStateData, 2, Store.currentClient, true);
+            var client = Store.currentClient;
+            client.messageQueue.AddTimedViewWithRpc(WorldServer.BuildViewUpdate(2, myselfStateData.ReturnFinalPacket()),
+                JumpRecords.EncodeClockEcho(clientTickSample), client.playerData.worldGeneration, client.TransportFence.Capture());
             
             // PacketContent pak = new PacketContent();
             // pak.AddUint16(2, 1);

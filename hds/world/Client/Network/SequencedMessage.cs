@@ -16,6 +16,7 @@ namespace hds
                 ScaleDiagnostics.FirstSend(scaleEnqueued,objectMessage);
         }
         internal ObjectMessageReceipt ObjectReceipt;
+        internal SequencedMessage TimedViewWithRpc;
         public byte[] content;
         public UInt16 sendCounter;
         private int resendTime;

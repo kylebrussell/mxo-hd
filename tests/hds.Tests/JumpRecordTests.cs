@@ -50,6 +50,7 @@ public class JumpRecordTests
         try
         {
             var c=(WorldClient)System.Runtime.CompilerServices.RuntimeHelpers.GetUninitializedObject(typeof(WorldClient));
+            typeof(WorldClient).GetField("<TransportFence>k__BackingField",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic)!.SetValue(c,new WorldSendFence());
             c.playerData=new();c.playerData.setCharID(110);c.playerData.setDistrictId(1);c.playerData.setOnWorld(true);
             c.playerInstance=new();c.messageQueue=new();c.viewMan=new();c.playerInstance.InnerStrengthAvailable.setValue((ushort)inner);
             Store.currentClient=c;Store.world=(WorldServer)System.Runtime.CompilerServices.RuntimeHelpers.GetUninitializedObject(typeof(WorldServer));
@@ -57,13 +58,19 @@ public class JumpRecordTests
             System.Buffers.Binary.BinaryPrimitives.WriteUInt32LittleEndian(start.AsSpan(35),sample);
             var handler=new AbilityHandler();handler.ProcessJump(ref start);
             Assert.Equal((ushort)inner,AbilityHandler.CurrentInnerStrength(c));
-            byte[] movement=Assert.Single(c.messageQueue.ObjectMessagesQueue.Cast<SequencedMessage>()).content;
+            var rpc=Assert.Single(c.messageQueue.RPCMessagesQueue.Cast<SequencedMessage>());
+            Assert.Empty(c.messageQueue.ObjectMessagesQueue);
+            var packet=new WorldPacket(c.playerData);
+            Assert.True(packet.addRPCContent(rpc));
+            Assert.True(packet.timed);
+            byte[] movement=Assert.Single(packet.ObjectMessages).content;
+            Assert.Same(rpc,Assert.Single(packet.RPCMessages));
             int mask=movement.AsSpan().IndexOf(Convert.FromHexString("0200030108008080bc"));Assert.True(mask>=0);
             int resource=mask+9+4+2+4+24;Assert.Equal(0x10,movement[resource]);
             Assert.Equal((ushort)inner,BitConverter.ToUInt16(movement,resource+1));
             handler.processHyperJumpCancel(ref cancel);
             Assert.Equal((ushort)inner,AbilityHandler.CurrentInnerStrength(c));
-            var rpc=Assert.Single(c.messageQueue.RPCMessagesQueue.Cast<SequencedMessage>());
+            Assert.Same(rpc,Assert.Single(c.messageQueue.RPCMessagesQueue.Cast<SequencedMessage>()));
             Assert.Equal(new byte[]{0x80,0xc3}.Concat(BitConverter.GetBytes(sample)).ToArray(),rpc.content.Skip(1).ToArray());
             double x=0,y=0,z=0;NumericalUtils.LtVector3dToDoubles(c.playerInstance.Position.getValue(),ref x,ref y,ref z);
             JumpRecords.TryCancel(Convert.FromHexString(RetailCancel),out var expected);
