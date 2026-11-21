@@ -27,20 +27,26 @@ public sealed class StarterTeamPatcherUpgradeRadiusMode : NativeQaMode
             $"UPDATE characters SET x={X+250},y={Y},z={Z},healthC=100,healthM=500,alignment=1,pvpflag=0 WHERE charId=6111",
             $"UPDATE characters SET x={X+670},y={Y},z={Z},healthC=100,healthM=500,alignment=1,pvpflag=0 WHERE charId=6112",
             "DELETE FROM char_abilities WHERE char_id IN (6111,6112)"
-        }, DevCommands: true, hotbarAbilities: new[] { Hacker, GroupRepairs, Upgrade }, environmentOverrides: new()
+        }, DevCommands: true, hotbarAbilities: new[] { Hacker, GroupRepairs, Upgrade }, testMobFixture: "martial-player-controls.csv", environmentOverrides: new()
         {
             ["MXO_AGGRO"] = "0", ["MXO_MOB_WANDER"] = "0", ["MXO_DESPERATION_QA_HOLD_HEALTH"] = "1"
-        }, extraQaMetadata: new() { ["ScopedStockRows"] = "71,74,1089", ["NativeCloseableRows"] = 1, ["MemoryUsed"] = Memory },
+        }, extraQaMetadata: new() { ["ScopedStockRows"] = "56,71,74,1089", ["NativeCloseableRows"] = 0, ["MemoryUsed"] = Memory },
         readyMessages: new[]
         {
-            $"Level {Level}, full prerequisite profile {Memory}/{AbilityMemory.ForLevel(Level)} memory. Stay on the outdoor spawn facing the two helpers 2.5 and 6.7 m east. Accept QAFriend's mission-team invite. Keep selection clear. Natural HP regeneration is held for all three players.",
-            "Enter ?qaunload 71 then ?qaload 71. Expect [MODIFIER] char=110 source=71 stat=1052 and stat=1141, both value=+1 duration=0s, remove then add. Source=74 remains loaded (stat=1052 +1, stat=127 +9). It raises the group heal radius to 6.54 m before the upgrade.",
-            "Use Hacker Style on page 2 slot 1, then Group Repairs on slot 2. Expect two '[ABILITY] Heal 56 -> <handle> for 9' lines for CSR and QAFriend. QAFar at 6.7 m is untouched. Expect 4 s cast and 4 s reuse. Wait until slot 2 is ready.",
-            "Use Team Patcher Upgrade (slot 3). Expect [MODIFIER] char=110 source=1089 stat=127/+7, 174/+3, 520/+10 and 564/+7, all duration=0s. No such adds on helpers. Cast slot 2 again. Radius is now 6.96 m and '[ABILITY] Heal 56 -> QAFar for 9' joins the CSR/QAFriend lines. Enter ?dismissbuff 1089. Expect all four matching removals, then a third group heal again excludes QAFar."
+            $"Level {Level}, {Memory}/{AbilityMemory.ForLevel(Level)} memory. CSR ({X},{Y},{Z}) faces QAFriend ({X + 250},{Y},{Z}) and QAFar ({X + 670},{Y},{Z}), all outdoor NAV floor 400. Accept the team invite and keep selection clear. All three begin at 100 HP with natural HP regen held.",
+            "Select Hacker Style on page 2 slot 1, then type ?qaunload 71. Expect [MODIFIER] 71/1052 and 71/1141 +1 removals. With 74 still loaded, 56 heals CSR and QAFriend for 8 (100 to 108) and leaves QAFar out of range. Wait for slot 2 reuse.",
+            "Type ?qaload 71 and confirm both +1 adds. Cast the same 56 on slot 2. It now heals CSR and QAFriend for 9 (108 to 117), from the same stands. Same 4 s cast, 4 s reuse and no heal on QAFar.",
+            "Use Team Patcher Upgrade (slot 3). Expect only CSR [MODIFIER] 1089/127 +7, 174 +3, 520 +10, 564 +7. Cast slot 2 again. QAFar first receives 9 (100 to 109), and CSR/QAFriend reach 126. Type ?dismissbuff 1089 and confirm the four removals. The last 56 reaches 135 on CSR/QAFriend and leaves QAFar at 109."
         });
 
     public override async Task<byte[]> AfterStartAsync(NativeQaBootstrapContext context)
     {
+        string root = context.RepositoryRoot ?? throw new InvalidOperationException("Team Patcher needs repository NAV data.");
+        SectorProperties.Load(Path.Combine(root, "data", "sector_properties.csv"));
+        NavMesh.UseDirectory(Path.Combine(root, "data", "navmesh"));
+        foreach (int x in new[] { X, X + 250, X + 670 })
+            Check.That(NavMesh.Locate(1, x, Y, Z, out var at) && !at.indoors && Math.Abs(at.floorY + 95 - Y) < 1,
+                $"Team Patcher stand ({x},{Y},{Z}) is on outdoor NAV");
         var server = context.ActualServer!;
         foreach (string handle in new[] { "QAFriend", "QAFar" })
         {
@@ -70,21 +76,22 @@ public sealed class StarterTeamPatcherUpgradeRadiusMode : NativeQaMode
         await TeamBreadthMode.InviteAsync(near, actor);
 
         await RecordsAsync(0, Resist, ResistStats, remove: false);
+        actor.SendRpc(StarterHackerViralSightMode.StockStyle);
+        await actor.WaitForViewUpdateAsync(2, "02 80 80 80 80 80 10 ee 03 00 00");
         int unload = await StockAbilityProfile.ChangeLoadoutAsync(actor, archive, new[] { Repair }, load: false);
         await RecordsAsync(unload, Repair, RepairStats, remove: true);
+        await HealAsync(nearAfter: 108, farAfter: null);
         int reload = await StockAbilityProfile.ChangeLoadoutAsync(actor, archive, new[] { Repair }, load: true);
         await RecordsAsync(reload, Repair, RepairStats, remove: false);
         await StockAbilityProfile.ObserveAsync(actor, 0, StockAbilityProfile.GrantRecord(Upgrade, remove: false), "Team Patcher grants 1089");
-        actor.SendRpc(StarterHackerViralSightMode.StockStyle);
-        await actor.WaitForViewUpdateAsync(2, "02 80 80 80 80 80 10 ee 03 00 00");
-        await HealAsync(nearAfter: 109, farAfter: null);
+        await HealAsync(nearAfter: 117, farAfter: null);
 
         var helperCursors = new[] { near, far }.ToDictionary(player => player, player => player.World.RpcSnapshot().Count);
         int apply = actor.World.RpcSnapshot().Count;
         actor.SendRpc(UpgradeStock);
         await RecordsAsync(apply, Upgrade, UpgradeStats, remove: false);
         await EvidenceRetestWire.TimerAsync(actor, apply, Upgrade, AbilityCooldowns.OwnTimer, 30);
-        await HealAsync(nearAfter: 118, farAfter: 109);
+        await HealAsync(nearAfter: 126, farAfter: 109);
         foreach (var entry in helperCursors)
             Check.That(!entry.Key.World.RpcSnapshot().Skip(entry.Value).Any(frame => UpgradeStats.Any(stat =>
                 StockAbilityProfile.Bonus(frame, Upgrade, stat.Stat, stat.Value, 0, false))), "Upgrade modifiers are caster-only");
@@ -92,7 +99,7 @@ public sealed class StarterTeamPatcherUpgradeRadiusMode : NativeQaMode
         int remove = actor.World.RpcSnapshot().Count;
         actor.SendChat("?dismissbuff 1089");
         await RecordsAsync(remove, Upgrade, UpgradeStats, remove: true);
-        await HealAsync(nearAfter: 127, farAfter: null);
+        await HealAsync(nearAfter: 135, farAfter: null);
         Check.Equal(0, actor.World.Problems.Count + near.World.Problems.Count + far.World.Problems.Count,
             "Team Patcher modifier and group heal records frame cleanly");
         return Array.Empty<byte>();
@@ -101,11 +108,13 @@ public sealed class StarterTeamPatcherUpgradeRadiusMode : NativeQaMode
         {
             int logAt = server.DebugLog().Length;
             int castAt = actor.World.RpcSnapshot().Count;
+            int ownerAt = actor.World.ViewSnapshot().Count;
             int nearAt = near.World.ViewSnapshot().Count;
             int farAt = far.World.ViewSnapshot().Count;
             actor.SendRpc(GroupStock);
             await EvidenceRetestWire.CastBarAsync(actor, GroupRepairs, 4);
             await EvidenceRetestWire.ViewSinceAsync(near, nearAt, 2, $"02 80 80 80 40 {EvidenceRetestWire.Le(nearAfter)}");
+            await EvidenceRetestWire.ViewSinceAsync(actor, ownerAt, 2, $"02 80 80 80 40 {EvidenceRetestWire.Le(nearAfter)}");
             if (farAfter.HasValue)
                 await EvidenceRetestWire.ViewSinceAsync(far, farAt, 2, $"02 80 80 80 40 {EvidenceRetestWire.Le(farAfter.Value)}");
             else
