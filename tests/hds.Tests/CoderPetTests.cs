@@ -162,6 +162,9 @@ public class CoderPetTests
         Assert.True(CoderPets.MatchesSelection(owner, pet, selected.ViewID, 13));
         Assert.False(CoderPets.MatchesSelection(owner, pet, selected.ViewID, 12));
         Assert.False(CoderPets.MatchesSelection(owner, pet, foreign.ViewID, 13));
+        selected.viewNeedsToBeDeleted = true;
+        Assert.False(CoderPets.MatchesSelection(owner, pet, selected.ViewID, 13));
+        selected.viewNeedsToBeDeleted = false;
         owner.viewMan.removeViewByViewId(selected.ViewID);
         Assert.False(CoderPets.MatchesSelection(owner, pet, selected.ViewID, 13));
     }
