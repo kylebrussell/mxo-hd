@@ -286,8 +286,11 @@ try
                     await NativeQa.Modes.StarterStealthObserverMode.RunPassAsync(actor);
                 else if (fixtureMode is NativeQa.Modes.MarketplaceBreadthMode market && action == "marketplace")
                     result = await market.SendActionAsync(actor, q, helpers, database);
-                else if (fixtureMode is NativeQa.Modes.StarterPathogenistAuraResistanceMode && action == "aura-resist")
-                    await NativeQa.Modes.StarterPathogenistAuraResistanceMode.ApplyResistanceAsync(actor);
+                else if (fixtureMode is NativeQa.Modes.StarterPathogenistAuraResistanceMode or NativeQa.Modes.StarterViralSplashResistanceMode &&
+                    action == "aura-resist")
+                    await NativeQa.Modes.StarterPathogenistAuraResistanceMode.ApplyResistanceAsync(actor,
+                        fixtureMode is NativeQa.Modes.StarterViralSplashResistanceMode
+                            ? NativeQa.Modes.StarterViralSplashResistanceMode.Resistance : 75);
                 else if (action == "stop") actor.SendRpc("44 00");
                 else if (action == "move")
                 {
