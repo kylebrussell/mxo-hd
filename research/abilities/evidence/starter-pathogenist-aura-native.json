@@ -1,0 +1,36 @@
+{
+  "abilities": {
+    "61": {
+      "checks": {
+        "script": {
+          "source": "The 61 template names ApplyAuraEffect for initial and scheduled reapplication of child 701 and ISDrainWithAbilityDeactivation for 3 IS every five seconds.",
+          "runtime": "AbilityAuras runs the initial child pulse and schedules repeat work per caster. It debits IS before the next pulse and ends on shortfall, toggled shutdown or source scope loss.",
+          "test": "StarterPathogenistAuraSightMode proves initial and scheduled child 701 plus shutdown. PathogenistAuraDeactivatesBeforeAnUnaffordablePulse checks exact 3 IS upkeep, refusal of an unaffordable pulse and no charge after shutdown. The native comment confirms the toggle and sight exclusion. https://github.com/kylebrussell/mxo-hd/pull/588#issuecomment-7054857954"
+        },
+        "behavior-tests": {
+          "source": "GOB 61 records 5 IS activation and 28 s own reuse. The enabled parent reapplies 701 around the caster and has a five-second 3 IS drain.",
+          "runtime": "AbilityHandler admits the loaded self-toggle. AbilityAuras uses the child's six-metre hostile radius, tracks the caster's own activation and terminates before an unaffordable pulse. The child applies two −14 defense modifiers for five seconds.",
+          "test": "AurasReadTheirDrainAndEffectFromTheTemplate and PathogenistAuraDeactivatesBeforeAnUnaffordablePulse cover the configured cost callback and shutdown. StarterHackerAuraRadiusMode covers the exact radius, StarterHackerHostileAurasMode covers overlapping casters, and StarterPathogenistAuraSightMode and the native comment cover pulse and sight. https://github.com/kylebrussell/mxo-hd/pull/588#issuecomment-7054857954"
+        }
+      }
+    },
+    "89": {
+      "checks": {
+        "script": {
+          "source": "The 89 template names ApplyAuraEffect for initial and scheduled reapplication of child 694 and ISDrainWithAbilityDeactivation for 12 IS every five seconds.",
+          "runtime": "AbilityAuras runs the initial child pulse and schedules repeat work per caster. It debits IS before the next pulse and ends on shortfall, toggled shutdown or source scope loss.",
+          "test": "StarterPathogenistAuraSightMode proves initial and scheduled child 694 plus shutdown. PathogenistAuraDeactivatesBeforeAnUnaffordablePulse checks exact 12 IS upkeep, refusal of an unaffordable pulse and no charge after shutdown. The native comment confirms the toggle and sight exclusion. https://github.com/kylebrussell/mxo-hd/pull/588#issuecomment-7054857954"
+        },
+        "behavior-tests": {
+          "source": "GOB 89 records 11 IS activation and 5 s own reuse. The enabled parent reapplies 694 around the caster and has a five-second 12 IS drain.",
+          "runtime": "AbilityHandler admits the loaded self-toggle. AbilityAuras uses the child's six-metre hostile radius, tracks the caster's own activation and terminates before an unaffordable pulse. The child applies one viral hit on the neutral fixture target.",
+          "test": "AurasReadTheirDrainAndEffectFromTheTemplate and PathogenistAuraDeactivatesBeforeAnUnaffordablePulse cover the configured cost callback and shutdown. StarterHackerAuraRadiusMode covers the exact radius, StarterHackerHostileAurasMode covers overlapping casters, and StarterPathogenistAuraSightMode and the native comment cover pulse and sight. https://github.com/kylebrussell/mxo-hd/pull/588#issuecomment-7054857954"
+        }
+      }
+    }
+  },
+  "notes": {
+    "694": "PR588 confirmed a one-point hit on a neutral target and line-of-sight exclusion. Typed resistance and the native reapply contest remain open. https://github.com/kylebrussell/mxo-hd/pull/588#issuecomment-7054857954",
+    "701": "PR588 confirmed line-of-sight exclusion. The child also stores TestFunction 2. The separate viral contest semantics of the shipped native reapply method remain open. https://github.com/kylebrussell/mxo-hd/pull/588#issuecomment-7054857954"
+  }
+}
