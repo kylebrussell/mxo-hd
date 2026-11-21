@@ -411,7 +411,14 @@ namespace hds
                     AbilityStats.Player(client, stat), 1, UInt16.MaxValue);
                 if (stat == 106) client.playerData.buffHealthMaximumDelta = max - baseline;
                 else client.playerData.buffISMaximumDelta = max - baseline;
-                if (NumericalUtils.ByteArrayToUint16(maximum.getValue(), 1) != max) { maximum.setValue(max); changed.Add(maximum); }
+                UInt16 previousMax = NumericalUtils.ByteArrayToUint16(maximum.getValue(), 1);
+                if (previousMax != max)
+                {
+                    maximum.setValue(max);
+                    changed.Add(maximum);
+                    if (present)
+                        Output.WriteDebugLog($"[VITALS] char={client.playerData.getCharID()} {(stat == 106 ? "maxHP" : "maxIS")} {previousMax} -> {max}");
+                }
                 if (NumericalUtils.ByteArrayToUint16(current.getValue(), 1) > max) { current.setValue(max); changed.Add(current); }
             }
             if (changed.Count > 0)

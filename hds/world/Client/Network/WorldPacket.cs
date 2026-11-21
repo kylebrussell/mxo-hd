@@ -147,6 +147,7 @@ namespace hds
                     if (message.rpcNumber < 0)
                     {
                         message.rpcNumber = counter++;
+                        Output.WriteBonusDebugLog(playerData.getCharID(), message.content);
                     }
                 }
 
