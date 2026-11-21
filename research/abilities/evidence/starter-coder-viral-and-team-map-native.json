@@ -1,0 +1,36 @@
+{
+  "abilities": {
+    "33": {
+      "checks": {
+        "behavior-tests": {
+          "source": "GOB 33 stores a single selected-hostile viral hit with fixed base 22, a two-second cast and six-second own reuse.",
+          "runtime": "The ordinary selected-target cast checks the live enemy, evaluates the viral contest and applies typed Viral Resistance to the resulting hit.",
+          "test": "StarterCoderSplashBatchMode and StarterCoderSightMode check selection, range, sight, the single recipient and the original Lockdown interaction. StarterCoderViralResistanceMode and PR633 confirm that +34 reduces raw 24 to 20 on the selected player and causes no secondary hit. The retail base/influence model remains a separate source-parity check. https://github.com/kylebrussell/mxo-hd/pull/633#issuecomment-7059918580"
+        }
+      }
+    },
+    "36": {
+      "checks": {
+        "behavior-tests": {
+          "source": "GOB 36 stores four base viral damage, a six-second cast and a selected hostile with two metres of splash.",
+          "runtime": "The server applies the primary and eligible secondary hits through the selected-target path, each with its own resistance result.",
+          "test": "StarterCoderSplashBatchMode, StarterCoderSightMode and StarterConcentrationBatchMode cover target admission, splash, cast/reuse and the lack of interruption. StarterCoderViralResistanceMode and stock PR633 confirm 4 on the primary and 3 on a resisting hostile secondary, with the ally and out-of-range hostile excluded. https://github.com/kylebrussell/mxo-hd/pull/633#issuecomment-7059918580"
+        }
+      }
+    },
+    "514": {
+      "checks": {
+        "damage": {
+          "source": "GOB 514 stores six fixed base viral damage with a two-metre selected-target splash.",
+          "runtime": "The ordinary cast applies the six-point base to both targets before their separate typed resistance reductions.",
+          "test": "StarterCoderViralResistanceMode verifies a neutral six-point primary and a five-point resisted secondary. Stock PR633 observed 6/6 once Empty Mind had expired, then 6/5 while a fresh +34 buff was active. Exact retail scaling remains open. https://github.com/kylebrussell/mxo-hd/pull/633#issuecomment-7059918580"
+        }
+      }
+    }
+  },
+  "notes": {
+    "44": "PR634 confirms the Safe ping on the mission owner and on teammates 6111 and 6112 after recall. The outsider receives no team ping. Unloading stops all three refreshes, and reload stays quiet. The native approach used an assisted position command because the console had not printed the stand. Floorplan reveal and exact flag semantics remain open. https://github.com/kylebrussell/mxo-hd/pull/634#issuecomment-7060078149",
+    "382": "PR634 confirms ordinary Recruit to Mission, QAFriend accepting, and a selected 382 recalling that teammate. https://github.com/kylebrussell/mxo-hd/pull/634#issuecomment-7060078149",
+    "486": "PR634 confirms that ordinary 486 moves both teammates to the safe floor while the outsider stays outside the team. https://github.com/kylebrussell/mxo-hd/pull/634#issuecomment-7060078149"
+  }
+}
