@@ -36,7 +36,7 @@ public sealed class StarterDrainCodeAdmissionMode : NativeQaMode
         readyMessages: new[]
         {
             $"Level {Level}. CSR ({X},{Y},{Z}) faces east onto its own summon stand ({X + 150},{Y},{Z}). QAFriend parks out of line at ({FriendX},{Y},{FriendParkZ}), leaving the Nuker alone at ({FriendX + 150},{Y},{Z}). All stands are on outdoor NAV floor 400.",
-            $"Retest the foreign-pet refusal first. Page 2 slot 1 Coder Style, then slot 2 Proxy. On landing, IS 700 to 650. Type ?pet passive, ?pet stay, then {FaceForeign}. Strafe a step if needed to clear the camera and select the isolated Nuker facing west. Confirm Nuker Simulacrum in the target panel before pressing slot 3. Expect 'That is not your simulacrum' if stock sends 19. No cast, reuse or IS return. Selection zero uses your own proxy and will consume it.",
+            $"Retest the foreign-pet refusal first. Page 2 slot 1 Coder Style, then slot 2 Proxy. On landing, IS 700 to 650. Type ?pet passive, ?pet stay, then {FaceForeign}. Strafe a step if needed to clear the camera and select the isolated Nuker facing west. Confirm Nuker Simulacrum in the target panel before pressing slot 3. Expect stock reason 24, 'Target is not valid', and 'That is not your simulacrum' if stock sends 19. No cast, reuse or IS return. Selection zero uses your own proxy and will consume it.",
             $"Type {FarStand}, facing west toward your own Proxy from 10.5 m. Select it afresh and press slot 3. Capture the stock range refusal 34 if sent. The Proxy stays up and IS stays 650. No cast or reuse begins.",
             $"Type {NearStand}, 9.5 m from the same Proxy. Select it and repeat slot 3. Expect 2 s cast and 58 s own reuse, IS 650 to 700, one own window and view removal, and the Nuker still present. No player maximum [VITALS] change or [PVP] rounds."
         });
@@ -78,7 +78,7 @@ public sealed class StarterDrainCodeAdmissionMode : NativeQaMode
         actor.SendChat(FaceForeign);
         await actor.WaitForTextAsync("Teleported to 4e2/12");
         int foreignAt = friend.World.RpcSnapshot().Count;
-        await RefusedAsync(foreign, AbilityRefusals.LegacyAmbiguous, "That is not your simulacrum.");
+        await RefusedAsync(foreign, AbilityRefusals.InvalidTarget, "That is not your simulacrum.");
         await MoveAsync(FarStand);
         await RefusedAsync(await PetAsync(actor, actor.CharId), AbilityRefusals.TargetOutOfRange, null);
         await MoveAsync(NearStand);

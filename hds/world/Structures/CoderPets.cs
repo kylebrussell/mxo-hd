@@ -719,7 +719,11 @@ namespace hds
                 if (pet == null || pet.Mob.getIsDead()) return "You need an active simulacrum.";
                 // Decoy1_Test / StopProxy1_Test / AcousticDecoy2_Test: the direct object must be owned by the subject. Without a
                 // selection (or the caster selected) the caster's own simulacrum is meant.
-                if (!MatchesSelection(caster, pet, targetView, targetSpawn)) return "That is not your simulacrum.";
+                if (!MatchesSelection(caster, pet, targetView, targetSpawn))
+                {
+                    refusal = AbilityRefusals.InvalidTarget;
+                    return "That is not your simulacrum.";
+                }
                 if (!InAbilityRange(pet, id))
                 {
                     refusal = AbilityRefusals.TargetOutOfRange;
