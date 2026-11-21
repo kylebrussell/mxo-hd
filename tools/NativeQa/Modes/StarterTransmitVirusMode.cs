@@ -15,7 +15,7 @@ public sealed class StarterTransmitVirusMode : NativeQaMode
     // PR396 and PR545 stock direct viral requests. Only the receiver-local selection handle changes.
     private const string BarrageStock = "80b93900040002000000000000000000000000000000000000000000585cba0001000000086b0000000000";
     private const string BlastStock = "80b93a000400020000000000000000000000000000000000000000000000000090767241086b0000000000";
-    private const string IncomingStock = "80b94a010e000c000000000000000000000000000000000000000000ffff7f7f00000000086b0000000000";
+    internal const string IncomingStock = "80b94a010e000c000000000000000000000000000000000000000000ffff7f7f00000000086b0000000000";
 
     public override string Name => "ability-parity-starter-transmit-virus";
     public override NativeQaModePlan Plan { get; } = new(Abilities, X, Z, Array.Empty<string>(), Array.Empty<string>(), new[]

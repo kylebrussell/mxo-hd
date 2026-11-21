@@ -17,6 +17,24 @@ public class AbilityScaledBuffTests
     }
 
     [Fact]
+    public void SelectivePhageUpgradeAddsThreeViralInputsAndRestoresThemOnRemoval()
+    {
+        var caster = Client(50);
+        AbilityPassives.SetLoaded(caster, new[] { ((ushort)83, (ushort)50) });
+        Assert.True(AbilityPassives.IsLoaded(caster, 1082));
+        int accuracy = AbilityStats.ViralAccuracy(caster);
+        int defense = AbilityStats.Player(caster, 183);
+        Assert.True(AbilityBuffs.Apply(caster, 1082));
+        Assert.Equal(accuracy + 4, AbilityStats.ViralAccuracy(caster));
+        Assert.Equal(defense + 2, AbilityStats.Player(caster, 183));
+        Assert.Equal(432, AbilityStats.ScaleAbilityDamage(caster, 330, 424));
+        Assert.True(AbilityBuffs.Remove(caster, 1082));
+        Assert.Equal(accuracy, AbilityStats.ViralAccuracy(caster));
+        Assert.Equal(defense, AbilityStats.Player(caster, 183));
+        Assert.Equal(424, AbilityStats.ScaleAbilityDamage(caster, 330, 424));
+    }
+
+    [Fact]
     public void PistolEvasiveKeepsTheHitAndAppliesThreeDefensesOnlyToItsCaster()
     {
         var caster = Client(50);
