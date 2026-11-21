@@ -8,6 +8,7 @@ namespace NativeQa.Modes;
 public sealed class DownloadMissionMapMode : NativeQaMode
 {
     private const ushort Map = UtilityAbilities.DownloadMissionMap;
+    private const int Level = 10, X = 24800, Y = 495, Z = -3048;
     private static readonly Regex MapRoll = new(@"\[UTILITY\] Download Mission Map: access flags (\d+)");
     private const string PingSent = "[UTILITY] Download Mission Map: ping sent Safe 1";
     private const string PingCleared = "[UTILITY] Download Mission Map: ping cleared Safe 1";
@@ -16,19 +17,25 @@ public sealed class DownloadMissionMapMode : NativeQaMode
     public override string Name => "ability-parity-download-mission-map";
 
     public override NativeQaModePlan Plan { get; } = new(
-        new ushort[] { 2, 17, Map }, 23828, 13984, Array.Empty<string>(), Array.Empty<string>(),
-        new[] { "UPDATE characters SET alignment=3, repMero=100, y=495 WHERE charId=110" },
-        DevCommands: true, loadAbilityAncestors: true, missionFixture: "locked-safe.xml",
+        new ushort[] { 2, 17, Map }, X, Z, Array.Empty<string>(),
+        new[] { $"UPDATE char_abilities SET level=LEAST(level,{Level}) WHERE char_id=110" },
+        new[] { $"UPDATE characters SET alignment=3, repMero=100,level={Level},exp={PlayerProgression.ExperienceForLevel(Level)},y={Y} WHERE charId=110" },
+        DevCommands: true, loadAbilityAncestors: true, missionFixture: "locked-safe.xml", testMobFixture: "martial-player-controls.csv",
         environmentOverrides: new() { ["MXO_AGGRO"] = "0", ["MXO_MOB_WANDER"] = "0", ["MXO_UTILITY_MAP_QA_REVEAL"] = "1" },
         readyMessages: new[]
         {
-            "Disposable reveal roll is fixed at 99. Call Flood and accept Locked Safe Fixture. Follow the mission route or use its printed QA stand. Check 'ping sent Safe 1' in the log and glance at the yellow minimap ping.",
-            "Unload Download Mission Map (44) in the Archive. Check 'ping cleared Safe 1' and let its 3s display expire. Reload 44 near the safe and confirm there is no new 'ping sent Safe 1' in this mission.",
-            "Abandon and accept once with 44 loaded. Return near the safe and confirm a new 'ping sent Safe 1' and yellow ping."
+            $"Start on outdoor NAV ({X},{Y},{Z}). Type ?qaunload 44, then call Flood and accept Locked Safe Fixture. Use the console's current READY Safe 1 stand. Look at the minimap for five seconds. There should be no access-flags roll and no Safe 1 ping. Type ?qaload 44 in place and confirm the already accepted mission still shows no Safe 1 ping.",
+            "Abandon and call Flood again with 44 loaded. The disposable reveal roll is fixed at 99 for loaded acceptance only. Accept, use the current printed Safe 1 stand and check [UTILITY] access flags, ping sent Safe 1 and the yellow minimap ping.",
+            "Type ?qaunload 44 with the ping visible. Check 'ping cleared Safe 1' and let its 3s display expire. Type ?qaload 44 near the safe and confirm there is no new 'ping sent Safe 1' in this mission. No [MODIFIER], maximum [VITALS] or [PVP] changes."
         });
 
     public override async Task<byte[]> AfterStartAsync(NativeQaBootstrapContext context)
     {
+        string root = context.RepositoryRoot ?? throw new InvalidOperationException("Map acceptance needs repository NAV data.");
+        SectorProperties.Load(Path.Combine(root, "data", "sector_properties.csv"));
+        NavMesh.UseDirectory(Path.Combine(root, "data", "navmesh"));
+        Check.That(NavMesh.Locate(1, X, Y, Z, out var spawn) && !spawn.indoors && Math.Abs(spawn.floorY + 95 - Y) < 1,
+            "The starter spawn is on outdoor NAV");
         if (context.StockProbe is not { } actor) return Array.Empty<byte>();
         var map = AbilityMemoryUiFixture.Decode(actor.CharacterData[6]).Single(row => AbilityCatalog.IdOf(row.Descriptor) == Map);
         var rows = new Dictionary<ushort, AbilityMemoryUiFixture.Tuple> { [Map] = map };
@@ -39,6 +46,19 @@ public sealed class DownloadMissionMapMode : NativeQaMode
 
         ushort transaction = 5;
         ushort NextTransaction() => transaction++;
+        await StockAbilityProfile.ChangeLoadoutAsync(actor, rows, new[] { Map }, load: false);
+        int absentAt = server.DebugLog().Length;
+        int absentPackets = await AcceptAsync(actor, NextTransaction);
+        await ApproachSafeAsync(actor, database, root);
+        await StockAbilityProfile.ChangeLoadoutAsync(actor, rows, new[] { Map }, load: true);
+        actor.SendChat("?utilitymap");
+        await actor.WaitForTextAsync("Utility map fixture flags=0");
+        await Task.Delay(TimeSpan.FromSeconds(4.2));
+        string absentLog = server.DebugLog()[absentAt..];
+        Check.That(!MapRoll.IsMatch(absentLog) && !absentLog.Contains(PingSent) &&
+            !actor.World.RpcSnapshot().Skip(absentPackets).Any(packet => OpenMap.IsMatch(packet.Bytes)),
+            "Accepting without Map skips the roll and loading it afterwards cannot start this mission reveal");
+        await AbandonAsync(actor);
         var first = await AcceptAndRevealAsync(actor, database, server, NextTransaction, context.RepositoryRoot);
         int beforeUnload = server.DebugLog().Length;
         int unloadAt = await StockAbilityProfile.ChangeLoadoutAsync(actor, rows, new[] { Map }, load: false);
@@ -63,7 +83,7 @@ public sealed class DownloadMissionMapMode : NativeQaMode
         Check.Equal(0, actor.World.Problems.Count, "Mission map framing");
         await File.WriteAllTextAsync(Path.Combine(context.OutputDirectory, "download-mission-map.json"),
             JsonSerializer.Serialize(new { FirstReveal = first.Reveal.Hex, FirstFlags = first.Flags, Unload = unload.Hex, Reload = reload.Hex,
-                OldFlags = 0, OldRevealCount = oldRevealCount, PingSent, PingCleared, FreshReveal = second.Reveal.Hex, FreshFlags = second.Flags },
+                UnloadedAcceptanceFlags = 0, OldFlags = 0, OldRevealCount = oldRevealCount, PingSent, PingCleared, FreshReveal = second.Reveal.Hex, FreshFlags = second.Flags },
                 new JsonSerializerOptions { WriteIndented = true }));
         return Array.Empty<byte>();
     }
@@ -80,8 +100,23 @@ public sealed class DownloadMissionMapMode : NativeQaMode
         HeadlessPlayer actor, ThrowawayDatabase database, ServerInstance server, Func<ushort> nextTransaction,
         string? repositoryRoot = null)
     {
-        int start = actor.World.RpcSnapshot().Count;
         int beforeAccept = server.DebugLog().Length;
+        int start = await AcceptAsync(actor, nextTransaction);
+        await actor.WaitUntilAsync(() => MapRoll.IsMatch(server.DebugLog()[beforeAccept..]),
+            "Mission acceptance rolled for map access", HeadlessPlayer.DefaultTimeout);
+        int flags = int.Parse(MapRoll.Match(server.DebugLog()[beforeAccept..]).Groups[1].Value);
+        Check.That((flags & 1) != 0, "The disposable roll reveals the objective on the first acceptance");
+        await ApproachSafeAsync(actor, database, repositoryRoot);
+        var reveal = await StockAbilityProfile.ObserveAsync(actor, start,
+            packet => OpenMap.IsMatch(packet.Bytes) && packet.Bytes.Length > 5, "Minimap objective reveal");
+        await actor.WaitUntilAsync(() => server.DebugLog()[beforeAccept..].Contains(PingSent),
+            "The server identifies the safe in the ping log", HeadlessPlayer.DefaultTimeout);
+        return (reveal, flags);
+    }
+
+    private static async Task<int> AcceptAsync(HeadlessPlayer actor, Func<ushort> nextTransaction)
+    {
+        int start = actor.World.RpcSnapshot().Count;
         string listId = StockAbilityProfile.LittleEndianHex(nextTransaction());
         actor.SendRpc($"80 94 {listId} 03");
         var list = BytePattern.Parse($"80 97 {listId}");
@@ -91,10 +126,11 @@ public sealed class DownloadMissionMapMode : NativeQaMode
         await StockAbilityProfile.ObserveAsync(actor, start, packet => BytePattern.Parse("80 99").IsMatch(packet.Bytes), "Mission details");
         actor.SendRpc($"80 9b {StockAbilityProfile.LittleEndianHex(nextTransaction())} 01");
         await StockAbilityProfile.ObserveAsync(actor, start, packet => BytePattern.Parse("80 9e 00").IsMatch(packet.Bytes), "Mission accepted");
-        await actor.WaitUntilAsync(() => MapRoll.IsMatch(server.DebugLog()[beforeAccept..]),
-            "Mission acceptance rolled for map access", HeadlessPlayer.DefaultTimeout);
-        int flags = int.Parse(MapRoll.Match(server.DebugLog()[beforeAccept..]).Groups[1].Value);
-        Check.That((flags & 1) != 0, "The disposable roll reveals the objective on the first acceptance");
+        return start;
+    }
+
+    private static async Task ApproachSafeAsync(HeadlessPlayer actor, ThrowawayDatabase database, string? repositoryRoot)
+    {
         if (repositoryRoot != null)
         {
             string checkpoint = await database.ScalarAsync($"SELECT HEX(payload) FROM char_active_missions WHERE charId={actor.CharId}");
@@ -109,10 +145,5 @@ public sealed class DownloadMissionMapMode : NativeQaMode
             await actor.WaitForTextAsync("Teleported to");
         }
         else await Scenarios.ApproachMissionObjectFixture(database, actor, 1);
-        var reveal = await StockAbilityProfile.ObserveAsync(actor, start,
-            packet => OpenMap.IsMatch(packet.Bytes) && packet.Bytes.Length > 5, "Minimap objective reveal");
-        await actor.WaitUntilAsync(() => server.DebugLog()[beforeAccept..].Contains(PingSent),
-            "The server identifies the safe in the ping log", HeadlessPlayer.DefaultTimeout);
-        return (reveal, flags);
     }
 }
