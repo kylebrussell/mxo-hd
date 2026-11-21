@@ -13,12 +13,12 @@ public sealed class StarterPathogenistAuraSightMode : NativeQaMode
     // Keep the complete loadout that the stock client used successfully for Static Field in PR574.
     private static readonly ushort[] Loadout = StockAbilityProfile.Profile(
         2, 17, HackerStyle, CodeNuke, ResistInfection, Miasma, StaticField, TrojanHorse).Order().ToArray();
-    private const string HackerUse = "80b9ee0300000000000000000000000000000000000000000000000000000084d75741086b0000000000";
+    internal const string HackerUse = "80b9ee0300000000000000000000000000000000000000000000000000000084d75741086b0000000000";
 
     // PR588 stock selected Miasma CSEQ 87/97 and PR574 stock unselected Static Field CSEQ 58/66.
-    private const string MiasmaOn = "80b93d00050003000000000000000000000000000000000000000000785cbf0001000000086b0000000000";
-    private const string MiasmaOff = "80b93d00050003000000000000000000000000000000000000000000d557377c20000000086b0000000000";
-    private const string StaticUse = "80b959000000000000000000000000000000000000000000000000000000000084d75741086b0000000000";
+    internal const string MiasmaOn = "80b93d00050003000000000000000000000000000000000000000000785cbf0001000000086b0000000000";
+    internal const string MiasmaOff = "80b93d00050003000000000000000000000000000000000000000000d557377c20000000086b0000000000";
+    internal const string StaticUse = "80b959000000000000000000000000000000000000000000000000000000000084d75741086b0000000000";
 
     public override string Name => "ability-parity-starter-pathogenist-aura-sight";
 
