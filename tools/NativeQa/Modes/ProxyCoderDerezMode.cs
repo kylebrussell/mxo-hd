@@ -8,13 +8,19 @@ namespace NativeQa.Modes;
 public sealed class ProxyCoderDerezMode : NativeQaMode
 {
     private const ushort Derez = 26, Coder = 1008, Daemon = 22;
-    private const int Level = 18, X = 17000, Y = 495, Z = 6400, DummyZ = 6600;
+    private const int Level = 18, X = 17000, Y = 495, Z = 6400, DummyZ = 6950, FarZ = 7300;
     // Complete stock Logic Daemon request from the PR593 dismissal batch.
     private const string StockDaemon = "80b916000000000000000000000000000000000000000000000000000090767241086b0000000000";
     private static readonly ushort[] HelperLoadout = StockAbilityProfile.Profile(2, 17, Coder, Daemon).Order().ToArray();
-    private static readonly (string Name, int X, int Z)[] Stands =
+    private const string FaceFriend = "?tp 17000 495 6400 4e2 12 4 - C0";
+    private const string FaceDummy = "?tp 17000 495 6400 4e2 12 4 - 00";
+    private const string FaceEnemy = "?tp 17000 495 6400 4e2 12 4 - 40";
+    private const string FaceFar = "?tp 17000 495 7300 4e2 10 1 - 40";
+    private static readonly (string Name, int X, int Z, int ParkZ, string ParkNav)[] Stands =
     {
-        ("QAFriend", 16400, Z), ("QAEnemy", 17300, Z), ("QAFar", 18600, Z)
+        ("QAFriend", 16400, Z, 7000, "11 0"),
+        ("QAEnemy", 17300, Z, 7000, "12 2"),
+        ("QAFar", 18600, FarZ, 6800, "6 0")
     };
 
     public override string Name => "ability-parity-proxy-coder-derez";
@@ -38,9 +44,9 @@ public sealed class ProxyCoderDerezMode : NativeQaMode
             ["MXO_PVP_SERVER"] = "1", ["MXO_PVP_MAX_SAFE_LEVEL"] = "15", ["MXO_SIMULACRUM_QA_HOLD_IS"] = "1"
         }, extraQaMetadata: new() { ["ScopedStockRows"] = "22,26,1008", ["NativeCloseableRows"] = 0 }, readyMessages: new[]
         {
-            "CSR (17000,495,6400) faces east. All stands and summon positions are verified on outdoor NAV floor 400. Three helpers enter and summon Nukers before READY. QAFriend's pet is west (16550,495,6400), QAEnemy's is 4.5 m east (17450,495,6400), and QAFar's is 17.5 m east (18750,495,6400). The Melee Dummy is north at (17000,495,6600).",
-            "Use Coder Style, page 2 slot 1, outside interlock. Try slot 2 Proxy Coder with no selection, the Melee Dummy, the west friendly Nuker and the distant east Nuker. Stock can suppress a request. For requests that send, expect reasons 24, 36, 36 and 34 respectively. No cast, reuse or IS debit.",
-            "Select the nearer east Nuker and press slot 2. Expect 2 s cast, 13.5 s own reuse, 200 to 160 IS and [PET] Proxy Coder derezzed Nuker Simulacrum of QAEnemy for 13000. Only that pet disappears. QAEnemy and both other pets remain alive, with no maximum player [VITALS] change or [PVP] rounds."
+            "All stands and summon positions are on outdoor NAV floor 400. The helpers move at least 5 m sideways after their Nukers stay, leaving the models separated. The far pet also has its own sightline. Confirm the intended name in the target panel before using the slot.",
+            $"Choose Coder Style (page 2 slot 1) outside interlock. No selection is reason 24 (already passed). Use {FaceDummy} to face the Melee Dummy at (17000,495,6950). Then {FaceFriend} to face the friendly Nuker at (16550,495,6400). Try slot 2 on each, expecting reason 36. Use {FaceFar} to face the separate far Nuker at (18750,495,7300), 17.5 m away; expect reason 34 if stock sends. Refusals do not start a cast or reuse or debit IS.",
+            $"Use {FaceEnemy} to return and face the near Nuker at (17450,495,6400). Select it and press slot 2. Expect 2 s cast, 13.5 s own reuse, [VITALS] IS 200 to 160 and [PET] Proxy Coder derezzed Nuker Simulacrum of QAEnemy for 13000. Only that pet disappears. QAEnemy and both other pets remain alive, with no maximum player [VITALS] change or [PVP] rounds."
         });
 
     public override async Task<byte[]> AfterStartAsync(NativeQaBootstrapContext context)
@@ -49,8 +55,8 @@ public sealed class ProxyCoderDerezMode : NativeQaMode
         string root = context.RepositoryRoot ?? throw new InvalidOperationException("Proxy Coder needs repository NAV data.");
         SectorProperties.Load(Path.Combine(root, "data", "sector_properties.csv"));
         NavMesh.UseDirectory(Path.Combine(root, "data", "navmesh"));
-        foreach (var (x, z) in Stands.SelectMany(stand => new[] { (stand.X, stand.Z), (stand.X + 150, stand.Z) })
-            .Append((X, Z)).Append((X, DummyZ)))
+        foreach (var (x, z) in Stands.SelectMany(stand => new[] { (stand.X, stand.Z), (stand.X + 150, stand.Z), (stand.X, stand.ParkZ) })
+            .Append((X, Z)).Append((X, DummyZ)).Append((X, FarZ)))
             Check.That(NavMesh.Locate(1, x, Y, z, out var at) && !at.indoors && Math.Abs(at.floorY + 95 - Y) < 1,
                 $"Proxy Coder stand ({x},{Y},{z}) is on outdoor NAV");
         foreach (var stand in Stands)
@@ -71,6 +77,8 @@ public sealed class ProxyCoderDerezMode : NativeQaMode
             await helper.WaitForTextAsync("Passive.");
             helper.SendChat("?pet stay");
             await helper.WaitForTextAsync("Staying.");
+            helper.SendChat($"?tp {stand.X} {Y} {stand.ParkZ} 4e2 {stand.ParkNav}");
+            await helper.WaitForTextAsync("Teleported to 4e2/" + stand.ParkNav.Split(' ')[0]);
         }
         if (context.StockProbe is not { } caster) return Array.Empty<byte>();
         await PvpOpponentsFixture.EnterAsync(caster);
@@ -83,6 +91,13 @@ public sealed class ProxyCoderDerezMode : NativeQaMode
         var enemyPet = await SeePetAsync(caster, enemy.CharId);
         var far = context.Helpers["QAFar"];
         var farPet = await SeePetAsync(caster, far.CharId);
+        foreach (var (stand, pet) in Stands.Zip(new[] { friendPet, enemyPet, farPet }))
+        {
+            var owner = await caster.WaitForViewNamedAsync(stand.Name);
+            Check.That(EngageFoesFixture.Position(pet).SequenceEqual(new double[] { stand.X + 150, Y, stand.Z }) &&
+                EngageFoesFixture.Position(owner).SequenceEqual(new double[] { stand.X, Y, stand.ParkZ }),
+                $"CSR sees {stand.Name} separated from its stationary Nuker");
+        }
         var npc = await caster.WaitForViewNamedAsync(CombatFixtureLoadout.DummyName);
         var nonPetPlayer = await caster.WaitForViewNamedAsync(far.Handle);
         var refusals = new List<string>();
@@ -92,6 +107,16 @@ public sealed class ProxyCoderDerezMode : NativeQaMode
             (Handle(farPet), 34u), (Handle(enemyPet) ^ 0x10000, 24u)
         })
         {
+            if (handle == Handle(farPet))
+            {
+                caster.SendChat(FaceFar);
+                await caster.WaitForTextAsync("Teleported to 4e2/10");
+            }
+            else if (reason == 24 && handle != 0)
+            {
+                caster.SendChat(FaceEnemy);
+                await caster.WaitForTextAsync("Teleported to 4e2/12");
+            }
             int start = caster.World.RpcSnapshot().Count;
             caster.SendRpc(Use(handle));
             var denial = await StockAbilityProfile.ObserveAsync(caster, start,
