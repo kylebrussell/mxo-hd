@@ -13,17 +13,17 @@
       "checks": {
         "controls": {
           "source": "GOB 40's linked ForceCombat is active for 25 s and breaks when the target takes damage.",
-          "runtime": "AbilityHostile gives the root and finite movement record the same source and removes both on the damage callback.",
+          "runtime": "AbilityHostile gives the root and finite Force Combat record the same source and removes both on the damage callback.",
           "test": "CodeFreezeRootLivesForTwentyFiveSecondsUnlessDamageBreaksIt checks expiry and damage break. The stock hit removes both records. https://github.com/kylebrussell/mxo-hd/pull/609#issuecomment-7057310371"
         },
         "stats": {
-          "source": "GOB 40 stores a fixed movement modifier of −20.",
-          "runtime": "The movement modifier contributes for the root's lifetime and is removed with it.",
+          "source": "GOB 40 stores a fixed Force Combat modifier of −20.",
+          "runtime": "The Force Combat modifier contributes for the root's lifetime and is removed with it.",
           "test": "StarterHackerMovementDebuffLifecycleMode and the stock trace verify stat 519 −20 alongside root 99, then both removals on the first hit. https://github.com/kylebrussell/mxo-hd/pull/609#issuecomment-7057310371"
         },
         "behavior-tests": {
           "source": "GOB 40 specifies a hostile cast, 18 IS, 2 s cast, 58 s own reuse, 20 s family reuse and 25 s damage-break root.",
-          "runtime": "AbilityHandler admits a valid hostile target. AbilityHostile attaches the finite root and movement modifier.",
+          "runtime": "AbilityHandler admits a valid hostile target. AbilityHostile attaches the finite root and Force Combat modifier.",
           "test": "StarterHackerControlTargetMode checks hostile admission. StarterHackerMovementDebuffLifecycleMode checks exact adds and first-hit removal; CodeFreezeRootLivesForTwentyFiveSecondsUnlessDamageBreaksIt checks the timeout branch. https://github.com/kylebrussell/mxo-hd/pull/609#issuecomment-7057310371"
         }
       }
@@ -31,7 +31,7 @@
     "41": {
       "checks": {
         "controls": {
-          "source": "GOB 41's −20 movement and ForceCombat share a 19 s effective root duration.",
+          "source": "GOB 41's −20 Force Combat and the root share a 19 s effective root duration.",
           "runtime": "AbilityHostile attaches both records. The callback or expiry removes both.",
           "test": "StarterHackerMovementDebuffLifecycleMode checks the state 99 and stat 519 records and their removal. The stock run exercised damage break. https://github.com/kylebrussell/mxo-hd/pull/609#issuecomment-7057310371"
         },
@@ -50,7 +50,7 @@
     "86": {
       "checks": {
         "stats": {
-          "source": "GOB 86 defines −50 Ballistic, Melee and Thrown Attack, −15 movement and −19 movement scale for 28 s.",
+          "source": "GOB 86 defines −50 Ballistic, Melee and Thrown Attack, −15 Force Combat and −19 Ranged Combat Tactics for 28 s.",
           "runtime": "AbilityHostile publishes the five timed records. AbilityStats includes the timed attack modifiers in its totals.",
           "test": "SlowAppliesFourPenaltyRecordsAndLowersBallisticAttackUntilExpiry checks the attack consumer. Native adds and timed removals cover all five stat IDs 115, 877, 878, 519 and 524. https://github.com/kylebrussell/mxo-hd/pull/609#issuecomment-7057310371"
         },
