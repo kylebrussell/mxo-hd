@@ -1,0 +1,28 @@
+{
+  "families": {
+    "stand-off-rank-19-passives": {
+      "representative": 309,
+      "result": "pass",
+      "head": "9b1590e1f483169c9ebece8640a7b511226cdb70",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/708#issuecomment-7071118779",
+      "scope": "Stock level-19 CSR receives 1031 +1, 1053 +1 and 1090 +3. Each source record removes and returns through the ordinary archive handler."
+    },
+    "dedicated-code-rank-19-passives": {
+      "representative": 346,
+      "result": "pass",
+      "head": "9b1590e1f483169c9ebece8640a7b511226cdb70",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/708#issuecomment-7071118779",
+      "scope": "Stock level-19 CSR receives 1031 +1 and 1053 +5. Both records remove and return through the ordinary archive handler."
+    }
+  },
+  "abilities": {
+    "309": {
+      "family": "stand-off-rank-19-passives",
+      "note": "At 39 IS the stock client refused Evade locally by one IS both before and after unloading both +1053 sources. No use request was sent. The retail server cost consumer and the other live passive effects remain open."
+    },
+    "346": {
+      "family": "dedicated-code-rank-19-passives",
+      "note": "The local Evade gate stayed the same at stat 1053 +6, 0 and +6. That measures stock admission at the 39 IS boundary. The broader live passive effects and retail cost consumer remain open."
+    }
+  }
+}

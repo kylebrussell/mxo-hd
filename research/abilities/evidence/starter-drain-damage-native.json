@@ -1,0 +1,13 @@
+{
+  "abilities": {
+    "19": {
+      "checks": {
+        "damage": {
+          "source": "GOB 19 has a fixed type-5 target health effect of 8000 and a separate fixed caster IS restore of 50. Decoy1_Test requires the selected pet to belong to the caster.",
+          "runtime": "CoderPets reads both fixed effects from their GOB records. A surviving pet receives its new HP in the world view and pet window, while the owner receives the capped IS return.",
+          "test": "StarterDrainCodeDamageMode checks the full 8000 damage with Fortify active on a deliberately durable Proxy. The native run observed HP 9000 to 1000, IS 720 to 770, a surviving pet window and 58 s own reuse. PR680 and PR700 separately cover foreign, out-of-range and in-combat denial. The 60 s DecoyDuration and remaining complete behavior evidence stay open. https://github.com/kylebrussell/mxo-hd/pull/710#issuecomment-7071169854"
+        }
+      }
+    }
+  }
+}
