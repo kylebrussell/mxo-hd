@@ -19,7 +19,7 @@ Code: `hds/world/Structures/CoderPets.cs`. Tests: `tests/hds.Tests/CoderPetTests
 
 ### Lifetime
 
-Detonate Proxy's GOB modifier attaches its callbacks to placeholder 710 with a zero-valued payload. `DetonateProxyProc` reads the pet's HP, subtracts the existing Viral Damage and the child's stored one from the temporary adjustment, then reapplies 1109 on the pet. The stored selector centers the radius on that pet. Stock casts 34, and the server refuses an ordinary request for 1109. The disposable mode `ability-parity-coder-detonate-proxy` checks the ordinary cast and bounded NPC area with neutral, viral-resistant, outside and lethal recipients. Player eligibility and exact retail resistance scaling remain open.
+Detonate Proxy's GOB modifier attaches its callbacks to placeholder 710 with a zero-valued payload. `DetonateProxyProc` reads the pet's HP, subtracts the existing Viral Damage and the child's stored one from the temporary adjustment, then reapplies 1109 on the pet. The stored selector centers the radius on that pet. Stock casts 34, and the server refuses an ordinary request for 1109. The disposable mode `ability-parity-coder-detonate-proxy` checks the ordinary cast and bounded NPC area with neutral, viral-resistant, outside and lethal recipients. The starter pet mode also checks an eligible hostile player in the pet-centered radius and excludes allied and out-of-range players. Player damage uses the pet level for viral resistance, as for NPCs. Exact retail resistance scaling and hit-contest behavior for the reapplication remain open.
 
 - One simulacrum per owner. A new summon replaces the old one.
 - The simulacrum leaves on:

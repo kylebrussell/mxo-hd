@@ -37,10 +37,16 @@ namespace hds
         }
         public static ushort Player(WorldClient caster,WorldClient victim,ushort ability,int raw,int type=-2)
         {
+            if(caster==null || caster==victim)return (ushort)Math.Clamp(raw,0,ushort.MaxValue);
+            return Player(caster.playerInstance.Level.getValue()[0],victim,ability,raw,type);
+        }
+
+        internal static ushort Player(int attackerLevel,WorldClient victim,ushort ability,int raw,int type=-2)
+        {
             if(type==-2)type=StoredType(ability);
             ushort stat=Stat(type);
-            if(caster==null || victim==null || caster==victim || stat==0)return (ushort)Math.Clamp(raw,0,ushort.MaxValue);
-            return Apply(caster.playerInstance.Level.getValue()[0],victim.playerInstance.Level.getValue()[0],
+            if(victim==null || stat==0)return (ushort)Math.Clamp(raw,0,ushort.MaxValue);
+            return Apply(attackerLevel,victim.playerInstance.Level.getValue()[0],
                 TypedResistanceBonuses.Player(victim,type,AbilityStats.Player(victim,144)+AbilityStats.Player(victim,stat)),ability,raw,type);
         }
         public static ushort Npc(WorldClient caster,Mob victim,ushort ability,int raw,int type=-2)
