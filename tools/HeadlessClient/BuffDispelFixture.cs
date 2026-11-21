@@ -30,6 +30,9 @@ public static class BuffDispelFixture
         Check.Equal(0,target.Received(Record(49,520,true)).Count,"Gaussian Blur remains present at Ready");
         Check.Equal(0,target.Received(Record(489,172,true)).Count,"Long-lived second upgrade remains present at Ready");
         Check.Equal(0,target.Received("80 bd 05 2a 00 00 00 00 00 00 00").Count,"Aura remains on at Ready");
+        // Blur stays active. Turn off the shield before the fixture asks the caster to enter interlock.
+        target.SendRpc("80 b9 d9 00 02 00");
+        await target.WaitForRpcAsync(Record(217,624,true));
         return records.ToArray();
     }
 }

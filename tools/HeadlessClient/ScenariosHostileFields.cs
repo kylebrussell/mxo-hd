@@ -35,27 +35,27 @@ public static partial class Scenarios
         await caster.EnterWorldAsync(); await target.EnterWorldAsync();
         target.SendChat("?pvpflag on"); await target.WaitForViewUpdateAsync(2,OwnPvpFlagOn);
         var view = await caster.WaitForViewNamedAsync(target.Handle);
-        Cast(target,217,2); await target.WaitForRpcAsync(ModPattern(217,624));
-        //600s Gaussian Blur,8s recast: each proc retry can restore a real active upgrade.
-        Cast(target,49); await target.WaitForRpcAsync(ModPattern(49,520));
+        // Combat Evasion is a removable upgrade and needs no shield that might deny the opening.
+        const ushort upgrade = 110;
+        Cast(target,upgrade); await target.WaitForRpcAsync(ModPattern(upgrade,520));
         bool skipped=false;
         for(int attempt=0;attempt<8;attempt++)
         {
             int before=context.Server.DebugLog().Split("MachinegunFistComboAbility lands on ProcTarget").Length;
-            int off=target.Received(ModPattern(49,520,true)).Count;
+            int off=target.Received(ModPattern(upgrade,520,true)).Count;
             Cast(caster,261,view.ViewId);
             await target.WaitUntilAsync(()=>context.Server.DebugLog().Split("MachinegunFistComboAbility lands on ProcTarget").Length>before,
                 "Normal Machinegun Fist Combo lands",TimeSpan.FromSeconds(12));
             await Task.Delay(500);
-            if(target.Received(ModPattern(49,520,true)).Count==off) { skipped=true; break; }
-            await Task.Delay(10500);
-            Cast(target,49); await target.WaitForRpcAsync(ModPattern(49,520));
+            if(target.Received(ModPattern(upgrade,520,true)).Count==off) { skipped=true; break; }
+            await Task.Delay(15500);
+            Cast(target,upgrade); await target.WaitForRpcAsync(ModPattern(upgrade,520));
         }
         Check.That(skipped,"A landed261 skips its20% dispel proc within eight attempts");
         await PrepareFreeCastViralFixture(context,caster,324);
         Cast(caster,324,view.ViewId);
-        await target.WaitForRpcAsync(ModPattern(49,520,true),TimeSpan.FromSeconds(10));
-        Check.That(context.Server.DebugLog().Contains("324 removes buff 49 from ProcTarget"),"Unqualified Delete Upgrade still removes the surviving upgrade");
+        await target.WaitForRpcAsync(ModPattern(upgrade,520,true),TimeSpan.FromSeconds(10));
+        Check.That(context.Server.DebugLog().Contains("324 removes buff 110 from ProcTarget"),"Unqualified Delete Upgrade still removes the surviving upgrade");
         Check.Equal(0,caster.World.Problems.Count+target.World.Problems.Count,"Proc-qualified dispel protocol");
     }
 
