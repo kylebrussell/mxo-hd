@@ -51,7 +51,8 @@ public class WriteCodeModeTests
                 "ability-parity-hacker-a2-group-heal" or "ability-parity-hacker-second-pass" or
                 "ability-parity-hacker-team-patcher" or "ability-evidence-direct-heals" or
                 "ability-parity-starter-initiative-and-desperation" or "ability-parity-starter-hacker-reactive-code" or
-                "ability-parity-starter-emergency-repairs" or "ability-parity-starter-coder-proxy-patch-and-charge";
+                "ability-parity-starter-emergency-repairs" or "ability-parity-starter-coder-proxy-patch-and-charge" or
+                "ability-parity-starter-team-patcher-upgrade-radius";
             bool holdHealth = originalHold || groupedHold && plan.EnvironmentOverrides.GetValueOrDefault(holdHealthKey) == "1";
             Assert.Equal(holdHealth ? "1" : "", NativeQaFixturePlan.EnvironmentFor(mode)[holdHealthKey]);
             if (holdHealth) Assert.True(plan.DevCommands);
