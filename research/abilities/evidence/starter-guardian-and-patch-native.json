@@ -1,0 +1,47 @@
+{
+  "families": {
+    "starter-patch-daemon": {
+      "representative": 602,
+      "result": "pass",
+      "head": "16e276136c6f347b64ccdaaf6c1a6ba7edce586f",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/603#issuecomment-7056588810",
+      "scope": "Stock Patch Daemon 1.0 replaced the active Proxy with a level-18 Healer, healed its injured owner, and stopped on stock Deactivate. The PacketLog records the full activation, eight-second cast, ten-second reuse and 750 Max HP. The heal amount uses the server's existing NPC roll model."
+    }
+  },
+  "abilities": {
+    "602": {
+      "family": "starter-patch-daemon",
+      "checks": {
+        "script": {
+          "source": "simulacra.py PatchDaemon1_Subject creates a Healer with owner level clamped to 12–22. PatchDaemon1_Deactivate destroys the current simulacrum.",
+          "runtime": "CoderPets.SpawnFor replaces the previous pet, assigns owner and master and registers the Healer. Stock Deactivate dispatches to Dismiss for the same pet.",
+          "test": "StarterCoderProxyPatchAndChargeMode checks level, HP, ownership, replacement, healing and window/view deletion. Native PR603 confirms the Proxy is removed, a level-18 Healer replaces it and stock Deactivate stops its healing. https://github.com/kylebrussell/mxo-hd/pull/603#issuecomment-7056588810"
+        },
+        "behavior-tests": {
+          "source": "GOB 602 specifies 100 IS, eight-second cast and ten-second reuse. The Subject and Deactivate callbacks specify the role, level clamp and teardown.",
+          "runtime": "AbilityHandler handles the cast, debit and reuse. CoderPets publishes the owned Healer, applies heals while the owner is injured and nearby, and cleans up on the stock order.",
+          "test": "StarterCoderProxyPatchAndChargeMode checks 100 IS, cast and reuse packets, the registered level-18 Healer at 750 HP, replacement, two owner heals, and no HP update after dismissal. PR603 native PacketLog lines 980–981 carry the stock request, 992 the cast, 1084–1086 the Healer registration and timer, and 1257 Deactivate. The native run saw four successive heals and none after removal. https://github.com/kylebrussell/mxo-hd/pull/603#issuecomment-7056588810"
+        }
+      }
+    },
+    "1094": {
+      "checks": {
+        "targeting": {
+          "source": "GOB 1094 is a self-only class toggle (CastDirectObjects=1, DoesNOTRequireLOS=1) from Guardian Patcher 51.",
+          "runtime": "AbilitySupport.Targets resolves the source player for this selector. The grant uses AbilityPassives and the self buff uses AbilityBuffs.",
+          "test": "StarterHackerRecoveryAndUpgradeMode uses the stock activation while holding QAFriend and fences the helper's receive queue to prove it gains no modifier. Native PR600 shows a selected friend but only CSR's three 1094 records. https://github.com/kylebrussell/mxo-hd/pull/600#issuecomment-7056448353"
+        },
+        "stats": {
+          "source": "GOB 1094 stores Healing 174 +3, Concentration 564 +7 and Combat Evasion 520 +20 while enabled.",
+          "runtime": "AbilityBuffs contributes the three active values. AbilityHealing consumes 174, AbilityCastInterrupts consumes 564 and CombatInsightEngagement uses 520 for the live evade comparison.",
+          "test": "HackerBatchBParityTests.HowitzerGrantAndUpgrade1087SeparateLoadedEffectsFromTheActiveClassBuff checks all three active 1094 totals after class replacement. The native PR600 PacketLog shows +3/+7/+20 adds at 3311–3313 and matching removals at 3405–3406. https://github.com/kylebrussell/mxo-hd/pull/600#issuecomment-7056448353"
+        },
+        "behavior-tests": {
+          "source": "GOB 1094 stores a self toggle costing 20 IS with 30 s own reuse, three while-enabled modifiers, and access by grant from Guardian Patcher.",
+          "runtime": "AbilityPassives publishes the live grant and AbilityHandler handles admission and reuse. AbilityBuffs applies and removes the sourced records.",
+          "test": "StarterHackerRecoveryAndUpgradeMode checks the stock grant, held friendly selection, exact add/remove records, timer and helper exclusion. GuardianPatcherLoadsARecipientIndependentPassiveAndGrantsOnlyASelfUpgrade covers the grant and removal in-process. Native PR600 confirms 1030→1010 IS, a 30 s own timer, one self activation and removal. https://github.com/kylebrussell/mxo-hd/pull/600#issuecomment-7056448353"
+        }
+      }
+    }
+  }
+}
