@@ -1,0 +1,46 @@
+{
+  "abilities": {
+    "2": {
+      "checks": {
+        "script": {
+          "source": "Awakened's SelfDefGrant names child 17 and UpdateCombatStyle as its level-change callback. The shipped script calls AbilityInv.updateCombatStyle.",
+          "runtime": "AbilityPassives.SetLoadedCore refreshes the grant closure at the loaded Awakened rank and recomputes active modifiers through CombatStyles. Archive reconciliation restores the granted style when the selected alternative is removed.",
+          "test": "StarterRanksRefreshTheAwakenedGrantAndFeedEachSelectedStyleConsumer exercises rank 8 to 12. Stock PR550 shows the rank-50 startup grant and two fallback paths. https://github.com/kylebrussell/mxo-hd/pull/550"
+        },
+        "behavior-tests": {
+          "source": "Awakened grants Self Defense at its loaded rank and adds 0.25 per rank to Stealth Detection, truncated toward zero.",
+          "runtime": "The archive grant is hidden and follows the parent rank. AbilityPassives emits the Awareness modifier, which Stealth.AwarenessOf uses in player detection.",
+          "test": "StarterRanksRefreshTheAwakenedGrantAndFeedEachSelectedStyleConsumer checks granted rank 8 and 12 and +2/+3 Awareness in the consumer. StarterStyleFallbackMode checks the stock rank-12 grant, +3 record and restored Self Defense while cycling alternative styles. Stock fixture trace 472b681b627c, SSEQ 4/10/20; rank-50 check in PR550. https://github.com/kylebrussell/mxo-hd/pull/550"
+        }
+      }
+    },
+    "17": {
+      "checks": {
+        "stats": {
+          "source": "Self Defense GOB 17 supplies nine learned-rank modifiers only while active, including the four typed defenses and Contested Withdraw.",
+          "runtime": "AbilityPassives installs just the selected style. AbilityStats uses its melee/ballistic accuracy, damage and defenses, while WithdrawalInput reads stat 1005.",
+          "test": "StarterRanksRefreshTheAwakenedGrantAndFeedEachSelectedStyleConsumer checks all nine contributors in the combat formulas. Stock SSEQ 20 in 472b681b627c has the exact rank-12 records. PR570 confirms +65 in a live rank-50 Withdraw. https://github.com/kylebrussell/mxo-hd/pull/570"
+        },
+        "behavior-tests": {
+          "source": "The granted exclusive style supplies its while-enabled modifiers to melee/ballistic combat and contested Withdraw and clears when another style becomes active.",
+          "runtime": "CombatStyles reconciles the selected style, and the passive refresh clears the previous style before applying the next one. The Self Defense exchange group and the withdrawal contest take the resulting style inputs.",
+          "test": "StarterStyleFallbackMode checks all adds/removes, stock selection and fallback after unload. StarterRanksRefreshTheAwakenedGrantAndFeedEachSelectedStyleConsumer checks the nine consumer inputs. PR570 exercises stock Close Combat and Withdraw with Self Defense. https://github.com/kylebrussell/mxo-hd/pull/570"
+        }
+      }
+    },
+    "1006": {
+      "checks": {
+        "stats": {
+          "source": "Hacker Style GOB 1006 supplies eight active-style modifiers: four defenses, Viral Accuracy, Viral Damage, Healing and Contested Withdraw.",
+          "runtime": "AbilityPassives evaluates the learned rank and publishes modifiers on style selection. Combat and healing consume them through AbilityStats, AbilityHealing and WithdrawalInput.",
+          "test": "StarterRanksRefreshTheAwakenedGrantAndFeedEachSelectedStyleConsumer checks all eight consumer inputs. Stock rank-12 trace 472b681b627c SSEQ 150/160 adds then removes all eight records. Stock PR570 confirms Withdraw uses its direct style stat. https://github.com/kylebrussell/mxo-hd/pull/570"
+        },
+        "behavior-tests": {
+          "source": "Hacker Style uses while-enabled modifiers and the known Self Defense interlock exchange family.",
+          "runtime": "CombatStyles selects the style via the stock ability request, clears it when it leaves memory and requires explicit re-selection after it returns. Its stat inputs and fallback use the common style executor.",
+          "test": "StarterStyleFallbackMode checks all eight modifiers and the selection/unload/reload lifecycle at rank 12. The focused consumer test covers its viral, healing, defensive and Withdraw inputs. PR550 covers rank 50 and PR570 proves the style in stock interlock and Withdraw. https://github.com/kylebrussell/mxo-hd/pull/550 https://github.com/kylebrussell/mxo-hd/pull/570"
+        }
+      }
+    }
+  }
+}

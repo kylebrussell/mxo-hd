@@ -6,70 +6,78 @@ namespace NativeQa.Modes;
 public sealed class StarterStyleFallbackMode : NativeQaMode
 {
     private const ushort SelfDefense = CombatStyles.SelfDefense, Hacker = CombatStyles.HackerStyle, Coder = CombatStyles.CoderStyle;
+    private const byte Rank = 12;
     private static readonly ushort[] Loadout = StockAbilityProfile.Profile(2, Hacker, Coder).Order().ToArray();
-    // PR529 1201–1202 and PR521 1059–1060, 4760–4761, respectively.
-    private const string StockSelfDefense = "80b911000000000000000000000000000000000000000000000000000000000084d75741086b0000000000";
-    private const string StockHacker = "80b9ee030000000000000000000000000000000000000000000000000000000084d75741086b0000000000";
-    private const string StockCoder = "80b9f0030400020000000000000000000000000000000000000000000000000084d75741086b0000000000";
+    // Stock rank-12 session 472b681b627c, CSEQ 57, 76, 79 and 90.
+    private const string StockHacker = "80b9ee030000000000000000000000000000000000000000000000001d6bffff3cf11a00086b0000000000";
+    private const string StockHackerAfterLoad = "80b9ee030000000000000000000000000000000000000000000000000cf11a0001000000086b0000000000";
+    private const string StockCoder = "80b9f0030000000000000000000000000000000000000000000000000cf11a0001000000086b0000000000";
+    private const string StockCoderAfterLoad = "80b9f0030000000000000000000000000000000000000000000000000000000084d75741086b0000000000";
     private static readonly (ushort Stat, int Value)[] SelfStats =
     {
-        (159, 24), (1009, 47), (522, 50), (171, 12), (1010, 47),
-        (524, 50), (1011, 47), (183, 47), (1005, 65)
+        (159, 9), (1009, 11), (522, 12), (171, 4), (1010, 11),
+        (524, 12), (1011, 11), (183, 11), (1005, 16)
     };
     private static readonly (ushort Stat, int Value)[] HackerStats =
     {
-        (174, 27), (1009, 47), (1010, 47), (1011, 47),
-        (342, 70), (172, 27), (183, 47), (1005, 64)
+        (174, 9), (1009, 11), (1010, 11), (1011, 11),
+        (342, 21), (172, 9), (183, 11), (1005, 15)
     };
     private static readonly (ushort Stat, int Value)[] CoderStats =
     {
-        (522, 64), (159, 26), (1009, 47), (1010, 47), (1011, 47),
-        (342, 64), (172, 26), (183, 47), (1005, 66)
+        (522, 15), (159, 9), (1009, 11), (1010, 11), (1011, 11),
+        (342, 15), (172, 9), (183, 11), (1005, 17)
     };
 
     public override string Name => "ability-parity-starter-style-fallback";
     public override NativeQaModePlan Plan { get; } = new(Loadout, 17000, 2300,
-        Array.Empty<string>(), new[] { "UPDATE char_abilities SET level=50 WHERE char_id=110" }, Array.Empty<string>(),
+        Array.Empty<string>(), new[] { $"UPDATE char_abilities SET level={Rank} WHERE char_id=110" },
+        new[] { $"UPDATE characters SET level={Rank},exp={PlayerProgression.ExperienceForLevel(Rank)} WHERE charId=110" },
         DevCommands: true, hotbarAbilities: new[] { SelfDefense, Hacker, Coder },
         environmentOverrides: new() { ["MXO_AGGRO"] = "0", ["MXO_MOB_WANDER"] = "0" },
-        extraQaMetadata: new() { ["ScopedStockRows"] = "2,17,1006,1008", ["NativeCloseableRows"] = 0 },
+        extraQaMetadata: new() { ["ScopedStockRows"] = "2,17,1006,1008", ["NativeCloseableRows"] = 3 },
         readyMessages: new[]
         {
-            "Stay at spawn and clear selection. Page 2 slots 1–3 are Self Defense, Hacker Style and Coder Style. Awakened rank 50 grants Self Defense rank 50. Check its startup +12 Awareness and the nine active Self Defense records.",
+            "Stay at spawn and clear selection. Page 2 slots 1–3 are Self Defense, Hacker Style and Coder Style. Awakened rank 12 grants Self Defense rank 12. Check its startup +3 Awareness and the nine active Self Defense records.",
             "Press slot 2. Hacker Style replaces Self Defense and adds the eight source-1006 records. Enter ?qaunload 1006. Self Defense should immediately replace Hacker Style, with no stale 1006 bonuses. Enter ?qaload 1006. Verify it stays inactive. Press slot 2 to select it again.",
-            "Press slot 3. Check that Coder Style replaces Hacker Style. Unload and reload 1008. It should also fall back to Self Defense and stay inactive after reload. End by selecting slot 3 again, then slot 1. Enter submits fixture commands."
+            "Press slot 3. Check that Coder Style replaces Hacker Style. Unload and reload 1008. It should also fall back to Self Defense and stay inactive after reload. End by selecting slot 3 again and unloading it to restore Self Defense. Enter submits fixture commands."
         });
 
     public override async Task<byte[]> AfterStartAsync(NativeQaBootstrapContext context)
     {
         if (context.StockProbe is not { } actor) return Array.Empty<byte>();
-        Check.That(Loadout.Sum(AbilityMemory.Cost) <= AbilityMemory.ForLevel(50), "Starter style memory fits");
+        Check.That(Loadout.Sum(AbilityMemory.Cost) <= AbilityMemory.ForLevel(Rank), "Starter style memory fits");
         var archive = AbilityMemoryUiFixture.Decode(actor.CharacterData[6]).Where(row => AbilityMemory.IsAbility(row.Descriptor))
             .ToDictionary(row => AbilityCatalog.IdOf(row.Descriptor));
         Check.That(!archive.ContainsKey(SelfDefense), "Self Defense comes from Awakened rather than a fixture archive row");
         await actor.EnterWorldAsync();
         NativeQaReadiness.RequireNoAmbientAggro(context.ActualServer!, actor);
-        await StockAbilityProfile.ObserveAsync(actor, 0, StockAbilityProfile.GrantRecord(SelfDefense, false, 50),
-            "Awakened supplies the rank-50 hidden Self Defense grant");
+        await StockAbilityProfile.ObserveAsync(actor, 0, StockAbilityProfile.GrantRecord(SelfDefense, false, Rank),
+            "Awakened supplies the rank-12 hidden Self Defense grant");
         await StockAbilityProfile.ObserveAsync(actor, 0,
-            frame => StockAbilityProfile.Bonus(frame, 2, 204, 12, 0, false), "Rank-50 Awakened Awareness");
+            frame => StockAbilityProfile.Bonus(frame, 2, 204, 3, 0, false), "Rank-12 Awakened Awareness");
         await RecordsAsync(0, SelfDefense, SelfStats, remove: false);
 
         await SelectAsync(StockHacker, SelfDefense, SelfStats, Hacker, HackerStats);
         await CycleAsync(Hacker, HackerStats);
-        await SelectAsync(StockHacker, SelfDefense, SelfStats, Hacker, HackerStats);
+        await SelectAsync(StockHackerAfterLoad, SelfDefense, SelfStats, Hacker, HackerStats);
         await SelectAsync(StockCoder, Hacker, HackerStats, Coder, CoderStats);
         await CycleAsync(Coder, CoderStats);
-        await SelectAsync(StockCoder, SelfDefense, SelfStats, Coder, CoderStats);
-        await SelectAsync(StockSelfDefense, Coder, CoderStats, SelfDefense, SelfStats);
+        await SelectAsync(StockCoderAfterLoad, SelfDefense, SelfStats, Coder, CoderStats);
+        await UnloadAsync(Coder, CoderStats);
         Check.Equal(0, actor.World.Problems.Count, "Style updates have valid framing");
         return Array.Empty<byte>();
 
-        async Task CycleAsync(ushort style, (ushort Stat, int Value)[] stats)
+        async Task UnloadAsync(ushort style, (ushort Stat, int Value)[] stats)
         {
             int views = actor.World.ViewSnapshot().Count;
             int unloaded = await StockAbilityProfile.ChangeLoadoutAsync(actor, archive, new[] { style }, load: false);
             await TransitionAsync(unloaded, views, style, stats, SelfDefense, SelfStats);
+        }
+
+        async Task CycleAsync(ushort style, (ushort Stat, int Value)[] stats)
+        {
+            await UnloadAsync(style, stats);
             int reloaded = await StockAbilityProfile.ChangeLoadoutAsync(actor, archive, new[] { style }, load: true);
             actor.SendRpc("81 48");
             await StockAbilityProfile.ObserveAsync(actor, reloaded, frame => BytePattern.Parse("81 49").IsMatch(frame.Bytes),
