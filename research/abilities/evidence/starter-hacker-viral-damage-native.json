@@ -1,0 +1,43 @@
+{
+  "abilities": {
+    "53": {
+      "checks": {
+        "damage": {
+          "source": "GOB 53 stores a fixed viral health modifier of 12 and damage type 2.",
+          "runtime": "The fixed base goes through the caster's viral influence, then TypedAbilityResistance applies the recipient's viral resistance once per hit.",
+          "test": "StarterHackerViralDamageAndAdmissionMode replays the stock request and asserts 14 on the neutral peer and 10 at +75 viral resistance. Stock native QA confirms both landed values with Transmit Virus +5 and Hacker Style +12. https://github.com/kylebrussell/mxo-hd/pull/612#issuecomment-7057719757"
+        }
+      }
+    },
+    "58": {
+      "checks": {
+        "damage": {
+          "source": "GOB 58 stores a fixed viral health modifier of 11 and damage type 2.",
+          "runtime": "The fixed base goes through the caster's viral influence, then TypedAbilityResistance applies the recipient's viral resistance once per hit.",
+          "test": "StarterHackerViralDamageAndAdmissionMode replays the stock request and asserts 12 on the neutral peer and 8 at +75 viral resistance. Stock native QA confirms both landed values with Transmit Virus +5 and Hacker Style +12. https://github.com/kylebrussell/mxo-hd/pull/612#issuecomment-7057719757"
+        }
+      }
+    },
+    "59": {
+      "checks": {
+        "damage": {
+          "source": "GOB 59 stores a fixed viral health modifier of 17 and damage type 2.",
+          "runtime": "The fixed base goes through the caster's viral influence, then TypedAbilityResistance applies the recipient's viral resistance once per hit.",
+          "test": "StarterHackerViralDamageAndAdmissionMode replays the stock request and asserts 19 on the neutral peer and 14 at +75 viral resistance. Stock native QA confirms both landed values with Transmit Virus +5 and Hacker Style +12. https://github.com/kylebrussell/mxo-hd/pull/612#issuecomment-7057719757"
+        }
+      }
+    },
+    "60": {
+      "checks": {
+        "damage": {
+          "source": "GOB 60 stores a fixed viral health modifier of 7 and damage type 2.",
+          "runtime": "The fixed base goes through the caster's viral influence, then TypedAbilityResistance applies the recipient's viral resistance once per hit.",
+          "test": "StarterHackerViralDamageAndAdmissionMode replays the stock request and asserts 8 on the neutral peer and 5 at +75 viral resistance. Stock native QA confirms both landed values with Transmit Virus +5 and Hacker Style +12. The +75 target is reached by Code Nuke's splash from the selected neutral target. https://github.com/kylebrussell/mxo-hd/pull/612#issuecomment-7057719757"
+        }
+      }
+    }
+  },
+  "notes": {
+    "53": "PR612 verifies the stock missing-target, allied-target, range and sight refusals. A forced deflection sample for Harmful Code itself is still open. https://github.com/kylebrussell/mxo-hd/pull/612#issuecomment-7057719757"
+  }
+}
