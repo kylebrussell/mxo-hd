@@ -3,7 +3,7 @@ using HeadlessClient;
 
 namespace NativeQa.Modes;
 
-public sealed class StarterConcentrationBatchMode : NativeQaMode
+public class StarterConcentrationBatchMode : NativeQaMode
 {
     private const ushort Concentration = 628, Insidious = 360, Tinkering = 36, Hacker = 1006, Coder = 1008;
     private const string HackerCast = "80b9ee030000000000000000000000000000000000000000000000000000000090c97941086b0000000000";
@@ -14,6 +14,9 @@ public sealed class StarterConcentrationBatchMode : NativeQaMode
     private const string ArmDamage = "?combatdepth hurtme 100 next";
     private static readonly ushort[] Loadout = StockAbilityProfile.Profile(2, 17, Concentration, Insidious, Tinkering, Hacker, Coder)
         .Order().ToArray();
+    protected virtual (ushort Ability, ushort Stat, int Value) Passive => (Concentration, 564, 30);
+    protected virtual string BaselineRoll => "concentration=5 through=77 roll=85";
+    protected virtual string LoadedRoll => "concentration=35 through=90 roll=85";
 
     public override string Name => "ability-parity-starter-awakened-concentration";
     public override NativeQaModePlan Plan { get; } = new(Loadout, PvpOpponentsFixture.X, PvpOpponentsFixture.Z,
@@ -45,19 +48,25 @@ public sealed class StarterConcentrationBatchMode : NativeQaMode
         NativeQaReadiness.RequireNoAmbientAggro(context.ActualServer!, target);
         if (context.StockProbe is not { } caster) return Array.Empty<byte>();
         var server = context.ActualServer!;
-        Check.That(Loadout.Sum(AbilityMemory.Cost) <= AbilityMemory.ForLevel(50), "The profile fits stock memory");
         await PvpOpponentsFixture.EnterAsync(caster);
         var view = await caster.WaitForViewNamedAsync(target.Handle);
         uint handle = DuelPackets.Handle(view.ViewId, view.SpawnId);
-        var archive = AbilityMemoryUiFixture.Decode(caster.CharacterData[6]).ToDictionary(row => AbilityCatalog.IdOf(row.Descriptor));
+        var archive = AbilityMemoryUiFixture.Decode(caster.CharacterData[6])
+            .Where(row => AbilityMemory.IsAbility(row.Descriptor)).ToDictionary(row => AbilityCatalog.IdOf(row.Descriptor));
+        Check.That(archive.Keys.Sum(AbilityMemory.Cost) <= AbilityMemory.ForLevel(50) &&
+            archive.Keys.All(id => AbilityPrerequisites.Current.Closure(id)
+                .All(need => archive.TryGetValue(need.Key, out var row) && row.Level >= need.Value)),
+            "The profile and ranked prerequisites fit stock memory");
+        var passive = Passive;
         caster.SendRpc(HackerCast);
         await caster.WaitForViewUpdateAsync(2, "02 80 80 80 80 80 10 ee 03 00 00");
         caster.SendRpc($"81 51 {WireFormat.ToHex(BitConverter.GetBytes(handle))}");
 
         int prior = caster.World.RpcSnapshot().Count;
-        await StockAbilityProfile.ChangeLoadoutAsync(caster, archive, new[] { Concentration }, load: false);
+        await StockAbilityProfile.ChangeLoadoutAsync(caster, archive, new[] { passive.Ability }, load: false);
         await StockAbilityProfile.ObserveAsync(caster, prior,
-            frame => StockAbilityProfile.Bonus(frame, Concentration, 564, 30, 0, true), "Unloading removes +30 Concentration");
+            frame => StockAbilityProfile.Bonus(frame, passive.Ability, passive.Stat, passive.Value, 0, true),
+            "Unloading removes the tested Concentration modifier");
         int targetAt = target.World.RpcSnapshot().Count;
         int first = caster.World.RpcSnapshot().Count;
         await ArmAsync(caster);
@@ -65,12 +74,13 @@ public sealed class StarterConcentrationBatchMode : NativeQaMode
         await EvidenceRetestWire.CastBarAsync(caster, Insidious, 4);
         await StockAbilityProfile.ObserveAsync(caster, first, frame => BytePattern.Parse("80 ad 68 01 00 00 02").IsMatch(frame.Bytes),
             "Damage interruption reason");
-        Check.That(server.DebugLog().Contains("loss=100 concentration=5 through=77 roll=85"), "Baseline uses the fixed interrupt roll");
+        Check.That(server.DebugLog().Contains("loss=100 " + BaselineRoll), "Baseline uses the fixed interrupt roll");
 
         prior = caster.World.RpcSnapshot().Count;
-        await StockAbilityProfile.ChangeLoadoutAsync(caster, archive, new[] { Concentration }, load: true);
+        await StockAbilityProfile.ChangeLoadoutAsync(caster, archive, new[] { passive.Ability }, load: true);
         await StockAbilityProfile.ObserveAsync(caster, prior,
-            frame => StockAbilityProfile.Bonus(frame, Concentration, 564, 30, 0, false), "Reload restores +30 Concentration");
+            frame => StockAbilityProfile.Bonus(frame, passive.Ability, passive.Stat, passive.Value, 0, false),
+            "Reload restores the tested Concentration modifier");
         int second = caster.World.RpcSnapshot().Count;
         await ArmAsync(caster);
         caster.SendRpc(StarterHackerControlTargetMode.WithHandle(InsidiousCast, handle));
@@ -81,7 +91,7 @@ public sealed class StarterConcentrationBatchMode : NativeQaMode
         var ownReuse = BytePattern.Parse("80 bd 01 68 01");
         Check.That(!caster.World.RpcSnapshot().Skip(first).Take(second - first).Any(frame => ownReuse.IsMatch(frame.Bytes)),
             "The interrupted cast never starts completion reuse");
-        Check.That(server.DebugLog().Contains("loss=100 concentration=35 through=90 roll=85"), "The loaded cast survives the same roll");
+        Check.That(server.DebugLog().Contains("loss=100 " + LoadedRoll), "The loaded cast survives the same roll");
 
         caster.SendRpc(CoderCast);
         await caster.WaitForViewUpdateAsync(2, "02 80 80 80 80 80 10 f0 03 00 00");
