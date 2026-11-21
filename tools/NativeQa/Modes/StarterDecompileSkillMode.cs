@@ -1,3 +1,4 @@
+using System.Buffers.Binary;
 using hds;
 using HeadlessClient;
 using MxoHd.PacketResearch;
@@ -7,6 +8,8 @@ namespace NativeQa.Modes;
 public sealed class StarterDecompileSkillMode : NativeQaMode
 {
     private const ushort Decompile = 276, Skill = 707;
+    private const byte CompilerSlot = 1, AnalyserSlot = 2, DecompilerSlot = 3;
+    private const uint Decompiler = 613;
     private const uint HealthPill = 2399, MaxHealthPill = 39413;
     private const int Rank = 18, X = 26000, Y = 495, Z = -1498;
     private static readonly ushort[] Loadout = StockAbilityProfile.Profile(2, 17, 37, Decompile, 277).Order().ToArray();
@@ -21,30 +24,48 @@ public sealed class StarterDecompileSkillMode : NativeQaMode
     public override NativeQaModePlan Plan { get; } = new(Loadout, X, Z, Array.Empty<string>(), new[]
     {
         "DELETE FROM inventory WHERE charId=110 AND slot BETWEEN 1 AND 96",
-        $"INSERT INTO inventory(charId,goid,slot,count,purity) VALUES (110,{CraftingSession.Tool},1,1,0)," +
-            $"(110,{CraftingSession.WriterTool},2,1,0),(110,613,3,1,0),(110,{HealthPill},5,2,0),(110,{MaxHealthPill},6,1,0)",
+        $"INSERT INTO inventory(charId,goid,slot,count,purity) VALUES (110,{CraftingSession.Tool},{CompilerSlot},1,0)," +
+            $"(110,{CraftingSession.WriterTool},{AnalyserSlot},1,0),(110,{Decompiler},{DecompilerSlot},1,0)," +
+            $"(110,{HealthPill},5,2,0),(110,{MaxHealthPill},6,1,0)",
         "CREATE TABLE IF NOT EXISTS char_recipes (charId INT UNSIGNED NOT NULL, goid BIGINT UNSIGNED NOT NULL, PRIMARY KEY(charId,goid))",
         $"DELETE FROM char_recipes WHERE charId=110 AND goid IN ({HealthPill},{MaxHealthPill})"
     }, new[]
     {
         $"UPDATE characters SET x={X},y={Y},z={Z} WHERE charId=110",
         $"UPDATE char_abilities SET level={Rank} WHERE char_id=110 AND ability_id={AbilityMessages.AbilityGameObject(Decompile)}"
-    }, DevCommands: true, hotbarAbilities: new[] { Decompile }, testMobFixture: "martial-player-controls.csv", environmentOverrides: new()
+    }, DevCommands: true, hotbarAbilities: new[] { Decompile }, hotbarInventory: new AbilitySweepHotbar.InventoryShortcut[]
+    {
+        new(DecompilerSlot, Decompiler, "Item Decompiler"),
+        new(CompilerSlot, CraftingSession.Tool, "Code Compiler"),
+        new(AnalyserSlot, CraftingSession.WriterTool, "Code Analyser")
+    }, testMobFixture: "martial-player-controls.csv", environmentOverrides: new()
     {
         ["MXO_AGGRO"] = "0", ["MXO_MOB_WANDER"] = "0"
     }, extraQaMetadata: new() { ["ScopedStockRows"] = "276,969,970", ["NativeCloseableRows"] = 0 }, readyMessages: new[]
     {
-        $"CSR is at ({X},{Y},{Z}); no helpers. Start with no selection. [MODIFIER] char=110 source=276 stat=707 add value=+18 duration=0s. The ability-only shortcut on page 2 is a control. Right-click the Item Decompiler in bag slot 3 and add the item to a free hotbar slot.",
-        "Use the Decompiler shortcut, then click Health Pill in bag slot 5 (stack of two). Expect [DECOMPILE] char=110 item=2399 skill=18 complexity=1, requiredAbove=54, success=True; one pill is consumed, 81 30 returns that recipe, 81 2f succeeds. There is no [VITALS] or [PVP] change.",
+        $"CSR is at ({X},{Y},{Z}); no helpers. Start with no selection. [MODIFIER] char=110 source=276 stat=707 add value=+18 duration=0s. Page 2 slot 1 is the ability-only control. The three actual item shortcuts are already installed in slots 2–4.",
+        "Press page 2 slot 2 to arm the Item Decompiler, then click Health Pill in bag slot 5 (stack of two). Expect [DECOMPILE] char=110 item=2399 skill=18 complexity=1, requiredAbove=54, success=True; one pill is consumed, 81 30 returns that recipe, 81 2f succeeds. If the target cursor appears but the bag still does not accept the pill click, record those separately. There is no [VITALS] or [PVP] change.",
         "After the 10 s reuse, use the same tool on Max Health Boost Pill 3.0 in slot 6. Expect [DECOMPILE] item=39413 skill=18 complexity=33 requiredAbove=182 success=False. The pill stays in the bag and no recipe packet arrives. The seeded rank makes both results independent of the regular 0–100 roll.",
         "Enter ?qaunload 276. Check [MODIFIER] char=110 source=276 stat=707 remove value=+18 duration=0s and no decompile result on the remaining slot-5 pill. Enter ?qaload 276 and see its +18 add. After the reuse, use the item shortcut and slot-5 pill again. It succeeds at the same skill and uses the last pill.",
-        "Use Activate Item on Code Compiler (bag 1) and Code Analyser (bag 2), closing each window. Check the 969/970 linked source on/off records and typing/standing posture. Info stays constant."
+        "Press page 2 slot 3 for Code Compiler and slot 4 for Code Analyser. Close each window before opening the other. This step never needs a bag click. Check the 969/970 linked source on/off records and typing/standing posture. Info stays constant."
     });
 
     public override async Task<byte[]> AfterStartAsync(NativeQaBootstrapContext context)
     {
-        if (context.StockProbe is not { } actor) return Array.Empty<byte>();
         var db = context.OwnedDatabase!;
+        foreach (var item in Plan.HotbarInventory)
+            Check.Equal(1L, await db.LongAsync($"SELECT COUNT(*) FROM inventory WHERE charId=110 AND slot={item.BagSlot} " +
+                $"AND goid={item.Goid} AND count=1"), $"One {item.Label} occupies its seeded shortcut slot");
+        if (context.StockProbe is not { } actor) return Array.Empty<byte>();
+        byte[] inventory = actor.CharacterData[5];
+        Check.Equal(0, inventory.Length % 9, "Margin ordinary inventory rows are nine bytes");
+        foreach (var item in Plan.HotbarInventory)
+            Check.That(Enumerable.Range(0, inventory.Length / 9).Any(index =>
+            {
+                var row = inventory.AsSpan(index * 9, 9);
+                return row[0] == item.BagSlot && BinaryPrimitives.ReadUInt32LittleEndian(row[1..]) == item.Goid &&
+                    BinaryPrimitives.ReadUInt32LittleEndian(row[5..]) == AbilitySweepHotbar.SingleItemDescriptor;
+            }), $"Margin inventory matches {item.Label}'s shortcut slot, GOID and instance descriptor");
         var server = context.ActualServer!;
         var archive = AbilityMemoryUiFixture.Decode(actor.CharacterData[6]).Where(row => AbilityMemory.IsAbility(row.Descriptor))
             .ToDictionary(row => AbilityCatalog.IdOf(row.Descriptor), row => row.Level);
@@ -91,8 +112,8 @@ public sealed class StarterDecompileSkillMode : NativeQaMode
         Check.Equal(0L, await CountAsync(HealthPill), "With the skill restored, the remaining pill is spent");
         Check.Equal(1L, await LearnedAsync(HealthPill), "Repeating a known recipe is idempotent");
 
-        await ToolAsync(CraftingSession.Ability, active => Scenarios.CompilerTool(actor, 1, active));
-        await ToolAsync(CraftingSession.WriterAbility, active => Scenarios.WriterTool(actor, 2, active));
+        await ToolAsync(CraftingSession.Ability, active => Scenarios.CompilerTool(actor, CompilerSlot, active));
+        await ToolAsync(CraftingSession.WriterAbility, active => Scenarios.WriterTool(actor, AnalyserSlot, active));
         Check.Equal(info, await db.LongAsync("SELECT cash FROM characters WHERE charId=110"), "No crafting-tool step spends Info");
         Check.Equal(0, actor.World.Problems.Count, "Decompile proof framing");
         Console.WriteLine("DECOMPILE SKILL PASS: +18 applied to both pill contests; failed and unloaded input preserved; Compiler and Writer reopen normally.");
