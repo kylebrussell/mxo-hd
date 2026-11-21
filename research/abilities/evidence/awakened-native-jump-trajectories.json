@@ -1,0 +1,7 @@
+{
+  "abilities": {
+    "11": {
+      "note": "PR705 stock confirms two short aimed jumps at peak 1000 (8.05/8.66 m, each 2.856 s), two full-peak Ctrl+Space landings at 38.50/41.50 m (4.812/5.187 s), silent unpaired cancel and free ordinary Space. PR707 confirms a separate distance-dominated aim jump from the roof to the lower terrace: native flag-1 request, peak 1000, 31.76 m, 3.970 s, 20 IS debit, one clock echo, and a visual landing confirmed by strafe. The untouched retail peak-245.828 sample remains the separate exact headless replay. Full stock peak/target selection and the retail effective-cost formula remain open. https://github.com/kylebrussell/mxo-hd/pull/705#issuecomment-7070599974 https://github.com/kylebrussell/mxo-hd/pull/707#issuecomment-7071074425"
+    }
+  }
+}
