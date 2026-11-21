@@ -22,8 +22,8 @@
       "checks": {
         "script": {
           "source": "StopProxy1_Test requires matching ownership. DetonateProxyProc bounds current HP between max/10 and max/4 before the internal 1109 reapply; DetonateProxyEnd deals 13000 to the pet after half a second.",
-          "runtime": "CoderPets checks the selected live own pet, computes the net HP-clamped 1109 payload at pet level, and schedules 13000 damage to the original pet. The exercised area branch is NPC damage.",
-          "test": "DetonateValueFollowsTempmods and DetonateReadsViralResistanceAtThePetsLevel check the clamp and typed resistance. StarterCoderPetBuffsAndDetonateMode and PR619 verify foreign refusal, NPC hits of 123 and 27, ordinary owner XP, and removal of only the caster's pet after approximately 0.57 s. Player recipients remain open. https://github.com/kylebrussell/mxo-hd/pull/619#issuecomment-7058548895"
+          "runtime": "CoderPets checks the selected live own pet, computes the net HP-clamped 1109 payload at pet level, and schedules 13000 damage to the original pet. PR619 exercised the NPC area branch.",
+          "test": "DetonateValueFollowsTempmods and DetonateReadsViralResistanceAtThePetsLevel check the clamp and typed resistance. StarterCoderPetBuffsAndDetonateMode and PR619 verify foreign refusal, NPC hits of 123 and 27, ordinary owner XP, and removal of only the caster's pet after approximately 0.57 s. https://github.com/kylebrussell/mxo-hd/pull/619#issuecomment-7058548895"
         }
       }
     },
