@@ -148,6 +148,13 @@ namespace hds.world.Structures
             lock(sync)return first!=0&&second!=0&&teams.Values.Any(t=>t.HasMember(first)&&t.HasMember(second));
         }
 
+        internal UInt32[] TeammatesOfLeader(UInt32 leader)
+        {
+            lock (sync)
+                return teams.Values.FirstOrDefault(team => team.LeaderCharId == leader)?.Members
+                    .Where(member => member.Key != leader).Select(member => member.Key).ToArray() ?? Array.Empty<UInt32>();
+        }
+
         /// <summary>Adds the player and returns their place in the member list (0 = leader), or -1 when the team is gone.</summary>
         public int AddTeamMember(UInt32 teamId, UInt32 charId, string handle)
         {
