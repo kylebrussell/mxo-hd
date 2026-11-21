@@ -49,11 +49,12 @@ namespace hds
 
             // These Hacker controls and debuffs require a live selected enemy.
             bool hostileControl = AbilityID == 43 || AbilityID == 48 || AbilityID == 315;
-            if (hostileControl || AbilityID == 40 || AbilityID == 41 || AbilityID == 66 || AbilityID == 69 ||
-                AbilityID == 86 || AbilityID == 354 || AbilityID == 476)
+            bool starterMovementDebuff = AbilityID == 40 || AbilityID == 41 || AbilityID == 86;
+            if (hostileControl || starterMovementDebuff || AbilityID == 66 || AbilityID == 69 ||
+                AbilityID == 354 || AbilityID == 476)
             {
                 ushort? spawn = packet.Length == 41 ? (ushort?)BitConverter.ToUInt16(packet, 4) : null;
-                if (!AbilityTargets.HasLiveAttackSelection(Store.currentClient, currentTargetViewId, spawn, requireOpponent: hostileControl))
+                if (!AbilityTargets.HasLiveAttackSelection(Store.currentClient, currentTargetViewId, spawn, requireOpponent: hostileControl || starterMovementDebuff))
                 {
                     // Stock reason 24 is ID_TARGET_NOT_VALID. The client supplies the only refusal line.
                     Store.currentClient.messageQueue.addRpcMessage(AbilityRefusals.Encode(new AbilityRefusals.Record(AbilityID, AbilityRefusals.InvalidTarget)));
@@ -63,7 +64,6 @@ namespace hds
                 }
             }
 
-            bool starterMovementDebuff = AbilityID == 40 || AbilityID == 41 || AbilityID == 86;
             if ((starterViralDamage || starterMovementDebuff || AbilityID == 69) &&
                 !AbilityTargets.WithinSelectionRange(Store.currentClient, AbilityID, currentTargetViewId))
             {
