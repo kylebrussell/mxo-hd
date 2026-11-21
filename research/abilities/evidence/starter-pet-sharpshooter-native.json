@@ -1,0 +1,29 @@
+{
+  "notes": {
+    "25": "PR649 confirms Power Boost's live +9/+9 producer at level 18 and nine melee Proxy hits equal to floor(base * 1.09), with no transfer to the replacement. The grouped stat and behavior checks still cover ballistic consumption and the unresolved Force Combat consumer. https://github.com/kylebrussell/mxo-hd/pull/649#issuecomment-7062104777",
+    "27": "PR649 confirms a fresh L4 Proxy replaces the L7 Proxy at 224 max HP for 50 IS. Its cost 10 and power 0/0 show that neither modifier transfers. https://github.com/kylebrussell/mxo-hd/pull/649#issuecomment-7062104777",
+    "28": "PR649 confirms a live L7 Proxy at 337 max HP for 50 IS. It uses the two buffs, hits the target and removes on replacement. The shipped Subject and Deactivate callbacks remain open. https://github.com/kylebrussell/mxo-hd/pull/649#issuecomment-7062104777",
+    "113": "PR650 records the level-27 stat 1048 +5 while the rifle's unmodified attack input stays 27 across all Sharpshooter controls. https://github.com/kylebrussell/mxo-hd/pull/650#issuecomment-7062181650",
+    "143": "PR650 verifies the independent stat 526 +50 record remains present during the Sharpshooter comparisons. https://github.com/kylebrussell/mxo-hd/pull/650#issuecomment-7062181650"
+  },
+  "abilities": {
+    "148": {
+      "checks": {
+        "behavior-tests": {
+          "source": "The shipped while-enabled callbacks suppress both shooting-at-melee-range and shooting-into-melee penalties. Termination restores them.",
+          "runtime": "SharpshooterFreeFire samples current loaded membership, target weapon, distance and current opponents on ordinary shots. The implementation preserves the long-range edge and the existing base attack input.",
+          "test": "SharpshooterFreeFireTests verifies the callback-only loaded state, distance and opponent count rules. PR650 verifies loaded/unloaded near 0/-15, long-range +15, armed 0 and two opponents -30/0 with base attack input 27 throughout. The exact retail caller and distance policy remains under source-parity. https://github.com/kylebrussell/mxo-hd/pull/650#issuecomment-7062181650"
+        }
+      }
+    },
+    "603": {
+      "checks": {
+        "behavior-tests": {
+          "source": "Shipped 603 reduces pet action costs by 20 percent and increases pet Inner Strength regeneration by 50 percent for 600 seconds.",
+          "runtime": "CoderPets applies the timed bonus to the current owned pet and uses it in both action admission and resource regeneration. A later summon starts with its own resource state.",
+          "test": "CoderPetTests.ChargeChangesActualBudgetAndExpiresWithoutRetroactiveRegeneration verifies both multipliers, expiry and resource boundaries. PR649 records the normal cast's 35 IS debit, the 600-second bonuses on the active attacking Proxy and the baseline cost on replacement. The distinct AcousticDecoy1_GetRange source remains under script/source-parity. https://github.com/kylebrussell/mxo-hd/pull/649#issuecomment-7062104777"
+        }
+      }
+    }
+  }
+}
