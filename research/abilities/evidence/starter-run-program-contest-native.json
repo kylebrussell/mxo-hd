@@ -1,0 +1,16 @@
+{
+  "families": {
+    "stock-run-program-viral-contest": {
+      "representative": 32,
+      "result": "pass",
+      "head": "5c3546e2b7c3b2ec1ab89fd7f2aacc14fcbfb2d9",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/639#issuecomment-7060603514",
+      "scope": "Stock login, unload and reload publish source 32 stat 1147 at +10. With the same opponent and normal Speed, Static Blast reads 79, 73 and 79; Tinkering reads 73 while unloaded and Advanced Tinkering reads 79 once restored. This proves the existing server consumer. The retail coefficient remains open."
+    }
+  },
+  "abilities": {
+    "32": {
+      "family": "stock-run-program-viral-contest"
+    }
+  }
+}
