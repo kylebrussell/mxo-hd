@@ -42,8 +42,11 @@ public static partial class Scenarios
             Check.Equal(1,received.Count(r=>r.Bytes.Length>=2&&r.Bytes[0]==0x80&&r.Bytes[1]==0xc3),"Cancel has no fabricated clock echo");
             var resources=JumpResources(p,view);Check.That(resources.Count>0&&resources.All(v=>v==80),"Charged start serializes 80 IS rather than a fixed capture value");
             Check.That(p.World.ViewSnapshot().Skip(view).Any(v=>Convert.ToHexString(v).Contains(Convert.ToHexString(BitConverter.GetBytes(17000d)))),"Existing cancel destination response retained");
-            int cancelRpc=p.World.RpcSnapshot().Count;p.SendRpc(cancel);await Barrier(p);
+            int cancelRpc=p.World.RpcSnapshot().Count, cancelView=p.World.ViewSnapshot().Count;
+            p.SendRpc(cancel);await Barrier(p);
             Check.Equal(0,p.World.RpcSnapshot().Skip(cancelRpc).Count(r=>r.Bytes.Length>=2&&r.Bytes[0]==0x80&&r.Bytes[1]==0xc3),"Cancel alone does not sample a clock");
+            Check.That(!p.World.ViewSnapshot().Skip(cancelView).Any(BytePattern.Parse("02 00 03 09 08 00").Occurs),
+                "Cancel after the flight ended sends no jump view update");
             operations.Add(new{p.Handle,Sample=sample,RpcCursor=rpc,ViewCursor=view,SentStart=Convert.ToHexString(start),SentCancel=Convert.ToHexString(cancel),Replies=received.Select(r=>r.Hex),Resources=resources,CancelOnlyCursor=cancelRpc});
         }
         try
