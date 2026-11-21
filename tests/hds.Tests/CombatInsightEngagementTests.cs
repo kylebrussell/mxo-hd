@@ -196,6 +196,48 @@ public class CombatInsightEngagementTests
         Assert.False(stamp.Current);
     }
 
+    [Theory]
+    [InlineData(50, 16, 10)]
+    [InlineData(16, 21, 10)]
+    [InlineData(16, 22, 9)]
+    [InlineData(16, 27, 4)]
+    [InlineData(16, 49, 2)]
+    public void ShieldResistanceCostMatchesShippedLevelCurve(byte attacker, byte defender, ushort expected)
+    {
+        Assert.Equal(expected, EvasionShield.ResistanceCost(attacker, defender));
+    }
+
+    [Fact]
+    public void RealResistedEntryPaysAtExactCostAndShortfallEndsOnlyEvade()
+    {
+        using var fixture = new Fixture();
+        var target = fixture.Target;
+        target.playerInstance.InnerStrengthAvailable.setValue((ushort)10);
+
+        Assert.False(CombatInsightEngagement.Allows(fixture.Source, target, fixture.Handle, out _, applyResistanceCost: true));
+        Assert.Equal(0, AbilityHandler.CurrentInnerStrength(target));
+        Assert.True(EvasionShield.HasState(target));
+
+        target.playerInstance.InnerStrengthAvailable.setValue((ushort)8);
+        Assert.False(CombatInsightEngagement.Allows(fixture.Source, target, fixture.Handle, out _, applyResistanceCost: true));
+        Assert.Equal(8, AbilityHandler.CurrentInnerStrength(target));
+        Assert.False(EvasionShield.HasState(target));
+        Assert.False(AbilityBuffs.IsToggledOn(target, 217));
+        Assert.True(CombatInsightEngagement.Allows(fixture.Source, target, fixture.Handle, out _, applyResistanceCost: true));
+    }
+
+    [Fact]
+    public void StaleEntryAndAnEntryThatBeatsTheShieldSpendNoDefenderIs()
+    {
+        using var fixture = new Fixture();
+        var target = fixture.Target;
+        Assert.False(CombatInsightEngagement.Allows(fixture.Source, target, fixture.Handle + 0x10000, out _, applyResistanceCost: true));
+        fixture.Source.playerData.combatTactic = CombatTactic.Grab;
+        Assert.True(CombatInsightEngagement.Allows(fixture.Source, target, fixture.Handle, out _, applyResistanceCost: true));
+        Assert.Equal(1000, AbilityHandler.CurrentInnerStrength(target));
+        Assert.True(EvasionShield.HasState(target));
+    }
+
     [Fact]public void AWrongCurrentSpawnCannotUseTheNewEvasionConsumer()
     {
         using var f=new Fixture();Assert.False(CombatInsightEngagement.Allows(f.Source,f.Target,f.Handle+0x10000,out var result));Assert.False(result.Computed);
