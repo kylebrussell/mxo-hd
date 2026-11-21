@@ -1,0 +1,31 @@
+{
+  "abilities": {
+    "2": {
+      "note": "PR670 trains loaded Awakened 15→16 and 16→17 through the stock Upgrade window. 2/204 +3→+4 replaces the old record once, then stays +4. Active Self Defense refreshes at rank 16, an active Coder Style survives the next upgrade, and removing Coder Style restores hidden Self Defense at rank 17. This is stock revalidation of the existing DONE row and its UpdateCombatStyle checks. https://github.com/kylebrussell/mxo-hd/pull/670#issuecomment-7064902573"
+    },
+    "17": {
+      "note": "PR670 stock training refreshes active Self Defense (1009 +14→+15 and 522 +15→+16) without a style toggle. After the next training while Coder Style is active, Coder unload restores Self Defense at rank 17 (159 +11, 1009 +16, 522 +17). https://github.com/kylebrussell/mxo-hd/pull/670#issuecomment-7064902573"
+    },
+    "25": {
+      "note": "PR669 adds the ballistic Proxy consumer. With +9 melee/+9 ballistic, Rifle damage moves from raw 16 to 17. Replacement clears both bonuses. Shipped Force Combat remains unverified. https://github.com/kylebrussell/mxo-hd/pull/669#issuecomment-7064848997"
+    },
+    "27": {
+      "note": "PR669's stock replacement removes the Rifle and spawns an L4 SMG Proxy at 224/224 HP with action cost 10 and both power bonuses 0. Its hits have no typed influence. https://github.com/kylebrussell/mxo-hd/pull/669#issuecomment-7064848997"
+    },
+    "28": {
+      "note": "PR669 uses the stock level-18 summon to create the L7 Rifle and land ordinary ballistic hits before Power Boost. The fixture pins the sheet; the replay does not prove retail distributions or the remaining summon callbacks. https://github.com/kylebrussell/mxo-hd/pull/669#issuecomment-7064848997"
+    },
+    "298": {
+      "note": "PR668 verifies an ordinary stock Countermeasure request from bag item shortcut 8 with no selection. +200 detection reveals the opposing-organization Disguise and restores the normal model, leaving the ally disguised and Master Shadow active. Cost 5 IS and own reuse 10 seconds. NPC recipients and sourced area geometry remain open. https://github.com/kylebrussell/mxo-hd/pull/668#issuecomment-7064793307"
+    },
+    "603": {
+      "note": "PR669 reproduces -20% action cost and +50% regen for 600 seconds alongside Power Boost. The active Rifle reports cost 8 and its replacement reports cost 10, while owner IS drops 600→565 for Charge. The independent retail base pet resources remain unresolved. https://github.com/kylebrussell/mxo-hd/pull/669#issuecomment-7064848997"
+    },
+    "1008": {
+      "note": "PR670 shows Coder Style remains active across a stock Awakened rank change. Explicitly unloading Coder Style removes its modifiers and restores the updated Self Defense. https://github.com/kylebrussell/mxo-hd/pull/670#issuecomment-7064902573"
+    },
+    "1114": {
+      "note": "PR668 sends the real stock Disguise frame on both witnesses. Only the opposing-organization witness loses its model and source 1114 stat 881, while the ally's mask stays active. https://github.com/kylebrussell/mxo-hd/pull/668#issuecomment-7064793307"
+    }
+  }
+}
