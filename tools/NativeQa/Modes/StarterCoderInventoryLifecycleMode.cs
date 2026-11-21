@@ -11,9 +11,9 @@ public sealed class StarterCoderInventoryLifecycleMode : NativeQaMode
     private const uint Pill = 2399, Revolver = 700;
     private static readonly ushort[] Loadout = StockAbilityProfile.Profile(2, 17, 37, Decompile, 277).Order().ToArray();
 
-    // The 7.6005 constructor at 621d3b00 takes ability ID, bag slot, tool slot and the recipe-known hint.
+    // Stock secondary-client PacketLog lines 1590 and 1655. Both recipes are in this client's known list.
     private const string UseOnPill = "81 31 14 01 00 00 05 03 01";
-    private const string UseOnRevolver = "81 31 14 01 00 00 06 03 00";
+    private const string UseOnRevolver = "81 31 14 01 00 00 06 03 01";
     private const string ReuseStart = "80 bd 01 14 01 04 00 00 20 41 01";
     private const string ReuseEnd = "80 bd 01 14 01 04 00 00 20 41 00";
 
@@ -36,7 +36,7 @@ public sealed class StarterCoderInventoryLifecycleMode : NativeQaMode
         {
             "Use Activate Item on the Code Analyser in bag slot 2. Verify Writer opens and the avatar begins typing. Close the window and verify the active record clears and the avatar stands.",
             "Repeat with the Code Compiler in bag slot 1. Opening and closing both tools should leave the bag and Info unchanged.",
-            "Add the Item Decompiler in bag slot 3 to an item hotbar slot and use that tool shortcut on the Health Pill in bag slot 5. Check 81 31, the 10 s reuse timer, 81 30 and the bag slot clearing.",
+            "Right-click the Item Decompiler in bag slot 3 and choose Add Item to Hotbar. Use the new item shortcut, then click the Health Pill in bag slot 5. The action sends 81 31 with the tool slot, starts 10 s reuse, returns 81 30 and removes the input. The prepared page 2 ability shortcut is a control without a tool selection.",
             "Try to decompile the revolver in bag slot 6 before reuse ends. It should remain in the bag. After the timer clears, decompile the revolver and verify that recipe is learned."
         });
 
