@@ -101,6 +101,58 @@ public class CombatStyleTests
     }
 
     [Fact]
+    public void StarterRanksRefreshTheAwakenedGrantAndFeedEachSelectedStyleConsumer()
+    {
+        var client = Client();
+        client.playerInstance.Level.setValue((byte)12);
+        int baselineAwareness = Stealth.AwarenessOf(client);
+        AbilityPassives.SetLoaded(client, new (ushort, ushort)[]
+        {
+            (2, 8), (CombatStyles.HackerStyle, 12), (CombatStyles.CoderStyle, 12)
+        });
+        Assert.Equal(8, AbilityPassives.Level(client, CombatStyles.SelfDefense));
+        Assert.Equal(baselineAwareness + 2, Stealth.AwarenessOf(client));
+
+        AbilityPassives.SetLoaded(client, new (ushort, ushort)[]
+        {
+            (2, 12), (CombatStyles.HackerStyle, 12), (CombatStyles.CoderStyle, 12)
+        });
+        Assert.Equal(12, AbilityPassives.Level(client, CombatStyles.SelfDefense));
+        Assert.Equal(baselineAwareness + 3, Stealth.AwarenessOf(client));
+        Assert.Equal(12, AbilityStats.Attack(client, false));
+        Assert.Equal(12, AbilityStats.Attack(client, true));
+        Assert.Equal(127, AbilityStats.ScaleTypedAbilityDamage(client, 0, 117));
+        Assert.Equal(121, AbilityStats.ScaleTypedAbilityDamage(client, 1, 117));
+        Assert.Equal(16, WithdrawalInput.Attack(client, null!, true));
+        AssertDefenses();
+
+        CombatStyles.Select(client, CombatStyles.HackerStyle);
+        Assert.Equal(0, AbilityStats.Attack(client, false));
+        Assert.Equal(21, AbilityStats.ViralAccuracy(client));
+        Assert.Equal(127, AbilityStats.ScaleTypedAbilityDamage(client, 2, 117));
+        Assert.Equal(127, AbilityHealing.ApplyInfluence(117, AbilityStats.Influence(client, 174)));
+        Assert.Equal(15, WithdrawalInput.Attack(client, null!, true));
+        AssertDefenses();
+
+        CombatStyles.Select(client, CombatStyles.CoderStyle);
+        Assert.Equal(15, AbilityStats.Attack(client, false));
+        Assert.Equal(15, AbilityStats.ViralAccuracy(client));
+        Assert.Equal(127, AbilityStats.ScaleTypedAbilityDamage(client, 0, 117));
+        Assert.Equal(127, AbilityStats.ScaleTypedAbilityDamage(client, 2, 117));
+        Assert.Equal(17, WithdrawalInput.Attack(client, null!, true));
+        Assert.Equal(0, AbilityStats.Influence(client, 174));
+        AssertDefenses();
+
+        void AssertDefenses()
+        {
+            Assert.Equal(11, AbilityStats.Defense(client, false));
+            Assert.Equal(11, AbilityStats.Defense(client, true));
+            Assert.Equal(11, AbilityStats.Player(client, AbilityStats.SpecialDefenseStat(2)));
+            Assert.Equal(11, AbilityStats.Player(client, AbilityStats.SpecialDefenseStat(4)));
+        }
+    }
+
+    [Fact]
     public void HackerAndCoderStylesBoostViralAndHealing()
     {
         var client = Client();
