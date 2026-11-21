@@ -16,9 +16,11 @@ public sealed class AwakenedJumpRankRangeMode : NativeQaMode
     // PR689 PacketLog lines 762–763 and 1424–1425, the complete cancelled forward requests.
     private const string Rank10Forward = "80 c2 00 00 00 00 80 5c d4 40 00 00 00 00 00 f0 7e 40 00 00 00 00 00 00 b9 40 e2 04 02 00 00 00 00 f0 20 46 01 62 6e 88 16";
     private const string Rank11Forward = "80 c2 00 00 00 00 80 a7 d4 40 00 00 00 00 00 f0 7e 40 00 00 00 20 00 00 b9 40 e2 04 01 00 00 00 00 f0 20 46 01 d4 3b 89 16";
-    // PR658 lines 2726–2727. Destination coordinates and NAV are replaced with this fixture's measured stands.
-    private const string CapturedStart = "80 c2 00 00 00 e0 8b 38 d8 40 00 00 00 00 00 f0 7e 40 00 00 00 c0 db b8 a4 " +
-        "c0 14 04 10 00 03 00 00 00 7a 44 01 65 43 4a 15";
+    // PR703 stock takeoff report when the cost check blocked 80 c2.
+    private const string TakeoffReport = "80 c4 00 00 00 00 40 b3 d0 40 00 00 00 00 00 f0 7e 40 00 00 00 00 00 00 b9 40 e2 04 12 00 01 00";
+    // Retail proxy_026 CSEQ 2280, 245.828125 peak. Only the destination and NAV are retargeted.
+    private const string CapturedStart = "80 c2 00 00 00 60 a6 18 d7 c0 00 00 00 00 ff 9b 9d 40 00 00 00 40 7a db d6 " +
+        "40 e8 00 02 00 08 00 00 d4 75 43 01 66 28 be 04";
     private static readonly ushort[] Loadout = StockAbilityProfile.Profile(2, 17, Jump, Sprint).Order().ToArray();
 
     public override string Name => "ability-parity-awakened-jump-rank-range";
@@ -35,11 +37,10 @@ public sealed class AwakenedJumpRankRangeMode : NativeQaMode
         }, extraQaMetadata: new() { ["ScopedStockRows"] = "2,11,184", ["NativeCloseableRows"] = 0 },
         readyMessages: new[]
         {
-            $"CSR starts at ({X},{Y},{Z}), facing east, with 99 IS and regen held. Leave Sprint off. Type {InteriorStand} to stand inside verified outdoor NAV 1250/18/1.",
-            "From normal view, use Ctrl+Space, wait 12 seconds, then strafe. Rank 10 should land near X=20950. Expect one 80 c2 with flag 1 and its matching 80 c3. In the same timed reply, [VITALS] Hyper-Jump 11 IS 99->79. An immediate 80 c4 takeoff report produces no second debit or snap-back.",
-            $"Return with {InteriorStand} and repeat. Expect 79->59 IS. Return again and train Hyper-Jump 10 to 11 for 24,200 Info. Expect source=11 stat=567 +30 removed and +33 added.",
-            $"From the same stand, make two rank-11 jumps, using {InteriorStand} and a strafe between them. Expect landings near X=21250, then IS 59->39->19 across the two accepted starts.",
-            "At 19 IS, try Ctrl+Space again from the same stand. The stock client may suppress the request or show insufficient IS. If it sends 80 c2, expect reason 17 with a deficit of 1 and no echo. IS and position stay at the starting value. Tap plain Space once to check ordinary jump still works with no IS debit."
+            $"CSR starts at ({X},{Y},{Z}) facing QA Jump Near at ({NearX},{Y},{Z}), with 99 IS held. Leave Sprint off. Click page 2 slot 1 for Jump aim and use a real mouse click on the open street near the marker about 18 m east. Land and strafe. Save the first 80 c2 and [NAV] Hyper-Jump line. A low-peak 18 m sample whose vertical time is shorter should take about 2.25 s. Expect IS 99->79.",
+            $"Type {InteriorStand}. From normal view use Ctrl+Space, wait 12 s and strafe near X=20950. Expect the [NAV] full-peak control at 38.5 m in about 4.81 s, one clock echo, normal landing and IS 79->59. Return to the printed stand and train Hyper-Jump 10 to 11 for 24,200 Info.",
+            $"Make two rank-11 forward jumps with {InteriorStand} and a strafe between them. Expect landings near X=21250 and IS 59->39->19. Return to the same stand.",
+            "At 19 IS try Ctrl+Space once. Expect the stock local cost gate and no accepted jump. If the stock client sends its lone 80 c4 takeoff report, save it and verify there is no jump view response and no Jump cancel line. Then use plain Space once. Expect IS to stay at 19."
         });
 
     public override async Task<byte[]> AfterStartAsync(NativeQaBootstrapContext context)
@@ -65,6 +66,16 @@ public sealed class AwakenedJumpRankRangeMode : NativeQaMode
         await actor.WaitForViewNamedAsync("QA Jump Near");
         await actor.WaitForViewNamedAsync("QA Jump Far");
         await BonusAsync(0, Jump, 567, 30, 0, false);
+        actor.SendChat(InteriorStand);
+        await actor.WaitForTextAsync("Teleported to 4e2/12");
+        int orphanViews = actor.World.ViewSnapshot().Count;
+        int orphanRpcs = actor.World.RpcSnapshot().Count;
+        actor.World.SendRpcs(WireFormat.FromHex(TakeoffReport), WireFormat.FromHex("81 48"));
+        await StockAbilityProfile.ObserveAsync(actor, orphanRpcs, packet => BytePattern.Parse("81 49").IsMatch(packet.Bytes),
+            "Lone stock takeoff report barrier");
+        Check.That(!actor.World.ViewSnapshot().Skip(orphanViews).Any(BytePattern.Parse("02 00 03 09 08 00").Occurs),
+            "The stock C4 that follows a local refusal is silent without an accepted C2");
+        await ReturnAsync();
         await JumpAsync(NearX);
         await ReturnAsync();
         await ReplayForwardAsync(Rank10Forward, Rank10X);
@@ -147,7 +158,7 @@ public sealed class AwakenedJumpRankRangeMode : NativeQaMode
             NavLocation nav = Ground(x);
             var destination = new JumpRecords.Destination(Bits(x), Bits(Y), Bits(Z), nav.sector, nav.region, nav.polygon);
             var request = new JumpRecords.Start(destination, captured.PeakBits, captured.IsHyperJump, captured.TimeStamp);
-            await ObserveJumpAsync(JumpRecords.Encode(request), request);
+            await ObserveJumpAsync(JumpRecords.Encode(request), request, travelSeconds: (x - X) / 800.0);
         }
 
         async Task ObserveJumpAsync(byte[] bytes, JumpRecords.Start request, int? takeoffX = null, double? travelSeconds = null,
@@ -184,6 +195,13 @@ public sealed class AwakenedJumpRankRangeMode : NativeQaMode
                 "The exact echo datagram reports one 20 IS takeoff debit");
             if (travelSeconds.HasValue)
             {
+                uint end = BitConverter.ToUInt32(viewBytes, start + 15);
+                double duration = end / 1000.0 - echoRecord.DatagramSimTime!.Value;
+                Check.That(Math.Abs(duration - travelSeconds.Value) < 0.3,
+                    $"Jump duration {duration:F3} s agrees with expected travel {travelSeconds.Value:F3} s");
+            }
+            if (takeoffX.HasValue)
+            {
                 const int deltaLength = 46;
                 int snapshot = start + deltaLength;
                 Check.That(WireFormat.TryReadJumpSnapshot(viewBytes, snapshot, out int snapshotEnd, out var fields) &&
@@ -203,10 +221,6 @@ public sealed class AwakenedJumpRankRangeMode : NativeQaMode
                     fields[25].AsSpan().SequenceEqual(viewBytes.AsSpan(start + 44, 2)),
                     "Both updates agree on peak, flags, end, destination and current IS");
                 Check.Equal((byte)1, fields[0][0], "The full default RSI selector keeps the ordinary avatar");
-                uint endMs = BitConverter.ToUInt32(fields[18]);
-                double duration = endMs / 1000.0 - echoRecord.DatagramSimTime!.Value;
-                Check.That(Math.Abs(duration - travelSeconds.Value) < 0.3,
-                    $"Full-height jump duration {duration:F3} s matches measured travel {travelSeconds.Value:F3} s");
             }
             else
             {

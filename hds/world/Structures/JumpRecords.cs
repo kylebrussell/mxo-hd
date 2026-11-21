@@ -26,6 +26,26 @@ namespace hds
             public readonly Destination Destination;
             public Cancel(Destination destination){Destination=destination;}
         }
+        internal readonly struct Flight
+        {
+            private readonly uint endMs, district;
+            private readonly int world, life;
+            internal readonly Takeoff? InitialReport;
+
+            internal Flight(uint endMs, ClientData owner, Takeoff? initialReport)
+            {
+                this.endMs = endMs;
+                district = owner.getDistrictId();
+                world = owner.worldGeneration;
+                life = owner.lifeGeneration;
+                InitialReport = initialReport;
+            }
+
+            internal bool IsCurrent(uint nowMs, ClientData owner) =>
+                unchecked((int)(endMs - nowMs)) >= 0 &&
+                district == owner.getDistrictId() && world == owner.worldGeneration && life == owner.lifeGeneration;
+        }
+
         internal readonly struct Takeoff
         {
             private readonly Destination origin;

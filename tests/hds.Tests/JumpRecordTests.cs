@@ -63,6 +63,38 @@ public class JumpRecordTests
                 unchecked((ulong)BitConverter.DoubleToInt64Bits(z)), 1250, 18, polygon);
     }
 
+    [Fact]
+    public void FlightExpiresAcrossClockWrapAndIgnoresALaterLife()
+    {
+        var data = new ClientData();
+        data.setDistrictId(1);
+        var flight = new JumpRecords.Flight(10, data, null);
+        Assert.True(flight.IsCurrent(uint.MaxValue, data));
+        Assert.True(flight.IsCurrent(10, data));
+        Assert.False(flight.IsCurrent(11, data));
+        data.lifeGeneration++;
+        Assert.False(flight.IsCurrent(10, data));
+    }
+
+    [Theory]
+    [InlineData(10300f, 7846.40096, 9811)]
+    [InlineData(245.828125f, 7872.00121, 9808)]
+    public void TravelTimeMatchesRetailAtBothFullAndLowPeak(float peak, double distance, int measuredMilliseconds)
+    {
+        uint end = AbilityHandler.JumpTravelEndTime(100, peak, distance, hyperJump: true);
+        Assert.InRange(end, (uint)(100000 + measuredMilliseconds - 40), (uint)(100000 + measuredMilliseconds + 40));
+    }
+
+    [Fact]
+    public void OrdinaryAndNearVerticalStartsRetainTheirExistingTimer()
+    {
+        const float peak = 1000;
+        Assert.Equal(AbilityHandler.JumpEndTime(100, peak),
+            AbilityHandler.JumpTravelEndTime(100, peak, 8.45, hyperJump: true));
+        Assert.Equal(AbilityHandler.JumpEndTime(100, peak),
+            AbilityHandler.JumpTravelEndTime(100, peak, 1800, hyperJump: false));
+    }
+
     [Theory]
     [InlineData(0, 0, false, 0xfffffff0u)]
     [InlineData(1, 1, false, 0x80000000u)]
@@ -110,10 +142,13 @@ public class JumpRecordTests
             double x=0,y=0,z=0;NumericalUtils.LtVector3dToDoubles(c.playerInstance.Position.getValue(),ref x,ref y,ref z);
             JumpRecords.TryCancel(Convert.FromHexString(RetailCancel),out var expected);
             Assert.Equal(expected.Destination.X,x);Assert.Equal(expected.Destination.Y,y);Assert.Equal(expected.Destination.Z,z);
-            c.messageQueue=new();handler.processHyperJumpCancel(ref cancel);Assert.Empty(c.messageQueue.RPCMessagesQueue);
             var cancelView = Assert.Single(c.messageQueue.ObjectMessagesQueue.Cast<SequencedMessage>()).content;
             Assert.Equal(0x10, cancelView[^6]);
             Assert.Equal((ushort)remaining, BitConverter.ToUInt16(cancelView, cancelView.Length - 5));
+            c.messageQueue = new();
+            handler.processHyperJumpCancel(ref cancel);
+            Assert.Empty(c.messageQueue.RPCMessagesQueue);
+            Assert.Empty(c.messageQueue.ObjectMessagesQueue);
         }
         finally{Store.currentClient=oldClient;Store.world=oldWorld;}
     }
