@@ -101,21 +101,19 @@ public class AbilitySweepHotbarTests
     }
 
     [Fact]
-    public void DecompilePlanSeedsThreeInventoryShortcutsWithTheirStockDescriptors()
+    public void DetectionPlanSeedsBothToolShortcutsWithTheirStockDescriptors()
     {
-        var plan = new NativeQa.Modes.StarterDecompileSkillMode().Plan;
+        var plan = new NativeQa.Modes.AwakenedDetectionBoundaryMode().Plan;
         byte[] untouched = { 1, 4, 0, 0, 0, 0, 99, 0, 0, 0 };
         byte[] tail = Enumerable.Range(0, 48).Select(i => (byte)i).ToArray();
         byte[] template = Template(tail, untouched);
         byte[] seeded = AbilitySweepHotbar.Seed(template, plan.HotbarAbilities, inventory: plan.HotbarInventory);
 
-        Assert.Equal(5u, BinaryPrimitives.ReadUInt32LittleEndian(seeded.AsSpan(12)));
-        Assert.Equal(new byte[] { 1, 0, 0, 0, 0, 0, 20, 1, 0, 0 }, seeded[16..26]);
-        Assert.Equal(Convert.FromHexString("01010100000003000000650200000000000c"), seeded[26..44]);
-        Assert.Equal(Convert.FromHexString("01020100000001000000f70400000000000c"), seeded[44..62]);
-        Assert.Equal(Convert.FromHexString("01030100000002000000130200000000000c"), seeded[62..80]);
-        Assert.Equal(untouched.Concat(tail).ToArray(), seeded[80..]);
-        Assert.Contains("slot 2 = Item Decompiler (bag slot 3, GOID 613)", plan.ReadyMessages);
+        Assert.Equal(3u, BinaryPrimitives.ReadUInt32LittleEndian(seeded.AsSpan(12)));
+        Assert.Equal(Convert.FromHexString("01000100000008000000540900000000000c"), seeded[16..34]);
+        Assert.Equal(Convert.FromHexString("01010100000001000000a60100000000000c"), seeded[34..52]);
+        Assert.Equal(untouched.Concat(tail).ToArray(), seeded[52..]);
+        Assert.Contains("slot 1 = Concealment Countermeasure Tool (bag slot 8, GOID 2388)", plan.ReadyMessages);
         Assert.Equal(seeded, AbilitySweepHotbar.Seed(seeded, plan.HotbarAbilities, inventory: plan.HotbarInventory));
     }
 
