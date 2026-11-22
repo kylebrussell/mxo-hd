@@ -64,7 +64,7 @@ namespace hds
                 AbilityStats.Player(source,1048),CombatTactics.Get(target.playerData.combatTactic).EvadeInterlock,
                 AbilityStats.Player(target,520),AbilityStats.Player(target,1049));
             if(!scope.Current)return false;
-            // A removed/suppressed217 no longer resists entry; no sticky gate or shield-health pool.
+            // A removed/suppressed217 no longer resists entry; no sticky gate.
             if(!EvasionShield.HasState(target))return true;
             Output.WriteDebugLog($"[COMBAT-INSIGHT OURS] {PvpFlag.Name(source)} -> {PvpFlag.Name(target)} force{scores.Force} evade{scores.Evade} allowed{scores.Allows}");
             if (scores.Allows || !applyResistanceCost) return scores.Allows;

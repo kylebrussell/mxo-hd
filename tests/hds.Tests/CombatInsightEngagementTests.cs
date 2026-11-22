@@ -207,6 +207,30 @@ public class CombatInsightEngagementTests
         Assert.Equal(expected, EvasionShield.ResistanceCost(attacker, defender));
     }
 
+    [Theory]
+    [InlineData(35, 166, 77, 0)]
+    [InlineData(40, 153, 51, 0)]
+    [InlineData(50, 127, 0, 0)]
+    public void ShieldDamageReproducesTheRetainedMeterSequences(int damage, byte first, byte second, byte last)
+    {
+        byte shield = EvasionShield.ReduceHealth(byte.MaxValue, damage);
+        Assert.Equal(first, shield);
+        shield = EvasionShield.ReduceHealth(shield, damage);
+        Assert.Equal(second, shield);
+        Assert.Equal(last, EvasionShield.ReduceHealth(shield, damage));
+    }
+
+    [Theory]
+    [InlineData(19, 19, 0, 35)]
+    [InlineData(19, 19, 3, 36)]
+    [InlineData(19, 21, 0, 36)]
+    [InlineData(1, 50, 0, 10)]
+    [InlineData(50, 1, 100, 500)]
+    public void ShieldDamageUsesTheShippedLevelAndForceBonusFormula(byte attacker, byte defender, int force, int damage)
+    {
+        Assert.Equal(damage, EvasionShield.ShieldDamage(attacker, defender, force));
+    }
+
     [Fact]
     public void RealResistedEntryPaysAtExactCostAndShortfallEndsOnlyEvade()
     {
@@ -216,11 +240,13 @@ public class CombatInsightEngagementTests
 
         Assert.False(CombatInsightEngagement.Allows(fixture.Source, target, fixture.Handle, out _, applyResistanceCost: true));
         Assert.Equal(0, AbilityHandler.CurrentInnerStrength(target));
+        Assert.Equal((byte)166, target.playerInstance.EvadeShieldHealth.getValue()[0]);
         Assert.True(EvasionShield.HasState(target));
 
         target.playerInstance.InnerStrengthAvailable.setValue((ushort)8);
         Assert.False(CombatInsightEngagement.Allows(fixture.Source, target, fixture.Handle, out _, applyResistanceCost: true));
         Assert.Equal(8, AbilityHandler.CurrentInnerStrength(target));
+        Assert.Equal((byte)0, target.playerInstance.EvadeShieldHealth.getValue()[0]);
         Assert.False(EvasionShield.HasState(target));
         Assert.False(AbilityBuffs.IsToggledOn(target, 217));
         Assert.True(CombatInsightEngagement.Allows(fixture.Source, target, fixture.Handle, out _, applyResistanceCost: true));

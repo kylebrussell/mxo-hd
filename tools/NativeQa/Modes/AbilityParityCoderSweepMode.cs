@@ -209,11 +209,16 @@ public sealed class AbilityParityCoderSweepMode : NativeQaMode
 
     internal static IEnumerable<ushort> InnerStrengthUpdates(byte[] packet)
     {
-        byte[] header = { 2, 0, 2, 0x80, 0x80, 0x80, 0x10 };
+        byte[] header = { 2, 0, 2, 0x80, 0x80, 0x80 };
         for (int offset = BytePattern.IndexOf(packet, header, 0);
-            offset >= 0 && offset + header.Length + 2 <= packet.Length;
-            offset = BytePattern.IndexOf(packet, header, offset + header.Length + 2))
-            yield return BitConverter.ToUInt16(packet, offset + header.Length);
+            offset >= 0 && offset + header.Length + 3 <= packet.Length;
+            offset = BytePattern.IndexOf(packet, header, offset + header.Length))
+        {
+            int mask = offset + header.Length;
+            // Bit 7 announces another group, such as the Evade shield after the IS field.
+            if ((packet[mask] & 0x7f) == 0x10)
+                yield return BitConverter.ToUInt16(packet, mask + 1);
+        }
     }
 
     private static async Task<string[]> WaitForStyleAsync(HeadlessPlayer owner, int start, bool remove)

@@ -71,7 +71,7 @@ namespace hds
             /// Using it again while it is on switches it off.
             /// </summary>
             public bool Toggle;
-            /// <summary>Own-view EvadeShieldHealth ff while on, 00 when it ends (Evade Combat).</summary>
+            /// <summary>Own-view EvadeShieldHealth starts at ff and clears to 00 when Evade Combat ends.</summary>
             public bool EvadeShield;
         }
 
@@ -458,7 +458,7 @@ namespace hds
             return !AbilityAuras.Friendly(abilityId) && !(TryGet(abilityId, out Buff buff) && buff.Toggle);
         }
 
-        /// <summary>Own-view EvadeShieldHealth (attribute 30): <c>02 00 02 80 80 80 80 04 &lt;value&gt;</c> (retail ff on, 00 off).</summary>
+        /// <summary>Own-view EvadeShieldHealth (attribute 30): <c>02 00 02 80 80 80 80 04 &lt;value&gt;</c> (retail ff on activation, 00 off).</summary>
         public static byte[] BuildEvadeShieldUpdate(byte health)
         {
             PacketContent pak = new PacketContent();
