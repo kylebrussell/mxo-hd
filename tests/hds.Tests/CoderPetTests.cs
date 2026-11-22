@@ -390,4 +390,35 @@ public class CoderPetTests
         pet.Mob.setIsDead(false); pet.Gone=true;
         Assert.False(cast.Matches(caster,pet));
     }
+
+    [Fact]
+    public void PursuitReusesTheCornerRouteAndThrottlesAnUnreachableDestination()
+    {
+        string root = AppContext.BaseDirectory;
+        while (!File.Exists(Path.Combine(root, "data", "sector_properties.csv")))
+            root = Path.GetDirectoryName(root)!;
+        SectorProperties.Load(Path.Combine(root, "data", "sector_properties.csv"));
+        NavMesh.UseDirectory(Path.Combine(root, "data", "navmesh"));
+
+        var mob = new Mob();
+        mob.setDistrict(1);
+        var pet = new CoderPets.Pet { Mob = mob };
+        var original = (19074d, 95d, -8852d);
+        var far = (20218d, 95d, -9510d);
+        Assert.False(NavMesh.HasSightPath(1, original.Item1, original.Item2, original.Item3, far.Item1, far.Item2, far.Item3));
+        Assert.True(CoderPets.PetWaypoint(pet, original, far, 0, out var first));
+        Assert.True(pet.Route.Length > 1);
+        NavPoint[] route = pet.Route;
+        Assert.True(CoderPets.PetWaypoint(pet, (first.x, first.y, first.z), far, 1, out var second));
+        Assert.Same(route, pet.Route);
+        Assert.Equal(route[1].Position, second.Position);
+
+        var differentFloor = (18533d, 1695d, 3170d);
+        Assert.False(CoderPets.PetWaypoint(pet, original, differentFloor, 2, out _));
+        Assert.Equal(5, pet.RetryRouteAt);
+        Assert.False(CoderPets.PetWaypoint(pet, original, differentFloor, 3, out _));
+        Assert.Equal(5, pet.RetryRouteAt);
+        Assert.False(CoderPets.PetWaypoint(pet, original, differentFloor, 5, out _));
+        Assert.Equal(8, pet.RetryRouteAt);
+    }
 }
