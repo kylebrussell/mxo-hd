@@ -388,9 +388,9 @@ namespace hds
         {
             foreach (ushort id in AbilityAuras.Active(client))
                 if (id == 42 || id == 485 || id == 378 || id == 380 || id == 61 || id == 89 ||
-                    id == 35 || id == ProxyTechnician.Ability)
+                    id == 35 || id == ProxyTechnician.Ability || id == DaemonBoost.Ability)
                     AbilityAuras.Stop(client, id);
-            if (CoderPets.IsToggledOn(client, CoderPets.DaemonBoost1) || CoderPets.IsToggledOn(client, CoderPets.DaemonBoost2))
+            if (CoderPets.IsToggledOn(client, CoderPets.DaemonBoost2))
                 CoderPets.ToggleOff(client);
         }
 

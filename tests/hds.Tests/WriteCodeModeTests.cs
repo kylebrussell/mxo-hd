@@ -47,7 +47,8 @@ public class WriteCodeModeTests
             const string holdHealthKey = "MXO_DESPERATION_QA_HOLD_HEALTH";
             bool originalHold = mode is "desperation" or "desperation-initiative" or "ability-sweep-hacker" or
                 "ability-parity-awakened-resistance-threshold";
-            bool groupedHold = mode is "ability-parity-coder-sweep" or "ability-parity-hacker-sweep" or
+            bool groupedHold = mode is "ability-parity-daemon-boost-friendly-pets" or
+                "ability-parity-coder-sweep" or "ability-parity-hacker-sweep" or
                 "ability-parity-hacker-a2-group-heal" or "ability-parity-hacker-second-pass" or
                 "ability-parity-hacker-team-patcher" or "ability-evidence-direct-heals" or
                 "ability-parity-starter-initiative-and-desperation" or "ability-parity-starter-hacker-reactive-code" or

@@ -378,21 +378,13 @@ public class CoderPetTests
     }
 
     [Fact]
-    public void Daemon699AndPower25UseIndependentTimersAndCorrectDamageTypes()
+    public void Daemon700AndPower25UseIndependentTimers()
     {
         var pet = ResourcePet();
         CoderPets.ApplyPowerBoost(pet, 50, 10);
-        CoderPets.ApplyDaemonBoost(pet, 699, 40, 20); //20 viral/healing influence, through25s
-        pet.Kind = CoderPets.Kind.Nuker;
-        Assert.Equal(96, CoderPets.DaemonBoostDamage(pet, 80, 24));
-        Assert.Equal(80, CoderPets.DaemonBoostDamage(pet, 80, 25));
-        pet.Kind = CoderPets.Kind.Healer;
-        Assert.Equal(96, CoderPets.DaemonBoostHealing(pet, 80, 24));
-        Assert.Equal(80, CoderPets.DaemonBoostHealing(pet, 80, 25));
         pet.Kind = CoderPets.Kind.Proxy; pet.Sheet = "Aikido";
-        Assert.Equal(80, CoderPets.DaemonBoostDamage(pet, 80, 24));
         Assert.Equal(100, CoderPets.PowerBoostDamage(pet, 80, 25));
-        CoderPets.ApplyDaemonBoost(pet, 700, 50, 309);
+        CoderPets.ApplyDaemonBoostAccuracy(pet, 50, 309);
         Assert.Equal(64,pet.BoostAccuracy); //binary32 scale1.3 *50 truncates64.999997 to64
         Assert.Equal(100, CoderPets.PowerBoostDamage(pet, 80, 309));
         Assert.Equal(80, CoderPets.PowerBoostDamage(pet, 80, 310));

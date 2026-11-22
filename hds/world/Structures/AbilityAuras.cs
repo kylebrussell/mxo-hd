@@ -69,10 +69,9 @@ namespace hds
                     activation.Lifetime.World, activation.Lifetime.Transport);
         }
 
-        /// <summary>Supported hostile pulses and the explicitly implemented Combat Aura / Deflect parents.
-        /// Pet auras and health-triggered parents have separate executors.</summary>
+        /// <summary>Supported hostile, support and friendly simulacra auras.</summary>
         public static bool Handles(ushort id) => AbilityCatalog.Find(id)?.Number("Ability/IsAToggleAbility") == 1 && EffectOf(id) != 0 &&
-            (AbilityHostile.IsDebuff(EffectOf(id)) || Friendly(id) || id == ProxyTechnician.Ability);
+            (AbilityHostile.IsDebuff(EffectOf(id)) || Friendly(id) || id == ProxyTechnician.Ability || id == DaemonBoost.Ability);
 
         // Explicit beneficial parents only. Deflect Virus's child term sweep is executed by its saved buff definition.
         // Beneficial parents retain the existing off-time cooldown policy; default native timing remains unverified.
@@ -110,6 +109,7 @@ namespace hds
                     state.On.TryGetValue(id, out var existing) && existing.Current) return;
                 generation = state.Generation + 1;
                 if (id == ProxyTechnician.Ability && !ProxyTechnician.Begin(client,generation)) return;
+                if (id == DaemonBoost.Ability && !DaemonBoost.Loaded(client)) return;
                 state.Generation = generation;
                 activation = new Activation(id, generation, lifetime);
                 state.On[id] = activation;
@@ -152,6 +152,7 @@ namespace hds
                 return;
             }
             if (id == ProxyTechnician.Ability && !ProxyTechnician.Matches(client,generation)) { Stop(client,id,generation); return; }
+            if (id == DaemonBoost.Ability && !DaemonBoost.Loaded(client)) { Stop(client,id,generation); return; }
             if (!PayDrain(client, id, generation)) return;
             Pulse(client, id, generation);
             if (Current(client, id, generation)) Schedule(client, id, generation);
@@ -184,15 +185,21 @@ namespace hds
                     return false;
                 }
                 if (id == ProxyTechnician.Ability) Output.WriteDebugLog("[PROXYTECH] drain source="+TimedEffects.PlayerName(client)+" amount="+drain);
+                if (id == DaemonBoost.Ability) Output.WriteDebugLog($"[DAEMON BOOST] 609 upkeep source={client.playerData.getCharID()} paid={drain} IS={available}->{available - drain}");
             }
             return true;
         }
 
-        /// <summary>One ApplyAuraEffect: the effect ability on hostile NPCs and PvP-legal players around the caster.</summary>
+        /// <summary>One ApplyAuraEffect invocation on the supported recipients around the caster.</summary>
         private static void Pulse(WorldClient client, ushort id, int generation)
         {
             if (!Current(client, id, generation) || PvpCombat.HealthOf(client) == 0) return;
             if (id == ProxyTechnician.Ability) { ProxyTechnician.Pulse(client,generation); return; }
+            if (id == DaemonBoost.Ability)
+            {
+                PulseDaemonBoost(client, generation);
+                return;
+            }
             ushort effectId = EffectOf(id);
             var effect = AbilityCatalog.Find(effectId);
             if (effect == null) return;
@@ -247,6 +254,22 @@ namespace hds
                 hits++;
             }
             Output.WriteDebugLog("[AURA] " + id + " pulse " + effectId + " reaches " + hits + " targets" + (damage > 0 ? " for " + damage : ""));
+        }
+
+        private static void PulseDaemonBoost(WorldClient client, int generation)
+        {
+            var state = states.GetOrCreateValue(client);
+            double now = TimeUtils.GetSimTimeSeconds();
+            foreach (var pet in CoderPets.SnapshotPets())
+            {
+                DaemonBoost.PulseEffect effect;
+                lock (state)
+                {
+                    if (!Current(client, DaemonBoost.Ability, generation)) return;
+                    effect = DaemonBoost.Project(client, pet, now);
+                }
+                if (effect != null) DaemonBoost.Publish(pet, effect);
+            }
         }
 
         /// <summary>Switches the aura off (toggled again, IS shortfall, death, a Delete Upgrade). Returns whether it was on.</summary>

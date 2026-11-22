@@ -17,8 +17,7 @@ namespace hds
         private static readonly ConditionalWeakTable<WorldClient,Context> contexts = new ConditionalWeakTable<WorldClient,Context>();
         private static readonly ConditionalWeakTable<CoderPets.Pet,Snapshot> snapshots = new ConditionalWeakTable<CoderPets.Pet,Snapshot>();
 
-        private static bool OwnerReady(WorldClient owner) => owner != null && owner.Alive && owner.playerData.getOnWorld() &&
-            !owner.playerData.worldChangePending && !owner.playerData.DistrictIsLA() && !owner.playerData.isDead && !owner.playerData.duelDeath;
+        private static bool OwnerReady(WorldClient owner) => CoderPets.AuraOwnerReady(owner);
         public static bool Loaded(WorldClient owner) => AbilityPassives.Level(owner,Ability) > 0;
         public static string Refusal(WorldClient owner) => Loaded(owner) && OwnerReady(owner) ? null : "Load Proxy Technician on a live in-world character first.";
         public static bool Begin(WorldClient owner,int generation=0)
@@ -52,11 +51,8 @@ namespace hds
             }
             return value;
         }
-        public static bool Eligible(WorldClient owner,CoderPets.Pet pet) => OwnerReady(owner) && pet != null &&
-            OwnerReady(pet.Owner) && ReferenceEquals(CoderPets.Of(pet.Owner),pet) && !pet.Gone && !pet.Mob.getIsDead() &&
-            pet.Mob.getDistrict()==owner.playerData.getDistrictId() && pet.Owner.playerData.getDistrictId()==owner.playerData.getDistrictId() &&
-            AbilitySupport.FriendlyRecipient(owner,pet.Owner) &&
-            CombatCalculator.CalculateDistanceMetres(owner.playerInstance.Position.getValue(),pet.Mob.getXPos(),pet.Mob.getYPos(),pet.Mob.getZPos())<=AbilityCatalog.Find(Effect).Number("Ability/RadiusOfEffect");
+        public static bool Eligible(WorldClient owner,CoderPets.Pet pet) =>
+            CoderPets.FriendlyAuraRecipient(owner, pet, AbilityCatalog.Find(Effect).Number("Ability/RadiusOfEffect"));
         internal static Snapshot Project(WorldClient owner,CoderPets.Pet pet,double now) => ProjectCaptured(owner,pet,Capture(owner),now);
         internal static Snapshot ProjectCaptured(WorldClient owner,CoderPets.Pet pet,Context captured,double now)
         {
