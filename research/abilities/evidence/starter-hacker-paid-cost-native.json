@@ -1,0 +1,45 @@
+{
+  "abilities": {
+    "309": {
+      "checks": {
+        "stats": {
+          "source": "GOB 309 has rank-scaled stat 1031 for viral damage and 1053 for cost. The direct percent cost stat 117 links to 1053. 309 also grants linked concentration 1090.",
+          "runtime": "AbilityPassives publishes the source records. AbilityStats.Influence feeds linked 1053 to ordinary ability admission and debit through AbilityCosts.Effective; the existing viral damage and interruptible-cast concentration consumers still read the passive.",
+          "test": "PR726 stock captures confirm rank-19 adds, unloads and reloads, and both exact paid-cost contrasts: Freeze 17 with 309+346 versus 18 with just 346; Evade 38 with 346 versus 40 with neither. HackerLoadedPassivesReachViralDamageAndCastThroughConsumers checks the other live effects and their removal. https://github.com/kylebrussell/mxo-hd/pull/726#issuecomment-7073533731"
+        },
+        "consumer": {
+          "source": "GOB 309 has rank-scaled stat 1031 for viral damage and 1053 for cost. The direct percent cost stat 117 links to 1053. 309 also grants linked concentration 1090.",
+          "runtime": "AbilityPassives publishes the source records. AbilityStats.Influence feeds linked 1053 to ordinary ability admission and debit through AbilityCosts.Effective; the existing viral damage and interruptible-cast concentration consumers still read the passive.",
+          "test": "PR726 stock captures confirm rank-19 adds, unloads and reloads, and both exact paid-cost contrasts: Freeze 17 with 309+346 versus 18 with just 346; Evade 38 with 346 versus 40 with neither. HackerLoadedPassivesReachViralDamageAndCastThroughConsumers checks the other live effects and their removal. https://github.com/kylebrussell/mxo-hd/pull/726#issuecomment-7073533731"
+        },
+        "behavior-tests": {
+          "source": "GOB 309 has rank-scaled stat 1031 for viral damage and 1053 for cost. The direct percent cost stat 117 links to 1053. 309 also grants linked concentration 1090.",
+          "runtime": "AbilityPassives publishes the source records. AbilityStats.Influence feeds linked 1053 to ordinary ability admission and debit through AbilityCosts.Effective; the existing viral damage and interruptible-cast concentration consumers still read the passive.",
+          "test": "PR726 stock captures confirm rank-19 adds, unloads and reloads, and both exact paid-cost contrasts: Freeze 17 with 309+346 versus 18 with just 346; Evade 38 with 346 versus 40 with neither. HackerLoadedPassivesReachViralDamageAndCastThroughConsumers checks the other live effects and their removal. https://github.com/kylebrussell/mxo-hd/pull/726#issuecomment-7073533731"
+        }
+      }
+    },
+    "346": {
+      "checks": {
+        "stats": {
+          "source": "GOB 346 has rank-scaled stat 1031 for viral damage and 1053 for cost. The direct percent cost stat 117 links to 1053.",
+          "runtime": "AbilityPassives publishes the source records. AbilityStats.Influence feeds linked 1053 to ordinary ability admission and debit through AbilityCosts.Effective; the existing viral damage consumer still read the passive.",
+          "test": "PR726 stock captures confirm rank-19 adds, unloads and reloads, and both exact paid-cost contrasts: Freeze 17 with 309+346 versus 18 with just 346; Evade 38 with 346 versus 40 with neither. HackerLoadedPassivesReachViralDamageAndCastThroughConsumers checks the other live effects and their removal. https://github.com/kylebrussell/mxo-hd/pull/726#issuecomment-7073533731"
+        },
+        "consumer": {
+          "source": "GOB 346 has rank-scaled stat 1031 for viral damage and 1053 for cost. The direct percent cost stat 117 links to 1053.",
+          "runtime": "AbilityPassives publishes the source records. AbilityStats.Influence feeds linked 1053 to ordinary ability admission and debit through AbilityCosts.Effective; the existing viral damage consumer still read the passive.",
+          "test": "PR726 stock captures confirm rank-19 adds, unloads and reloads, and both exact paid-cost contrasts: Freeze 17 with 309+346 versus 18 with just 346; Evade 38 with 346 versus 40 with neither. HackerLoadedPassivesReachViralDamageAndCastThroughConsumers checks the other live effects and their removal. https://github.com/kylebrussell/mxo-hd/pull/726#issuecomment-7073533731"
+        },
+        "behavior-tests": {
+          "source": "GOB 346 has rank-scaled stat 1031 for viral damage and 1053 for cost. The direct percent cost stat 117 links to 1053.",
+          "runtime": "AbilityPassives publishes the source records. AbilityStats.Influence feeds linked 1053 to ordinary ability admission and debit through AbilityCosts.Effective; the existing viral damage consumer still read the passive.",
+          "test": "PR726 stock captures confirm rank-19 adds, unloads and reloads, and both exact paid-cost contrasts: Freeze 17 with 309+346 versus 18 with just 346; Evade 38 with 346 versus 40 with neither. HackerLoadedPassivesReachViralDamageAndCastThroughConsumers checks the other live effects and their removal. https://github.com/kylebrussell/mxo-hd/pull/726#issuecomment-7073533731"
+        }
+      }
+    }
+  },
+  "notes": {
+    "PR726": "The stock casts confirm the implemented catalog link at the tested boundaries. The retained PR708 client-only refusal at 39 IS remains separate from actual paid IS and does not establish retail rounding. https://github.com/kylebrussell/mxo-hd/pull/726#issuecomment-7073533731"
+  }
+}
