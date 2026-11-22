@@ -141,8 +141,6 @@ namespace hds
             { 992, new Buff { Seconds = 120, Modifiers = new[] { Stat(144, 10), Stat(163, 9) } } },
             // Serene Calm, medanon niobe3dualduality: 40 s
             { 272, new Buff { Seconds = 40, Modifiers = new[] { Stat(1009, 57), Stat(1011, 49), Stat(183, 54), Stat(1010, 51) } } },
-            // Upgrade Attacks
-            { 314, new Buff { Seconds = 20, Modifiers = new[] { Stat(342, 108) } } },
             // Overclock (Avoidance), abilities_useoverclocked
             { 327, new Buff { Seconds = 20, Modifiers = new[] { Stat(172, 43) } } },
             // Combat Hacking, abilities_usecombathacking: 32 s

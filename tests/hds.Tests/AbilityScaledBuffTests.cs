@@ -58,6 +58,25 @@ public class AbilityScaledBuffTests
     }
 
     [Theory]
+    [InlineData(22, 52)]
+    [InlineData(29, 66)]
+    [InlineData(50, 108)]
+    [InlineData(69, 146)]
+    public void UpgradeAttacksSnapshotsCasterLevelUntilItsTwentySecondExpiry(byte level, int expected)
+    {
+        var caster = Client(level);
+        Assert.True(AbilityBuffs.Apply(caster, 314, caster));
+        var active = caster.playerData.activeBuffs[314];
+        Assert.Equal(expected, AbilityStats.ViralAccuracy(caster));
+        caster.playerInstance.Level.setValue((byte)50);
+
+        TimedEffects.RunDue(active.Started + 19.99);
+        Assert.Equal(expected, AbilityStats.ViralAccuracy(caster));
+        TimedEffects.RunDue(active.Started + 20.01);
+        Assert.Equal(0, AbilityStats.ViralAccuracy(caster));
+    }
+
+    [Theory]
     [InlineData(129, 55, 74)]
     [InlineData(147, 49, 70)]
     [InlineData(158, 51, 72)]
