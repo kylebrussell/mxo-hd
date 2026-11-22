@@ -577,7 +577,7 @@ namespace hds
 
         // ---- Orders ----------------------------------------------------------------------------------------------
 
-        /// <summary>81 7a ID Command / 81 7b ID Command TargetObject(u32) / 81 7c ID Command Value.</summary>
+        /// <summary>81 7a ID Command / 81 7b ID Command TargetObject(view u16, spawn u16) / 81 7c ID Command Value.</summary>
         public static bool TryParseOrder(int header, byte[] data, out byte id, out Command command, out UInt32 target, out byte value)
         {
             id = 0; command = 0; target = 0; value = 0;
@@ -653,12 +653,15 @@ namespace hds
 
         internal static Mob ResolveAttackTarget(Pet pet, WorldClient client, UInt32 targetObject, bool fromClient)
         {
-            // The low word indexes this receiver's views. Keep the remaining bits opaque until the stock wire is confirmed.
+            // PR772 stock Attack repeats the selected view and spawn from 81 51.
+            // The zero-extended view remains accepted for older headless callers.
             UInt16 targetView = (UInt16)(targetObject & 0xffff);
+            UInt16 targetSpawn = (UInt16)(targetObject >> 16);
             if (targetObject == 0 && !fromClient) return DefaultTarget(client, pet);
             if (targetView <= 2) return null;
             Mob target = AbilityTargets.FindMob(client, targetView, out ClientView view);
-            return view?.viewCreated == true && !view.viewNeedsToBeDeleted && CanPursue(pet, target) ? target : null;
+            return view?.viewCreated == true && !view.viewNeedsToBeDeleted &&
+                (targetSpawn == 0 || view.spawnId == targetSpawn) && CanPursue(pet, target) ? target : null;
         }
 
         internal static void SetStance(Pet pet, Stance stance)

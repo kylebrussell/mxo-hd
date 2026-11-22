@@ -161,6 +161,7 @@ public class CoderPetTests
         dummy.setEntityId(0xABCDEF);
         dummy.setDistrict(1);
         var npcView = owner.viewMan.addView(dummy.getEntityId(), 599);
+        npcView.spawnId = 0x22;
         npcView.viewCreated = true;
         var playerView = owner.viewMan.addView(0xABCDE0, 0);
         playerView.viewCreated = true;
@@ -175,8 +176,10 @@ public class CoderPetTests
             npcView.viewCreated = false;
             Assert.Null(CoderPets.ResolveAttackTarget(pet, owner, npcView.ViewID, fromClient: true));
             npcView.viewCreated = true;
-            uint fullNetworkField = (0x22u << 16) | npcView.ViewID;
+            uint fullNetworkField = DuelPackets.Handle(npcView.ViewID, npcView.spawnId);
             Assert.Same(dummy, CoderPets.ResolveAttackTarget(pet, owner, fullNetworkField, fromClient: true));
+            Assert.Null(CoderPets.ResolveAttackTarget(pet, owner, DuelPackets.Handle(npcView.ViewID, 0x21), fromClient: true));
+            Assert.Null(CoderPets.ResolveAttackTarget(pet, owner, fullNetworkField | 0x01000000u, fromClient: true));
             npcView.viewNeedsToBeDeleted = true;
             Assert.Null(CoderPets.ResolveAttackTarget(pet, owner, npcView.ViewID, fromClient: true));
             Assert.Null(CoderPets.ResolveAttackTarget(pet, owner, fullNetworkField, fromClient: true));
