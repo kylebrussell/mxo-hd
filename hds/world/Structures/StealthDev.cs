@@ -1,4 +1,5 @@
 using System;
+using hds.shared;
 
 namespace hds
 {
@@ -46,6 +47,10 @@ namespace hds
         public static string Run(WorldClient caller, bool bot, string[] args)
         {
             string what = args.Length > 0 ? args[0] : "";
+            if (!bot && args.Length == 1 && (what.Equals("pose", StringComparison.OrdinalIgnoreCase) ||
+                what.Equals("stand", StringComparison.OrdinalIgnoreCase)))
+                return MovementPose(caller, what.Equals("stand", StringComparison.OrdinalIgnoreCase));
+
             if (what.Equals("off", StringComparison.OrdinalIgnoreCase))
             {
                 if (bot) return DuelBot.Dismiss(caller) ? "StealthBot left." : "You have no bot.";
@@ -71,6 +76,35 @@ namespace hds
             }
             Stealth.Begin(subject, Stealth.Defs[ability.Value], Stealth.AbilityLevel(subject, ability.Value));
             return "Stealth " + what + " on.";
+        }
+
+        // Only for the disposable movement comparison. The active ability owns visibility and stat records.
+        private static string MovementPose(WorldClient client, bool stand)
+        {
+            const byte sneak = 9, invisibility = 26;
+            var data = client.playerData;
+            if (data.getCharID() != 110 || !client.Alive || data.worldChangePending || data.DistrictIsLA() ||
+                !QaLoadout.Allowed(Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS"),
+                    Store.config?.dbParams?.DatabaseName, data.getCharID(), data.getOnWorld(), data.isDead || data.duelDeath) ||
+                CombatManager.GetHandler(client).isCombatRunning)
+                return "Stealth pose is available in disposable QA outside combat.";
+
+            if (stand)
+            {
+                byte stance = EmoteHandler.Stance(client);
+                if (stance == sneak || stance == invisibility)
+                    EmoteHandler.SetStance(client, AnimationPackets.StanceStanding);
+                return "Stealth pose cleared.";
+            }
+            byte? pose = Stealth.Current(client)?.Def.Ability switch
+            {
+                Stealth.SneakGrantAbility => sneak,
+                Stealth.InvisibilityGrantAbility => invisibility,
+                _ => null
+            };
+            if (pose == null) return "Activate Sneak or the Invisibility Belt first.";
+            EmoteHandler.SetStance(client, pose.Value);
+            return $"Stealth pose {pose.Value:x2} sent.";
         }
     }
 }
