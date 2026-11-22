@@ -12,7 +12,8 @@ namespace hds
             if(!ordinary)return InterlockInitiative.Attack(actor,queued);
             // Primary direct1005 only. The linked1045 coefficient is unrecovered and is NOT guessed here.
             int direct=AbilityStats.Player(actor,1005);
-            Output.WriteDebugLog("[WITHDRAW INPUT OURS] "+TimedEffects.PlayerName(actor)+" direct="+direct+" input="+direct);
+            Output.WriteDebugLog($"[WITHDRAW INPUT OURS] {TimedEffects.PlayerName(actor)} direct={direct} input={direct} " +
+                $"bonus1045={AbilityStats.Player(actor,1045)}");
             return direct;
         }
         // combat_calculations.GetTacticWithdrawTacticsMod; DEFENSE is this server's Grab button.
