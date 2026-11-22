@@ -533,37 +533,53 @@ namespace hds
             }
             return new MultifightingRound(version,snapshot);
         }
+        private bool CurrentMember(MultifightingMember member) =>
+            member.Endpoint && member.Owner != null && member.Side.Present &&
+            ReferenceEquals(member.Side.Client, member.Client) && ReferenceEquals(member.Side.Other, member.Other) &&
+            ReferenceEquals(member.Side.MultifightingOwner, member.Owner) && member.Owner.Current(this, member.Transport);
+
+        private MultifightingMember CurrentMember(Side side, MultifightingRound round)
+        {
+            if (round == null || !IsActive || round.Version != membershipVersion) return null;
+            var member = round.Members.SingleOrDefault(entry => ReferenceEquals(entry.Side, side));
+            return member != null && CurrentMember(member) ? member : null;
+        }
+
+        private int CountOpponents(MultifightingMember own, MultifightingRound round) =>
+            round.Members.Where(entry => !ReferenceEquals(entry.Client, own.Client) && CurrentMember(entry) &&
+                entry.Owner.Data.getDistrictId() == own.Owner.Data.getDistrictId() &&
+                (ReferenceEquals(entry.Other, own.Side) || ReferenceEquals(own.Other, entry.Side))).Select(entry => entry.Client).Distinct().Count();
+
         internal int MultifightingInput(Side actor,int value,string role,MultifightingRound round)
         {
             // Called under sync by the executor; also serialized here for direct controls.
-            lock(sync)
+            lock (sync)
             {
-                if(round==null || !IsActive || round.Version!=membershipVersion)return value;
-                bool Current(MultifightingMember m)=>m.Endpoint && m.Owner!=null && m.Side.Present &&
-                    ReferenceEquals(m.Side.Client,m.Client) && ReferenceEquals(m.Side.Other,m.Other) && ReferenceEquals(m.Side.MultifightingOwner,m.Owner) &&
-                    m.Owner.Current(this,m.Transport);
-                var own=round.Members.SingleOrDefault(m=>ReferenceEquals(m.Side,actor));
-                if(own==null || !Current(own))return value;
-                int count=round.Members.Where(m=>!ReferenceEquals(m.Client,own.Client) && Current(m) && m.Owner.Data.getDistrictId()==own.Owner.Data.getDistrictId() &&
-                    (ReferenceEquals(m.Other,actor)||ReferenceEquals(own.Other,m.Side))).Select(m=>m.Client).Distinct().Count();
-                //140 belongs to the actor, not its opponents. Read current membership from the captured data;
-                //an unrelated load/unload must not erase a live link, and unload cannot reuse an older benefit.
-                bool loaded=MultifightingInterlock.Loaded(own.Owner.Data);
-                if(!Current(own))return value;
-                int penalty=MultifightingInterlock.Penalty(count,loaded);
+                var own = CurrentMember(actor, round);
+                if (own == null) return value;
+                int count = CountOpponents(own, round);
+                // An unrelated load/unload must not erase a live link.
+                bool loaded = MultifightingInterlock.Loaded(own.Owner.Data);
+                if (!CurrentMember(own)) return value;
+                int penalty = MultifightingInterlock.Penalty(count, loaded);
                 Output.WriteDebugLog($"[MULTIFIGHTING OURS] {PvpFlag.Name(own.Client)} opponents{count} loaded{loaded} penalty{penalty} {role}{value}->{value+penalty}");
-                return value+penalty;
+                return value + penalty;
             }
         }
 
-        private static int CloseGunPenalty(WorldClient gunner, WorldClient opponent)
+        private int CloseGunPenalty(Side gunner, Side opponent, MultifightingRound round)
         {
-            byte gun = RangedWeapons.AttackClass(SharpshooterFreeFire.EquippedWeapon(gunner));
-            if (gun == 0 || RangedWeapons.IsGun(SharpshooterFreeFire.EquippedWeapon(opponent))) return 0;
-            bool loaded = AbilityPassives.IsLoaded(gunner, 148);
-            int modifier = CombatRules.GunAgainstFistsModifier(gun, false, shortRange: true, defenderOpponents: 1,
-                shortRangePenaltyNegated: loaded);
-            Output.WriteDebugLog($"[SHARPSHOOTER INTERLOCK] {PvpFlag.Name(gunner)} loaded148={loaded} attack={modifier} defence={modifier}");
+            byte gun = RangedWeapons.AttackClass(SharpshooterFreeFire.EquippedWeapon(gunner.Client));
+            if (gun == 0 || RangedWeapons.IsGun(SharpshooterFreeFire.EquippedWeapon(opponent.Client))) return 0;
+            var source = CurrentMember(gunner, round);
+            var target = CurrentMember(opponent, round);
+            if (source == null || target == null) return 0;
+            int opponents = CountOpponents(target, round);
+            bool loaded = AbilityPassives.IsLoaded(source.Client, 148);
+            if (opponents == 0 || !CurrentMember(target) || !CurrentMember(source)) return 0;
+            int modifier = CombatRules.GunAgainstFistsModifier(gun, false, shortRange: true, defenderOpponents: opponents,
+                intoMeleePenaltyNegated: loaded, shortRangePenaltyNegated: loaded);
+            Output.WriteDebugLog($"[SHARPSHOOTER INTERLOCK] {PvpFlag.Name(source.Client)} loaded148={loaded} attack={modifier} defence={modifier} opponents={opponents}");
             return modifier;
         }
 
@@ -611,12 +627,11 @@ namespace hds
                 bool pWithdrawal=WithdrawalInput.Ordinary(p.Withdrawing,opening,pAbility,p.OrdinaryWithdrawalRequested);
                 bool nWithdrawal=WithdrawalInput.Ordinary(n.Withdrawing,opening,nAbility,n.OrdinaryWithdrawalRequested);
                 // Combat_modifiers.py defines the short-range gun penalty for both rolls.
-                // Limit this caller to an ordinary exchange in a current two-person close interlock.
+                // Use the opponent's current direct links to distinguish shooting into a melee.
                 bool closeGunExchange = !opening && counter && pAbility == null && nAbility == null &&
-                    !p.Withdrawing && !n.Withdrawing && multifighting.Version == membershipVersion &&
-                    multifighting.Members.Length == 2 && CombatHandler.InMeleeReach(PvpCombat.MetresBetween(p.Client, n.Client));
-                int pGunPenalty = closeGunExchange ? CloseGunPenalty(p.Client, n.Client) : 0;
-                int nGunPenalty = closeGunExchange ? CloseGunPenalty(n.Client, p.Client) : 0;
+                    !p.Withdrawing && !n.Withdrawing && CombatHandler.InMeleeReach(PvpCombat.MetresBetween(p.Client, n.Client));
+                int pGunPenalty = closeGunExchange ? CloseGunPenalty(p, n, multifighting) : 0;
+                int nGunPenalty = closeGunExchange ? CloseGunPenalty(n, p, multifighting) : 0;
                 if (!opening)
                 {
                     p.QueuedAbility = null;
