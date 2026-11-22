@@ -178,8 +178,10 @@ namespace hds
                     Output.WriteDebugLog("[ABILITY] Denied 130: requires outside combat");
                     return;
                 }
-                ushort? spawn = packet.Length == 41 ? (ushort?)BitConverter.ToUInt16(packet, 4) : null;
-                if (!AbilityTargets.HasLiveAttackSelection(shooter, currentTargetViewId, spawn, requireOpponent: true))
+                gunTargetSpawn = (ushort?)shooter.viewMan.getViewById(currentTargetViewId)?.spawnId;
+                ushort? spawn = packet.Length == 41 ? BitConverter.ToUInt16(packet, 4) : gunTargetSpawn;
+                if (!gunTargetSpawn.HasValue ||
+                    !AbilityTargets.HasLiveAttackSelection(shooter, currentTargetViewId, spawn, requireOpponent: true))
                 {
                     const string notice = "Select a living enemy before using this ability.";
                     new ServerPackets().sendSystemChatMessage(Store.currentClient, notice, "BROADCAST");
@@ -770,7 +772,7 @@ namespace hds
             }
             // Attack abilities on the current close-combat target hit it (buffs used with a target selected don't).
             ushort hostileView=engageFoes?.PrimaryView??currentTargetViewId;
-            if (starterGunCast && (!AbilityTargets.HasLiveAttackSelection(client, hostileView, gunTargetSpawn, requireOpponent: true) ||
+            if (selectedGunShot && (!AbilityTargets.HasLiveAttackSelection(client, hostileView, gunTargetSpawn, requireOpponent: true) ||
                 !AbilityTargets.WithinSelectionRange(client, AbilityID, hostileView) ||
                 !AbilityTargets.HasSelectionSight(client, definition, hostileView)))
             {
