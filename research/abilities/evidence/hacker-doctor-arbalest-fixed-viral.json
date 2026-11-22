@@ -1,0 +1,100 @@
+{
+  "abilities": {
+    "238": {
+      "checks": {
+        "damage": {
+          "source": "The shipped GOB StatModifier for 238 stores equal min/max 33, type 2 Viral, DurationType 1 and health target 108. The legacy maximum is zero.",
+          "runtime": "AbilityHandler reads the fixed instant GOB component when the legacy range is unusable. The existing typed landing path applies Viral Damage influence and the defender's Viral Resistance once.",
+          "test": "IncompleteLegacyRowsUseTheShippedViralBase checks 33 across random seeds and preserves the complete legacy range branch. DoctorAndArbalestFixedDamageUsesTheLiveViralContestAndTypedHealthPath checks 44 neutral and 36 after +64 resistance from the level-43 profile."
+        },
+        "targeting": {
+          "source": "GOB 238 stores selected target, a 16 m range, Hacker Style and viral TestFunction 2.",
+          "runtime": "The ordinary selected-viral handler verifies ownership, a living hostile spawn, range, sight and style before cost. Landing rechecks the original hostile spawn and range before the common viral contest and damage executor.",
+          "test": "DoctorAndArbalestViralCastsGuardAdmissionAndTheAdmittedSpawn covers empty selection, 16.01 m range, replacement of the admitted spawn. DoctorAndArbalestFixedDamageUsesTheLiveViralContestAndTypedHealthPath exercises the shared real contest with controlled hit and deflection draws."
+        },
+        "source-parity": {
+          "source": "GOB 238 gives a single fixed 33 instant viral health modifier. The preserved CSV range lacks a usable upper endpoint and the archive search found no alternate captured full cast.",
+          "runtime": "The fixed template fallback replaces the generic random result in this row, with valid older ranges and the existing typed scaling still handled by the ordinary path.",
+          "test": "IncompleteLegacyRowsUseTheShippedViralBase and DoctorAndArbalestFixedDamageUsesTheLiveViralContestAndTypedHealthPath cover derived base, influence and resistance. The grouped NativeQa plan captures this row's first known stock request."
+        },
+        "behavior-tests": {
+          "source": "Harmful Code 2.0 stores 4 s casting, 30 IS, 8 s own reuse, and group 682 for 4 s.",
+          "runtime": "The normal cast and existing catalog cooldown paths drive the cast and family. The shared viral contest resolves before the direct health hit.",
+          "test": "DoctorAndArbalestViralCastsKeepShippedCastAndCooldownMetadata verifies the catalog input and timer lookup. The admission and live-land tests exercise refusal, damage, resistance and deflection. The NativeQa bootstrap validates captured sibling traffic, and the planned native pass supplies this row's stock-family witness."
+        }
+      }
+    },
+    "311": {
+      "checks": {
+        "damage": {
+          "source": "The shipped GOB DamageModifier for 311 stores equal min/max 31, type 2 Viral, DurationType 1 and health target 108. The legacy maximum is zero.",
+          "runtime": "AbilityHandler reads the fixed instant GOB component when the legacy range is unusable. The existing typed landing path applies Viral Damage influence and the defender's Viral Resistance once.",
+          "test": "IncompleteLegacyRowsUseTheShippedViralBase checks 31 across random seeds and preserves the complete legacy range branch. DoctorAndArbalestFixedDamageUsesTheLiveViralContestAndTypedHealthPath checks 42 neutral and 34 after +64 resistance from the level-43 profile."
+        },
+        "targeting": {
+          "source": "GOB 311 stores selected target, a 20 m range, Hacker Style and viral TestFunction 2.",
+          "runtime": "The ordinary selected-viral handler verifies ownership, a living hostile spawn, range, sight and style before cost. Landing rechecks the original hostile spawn and range before the common viral contest and damage executor.",
+          "test": "DoctorAndArbalestViralCastsGuardAdmissionAndTheAdmittedSpawn covers allied selection, 20.01 m range, an obstructed hostile. DoctorAndArbalestFixedDamageUsesTheLiveViralContestAndTypedHealthPath exercises the shared real contest with controlled hit and deflection draws."
+        },
+        "source-parity": {
+          "source": "GOB 311 gives a single fixed 31 instant viral health modifier. The preserved CSV range lacks a usable upper endpoint and the archive search found no alternate captured full cast.",
+          "runtime": "The fixed template fallback replaces the generic random result in this row, with valid older ranges and the existing typed scaling still handled by the ordinary path.",
+          "test": "IncompleteLegacyRowsUseTheShippedViralBase and DoctorAndArbalestFixedDamageUsesTheLiveViralContestAndTypedHealthPath cover derived base, influence and resistance. The grouped NativeQa plan captures this row's first known stock request."
+        },
+        "behavior-tests": {
+          "source": "Logic Blast 2.0 stores 2 s casting, 8 IS, 4 s own reuse, and group 682 for 4 s.",
+          "runtime": "The normal cast and existing catalog cooldown paths drive the cast and family. The shared viral contest resolves before the direct health hit.",
+          "test": "DoctorAndArbalestViralCastsKeepShippedCastAndCooldownMetadata verifies the catalog input and timer lookup. The admission and live-land tests exercise refusal, damage, resistance and deflection. The NativeQa bootstrap validates captured sibling traffic, and the planned native pass supplies this row's stock-family witness."
+        }
+      }
+    },
+    "312": {
+      "checks": {
+        "damage": {
+          "source": "The shipped GOB DamageModifier for 312 stores equal min/max 40, type 2 Viral, DurationType 1 and health target 108. The legacy maximum is zero.",
+          "runtime": "AbilityHandler reads the fixed instant GOB component when the legacy range is unusable. The existing typed landing path applies Viral Damage influence and the defender's Viral Resistance once.",
+          "test": "IncompleteLegacyRowsUseTheShippedViralBase checks 40 across random seeds and preserves the complete legacy range branch. DoctorAndArbalestFixedDamageUsesTheLiveViralContestAndTypedHealthPath checks 54 neutral and 44 after +64 resistance from the level-43 profile."
+        },
+        "targeting": {
+          "source": "GOB 312 stores selected target, a 20 m range, Hacker Style and viral TestFunction 2.",
+          "runtime": "The ordinary selected-viral handler verifies ownership, a living hostile spawn, range, sight and style before cost. Landing rechecks the original hostile spawn and range before the common viral contest and damage executor.",
+          "test": "DoctorAndArbalestViralCastsGuardAdmissionAndTheAdmittedSpawn covers stale spawn, unloaded ability, a target leaving range during the cast. DoctorAndArbalestFixedDamageUsesTheLiveViralContestAndTypedHealthPath exercises the shared real contest with controlled hit and deflection draws."
+        },
+        "source-parity": {
+          "source": "GOB 312 gives a single fixed 40 instant viral health modifier. The preserved CSV range lacks a usable upper endpoint and the archive search found no alternate captured full cast.",
+          "runtime": "The fixed template fallback replaces the generic random result in this row, with valid older ranges and the existing typed scaling still handled by the ordinary path.",
+          "test": "IncompleteLegacyRowsUseTheShippedViralBase and DoctorAndArbalestFixedDamageUsesTheLiveViralContestAndTypedHealthPath cover derived base, influence and resistance. The grouped NativeQa plan captures this row's first known stock request."
+        },
+        "behavior-tests": {
+          "source": "Logic Barrage 3.0 stores 2 s casting, 10 IS, 4 s own reuse, and group 683 for 4 s.",
+          "runtime": "The normal cast and existing catalog cooldown paths drive the cast and family. The shared viral contest resolves before the direct health hit.",
+          "test": "DoctorAndArbalestViralCastsKeepShippedCastAndCooldownMetadata verifies the catalog input and timer lookup. The admission and live-land tests exercise refusal, damage, resistance and deflection. The NativeQa bootstrap validates captured sibling traffic, and the planned native pass supplies this row's stock-family witness."
+        }
+      }
+    },
+    "313": {
+      "checks": {
+        "damage": {
+          "source": "The shipped GOB DamageModifier for 313 stores equal min/max 18, type 2 Viral, DurationType 1 and health target 108. The legacy maximum is zero.",
+          "runtime": "AbilityHandler reads the fixed instant GOB component when the legacy range is unusable. The existing typed landing path applies Viral Damage influence and the defender's Viral Resistance once.",
+          "test": "IncompleteLegacyRowsUseTheShippedViralBase checks 18 across random seeds and preserves the complete legacy range branch. DoctorAndArbalestFixedDamageUsesTheLiveViralContestAndTypedHealthPath checks 24 neutral and 19 after +64 resistance from the level-43 profile."
+        },
+        "targeting": {
+          "source": "GOB 313 stores selected target, a 20 m range, Hacker Style and viral TestFunction 2. CastWhenUsed 1 requires outside combat.",
+          "runtime": "The ordinary selected-viral handler verifies ownership, a living hostile spawn, range, sight and style before cost. Landing rechecks the original hostile spawn and range before the common viral contest and damage executor.",
+          "test": "DoctorAndArbalestViralCastsGuardAdmissionAndTheAdmittedSpawn covers wrong active style, outside-combat admission and a deflected hit. DoctorAndArbalestFixedDamageUsesTheLiveViralContestAndTypedHealthPath exercises the shared real contest with controlled hit and deflection draws."
+        },
+        "source-parity": {
+          "source": "GOB 313 gives a single fixed 18 instant viral health modifier. The preserved CSV range lacks a usable upper endpoint and the archive search found no alternate captured full cast.",
+          "runtime": "The fixed template fallback replaces the generic random result in this row, with valid older ranges and the existing typed scaling still handled by the ordinary path.",
+          "test": "IncompleteLegacyRowsUseTheShippedViralBase and DoctorAndArbalestFixedDamageUsesTheLiveViralContestAndTypedHealthPath cover derived base, influence and resistance. The grouped NativeQa plan captures this row's first known stock request."
+        },
+        "behavior-tests": {
+          "source": "Logic Cannon 1.0 stores 8 s casting, 18 IS, 15 s own reuse, and group 684 for 15 s.",
+          "runtime": "The normal cast and existing catalog cooldown paths drive the cast and family. The shared viral contest resolves before the direct health hit.",
+          "test": "DoctorAndArbalestViralCastsKeepShippedCastAndCooldownMetadata verifies the catalog input and timer lookup. The admission and live-land tests exercise refusal, damage, resistance and deflection. The NativeQa bootstrap validates captured sibling traffic, and the planned native pass supplies this row's stock-family witness."
+        }
+      }
+    }
+  }
+}

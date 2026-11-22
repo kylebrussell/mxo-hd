@@ -18,6 +18,91 @@ public class AbilityRefusalFeedbackTests:IDisposable
         Store.config=new ServerConfig("unused");typeof(ServerConfig).GetField("_dbParams",BindingFlags.Instance|BindingFlags.NonPublic)!.SetValue(Store.config,new DbParams{DatabaseName="mxotest_refusal"});
         WorldServer.Clients=new();var loader=(DataLoader)RuntimeHelpers.GetUninitializedObject(typeof(DataLoader));var ability=new AbilityItem();ability.setAbilityID(77);ability.setAbilityName("Repair RSI");ability.setCastAnimStart(new byte[4]);loader.AbilityDB=new(){ability};loaderField.SetValue(null,loader);
     }
+
+    [Theory]
+    [InlineData(238, "empty", AbilityRefusals.InvalidTarget)]
+    [InlineData(238, "far", AbilityRefusals.TargetOutOfRange)]
+    [InlineData(238, "changed", 0u)]
+    [InlineData(311, "ally", AbilityRefusals.InvalidTarget)]
+    [InlineData(311, "far", AbilityRefusals.TargetOutOfRange)]
+    [InlineData(311, "sight", AbilityRefusals.TargetNotInSight)]
+    [InlineData(312, "spawn", AbilityRefusals.InvalidTarget)]
+    [InlineData(312, "unloaded", AbilityRefusals.NotLoaded)]
+    [InlineData(312, "retreat", 0u)]
+    [InlineData(313, "style", AbilityRefusals.WrongStyle)]
+    [InlineData(313, "combat", AbilityRefusals.MustBeOutsideCombat)]
+    public void DoctorAndArbalestViralCastsGuardAdmissionAndTheAdmittedSpawn(ushort id, string state, uint refusal)
+    {
+        string root = AppContext.BaseDirectory;
+        while (!File.Exists(Path.Combine(root, "data", "sector_properties.csv"))) root = Path.GetDirectoryName(root)!;
+        SectorProperties.Load(Path.Combine(root, "data", "sector_properties.csv"));
+        NavMesh.UseDirectory(Path.Combine(root, "data", "navmesh"));
+
+        var caster = Client();
+        var target = Client();
+        caster.playerData.setEntityId(110);
+        target.playerData.setCharID(111);
+        target.playerData.setEntityId(111);
+        caster.playerData.pvpFlag = target.playerData.pvpFlag = true;
+        caster.playerInstance.OrganizationID.setValue((byte)1);
+        target.playerInstance.OrganizationID.setValue((byte)(state == "ally" ? 1 : 2));
+        caster.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(21750, 1095, 16150));
+        double outside = 21749 - AbilityCatalog.Find(id).Number("Ability/SelectionRange") * 100;
+        SetTarget(state == "far" ? outside : state == "sight" ? 22350 : 21550);
+        WorldServer.Clients.Add("caster", caster);
+        WorldServer.Clients.Add("target", target);
+        var view = caster.viewMan.addView(111, 12);
+        view.viewCreated = true;
+        view.spawnId = 9;
+        caster.playerData.passives.Loaded[CombatStyles.HackerStyle] = 40;
+        if (state != "style") caster.playerData.combatStyle = CombatStyles.HackerStyle;
+        if (state != "unloaded") caster.playerData.passives.Loaded[id] = 40;
+        Store.currentClient = caster;
+
+        var ability = new AbilityItem();
+        ability.setAbilityID(id);
+        ability.setAbilityName("Doctor/Arbalest viral cast");
+        ability.setCastAnimStart(new byte[4]);
+        DataLoader.getInstance().AbilityDB.Add(ability);
+        var fight = CombatManager.GetHandler(caster);
+        fight.isCombatRunning = state == "combat";
+        // Internal handler body for admission regression. The native bootstrap keeps captured requests only.
+        var body = new byte[41];
+        BitConverter.GetBytes(id).CopyTo(body, 0);
+        BitConverter.GetBytes(state == "empty" ? (ushort)0 : view.ViewID).CopyTo(body, 2);
+        BitConverter.GetBytes((ushort)(state == "spawn" ? 8 : 9)).CopyTo(body, 4);
+        double before = caster.playerData.castEndsAt;
+        try
+        {
+            new AbilityHandler().ProcessAbility(ref body);
+            if (refusal != 0)
+            {
+                Assert.Equal(AbilityRefusals.Encode(new(id, refusal)), Assert.Single(Rpcs(caster)));
+                Assert.Equal(before, caster.playerData.castEndsAt);
+                Assert.Equal(500, AbilityHandler.CurrentInnerStrength(caster));
+                Assert.Empty(caster.playerData.cooldownEndsAt);
+            }
+            else
+            {
+                double end = caster.playerData.castEndsAt;
+                Assert.True(end > TimeUtils.GetSimTimeSeconds());
+                Assert.Equal(500 - AbilityCosts.Cost(id), AbilityHandler.CurrentInnerStrength(caster));
+                if (state == "changed") view.spawnId++;
+                else SetTarget(outside);
+                DelayedActions.RunDue(end + 1);
+                Assert.True(AbilityCooldowns.IsCoolingDown(caster.playerData, id, TimeUtils.GetSimTimeSeconds()));
+            }
+            Assert.Empty(Rpcs(target));
+            Assert.Equal(1000, PvpCombat.HealthOf(target));
+        }
+        finally
+        {
+            fight.isCombatRunning = false;
+            CombatManager.RemoveClient(caster);
+        }
+
+        void SetTarget(double x) => target.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(x, 1095, 16150));
+    }
     public void Dispose(){Store.currentClient=oldClient;Store.config=oldConfig;WorldServer.Clients=oldClients!;loaderField.SetValue(null,oldLoader);for(int i=0;i<keys.Length;i++)Environment.SetEnvironmentVariable(keys[i],oldEnv[i]);}
     static byte[] Hex(string s)=>Convert.FromHexString(s);
     static WorldClient Client(ushort inner=500)

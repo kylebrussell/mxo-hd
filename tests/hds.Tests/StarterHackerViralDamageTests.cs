@@ -10,6 +10,10 @@ public class StarterHackerViralDamageTests
     [InlineData(58, 11)]
     [InlineData(59, 17)]
     [InlineData(60, 7)]
+    [InlineData(238, 33)]
+    [InlineData(311, 31)]
+    [InlineData(312, 40)]
+    [InlineData(313, 18)]
     public void IncompleteLegacyRowsUseTheShippedViralBase(ushort id, ushort amount)
     {
         string root = AppContext.BaseDirectory;
@@ -38,5 +42,23 @@ public class StarterHackerViralDamageTests
     {
         Assert.Equal((424, 424), ((int)AbilityTargets.Retail[330].MinDamage, (int)AbilityTargets.Retail[330].MaxDamage));
         Assert.Equal((645, 1183), ((int)AbilityTargets.Retail[359].MinDamage, (int)AbilityTargets.Retail[359].MaxDamage));
+    }
+
+    [Theory]
+    [InlineData(238, 30, 4, 8, 682, 4, 16, 2)]
+    [InlineData(311, 8, 2, 4, 682, 4, 20, 2)]
+    [InlineData(312, 10, 2, 4, 683, 4, 20, 2)]
+    [InlineData(313, 18, 8, 15, 684, 15, 20, 1)]
+    public void DoctorAndArbalestViralCastsKeepShippedCastAndCooldownMetadata(
+        ushort id, ushort cost, float cast, float own, ushort family, float shared, double range, double castWhen)
+    {
+        var entry = AbilityCatalog.Find(id);
+        Assert.Equal(cost, AbilityCosts.Cost(id));
+        Assert.Equal(cast, entry.CastSeconds);
+        Assert.Equal(range, entry.Number("Ability/SelectionRange"));
+        Assert.Equal(castWhen, entry.Number("Ability/CastWhenUsed"));
+        Assert.True(FreeCastViralContest.Applies(id, AbilityCastOrigin.NormalFreeCast));
+        Assert.True(AbilityCooldowns.TryGet(id, out var timer));
+        Assert.Equal((own, family, shared), (timer.Seconds, timer.Group, timer.GroupSeconds));
     }
 }
