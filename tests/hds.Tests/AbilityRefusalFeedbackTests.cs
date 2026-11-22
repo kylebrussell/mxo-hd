@@ -650,4 +650,90 @@ public class AbilityRefusalFeedbackTests:IDisposable
         Assert.Equal(castBefore, caster.playerData.castEndsAt);
         Assert.Empty(caster.playerData.cooldownEndsAt);
     }
+
+    [Theory]
+    [InlineData(352, "empty", AbilityRefusals.InvalidTarget)]
+    [InlineData(393, "ally", AbilityRefusals.InvalidTarget)]
+    [InlineData(352, "spawn", AbilityRefusals.InvalidTarget)]
+    [InlineData(393, "far", AbilityRefusals.TargetOutOfRange)]
+    [InlineData(352, "far", AbilityRefusals.TargetOutOfRange)]
+    [InlineData(393, "blocked", AbilityRefusals.TargetNotInSight)]
+    [InlineData(352, "blocked", AbilityRefusals.TargetNotInSight)]
+    [InlineData(393, "combat", AbilityRefusals.MustBeOutsideCombat)]
+    [InlineData(352, "style", AbilityRefusals.WrongStyle)]
+    [InlineData(393, "unloaded", AbilityRefusals.NotLoaded)]
+    [InlineData(352, "swap", 0u)]
+    [InlineData(393, "retreat", 0u)]
+    [InlineData(352, "retreat", 0u)]
+    [InlineData(393, "unload", 0u)]
+    public void SelectedPacifyRefusesBeforeCostAndRetainsTheAdmittedSpawn(ushort id, string state, uint reason)
+    {
+        string root = AppContext.BaseDirectory;
+        while (!File.Exists(Path.Combine(root, "data", "sector_properties.csv")))
+            root = Path.GetDirectoryName(root)!;
+        SectorProperties.Load(Path.Combine(root, "data", "sector_properties.csv"));
+        NavMesh.UseDirectory(Path.Combine(root, "data", "navmesh"));
+        var caster = Client();
+        var target = Client();
+        caster.playerData.passives.Loaded[CombatStyles.HackerStyle] = 30;
+        if (state != "unloaded") caster.playerData.passives.Loaded[id] = 24;
+        if (state != "style") caster.playerData.combatStyle = CombatStyles.HackerStyle;
+        caster.playerInstance.OrganizationID.setValue((byte)1);
+        target.playerInstance.OrganizationID.setValue((byte)(state == "ally" ? 1 : 2));
+        caster.playerData.pvpFlag = target.playerData.pvpFlag = true;
+        target.playerData.setCharID(111);
+        target.playerData.setEntityId(42);
+        caster.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(21750, 1095, 16150));
+        double distantX = id == 393 ? 20349 : 19749;
+        double initialX = state == "far" ? distantX : state == "blocked" ? 22350 : 21550;
+        target.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(initialX, 1095, 16150));
+        WorldServer.Clients.Add("target", target);
+        var targetView = caster.viewMan.addView(42, 12);
+        targetView.viewCreated = true;
+        targetView.spawnId = 9;
+        Store.currentClient = caster;
+
+        var ability = new AbilityItem();
+        ability.setAbilityID(id);
+        ability.setAbilityName("Selected Pacify");
+        ability.setCastAnimStart(new byte[4]);
+        DataLoader.getInstance().AbilityDB.Add(ability);
+        var combat = CombatManager.GetHandler(caster);
+        combat.isCombatRunning = state == "combat";
+        var request = new byte[41];
+        BitConverter.GetBytes(id).CopyTo(request, 0);
+        BitConverter.GetBytes(state == "empty" ? (ushort)0 : targetView.ViewID).CopyTo(request, 2);
+        BitConverter.GetBytes((ushort)(state == "spawn" ? 8 : 9)).CopyTo(request, 4);
+        double castBefore = caster.playerData.castEndsAt;
+        try
+        {
+            new AbilityHandler().ProcessAbility(ref request);
+            if (reason == 0)
+            {
+                double castEnd = caster.playerData.castEndsAt;
+                Assert.True(castEnd > TimeUtils.GetSimTimeSeconds());
+                Assert.Equal(500 - AbilityCosts.Cost(id), AbilityHandler.CurrentInnerStrength(caster));
+                if (state == "swap") targetView.spawnId++;
+                if (state == "retreat")
+                    target.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(distantX, 1095, 16150));
+                if (state == "unload") caster.playerData.passives.Loaded.Remove(id);
+                DelayedActions.RunDue(castEnd + 1);
+                Assert.True(AbilityCooldowns.IsCoolingDown(caster.playerData, id, TimeUtils.GetSimTimeSeconds()));
+            }
+            else
+            {
+                Assert.Equal(AbilityRefusals.Encode(new(id, reason)), Assert.Single(Rpcs(caster)));
+                Assert.Equal(castBefore, caster.playerData.castEndsAt);
+                Assert.Equal(500, AbilityHandler.CurrentInnerStrength(caster));
+                Assert.Empty(caster.playerData.cooldownEndsAt);
+            }
+            Assert.Empty(Rpcs(target));
+            Assert.True(ControlActions.CanUseAbilities(TimedEffects.ForPlayer(target).Effects));
+        }
+        finally
+        {
+            combat.isCombatRunning = false;
+            CombatManager.RemoveClient(caster);
+        }
+    }
 }
