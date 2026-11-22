@@ -78,6 +78,11 @@ namespace hds
         {
             int cost = Cost(abilityId);
             if (client?.playerInstance == null || client.playerData == null) return (UInt16)cost;
+            // The stock locator always requests the base ability. Apply the loaded mastery cost
+            // while keeping the base request, tool prerequisites and activation records.
+            if (AbilityCatalog.Canonical(abilityId) == UtilityAbilities.LocateDataNode &&
+                AbilityPassives.Level(client, UtilityAbilities.FindDataNode) > 0)
+                cost = Cost(UtilityAbilities.FindDataNode);
             return (UInt16)Math.Clamp(cost - AbilityStats.PercentDelta(cost, AbilityStats.Influence(client, 117)), 0, UInt16.MaxValue);
         }
 
