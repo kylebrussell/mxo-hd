@@ -338,8 +338,12 @@ def server(i):
         parts.append('stock summons keep the open street stand or use a verified stand on the same room floor')
     if i in (33, 36, 53, 57, 58, 59, 60, 514):
         parts.append('cast completion rechecks the original target spawn and range before damage or splash')
+    if i in (53, 57, 58, 59, 60):
+        parts.append('checks loaded membership before charging and applying the timed attack')
     if i in (40, 86):
         parts.append('cast completion requires the original hostile spawn in range before applying its timed effect')
+    if i in (40, 66, 86):
+        parts.append('checks loaded membership before charging and landing; landed effects and reuse survive unload')
     if i in (40, 86, 130):
         parts.append('the active Force Combat penalty lowers the current engagement score until expiry')
     if i in (43, 48, 69):
@@ -457,6 +461,8 @@ def server(i):
         parts.append('requires active Concealment and consumes it at cast start; stock hit 23 after six seconds')
     if i in (503, 1137):
         parts.append('unloading the parent clears the active Concealment grant, with separate Sneak preserved')
+    if i == 1137:
+        parts.append('Archive unload cancels a pending cast and republishes the normal owner stealth-off state and stance')
     if i == 21:
         parts.append('requires a live enemy selection before charging the cast')
     return '; '.join(parts) or 'presentation only; no effect executor'
