@@ -10,6 +10,12 @@ Only direct caller of625c5500 found is UI621ed033: ECX comes from local-characte
 
 Direct177 buff totals use existing AbilityStats.Player caps. Zero direct total preserves the previous radius exactly. Existing captured345 +21 is preserved: raw catalog345 says12, a separate unresolved magnitude mismatch. At base4 the actual current +21 gives approximately4.84m. No magnitude, linked-attribute aggregation, character baseline or RNG is changed.
 
+### Level 28 Range Booster check
+
+The `ability-parity-hacker-range-booster` mode loads the full level-28 prerequisites in 42/58 memory. It retains +21 because the archived Range Booster activation produces a direct source-345 stat-177 record for +21 over 30 seconds. The shipped template's value of 12 remains useful for identifying the stat and effect lifetime. The server uses the observed direct amount for this ability. [Stock cast and matching bonus](../research/packet-dumps/community-intake/20260607T203107Z-hdneo-public-vector-state-static-selected/logs/mxopackets1_crashover2k_afterwhoruneo_old_world_packets_Vector28.log.txt#L8542)
+
+With QAEnemy selected, Code Nuke uses a 4.00 m radius and hits QAEnemy and QAOther for 8 each. Range Booster applies immediately, costs 37 IS with Dedicated Code loaded and starts 180 seconds of reuse. A fresh Code Nuke during the 30-second modifier reaches QAFar at 4.40 m and still excludes QAFriend at 4.99 m. At expiry the same record is removed and a final Code Nuke excludes QAFar again. The headless check exercises all three casts with archived request bytes; the stock run adds the Status readout and verifies the same selected-target route.
+
 75 raw TargetAttribute is1055, +25 at learned50, not177.177 links1055, and1055 links82 (Belief) with scale2. Native625c47a0 recursively reads AttributeLink entries via6251d780/map62b04a48: populator6251d4d9..5556 reads component93 AttributeLink and AttributeLevelBonusScale;625c4974..4991 subtracts global62b11ee0 and multiplies link scale.177's catalog omits the scale. The loader follow-up below establishes that the initial property getter returns0; the global threshold, actor coefficient and later mutation paths remain unresolved. The implementation deliberately does not sum1055 into177.75 remains cosmetic in the current executable audit.
 
 ## Initial linked-attribute default
