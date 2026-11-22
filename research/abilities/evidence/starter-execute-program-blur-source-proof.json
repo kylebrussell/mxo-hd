@@ -1,0 +1,22 @@
+{
+  "abilities": {
+    "45": {
+      "checks": {
+        "source-parity": {
+          "source": "GOB 45 provides indefinite learned-rank bonuses 1059 and 1056 at ×0.2 and 1049 and 1090 at ×0.1. GOB 114 links 1059 and GOB 564 links 1090. The shipped DamageInterruptsCasting script makes Concentration part of the defender's cast-through chance. The original 1049 stat carries no direct AttributeLink and its original forced-entry calculation remains unarchived.",
+          "runtime": "AbilityBuffs.RefreshVitals and AbilityHandler.RegenerateInnerStrength consume the first two percentages on actual maximum and timed Inner Strength regeneration. AbilityCastInterrupts reads current linked Concentration during damage to an explicitly interruptible cast. The chosen player entry rule uses 1049 once as a percentage of the defending tactic and direct 520 base, then adds its separate flat margin. This score applies while an Evade generation is active. Execute Program supplies no movement modifier.",
+          "test": "PR528 stock PacketLog lines 1208 and 1527 confirm 220→200→220 Inner Strength maximum and +8 unloaded versus +8/+9 loaded standing regeneration. In PR529 stock with 45 loaded, force100 and force110 both refuse at evade115. Unloading 45 changes evade to 110 and the same force110 reaches close combat. Reload and shield-off restore ordinary entry. PR625 verifies +5 Concentration changes the same 100 HP loss from through75 to through77 at roll76, interrupting only without 45. ExecuteProgram45ChangesTheActualInnerStrengthMaximumAndRegen and ExecuteProgramOnlyChangesEntryWhileItsBonusAndTheShieldAreActive cover the independent receivers. https://github.com/kylebrussell/mxo-hd/pull/528 https://github.com/kylebrussell/mxo-hd/pull/529 https://github.com/kylebrussell/mxo-hd/pull/625#issuecomment-7059089190"
+        }
+      }
+    },
+    "49": {
+      "checks": {
+        "source-parity": {
+          "source": "GOB 49 is a self-cast with the Evading required-state mask, 20 IS, 2 s cast, 8 s reuse and a fixed direct 520 +25 for 600 s. Its shipped ImpartBlurInit/Term callbacks add and remove kBlur through CharMvt; the reviewed client mapping resolves the presentation bit 0x40. The original entry score and shield-pool mathematics remain unarchived.",
+          "runtime": "AbilityHandler requires active Evade for admission. AbilityBuffs stores direct 520 and publishes the blur presentation bit to self and observers. Dismissal and expiry clear the same record and appearance bit. There is no movement-speed multiplier. The chosen entry rule reads direct 520 once while that defender's Evade generation is active. The separately timed Blur can remain visible after shield loss without supplying an independent gate or altering shield payment.",
+          "test": "PR698 stock refused locally at rest, then consumed 20 IS with an active Evade generation, published the +25 record and 8 s timer, increased the same force110 entry score 113→138, and returned it to 113 on dismissal. PR702 repeated that comparison and admitted the same foe after the shield released, with Blur again gated. PR735 independently shows the Blur modifier survives shield shortfall. The own-and-observer tactical blur replay verifies the presentation bit, and GaussianBlur49ClearsItsVisibleBitAndEvasionModifierAtExpiry verifies natural removal. https://github.com/kylebrussell/mxo-hd/pull/698#issuecomment-7069757538 https://github.com/kylebrussell/mxo-hd/pull/702#issuecomment-7070258176 https://github.com/kylebrussell/mxo-hd/pull/735#issuecomment-7074963029"
+        }
+      }
+    }
+  }
+}
