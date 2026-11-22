@@ -207,17 +207,22 @@ public class FreeCastViralLandingTests : IDisposable
     [InlineData(400, 500, TempMods.DOTPlaceHolderAbility, 74, 15, 12, false)]
     [InlineData(399, 800, TempMods.PowerlessAbility, 0, 11.0526, 0, true)]
     [InlineData(400, 500, TempMods.DOTPlaceHolderAbility, 74, 15, 12, true)]
+    [InlineData(353, 500, TempMods.DOTPlaceHolderAbility, 549, 30, 46, false)]
+    [InlineData(402, 600, 115, -125, 18, 0, false)]
     public void DespoilerFieldsLandOnTheSelectedEnemyAndExactRadiusEdge(
         ushort id, int edgeRadius, ushort stat, int amount, double duration, int damagePerTick, bool deflectPrimary)
     {
         var caster = Client(110);
         Store.currentClient = caster;
         caster.playerData.pvpFlag = true;
-        caster.playerInstance.Level.setValue((byte)30);
+        bool infectAndBottleneck = id == 353 || id == 402;
+        byte level = infectAndBottleneck ? (byte)24 : (byte)30;
+        caster.playerInstance.Level.setValue(level);
         caster.playerInstance.OrganizationID.setValue((byte)1);
         caster.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(17000, 495, 6400));
-        AbilityPassives.SetLoaded(caster, new NativeQa.Modes.HackerDespoilerAreaControlsMode().Plan.Abilities
-            .Select(ability => (ability, (ushort)30)));
+        var plan = infectAndBottleneck ? new NativeQa.Modes.HackerInfectAndBottleneckMode().Plan :
+            new NativeQa.Modes.HackerDespoilerAreaControlsMode().Plan;
+        AbilityPassives.SetLoaded(caster, plan.Abilities.Select(ability => (ability, (ushort)level)));
         CombatStyles.Select(caster, CombatStyles.HackerStyle);
         Environment.SetEnvironmentVariable("MXO_FREECAST_VIRAL_QA_ATTACK15", "32766");
         Environment.SetEnvironmentVariable("MXO_FREECAST_VIRAL_QA_DEFENSE15", "0");
@@ -251,12 +256,15 @@ public class FreeCastViralLandingTests : IDisposable
             var effects = affected.Select(target =>
             {
                 var subject = TimedEffects.ForPlayer(target);
-                var effect = Assert.Single(subject.Effects.Snapshot());
+                var landing = subject.Effects.Snapshot();
+                Assert.Equal(id == 402 ? 4 : 1, landing.Count);
+                var effect = Assert.Single(landing, item => item.Target == stat);
                 Assert.Equal(id, effect.Parent);
                 Assert.Equal(stat, effect.Target);
                 Assert.Equal(amount, effect.Value);
                 Assert.Equal(duration, effect.Seconds, 3);
-                Assert.Equal(id == 400, ControlActions.CanUseAbilities(subject.Effects));
+                Assert.Equal(id != 399, ControlActions.CanUseAbilities(subject.Effects));
+                if (id == 402) Assert.Equal(-1f, BitConverter.ToSingle(target.playerInstance.MovementScale.getValue()));
                 Assert.True(ControlActions.CanMove(subject.Effects));
                 Assert.True(ControlActions.CanUseWeapons(subject.Effects));
                 Assert.True(ControlActions.CanWithdraw(subject.Effects));
@@ -275,7 +283,9 @@ public class FreeCastViralLandingTests : IDisposable
             Assert.All(affected, target => Assert.Equal(1000 - 2 * damagePerTick + (id == 400 && target == edge ? 4 : 0), PvpCombat.HealthOf(target)));
             TimedEffects.RunDue(effects.Max(effect => effect.Expires) + 0.01);
             TimedEffects.RunDue(effects.Max(effect => effect.Expires) + 3);
-            Assert.All(affected, target => Assert.Equal(1000 - 5 * damagePerTick + (id == 400 && target == edge ? 4 : 0), PvpCombat.HealthOf(target)));
+            int ticks = id == 353 ? 11 : 5;
+            Assert.All(affected, target => Assert.Equal(1000 - ticks * damagePerTick + (id == 400 && target == edge ? 4 : 0), PvpCombat.HealthOf(target)));
+            if (id == 402) Assert.All(affected, target => Assert.Equal(0f, BitConverter.ToSingle(target.playerInstance.MovementScale.getValue())));
             Assert.All(excluded, target => Assert.Equal(1000, PvpCombat.HealthOf(target)));
             Assert.All(subjects, subject =>
             {
@@ -294,7 +304,7 @@ public class FreeCastViralLandingTests : IDisposable
         {
             var target = Client(id);
             target.playerData.pvpFlag = true;
-            target.playerInstance.Level.setValue((byte)30);
+            target.playerInstance.Level.setValue(level);
             target.playerInstance.OrganizationID.setValue(organization);
             target.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(17000, 495, z));
             if (visible) caster.viewMan.addView(id, 1).viewCreated = true;

@@ -352,17 +352,19 @@ namespace hds
         internal static float MovementScaleFor(WorldClient client, Buff buff)
         {
             if (buff == null) return 0f;
-            ushort stat = Stealth.Current(client)?.Def.Kind switch
-            {
-                Stealth.Kind.Sneak => 877,
-                Stealth.Kind.Invisibility => 878,
-                Stealth.Kind.Imparted => 878,
-                _ => 115
-            };
-            if (stat == 115) return buff.MovementScale;
+            ushort stat = MovementStatFor(client);
+            if (stat == RunMovementStat) return buff.MovementScale;
             Modifier modifier = Array.Find(buff.Modifiers, entry => entry.Stat == stat);
             return modifier.Stat == stat ? modifier.Value / 100f : buff.MovementScale;
         }
+
+        private static ushort MovementStatFor(WorldClient client) => Stealth.Current(client)?.Def.Kind switch
+        {
+            Stealth.Kind.Sneak => SneakMovementStat,
+            Stealth.Kind.Invisibility => InvisibleMovementStat,
+            Stealth.Kind.Imparted => InvisibleMovementStat,
+            _ => RunMovementStat
+        };
 
         private static float RemainingMovementScale(WorldClient client)
         {
@@ -373,13 +375,16 @@ namespace hds
             return MovementScaleFor(client, buff);
         }
 
-        private const ushort CrashAbility = 396, RunMovementStat = 115, SneakMovementStat = 877, InvisibleMovementStat = 878;
+        private const ushort CrashAbility = 396, BottleneckField = 402;
+        private const ushort RunMovementStat = 115, SneakMovementStat = 877, InvisibleMovementStat = 878;
 
-        public static bool ProjectsTimedMovementDebuff(ushort source) => source == 86 || source == 130 || source == CrashAbility;
+        private static bool UsesStanceMovementChannel(ushort source) => source == CrashAbility || source == BottleneckField;
+
+        public static bool ProjectsTimedMovementDebuff(ushort source) => source == 86 || source == 130 || UsesStanceMovementChannel(source);
 
         private static bool ProjectsSignedMovementDebuff(TimedEffects.Active modifier) =>
             ProjectsTimedMovementDebuff(modifier.Parent) &&
-            (modifier.Target == RunMovementStat || modifier.Parent == CrashAbility &&
+            (modifier.Target == RunMovementStat || UsesStanceMovementChannel(modifier.Parent) &&
                 (modifier.Target == SneakMovementStat || modifier.Target == InvisibleMovementStat)) &&
             modifier.Proc == TempMods.Proc.Stat && modifier.Value < 0;
 
@@ -392,18 +397,12 @@ namespace hds
             var active = TimedEffects.ForPlayer(client).Effects.Snapshot();
             // Vector26 observes -1 on Immobilizing Shot's EnableRootWithChance state and the remaining scale on removal.
             if (active.Any(OverridesMovementScale)) return -1f;
-            ushort crashMovementStat = Stealth.Current(client)?.Def.Kind switch
-            {
-                Stealth.Kind.Sneak => SneakMovementStat,
-                Stealth.Kind.Invisibility => InvisibleMovementStat,
-                Stealth.Kind.Imparted => InvisibleMovementStat,
-                _ => RunMovementStat
-            };
-            // Crash specifies a modifier for each movement stance. Apply only the current channel.
+            ushort movementStat = MovementStatFor(client);
+            // Crash and Bottleneck each specify three movement channels. Apply only the current one.
             int points = active.Where(modifier => ProjectsSignedMovementDebuff(modifier) &&
-                (modifier.Parent != CrashAbility || modifier.Target == crashMovementStat)).Sum(modifier => modifier.Value);
+                (!UsesStanceMovementChannel(modifier.Parent) || modifier.Target == movementStat)).Sum(modifier => modifier.Value);
             // Retail Crippling Shot 450 combines signed stat 115 points per hundred with the existing scale.
-            return points == 0 ? movementScale : (float)((decimal)movementScale + points / 100m);
+            return points == 0 ? movementScale : Math.Max(-1f, (float)((decimal)movementScale + points / 100m));
         }
 
         internal static void PresentTimedMovementChange(WorldClient client, IEnumerable<TimedEffects.Active> changed)
