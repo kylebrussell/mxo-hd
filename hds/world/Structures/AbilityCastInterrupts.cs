@@ -71,6 +71,22 @@ namespace hds
             }
         }
         public static bool KnownInterruptible(ushort ability) => AbilityCatalog.Find(ability)?.Number("Ability/IsInterruptable",-1)==1;
+
+        internal static bool CancelPending(WorldClient client, ushort ability)
+        {
+            var data = client.playerData;
+            lock (data.craftingSync)
+            {
+                if (!states.TryGetValue(client, out var state)) return false;
+                var cast = state.Current;
+                if (cast == null || cast.Ability != ability || !ReferenceEquals(data, cast.Data)) return false;
+                state.Current = null;
+                state.Generation++;
+                if (data.castEndsAt == cast.End) data.castEndsAt = -1;
+                return true;
+            }
+        }
+
         public static int CastThroughPercent(int damage,ushort maximum,short concentration)
         {
             if(damage<0 || maximum==0)throw new ArgumentOutOfRangeException();

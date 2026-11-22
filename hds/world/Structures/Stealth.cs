@@ -450,6 +450,17 @@ namespace hds
             }
         }
 
+        internal static void StopPredictedConcealment(WorldClient client)
+        {
+            // The Archive interaction interrupted a cast whose stance the owner predicted locally.
+            const byte interruptedByInteraction = 4;
+            client.messageQueue.addRpcMessage(AbilityCastInterrupts.CancelPacket(ConcealmentGrantAbility, interruptedByInteraction));
+            client.messageQueue.addRpcMessage(AbilityBuffs.BuildExclusive(ConcealmentGrantAbility, false));
+            ushort bits = (ushort)(BitsOf(client) | AbilityBuffs.DissemblingBits(client));
+            QueueOwnerState(client, bits, PvpFlag.FlagsOf(client));
+            EmoteHandler.RepublishOwnStance(client);
+        }
+
         private static bool EndCore(WorldClient client, string why, bool flush, int generation)
         {
             Holder h = HolderOf(client);
@@ -507,10 +518,13 @@ namespace hds
             }
             UInt32 all = PvpFlag.FlagsOf(client);
             client.playerInstance.ConditionStateFlags.setValue(all);
-            client.messageQueue.addObjectMessage(BuildSelf(bits, all), false);
+            QueueOwnerState(client, bits, all);
             client.FlushQueue();
             PvpFlag.ToWatchers(client, BuildOther(bits, all));
         }
+
+        private static void QueueOwnerState(WorldClient client, UInt16 bits, UInt32 flags) =>
+            client.messageQueue.addObjectMessage(BuildSelf(bits, flags), false);
 
         /// <summary>Own view: DissemblingType (36) and ConditionStateFlags (42): <c>02 00 02 80 80 80 80 80 82 &lt;u16&gt; 01 &lt;u32&gt;</c>.</summary>
         public static byte[] BuildSelf(UInt16 bits, UInt32 flags) => PlayerViewAttributes.BuildSelf(

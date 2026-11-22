@@ -348,6 +348,10 @@ namespace hds
         internal static byte[] CurrentStanceUpdate(WorldClient client) =>
             AnimationPackets.Other(Next(client, AnimationPackets.KindPlain, Stance(client), null, advance: false), 0);
 
+        internal static void RepublishOwnStance(WorldClient client) => client.messageQueue.addObjectMessage(
+            AnimationPackets.Own(Next(client, AnimationPackets.KindPlain, Stance(client), null), 0,
+                (UInt32)(TimeUtils.GetSimTimeSeconds() * 1000)), false);
+
         /// <summary>A player left the world: their requests go, and so do requests to them.</summary>
         public static void PlayerLeftWorld(WorldClient client)
         {

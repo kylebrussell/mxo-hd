@@ -56,8 +56,10 @@ namespace hds
 			SelfViewUpdate state = entry.State;
 			if (state != null)
 			{
-				if (state.HasPosition && !ControlActions.CanMove(Store.currentClient))
+				if (state.HasPosition && (!state.PositionInWorldUnits || !ControlActions.CanMove(Store.currentClient)))
 				{
+					if (!state.PositionInWorldUnits)
+						Output.WriteDebugLog($"[03] Corrected invalid self-view position ({state.X:R}, {state.Y:R}, {state.Z:R}) flags={state.Flags:x2}");
 					ControlActions.CorrectPosition(Store.currentClient);
 					return entry.End;
 				}

@@ -88,6 +88,23 @@ public class AbilityCastInterruptTests : IDisposable
         var next=AbilityCastInterrupts.Begin(c,77,20);Assert.False(AbilityCastInterrupts.Complete(old,()=>consumed++));
         Assert.True(AbilityCastInterrupts.Complete(next,()=>consumed++));Assert.Equal(1,consumed);
     }
+
+    [Fact]
+    public void UnloadingACastGrantFencesOnlyItsPendingReservation()
+    {
+        var client = Client();
+        var conceal = Begin(client, Stealth.ConcealmentGrantAbility);
+        Assert.False(AbilityCastInterrupts.CancelPending(client, CombatSpecials.ConcealedShot));
+        Assert.True(AbilityCastInterrupts.IsCurrent(conceal));
+        Assert.True(AbilityCastInterrupts.CancelPending(client, Stealth.ConcealmentGrantAbility));
+        Assert.Equal(-1d, client.playerData.castEndsAt);
+        Assert.False(AbilityCastInterrupts.Complete(conceal, () => throw new InvalidOperationException("Stale landing")));
+
+        var other = Begin(client, CombatSpecials.ConcealedShot);
+        Assert.False(AbilityCastInterrupts.CancelPending(client, Stealth.ConcealmentGrantAbility));
+        Assert.True(AbilityCastInterrupts.Complete(other, () => { }));
+    }
+
     [Fact]
     public void ExpiredNormalCastLandsBeforeNextReservationEvenWhenTimerHasNotRun()
     {

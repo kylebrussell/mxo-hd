@@ -32,6 +32,12 @@ namespace hds
         public float Y { get; private set; }
         public float Z { get; private set; }
 
+        // NAV coordinates and placement pivots are signed world-unit integers. Keep the packet boundary
+        // parseable when an animation echo sends a position outside that representable space.
+        internal bool PositionInWorldUnits => FitsWorldUnit(X) && FitsWorldUnit(Y) && FitsWorldUnit(Z);
+
+        private static bool FitsWorldUnit(double coordinate) => coordinate >= int.MinValue && coordinate <= int.MaxValue;
+
         /// <summary>Offset of the flag byte.</summary>
         public int Start { get; private set; }
 

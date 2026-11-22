@@ -42,6 +42,13 @@ namespace hds
                 return;
             }
 
+            bool concealment = AbilityID == Stealth.ConcealmentGrantAbility;
+            if (concealment && !AbilityPassives.IsLoaded(Store.currentClient, AbilityID))
+            {
+                Deny(AbilityID, "Load Concealment before using it.", AbilityRefusals.NotLoaded, sendServerText: false);
+                return;
+            }
+
             // These starter viruses need a live enemy selection, including Logic Bomb's splash centre.
             bool starterViralDamage = AbilityID == 53 || (AbilityID >= 57 && AbilityID <= 60);
             ushort? lockedDamageTargetSpawn = null;
@@ -623,6 +630,7 @@ namespace hds
             AbilityCastInterrupts.After(normalCast, () =>
             {
                 if (!ControlActions.CanUseAbilities(client)) return;
+                if (concealment && !AbilityPassives.IsLoaded(client, AbilityID)) return;
                 // The archived class upgrades publish their activation timer before the exclusive-on record.
                 if (startingClassUpgrade)
                     AbilityCooldowns.Start(client, AbilityID, TimeUtils.GetSimTimeSeconds());

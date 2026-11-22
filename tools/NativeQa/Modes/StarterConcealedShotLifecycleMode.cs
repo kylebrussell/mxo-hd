@@ -12,6 +12,7 @@ public sealed class StarterConcealedShotLifecycleMode : NativeQaMode
     // PR429 stock Concealment (7483f644ff39:1600–1601) and PR410 stock Concealed Shot (3ef3dc4c8f4c:2400–2401).
     private const string ConcealFrame = "80b97104000000000000000000000000000000000000000000000000d557377c20000000086b0000000000";
     private const string ShotFrame = "80b9f801040002000000000000000000000000000000000000000000585cc10001000000086b0000000000";
+    private const string InvalidEcho = "02030200012a1a00000100d00000003ff74300000000"; // PR780 stock self update.
 
     private static readonly ushort[] Loadout = new ushort[] { 2, 17, Rifles, Parent, Shot }
         .SelectMany(id => AbilityPrerequisites.Current.Closure(id).Keys.Append(id)).Distinct().Order().ToArray();
@@ -39,6 +40,8 @@ public sealed class StarterConcealedShotLifecycleMode : NativeQaMode
         {
             $"Level {Level}, 42/49 memory, 503 at rank {Level} grants 1137. Verified outdoor NAV: CSR ({X},{Y},{Z}) faces QAEnemy ({EnemyX},{Y},{Z}) from 4 m behind; allied observer QAFriend ({FriendX},{Y},{Z}). Rifle equipped. Page 2 slots 1/2/3 = Rifles/Concealment/Concealed Shot.",
             "Check login source 503 [MODIFIER] 575 +3, 1045 +1, 1059 +3 and 1139 +1. Choose Rifles and /target QAEnemy. From rest press slot 3 before concealing. Expect the local Concealment gate or a single reason 23 (mask 0x00040000) without cast bar, cost, hit or reuse.",
+            "Cast lifetime retest: ?qaunload 503 removes 1137. Try its shortcut and expect local unavailability or the not-loaded response, with no cast bar, IS debit or timer. Reload 503. With the Archive or unload command ready, press slot 2 and unload 503 during its 2 s cast bar. Expect one 80 ad 71 04 00 00 04, followed by the exclusive off and grant unload. The cast bar clears and CSR returns to the original visible stance without a 1137 modifier or reuse. Slot 3 remains gated. Headless reloads 503 within the old bar; native can wait past it.",
+            "After the cancelled bar, reload 503 if needed and use slot 2 again. Expect a fresh 2 s cast, 15 s reuse, source 1137 Stealth +19 and states 623/881. Immediately use slot 3 once: it consumes Concealment at cast start, spends 45 IS, shows a 6 s bar, hits for 23 and starts 45 s own reuse. This completes the cast lifetime retest.",
             "Use ?health 700 before slot 2. Expect 1137 2 s activation, 15 s own reuse, [STEALTH] bits 2 SL 19 and source 1137 Stealth +19 plus states 623/881. Use ?health 1800 shortly after activation. That health gain leaves concealment up. Then ?health 600 ends it once with [STEALTH] 1137 off (damaged). Try slot 3 again to verify the gate returns after concealment breaks. These commands drive the normal health-change callback in the disposable fixture.",
             "Wait for 1137 reuse to clear. Keep QAEnemy 4 m ahead and activate slot 2 again, then press slot 3. The accepted shot consumes 1137 at cast start, spends 45 IS, shows a 6 s bar and hits QAEnemy for 23 at completion with 45 s own reuse. This run does not assess armor piercing or the random stun."
         });
@@ -80,8 +83,60 @@ public sealed class StarterConcealedShotLifecycleMode : NativeQaMode
         Check.That(AbilityRefusals.TryDecode(refused.Bytes, out var record) && record.StatesNotMet == Stealth.ConcealmentFlag,
             "The source-backed concealment bit is the only missing state");
 
+        int unloaded = await StockAbilityProfile.ChangeLoadoutAsync(actor, profile, new[] { Parent }, load: false);
+        await StockAbilityProfile.ObserveAsync(actor, unloaded, StockAbilityProfile.GrantRecord(Conceal, remove: true),
+            "The stock archive removes 1137");
+        await RefusedAsync(actor, Conceal, Convert.FromHexString(ConcealFrame), AbilityRefusals.NotLoaded);
+        int restored = await StockAbilityProfile.ChangeLoadoutAsync(actor, profile, new[] { Parent }, load: true);
+        await StockAbilityProfile.ObserveAsync(actor, restored, StockAbilityProfile.GrantRecord(Conceal, remove: false, rank: Level),
+            "The stock archive restores 1137");
+        int pendingAt = actor.World.RpcSnapshot().Count;
+        int pendingOwnViewsAt = actor.World.ViewSnapshot().Count;
+        int pendingViewsAt = friend.World.ViewSnapshot().Count;
+        var castClock = System.Diagnostics.Stopwatch.StartNew();
+        actor.SendRpc(ConcealFrame);
+        await EvidenceRetestWire.CastBarAsync(actor, Conceal, 2);
+        unloaded = await StockAbilityProfile.ChangeLoadoutAsync(actor, profile, new[] { Parent }, load: false);
+        await StockAbilityProfile.ObserveAsync(actor, unloaded, StockAbilityProfile.GrantRecord(Conceal, remove: true),
+            "The in-flight grant is removed");
+        restored = await StockAbilityProfile.ChangeLoadoutAsync(actor, profile, new[] { Parent }, load: true);
+        await StockAbilityProfile.ObserveAsync(actor, restored, StockAbilityProfile.GrantRecord(Conceal, remove: false, rank: Level),
+            "The grant is restored while its original cast was pending");
+        Check.That(castClock.Elapsed.TotalSeconds < 2, "Full unload/reload occurred before the original cast deadline");
+        await Task.Delay(TimeSpan.FromSeconds(2.1));
+        await RefusedAsync(actor, Shot, shot, AbilityRefusals.CasterStateRequired);
+        var cancelled = actor.World.RpcSnapshot().Skip(pendingAt).ToArray();
+        byte[] cancelWire = AbilityCastInterrupts.CancelPacket(Conceal, 4);
+        byte[] exclusiveOff = AbilityBuffs.BuildExclusive(Conceal, false);
+        int cancelIndex = Array.FindIndex(cancelled, frame => frame.Bytes.AsSpan().SequenceEqual(cancelWire));
+        int offIndex = Array.FindIndex(cancelled, frame => frame.Bytes.AsSpan().SequenceEqual(exclusiveOff));
+        int unloadIndex = Array.FindIndex(cancelled, frame => StockAbilityProfile.GrantRecord(Conceal, remove: true)(frame));
+        Check.That(cancelIndex >= 0 && offIndex > cancelIndex && unloadIndex > offIndex &&
+            cancelled.Count(frame => frame.Bytes.AsSpan().SequenceEqual(cancelWire)) == 1,
+            "The owner receives one cast interrupt, then exclusive off, then the granted ability unload");
+        await EvidenceRetestWire.ViewSinceAsync(actor, pendingOwnViewsAt, 2,
+            WireFormat.ToHex(Stealth.BuildSelf(0, PvpFlag.PvpBit)[2..]));
+        Check.That(actor.World.ViewSnapshot().Skip(pendingOwnViewsAt)
+            .Any(BytePattern.Parse("02 00 01 28 ?? 40 00 00 00 10").Occurs),
+            "The owner receives the original standing animation after local cast prediction");
+        Check.That(!cancelled.Any(frame => frame.Bytes.AsSpan().SequenceEqual(AbilityBuffs.BuildExclusive(Conceal, true))) &&
+            !cancelled.Any(frame => frame.Bytes.AsSpan().SequenceEqual(AbilityCooldowns.BuildTimer(Conceal, AbilityCooldowns.OwnTimer, 15, true))) &&
+            !cancelled.Any(frame => StockAbilityProfile.Bonus(frame, Conceal, 209, Level, 0, false)),
+            "The obsolete cast never applies Concealment and starts no cooldown");
+        var hiddenView = BytePattern.Parse(StockAbilityProfile.LittleEndianHex(friendlyView.ViewId) + " " + WireFormat.ToHex(
+            Stealth.BuildOther(Stealth.Sneak, PvpFlag.PvpBit | Stealth.StealthedFlag | Stealth.ConcealmentFlag)));
+        Check.That(!friend.World.ViewSnapshot().Skip(pendingViewsAt).Any(hiddenView.Occurs),
+            "The friendly observer never receives Concealment from the cancelled cast");
+
         int concealAt = actor.World.RpcSnapshot().Count;
         await ActivateAsync();
+        byte[] invalid = Convert.FromHexString(InvalidEcho);
+        int correctionAt = actor.World.ViewSnapshot().Count;
+        actor.World.SendViewList(invalid[2..^2]);
+        byte[] correction = ServerPackets.BuildSelfPositionHandoff(64, X, Y, Z, 0);
+        var position = BytePattern.Parse(WireFormat.ToHex(correction[..^4]) + " ?? ?? ?? ??");
+        await actor.WaitUntilAsync(() => actor.World.ViewSnapshot().Skip(correctionAt).Any(position.Occurs),
+            "The exact stock echo is corrected to the valid original position", HeadlessPlayer.DefaultTimeout);
         await RefusedAsync(actor, Shot, WithHandle(ShotFrame, handle ^ 0x10000));
         int healthLogAt = server.DebugLog().Length;
         await HealthAsync(1800);
