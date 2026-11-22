@@ -133,6 +133,7 @@ public static partial class Scenarios
         new Scenario("ability-health-proc-lifecycle", HealthProcLifecycle, HealthCallbackNpcs),
         new Scenario("ability-health-reactive-area", HealthReactiveArea, HealthCallbackNpcs),
         new Scenario("ability-health-deflect-lineup", HealthDeflectLineup, FreeCastViralLandingEnvironment(HealthCallbackNpcs)),
+        new Scenario("deflect-bullets-child-radius", DeflectBulletsChildRadius, StillNpcs),
         new Scenario("ability-health-lineup-timings", HealthLineupTimings, HealthCallbackNpcs),
         new Scenario("typed-special-queued", TypedSpecialQueued, StillNpcs),
         new Scenario("typed-special-defense", TypedSpecialDefense, StillNpcs),

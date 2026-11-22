@@ -154,6 +154,115 @@ public static partial class Scenarios
         Check.Equal(0,p.World.Problems.Count+friend.World.Problems.Count+enemy.World.Problems.Count,"Deflect parents and concealed Line Up protocol");
     }
 
+    private static async Task DeflectBulletsChildRadius(ScenarioContext context)
+    {
+        const ushort parent = 380, child = 692, level = 22;
+        const int x = 17000, y = 495, z = 6400;
+        const int edgeZ = z - 330, outsideZ = z + 331;
+        var roots = new ushort[] { 2, 17, CombatStyles.HackerStyle, parent };
+        var profile = roots.SelectMany(id => AbilityPrerequisites.Current.Closure(id).Keys.Append(id))
+            .Distinct().Select(id => (id, level)).ToArray();
+        Check.That(profile.Sum(row => AbilityMemory.Cost(row.id)) <= AbilityMemory.ForLevel(level),
+            "Deflect Bullets fits its first eligible profile");
+        Check.Equal(6d, AbilityCatalog.Find(parent).Number("Ability/RadiusOfEffect"), "Parent radius metadata");
+        Check.Equal(3d, AbilityCatalog.Find(child).Number("Ability/RadiusOfEffect"), "Invoked child radius");
+        SectorProperties.Load(Path.Combine(context.RepositoryRoot, "data", "sector_properties.csv"));
+        NavMesh.UseDirectory(Path.Combine(context.RepositoryRoot, "data", "navmesh"));
+        foreach (var (standX, standZ) in new[] { (x, z), (x, edgeZ), (x, outsideZ), (x + 150, z) })
+            Check.That(NavMesh.Locate(1, standX, y, standZ, out var stand) && !stand.indoors && stand.floorY + 95 == y,
+                $"Verified outdoor NAV ({standX},{y},{standZ})");
+
+        var caster = await context.AddPlayerAsync(new CharacterSeed("DeflectRadiusOwner")
+        {
+            Level = level, X = x, Y = y, Z = z, Rotation = 0, Organization = 1, OwnedLoadedAbilities = profile
+        });
+        var edge = await context.AddPlayerAsync(new CharacterSeed("DeflectRadiusEdge")
+        {
+            Level = level, X = x, Y = y, Z = edgeZ, Organization = 1
+        });
+        var outside = await context.AddPlayerAsync(new CharacterSeed("DeflectRadiusOutside")
+        {
+            Level = level, X = x, Y = y, Z = outsideZ, Organization = 1
+        });
+        var outsider = await context.AddPlayerAsync(new CharacterSeed("DeflectRadiusOutsider")
+        {
+            Level = level, X = x + 150, Y = y, Z = z, Organization = 1
+        });
+        var players = new[] { caster, edge, outside, outsider };
+        foreach (var player in players) await player.EnterWorldAsync();
+        SelectStyle(caster, CombatStyles.HackerStyle);
+        await caster.WaitForViewUpdateAsync(2, "02 80 80 80 80 80 10 ee 03 00 00");
+        var radius = await ObserveAsync(caster, ModPattern(74, 127));
+        Check.Equal(10, BitConverter.ToInt32(radius.Bytes, 13),
+            "Required rank-22 Resist Damage makes the three-metre radius 3.30 m");
+        foreach (var (player, expectedX, expectedZ) in new[] { (edge, x, edgeZ), (outside, x, outsideZ), (outsider, x + 150, z) })
+        {
+            var seen = await caster.WaitForViewNamedAsync(player.Handle);
+            Check.That(EngageFoesFixture.Position(seen).SequenceEqual(new double[] { expectedX, y, expectedZ }),
+                $"{player.Handle} stands at its measured radius control");
+        }
+        foreach (var teammate in new[] { edge, outside })
+        {
+            caster.SendRpc(GroupInvite(Team, teammate.Handle, ""));
+            await teammate.WaitForRpcAsync("80 8f 0c 00");
+            teammate.SendRpc(InviteAnswer(Team, 0, caster.Handle));
+            await teammate.WaitForRpcAsync("80 8e");
+            await caster.WaitForRpcAsync($"70 03 {Le(teammate.CharId)} 09 00");
+        }
+
+        Cast(caster, child);
+        await caster.WaitForTextAsync("Use the parent ability, not its internal effect.");
+        Check.Equal(0, caster.Received(ModPattern(child, 1010)).Count, "The child has no direct activation path");
+
+        // The legacy headless sender drives the ordinary server executor. PR320 independently captures the stock parent/child flow.
+        Cast(caster, parent);
+        await caster.WaitForRpcAsync("80 bd 05 7c 01 00 00 00 00 00 01");
+        var accepted = new[] { caster, edge };
+        var modifiers = new (ushort Stat, int Value)[] { (1010, 21), (1011, 10), (564, 10) };
+        var active = new Dictionary<(HeadlessPlayer Player, ushort Stat), RpcRecord>();
+        var ownFx = BytePattern.Parse(WireFormat.ToHex(ServerPackets.BuildPlayerAbilityEffect(0x28000824, 0, true)[..^1]) + " ??");
+        foreach (var player in accepted)
+        {
+            foreach (var (stat, value) in modifiers)
+            {
+                var add = await ObserveAsync(player, ModPattern(child, stat));
+                Check.Equal(value, BitConverter.ToInt32(add.Bytes, 13), $"{player.Handle} stat {stat}");
+                Check.Equal(5f, BitConverter.ToSingle(add.Bytes, 18), $"{player.Handle} five-second child");
+                active[(player, stat)] = add;
+            }
+            var fx = await ObserveAsync(player, ModPattern(parent, parent));
+            Check.Equal(0x28000824u, BitConverter.ToUInt32(fx.Bytes, 13), $"{player.Handle} child FX");
+            Check.Equal(0.2f, BitConverter.ToSingle(fx.Bytes, 18), $"{player.Handle} linked FX delay");
+            var fxOff = await ObserveAsync(player, ModPattern(parent, parent, off: true));
+            Check.Equal(BitConverter.ToUInt16(fx.Bytes, 4), BitConverter.ToUInt16(fxOff.Bytes, 4), "Linked FX removes its own record");
+            await player.WaitUntilAsync(() => player.World.ViewSnapshot().Any(ownFx.Occurs),
+                $"{player.Handle} receives the actual linked effect on the own view", HeadlessPlayer.DefaultTimeout);
+        }
+        Cast(caster, parent);
+        await caster.WaitForRpcAsync("80 bd 05 7c 01 00 00 00 00 00 00");
+        foreach (var player in accepted)
+        foreach (var (stat, _) in modifiers)
+        {
+            var removal = await ObserveAsync(player, ModPattern(child, stat, off: true));
+            Check.Equal(BitConverter.ToUInt16(active[(player, stat)].Bytes, 4), BitConverter.ToUInt16(removal.Bytes, 4),
+                $"{player.Handle} expires the active {stat} record");
+            Check.Equal(1, player.Received(ModPattern(child, stat)).Count, $"{player.Handle} gets one pulse after the test starts");
+        }
+        foreach (var player in new[] { outside, outsider })
+        {
+            foreach (var (stat, _) in modifiers)
+                Check.Equal(0, player.Received(ModPattern(child, stat)).Count, $"{player.Handle} is excluded");
+            Check.Equal(0, player.Received(ModPattern(parent, parent)).Count, $"{player.Handle} receives no linked FX");
+        }
+        Check.Equal(0, players.Sum(player => player.World.Problems.Count), "Deflect Bullets child framing");
+
+        static async Task<RpcRecord> ObserveAsync(HeadlessPlayer player, string pattern)
+        {
+            await player.WaitUntilAsync(() => player.Received(pattern).Count != 0, pattern, HeadlessPlayer.DefaultTimeout);
+            return player.Received(pattern).Single();
+        }
+    }
+
     private static async Task HealthLineupTimings(ScenarioContext context)
     {
         var p=await context.AddPlayerAsync(LineUpActor("LineupTimer"));

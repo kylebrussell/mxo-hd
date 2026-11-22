@@ -1,0 +1,21 @@
+{
+  "abilities": {
+    "692": {
+      "checks": {
+        "area": {
+          "source": "GOB 692 stores CastDirectObjects 9 and RadiusOfEffect 3. Parent 380's ApplyAuraEffect invokes child 692 with the child's own area. The parent separately has radius metadata 6.",
+          "runtime": "AbilityAuras.Pulse invokes AbilitySupport.Land for 692. AbilitySupport.Targets uses the child's group selector and radius for the caster and living teammates.",
+          "test": "The deflect-bullets-child-radius server scenario observes the legally loaded rank-22 Resist Damage's +10 Buff Area Radius. That yields a 3.30 m effective child radius from the 3 m base. It verifies the caster, a teammate 3.30 m behind the caster, an excluded teammate at 3.31 m, and an excluded nearby same-organization outsider at 1.50 m on verified outdoor NAV."
+        },
+        "behavior-tests": {
+          "source": "GOB 692 stores five-second Ballistic Defense, Thrown Defense and Concentration. virii.py DeflectBullets1Effect_DirectObject schedules the 0.2-second 0x28000824 effect. The child is invoked by parent 380.",
+          "runtime": "AbilityScaledBuffs supplies the caster-level defense and concentration records. AbilityStats and AbilityCastInterrupts consume them. Virii.ApplyDeflectEffect sends the linked effect and normal expiry.",
+          "test": "The deflect-bullets-child-radius server scenario rejects direct child activation. At caster level 22, admitted players receive +21 Ballistic Defense, +10 Thrown Defense, +10 Concentration, the linked FX records and 0x28000824 on their own views. Matching locators are removed after parent deactivation. LinkedDeflectBuffsChangeTheMatchingDefenseContestsThenExpire covers real defensive contests and Concentration input. The stock PR320 run observed 380's 692 pulses, toggle-off, 692 removal and the corresponding chat. https://github.com/kylebrussell/mxo-hd/pull/320#issuecomment-6999754005"
+        }
+      }
+    }
+  },
+  "observations": {
+    "380": "Parent evidence still needs the distinct cross-caster overlap check. The child radius and lifecycle evidence has no second caster."
+  }
+}
