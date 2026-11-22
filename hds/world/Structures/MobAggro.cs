@@ -16,6 +16,8 @@ namespace hds
     /// </summary>
     public static class MobAggro
     {
+        internal const ushort EnrageAbility = 588;
+        private const double EnrageRangeUnits = 1000;
         public static readonly bool Enabled = Environment.GetEnvironmentVariable("MXO_AGGRO") != "0";
         public static readonly double RangeUnits = ReadDouble("MXO_AGGRO_RANGE", 12) * 100; // 100 units per metre
         public static readonly int LevelGap = (int)ReadDouble("MXO_AGGRO_LEVEL_GAP", 10);
@@ -205,11 +207,67 @@ namespace hds
             Attack(client, mob, view, x, y, z);
         }
 
-        internal static void Attack(WorldClient client, Mob mob, ClientView view, double px, double py, double pz)
+        // GenericEnrageUpdate and GetClosestEnemyInSight. Use the normal
+        // public-world player/NPC eligibility and the ordinary close-combat entry.
+        internal static void EnragePulse(Mob mob, TimedEffects.Active control)
         {
-            if (ControlActions.Incapacitated(TimedEffects.ForMob(mob).Effects)) return;
+            if (!CanStartEnrage(mob, control)) return;
+            List<WorldClient> players;
+            lock (WorldServer.Clients) players = new List<WorldClient>(WorldServer.Clients.Values);
+            WorldClient nearest = null;
+            double nearestDistance = double.MaxValue;
+            foreach (WorldClient player in players)
+            {
+                if (!TryEnrageTarget(mob, player, out _, out _, out double distance) || distance >= nearestDistance)
+                    continue;
+                nearest = player;
+                nearestDistance = distance;
+            }
+            if (nearest == null) return;
+
+            DelayedActions.AfterFor(nearest, 0, () =>
+            {
+                if (!CanStartEnrage(mob, control) ||
+                    !TryEnrageTarget(mob, nearest, out ClientView view, out var position, out _)) return;
+                Output.WriteDebugLog($"[ENRAGE] source={EnrageAbility} entity={mob.getEntityId()} seeks char={nearest.playerData.getCharID()}");
+                Attack(nearest, mob, view, position.X, position.Y, position.Z, control);
+            });
+        }
+
+        private static bool CanStartEnrage(Mob mob, TimedEffects.Active control) =>
+            MobMotion.Ordinary(mob) && mob.getHealthC() > 0 && !mob.isFriendly && !mob.PassiveTarget &&
+            mob.CombatantCount == 0 && !MobMotion.Chasing(mob) &&
+            TimedEffects.ForMob(mob).Effects.IsCurrent(control, TimeUtils.GetSimTimeSeconds());
+
+        private static bool TryEnrageTarget(Mob mob, WorldClient player, out ClientView view,
+            out (double X, double Y, double Z) position, out double distanceSquared)
+        {
+            view = null;
+            position = default;
+            distanceSquared = 0;
+            var data = player?.playerData;
+            if (data == null || !player.Alive || !data.getOnWorld() || data.waitForRPCShutDown ||
+                data.isDead || data.duelDeath || data.DistrictIsLA() || data.getDistrictId() != mob.getDistrict() ||
+                Stealth.Current(player) != null)
+                return false;
+            position = CombatSight.Position(player);
+            double dx = mob.getXPos() - position.X, dy = mob.getYPos() - position.Y, dz = mob.getZPos() - position.Z;
+            distanceSquared = dx * dx + dy * dy + dz * dz;
+            if (!(distanceSquared <= EnrageRangeUnits * EnrageRangeUnits) || !SameFloor(mob.getYPos(), position.Y)) return false;
+            view = player.viewMan.FindViewForEntity(mob.getEntityId());
+            return view != null && view.viewCreated && !view.viewNeedsToBeDeleted &&
+                !CombatManager.GetHandler(player).isCombatRunning && CombatSight.Between(player, mob);
+        }
+
+        internal static void Attack(WorldClient client, Mob mob, ClientView view, double px, double py, double pz,
+            TimedEffects.Active enrage = null)
+        {
+            var effects = TimedEffects.ForMob(mob).Effects;
+            if (ControlActions.Incapacitated(effects) || enrage != null &&
+                (!effects.IsCurrent(enrage, TimeUtils.GetSimTimeSeconds()) || mob.CombatantCount != 0 ||
+                 !TryEnrageTarget(mob, client, out _, out _, out _))) return;
             double dx = mob.getXPos() - px, dz = mob.getZPos() - pz;
-            if (OpensFire(mob.getWeapon(), Math.Sqrt(dx * dx + dz * dz)) && ControlActions.CanUseWeapons(TimedEffects.ForMob(mob).Effects))
+            if (enrage == null && OpensFire(mob.getWeapon(), Math.Sqrt(dx * dx + dz * dz)) && ControlActions.CanUseWeapons(effects))
             {
                 Output.WriteDebugLog("[AGGRO] " + mob.getName() + " opens fire on " + client.playerData.getCharID() +
                                      " (view " + view.ViewID + ")");
@@ -223,7 +281,7 @@ namespace hds
             if (mob.missionInstance == 0 && (!ReachedMeleeDistance(dx * dx + dz * dz) ||
                 !NavMesh.HasSightPath(mob.getDistrict(), mob.getXPos(), mob.getYPos(), mob.getZPos(), px, py, pz)))
             {
-                if(MobMotion.BeginChase(client,mob))Output.WriteDebugLog("[AGGRO] "+mob.getName()+" pursues "+client.playerData.getCharID());
+                if(MobMotion.BeginChase(client,mob,enrage))Output.WriteDebugLog("[AGGRO] "+mob.getName()+" pursues "+client.playerData.getCharID());
                 return;
             }
 

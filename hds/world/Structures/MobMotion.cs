@@ -18,6 +18,7 @@ namespace hds
             public double Updated, WaitUntil;
             public double[] Goal;
             public WorldClient Target;
+            public TimedEffects.Active Enrage;
             public NavPoint[] Path;
             public double[] PathTarget;
             public int Waypoint;
@@ -62,7 +63,7 @@ namespace hds
             // Check the whole segment, not only its endpoint; a wall can have mapped floor on both sides.
             return NavMesh.HasSightPath(district,from[0],from[1],from[2],next.x,next.y,next.z);
         }
-        internal static bool BeginChase(WorldClient client,Mob mob)
+        internal static bool BeginChase(WorldClient client,Mob mob,TimedEffects.Active enrage=null)
         {
             if(!Ordinary(mob)||client?.playerData==null)return false;
             lock(sync)
@@ -76,7 +77,7 @@ namespace hds
                     if(!PlanChase(mob.getDistrict(), state, from, target))return false;
                 }
                 else state.Path = null;
-                state.Target=client;state.Goal=null;return true;
+                state.Target=client;state.Enrage=enrage;state.Goal=null;return true;
             }
         }
 
@@ -126,7 +127,7 @@ namespace hds
                 mob.currentState=(int)Mob.statusList.STANDING;
                 mob.updateAnimation((byte)Mob.Animations.STAND);
             }
-            state.Walking=false;state.Goal=null;state.Target=null;state.Path=null;
+            state.Walking=false;state.Goal=null;state.Target=null;state.Enrage=null;state.Path=null;
             state.WaitUntil=now+state.Random.Next(MinimumIdleSeconds,MaximumIdleSeconds+1);
         }
         internal static void Tick(List<WorldClient> clients,Dictionary<ulong,Mob> mobs,double now)
@@ -155,7 +156,7 @@ namespace hds
                 {
                     if(!moving.TryGetValue(mob,out var state)||state.Life!=mob.DeathGeneration)moving[mob]=state=New(mob,now);
                     double elapsed=now-state.Updated;state.Updated=now;
-                    if(mob.getCombatTarget()!=null){state.Goal=null;state.Target=null;state.Path=null;state.Walking=false;continue;}
+                    if(mob.getCombatTarget()!=null){state.Goal=null;state.Target=null;state.Enrage=null;state.Path=null;state.Walking=false;continue;}
                     if(state.Target==null&&selected.Contains(mob))
                     {
                         if(state.Goal!=null||state.Walking)Stop(mob,state,now);
@@ -176,8 +177,10 @@ namespace hds
                     if(state.Target!=null)
                     {
                         var target=state.Target;
+                        var enrage=state.Enrage;
                         if(!target.Alive||target.playerData.isDead||!target.playerData.getOnWorld()||target.playerData.waitForRPCShutDown||
-                            target.playerData.getDistrictId()!=mob.getDistrict()||Stealth.Current(target)!=null)
+                            target.playerData.getDistrictId()!=mob.getDistrict()||Stealth.Current(target)!=null||
+                            enrage!=null&&!TimedEffects.ForMob(mob).Effects.IsCurrent(enrage,now))
                         {Stop(mob,state,now);continue;}
                         var to=Position(target);
                         if(Math.Abs(from[1]-to[1])>150||Math.Pow(to[0]-mob.xBase,2)+Math.Pow(to[2]-mob.zBase,2)>25000000)
@@ -186,7 +189,7 @@ namespace hds
                         if(straight&&MobAggro.ReachedMeleeDistance(DistanceSquared(to,from)))
                         {
                             var view=target.viewMan.FindViewForEntity(mob.getEntityId());Stop(mob,state,now);
-                            if(view?.viewCreated==true)MobAggro.Attack(target,mob,view,to[0],to[1],to[2]);continue;
+                            if(view?.viewCreated==true)MobAggro.Attack(target,mob,view,to[0],to[1],to[2],enrage);continue;
                         }
                         if(!ChaseGoal(mob.getDistrict(),state,from,to,straight)){Stop(mob,state,now);continue;}
                         speed=ChaseSpeed;
