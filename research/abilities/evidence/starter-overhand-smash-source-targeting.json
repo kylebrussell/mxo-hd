@@ -1,0 +1,18 @@
+{
+  "abilities": {
+    "145": {
+      "checks": {
+        "targeting": {
+          "source": "GOB 145 uses CastDirectObjects 0, CastWhenUsed 3, hostile target selector, Karate, physical TestFunction 3 and a 16 m selection limit. The cast belongs to the current interlock opponent.",
+          "runtime": "AbilityHandler verifies the selected view and spawn against the live melee session before charging and gives the admitted handle to the queued-round path. The NPC landing resolver rechecks sight and range. The round must still select that opponent and win before applying damage or effects.",
+          "test": "StarterMeleeSelectedOpponentMode uses the retained complete stock use request. On real session state it rejects attempts at rest, a stale opponent spawn, no selection and another live player with a selectable view, without charge, cast or cooldown. It accepts the actual opponent and queues move 277. Stock PR741 and PR757 both observe local at-rest refusal and the live Karate move. PR757 also observes a charged miss with no landed effect before the successful retry. https://github.com/kylebrussell/mxo-hd/pull/741#issuecomment-7075743659 https://github.com/kylebrussell/mxo-hd/pull/757#issuecomment-7082070045"
+        },
+        "source-parity": {
+          "source": "GOB 145 has one enabled Current Health component with physical type 0, instant DurationType 1 and equal endpoints 7. It stores no ValueFunction or ValueScale. Two fixed -10 melee penalties and the 10% Enrage are separate ten-second components.",
+          "runtime": "AbilityHandler reads the fixed health component when the original legacy endpoints 0/0 do not supply a damage range. The shared landed-special path reads live melee influence and resistance. The target's separate penalties and conditional Enrage use the subsequent timed-effect phase.",
+          "test": "OverhandSmashUsesItsFixedBaseWithRankAndTypedMeleeInputs varies character level 19/50, ability rank 5/19 and Karate rank 19/50, compares independent melee and ballistic bonuses, then applies +75 Melee Resistance through the actual PvP landing path. Stock PR741 measured 7 neutral and 5 resisted. Stock PR757 measured 7 on the live level-35 interlock and saw the timed penalties. Stock PR618 verified the Enrage action gate and expiry on a player. https://github.com/kylebrussell/mxo-hd/pull/741#issuecomment-7075743659 https://github.com/kylebrussell/mxo-hd/pull/757#issuecomment-7082070045 https://github.com/kylebrussell/mxo-hd/pull/618#issuecomment-7058602300"
+        }
+      }
+    }
+  }
+}

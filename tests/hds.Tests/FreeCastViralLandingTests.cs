@@ -229,6 +229,70 @@ public class FreeCastViralLandingTests : IDisposable
         }
     }
 
+    [Theory]
+    [InlineData(19, 5, 19, 0, 0, 0, 7)]
+    [InlineData(19, 19, 19, 0, 0, 0, 7)]
+    [InlineData(50, 19, 19, 0, 0, 0, 7)]
+    [InlineData(50, 19, 50, 0, 0, 0, 9)]
+    [InlineData(50, 19, 19, 0, 35, 0, 7)]
+    [InlineData(50, 19, 19, 35, 0, 0, 10)]
+    [InlineData(50, 19, 19, 35, 0, 75, 8)]
+    public void OverhandSmashUsesItsFixedBaseWithRankAndTypedMeleeInputs(
+        byte level, ushort abilityRank, ushort karateRank, int meleeBonus, int ballisticBonus, int resistance, ushort landed)
+    {
+        const ushort overhandSmash = 145;
+        var caster = Client(110);
+        var target = Client(111);
+        Store.currentClient = caster;
+        caster.playerData.pvpFlag = target.playerData.pvpFlag = true;
+        caster.playerInstance.Level.setValue(level);
+        target.playerInstance.Level.setValue(level);
+        caster.playerInstance.OrganizationID.setValue((byte)1);
+        target.playerInstance.OrganizationID.setValue((byte)2);
+        caster.viewMan.addView(111, 1).viewCreated = true;
+        AbilityPassives.SetLoaded(caster, new[] { (overhandSmash, abilityRank), (CombatStyles.Karate, karateRank) });
+        CombatStyles.Select(caster, CombatStyles.Karate);
+        Assert.Equal(CombatStyles.Karate, CombatStyles.Active(caster));
+        Assert.Equal(abilityRank, AbilityPassives.Level(caster, overhandSmash));
+
+        var source = TimedEffects.ForPlayer(caster);
+        var victim = TimedEffects.ForPlayer(target);
+        var smash = new AbilityItem();
+        smash.setAbilityID(overhandSmash);
+        try
+        {
+            var now = TimeUtils.GetSimTimeSeconds();
+            source.Effects.Apply(185, new[] { Stat(159, meleeBonus), Stat(171, ballisticBonus) }, now);
+            victim.Effects.Apply(271, new[] { Stat(180, resistance) }, now);
+            int karateInfluence = karateRank == 50 ? 29 : 13;
+            Assert.Equal(karateInfluence + meleeBonus, AbilityStats.Influence(caster, 159));
+            Assert.Equal(ballisticBonus, AbilityStats.Influence(caster, 171));
+            Assert.Equal((ushort)7, AbilityHandler.AbilityDamage(smash, new Random(17), characterLevel: level));
+
+            PvpCombat.LandAbilityOn(caster, smash, target);
+
+            Assert.Equal(1000 - landed, PvpCombat.HealthOf(target));
+            var penalties = victim.Effects.Snapshot().Where(effect => effect.Parent == overhandSmash &&
+                effect.Proc == TempMods.Proc.Stat).OrderBy(effect => effect.Target).ToArray();
+            Assert.Equal(new ushort[] { 522, 1009 }, penalties.Select(effect => effect.Target));
+            Assert.All(penalties, effect =>
+            {
+                Assert.Equal(-10, effect.Value);
+                Assert.Equal(10f, effect.Seconds);
+            });
+        }
+        finally
+        {
+            TimedEffects.Clear(source);
+            TimedEffects.Clear(victim);
+        }
+
+        static TimedEffects.Active Stat(ushort targetStat, int value) => new()
+        {
+            Kind = TempMods.KindStat, Target = targetStat, Value = value, Seconds = 10, Proc = TempMods.Proc.Stat
+        };
+    }
+
     [Fact] public void ExistingUpgradeAttacksAndSereneCalmChangeTheActualCommonContest()
     {
         var c=Client(110);var target=Client(111);Store.currentClient=c;
