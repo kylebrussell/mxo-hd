@@ -325,6 +325,12 @@ def server(i):
         parts.append(f'landed proc {seconds}s marker calls ApplyStunWithTimer; 4s Stun and separate 4s immunity')
     if i in (268, 406):
         parts.append('caster-centred hostile area via shipped selector 4 at cast completion')
+    if i in (38, 47, 97):
+        parts.append('stock level-19 caster-centred radius gains 10% from active Pathogenist Upgrade 1085')
+    if i in (126, 130, 176):
+        parts.append('stock blocked sight denies the selected shot before cast, IS cost or reuse')
+    if i in (33, 36, 514):
+        parts.append('cast completion rechecks the original target spawn and range before damage or splash')
     if r.get('sharpshooter'):
         parts.append(r['sharpshooter'])
     if r.get('health_callback'):
