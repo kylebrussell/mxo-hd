@@ -1,0 +1,6 @@
+{
+  "notes": {
+    "49": "PR735 verifies Gaussian Blur costs 20 IS and adds 520 +25 for 600 s. That record remains active when a later Evade Combat shortfall removes 217/624. https://github.com/kylebrussell/mxo-hd/pull/735#issuecomment-7074963029",
+    "217": "PR735 verifies one stock Evade Combat activation notice and 40 IS, 7 IS with 24 shield damage against level 11, and 10 IS with 36 shield damage against level 19. Exact payment to 0 IS preserves the shield. The next 7 IS shortfall removes 217/624 and starts 30 s reuse. The original retail admission predicate and internal shield scale remain open. https://github.com/kylebrussell/mxo-hd/pull/735#issuecomment-7074963029"
+  }
+}
