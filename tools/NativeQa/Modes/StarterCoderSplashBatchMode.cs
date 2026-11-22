@@ -11,7 +11,7 @@ public sealed class StarterCoderSplashBatchMode : NativeQaMode
     private const ushort CoderStyle = 1008, Lockdown = 21;
     // PR409 stock PacketLog: Coder Style at 3277; Lockdown against the live selected target at 5348.
     internal const string StockStyle = "80b9f003000000000000000000000000000000000000000000000000585cc70001000000086b0000000000";
-    private const string StockLockdown = "80b915000d000b000000000000000000000000000000000000000000585cc70001000000086b0000000000";
+    internal const string StockLockdown = "80b915000d000b000000000000000000000000000000000000000000585cc70001000000086b0000000000";
     internal sealed record Sample(ushort Id, int Damage, float Cast, int Reuse, bool Splash, string Request);
     internal static readonly Sample[] Samples =
     {

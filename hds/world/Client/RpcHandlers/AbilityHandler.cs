@@ -64,7 +64,22 @@ namespace hds
                 }
             }
 
-            if ((starterViralDamage || starterMovementDebuff || AbilityID == 69) &&
+            // These starter Coder casts require a live selected target, including the Tinkering area centre.
+            bool starterCoderCast = AbilityID == 21 || AbilityID == 33 || AbilityID == 36 || AbilityID == 514;
+            if (starterCoderCast)
+            {
+                ushort? spawn = packet.Length == 41 ? (ushort?)BitConverter.ToUInt16(packet, 4) : null;
+                if (!AbilityTargets.HasLiveAttackSelection(Store.currentClient, currentTargetViewId, spawn, requireOpponent: true))
+                {
+                    const string notice = "Select a living enemy before using this ability.";
+                    new ServerPackets().sendSystemChatMessage(Store.currentClient, notice, "BROADCAST");
+                    Store.currentClient.FlushQueue();
+                    Output.WriteDebugLog("[ABILITY] Denied " + AbilityID + ": " + notice);
+                    return;
+                }
+            }
+
+            if ((starterViralDamage || starterMovementDebuff || starterCoderCast || AbilityID == 69) &&
                 !AbilityTargets.WithinSelectionRange(Store.currentClient, AbilityID, currentTargetViewId))
             {
                 Store.currentClient.messageQueue.addRpcMessage(AbilityRefusals.Encode(
@@ -210,20 +225,6 @@ namespace hds
                 {
                     shooter.messageQueue.addRpcMessage(AbilityRefusals.Encode(new AbilityRefusals.Record(AbilityID, AbilityRefusals.InvalidTarget)));
                     shooter.FlushQueue();
-                    return;
-                }
-            }
-
-            // These starter Coder casts require a live selected target, including the Tinkering area centre.
-            if (AbilityID == 21 || AbilityID == 33 || AbilityID == 36 || AbilityID == 514)
-            {
-                ushort? spawn = packet.Length == 41 ? (ushort?)BitConverter.ToUInt16(packet, 4) : null;
-                if (!AbilityTargets.HasLiveAttackSelection(Store.currentClient, currentTargetViewId, spawn, requireOpponent: true))
-                {
-                    const string notice = "Select a living enemy before using this ability.";
-                    new ServerPackets().sendSystemChatMessage(Store.currentClient, notice, "BROADCAST");
-                    Store.currentClient.FlushQueue();
-                    Output.WriteDebugLog("[ABILITY] Denied " + AbilityID + ": " + notice);
                     return;
                 }
             }
