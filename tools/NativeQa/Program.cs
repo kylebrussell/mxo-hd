@@ -271,7 +271,7 @@ try
                     var pending = await actor.WaitForRpcAsync("81 88");
                     byte[] reply = fixtureMode is NativeQa.Modes.AbilityHealthParityMode
                         ? NativeQa.Modes.AbilityHealthParityMode.RejuvenateReply(pending.Bytes)
-                        : fixtureMode is NativeQa.Modes.StarterPersonalFirewallAndRestoreMode or NativeQa.Modes.StarterRestoreRsiPvpMode
+                        : fixtureMode is NativeQa.Modes.StarterPersonalFirewallAndRestoreMode or NativeQa.Modes.StarterRestoreRsiPvpMode or NativeQa.Modes.HackerRevitalizeReviveMode
                             ? Scenarios.NativeRejuvenateConsent() : new byte[54];
                     reply[0] = 0x81; reply[1] = 0x88;
                     Array.Copy(pending.Bytes, 2, reply, 2, 4);
@@ -285,6 +285,8 @@ try
                         actor.SendRpc(reply);
                         result = await NativeQa.Modes.AbilityHealthParityMode.CheckRejuvenatedAsync(actor, maxima, viewCursor);
                     }
+                    else if (fixtureMode is NativeQa.Modes.HackerRevitalizeReviveMode && reply[6] == 0 && reply[7] == 0)
+                        result = await NativeQa.Modes.HackerRevitalizeReviveMode.ApproveAsync(actor, reply);
                     else actor.SendRpc(reply);
                 }
                 else if (action == "invite") actor.SendRpc(Invite(q.GetProperty("target").GetString()!));
