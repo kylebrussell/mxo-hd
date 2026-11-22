@@ -316,6 +316,30 @@ namespace hds
 
         // ---- Spawning --------------------------------------------------------------------------------------------
 
+        private static readonly double[] SummonStandDistances = { 150, 100, 75 };
+        private static readonly int[] SummonStandTurns = { 0, 1, -1, 2, -2, 3, -3, 4 };
+
+        internal static (double X, double Y, double Z) SummonStand(ushort district, double x, double y, double z)
+        {
+            // Without a mapped origin, preserve the established offset and height.
+            if (!NavMesh.Locate(district, x, y, z, out NavLocation origin)) return (x + 150, y, z);
+            foreach (double radius in SummonStandDistances)
+            {
+                foreach (int turn in SummonStandTurns)
+                {
+                    double angle = turn * Math.PI / 4;
+                    double tx = x + radius * Math.Cos(angle), tz = z + radius * Math.Sin(angle);
+                    if (NavMesh.WalkableLine(district, origin, x, z, tx, tz, out NavLocation end) &&
+                        Math.Abs(end.floorY - origin.floorY) <= 40)
+                    {
+                        return (tx, end.floorY + 95, tz);
+                    }
+                }
+            }
+            // The owner is standing on the only verified floor left.
+            return (x, origin.floorY + 95, z);
+        }
+
         public static Pet SpawnFor(WorldClient owner, UInt16 ability)
         {
             if (!Summons.TryGetValue(ability, out Summon summon)) return null;
@@ -338,7 +362,8 @@ namespace hds
 
             double x = 0, y = 0, z = 0;
             NumericalUtils.LtVector3dToDoubles(owner.playerInstance.Position.getValue(), ref x, ref y, ref z);
-            x += 150;
+            ushort district = (ushort)owner.playerData.getDistrictId();
+            (x, y, z) = SummonStand(district, x, y, z);
 
             if (fixtureRifle) sheet = "Rifle";
             byte simId;
@@ -352,7 +377,7 @@ namespace hds
             var mob = new Mob();
             mob.setEntityId(WorldServer.entityIdCounter++);
             mob.setGoId(new byte[] { (byte)(SimulacraGoId & 0xff), (byte)(SimulacraGoId >> 8) });
-            mob.setDistrict((UInt16)owner.playerData.getDistrictId());
+            mob.setDistrict(district);
             mob.setDistrictName(owner.playerData.getDistrict());
             mob.setName(NameOf(summon.Kind, sheet));
             mob.setLevel((UInt16)level);
@@ -381,7 +406,8 @@ namespace hds
             SendWindow(pet, true);
             EnsureTimer();
             Output.WriteDebugLog("[PET] " + TimedEffects.PlayerName(owner) + " summoned " + mob.getName() + " L" + level +
-                                 " (ability " + ability + ", simulacrum " + simId + ")");
+                                 " (ability " + ability + ", simulacrum " + simId + ")" +
+                                 FormattableString.Invariant($" at ({x:0.##},{y:0.##},{z:0.##})"));
             return pet;
         }
 

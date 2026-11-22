@@ -8,6 +8,27 @@ namespace hds
     {
         private const int PathSearchMargin = 1200;
         private const int PathSearchLimit = 384;
+        private const double DirectWalkStep = 10;
+        private const double DirectWalkStepHeight = 40;
+
+        /// <summary>Trace a short walk over open polygon edges, at most 40 units up or down per sample.</summary>
+        internal static bool WalkableLine(ushort district, NavLocation from, double x, double z, double tx, double tz,
+            out NavLocation end)
+        {
+            end = from;
+            int steps = (int)Math.Ceiling(Math.Sqrt((tx - x) * (tx - x) + (tz - z) * (tz - z)) / DirectWalkStep);
+            for (int i = 1; i <= steps; i++)
+            {
+                double px = x + (tx - x) * i / steps, pz = z + (tz - z) * i / steps;
+                if (!Locate(district, px, end.floorY + 95, pz, out NavLocation step) ||
+                    Math.Abs(step.floorY - end.floorY) > DirectWalkStepHeight || !OpenBetween(district, end, step))
+                {
+                    return false;
+                }
+                end = step;
+            }
+            return true;
+        }
 
         /// <summary>Find waypoints through walkable portals on the current floor near the pursuit.</summary>
         internal static NavPoint[] WalkingPath(ushort world, double[] from, double[] to)

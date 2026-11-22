@@ -6,6 +6,29 @@ namespace hds.Tests;
 public class CoderPetTests
 {
     [Fact]
+    public void SummonKeepsTheStreetOffsetAndUsesTheSameRoomWhenTheOffsetIsBlocked()
+    {
+        string root = AppContext.BaseDirectory;
+        while (!File.Exists(Path.Combine(root, "data", "sector_properties.csv")))
+            root = Path.GetDirectoryName(root)!;
+        SectorProperties.Load(Path.Combine(root, "data", "sector_properties.csv"));
+        NavMesh.UseDirectory(Path.Combine(root, "data", "navmesh"));
+
+        Assert.Equal((17150d, 495d, 2300d), CoderPets.SummonStand(1, 17000, 495, 2300));
+        Assert.Equal((17150d, 497d, 2300d), CoderPets.SummonStand(ushort.MaxValue, 17000, 497, 2300));
+
+        Assert.True(NavMesh.Locate(1, 41010, 1695, 12280, out var owner));
+        Assert.True(owner.indoors);
+        Assert.False(NavMesh.Locate(1, 41160, 1695, 12280, out _));
+        var pet = CoderPets.SummonStand(1, 41010, 1695, 12280);
+        Assert.Equal(41116.07, pet.X, precision: 2);
+        Assert.Equal(1695, pet.Y);
+        Assert.Equal(12386.07, pet.Z, precision: 2);
+        Assert.True(NavMesh.WalkableLine(1, owner, 41010, 12280, pet.X, pet.Z, out var reached));
+        Assert.Equal((owner.sector, owner.region, owner.floorY), (reached.sector, reached.region, reached.floorY));
+    }
+
+    [Fact]
     public void ChargeSelectionUsesTheScriptedRangeAndPercentDecrease()
     {
         var owner = Owner(43);
