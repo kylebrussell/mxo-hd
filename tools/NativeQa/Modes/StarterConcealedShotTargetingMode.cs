@@ -38,7 +38,7 @@ public sealed class StarterConcealedShotTargetingMode : NativeQaMode
         {
             $"Level {Level}, 42/49 legal memory and rifle equipped. CSR PICK ({PickX},{Y},{Z}) faces QAEnemy ({TargetX},{Y},{Z}) from behind. Page 2 Rifles, 1137, 504. Use slot 1 and target QAEnemy. Keep the selection without Escape.",
             "Use slot 2 and wait for 1137 on (+19/623/881). Use the printed BLOCK move and press slot 3. Expected local sight refusal or server reason 9. Use the printed FAR move, which retains sight beyond 30 m, and press slot 3 again. Expected local range refusal or server reason 34.",
-            $"Both refusals leave 1137 active, IS at {ConcealedIs} after the initial 1137 cost, and no 504 cast bar, damage, modifier or reuse. Return to PICK without reactivating 1137 and press slot 3. Expect [STEALTH] 1137 off at cast start, 45 IS, 6 s bar, 23 damage and 45 s own reuse. No max [VITALS] change or [PVP] round."
+            $"Both refusals leave 1137 active, IS at {ConcealedIs} after the initial 1137 cost, and no 504 cast bar, damage, modifier or reuse. Return to PICK with ?tp {PickX} {Y} {Z} 265 f 4 - 40, keep 1137 active, and press slot 3. Expect [STEALTH] 1137 off at cast start, 45 IS, 6 s bar, 23 damage and 45 s own reuse. No max [VITALS] change or [PVP] round."
         });
 
     public override async Task<byte[]> AfterStartAsync(NativeQaBootstrapContext context)
