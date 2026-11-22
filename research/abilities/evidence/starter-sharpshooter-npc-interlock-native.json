@@ -1,0 +1,7 @@
+{
+  "abilities": {
+    "148": {
+      "note": "PR797 stock confirmed ordinary single-NPC interlock penalties in both attack and defence. The unarmed dummy gave a rifle -15, 0 with 148 loaded, then -15 after unload. The archived SMG and handgun deltas were -10 and -5. The earlier handgun sample was beyond the current 3 m gate; the exact 2 m return restored the penalty. The retail range selection and wider opponent policy remain open. https://github.com/kylebrussell/mxo-hd/pull/797#issuecomment-7084706682 https://github.com/kylebrussell/mxo-hd/pull/797#issuecomment-7084997285"
+    }
+  }
+}
