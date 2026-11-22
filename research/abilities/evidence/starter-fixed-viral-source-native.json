@@ -1,0 +1,52 @@
+{
+  "notes": {
+    "policy": "These rows use the shipped equal minimum and maximum with the stock-verified server contest and typed resistance path. The resistance curve is applied relative to its zero-resistance baseline. The native runs verify request admission, effects and presentation on this implementation."
+  },
+  "abilities": {
+    "53": {
+      "checks": {
+        "source-parity": {
+          "source": "GOB 53's instant health modifier stores equal values of 12, viral damage type 2, and the template selects TestFunction 2.",
+          "runtime": "The ordinary hostile cast requires a live target, checks the viral contest, applies caster viral influence to the fixed base, and applies typed resistance once on a hit.",
+          "test": "[PR761](https://github.com/kylebrussell/mxo-hd/pull/761#issuecomment-7082467881) observed 12 at +5% caster influence. [PR612](https://github.com/kylebrussell/mxo-hd/pull/612#issuecomment-7057719757) observed 14 with +17% caster influence and 10 against +75 resistance. [PR615](https://github.com/kylebrussell/mxo-hd/pull/615#issuecomment-7058034188) confirmed deflection applies no damage."
+        }
+      }
+    },
+    "57": {
+      "checks": {
+        "source-parity": {
+          "source": "GOB 57 stores equal damage endpoints 8, ValueFunction 0, viral damage type 2 and TestFunction 2.",
+          "runtime": "The ordinary selected-target path feeds base 8 through caster viral influence and the hit/deflect contest. A hit applies the same typed resistance consumer as the other viral casts.",
+          "test": "Stock [PR761](https://github.com/kylebrussell/mxo-hd/pull/761#issuecomment-7082467881) observed 8 with +5% caster influence, and [PR628](https://github.com/kylebrussell/mxo-hd/pull/628#issuecomment-7059322614) observed 9 on the selected hostile only. [PR615](https://github.com/kylebrussell/mxo-hd/pull/615#issuecomment-7058034188) and FreeCastViralLandingTests exercise the deflect path."
+        }
+      }
+    },
+    "58": {
+      "checks": {
+        "source-parity": {
+          "source": "GOB 58 stores equal damage endpoints 11, ValueFunction 0, viral damage type 2 and TestFunction 2.",
+          "runtime": "The target and contest gates run before the fixed base is scaled by caster influence and the recipient's typed resistance.",
+          "test": "Stock [PR761](https://github.com/kylebrussell/mxo-hd/pull/761#issuecomment-7082467881) observed neutral 11 at +5% influence. [PR612](https://github.com/kylebrussell/mxo-hd/pull/612#issuecomment-7057719757) observed 12 at +17% and 8 with +75 resistance. [PR615](https://github.com/kylebrussell/mxo-hd/pull/615#issuecomment-7058034188) confirmed zero damage on deflection."
+        }
+      }
+    },
+    "59": {
+      "checks": {
+        "source-parity": {
+          "source": "GOB 59 stores equal damage endpoints 17, ValueFunction 0, viral damage type 2 and TestFunction 2.",
+          "runtime": "The fixed base applies through the existing viral influence and typed resistance pipeline against the selected legal hostile after the free-cast contest.",
+          "test": "Stock [PR761](https://github.com/kylebrussell/mxo-hd/pull/761#issuecomment-7082467881) observed 17 at +5%. [PR612](https://github.com/kylebrussell/mxo-hd/pull/612#issuecomment-7057719757) observed 19 at +17% and 14 with +75 resistance. The exact stock replay covers admission and FreeCastViralLandingTests exercises deflection with no damage."
+        }
+      }
+    },
+    "60": {
+      "checks": {
+        "source-parity": {
+          "source": "GOB 60 stores equal damage endpoints 7, ValueFunction 0, viral damage type 2 and TestFunction 2. Its separate selected-area metadata allows secondary targets.",
+          "runtime": "The selected live opponent anchors one legal splash. The fixed base goes through the same typed resistance consumer for each recipient after valid admission and the applicable contest.",
+          "test": "Stock [PR761](https://github.com/kylebrussell/mxo-hd/pull/761#issuecomment-7082467881) observed primary and secondary 7. [PR612](https://github.com/kylebrussell/mxo-hd/pull/612#issuecomment-7057719757) observed raw 8 and resisted secondary 5. [PR628](https://github.com/kylebrussell/mxo-hd/pull/628#issuecomment-7059322614) observed resisted secondary 6 and then 8 after expiry, with allied and far recipients excluded. FreeCastViralLandingTests checks zero damage when the contest deflects."
+        }
+      }
+    }
+  }
+}
