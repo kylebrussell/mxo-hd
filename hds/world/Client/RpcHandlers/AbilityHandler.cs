@@ -27,7 +27,9 @@ namespace hds
             if (PrisonDevices.Handles(AbilityID)) { PrisonDevices.Activate(Store.currentClient, AbilityID, packet); return; }
             UInt16 currentTargetViewId = reader.ReadUInt16(1);
 
-            if (!CoderPets.IsCastLoaded(Store.currentClient, AbilityID))
+            bool starterViralDebuffNeedsLoadout = AbilityID == 43 || AbilityID == 48 || AbilityID == 69;
+            if (!CoderPets.IsCastLoaded(Store.currentClient, AbilityID) ||
+                (starterViralDebuffNeedsLoadout && !AbilityPassives.IsLoaded(Store.currentClient, AbilityID)))
             {
                 Deny(AbilityID, "Load this ability before using it.", AbilityRefusals.NotLoaded, sendServerText: false);
                 return;

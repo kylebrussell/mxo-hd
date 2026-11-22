@@ -45,6 +45,31 @@ public class AbilityRefusalFeedbackTests:IDisposable
         Assert.Equal(Hex("80ba840000006b0d0000000000000000000000"),AbilityCooldowns.BuildDenied(132,CombatStyles.DeniedWrongStyle));
         Assert.Equal((byte)6,AbilityCooldowns.DeniedBusy);Assert.Equal((byte)6,AbilityCooldowns.DeniedLegacyAmbiguous);
     }
+    [Theory]
+    [InlineData(43)]
+    [InlineData(48)]
+    [InlineData(69)]
+    public void UnloadedStarterViralDebuffRefusesBeforeCastOrCost(ushort id)
+    {
+        var caster = Client();
+        Store.currentClient = caster;
+        double castBefore = caster.playerData.castEndsAt;
+        var request = new byte[41];
+        BitConverter.GetBytes(id).CopyTo(request, 0);
+        BitConverter.GetBytes((ushort)4).CopyTo(request, 2);
+        BitConverter.GetBytes((ushort)2).CopyTo(request, 4);
+
+        new AbilityHandler().ProcessAbility(ref request);
+
+        byte[] packet = Assert.Single(Rpcs(caster));
+        Assert.True(AbilityRefusals.TryDecode(packet, out var refusal));
+        Assert.Equal((uint)id, refusal.AbilityID);
+        Assert.Equal(AbilityRefusals.NotLoaded, refusal.ErrorID);
+        Assert.Equal(500, AbilityHandler.CurrentInnerStrength(caster));
+        Assert.Equal(castBefore, caster.playerData.castEndsAt);
+        Assert.Empty(caster.playerData.cooldownEndsAt);
+    }
+
     [Fact] public void PoorFixtureUsesActualMinimumAndCappedRegeneration()
     {
         var c=Client(0);c.playerInstance.InnerStrengthMax.setValue((ushort)0);
