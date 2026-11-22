@@ -203,9 +203,10 @@ namespace hds
                 Output.WriteDebugLog("[AURA] " + id + " friendly pulse " + effectId);
                 return;
             }
-            // Miasma's authored effect has a viral hit test. The parent toggle and its upkeep
-            // are paid once, while each eligible recipient of the 701 pulse rolls separately.
-            var contest = effectId == 701 && effect.Number("Ability/TestFunction") == 2 ? new AbilityItem() : null;
+            // Miasma and Static Field store the viral test on the child. The parent upkeep
+            // is paid once, then each eligible pulse recipient rolls separately.
+            var contest = (effectId == 694 || effectId == 701) && effect.Number("Ability/TestFunction") == 2
+                ? new AbilityItem() : null;
             contest?.setAbilityID(effectId);
             double radius = effect.Number("Ability/RadiusOfEffect");
             double x = 0, y = 0, z = 0;
