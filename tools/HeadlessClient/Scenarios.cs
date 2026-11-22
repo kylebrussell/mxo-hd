@@ -39,6 +39,8 @@ public static partial class Scenarios
         new Scenario("machines-disturbing-trends",MachinesDisturbingTrends,new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="1",["MXO_MISSION_SITE_QA_SEED"]="201101",["MXO_PACKET_LOG"]="1"}),
         new Scenario("invisibility-duration",InvisibilityDuration,InvisibilityDurationFixture.Environment),
         new Scenario("engage-foes-taunt",EngageFoesTaunt,EngageFoesFixture.Environment),
+        new Scenario("patch-daemon2-server", PatchDaemon2Server, new Dictionary<string, string>(StillNpcs)
+            { ["MXO_DEV_COMMANDS"] = "1", ["MXO_DESPERATION_QA_HOLD_HEALTH"] = "1" }),
         new Scenario("mission-rpc-stall-recovery", MissionRpcStallRecovery, InteriorAdmissionFixture.Environment(InteriorAdmissionFixture.Zion)),
         new Scenario(MissionPublicStreetProof.Name,MissionPublicStreetRoute,MissionPublicStreetEnvironment(),Timeout:TimeSpan.FromMinutes(6)),
         new Scenario("mission-elevator-native-pose",c=>InteriorAdmissionProof(c,InteriorAdmissionFixture.ElevatorNativePose,true),InteriorAdmissionFixture.Environment(InteriorAdmissionFixture.ElevatorNativePose)),

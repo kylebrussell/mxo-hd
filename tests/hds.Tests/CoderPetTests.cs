@@ -79,6 +79,10 @@ public class CoderPetTests
         Assert.Equal((4, 7), (CoderPets.Summons[22].MinLevel, CoderPets.Summons[22].MaxLevel));
         Assert.Equal((44, 50), (CoderPets.Summons[617].MinLevel, CoderPets.Summons[617].MaxLevel));
         Assert.Equal(CoderPets.Kind.Healer, CoderPets.Summons[602].Kind);
+        Assert.Equal(CoderPets.Kind.Healer, CoderPets.Summons[612].Kind);
+        Assert.Equal(23, CoderPets.SimLevel(CoderPets.Summons[612], 22));
+        Assert.Equal(29, CoderPets.SimLevel(CoderPets.Summons[612], 29));
+        Assert.Equal(43, CoderPets.SimLevel(CoderPets.Summons[612], 50));
         Assert.Equal(CoderPets.Kind.Nuker, CoderPets.Summons[616].Kind);
         Assert.Equal(7, CoderPets.SimLevel(CoderPets.Summons[22], 50));
         Assert.Equal(4, CoderPets.SimLevel(CoderPets.Summons[22], 1));
