@@ -1,0 +1,14 @@
+{
+  "abilities": {
+    "126": {
+      "checks": {
+        "stats": {
+          "source": "The shipped 126 stores a ten-second Ballistic Accuracy modifier. A retail Disarming Shot application delivers source 126, stat 524 and the captured signed value -24. https://github.com/kylebrussell/mxo-hd/blob/38b1ffe6/research/packet-dumps/community-intake/20260608T122812Z-hdneo-public-endgame-mission-sanitized-selected/logs/mxopackets1_medanon_niobe3dualduality.log.txt#L19283-L19296",
+          "runtime": "An actual shot from the affected player consumes its current signed ballistic input. The melee total remains independent and the matching modifier removal restores the ballistic total.",
+          "test": "StarterDisarmingShotAccuracyMode replays the exact stock request and correlates actual attacks with the matching stat records. PR799 stock confirmed 19 to -1 to 19 with source 126's -20 for 10 s, and melee 19 for all three samples. https://github.com/kylebrussell/mxo-hd/pull/799#issuecomment-7084857062"
+        }
+      },
+      "note": "PR799 stock queued 126 in PvP interlock, hit for 11 and proved the recipient's signed ballistic-accuracy consumption through expiry. Wider hit and damage parity remains open. https://github.com/kylebrussell/mxo-hd/pull/799#issuecomment-7084857062"
+    }
+  }
+}

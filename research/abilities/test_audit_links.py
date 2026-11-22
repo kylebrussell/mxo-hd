@@ -1,3 +1,4 @@
+import csv
 import hashlib
 import re
 import subprocess
@@ -64,5 +65,16 @@ class AuditLinkTests(unittest.TestCase):
         self.assertIn('[web](https://example.com/path?q=1#part)',result)
         self.assertIn('[local](#heading)',result)
         self.assertIn('('+BASE+'research/client-scripts/tempmods.py#L342)',result)
+
+    def test_legacy_soldier_links_do_not_create_active_script_checks(self):
+        with tempfile.TemporaryDirectory(prefix='mxo-audit-legacy-soldier-') as temp:
+            output = Path(temp)
+            self.generate(output)
+            with (output / 'ABILITY-PARITY.csv').open(encoding='utf-8', newline='') as stream:
+                rows = {row['id']: row for row in csv.DictReader(stream)}
+        self.assertIn('old_sm_pistol.py', rows['126']['shipped_behavior'])
+        self.assertIn('legacy module omitted at startup', rows['126']['shipped_behavior'])
+        self.assertNotIn('script: Verify callback coverage for PistolDisarmingShot_DirectObject', rows['126']['remaining'])
+        self.assertIn('script: Verify callback coverage for RemoteProxy2_Deactivate', rows['28']['remaining'])
 
 if __name__=='__main__': unittest.main()
