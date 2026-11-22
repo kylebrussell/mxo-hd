@@ -1,0 +1,22 @@
+{
+  "abilities": {
+    "5": {
+      "checks": {
+        "source-parity": {
+          "source": "GOB 5 stores a self-applied 20-second Thrown Resistance 1033 modifier using character-level function 3 × 1.5. A direct hostile health damage component identifies the thrown path with target 108 and DamageType 7, while an explicitly typed ThrownDOT callback reaches the separate timed path. The original GetDamageReductionValue script supplies the level and armor curve with signed caps. The original typed damage consumer's full argument construction remains unarchived.",
+          "runtime": "The chosen server policy applies the shipped reduction curve to general and matching typed resistance once, after existing attacker damage influence, and divides by the zero-resistance factor before flooring to preserve the unmodified hit. The victim's on-path TypedAbilityResistance.Player receiver reads 1033 when PvpCombat lands a qualifying thrown ability. TimedEffects reads the same typed total on each eligible thrown tick. Ordinary toughness, healing, self effects, and unrelated viral damage keep their own behavior.",
+          "test": "PR382 stock QA on 78de9bdc cast 5 while QAEnemy was selected, applied +75 to CSR for 20 s, and observed the opposing 1135 type-7 hit go from raw 83 to final 68 with 15 resisted, then to 83 after the buff expired. A press roughly 25 s after cast sent no new request during the 60 s reuse. PR506's PacketLog independently confirms the 1033 +75 add and removal before 8 replaces the buff. TypedAbilityResistanceTests covers the selected direct type, real buff removal, exact zero-baseline normalization, typed DOT routing and other health/control exclusions. The native 1135 witness establishes receiver consumption at the tested damage input. https://github.com/kylebrussell/mxo-hd/pull/382#issuecomment-7021922664 https://github.com/kylebrussell/mxo-hd/pull/506"
+        }
+      }
+    },
+    "8": {
+      "checks": {
+        "source-parity": {
+          "source": "GOB 8 stores a self-applied 20-second Viral Resistance 157 modifier using character-level function 3 × 1.5. GOB 330 identifies direct hostile health damage with target 108 and DamageType 2. The 474 infection supplies a typed ViralDOT component and the shipped tempmods.ViralDOT calls dealAbilityDamage with that damage type. The original GetDamageReductionValue supplies the level and armor curve. The original native combination of the typed argument and any baseline remains unarchived.",
+          "runtime": "PvpCombat passes a landed viral ability's existing influenced damage to TypedAbilityResistance.Player. The receiver uses general and viral 157 resistance on the target exactly once. TimedEffects applies that same calculation at each eligible tick using the preserved viral type and current target stat. The chosen normalization floors the shipped adjusted damage divided by the zero-resistance factor, preserving the existing hit with no modifiers.",
+          "test": "PR382 stock QA on 78de9bdc cast 8 on self while QAEnemy was selected and saw +75 resistance for 20 s. Opposing 330 dealt raw 424 / final 348, then 424 after expiry. The same 474 infection ticked for 59 of 72 while 8 remained active and 72 after natural removal. The native observation is a per-hit damage read, independent of fixture health topping up between ticks. PR506's PacketLog confirmed 157 +75 after 5 was removed and the 60 s reuse. TypedAbilityResistanceTests covers real buffs, exact zero-baseline normalization, component-specific DOT typing, and matching current target caps through expiry. https://github.com/kylebrussell/mxo-hd/pull/382#issuecomment-7021922664 https://github.com/kylebrussell/mxo-hd/pull/506"
+        }
+      }
+    }
+  }
+}
