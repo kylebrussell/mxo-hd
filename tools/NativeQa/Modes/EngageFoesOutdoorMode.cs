@@ -1,6 +1,5 @@
 using hds;
 using HeadlessClient;
-using MxoHd.PacketResearch;
 
 namespace NativeQa.Modes;
 
@@ -54,7 +53,7 @@ public sealed class EngageFoesOutdoorMode : NativeQaMode
         var observer = await HeadlessPlayer.LoginAsync(context.Address, "QAFriend", "QAFriend", stockCharacterLoad: true);
         context.Helpers.Add(observer.Handle, observer);
         await observer.EnterWorldAsync();
-        var observerTargets = await VerifyTargetsAsync(observer);
+        await VerifyTargetsAsync(observer);
         NativeQaReadiness.RequireNoAmbientAggro(server, observer);
         if (context.StockProbe is not { } actor) return Array.Empty<byte>();
 
@@ -69,45 +68,15 @@ public sealed class EngageFoesOutdoorMode : NativeQaMode
         var primary = targets[0];
         actor.SendRpc(StarterCoderPetBuffsAndDetonateMode.CoderStock);
         await actor.WaitForViewUpdateAsync(2, "02 80 80 80 80 80 10 f0 03 00 00");
-        await EngageFoesFixture.RequireFullHealthAsync(actor, primary);
+        var expected = targets.Where((_, i) => Targets[i].Hit).Select(view => view.ViewId).Order().ToArray();
+        Check.That(EngageFoesFixture.ExpectedRecipients(actor.World.CreationSnapshot(), primary).SequenceEqual(expected),
+            "The live target geometry distinguishes the inclusive 6 m edge, the 6.01 m exclusion, and the caster-near exclusion");
         actor.SendRpc($"81 51 {StockAbilityProfile.LittleEndianHex(primary.ViewId)} {StockAbilityProfile.LittleEndianHex(primary.SpawnId)}");
-        int rpc = actor.World.RpcSnapshot().Count, views = actor.World.ViewSnapshot().Count;
-        int log = server.DebugLog().Length;
-        // Reuse the established Engage Foes headless encoder and retain the first full native 610 request during QA.
-        var request = new AbilityUseRecord(Engage, DuelPackets.Handle(primary.ViewId, primary.SpawnId),
-            0, 0, 0, 0, 0x6b, 0x6b, 0, 0);
-        actor.SendRpc(request.Encode());
-        await EvidenceRetestWire.CastBarAsync(actor, Engage, 2);
-        await EvidenceRetestWire.TimerAsync(actor, rpc, Engage, AbilityCooldowns.OwnTimer, 30);
-        await actor.WaitUntilAsync(() => actor.World.ViewSnapshot().Skip(views)
-            .SelectMany(AbilityParityCoderSweepMode.InnerStrengthUpdates).Contains((ushort)200), "Exactly 50 IS spent", HeadlessPlayer.DefaultTimeout);
-        await actor.WaitUntilAsync(() => Lines().Count(line => line.Contains("source=610 stat=93 remove value=0 duration=6s")) == 2,
-            "Both applied Enraged states expire at their stored six-second duration", TimeSpan.FromSeconds(10));
-
-        var result = Lines();
-        for (int i = 0; i < targets.Length; i++)
-        {
-            var target = targets[i];
-            bool hit = Targets[i].Hit;
-            int expected = hit ? 1 : 0;
-            Check.Equal(expected, result.Count(line => line.Contains($"mob='{target.Name}'") && line.Contains("source=610 stat=93 add value=0 duration=6s")), $"Enraged on {target.Name}");
-            Check.Equal(expected, result.Count(line => line.Contains($"[ENGAGE-FOES] source={actor.CharId} ") &&
-                line.Contains($"view={target.ViewId} ") && line.Contains($"spawn={target.SpawnId} ")), $"Taunt on {target.Name}");
-            if (hit)
-            {
-                Check.That(result.Any(line => line.Contains($"[ABILITY] 610 lands on view {target.ViewId} for 0")), "The control deals no direct damage");
-                Check.That(result.Any(line => line.Contains($"[AGGRO] {target.Name} pursues {actor.CharId}")),
-                    "The successful TauntAggro initializer can start ordinary NPC pursuit after landing");
-            }
-            else
-                await EngageFoesFixture.RequireFullHealthAsync(observer, observerTargets[i]);
-        }
-        Check.That(!result.Any(line => line.Contains("[PVP] Round")), "The NPC responses do not open PvP");
-        Check.Equal(0, actor.World.Problems.Count + observer.World.Problems.Count, "Ability wire framing");
-        Console.WriteLine("ENGAGE FOES PASS: selected healthy primary, inclusive 6m edge, two exclusions, taunt and Enraged expiration.");
+        // The first stock 610 activation belongs to the native session. The existing separate
+        // engage-foes-taunt server scenario exercises the normal 610 handler and AI diversion.
+        Check.Equal(0, actor.World.Problems.Count + observer.World.Problems.Count, "Fixture packet framing");
+        Console.WriteLine("ENGAGE FOES NATIVE BOOTSTRAP PASS: captured Coder Style, live target selection and clear 6 m geometry. No 610 request sent.");
         return Array.Empty<byte>();
-
-        string[] Lines() => server.DebugLog()[log..].Split('\n');
 
         async Task<ViewCreation[]> VerifyTargetsAsync(HeadlessPlayer player)
         {
