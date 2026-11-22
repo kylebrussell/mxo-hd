@@ -112,6 +112,11 @@ namespace hds
             if (starterCoderCast)
             {
                 var caster = Store.currentClient;
+                if (!AbilityPassives.IsLoaded(caster, AbilityID))
+                {
+                    Deny(AbilityID, "Load this ability before using it.", AbilityRefusals.NotLoaded, sendServerText: false);
+                    return;
+                }
                 lockedDamageTargetSpawn = (ushort?)caster.viewMan.getViewById(currentTargetViewId)?.spawnId;
                 ushort? requestedSpawn = packet.Length == 41 ? BitConverter.ToUInt16(packet, 4) : lockedDamageTargetSpawn;
                 if (!lockedDamageTargetSpawn.HasValue ||
@@ -665,6 +670,12 @@ namespace hds
                 {
                     AbilityCooldowns.Start(client, ability.getAbilityID(), TimeUtils.GetSimTimeSeconds());
                 }
+
+            if (starterCoderCast && !AbilityPassives.IsLoaded(client, AbilityID))
+            {
+                Output.WriteDebugLog($"[ABILITY] {AbilityID} fizzles: the Coder ability was unloaded during the cast");
+                return;
+            }
 
             if ((starterCoderCast || starterViralDamage) &&
                 (!AbilityTargets.HasLiveAttackSelection(client, currentTargetViewId, lockedDamageTargetSpawn, requireOpponent: true) ||

@@ -161,6 +161,7 @@ public class AbilityRefusalFeedbackTests:IDisposable
     public void TinkeringWithoutALiveSelectionLeavesResourcesAndCastStateUntouched(ushort id, ushort view)
     {
         var client = Client();
+        client.playerData.passives.Loaded[id] = 18;
         double castEndsAt = client.playerData.castEndsAt;
         ushort previousAbility = client.playerData.lastAbilityId;
         Store.currentClient = client;
@@ -242,6 +243,8 @@ public class AbilityRefusalFeedbackTests:IDisposable
     public void DelayedHostileCastCannotLandOnANewerSpawnInTheOriginalView(ushort abilityId, int length)
     {
         var caster = Client();
+        if (abilityId is 21 or 33 or 36 or 514)
+            caster.playerData.passives.Loaded[abilityId] = 18;
         var target = Client();
         target.playerData.setCharID(111);
         target.playerData.setEntityId(42);
