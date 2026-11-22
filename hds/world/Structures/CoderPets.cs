@@ -255,9 +255,13 @@ namespace hds
             return true;
         }
 
-        // OURS combat conversion; all four sourced Fortify resistance scores use the same rating curve.
-        public static int Mitigate(Pet pet, int damage, double now) => now < pet.FortifyUntil
-            ? (int)Math.Ceiling(damage * 100.0 / (100 + pet.FortifyResistance)) : damage;
+        // NPC retaliation already includes the level ratio. Normalize the shipped armor curve
+        // against zero toughness so Fortify adds only the change from its resistance rating.
+        internal static int MitigateRetaliation(Pet pet, int attackerLevel, int damage, double now)
+        {
+            if (damage <= 0 || now >= pet.FortifyUntil) return damage;
+            return Math.Max(1, (int)TypedAbilityResistance.Amount(damage, attackerLevel, pet.Mob.getLevel(), pet.FortifyResistance));
+        }
 
         // OURS base roll/level curve; sourced 700 accuracy (level*1.3) now changes the actual attack roll.
         public static double HitChance(Pet pet, int targetLevel, double now) => Math.Clamp(
@@ -1253,8 +1257,13 @@ namespace hds
                 !GroundLine(district, from, mob.getXPos(), mob.getZPos(), (target.getXPos(), target.getYPos(), target.getZPos())))
                 return;
             pet.NextRetaliation = now + AttackPeriodSeconds;
-            UInt16 damage = CombatCalculator.CalculateMobDamageWithTactics(target.getLevel(), pet.Mob.getLevel());
-            DamagePet(pet, Mitigate(pet, damage, now), CombatCalculator.GetRandomMeleeHitFx());
+            ushort raw = CombatCalculator.CalculateMobDamageWithTactics(target.getLevel(), mob.getLevel());
+            int damage = MitigateRetaliation(pet, target.getLevel(), raw, now);
+            ushort before = mob.getHealthC();
+            DamagePet(pet, damage, CombatCalculator.GetRandomMeleeHitFx());
+            int rating = now < pet.FortifyUntil ? pet.FortifyResistance : 0;
+            Output.WriteDebugLog($"[PET RETALIATION] attacker={target.getName()} attackerLevel={target.getLevel()} pet={pet.SimulacraId} " +
+                $"petLevel={mob.getLevel()} meleeRating={rating} raw={raw} final={damage} HP={before}->{mob.getHealthC()}");
         }
 
         /// <summary>Patch Daemon heals its owner when hurt. No retail value is known: it heals the NPC round amount at its level (our choice).</summary>
