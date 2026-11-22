@@ -340,8 +340,11 @@ def server(i):
         parts.append('cast completion rechecks the original target spawn and range before damage or splash')
     if i in (40, 86):
         parts.append('cast completion requires the original hostile spawn in range before applying its timed effect')
+    if i in (40, 86, 130):
+        parts.append('the active Force Combat penalty lowers the current engagement score until expiry')
     if i in (43, 48, 69):
         parts.append('cast completion rechecks the original hostile spawn and range before debuff or damage over time')
+        parts.append('checks loaded membership at admission and preserves the duration of landed effects on unload')
     if r.get('sharpshooter'):
         parts.append(r['sharpshooter'])
     if r.get('health_callback'):
@@ -439,6 +442,7 @@ def server(i):
         parts.append('stock level-19 +24 on the chosen allies feeds melee, ballistic and thrown special attack inputs')
     if i in (46, 68, 173):
         parts.append('requires clear sight to the selected ally before charging and at cast completion')
+        parts.append('requires loaded membership at admission and completion')
     if i == 113:
         parts.append('stock equal-level shield damage 35 to 36 when 1048 +3 is loaded')
     if i in (22, 27, 28):

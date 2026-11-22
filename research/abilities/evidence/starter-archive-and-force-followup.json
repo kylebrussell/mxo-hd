@@ -1,0 +1,31 @@
+{
+  "abilities": {
+    "40": {
+      "note": "PR800 headless live engagement test applies the actual timed source 40 stat 519 -20 for 25 s. The affected player's Force score falls from 110 to 88 against unchanged Evade 110, then returns to 110 on expiry. The other actor's stat 519 and the affected player's melee accuracy stay fixed. Exact retail engagement arithmetic remains open. https://github.com/kylebrussell/mxo-hd/pull/800"
+    },
+    "43": {
+      "note": "PR786 stock gated the unloaded Disrupt Inputs shortcut locally before sending a cast. A reloaded 10 IS cast applied stat 90 for 16 s. Unloading the ability after landing left the target record until its ordinary expiry. Disposable replay verifies the server reason 7 for a stale stock-format request. https://github.com/kylebrussell/mxo-hd/pull/786#issuecomment-7084001036"
+    },
+    "46": {
+      "note": "PR793 stock locally gated the unloaded Fast Healing shortcut. A normal selected-friendly cast after loading cost 35 IS and added stat 112 +40 for 600 s. The current fixture replays the complete stock 80 b9 witness. https://github.com/kylebrussell/mxo-hd/pull/793#issuecomment-7084106305"
+    },
+    "48": {
+      "note": "PR786 stock gated the unloaded Freeze System shortcut locally. The reloaded 26 IS cast applied 85 for 6 s and both stat 157 -20 and source 734 stat 681 for 12 s. Unloading after landing left all three records to expire on schedule. Disposable replay verifies the server refusal for a stale request. https://github.com/kylebrussell/mxo-hd/pull/786#issuecomment-7084001036"
+    },
+    "68": {
+      "note": "PR793 stock locally gated an unloaded Firewall. Unloading during an admitted cast kept the 40 IS debit and fizzled before applying any modifier. A fresh cast after reloading applied stat 157 +40 and 180/181/1033 +10 for 300 s to the same selected ally. https://github.com/kylebrussell/mxo-hd/pull/793#issuecomment-7084106305"
+    },
+    "69": {
+      "note": "PR786 stock gated Processor Lag locally while unloaded. The reloaded 10 IS cast applied stat 1157 +35 for 30 s. It still produced exactly five six-point damage ticks and cleared the same record after a post-landing unload. Disposable replay verifies the server refusal for a stale request. https://github.com/kylebrussell/mxo-hd/pull/786#issuecomment-7084001036"
+    },
+    "86": {
+      "note": "PR800 headless applies Slow's actual stat 519 -15 for 28 s and verifies the affected player's Force score falls from 110 to 93 against unchanged Evade 110 and returns to 110 on expiry. The measured stock movement proof is in PR794. https://github.com/kylebrussell/mxo-hd/pull/800 https://github.com/kylebrussell/mxo-hd/pull/794#issuecomment-7083808258"
+    },
+    "130": {
+      "note": "PR800 headless applies Hindering Shot's actual stat 519 -10 for 8 s and verifies the affected player's Force score falls from 110 to 99 against unchanged Evade 110 and returns to 110 on expiry. This covers the existing Force input. Wider original retail scaling and other open checks remain. https://github.com/kylebrussell/mxo-hd/pull/800"
+    },
+    "173": {
+      "note": "PR793 stock locally gated unloaded Combat Enhancement. After loading, the normal selected-friendly cast charged 40 IS and added 522/524/1032 +24 for 300 s to the same ally. Stock provided the complete request used for the headless replay. https://github.com/kylebrussell/mxo-hd/pull/793#issuecomment-7084106305"
+    }
+  }
+}
