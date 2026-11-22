@@ -26,6 +26,8 @@ namespace hds
         public const byte KindAccepted = 0x02;
 
         public const byte StanceStanding = 0x00;
+        public const byte StanceSneaking = 0x09;
+        public const byte StanceInvisible = 0x1a;
         public const byte StanceSitting = 0x0a;
 
         /// <summary>ConditionStateFlags bit set while sitting (retail own view 01 00 00 20 00 after 34 0a).</summary>

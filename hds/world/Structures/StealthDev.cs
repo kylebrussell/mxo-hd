@@ -81,7 +81,6 @@ namespace hds
         // Only for the disposable movement comparison. The active ability owns visibility and stat records.
         private static string MovementPose(WorldClient client, bool stand)
         {
-            const byte sneak = 9, invisibility = 26;
             var data = client.playerData;
             if (data.getCharID() != 110 || !client.Alive || data.worldChangePending || data.DistrictIsLA() ||
                 !QaLoadout.Allowed(Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS"),
@@ -92,19 +91,14 @@ namespace hds
             if (stand)
             {
                 byte stance = EmoteHandler.Stance(client);
-                if (stance == sneak || stance == invisibility)
+                if (stance == AnimationPackets.StanceSneaking || stance == AnimationPackets.StanceInvisible)
                     EmoteHandler.SetStance(client, AnimationPackets.StanceStanding);
                 return "Stealth pose cleared.";
             }
-            byte? pose = Stealth.Current(client)?.Def.Ability switch
-            {
-                Stealth.SneakGrantAbility => sneak,
-                Stealth.InvisibilityGrantAbility => invisibility,
-                _ => null
-            };
-            if (pose == null) return "Activate Sneak or the Invisibility Belt first.";
-            EmoteHandler.SetStance(client, pose.Value);
-            return $"Stealth pose {pose.Value:x2} sent.";
+            byte pose = Stealth.MovementStance(Stealth.Current(client)?.Def.Ability ?? 0);
+            if (pose == AnimationPackets.StanceStanding) return "Activate Sneak or the Invisibility Belt first.";
+            EmoteHandler.SetStance(client, pose, respectStealth: true);
+            return $"Stealth pose {pose:x2} sent.";
         }
     }
 }

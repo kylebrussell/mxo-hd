@@ -32,8 +32,8 @@ public sealed class AwakenedStealthMovementPoseMode : NativeQaMode
         readyMessages: new[]
         {
             $"CSR ({X},{Y},{Z}) faces +Z on verified outdoor NAV floor 400, with QAFriend ({ObserverX},{Y},{Z}). No bag clicks. Page 2 Spy, Sneak, Belt. Sprint and Speed are unloaded. Before each sample use {Home}.",
-            "Pick Spy style. For each stance (Sneak first, then Belt) activate with the stock hotbar once. With the ability still active, enter ?stealth stand and run forward for 2 s. Return to the same stand. Enter ?stealth pose and run forward again for 2 s. Use the same run setting and save first movement and first stop frames.",
-            "Expect [EMOTE] stance 09 for Sneak and 1a for Belt after ?stealth pose. Compare each pair. Note any outgoing 33 that clears the pose on movement. The active [MODIFIER] 115 -200/-300 stays identical. No MovementScale override, scripted displacement or damage. Clear the pose with ?stealth stand, then toggle off the stock ability before moving to the next pair."
+            "Pick Spy style. From HOME, run forward for 2 s with no stealth. Return to HOME. Activate Sneak with slot 2 and run again for 2 s without any pose command. Toggle off with slot 2 and repeat from HOME at normal speed.",
+            "Repeat with the Belt in slot 3 (3 s cast, 50 IS). Expect [EMOTE] 09 Sneak or 1a Belt on activation, stock walk state 01 while moving and stance 00 on toggle-off. Report matched distance ratios and look for run state 03 after off. Expect [MODIFIER] 115 -200/-300 add and remove, with no max [VITALS] change or [PVP] round. Neither QA pose command is needed."
         });
 
     public override async Task<byte[]> AfterStartAsync(NativeQaBootstrapContext context)
@@ -65,35 +65,33 @@ public sealed class AwakenedStealthMovementPoseMode : NativeQaMode
         actor.SendRpc(SpyUse);
         await actor.WaitForViewUpdateAsync(2, "02 80 80 80 80 80 10 58 04 00 00");
 
-        await CompareAsync(Sneak, SneakUse, 9, -200, 0);
-        await CompareAsync(Belt, BeltUse, 26, -300, 68);
+        await CheckToggleAsync(Sneak, SneakUse, 9, -200, 0);
+        await CheckToggleAsync(Belt, BeltUse, 26, -300, 68);
         Check.Equal(0, actor.World.Problems.Count + observer.World.Problems.Count, "Stealth diagnostic framing");
         return Array.Empty<byte>();
 
-        async Task CompareAsync(ushort ability, string request, byte stance, int pace, int seconds)
+        async Task CheckToggleAsync(ushort ability, string request, byte stance, int pace, int seconds)
         {
             int begin = actor.World.RpcSnapshot().Count;
-            actor.SendRpc(request);
-            await StockAbilityProfile.ObserveAsync(actor, begin,
-                frame => StockAbilityProfile.Bonus(frame, ability, 115, pace, seconds, false), $"Stock {ability} sets its movement penalty");
             int own = actor.World.ViewSnapshot().Count;
             int seen = observer.World.ViewSnapshot().Count;
-            actor.SendChat("?stealth pose");
-            await actor.WaitForTextAsync($"Stealth pose {stance:x2} sent.");
+            actor.SendRpc(request);
+            await StockAbilityProfile.ObserveAsync(actor, begin,
+                frame => StockAbilityProfile.Bonus(frame, ability, 115, pace, seconds, false),
+                $"Stock {ability} sets its movement modifier");
             await EvidenceRetestWire.ViewSinceAsync(actor, own, 2, $"01 28 ?? 40 {stance:x2} 00 00 10");
             await EvidenceRetestWire.ViewSinceAsync(observer, seen, observedView, $"01 2a ?? 40 {stance:x2} 00 00 10");
-            own = actor.World.ViewSnapshot().Count;
-            actor.SendChat("?stealth stand");
-            await actor.WaitForTextAsync("Stealth pose cleared.");
-            await EvidenceRetestWire.ViewSinceAsync(actor, own, 2, "01 28 ?? 40 00 00 00 10");
-            Check.That(!actor.World.RpcSnapshot().Skip(begin).Any(frame =>
-                StockAbilityProfile.Bonus(frame, ability, 115, pace, seconds, true)), "Pose changes leave the penalty active");
 
             await Task.Delay(TimeSpan.FromSeconds(2.1));
             int off = actor.World.RpcSnapshot().Count;
+            own = actor.World.ViewSnapshot().Count;
+            seen = observer.World.ViewSnapshot().Count;
             actor.SendRpc(request);
             await StockAbilityProfile.ObserveAsync(actor, off,
-                frame => StockAbilityProfile.Bonus(frame, ability, 115, pace, seconds, true), $"Stock {ability} removes its movement penalty");
+                frame => StockAbilityProfile.Bonus(frame, ability, 115, pace, seconds, true),
+                $"Stock {ability} removes its movement modifier");
+            await EvidenceRetestWire.ViewSinceAsync(actor, own, 2, "01 28 ?? 40 00 00 00 10");
+            await EvidenceRetestWire.ViewSinceAsync(observer, seen, observedView, "01 2a ?? 40 00 00 00 10");
         }
     }
 }

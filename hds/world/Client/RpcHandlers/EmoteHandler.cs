@@ -65,11 +65,11 @@ namespace hds
 
         // ---- sending animations --------------------------------------------------------------------------------
 
-        private static AnimationPackets.Animation Next(WorldClient client, byte kind, byte stance, UInt16? action)
+        private static AnimationPackets.Animation Next(WorldClient client, byte kind, byte stance, UInt16? action, bool advance = true)
         {
             double x = 0, y = 0, z = 0;
             NumericalUtils.LtVector3dToDoubles(client.playerInstance.Position.getValue(), ref x, ref y, ref z);
-            client.playerData.emoteCounter++;
+            if (advance) client.playerData.emoteCounter++;
             return new AnimationPackets.Animation
             {
                 Counter = client.playerData.emoteCounter, Kind = kind, Stance = stance, Action = action,
@@ -83,7 +83,8 @@ namespace hds
 
         /// <summary>The animation to the subject's own view and to everyone with a view of them, each with the partner
         /// as they know them.</summary>
-        private static void Play(WorldClient subject, AnimationPackets.Animation a, WorldClient partner, UInt32? flags = null)
+        private static void Play(WorldClient subject, AnimationPackets.Animation a, WorldClient partner, UInt32? flags = null,
+            bool respectStealth = false)
         {
             if (!subject.IsBot)
             {
@@ -92,16 +93,19 @@ namespace hds
                 subject.FlushQueue();
             }
 
+            var clients = WorldServer.Clients;
+            if (clients == null) return;
             List<WorldClient> others;
-            lock (WorldServer.Clients)
+            lock (clients)
             {
-                others = WorldServer.Clients.Values.Where(c => c != null && c != subject && !c.IsBot).ToList();
+                others = clients.Values.Where(c => c != null && c != subject && !c.IsBot).ToList();
             }
 
             foreach (WorldClient viewer in others)
             {
-                ClientView view = viewer.viewMan.FindViewForEntity(subject.playerData.getEntityId());
-                if (view == null || !view.viewCreated)
+                ClientView view = viewer.viewMan?.FindViewForEntity(subject.playerData.getEntityId());
+                if (view == null || !view.viewCreated || respectStealth &&
+                    (view.viewNeedsToBeDeleted || Stealth.HiddenFrom(viewer, subject)))
                 {
                     continue;
                 }
@@ -305,7 +309,7 @@ namespace hds
         }
 
         /// <summary>The stance to the player's own view and everyone else's; sitting also sets ConditionStateFlags 0x00200000.</summary>
-        internal static void SetStance(WorldClient client, byte stance)
+        internal static void SetStance(WorldClient client, byte stance, bool respectStealth = false)
         {
             bool wasSitting = client.playerData.stance == AnimationPackets.StanceSitting;
             bool sitting = stance == AnimationPackets.StanceSitting;
@@ -326,9 +330,12 @@ namespace hds
                 client.playerInstance.ConditionStateFlags.setValue(flags.Value);
             }
 
-            Play(client, Next(client, AnimationPackets.KindPlain, stance, null), null, flags);
+            Play(client, Next(client, AnimationPackets.KindPlain, stance, null), null, flags, respectStealth);
             Output.WriteDebugLog("[EMOTE] " + SocialHandler.HandleOf(client) + " stance " + stance.ToString("x2"));
         }
+
+        internal static byte[] CurrentStanceUpdate(WorldClient client) =>
+            AnimationPackets.Other(Next(client, AnimationPackets.KindPlain, Stance(client), null, advance: false), 0);
 
         /// <summary>A player left the world: their requests go, and so do requests to them.</summary>
         public static void PlayerLeftWorld(WorldClient client)
