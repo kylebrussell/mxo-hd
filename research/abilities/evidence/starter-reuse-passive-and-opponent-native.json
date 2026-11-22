@@ -1,0 +1,67 @@
+{
+  "families": {
+    "clear-head-loaded-passive": {
+      "representative": 233,
+      "result": "pass",
+      "head": "47a2bb07",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/755#issuecomment-7081754805",
+      "scope": "1047 +3 and 1141 +1 restore after unload/reload. Patcher self-heal changes 24 to 23 on unloading 233."
+    },
+    "hostile-programming-loaded-passive": {
+      "representative": 349,
+      "result": "pass",
+      "head": "47a2bb07",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/755#issuecomment-7081754805",
+      "scope": "1147 +1 and 1056 +5 restore. Max IS tracks 1080/1030/1080 and Logic Blast attack input 35/34/35."
+    },
+    "dedication-loaded-passive": {
+      "representative": 370,
+      "result": "pass",
+      "head": "47a2bb07",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/755#issuecomment-7081754805",
+      "scope": "1143, 1027, 1141 and 1052 each add +1 and all round-trip through unload/reload."
+    },
+    "advanced-damage-resistance-loaded-passive": {
+      "representative": 376,
+      "result": "pass",
+      "head": "47a2bb07",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/755#issuecomment-7081754805",
+      "scope": "1148 +4, 1142 +1, 1139 +1 and 1146 +4 all remove and restore."
+    }
+  },
+  "abilities": {
+    "26": {
+      "note": "PR753 shows the lethal impact ID 0x280009cd ahead of the separate death ID 0x2800060d in the same view list, 13,000 damage to the hostile Nuker, 40 IS, 13.5 s reuse and only the selected enemy pet removed. Wider retail damage behavior remains open. https://github.com/kylebrussell/mxo-hd/pull/753#issuecomment-7081587017"
+    },
+    "217": {
+      "note": "PR754 verifies the defender-specific 4d refusal and visible message, 7 IS / 24 shield damage without entering interlock, and the active 624 removal with 30 s own reuse. The next Sprint cast starts immediately and spends only its own 25 IS. https://github.com/kylebrussell/mxo-hd/pull/754#issuecomment-7081639451"
+    },
+    "126": {
+      "note": "PR756 confirms reason 24 before cost, cast or reuse when no live enemy is selected. In handgun interlock the move consumes 20 IS with animation 9522 and 8 s reuse. The far-target reason 34 is headless only. https://github.com/kylebrussell/mxo-hd/pull/756#issuecomment-7082003911"
+    },
+    "176": {
+      "note": "PR756 confirms reason 24 before cost, cast or reuse with empty selection and move 21083 with 25 IS and 8 s reuse on the current SMG interlock opponent. The far-target reason 34 is headless only. https://github.com/kylebrussell/mxo-hd/pull/756#issuecomment-7082003911"
+    },
+    "605": {
+      "checks": {
+        "choreography": {
+          "source": "ILDB record 288 names Low Blow in the unarmed Coder Style combat exchange.",
+          "runtime": "AbilityHandler enforces the current interlock-opponent guard before queueing 605; CombatAnimations names the LowBlow exchange in Coder Style.",
+          "test": "PR757 observes a guarded stock hotbar cast queue on the current Melee Dummy, 30 IS, 6 s reuse, animation 288 and 19 landed damage. https://github.com/kylebrussell/mxo-hd/pull/757#issuecomment-7082070045"
+        }
+      }
+    },
+    "233": {
+      "family": "clear-head-loaded-passive"
+    },
+    "349": {
+      "family": "hostile-programming-loaded-passive"
+    },
+    "370": {
+      "family": "dedication-loaded-passive"
+    },
+    "376": {
+      "family": "advanced-damage-resistance-loaded-passive"
+    }
+  }
+}
