@@ -1,0 +1,26 @@
+{
+  "families": {
+    "hacker-zone-of-powerlessness-selected-area": {
+      "representative": 399,
+      "result": "pass",
+      "head": "ce654e8d547ec7b43f8b1aa86553991cb337156a",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/856#issuecomment-7087452932",
+      "scope": "Stock at level 30 with the verified 47/60 Hacker Style closure. No-target and same-organization requests refused reason 24 before cost. The selected enemy and exact 8.00 m edge received only source 399 state 96 with a separate linked marker. The 8.01 m hostile and ally got no records. Cast 2 s, reuse 30 s, paid 30 IS, no new 734 immunity or health damage. The observed 11.052601 s is the modeled 10.14 s baseline with the loaded rank-30 bonus. The stored six-second versus archived duration source remains open."
+    },
+    "hacker-plague-zone-one-selected-viral-dot": {
+      "representative": 400,
+      "result": "pass",
+      "head": "ce654e8d547ec7b43f8b1aa86553991cb337156a",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/856#issuecomment-7087452932",
+      "scope": "Stock at level 30 with the verified 47/60 Hacker Style closure. No-target and same-organization requests refused reason 24 before cost. Cast 2 s, reuse 12 s, paid 15 IS. Only the selected hostile and exact 5.00 m edge received source 400 stat 1157 +74 for 15 s with five twelve-point ticks, then removal and no sixth tick. The 5.01 m hostile and ally were excluded. Helper regen obscured cumulative HP, so the direct controlled health proof comes from DespoilerFieldsLandOnTheSelectedEnemyAndExactRadiusEdge."
+    }
+  },
+  "abilities": {
+    "399": {
+      "family": "hacker-zone-of-powerlessness-selected-area"
+    },
+    "400": {
+      "family": "hacker-plague-zone-one-selected-viral-dot"
+    }
+  }
+}

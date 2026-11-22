@@ -1,0 +1,21 @@
+{
+  "abilities": {
+    "314": {
+      "checks": {
+        "stats": {
+          "source": "Archived stock 314 records report direct Viral Accuracy stat 342 +108 at level 50 and +146 at level 69. The GOB uses a native function that does not reproduce those observed values on its own.",
+          "runtime": "AbilityScaledBuffs uses the disclosed affine rule through those two observed points. AbilityStats.ViralAccuracy consumes the direct bonus once. The native level-22 check measures the expected +52 record.",
+          "test": "AbilityScaledBuffTests covers live accuracy during active 314 and baseline restoration; HackerUpgradeAttacksMode verifies the exact two-second cast and 20-second lifetime. Stock PR852 records stat 342 +52 and matching removal. https://github.com/kylebrussell/mxo-hd/pull/852#issuecomment-7087498888"
+        },
+        "behavior-tests": {
+          "source": "GOB 314 targets self, costs 35 IS, casts for 2 s and has 90 s own reuse, with a temporary direct Viral Accuracy bonus.",
+          "runtime": "The normal support handler ignores friendly selection for 314, applies the timed buff only to the caster, and removes it at expiry.",
+          "test": "Native PR852 sent a zero-target request while QAFriend was selected, paid 35 IS, received 90 s reuse and stat 342 +52 for 20 s only on CSR. The 80 bc records prove the active values; the tester did not open Status. https://github.com/kylebrussell/mxo-hd/pull/852#issuecomment-7087498888"
+        }
+      }
+    },
+    "693": {
+      "note": "Reopen source-parity because the archived proxy_024 lines 13012–13038, 13131–13134 and 13257–13263 show the stat-1009 +37 and stat-183 +99 direct records from source 0x02b5 = 693 on the same self caster and recipient, plus a child exclusive and recast sequence. The modeled nominal level-50 +24/+48 and current child refresh do not explain that report. The exact session level/attributes are unavailable. Previously verified pulse FX, five-second records, defense consumers and term cleanse remain credited."
+    }
+  }
+}

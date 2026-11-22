@@ -1,0 +1,33 @@
+{
+  "families": {
+    "hacker-range-booster-stock-splash": {
+      "representative": 345,
+      "head": "9ebcd2ce",
+      "result": "pass",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/853#issuecomment-7087391510",
+      "scope": "Native 37 IS/180 s, +21 radius for 30 s, and target-centred 4.00/4.40/4.99 m A/B/A recipients."
+    }
+  },
+  "abilities": {
+    "345": {
+      "family": "hacker-range-booster-stock-splash",
+      "checks": {
+        "stats": {
+          "source": "The source-345 retail record publishes stat 177 +21 for 30 s. The GOB static preview is +12.",
+          "runtime": "AbilityBuffs publishes the documented +21 effect and AbilityRadius includes it in the target-centred selection radius.",
+          "test": "HackerRangeBoosterMode and native PR853 agree: Code Nuke includes QAOther at 4.00 m before the buff, adds QAFar at 4.40 m during it, excludes QAFriend at 4.99 m throughout, and restores baseline after expiry. https://github.com/kylebrussell/mxo-hd/pull/853#issuecomment-7087391510"
+        },
+        "source-parity": {
+          "source": "The complete archived source-345 record has raw +21 and a 30 s lifetime. The stock client receives that modifier and successfully casts the expanded Code Nuke.",
+          "runtime": "The server preserves the observed +21 rather than the preview +12, yielding 4.84 m from the regular Code Nuke radius.",
+          "test": "Fresh PR853 native reports the +21 add/remove and independent selected-centre recipients before, during and after the ordinary buff. https://github.com/kylebrussell/mxo-hd/pull/853#issuecomment-7087391510"
+        },
+        "behavior-tests": {
+          "source": "Range Booster is instant, 180 s own reuse and a timed recipient-radius modifier.",
+          "runtime": "Ordinary support applies the buff to the caster, and the common typed viral area checks its actual radius on each cast.",
+          "test": "The captured NativeQa control and exact native PR853 observe 37 IS with Dedicated Code, reuse 180 s, natural expiry at 30 s and three scopes of real damage. No maximum-vital or interlock records. https://github.com/kylebrussell/mxo-hd/pull/853#issuecomment-7087391510"
+        }
+      }
+    }
+  }
+}
