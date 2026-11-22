@@ -38,7 +38,7 @@ public sealed class StarterSimulacraAttackOrdersMode : NativeQaMode
             $"CSR ({X},{Y},{Z}) faces QA Pet Target ({TargetX},{Y},{TargetZ}) 5.44 m away. The Proxy/Nuker spawn at ({X + 150},{Y},{Z}), off the target's centerline. All three stands are on clear outdoor NAV floor 400 away from WinterFrost. Level {Level}, {Memory}/{AbilityMemory.ForLevel(Level)} memory with all prerequisites. Page 2 is Coder Style/27/28/22. No bag or helpers.",
             "Use slots 1 and 2 with no selection. Expect one Simulacra window, L4/224 HP, 8 s cast and own reuse, IS 300 to 250. Type ?pet passive and ?pet stay as setup. Clear the target on empty ground. Click Attack in the Simulacra window once. Then select your own pet and try Attack once. The client may suppress those requests. If it sends 81 7b, expect [PET] Order refused: Choose a hostile NPC within your simulacrum's leash. In both cases there must be no hit or fallback to QA Pet Target.",
             "Single-click the humanoid QA Pet Target and confirm the name in the target panel. In the Simulacra window click Attack (SAtk). If no 81 7b is sent, try typing /ordersimulacra All Attack and press Enter. If neither sends it, record the selected name, control tooltip and whether the request was suppressed. Use the stock control only for this check.",
-            "Save the first complete stock 81 7b hex, plus the preceding 81 51 selection or matching view creation with view and spawn. Expect [PET] Order 17b id 254 command Attack target <full field>, followed by [PET] <pet> hits QA Pet Target for N. Damage varies. Click Stay (81 7a fe 00) and check no further hit after that order. If the control is inaccessible, ?pet stay can stop the pet for the next stage.",
+            "The PR772 stock trace selected and attacked view 4, spawn 2. Expect [PET] Order 17b id 254 command Attack target <full field> matching your current view and spawn, followed by [PET] <pet> hits QA Pet Target for N. Damage varies. Click Stay (81 7a fe 00) and check the pet stops after that order. The headless replay also tests an earlier nonzero spawn on the same view number.",
             "Clear selection and repeat the positive Attack and Stay on slots 3 and 4. Each removes only the old window, then shows a new L7/337 HP pet (Rifle and Nuker). Both casts take 8 s. Own reuse is 8 s for 28 and 10 s for 22. IS 250 to 200 to 150. No owner [PVP] rounds or max [VITALS] changes. This batch verifies Attack orders. No row is projected to move to DONE."
         });
 
@@ -66,7 +66,7 @@ public sealed class StarterSimulacraAttackOrdersMode : NativeQaMode
             "The selectable NPC is alive on its planned stand");
         actor.SendRpc(StarterCoderPetBuffsAndDetonateMode.CoderStock);
         await actor.WaitForViewUpdateAsync(2, "02 80 80 80 80 80 10 f0 03 00 00");
-        string[] orders = new string[Summons.Length];
+        var orders = new List<string>();
         byte previousId = 0;
         for (int i = 0; i < Summons.Length; i++)
         {
@@ -102,7 +102,9 @@ public sealed class StarterSimulacraAttackOrdersMode : NativeQaMode
             if (i == 0)
             {
                 int noTargetAt = server.DebugLog().Length;
+                Select(0);
                 await RefuseAsync(0);
+                Select(Handle(pet));
                 await RefuseAsync(Handle(pet));
                 await StatusAsync(", Stay, Passive", "fighting ");
                 Check.That(!server.DebugLog()[noTargetAt..].Contains(hit), "Missing and own-pet orders do not start a fallback fight");
@@ -110,33 +112,46 @@ public sealed class StarterSimulacraAttackOrdersMode : NativeQaMode
 
             uint handle = Handle(target);
             Select(handle);
-            // The older replay zero-extends the live view. Also pass the full selected-object field through dispatch.
-            string order = Attack(i == 0 ? target.ViewId : handle);
-            orders[i] = order;
+            // PR772 stock: 81 51 04 00 02 00, then 81 7b fe 02 04 00 02 00.
+            uint earlierSpawn = target.SpawnId <= 1 ? 255u : (uint)target.SpawnId - 1u;
+            uint staleHandle = DuelPackets.Handle(target.ViewId, earlierSpawn);
+            int staleAt = server.DebugLog().Length;
+            await RefuseAsync(staleHandle);
+            await StatusAsync(", Stay, Passive", "fighting ");
+            Check.That(!server.DebugLog()[staleAt..].Contains(hit), "The prior spawn cannot start an attack on the current NPC");
+            orders.Add($"refused {Attack(staleHandle)}");
+
+            string order = Attack(handle);
+            orders.Add($"accepted {order}");
             int attackAt = server.DebugLog().Length;
             actor.SendRpc(order);
             await StatusAsync($", fighting {TargetName}");
             if (i == 0)
             {
-                await RefuseAsync(Handle(pet));
+                await RefuseAsync(staleHandle);
                 await StatusAsync($", fighting {TargetName}");
             }
             await actor.WaitUntilAsync(() => server.DebugLog()[attackAt..].Contains(hit),
                 $"{pet.Name} hits the selected NPC", TimeSpan.FromSeconds(22));
             actor.SendRpc("81 7a fe 00");
             await StatusAsync(", Stay, Passive", "fighting ");
+            if (i == 0)
+            {
+                int stayAt = server.DebugLog().Length;
+                await Task.Delay(TimeSpan.FromSeconds(CoderPets.AttackPeriodSeconds + 1));
+                Check.That(!server.DebugLog()[stayAt..].Contains(hit), "Stay stops the live pet across its next attack interval");
+            }
         }
         Check.That(!server.DebugLog().Contains("[PVP] Round"), "The owner did not enter an interlock");
         Check.Equal(0, actor.World.Problems.Count, "Pet order replay framing");
         await File.WriteAllLinesAsync(Path.Combine(context.OutputDirectory, "starter-simulacra-attack-orders.txt"), orders);
-        Console.WriteLine("SIMULACRA ATTACK ORDERS PASS: selectionless and own-pet refusals, live NPC hits for 27/28/22, and Stay.");
+        Console.WriteLine("SIMULACRA ATTACK ORDERS PASS: missing, own-pet and stale spawn refusals; live 27/28/22 hits and Stay.");
         return Array.Empty<byte>();
 
         void Select(uint handle) => actor.SendRpc("81 51 " + Hex(handle));
 
         async Task RefuseAsync(uint handle)
         {
-            Select(handle);
             int cursor = server.DebugLog().Length;
             actor.SendRpc(Attack(handle));
             await actor.WaitUntilAsync(() => server.DebugLog()[cursor..].Contains(Refusal), "Invalid explicit target is refused",

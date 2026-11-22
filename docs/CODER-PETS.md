@@ -45,7 +45,7 @@ The simulacrum is ticked every second.
 The layouts are client.dll's own.
 
 - **`81 7a`** (ctor 620ef730, 4 bytes): `ID u8, Command u8`.
-- **`81 7b`** (620ef832, 8 bytes): `ID u8, Command u8, TargetObject u32`. The server reads the low u16 as the view. The window resolves the selected object before submitting an Attack. If the explicit view fails to resolve to a live, visible hostile NPC within the owner leash, the wire order is refused. The `?pet attack` developer shortcut can still choose an NPC automatically.
+- **`81 7b`** (620ef832, 8 bytes): `ID u8, Command u8, view u16, spawn u16`. The PR772 stock capture selected `81 51 04 00 02 00`, then sent `81 7b fe 02 04 00 02 00`. The order requires a live, visible hostile NPC within the owner leash and a matching supplied spawn. Older headless calls may use a zero-extended view. The `?pet attack` developer shortcut can still choose an NPC automatically.
 - **`81 7c`** (620ef952, 5 bytes): `ID u8, Command u8, Value u8`.
 
 The Simulacra window (`viewsimulacra.cpp`) maps its buttons to FourCC messages (dispatcher 620f0070). It sends ID `0xfe`, meaning the current simulacrum:
