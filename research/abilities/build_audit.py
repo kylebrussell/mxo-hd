@@ -256,7 +256,7 @@ def server(i):
         parts.append('stored fixed ballistic base 22 with incomplete legacy endpoints; armor piercing and complete damage parity unresolved')
     elif i in (36, 514):
         base = 4 if i == 36 else 6
-        parts.append(f'stored fixed viral {base} base with incomplete legacy endpoints; live selected target required before admission; full area and damage parity unresolved')
+        parts.append(f'stored fixed viral {base} base with incomplete legacy endpoints; 16 m live hostile selection before cost and 2 m target-centred splash verified in stock client; retail viral scaling unresolved')
     elif i in (197, 198) and not r['damage']:
         base = {197: 16, 198: 7}[i]
         parts.append(f'stored fixed physical base {base} before ordinary influence and resistance')
@@ -276,7 +276,7 @@ def server(i):
     elif i == 605:
         parts.append('stored fixed physical base 17 before typed influence and resistance; stock Coder interlock landed 19; wider targeting and outcome variants unresolved')
     elif i == 33:
-        parts.append('stored fixed viral base 22 with incomplete legacy endpoints; live enemy selection required before charging the cast; full retail scaling unresolved')
+        parts.append('stored fixed viral base 22 with incomplete legacy endpoints; 16 m live enemy selection before cost verified in stock client; full retail scaling unresolved')
     elif i == 279:
         parts.append('stored function-3 thrown base with live enemy selection required; stock level-20 shot landed 37; wider damage and conditional ordering unresolved')
     elif i == 280:

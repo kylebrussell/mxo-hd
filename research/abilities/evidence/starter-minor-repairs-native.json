@@ -1,0 +1,13 @@
+{
+  "rows": {
+    "24": {
+      "checks": {
+        "source-parity": {
+          "source": "GOB Minor Repairs 24 grants stat 955 +33. The stock Compile60 consumer at 0x6207f650 applies 955 only to the ordinary IC category, after the general reduction and before the final clamp. See COMPILE-ORDINARY-IC.md.",
+          "runtime": "OrdinaryItemCompile takes the same category-gated stat and schedules completion using OrdinaryItemCode.Seconds. Unloading the passive removes 955 without changing Compile Items skill 706.",
+          "test": "StarterMinorRepairsCompileMode replays the two stock tool states and compares timed 60-to-61 completions. Native PR717 verifies +33 removal and restoration, Antibiotic 2 changing from 9 to 6.03 seconds, Revolver staying at 3 seconds, and 706 staying +19. The tester opened the stock Compiler from the bag. https://github.com/kylebrussell/mxo-hd/pull/717#issuecomment-7072036036"
+        }
+      }
+    }
+  }
+}

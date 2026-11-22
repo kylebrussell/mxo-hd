@@ -1,0 +1,18 @@
+{
+  "abilities": {
+    "514": {
+      "checks": {
+        "behavior-tests": {
+          "source": "GOB Advanced Tinkering 514 requires a selected hostile within 16 metres. It has six fixed viral base damage, two metres of splash, a six-second cast, 40 IS and 30-second own reuse.",
+          "runtime": "AbilityHandler checks range before cost and cast scheduling. AbilityTargets and PvpCombat resolve the selected primary and its eligible splash recipients separately.",
+          "test": "PR718 uses stock 514 at 17 m and receives reason 34 without a cast or IS debit. At 16 m it costs 40 IS, reuses for 30 s, and lands for six on the primary and six at the 2.00 m splash edge. The 2.01 m hostile and nearby ally take nothing. StarterCoderSplashBoundariesMode replays the six-second cast and separate recipient results. PR633 verified the resisted secondary. https://github.com/kylebrussell/mxo-hd/pull/718#issuecomment-7072125698 https://github.com/kylebrussell/mxo-hd/pull/633#issuecomment-7059918580"
+        }
+      }
+    }
+  },
+  "notes": {
+    "21": "PR718 confirms stock refusal reason 34 at 17 m before IS and reuse, and a valid 10 IS cast at 16 m applying state 99 for 12 s with 13.5 s reuse and no interlock. https://github.com/kylebrussell/mxo-hd/pull/718#issuecomment-7072125698",
+    "33": "PR718 confirms stock refusal reason 34 at 17 m with no debit or reuse, and at 16 m a single hit for 24, 15 IS and 6 s reuse. Retail viral scaling remains open. https://github.com/kylebrussell/mxo-hd/pull/718#issuecomment-7072125698",
+    "36": "PR718 confirms the 16 m selection boundary before cost, 20 IS, 30 s reuse, and two four-point hits. The secondary at exactly 2.00 m is included. The 2.01 m hostile and nearby ally are excluded. Retail viral scaling remains open. https://github.com/kylebrussell/mxo-hd/pull/718#issuecomment-7072125698"
+  }
+}
