@@ -1,0 +1,37 @@
+{
+  "abilities": {
+    "40": {
+      "note": "PR779 stock Code Freeze 1.0 paid 18 IS and started 58 s reuse when the selected hostile moved out during the cast. It emitted one fizzle and no recipient record. A later cast on that selected hostile in range produced the 25 s root and -20 Force Combat. https://github.com/kylebrussell/mxo-hd/pull/779#issuecomment-7083574032"
+    },
+    "53": {
+      "note": "PR774 stock Harmful Code paid 18 IS and fizzled when the selected target moved outside the shipped 16 m limit during its four-second cast. A second cast at a valid stand hit that target for 12. Retail damage scaling remains open. https://github.com/kylebrussell/mxo-hd/pull/774#issuecomment-7083449600"
+    },
+    "57": {
+      "note": "PR774 stock Logic Barrage landed for 8 on the original in-range selected enemy at 5 IS. This is a positive control for the completion guard. Retail damage scaling remains open. https://github.com/kylebrussell/mxo-hd/pull/774#issuecomment-7083449600"
+    },
+    "58": {
+      "note": "PR774 stock Logic Blast landed for 11 on the original in-range selected enemy at 6 IS. This is a positive control for the completion guard. Retail damage scaling remains open. https://github.com/kylebrussell/mxo-hd/pull/774#issuecomment-7083449600"
+    },
+    "59": {
+      "note": "PR774 stock Logic Barrage 2.0 landed for 17 on the original in-range selected enemy at 7 IS. This is a positive control for the completion guard. Retail damage scaling remains open. https://github.com/kylebrussell/mxo-hd/pull/774#issuecomment-7083449600"
+    },
+    "60": {
+      "note": "PR774 stock Code Nuke paid 11 IS and fizzled when the selected centre moved out during the cast. QAEnemy, QAFar and QAFriend took no damage. A valid second cast hit QAEnemy and nearby hostile QAFar for 7 each; QAFriend was spared. Retail damage scaling remains open. https://github.com/kylebrussell/mxo-hd/pull/774#issuecomment-7083449600"
+    },
+    "86": {
+      "note": "PR779 stock Slow paid 12 IS and started 8 s reuse when the selected hostile moved out during the cast. The recipient got no modifier. Two positive samples where the movement arrived after landing had all five 28 s records, which distinguish the normal landing from the range fizzle. Visible slowdown and recovery from PR775 remain open. https://github.com/kylebrussell/mxo-hd/pull/779#issuecomment-7083574032"
+    },
+    "503": {
+      "checks": {
+        "script": {
+          "source": "GOB 503 grants 1137. Concealment_RemoveConcealmentStealth in the shipped tempmods.py removes the kSneak dissembling type. ConcealmentGrant_Deactivate in sneaks.py calls it and clears the Concealed state.",
+          "runtime": "AbilityPassives routes loss of the 1137 grant to Stealth.ConcealmentGrantRemoved. It terminates active 1137 and clears its movement and state records, leaving an independent 1111 Sneak active.",
+          "test": "StarterConcealmentUnloadMode verifies the own and observer flag clear, all three modifier removals and one exclusive off record. PR778 stock observed the matching removals, one off line and client concealment refusal on the next 504, with unrelated Sneak unaffected. Retail Archive dispatch ordering and passive stat consumers are still open where applicable. https://github.com/kylebrussell/mxo-hd/pull/778#issuecomment-7083503883"
+        }
+      }
+    },
+    "1137": {
+      "note": "PR778 stock kept active Concealment through a 504-only unload/reload. Unloading 503 cleared 1137 and removed 209 +19, Concealed 623 and Stealthed 881 once. Reload restored the grant with no active state. Independent Sneak stayed active. https://github.com/kylebrussell/mxo-hd/pull/778#issuecomment-7083503883"
+    }
+  }
+}

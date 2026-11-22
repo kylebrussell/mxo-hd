@@ -330,11 +330,18 @@ def server(i):
     if i in (126, 130, 176):
         parts.append('stock blocked sight denies the selected shot before cast, IS cost or reuse')
     if i in (86, 130):
-        parts.append('PR775 stock run found base run speed unchanged with the three -50 movement records active')
+        if r.get('movement_debuff_scale'):
+            parts.append('signed stat 115 projects to stock run speed and the remaining scale returns at expiry')
+        else:
+            parts.append('PR775 stock run found base run speed unchanged with the three -50 movement records active')
     if i in (22, 27, 28):
         parts.append('stock summons keep the open street stand or use a verified stand on the same room floor')
-    if i in (33, 36, 514):
+    if i in (33, 36, 53, 57, 58, 59, 60, 514):
         parts.append('cast completion rechecks the original target spawn and range before damage or splash')
+    if i in (40, 86):
+        parts.append('cast completion requires the original hostile spawn in range before applying its timed effect')
+    if i in (43, 48, 69):
+        parts.append('cast completion rechecks the original hostile spawn and range before debuff or damage over time')
     if r.get('sharpshooter'):
         parts.append(r['sharpshooter'])
     if r.get('health_callback'):
@@ -436,8 +443,16 @@ def server(i):
         parts.append('stock equal-level shield damage 35 to 36 when 1048 +3 is loaded')
     if i in (22, 27, 28):
         parts.append('stock Simulacra Attack and Stay verified for this summon')
+    if i == 27:
+        parts.append('stock Attack carries the selected view and spawn; Stay ends attacks')
+    if i in (20, 30, 603):
+        parts.append('requires continuous loaded membership through the pet support cast')
+    if i in (20, 603):
+        parts.append('unloading preserves the lifetime of the landed pet buff')
     if i == 504:
         parts.append('requires active Concealment and consumes it at cast start; stock hit 23 after six seconds')
+    if i in (503, 1137):
+        parts.append('unloading the parent clears the active Concealment grant, with separate Sneak preserved')
     if i == 21:
         parts.append('requires a live enemy selection before charging the cast')
     return '; '.join(parts) or 'presentation only; no effect executor'

@@ -1,0 +1,37 @@
+{
+  "abilities": {
+    "20": {
+      "note": "PR790 stock unloaded Fortify rejected with reason 7. A committed in-bar unload paid 30 IS without adding modifiers. A fresh cast raised the selected living Proxy from 224 to 494 maximum HP and added resistance 36, both retained after unloading the finished cast. The resistance rating curve remains open. https://github.com/kylebrussell/mxo-hd/pull/790#issuecomment-7083931604"
+    },
+    "27": {
+      "note": "PR785 stock selected view 4 spawn 2 with 81 51 04 00 02 00 and sent 81 7b fe 02 04 00 02 00. The level-4 Proxy hit the selected hostile for 11 and 12. Stock Stay, 81 7a fe 00, ended the attacks. Stale spawn refusal has disposable headless coverage. https://github.com/kylebrussell/mxo-hd/pull/785#issuecomment-7083857188"
+    },
+    "30": {
+      "note": "PR790 stock unloaded Repair rejected with reason 7. An accepted Repair paid 20 IS and applied no heal after the ability was unloaded during the bar. Reload and a fresh cast raised current pet HP from 224 to 244 under the existing 494 maximum. https://github.com/kylebrussell/mxo-hd/pull/790#issuecomment-7083931604"
+    },
+    "43": {
+      "note": "PR781 stock cast paid 10 IS when the selected hostile moved out of range during the bar. It fizzled before any recipient effect or HP change. The clear control applied stat 90 for 16 seconds. https://github.com/kylebrussell/mxo-hd/pull/781#issuecomment-7083724472"
+    },
+    "48": {
+      "note": "PR781 stock cast paid 26 IS and fizzled when its selected hostile moved out of range during the bar. A clear cast after the concurrent resistance effect expired applied stat 85 for 6 seconds, stat 157 -20 for 12 seconds and immunity record 734/681 for 12 seconds. https://github.com/kylebrussell/mxo-hd/pull/781#issuecomment-7083724472"
+    },
+    "69": {
+      "note": "PR781 stock cast paid 10 IS and fizzled when its selected hostile moved out of range during the bar, with no damage or recipient effect. The clear control applied stat 1157 +35 for 30 seconds and exactly five six-point ticks. https://github.com/kylebrussell/mxo-hd/pull/781#issuecomment-7083724472"
+    },
+    "86": {
+      "checks": {
+        "source-parity": {
+          "source": "Slow ships equal -50 values for normal, Sneak and Invisibility movement records, plus its separate force and ballistic modifiers. The paired archived retail Crippling Shot packets pin the signed stat-115 /100 projection and its addition to an existing movement scale. PR775 showed the stock renderer did not slow from record delivery alone.",
+          "runtime": "TimedEffects publishes the effective signed scale to the affected owner's view and observers, composes it with Movement Accelerator and restores the remaining scale on expiry. PR779 verifies the original-target cast and duration behaviour. https://github.com/kylebrussell/mxo-hd/pull/779#issuecomment-7083574032",
+          "test": "PR794 stock two-second forward samples measured 1298.4 units at baseline, 600.3 under Slow, 1407.8 with Movement Accelerator alone, 724.0 with both and 1297.0 after expiry and dismissal. The disposable replay also checks the exact -0.50, -0.40, +0.10 and zero owner and observer updates. https://github.com/kylebrussell/mxo-hd/pull/794#issuecomment-7083808258"
+        }
+      }
+    },
+    "130": {
+      "note": "PR794 stock measured 598.2 units of a two-second run under Hindering Shot, compared with 1298.4 at baseline. Its eight-second modifiers and signed -0.50 movement projection matched on the actual recipient. Choreography, complete scaling and wider targeting remain open. https://github.com/kylebrussell/mxo-hd/pull/794#issuecomment-7083808258"
+    },
+    "603": {
+      "note": "PR790 stock unloaded Charge rejected with reason 7. An in-bar unload kept normal 35 IS debit and prevented the buff. A fresh cast gave -20% cost and +50% regeneration for 600 seconds. Effective pet cost 8 remained after unloading the finished cast. Retail base pet resources remain open. https://github.com/kylebrussell/mxo-hd/pull/790#issuecomment-7083931604"
+    }
+  }
+}
