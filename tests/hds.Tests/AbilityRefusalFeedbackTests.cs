@@ -219,6 +219,50 @@ public class AbilityRefusalFeedbackTests:IDisposable
         DelayedActions.RunDue(end+1);Assert.True(PvpCombat.HealthOf(c)>100);Assert.Equal((ushort)490,AbilityHandler.CurrentInnerStrength(c));
         Assert.True(AbilityCooldowns.IsCoolingDown(c.playerData,77,TimeUtils.GetSimTimeSeconds()));Assert.DoesNotContain(Rpcs(c),r=>r.Length>=2&&r[0]==0x80&&r[1]==0xba);
     }
+    [Theory]
+    [InlineData(40, false)]
+    [InlineData(86, false)]
+    [InlineData(86, true)]
+    public void StarterMovementDebuffDoesNotLandOnAReplacementSpawn(ushort id, bool shortRequest)
+    {
+        var caster = Client();
+        var enemy = Client();
+        enemy.playerData.setCharID(111);
+        enemy.playerData.setEntityId(42);
+        caster.playerInstance.OrganizationID.setValue((byte)1);
+        enemy.playerInstance.OrganizationID.setValue((byte)2);
+        caster.playerData.pvpFlag = enemy.playerData.pvpFlag = true;
+        caster.playerData.combatStyle = CombatStyles.HackerStyle;
+        WorldServer.Clients.Add("enemy", enemy);
+        var view = caster.viewMan.addView(42, 12);
+        view.viewCreated = true;
+        view.spawnId = 9;
+        Store.currentClient = caster;
+
+        var ability = new AbilityItem();
+        ability.setAbilityID(id);
+        ability.setAbilityName("Starter movement debuff");
+        ability.setCastAnimStart(new byte[4]);
+        DataLoader.getInstance().AbilityDB.Add(ability);
+        var request = new byte[shortRequest ? 4 : 41];
+        BitConverter.GetBytes(id).CopyTo(request, 0);
+        BitConverter.GetBytes(view.ViewID).CopyTo(request, 2);
+        if (!shortRequest) BitConverter.GetBytes((ushort)view.spawnId).CopyTo(request, 4);
+
+        new AbilityHandler().ProcessAbility(ref request);
+        double end = caster.playerData.castEndsAt;
+        Assert.True(end > TimeUtils.GetSimTimeSeconds());
+        Assert.Equal(500 - AbilityCosts.Cost(id), AbilityHandler.CurrentInnerStrength(caster));
+        view.spawnId++;
+        Assert.True(AbilityTargets.HasLiveAttackSelection(caster, view.ViewID, (ushort)view.spawnId, requireOpponent: true));
+
+        DelayedActions.RunDue(end + 1);
+
+        Assert.Empty(Rpcs(enemy));
+        Assert.False(TimedEffects.ForPlayer(enemy).Effects.Has(TempMods.RootedAbility));
+        Assert.True(AbilityCooldowns.IsCoolingDown(caster.playerData, id, TimeUtils.GetSimTimeSeconds()));
+    }
+
     [Fact] public void FixedProbeGuardsAndNamesCannotParameterizeAuthority()
     {
         bool Allowed(string o="1",string d="1",string db="mxotest_x",uint ch=110,bool alive=true,bool world=true,bool dead=false,bool pending=false,bool shutdown=false,bool la=false)=>AbilityRefusalQa.Allowed(o,d,db,ch,alive,world,dead,pending,shutdown,la);
