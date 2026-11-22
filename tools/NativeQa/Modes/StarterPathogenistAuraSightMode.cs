@@ -31,6 +31,8 @@ public sealed class StarterPathogenistAuraSightMode : NativeQaMode
         "DELETE FROM char_abilities WHERE char_id IN (6112,6114)"
     }, DevCommands: true, hotbarAbilities: new[] { Miasma, StaticField, HackerStyle }, environmentOverrides: new()
     {
+        ["MXO_FREECAST_VIRAL_QA"] = "1", ["MXO_FREECAST_VIRAL_QA_ATTACK15"] = "32766",
+        ["MXO_FREECAST_VIRAL_QA_DEFENSE15"] = "0",
         ["MXO_AGGRO"] = "0", ["MXO_MOB_WANDER"] = "0", ["MXO_PVP_SERVER"] = "1", ["MXO_PVP_MAX_SAFE_LEVEL"] = "15",
         [AreaTargetDiagnostics.Variable] = "1"
     }, extraQaMetadata: new() { ["ScopedStockRows"] = "61,89,694,701", ["NativeCloseableRows"] = 2, ["MemoryUsed"] = Loadout.Sum(AbilityMemory.Cost) },

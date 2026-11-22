@@ -50,7 +50,10 @@ namespace hds
             !c.playerData.DistrictIsLA() && !c.playerData.isDead && !c.playerData.duelDeath;
         internal static bool TryQaDraw(WorldClient source,ushort ability,out int a,out int d)
         {
-            a=d=0;return Ready(source) && AbilityPassives.Level(source,ability)>0 && !string.Equals(TimedEffects.PlayerName(source),"TheNeo",StringComparison.OrdinalIgnoreCase) &&
+            a=d=0;
+            if (!Ready(source)) return false;
+            ushort loaded = ability == 701 && AbilityAuras.IsOn(source, 61) ? (ushort)61 : ability;
+            return AbilityPassives.Level(source,loaded)>0 && !string.Equals(TimedEffects.PlayerName(source),"TheNeo",StringComparison.OrdinalIgnoreCase) &&
                 QaAllowed(Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS"),Store.config?.dbParams?.DatabaseName,source.playerData.getCharID(),
                     source.playerData.getOnWorld(),source.playerData.isDead,Environment.GetEnvironmentVariable("MXO_FREECAST_VIRAL_QA"),
                     Environment.GetEnvironmentVariable(AttackQa),Environment.GetEnvironmentVariable(DefenseQa),out a,out d);

@@ -116,7 +116,9 @@ public static partial class Scenarios
     /// <summary>Miasma 1.0's toggled aura and Plague Zone 1.0 against NPCs.</summary>
     private static async Task HostileFieldsNpc(ScenarioContext context)
     {
-        var caster = (await context.AddPlayersInWorldAsync(NearNpc("AuraHacker") with { InnerStrength = 200 }))[0];
+        var caster = await context.AddPlayerAsync(NearNpc("AuraHacker") with { InnerStrength = 200 });
+        await LoadAbilitiesAsync(context, caster, 2, 17, 38, 40, 45, 52, 57, 58, 60, 61, 67, 75, 77, 95, 97, 98, 327, 398, 400, 1006);
+        await caster.EnterWorldAsync();
         var frost = await caster.WaitForViewNamedAsync("WinterFrost");
         Cast(caster, 61);
         await caster.WaitForRpcAsync("80 bd 05 3d 00 00 00 00 00 00 01", TimeSpan.FromSeconds(10));
@@ -129,10 +131,9 @@ public static partial class Scenarios
         await caster.WaitForRpcAsync("80 bd 05 3d 00 00 00 00 00 00 00", TimeSpan.FromSeconds(5));
         Check.That(context.Server.DebugLog().Contains("[AURA] 61 off"), "Using the aura again switches it off");
 
-        await PrepareFreeCastViralFixture(context,caster,400);
         Cast(caster, 400, frost.ViewId);
-        await caster.WaitUntilAsync(() => context.Server.DebugLog().Contains("400 ticks on WinterFrost for 10"),
-            "Plague Zone 1.0 ticks int(59 / 15 * 2.5 + .5)", TimeSpan.FromSeconds(12));
+        await caster.WaitUntilAsync(() => context.Server.DebugLog().Contains("400 ticks on WinterFrost for 11"),
+            "Plague Zone ticks for 11 after the full profile scales its total from 59 to 67", TimeSpan.FromSeconds(12));
         Check.Equal(0, caster.World.Problems.Count, "Hostile aura protocol");
     }
 }

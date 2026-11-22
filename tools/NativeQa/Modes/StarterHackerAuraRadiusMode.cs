@@ -30,6 +30,8 @@ public sealed class StarterHackerAuraRadiusMode : NativeQaMode
         .ToArray(), DevCommands: true, hotbarAbilities: new[] { Miasma, StaticField, TrojanHorse },
         environmentOverrides: new()
         {
+            ["MXO_FREECAST_VIRAL_QA"] = "1", ["MXO_FREECAST_VIRAL_QA_ATTACK15"] = "32766",
+            ["MXO_FREECAST_VIRAL_QA_DEFENSE15"] = "0",
             ["MXO_AGGRO"] = "0", ["MXO_MOB_WANDER"] = "0", ["MXO_PVP_SERVER"] = "1", ["MXO_PVP_MAX_SAFE_LEVEL"] = "15",
             [AreaTargetDiagnostics.Variable] = "1"
         }, extraQaMetadata: new() { ["ScopedStockRows"] = "61,89,694,701,945,946", ["NativeCloseableRows"] = 1 },
