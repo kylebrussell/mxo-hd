@@ -58,9 +58,18 @@ namespace hds
         public static bool TryScriptedTimed(ushort id, int casterLevel, out AbilityBuffs.Buff buff)
         {
             buff = null;
-            if (id != 63 && id != 436 && id != 68 && id != 319) return false;
+            if (id != 63 && id != 436 && id != 68 && id != 319 && id != 314) return false;
             var entry = AbilityCatalog.Find(id);
             var modifiers = entry.Modifiers.Where(m => m.Number("WhenEnabled",-1)==2).ToList();
+            if (id == 314)
+            {
+                // GOB function 3 selects character level. The captured direct records are +108 at 50
+                // and +146 at 69. Use the affine rule through both observations for the live modifier.
+                var modifier = modifiers.Single();
+                buff = new AbilityBuffs.Buff { Seconds = (float)modifier.Number("Duration"),
+                    Modifiers = new[] { new AbilityBuffs.Modifier(AbilityBuffs.KindStat, modifier.Target, 2 * casterLevel + 8) } };
+                return true;
+            }
             var stats = modifiers.Where(m=>m.Target!=0 && m.Target!=710).ToList();
             if(stats.Any(m=>!AbilityValues.TryValue(m,0,casterLevel,out _))) return false;
             buff = new AbilityBuffs.Buff { Seconds = 300, Family = 1000+(int)entry.Number("Ability/StackingType"),

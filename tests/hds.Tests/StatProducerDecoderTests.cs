@@ -67,6 +67,7 @@ public class StatProducerDecoderTests
         Assert.True(AbilityBuffs.Retail[1087].Toggle);
         Assert.True(AbilityBuffs.CooldownStartsOnUse(1087));
         Assert.Equal(0, AbilityBuffs.Retail[1087].Seconds);
-        Assert.Equal(20,AbilityBuffs.Retail[314].Seconds);
+        Assert.True(AbilityBuffs.TryGet(314, out var upgradeAttacks));
+        Assert.Equal(20, upgradeAttacks.Seconds);
     }
 }
