@@ -42,6 +42,7 @@ public class AbilityRefusalFeedbackTests:IDisposable
         var caster = Client();
         var enemy = Client();
         caster.playerData.combatStyle = CombatStyles.HackerStyle;
+        caster.playerData.passives.Loaded[id] = 19;
         enemy.playerData.setCharID(111);
         enemy.playerData.setEntityId(42);
         caster.playerInstance.OrganizationID.setValue((byte)1);
