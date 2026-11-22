@@ -556,6 +556,17 @@ namespace hds
             }
         }
 
+        private static int CloseGunPenalty(WorldClient gunner, WorldClient opponent)
+        {
+            byte gun = RangedWeapons.AttackClass(SharpshooterFreeFire.EquippedWeapon(gunner));
+            if (gun == 0 || RangedWeapons.IsGun(SharpshooterFreeFire.EquippedWeapon(opponent))) return 0;
+            bool loaded = AbilityPassives.IsLoaded(gunner, 148);
+            int modifier = CombatRules.GunAgainstFistsModifier(gun, false, shortRange: true, defenderOpponents: 1,
+                shortRangePenaltyNegated: loaded);
+            Output.WriteDebugLog($"[SHARPSHOOTER INTERLOCK] {PvpFlag.Name(gunner)} loaded148={loaded} attack={modifier} defence={modifier}");
+            return modifier;
+        }
+
         private void ResolvePair(Side first, Side second, bool opening, bool counter)
         {
             WorldClient dead = null, killer = null;
@@ -599,6 +610,13 @@ namespace hds
                 if (!CombatAnimations.CanResolveQueuedAbility(n.Client, nAbility)) nAbility = null;
                 bool pWithdrawal=WithdrawalInput.Ordinary(p.Withdrawing,opening,pAbility,p.OrdinaryWithdrawalRequested);
                 bool nWithdrawal=WithdrawalInput.Ordinary(n.Withdrawing,opening,nAbility,n.OrdinaryWithdrawalRequested);
+                // Combat_modifiers.py defines the short-range gun penalty for both rolls.
+                // Limit this caller to an ordinary exchange in a current two-person close interlock.
+                bool closeGunExchange = !opening && counter && pAbility == null && nAbility == null &&
+                    !p.Withdrawing && !n.Withdrawing && multifighting.Version == membershipVersion &&
+                    multifighting.Members.Length == 2 && CombatHandler.InMeleeReach(PvpCombat.MetresBetween(p.Client, n.Client));
+                int pGunPenalty = closeGunExchange ? CloseGunPenalty(p.Client, n.Client) : 0;
+                int nGunPenalty = closeGunExchange ? CloseGunPenalty(n.Client, p.Client) : 0;
                 if (!opening)
                 {
                     p.QueuedAbility = null;
@@ -611,10 +629,12 @@ namespace hds
                 lock (rng)
                 {
                     pHit = CombatInterlock.RollHit(rng, pTactic, pLevel, nTactic, nLevel, out pAttack, out nDefense, pType,
-                        MultifightingInput(p,WithdrawalInput.Attack(p.Client,pAbility,pWithdrawal),"attack",multifighting), MultifightingInput(n,AbilityStats.SpecialDefense(n.Client, pAbility),"defence",multifighting), pWithdrawal) &&
+                        MultifightingInput(p,WithdrawalInput.Attack(p.Client,pAbility,pWithdrawal),"attack",multifighting) + pGunPenalty,
+                        MultifightingInput(n,AbilityStats.SpecialDefense(n.Client, pAbility),"defence",multifighting) + nGunPenalty, pWithdrawal) &&
                         !ControlActions.Incapacitated(TimedEffects.ForPlayer(p.Client).Effects);
                     nHit = CombatInterlock.RollHit(rng, nTactic, nLevel, pTactic, pLevel, out nAttack, out pDefense, nType,
-                        MultifightingInput(n,WithdrawalInput.Attack(n.Client,nAbility,nWithdrawal),"attack",multifighting), MultifightingInput(p,AbilityStats.SpecialDefense(p.Client, nAbility),"defence",multifighting), nWithdrawal) &&
+                        MultifightingInput(n,WithdrawalInput.Attack(n.Client,nAbility,nWithdrawal),"attack",multifighting) + nGunPenalty,
+                        MultifightingInput(p,AbilityStats.SpecialDefense(p.Client, nAbility),"defence",multifighting) + pGunPenalty, nWithdrawal) &&
                         !ControlActions.Incapacitated(TimedEffects.ForPlayer(n.Client).Effects) && counter;
                     pCondition = rng.Next(100) < CombatInterlock.ConditionChancePercent;
                     nCondition = rng.Next(100) < CombatInterlock.ConditionChancePercent;
