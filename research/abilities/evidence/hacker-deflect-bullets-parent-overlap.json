@@ -1,0 +1,23 @@
+{
+  "abilities": {
+    "380": {
+      "checks": {
+        "area": {
+          "source": "GOB 380 activates child 692 immediately and every five seconds via ApplyAuraEffect. Child 692 uses selector 9 and radius 3 m. The parent's separate 6 m metadata is not the child radius.",
+          "runtime": "AbilityAuras dispatches the 692 group selection on each pulse around the current caster. The actual recipients are the caster and living teammates within the modified child radius.",
+          "test": "DeflectBulletsKeepsOneChildAcrossTwoCastersAndRechecksRadiusOnPaidPulses includes an exact 3.00 m teammate shared by two casters and excludes a 3.01 m teammate, nearby outsider and downed teammate. When the included teammate leaves the remaining active caster's range, their last record expires without refreshing. PR826 separately verifies the 3.30 m boundary under +10 radius. https://github.com/kylebrussell/mxo-hd/pull/826"
+        },
+        "aura": {
+          "source": "GOB 380 stores initial/repeated ApplyAuraEffect, a 5 s interval, a separate 7 IS drain and a 10 s recast. The original ApplyAuraEffect reapplies the child only while the caster has health. The original cross-caster collision ordering remains unarchived.",
+          "runtime": "The server uses a single current child per recipient under its chosen last-application policy. Taking down one parent stops its future upkeep and pulses, and the other caster can keep refreshing their own application. The normal 10 s timer starts at parent termination. Each paid pulse occurs after its 7 IS debit and shortfall stops the generation.",
+          "test": "DeflectBulletsKeepsOneChildAcrossTwoCastersAndRechecksRadiusOnPaidPulses exercises simultaneous actual Start() activations, distinct caster-level values on the same teammate, the first caster toggling off, valid ongoing second-caster refresh and the final low-IS stop. DeflectAuraChargesSevenAndDeactivatesBeforeAnUnaffordablePulse isolates the shortfall path. PR320 stock observes repeated 692, then 380 off, child removal and the visible stop notification. https://github.com/kylebrussell/mxo-hd/pull/320#issuecomment-6999754005"
+        },
+        "behavior-tests": {
+          "source": "GOB 380 dispatches a scoped 692 defensive child and pays upkeep. GOB 692 stores five-second Ballistic Defense, Thrown Defense and Concentration. The shipped DeflectBullets1Effect_DirectObject queues the 0.2 s effect.",
+          "runtime": "Normal activation and scheduler dispatch the sourced child stats and FX. An ended parent stops casting new effects. The received child's expiry, defense and concentration consumers use the same independent five-second record.",
+          "test": "DeflectBulletsKeepsOneChildAcrossTwoCastersAndRechecksRadiusOnPaidPulses verifies only the current caster's level-30 +28 replaces level-22 +21 for the overlapping player and then returns to zero. LinkedDeflectBuffsChangeTheMatchingDefenseContestsThenExpire checks actual defense and concentration use. The deflect-bullets-child-radius scenario verifies source-specific modifier records and 0x28000824 FX. PR320 stock passed the visible parent and child lifecycle. https://github.com/kylebrussell/mxo-hd/pull/320#issuecomment-6999754005 https://github.com/kylebrussell/mxo-hd/pull/826"
+        }
+      }
+    }
+  }
+}
