@@ -819,8 +819,9 @@ namespace hds
             {
                 if (!ControlActions.CanUseAbilities(client)) return;
                 if (concealment && !AbilityPassives.IsLoaded(client, AbilityID)) return;
-                // The archived class upgrades publish their activation timer before the exclusive-on record.
-                if (startingClassUpgrade)
+                // The archived class upgrades and Deflect Virus publish their own timer before exclusive-on.
+                bool activationTimerFirst = startingClassUpgrade || AbilityID == Virii.DeflectVirus1Ability;
+                if (activationTimerFirst)
                     AbilityCooldowns.Start(client, AbilityID, TimeUtils.GetSimTimeSeconds());
                 if (corpse != null) AbilityResurrection.Request(client, corpse, AbilityID, casterWorld, casterLife, targetWorld, targetLife);
                 else if (lineUp)
@@ -844,7 +845,7 @@ namespace hds
                 if (AbilityID == AbilityEmpBlast.Ability) AbilityEmpBlast.Land(client);
                 if (UtilityAbilities.Handles(AbilityID)) UtilityAbilities.Land(client, AbilityID, currentTargetViewId, locatorSlot, selectedLocator, recallRecipient);
                 if (CombatSpecials.ActsOnCast(AbilityID)) CombatSpecials.CastTaunt(client);
-                if (!startingClassUpgrade && AbilityBuffs.CooldownStartsOnUse(ability.getAbilityID()))
+                if (!activationTimerFirst && AbilityBuffs.CooldownStartsOnUse(ability.getAbilityID()))
                 {
                     AbilityCooldowns.Start(client, ability.getAbilityID(), TimeUtils.GetSimTimeSeconds());
                 }
