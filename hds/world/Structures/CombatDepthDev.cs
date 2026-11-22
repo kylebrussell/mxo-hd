@@ -10,9 +10,10 @@ namespace hds
             if (Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS") != "1") return "Combat depth requires MXO_DEV_COMMANDS=1.";
             string command = args.Length > 0 ? args[0] : "";
             if (command == "foundations-sight") return CombatFoundationsQa.Setup(caller, "sight");
-            if (command == "foundations-sight-pick") return CombatFoundationsQa.Setup(caller, "sight-pick");
+            if (command == "foundations-sight-pick" || command == "sp") return CombatFoundationsQa.Setup(caller, "sight-pick");
             if (command == "foundations-sight-far") return CombatFoundationsQa.Setup(caller, "sight-far");
-            if (command == "foundations-sight-blocked") return CombatFoundationsQa.Setup(caller, "sight-blocked");
+            if (command == "foundations-sight-blocked" || command == "sb") return CombatFoundationsQa.Setup(caller, "sight-blocked");
+            if (command == "gf") return CombatFoundationsQa.Setup(caller, "gun-far");
             if (command == "foundations-cone") return CombatFoundationsQa.Setup(caller, "cone");
             if (command == "foundations-detonate") return CombatFoundationsQa.Setup(caller, "detonate");
             if (command == "foundations-viral") return CombatFoundationsQa.Setup(caller, "viral");

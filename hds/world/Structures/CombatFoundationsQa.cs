@@ -9,7 +9,7 @@ namespace hds
         private const uint Rifle = 692, DualSmgs = 7899;
         private const int ResistSeconds = 1800;
         private const int SightX = 22700, SightY = 1095, SightZ = 16100, BlockedX = 21700, ClearX = 22900;
-        private const int PickX = 21550, TestTargetX = 21750, TestCastX = 22350, TestZ = 16150;
+        private const int PickX = 21550, TestTargetX = 21750, TestCastX = 22350, GunFarX = 19600, TestZ = 16150;
 
         internal static string Setup(WorldClient caller, string mode)
         {
@@ -43,6 +43,15 @@ namespace hds
                 Spawn("QA Sight Target", TestTargetX, SightY, TestZ);
                 Move(caller, x, SightY, TestZ, yaw: 192);
                 return $"Far stand {x},{SightY},{TestZ}. QA Sight Target is beyond 20 m.";
+            }
+            if (mode == "gun-far")
+            {
+                if (!OutdoorStand(GunFarX) || !OutdoorStand(TestTargetX) ||
+                    !NavMesh.HasSightPath(1, GunFarX, SightY, TestZ, TestTargetX, SightY, TestZ))
+                    return "Gun landing fixture refused: the clear far stand could not be verified.";
+                Spawn("QA Sight Target", TestTargetX, SightY, TestZ);
+                Move(caller, GunFarX, SightY, TestZ, yaw: 64);
+                return $"Far stand {GunFarX},{SightY},{TestZ}. QA Sight Target is 21.5 m ahead with clear sight.";
             }
             if (mode == "sight-pick" || mode == "sight-blocked")
             {
