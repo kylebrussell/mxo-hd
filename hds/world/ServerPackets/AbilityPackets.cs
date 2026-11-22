@@ -52,7 +52,8 @@ namespace hds
             var client = Store.currentClient;
             byte counter = (byte)client.playerData.assignSpawnIdCounter();
             ushort flags = (ushort)(0x1000 | AbilityBuffs.DissemblingBits(client) | Stealth.BitsOf(client));
-            float scale = AbilityBuffs.WithTimedMovementDebuffs(client, AbilityBuffs.Retail[AbilityBuffs.HyperSpeed].MovementScale);
+            float speed = AbilityBuffs.MovementScaleFor(client, AbilityBuffs.Retail[AbilityBuffs.HyperSpeed]);
+            float scale = AbilityBuffs.WithTimedMovementDebuffs(client, speed);
             client.messageQueue.addObjectMessage(BuildHyperSpeedUpdate(innerStrength, counter, flags, scale), false);
             Store.currentClient.FlushQueue();
         }

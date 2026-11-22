@@ -97,6 +97,40 @@ public class DesperateSpeedTests
         finally { AbilityBuffs.RemoveAll(player); }
     }
 
+    [Theory]
+    [InlineData(12, .45f, .12f, 600)]
+    [InlineData(323, .25f, .05f, 720)]
+    [InlineData(423, .45f, .10f, 960)]
+    public void MovementBuffProjectsTheSelectedStanceWithoutStackingChannels(ushort ability, float run, float stealth, int duration)
+    {
+        var player = Client(level: 50);
+        try
+        {
+            Assert.True(AbilityBuffs.Apply(player, ability));
+            Assert.Equal(run, Scale());
+            Assert.True(AbilityBuffs.TryGet(ability, out var buff));
+            Assert.Equal(duration, buff.Seconds);
+            Assert.Equal((int)(stealth * 100 + .5), AbilityStats.Player(player, 877));
+            Assert.Equal((int)(stealth * 100 + .5), AbilityStats.Player(player, 878));
+            Assert.NotNull(Stealth.Begin(player, Stealth.Defs[Stealth.SneakGrantAbility], 25));
+            Assert.Equal(stealth, Scale());
+            Assert.True(Stealth.End(player, "test stance", false));
+            Assert.Equal(run, Scale());
+            Assert.NotNull(Stealth.Begin(player, Stealth.Defs[Stealth.InvisibilityGrantAbility], 25));
+            Assert.Equal(stealth, Scale());
+            TimedEffects.RunDue(TimeUtils.GetSimTimeSeconds() + duration + .01);
+            Assert.False(AbilityBuffs.IsActive(player, ability));
+            Assert.Equal(0, Scale());
+        }
+        finally
+        {
+            Stealth.End(player, "test cleanup", false);
+            AbilityBuffs.RemoveAll(player);
+        }
+
+        float Scale() => BitConverter.ToSingle(player.playerInstance.MovementScale.getValue());
+    }
+
     [Fact]
     public void SprintStartAndRemovalPreserveTheActiveSlowContribution()
     {
