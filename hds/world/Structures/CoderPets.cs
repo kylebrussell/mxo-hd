@@ -104,6 +104,11 @@ namespace hds
             public int BoostViralDamage, BoostHealing;
             public bool Gone, WindowRemoved;
             public byte Counter;
+            internal bool Walking;
+            internal NavPoint[] Route;
+            internal (double X, double Y, double Z) RouteTarget;
+            internal double RetryRouteAt;
+            internal int RouteIndex;
         }
 
         private static readonly Dictionary<UInt32, Pet> pets = new Dictionary<UInt32, Pet>();
@@ -122,6 +127,7 @@ namespace hds
         public const string RifleProxyQa = "MXO_SIMULACRUM_QA_RIFLE";
         public const double FollowDistanceMetres = 2.5, MeleeRangeMetres = 2.5, RangedRangeMetres = 15.0, LeashMetres = 60.0;
         public const double StepMetres = 5.0;
+        private const double RouteReplanDistance = 100, RouteRetrySeconds = 3;
 
         public static Pet Of(WorldClient owner)
         {
@@ -638,12 +644,13 @@ namespace hds
             switch (command)
             {
                 case Command.Stay:
-                    pet.Order = Command.Stay; pet.Target = null; SetStanding(pet); SendWindow(pet, false); return null;
+                    pet.Order = Command.Stay; pet.Target = null; pet.Route = null; SetStanding(pet); SendWindow(pet, false); return null;
                 case Command.Follow:
-                    pet.Order = Command.Follow; pet.Target = null; SendWindow(pet, false); return null;
+                    pet.Order = Command.Follow; pet.Target = null; pet.Route = null; SendWindow(pet, false); return null;
                 case Command.Attack:
                     Mob target = ResolveAttackTarget(pet, client, targetObject, fromClient);
                     if (target == null) return "Choose a hostile NPC within your simulacrum's leash.";
+                    if (pet.Target != target) pet.Route = null;
                     pet.Order = Command.Attack; pet.Target = target; SendWindow(pet, false); return null;
                 case Command.Mode:
                     if (value > 2) return "Unknown mode.";
@@ -1167,14 +1174,14 @@ namespace hds
             if (pet.Kind == Kind.Healer)
             {
                 HealerTick(pet, now);
-                if (pet.Order != Command.Stay) MoveToward(pet, OwnerPosition(pet), FollowDistanceMetres);
+                if (pet.Order != Command.Stay) MoveToward(pet, OwnerPosition(pet), FollowDistanceMetres, now);
                 return;
             }
 
             if (pet.Target != null)
             {
                 double reach = Ranged(pet) ? RangedRangeMetres : MeleeRangeMetres;
-                bool inReach = MoveToward(pet, (pet.Target.getXPos(), pet.Target.getYPos(), pet.Target.getZPos()), reach,
+                bool inReach = MoveToward(pet, (pet.Target.getXPos(), pet.Target.getYPos(), pet.Target.getZPos()), reach, now,
                     pet.Order == Command.Stay);
                 if (inReach && now >= pet.NextAttack)
                 {
@@ -1184,7 +1191,7 @@ namespace hds
                 if (now >= pet.NextRetaliation) Retaliate(pet, pet.Target, now);
                 return;
             }
-            if (pet.Order == Command.Follow) MoveToward(pet, OwnerPosition(pet), FollowDistanceMetres);
+            if (pet.Order == Command.Follow) MoveToward(pet, OwnerPosition(pet), FollowDistanceMetres, now);
         }
 
         /// <summary>
@@ -1213,6 +1220,11 @@ namespace hds
         {
             if (target.PassiveTarget || target.getIsDead() || target.getCombatTarget() != null || target.IsStunned(now)) return;
             if (OwnerDistanceTo(pet, target) > LeashMetres || Distance(pet.Mob, target.getXPos(), target.getYPos(), target.getZPos()) > RangedRangeMetres * 100) return;
+            var mob = pet.Mob;
+            ushort district = mob.getDistrict();
+            if (NavMesh.Locate(district, mob.getXPos(), mob.getYPos(), mob.getZPos(), out var from) &&
+                !GroundLine(district, from, mob.getXPos(), mob.getZPos(), (target.getXPos(), target.getYPos(), target.getZPos())))
+                return;
             pet.NextRetaliation = now + AttackPeriodSeconds;
             UInt16 damage = CombatCalculator.CalculateMobDamageWithTactics(target.getLevel(), pet.Mob.getLevel());
             DamagePet(pet, Mitigate(pet, damage, now), CombatCalculator.GetRandomMeleeHitFx());
@@ -1424,15 +1436,110 @@ namespace hds
 
         private static void SetStanding(Pet pet)
         {
+            pet.Walking = false;
             pet.Mob.updateAnimation((byte)Mob.Animations.STAND);
         }
 
-        /// <summary>
-        /// Steps the simulacrum towards a point until it is within <paramref name="stopMetres"/>, at most 5 m a tick, with the walk
-        /// animation the wandering NPCs use (02 0e). Returns true once within reach.
-        /// </summary>
-        private static bool MoveToward(Pet pet, (double x, double y, double z) goal, double stopMetres, bool stay = false)
+        /// <summary>Follow a walkable path without treating a nearby point through a wall as reached.</summary>
+        private static bool MoveToward(Pet pet, (double x, double y, double z) goal, double stopMetres, double now, bool stay = false)
         {
+            Mob mob = pet.Mob;
+            double x = mob.getXPos(), y = mob.getYPos(), z = mob.getZPos();
+            ushort district = mob.getDistrict();
+            if (!NavMesh.Locate(district, x, y, z, out NavLocation origin))
+                return MoveWithoutNav(pet, goal, stopMetres, stay);
+
+            double distance = Distance(mob, goal.x, goal.y, goal.z), stop = stopMetres * 100;
+            if (!NavMesh.Locate(district, goal.x, goal.y, goal.z, out NavLocation destination) ||
+                Math.Abs(origin.floorY - destination.floorY) > 150)
+            {
+                pet.Route = null;
+                if (pet.Walking) SetStanding(pet);
+                return false;
+            }
+
+            bool direct = distance <= stop
+                ? GroundLine(district, origin, x, z, goal)
+                : NavMesh.HasSightPath(district, x, y, z, goal.x, goal.y, goal.z);
+            if (direct && distance <= stop)
+            {
+                pet.Route = null;
+                if (pet.Walking) SetStanding(pet);
+                return true;
+            }
+            if (stay) return false;
+
+            double advance = Math.Min(StepMetres * 100, distance - stop * 0.8);
+            NavLocation reached;
+            if (direct && GroundStep(pet, origin, x, z, goal.x, goal.z, advance, out reached))
+                pet.Route = null;
+            else if (!PetWaypoint(pet, (x, y, z), goal, now, out NavPoint waypoint) ||
+                !GroundStep(pet, origin, x, z, waypoint.x, waypoint.z, StepMetres * 100, out reached))
+            {
+                if (pet.Route?.Length > 0)
+                {
+                    pet.Route = Array.Empty<NavPoint>();
+                    pet.RetryRouteAt = now + RouteRetrySeconds;
+                }
+                if (pet.Walking) SetStanding(pet);
+                return false;
+            }
+
+            bool inReach = Distance(mob, goal.x, goal.y, goal.z) <= stop &&
+                GroundLine(district, reached, mob.getXPos(), mob.getZPos(), goal);
+            pet.Walking = !inReach;
+            pet.Mob.updateAnimation((byte)(inReach ? Mob.Animations.STAND : Mob.Animations.WALK));
+            return inReach;
+        }
+
+        internal static bool PetWaypoint(Pet pet, (double x, double y, double z) from, (double x, double y, double z) goal,
+            double now, out NavPoint point)
+        {
+            var old = pet.RouteTarget;
+            bool goalMoved = Math.Pow(old.X - goal.x, 2) + Math.Pow(old.Y - goal.y, 2) + Math.Pow(old.Z - goal.z, 2) >=
+                RouteReplanDistance * RouteReplanDistance;
+            if (pet.Route == null || goalMoved || (pet.RouteIndex >= pet.Route.Length && now >= pet.RetryRouteAt))
+            {
+                pet.Route = NavMesh.WalkingPath(pet.Mob.getDistrict(), new[] { from.x, from.y, from.z }, new[] { goal.x, goal.y, goal.z });
+                pet.RouteTarget = goal;
+                pet.RouteIndex = 0;
+                pet.RetryRouteAt = now + RouteRetrySeconds;
+            }
+            while (pet.RouteIndex < pet.Route.Length)
+            {
+                point = pet.Route[pet.RouteIndex];
+                if (Math.Pow(point.x - from.x, 2) + Math.Pow(point.z - from.z, 2) >= 0.01) return true;
+                pet.RouteIndex++;
+            }
+            point = default;
+            return false;
+        }
+
+        private static bool GroundLine(ushort district, NavLocation from, double x, double z, (double x, double y, double z) goal) =>
+            NavMesh.Locate(district, goal.x, goal.y, goal.z, out NavLocation target) &&
+            Math.Abs(target.floorY - from.floorY) <= 150 &&
+            NavMesh.WalkableLine(district, from, x, z, goal.x, goal.z, out NavLocation end) &&
+            (end.sector, end.region, end.indoors) == (target.sector, target.region, target.indoors);
+
+        private static bool GroundStep(Pet pet, NavLocation origin, double x, double z, double tx, double tz, double advance,
+            out NavLocation reached)
+        {
+            reached = origin;
+            double dx = tx - x, dz = tz - z, length = Math.Sqrt(dx * dx + dz * dz);
+            if (length < 0.01) return false;
+            double fraction = Math.Min(1, advance / length);
+            double nx = x + dx * fraction, nz = z + dz * fraction;
+            if (!NavMesh.WalkableLine(pet.Mob.getDistrict(), origin, x, z, nx, nz, out reached)) return false;
+            FaceTowards(pet, nx, nz);
+            pet.Mob.setXPos(nx);
+            pet.Mob.setYPos(reached.floorY + 95);
+            pet.Mob.setZPos(nz);
+            return true;
+        }
+
+        private static bool MoveWithoutNav(Pet pet, (double x, double y, double z) goal, double stopMetres, bool stay)
+        {
+            pet.Route = null;
             double d = Distance(pet.Mob, goal.x, goal.y, goal.z) / 100.0;
             if (d <= stopMetres) return true;
             if (stay) return false;
@@ -1442,8 +1549,9 @@ namespace hds
             pet.Mob.setXPos(pet.Mob.getXPos() + (goal.x - pet.Mob.getXPos()) * f);
             pet.Mob.setYPos(pet.Mob.getYPos() + (goal.y - pet.Mob.getYPos()) * f);
             pet.Mob.setZPos(pet.Mob.getZPos() + (goal.z - pet.Mob.getZPos()) * f);
-            pet.Mob.updateAnimation((byte)(d - step <= stopMetres ? Mob.Animations.STAND : Mob.Animations.WALK));
-            return d - step <= stopMetres;
+            pet.Walking = d - step > stopMetres;
+            pet.Mob.updateAnimation((byte)(pet.Walking ? Mob.Animations.WALK : Mob.Animations.STAND));
+            return !pet.Walking;
         }
     }
 }
