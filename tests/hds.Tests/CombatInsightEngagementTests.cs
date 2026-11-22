@@ -139,6 +139,39 @@ public class CombatInsightEngagementTests
         Assert.Equal(baseline.Force, restored.Force);
     }
 
+    [Theory]
+    [InlineData(40, -20, 25, 88)]
+    [InlineData(86, -15, 28, 93)]
+    [InlineData(130, -10, 8, 99)]
+    public void StarterDebuffReducesTheAffectedPlayersForceScoreUntilItsOwnExpiry(ushort ability, int forcePenalty,
+        int seconds, long reducedScore)
+    {
+        using var fixture = new Fixture();
+        AbilityPassives.SetLoaded(fixture.Source, new (ushort, ushort)[] { (2, 50), (113, 50) });
+        Assert.True(CombatInsightEngagement.Allows(fixture.Source, fixture.Target, fixture.Handle, out var baseline));
+        Assert.Equal((110L, 110L), (baseline.Force, baseline.Evade));
+        int accuracy = AbilityStats.Player(fixture.Source, 522);
+        Assert.True(TempMods.TryGet(ability, out var effect));
+
+        var affected = TimedEffects.ForPlayer(fixture.Source);
+        double start = TimeUtils.GetSimTimeSeconds();
+        TimedEffects.Apply(affected, effect, start, fixture.Target, "Debuff caster");
+
+        var applied = Assert.Single(affected.Effects.Snapshot(), mod => mod.Parent == ability && mod.Target == 519);
+        Assert.Equal((forcePenalty, (float)seconds), (applied.Value, applied.Seconds));
+        Assert.Equal(forcePenalty, AbilityStats.Player(fixture.Source, 519));
+        Assert.Equal(0, AbilityStats.Player(fixture.Target, 519));
+        Assert.Equal(accuracy, AbilityStats.Player(fixture.Source, 522));
+        Assert.False(CombatInsightEngagement.Allows(fixture.Source, fixture.Target, fixture.Handle, out var withDebuff));
+        Assert.Equal((reducedScore, baseline.Evade), (withDebuff.Force, withDebuff.Evade));
+
+        TimedEffects.RunDue(start + seconds + 0.01);
+        Assert.DoesNotContain(affected.Effects.Snapshot(), mod => mod.Parent == ability);
+        Assert.Equal(0, AbilityStats.Player(fixture.Source, 519));
+        Assert.True(CombatInsightEngagement.Allows(fixture.Source, fixture.Target, fixture.Handle, out var afterExpiry));
+        Assert.Equal((baseline.Force, baseline.Evade), (afterExpiry.Force, afterExpiry.Evade));
+    }
+
     [Fact]public void Positive520NeverRecreatesRemovedOrSuppressed217()
     {
         using var f=new Fixture();Assert.True(AbilityBuffs.Apply(f.Target,49));
