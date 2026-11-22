@@ -337,13 +337,28 @@ namespace hds
                     shooter.FlushQueue();
                     return;
                 }
-                if (AbilityID == CombatSpecials.ConcealedShot && !Stealth.IsOn(shooter, Stealth.ConcealmentGrantAbility))
+                if (AbilityID == CombatSpecials.ConcealedShot)
                 {
-                    shooter.messageQueue.addRpcMessage(AbilityRefusals.Encode(new AbilityRefusals.Record(
-                        AbilityID, AbilityRefusals.CasterStateRequired, states: Stealth.ConcealmentFlag)));
-                    shooter.FlushQueue();
-                    Output.WriteDebugLog("[ABILITY] Denied 504: requires Concealment");
-                    return;
+                    if (!Stealth.IsOn(shooter, Stealth.ConcealmentGrantAbility))
+                    {
+                        shooter.messageQueue.addRpcMessage(AbilityRefusals.Encode(new AbilityRefusals.Record(
+                            AbilityID, AbilityRefusals.CasterStateRequired, states: Stealth.ConcealmentFlag)));
+                        shooter.FlushQueue();
+                        Output.WriteDebugLog("[ABILITY] Denied 504: requires Concealment");
+                        return;
+                    }
+                    if (!AbilityTargets.WithinSelectionRange(shooter, AbilityID, currentTargetViewId))
+                    {
+                        Deny(AbilityID, $"Out-of-range selected target {currentTargetViewId}.",
+                            AbilityRefusals.TargetOutOfRange, sendServerText: false);
+                        return;
+                    }
+                    if (!AbilityTargets.HasSelectionSight(shooter, definition, currentTargetViewId))
+                    {
+                        Deny(AbilityID, $"Sight blocked for selected target {currentTargetViewId}.",
+                            AbilityRefusals.TargetNotInSight, sendServerText: false);
+                        return;
+                    }
                 }
             }
 
