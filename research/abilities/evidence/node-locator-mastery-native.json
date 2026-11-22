@@ -1,0 +1,16 @@
+{
+  "families": {
+    "find-data-node-mastery-stock-tool": {
+      "representative": 621,
+      "result": "pass",
+      "head": "a1138f9abd00f1431204a289bbb99cd6d554ead1",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/814#issuecomment-7085959063",
+      "scope": "Ordinary Data Node Goggles (423, bag 8) sent the same 215 action with 621 loaded, archived and reloaded. Costs were 0/5/0 IS. Each activation showed the stock search text and green FX, and every toggle-off showed its stop text and cleared the FX. The active-shortcut highlight was outside this witness."
+    }
+  },
+  "abilities": {
+    "621": {
+      "family": "find-data-node-mastery-stock-tool"
+    }
+  }
+}
