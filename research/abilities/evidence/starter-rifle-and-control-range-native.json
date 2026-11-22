@@ -1,0 +1,9 @@
+{
+  "notes": {
+    "43": "PR744 stock range refusal uses reason 34 at 21.5 m before cost, cast, reuse or effects. In-range Disrupt Inputs costs 10 IS, adds Blind source 43/state 90 for 16 s and uses 43 s reuse. The stock run did not time the cast. https://github.com/kylebrussell/mxo-hd/pull/744#issuecomment-7076160208",
+    "48": "PR744 stock range refusal uses reason 34 at 21.5 m before cost, cast, reuse or effects. In range: 26 IS, source 48/state 85 for 6 s, viral resistance −20 for 12 s, 734/681 for 12 s and 43 s reuse. The stock run did not time the cast. https://github.com/kylebrussell/mxo-hd/pull/744#issuecomment-7076160208",
+    "130": "PR744 verifies reason 34 at 21.5 m before cost, cast, reuse or effects. A selected same-organization player is refused without cost. Near, 20 IS lands for 9, with stats 115/877/878 −50 and 519 −10 for 8 s and 8 s reuse. The stock run did not time the cast. Movement-stat consumption, other targeting cases and wider retail damage remain open. https://github.com/kylebrussell/mxo-hd/pull/744#issuecomment-7076160208",
+    "140": "PR743 confirms native CSR inputs with one, two and three current opponents: 0, −10, −15. Loading 140 changes the three-opponent attack and defence penalty to −5 without changing Sharpshooter. Unload restores −15. Other engine caller details stay open. https://github.com/kylebrussell/mxo-hd/pull/743#issuecomment-7076106349",
+    "148": "PR743 confirms a separate native rifle penalty of −15 to attack and defence against an unarmed opponent. Loading 148 removes it while the 140 inputs stay fixed. Unloading restores it. https://github.com/kylebrussell/mxo-hd/pull/743#issuecomment-7076106349"
+  }
+}
