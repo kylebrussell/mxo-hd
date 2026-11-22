@@ -492,6 +492,12 @@ namespace hds
                         Deny(AbilityID, "Choose a living friendly target within range.");
                     return;
                 }
+                if (targets.Any(target => AbilitySupport.SightBlocked(Store.currentClient, target, AbilityID)))
+                {
+                    Deny(AbilityID, $"Sight blocked for selected target {currentTargetViewId}.",
+                        AbilityRefusals.TargetNotInSight, sendServerText: false);
+                    return;
+                }
                 if (AbilitySupport.RequiresBuffer(AbilityID) && targets.All(target => !AbilitySupport.BufferFits(target, AbilityID)))
                 {
                     Deny(AbilityID, "The upgrade buffer is full.");

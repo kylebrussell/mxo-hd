@@ -17,6 +17,14 @@ namespace hds
         public static bool BufferFits(WorldClient target, ushort id) => !RequiresBuffer(id) ||
             AbilityBuffBuffer.CanApply(target,id,AbilityBuffs.TryGet(id,out var buff) ? buff : null);
 
+        internal static bool SightBlocked(WorldClient caster, WorldClient target, ushort id)
+        {
+            if (target == caster || (id != 46 && id != 68 && id != 173)) return false;
+            var entry = AbilityCatalog.Find(id);
+            return entry?.Number("Ability/CastDirectObjects") == 0 &&
+                entry.Number("Ability/DoesNOTRequireLOS") == 0 && !CombatSight.Between(caster, target);
+        }
+
         public static WorldClient PlayerInView(WorldClient caster, UInt16 view, UInt16? spawn = null)
         {
             if (view <= 2) return caster;
@@ -69,6 +77,11 @@ namespace hds
             var entry = AbilityCatalog.Find(id);
             foreach (WorldClient target in Targets(caster, id, view, spawn))
             {
+                if (SightBlocked(caster, target, id))
+                {
+                    Output.WriteDebugLog($"[ABILITY] {id} fizzles: sight lost to {TimedEffects.PlayerName(target)}");
+                    continue;
+                }
                 if (!BufferFits(target,id)) continue;
                 if (entry?.Healing == true)
                 {
