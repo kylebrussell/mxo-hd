@@ -152,6 +152,12 @@ public class CoderPetTests
             npcView.viewCreated = false;
             Assert.Null(CoderPets.ResolveAttackTarget(pet, owner, npcView.ViewID, fromClient: true));
             npcView.viewCreated = true;
+            uint fullNetworkField = (0x22u << 16) | npcView.ViewID;
+            Assert.Same(dummy, CoderPets.ResolveAttackTarget(pet, owner, fullNetworkField, fromClient: true));
+            npcView.viewNeedsToBeDeleted = true;
+            Assert.Null(CoderPets.ResolveAttackTarget(pet, owner, npcView.ViewID, fromClient: true));
+            Assert.Null(CoderPets.ResolveAttackTarget(pet, owner, fullNetworkField, fromClient: true));
+            npcView.viewNeedsToBeDeleted = false;
             dummy.setZPos((CoderPets.LeashMetres + 1) * 100);
             Assert.Null(CoderPets.ResolveAttackTarget(pet, owner, npcView.ViewID, fromClient: true));
         }

@@ -551,7 +551,7 @@ namespace hds
 
         // ---- Orders ----------------------------------------------------------------------------------------------
 
-        /// <summary>81 7a ID Command / 81 7b ID Command TargetObject(u32: view u16, spawn u16) / 81 7c ID Command Value.</summary>
+        /// <summary>81 7a ID Command / 81 7b ID Command TargetObject(u32) / 81 7c ID Command Value.</summary>
         public static bool TryParseOrder(int header, byte[] data, out byte id, out Command command, out UInt32 target, out byte value)
         {
             id = 0; command = 0; target = 0; value = 0;
@@ -581,13 +581,13 @@ namespace hds
             Output.WriteDebugLog("[PET] Order " + header.ToString("x") + " id " + id + " command " + command + " target " + target.ToString("x8") + " value " + value);
             // The stock Attack button resolves a selected object before sending 81 7b (client.dll 620efaf0).
             // A missing or unsupported selection must never retarget to a nearby NPC.
-            string refusal = Order(client, id, command, (UInt16)(target & 0xffff), value, fromClient: true);
+            string refusal = Order(client, id, command, target, value, fromClient: true);
             if (refusal != null)
                 Output.WriteDebugLog("[PET] Order refused: " + refusal);
         }
 
         /// <summary>Carries out an order. Returns a line for the dev command, null when it was done.</summary>
-        public static string Order(WorldClient client, byte id, Command command, UInt16 targetView, byte value, bool fromClient = false)
+        public static string Order(WorldClient client, byte id, Command command, UInt32 targetObject, byte value, bool fromClient = false)
         {
             Pet pet = Of(client);
             if (pet == null) return "You have no simulacrum.";
@@ -600,11 +600,11 @@ namespace hds
             lock (pet)
             {
                 if (pet.Gone || pet.Mob.getIsDead()) return "You have no active simulacrum.";
-                return ApplyOrder(pet, client, command, targetView, value, fromClient);
+                return ApplyOrder(pet, client, command, targetObject, value, fromClient);
             }
         }
 
-        private static string ApplyOrder(Pet pet, WorldClient client, Command command, UInt16 targetView, byte value, bool fromClient)
+        private static string ApplyOrder(Pet pet, WorldClient client, Command command, UInt32 targetObject, byte value, bool fromClient)
         {
             switch (command)
             {
@@ -613,7 +613,7 @@ namespace hds
                 case Command.Follow:
                     pet.Order = Command.Follow; pet.Target = null; SendWindow(pet, false); return null;
                 case Command.Attack:
-                    Mob target = ResolveAttackTarget(pet, client, targetView, fromClient);
+                    Mob target = ResolveAttackTarget(pet, client, targetObject, fromClient);
                     if (target == null) return "Choose a hostile NPC within your simulacrum's leash.";
                     pet.Order = Command.Attack; pet.Target = target; SendWindow(pet, false); return null;
                 case Command.Mode:
@@ -625,12 +625,14 @@ namespace hds
             }
         }
 
-        internal static Mob ResolveAttackTarget(Pet pet, WorldClient client, UInt16 targetView, bool fromClient)
+        internal static Mob ResolveAttackTarget(Pet pet, WorldClient client, UInt32 targetObject, bool fromClient)
         {
-            if (targetView == 0 && !fromClient) return DefaultTarget(client, pet);
+            // The low word indexes this receiver's views. Keep the remaining bits opaque until the stock wire is confirmed.
+            UInt16 targetView = (UInt16)(targetObject & 0xffff);
+            if (targetObject == 0 && !fromClient) return DefaultTarget(client, pet);
             if (targetView <= 2) return null;
             Mob target = AbilityTargets.FindMob(client, targetView, out ClientView view);
-            return view?.viewCreated == true && CanPursue(pet, target) ? target : null;
+            return view?.viewCreated == true && !view.viewNeedsToBeDeleted && CanPursue(pet, target) ? target : null;
         }
 
         internal static void SetStance(Pet pet, Stance stance)
