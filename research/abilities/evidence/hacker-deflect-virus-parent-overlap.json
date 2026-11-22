@@ -1,0 +1,23 @@
+{
+  "abilities": {
+    "378": {
+      "checks": {
+        "area": {
+          "source": "GOB 378 invokes the 693 child, whose CastDirectObjects 9, RadiusOfEffect 6 and UBF0 category specify the caster-centred team pulse with the existing support radius bonus.",
+          "runtime": "AbilityAuras calls AbilitySupport.Land for child 693. AbilitySupport.Targets applies the source's effective radius and selects the living caster and in-range team members.",
+          "test": "deflect-virus-parent-radius-and-overlap checks verified NAV stands at 6.60 m and 6.61 m with the first loaded caster's +10 percent radius. The second loaded caster's +14 percent radius also reaches the shared teammate at 6.83 m. A closer nonmember gets no child or FX. PR367 verified the actual stock caster-and-teammate recipients. https://github.com/kylebrussell/mxo-hd/pull/367#issuecomment-7014684373"
+        },
+        "aura": {
+          "source": "proxy_024 lines 12959–13039 preserve the complete 378 request, its own timer before exclusive-on, and the timed child. Lines 13473–13507 show the stock dismissal and parent records off at 13:44:16, then the last child IDs e5 and e7 expiring at 13:44:19.",
+          "runtime": "AbilityHandler publishes 378's 10-second own reuse before the exclusive-on record. AbilityAuras maintains each source and checks its generation before recurring upkeep. A later accepted pulse replaces the existing child records on the recipient, and dismissal leaves the current child to its own expiry.",
+          "test": "deflect-virus-parent-radius-and-overlap replays the exact request and dismissal, checks both source levels replace rather than stack, observes one surviving source's next 7 IS tick, and matches both final defense removal record IDs. The other source stops paying. PR367 saw the live stock toggle, repeated pulse refresh and off. https://github.com/kylebrussell/mxo-hd/pull/367#issuecomment-7014684373"
+        },
+        "behavior-tests": {
+          "source": "GOB 378 has a 2-second cast, 10 IS initial cost, 7 IS every five seconds, and ApplyAuraEffect for 693. virii.py DeflectVirus1Effect_DirectObject schedules the 0.2-second effect; the child's Sweep component uses the 4 percent term callback.",
+          "runtime": "The actual 378 cast and the paid aura scheduler publish the parent and dispatch the child. The matching linked FX has its own add/remove record, while the child's term callback runs on removal.",
+          "test": "deflect-virus-parent-radius-and-overlap covers the complete live cast, ordered activation timer, recipient/FX range, upkeep, dismissal and final expiry. DeflectAuraChargesSevenAndDeactivatesBeforeAnUnaffordablePulse proves shortfall, and DeflectVirusChildCarriesScaledDefencesAndRunsItsFourPercentTermCleanseOnce verifies the sourced term behavior. The archive's child 693 magnitude/presentation questions are documented separately from the 378 parent. https://github.com/kylebrussell/mxo-hd/pull/367#issuecomment-7014684373"
+        }
+      }
+    }
+  }
+}
