@@ -338,6 +338,8 @@ def server(i):
             parts.append('PR775 stock run found base run speed unchanged with the three -50 movement records active')
     if i in (22, 27, 28):
         parts.append('stock summons keep the open street stand or use a verified stand on the same room floor')
+    if i in (22, 27, 28, 29, 602):
+        parts.append('requires loaded memory from admission through cast completion; an Archive fizzle keeps the prior summon')
     if i in (33, 36, 53, 57, 58, 59, 60, 514):
         parts.append('cast completion rechecks the original target spawn and range before damage or splash')
     if i in (21, 33, 36, 514):
