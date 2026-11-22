@@ -11,6 +11,6 @@
     }
   },
   "notes": {
-    "148": "PR738 shows a fixed pistol and tactic at 1.2 m in ordinary two-person interlock. Unloaded/loaded/unloaded 148 changes both attack and defence modifiers −5/0/−5. Other ranges, multi-opponent interlock and the full retail roll model remain open. https://github.com/kylebrussell/mxo-hd/pull/738#issuecomment-7075344571"
+    "148": "PR738 shows a fixed pistol and tactic at 1.2 m in ordinary two-person interlock. Unloaded/loaded/unloaded 148 changes both attack and defence modifiers −5/0/−5. Other ranges and the full retail roll model remain open. PR740 separately covers the crowded close-range case. https://github.com/kylebrussell/mxo-hd/pull/738#issuecomment-7075344571"
   }
 }
