@@ -250,11 +250,11 @@ def server(i):
     if r['cooldown']:
         cd = r['cooldown']
         parts.append(f"reuse {cd['Seconds']:g}s" + (f" / group {cd['Group']} {cd['GroupSeconds']:g}s" if cd['Group'] else ''))
-    starter_viral_bases = {57: 8, 58: 11, 59: 17, 60: 7}
+    starter_viral_bases = {53: 12, 57: 8, 58: 11, 59: 17, 60: 7}
     if i in starter_viral_bases and not r['damage']:
-        parts.append(f'stored fixed viral base {starter_viral_bases[i]} when legacy endpoints are incomplete; live selected enemy required before cast or reuse; stock level-19 neutral hits match the stored base at +5% viral influence; retail damage scaling and contest unresolved')
-    elif i == 53 and not r['damage']:
-        parts.append('stored fixed viral base 12 with incomplete legacy endpoints; live selected enemy required before cast or reuse; stock neutral hits 12 at +5% and 14 at +17% viral influence; retail damage scaling and contest unresolved')
+        parts.append(f'shipped fixed viral base {starter_viral_bases[i]}; live selected enemy required before cast or reuse; normal viral hit/deflect contest, caster influence scaling and typed resistance; stock base and influenced hits observed')
+        if i == 60:
+            parts.append('same typed damage path for each legal splash recipient')
     elif i in (105, 176) and not r['damage']:
         base, hit = (8, 8) if i == 105 else (17, 18)
         admission = 'current live interlock opponent only; wider damage scaling unresolved' if i == 105 else 'wider damage and admission unresolved'
