@@ -322,6 +322,17 @@ namespace hds
                 }
             }
 
+            bool lineUp = AbilityID == AbilityHealthCallbacks.LineUpAbility;
+            if (lineUp && AbilityHealthCallbacks.LineUpRefusal(Store.currentClient, CombatManager.GetHandler(Store.currentClient)) is uint lineUpRefusal)
+            {
+                uint states = lineUpRefusal == AbilityRefusals.CasterStateRequired ? Stealth.ConcealmentFlag : 0;
+                Store.currentClient.messageQueue.addRpcMessage(AbilityRefusals.Encode(
+                    new AbilityRefusals.Record(AbilityID, lineUpRefusal, states: states)));
+                Store.currentClient.FlushQueue();
+                Output.WriteDebugLog($"[ABILITY] Denied {AbilityID}: Line Up The Shot refusal {lineUpRefusal}");
+                return;
+            }
+
             if (CombatSpecials.IsRifleOpener(AbilityID) || AbilityID == CombatSpecials.ConcealedShot)
             {
                 var shooter = Store.currentClient;
@@ -656,7 +667,7 @@ namespace hds
 
             var freeStealth=StealthShieldAbilities.Handles(AbilityID)?StealthShieldAbilities.Capture(Store.currentClient,currentTargetViewId):null;
             var ghostStrike=GhostStrikeCallbacks.Capture(Store.currentClient,AbilityID,currentTargetViewId);
-            bool lineUpConcealed = AbilityID==506 && Stealth.IsOn(Store.currentClient,Stealth.ConcealmentGrantAbility);
+            bool lineUpConcealed = lineUp && Stealth.IsOn(Store.currentClient, Stealth.ConcealmentGrantAbility);
             bool sneakOpener = Stealth.IsHidden(Store.currentClient);
             // Attacking or using another ability ends stealth (our rule; see Stealth.BreakForAction)
             if (AbilityID==StealthShieldAbilities.DisableEvasion) StealthShieldAbilities.ActionTaken(Store.currentClient);
@@ -689,7 +700,14 @@ namespace hds
                 if (startingClassUpgrade)
                     AbilityCooldowns.Start(client, AbilityID, TimeUtils.GetSimTimeSeconds());
                 if (corpse != null) AbilityResurrection.Request(client, corpse, AbilityID, casterWorld, casterLife, targetWorld, targetLife);
-                else if (AbilityID==506) AbilityHealthCallbacks.LineUp(client,lineUpConcealed);
+                else if (lineUp)
+                {
+                    if (AbilityPassives.IsLoaded(client, AbilityID) &&
+                        AbilityPassives.IsLoaded(client, Stealth.ConcealmentGrantAbility))
+                        AbilityHealthCallbacks.LineUp(client, lineUpConcealed);
+                    else
+                        Output.WriteDebugLog($"[ABILITY] {AbilityID} fizzles: Line Up The Shot or its Concealment grant was unloaded");
+                }
                 else if (support)
                 {
                     if (starterGuardianSupport && !AbilityPassives.IsLoaded(client, AbilityID))

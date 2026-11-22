@@ -223,19 +223,67 @@ public class AbilityHealthCallbackTests
     }
 
     [Fact]
+    public void LineUpRequiresLoadedRiflesEquippedRifleAndActualConcealmentAtRest()
+    {
+        var c = Client();
+        var combat = new CombatHandler(c);
+        const ushort lineUp = AbilityHealthCallbacks.LineUpAbility, rifles = CombatStyles.Rifles;
+        var entry = AbilityCatalog.Find(lineUp);
+        Assert.Equal(1d, entry.Number("Ability/CastWhenUsed"));
+        Assert.Equal(rifles, AbilityCatalog.IdOf((uint)entry.Number("Ability/CastRequiredCombatStance")));
+        Assert.Equal((double)0x66525749, entry.Number("Ability/ReqCategory")); // FourCC IWRf
+        Assert.Equal((double)Stealth.ConcealmentFlag, entry.Number("Ability/CastCasterRequiredStates"));
+        try
+        {
+            Assert.Equal(AbilityRefusals.NotLoaded, AbilityHealthCallbacks.LineUpRefusal(c, combat));
+            AbilityPassives.SetLoaded(c, new[] { (lineUp, (ushort)20), (rifles, (ushort)20), ((ushort)503, (ushort)20) });
+            combat.isCombatRunning = true;
+            Assert.Equal(AbilityRefusals.MustBeOutsideCombat, AbilityHealthCallbacks.LineUpRefusal(c, combat));
+            combat.isCombatRunning = false;
+            Assert.Equal(AbilityRefusals.WrongStyle, AbilityHealthCallbacks.LineUpRefusal(c, combat));
+            c.playerData.combatStyle = rifles;
+            c.playerInstance.EquippedItemID.setValue(CombatFixtureWeapons.Handgun);
+            Assert.Equal(AbilityRefusals.RequiredItemCategory, AbilityHealthCallbacks.LineUpRefusal(c, combat));
+            c.playerInstance.EquippedItemID.setValue(CombatFixtureWeapons.Rifle);
+            Assert.Equal(AbilityRefusals.CasterStateRequired, AbilityHealthCallbacks.LineUpRefusal(c, combat));
+            Stealth.Begin(c, Stealth.Defs[Stealth.SneakGrantAbility], 20);
+            Assert.Equal(AbilityRefusals.CasterStateRequired, AbilityHealthCallbacks.LineUpRefusal(c, combat));
+            Stealth.Begin(c, Stealth.Defs[Stealth.ConcealmentGrantAbility], 20);
+            Assert.Null(AbilityHealthCallbacks.LineUpRefusal(c, combat));
+        }
+        finally
+        {
+            Stealth.End(c, "test", false);
+        }
+    }
+
+    [Fact]
     public void LineUpUsesTwoDurationsPreservesConcealmentAndOnlyDamageBreaksTheParent()
     {
         var c=Client();
         try
         {
+            int rangedAccuracy = AbilityStats.Attack(c, true);
+            int meleeAccuracy = AbilityStats.Attack(c, false);
+            ushort ballisticDamage = AbilityStats.ScaleTypedAbilityDamage(c, 1, 100);
+            ushort meleeDamage = AbilityStats.ScaleTypedAbilityDamage(c, 0, 100);
+            ushort isBefore = AbilityHandler.CurrentInnerStrength(c);
             Assert.True(AbilityHealthCallbacks.LineUp(c,false));Assert.True(Stealth.IsOn(c,1137));
             Assert.Equal(25,AbilityBuffs.Total(c,524));Assert.Equal(10,AbilityBuffs.Total(c,171));
+            Assert.Equal(rangedAccuracy + 25, AbilityStats.Attack(c, true));
+            Assert.Equal(ballisticDamage + 10, AbilityStats.ScaleTypedAbilityDamage(c, 1, 100));
+            Assert.Equal(meleeAccuracy, AbilityStats.Attack(c, false));
+            Assert.Equal(meleeDamage, AbilityStats.ScaleTypedAbilityDamage(c, 0, 100));
+            Assert.Equal(0, AbilityBuffs.Total(c, 710));
+            Assert.Equal(isBefore, AbilityHandler.CurrentInnerStrength(c));
             Assert.Equal(36,AbilityBuffBuffer.Used(c)); // parent20 once, concealment16
             AbilityHandler.HealSelf(c,1);Assert.True(TimedEffects.ForPlayer(c).Effects.HasParent(506));
             PvpCombat.Damage(c,1);Assert.False(TimedEffects.ForPlayer(c).Effects.HasParent(506));Assert.False(Stealth.IsOn(c,1137));
             Assert.True(AbilityHealthCallbacks.LineUp(c,false));
             TimedEffects.RunDue(TimeUtils.GetSimTimeSeconds()+13);
             Assert.Equal(0,AbilityBuffs.Total(c,171));Assert.Equal(25,AbilityBuffs.Total(c,524));
+            Assert.Equal(ballisticDamage, AbilityStats.ScaleTypedAbilityDamage(c, 1, 100));
+            Assert.Equal(rangedAccuracy + 25, AbilityStats.Attack(c, true));
             PvpCombat.Damage(c,1);Assert.True(TimedEffects.ForPlayer(c).Effects.HasParent(506)); //12s callback is gone
             int generation=Stealth.Current(c)?.Generation??0;
             Assert.True(AbilityHealthCallbacks.LineUp(c,true));Assert.True((Stealth.Current(c)?.Generation??0)>=generation+2);

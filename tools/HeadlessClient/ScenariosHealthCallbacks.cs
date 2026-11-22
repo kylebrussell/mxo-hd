@@ -1,3 +1,5 @@
+using hds;
+
 namespace HeadlessClient;
 
 public static partial class Scenarios
@@ -112,11 +114,10 @@ public static partial class Scenarios
 
     private static async Task HealthDeflectLineup(ScenarioContext context)
     {
-        var p=await context.AddPlayerAsync(new CharacterSeed("DeflectOwner") {Level=20,Organization=1,Health=500,MaxHealth=1000,InnerStrength=2000,MaxInnerStrength=2000});
+        var p=await context.AddPlayerAsync(LineUpActor("DeflectOwner") with {Organization=1,InnerStrength=2000,MaxInnerStrength=2000});
         var friend=await context.AddPlayerAsync(new CharacterSeed("DeflectFriend") {X=17120,Level=50,Organization=1});
         var enemy=await context.AddPlayerAsync(new CharacterSeed("DeflectEnemy") {X=17220,Level=50,Organization=2,InnerStrength=1000,MaxInnerStrength=1000});
-        await context.Database.ExecuteAsync($"DELETE FROM char_abilities WHERE char_id IN ({p.CharId},{friend.CharId},{enemy.CharId})");
-        await LoadAbilitiesAsync(context,p,1137);
+        await context.Database.ExecuteAsync($"DELETE FROM char_abilities WHERE char_id IN ({friend.CharId},{enemy.CharId})");
         await LoadAbilitiesAsync(context,enemy,2,17,477,478,480,481,483);
         foreach(var actor in new[]{p,friend,enemy}) await actor.EnterWorldAsync();
         p.SendRpc(GroupInvite(Team,friend.Handle,""));await friend.WaitForRpcAsync("80 8f 0c 00");
@@ -141,7 +142,7 @@ public static partial class Scenarios
         Cast(enemy,481,victim.ViewId);await friend.WaitForRpcAsync(ModPattern(481,481),TimeSpan.FromSeconds(8));
         await friend.WaitForRpcAsync(ModPattern(481,481,true),TimeSpan.FromSeconds(8)); // fixture roll0 < term sweep4
         Cast(p,378);await p.WaitForRpcAsync("80 bd 05 7a 01 00 00 00 00 00 00");
-        Cast(p,1137);await p.WaitForRpcAsync(ModPattern(1137,881),TimeSpan.FromSeconds(8));
+        await PrepareLineUp(p);
         int concealOff=p.Received(ModPattern(1137,881,true)).Count;
         Cast(p,506);await Task.Delay(1000);
         Check.Equal(concealOff,p.Received(ModPattern(1137,881,true)).Count,"Line Up preserves concealment during its cast");
@@ -155,16 +156,61 @@ public static partial class Scenarios
 
     private static async Task HealthLineupTimings(ScenarioContext context)
     {
-        var p=await context.AddPlayerAsync(new CharacterSeed("LineupTimer") {Level=20,Health=500,MaxHealth=1000,InnerStrength=1000,MaxInnerStrength=1000});
-        await context.Database.ExecuteAsync($"DELETE FROM char_abilities WHERE char_id={p.CharId}");await p.EnterWorldAsync();
-        Cast(p,506);var accuracy=await p.WaitForRpcAsync(ModPattern(506,524),TimeSpan.FromSeconds(9));
+        var p=await context.AddPlayerAsync(LineUpActor("LineupTimer"));
+        await p.EnterWorldAsync();
+        SelectStyle(p, CombatStyles.Rifles);
+        await p.WaitForViewUpdateAsync(2, "02 80 80 80 80 80 10 93 00 00 00");
+        // This scenario exercises normal server admission using the existing headless ability sender.
+        byte[] casterState = AbilityRefusals.Encode(new AbilityRefusals.Record(506, AbilityRefusals.CasterStateRequired,
+            states: Stealth.ConcealmentFlag));
+        Cast(p,506);
+        await p.WaitForRpcAsync(WireFormat.ToHex(casterState));
+        string cost = $"[ABILITY-COST] char={p.CharId} ability=506 paid=30";
+        Check.That(!context.Server.DebugLog().Contains(cost), "An exposed player does not pay for Line Up");
+        await EnterLineUpConcealment(p);
+        Cast(p,506);
+        var bar = await p.WaitForRpcAsync("80 ac fa 01");
+        Check.Equal(4f, BitConverter.ToSingle(bar.Bytes, bar.Bytes.Length - 4), "Line Up's normal cast lasts four seconds");
+        var accuracy=await p.WaitForRpcAsync(ModPattern(506,524),TimeSpan.FromSeconds(9));
         Check.Equal(20f,BitConverter.ToSingle(accuracy.Bytes,18),"Accuracy lasts20s");
+        Check.Equal(25, BitConverter.ToInt32(accuracy.Bytes,13), "Accuracy scales to +25 at level 20");
         var damage=p.Received(ModPattern(506,171)).Last();Check.Equal(12f,BitConverter.ToSingle(damage.Bytes,18),"Damage and its health callback last12s");
+        Check.Equal(10, BitConverter.ToInt32(damage.Bytes,13), "Ballistic damage scales to +10 at level 20");
+        await p.WaitForRpcAsync(WireFormat.ToHex(AbilityCooldowns.BuildTimer(506, AbilityCooldowns.OwnTimer, 15, true)));
+        Check.That(context.Server.DebugLog().Contains(cost), "The admitted use pays 30 IS");
+        Check.Equal(0, p.Received(ModPattern(506,710)).Count, "The inline reapplication identifier is never published as a stat");
         await p.WaitForRpcAsync(ModPattern(506,171,true),TimeSpan.FromSeconds(15));
         Check.Equal(0,p.Received(ModPattern(506,524,true)).Count,"Accuracy survives the12s component expiry");
         p.SendChat("?health 400");await p.WaitForRpcAsync(ModPattern(1137,881,true));
         await Task.Delay(600);Check.Equal(0,p.Received(ModPattern(506,524,true)).Count,"Damage after12s does not cancel the remaining accuracy");
         await p.WaitForRpcAsync(ModPattern(506,524,true),TimeSpan.FromSeconds(10));
         Check.Equal(0,p.World.Problems.Count,"Line Up split duration protocol");
+    }
+
+    private static CharacterSeed LineUpActor(string handle)
+    {
+        const ushort level = 20, lineUp = AbilityHealthCallbacks.LineUpAbility;
+        var roots = new ushort[] { 2, 17, CombatStyles.Rifles, lineUp };
+        var profile = roots.SelectMany(id => AbilityPrerequisites.Current.Closure(id).Keys.Append(id))
+            .Distinct().Select(id => (id, level)).ToArray();
+        return new CharacterSeed(handle)
+        {
+            Level = level, Health = 500, MaxHealth = 1000, InnerStrength = 1000, MaxInnerStrength = 1000,
+            Items = new[] { ((int)CombatFixtureWeapons.HandSlot, CombatFixtureWeapons.Rifle, 1) },
+            OwnedLoadedAbilities = profile
+        };
+    }
+
+    private static async Task PrepareLineUp(HeadlessPlayer actor)
+    {
+        SelectStyle(actor, CombatStyles.Rifles);
+        await actor.WaitForViewUpdateAsync(2, "02 80 80 80 80 80 10 93 00 00 00");
+        await EnterLineUpConcealment(actor);
+    }
+
+    private static async Task EnterLineUpConcealment(HeadlessPlayer actor)
+    {
+        Cast(actor, Stealth.ConcealmentGrantAbility);
+        await actor.WaitForRpcAsync(ModPattern(1137, 881), TimeSpan.FromSeconds(8));
     }
 }
