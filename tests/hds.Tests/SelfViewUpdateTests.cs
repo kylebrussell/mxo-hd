@@ -121,6 +121,18 @@ public class SelfViewUpdateTests
         Assert.Equal(63607.03f, state.X, 1);
     }
 
+    [Theory]
+    [InlineData("01 2a 02 03 00 e0 82 46 00 80 f7 43 fe c6 09 45 00 00", true)] // Retail Mara, valid counter and position.
+    [InlineData("01 2a 1a 00 00 01 00 d0 00 00 00 3f f7 43 00 00 00 00", false)] // PR780, stock echo outside world units.
+    [InlineData("01 08 00 00 c0 7f 00 80 f7 43 fe c6 09 45 00 00", false)] // Non-finite position.
+    public void BoundaryStaysParseableWhenPositionCannotBeUsed(string hex, bool valid)
+    {
+        var entry = Entry(hex);
+        Assert.Equal(Hex(hex).Length - 2, entry.End);
+        Assert.True(entry.State.HasPosition);
+        Assert.Equal(valid, entry.State.PositionInWorldUnits);
+    }
+
     [Fact]
     public void ParsesStateAndNamesTogether()
     {

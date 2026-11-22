@@ -390,6 +390,10 @@ namespace hds
                 }
                 if(result.LevelRefused) new ServerPackets().sendSystemChatMessage(client,"Your character level is too low to load that ability.","MODAL");
                 var remainingMembership=AbilityMemory.Membership(result.Loaded);
+                if (unload && !remainingMembership.Contains(Stealth.ConcealmentGrantAbility) &&
+                    result.Accepted.Any(row => row.Ability == AbilitySneakGrant.ConcealmentParent) &&
+                    AbilityCastInterrupts.CancelPending(client, Stealth.ConcealmentGrantAbility))
+                    Stealth.StopPredictedConcealment(client);
                 byte[] emittedShadowBase=null;
                 foreach(var owned in result.Accepted.GroupBy(r=>r.Ability).Select(g=>g.First()))
                 {
