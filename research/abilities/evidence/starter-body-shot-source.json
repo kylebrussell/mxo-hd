@@ -1,0 +1,13 @@
+{
+  "abilities": {
+    "105": {
+      "checks": {
+        "source-parity": {
+          "source": "GOB 105 has one WhenEnabled=2 Current Health stat 108 component with DamageType 1, DurationType 1 and equal MinValue and MaxValue 8. It stores neither ValueFunction nor ValueScale. The old flat-50 Rifle Body Shot routine is in old_sm_rifle.py, which is unimported in the retained client scripts.",
+          "runtime": "AbilityHandler selects the fixed GOB health base because the shipped legacy CSV endpoints are inverted. Both the NPC and PvP landed-special paths consume that fixed base through ordinary ballistic influence and recipient resistance, and apply both −5 resistance records after resolving the hit. The valid rifle selects the style and move. Its separate tool base does not replace the special's base.",
+          "test": "BodyShotUsesItsFixedBaseWithIndependentRankWeaponAndInfluenceInputs varies character level 19/50, Body Shot rank 5/19, Rifles rank 19/50, and rifles 692/693 with tool bases 2/4. It checks actual PvP health changes with ordinary ballistic influence and +75 Ballistic Resistance plus the landed pair. PR741 and PR616 stock runs both observed 8 neutral, 6 resisted and move 11364. PR330's move 11364 passed on the earlier runtime that still used a generic 50–80 damage roll. https://github.com/kylebrussell/mxo-hd/pull/741#issuecomment-7075743659 https://github.com/kylebrussell/mxo-hd/pull/616#issuecomment-7058153028 https://github.com/kylebrussell/mxo-hd/pull/330#issuecomment-7006864509"
+        }
+      }
+    }
+  }
+}

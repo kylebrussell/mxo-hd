@@ -255,10 +255,10 @@ def server(i):
         parts.append(f'shipped fixed viral base {starter_viral_bases[i]}; live selected enemy required before cast or reuse; normal viral hit/deflect contest, caster influence scaling and typed resistance; stock base and influenced hits observed')
         if i == 60:
             parts.append('same typed damage path for each legal splash recipient')
-    elif i in (105, 176) and not r['damage']:
-        base, hit = (8, 8) if i == 105 else (17, 18)
-        admission = 'current live interlock opponent only; wider damage scaling unresolved' if i == 105 else 'wider damage and admission unresolved'
-        parts.append(f'stored fixed ballistic {base} base with incomplete legacy endpoints; stock interlock landed {hit}; {admission}')
+    elif i == 105 and not r['damage']:
+        parts.append('stored fixed ballistic base 8 for a live Rifles interlock opponent, with ordinary damage influence and ballistic resistance (stock 8 neutral, 6 resisted)')
+    elif i == 176 and not r['damage']:
+        parts.append('stored fixed ballistic base 17 with incomplete legacy endpoints; stock interlock landed 18; wider damage and admission unresolved')
     elif r['damage']:
         parts.append(f"captured hit {r['damage']['min']}..{r['damage']['max']}")
     elif i == 504:
