@@ -253,7 +253,7 @@ public class OperativeBatchTwoTests
     public void ImpartInvisibilityRefusesSelfAndLeavesExistingStateAlone()
     {
         var actor = StealthActor();
-        Assert.Equal("You cannot impart invisibility on yourself.", Stealth.Refusal(actor, 366, 2));
+        Assert.Equal("You cannot impart invisibility on yourself.", Stealth.Refusal(actor, 366, 2, out _));
         Stealth.Land(actor, 366, 2);
         Assert.Null(Stealth.Current(actor));
     }

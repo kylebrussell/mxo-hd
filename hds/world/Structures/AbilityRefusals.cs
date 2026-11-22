@@ -7,6 +7,8 @@ namespace hds
     {
         public const uint ReuseWait=5, CurrentTactic=6, NotLoaded=7, WrongStyle=13, InsufficientInnerStrength=17,
             MustBeOutsideCombat=21, TargetStateRequired=22, CasterStateRequired=23, InvalidTarget=24, TargetOutOfRange=34, NotEnemySimulacrum=36;
+        // The stock 80 ba consumer leaves reason 10 silent. Use only where the script supplies the message.
+        public const uint NoClientMessage = 10;
         /// <summary>Compatibility value for unresolved aggregate failures;6 is not a generic busy message.</summary>
         public const uint LegacyAmbiguous=CurrentTactic;
         public const byte NoToolSlot=0x6b;

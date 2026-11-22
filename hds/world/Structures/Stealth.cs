@@ -253,8 +253,9 @@ namespace hds
         // ---- using the abilities ----
 
         /// <summary>Why the ability can't be used now (the script's _Test), or null.</summary>
-        public static string Refusal(WorldClient client, UInt16 id, UInt16 targetView)
+        public static string Refusal(WorldClient client, UInt16 id, UInt16 targetView, out uint reason)
         {
+            reason = AbilityRefusals.LegacyAmbiguous;
             if(id==SneakGrantAbility && StealthShieldAbilities.PendingRestealth(client))return "Sneak is waiting for Disable Evasion's restealth callback.";
             if (id == ImpartInvisibilityAbility)
             {
@@ -273,7 +274,11 @@ namespace hds
             if (def.Kind == Kind.Disguise && EnemyWatching(client, InvisibilityProximityUnits))
                 return "You cannot disguise while an enemy is watching.";
             if (def.Kind == Kind.Invisibility && EnemyWatching(client, InvisibilityProximityUnits, ignoreBlinded: true))
-                return "You cannot become invisible near enemies."; // InvisibilityGrant_Test
+            {
+                // InvisibilityGrant_Test supplies the proximity message itself. Keep the 80 ba response silent.
+                reason = AbilityRefusals.NoClientMessage;
+                return "You cannot become invisible near enemies.";
+            }
             if (def.Kind == Kind.Imparted && (BitsOf(client) & Invisible) != 0) return "You are already invisible.";
             return null;
         }
@@ -284,7 +289,7 @@ namespace hds
             if (id == AbilityDisguise.Ability)
             {
                 uint model = AbilityDisguise.ModelFor(client, toolSlot);
-                if (model != 0 && Refusal(client,id,targetView) == null)
+                if (model != 0 && Refusal(client,id,targetView,out _) == null)
                 {
                     foreach (ushort aura in AbilityAuras.Active(client)) AbilityAuras.Stop(client,aura);
                     Begin(client, Defs[id], AbilityLevel(client,id), model);
@@ -294,7 +299,7 @@ namespace hds
             if (id == ImpartInvisibilityAbility)
             {
                 WorldClient target = AbilitySupport.PlayerInView(client, targetView);
-                if (target == null || Refusal(client, id, targetView) != null) return;
+                if (target == null || Refusal(client, id, targetView, out _) != null) return;
                 Begin(target, Defs[InvisibilityImpartedAbility], AbilityLevel(client, id));
                 return;
             }
@@ -379,7 +384,7 @@ namespace hds
         }
 
         // utility.turnOffAuras lists these parents. Leave unrelated auras alone.
-        private static void StopStealthAuras(WorldClient client)
+        internal static void StopStealthAuras(WorldClient client)
         {
             foreach (ushort id in AbilityAuras.Active(client))
                 if (id == 42 || id == 485 || id == 378 || id == 380 || id == 61 || id == 89 ||

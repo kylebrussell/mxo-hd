@@ -163,13 +163,15 @@ namespace hds
             if (drain > 0)
             {
                 int available;
-                ushort remaining = 0;
                 var state = states.GetOrCreateValue(client);
                 lock (state)
                 {
                     if (generation.HasValue && !Current(client, id, generation.Value)) return false;
                     available = AbilityHandler.CurrentInnerStrength(client);
-                    if (available >= drain) remaining = AbilityHandler.SpendInnerStrength(client, (ushort)drain);
+                    // Publish the tick debit before releasing its generation. A later stop and
+                    // cast cannot put an older balance after the cast's own debit.
+                    if (available >= drain)
+                        new ServerPackets().sendISCurrent(client, AbilityHandler.SpendInnerStrength(client, (ushort)drain));
                 }
                 if (available < drain)
                 {
@@ -181,8 +183,6 @@ namespace hds
                     }
                     return false;
                 }
-                if (!generation.HasValue || Current(client, id, generation.Value))
-                    new ServerPackets().sendISCurrent(client, remaining);
                 if (id == ProxyTechnician.Ability) Output.WriteDebugLog("[PROXYTECH] drain source="+TimedEffects.PlayerName(client)+" amount="+drain);
             }
             return true;
