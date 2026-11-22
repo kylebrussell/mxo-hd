@@ -1,0 +1,75 @@
+{
+  "families": {
+    "stock-starter-ability-recipe": {
+      "representative": 516,
+      "scope": "PR747 stock Analyser Write Code produced rank-1 Awakened codes with Ability Maker unloaded and loaded, both at 7 Info. https://github.com/kylebrussell/mxo-hd/pull/747#issuecomment-7076943400",
+      "result": "pass",
+      "head": "8ce0977b21d98f991b911908ef307f34cdeaad5a",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/747#issuecomment-7076943400"
+    },
+    "stock-starter-exile-stakes-and-silver": {
+      "representative": 207,
+      "scope": "PR748 stock client gated the four shortcuts at rest, then used each on the live opponent in right-click Close Combat. Each queued for 20 IS with no own reuse, and all neutral and matching weakness samples landed. https://github.com/kylebrussell/mxo-hd/pull/748#issuecomment-7077003583",
+      "result": "pass",
+      "head": "5eaffeadae3ec467a16361012b5bee2bc1ad2636",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/748#issuecomment-7077003583"
+    }
+  },
+  "abilities": {
+    "207": {
+      "family": "stock-starter-exile-stakes-and-silver",
+      "checks": {
+        "targeting": {
+          "source": "GOB 207 Wooden Stake uses CastWhenUsed 3, CastWhatHow 0 and enemy selector 3, and general.py resolves its damage on the direct object.",
+          "runtime": "AbilityHandler binds admission and the queued round to the same live interlock opponent, checking the view and spawn before any debit. The ordinary round resolves impact.",
+          "test": "PR748 verifies the stock client blocks activation at rest and the live move costs 20 IS and lands 11 neutral and 111 with wood weakness. The full captured replay separately verifies at-rest and stale-handle refusal and queues the live request. Stale selection was headless only. https://github.com/kylebrussell/mxo-hd/pull/748#issuecomment-7077003583"
+        }
+      }
+    },
+    "208": {
+      "family": "stock-starter-exile-stakes-and-silver",
+      "checks": {
+        "targeting": {
+          "source": "GOB 208 Silver Bullet uses CastWhenUsed 3, CastWhatHow 0 and enemy selector 3, and general.py resolves its damage on the direct object.",
+          "runtime": "AbilityHandler binds admission and the queued round to the same live interlock opponent, checking the view and spawn before any debit. The ordinary round resolves impact.",
+          "test": "PR748 verifies the stock client blocks activation at rest and the live move costs 20 IS and lands 10 neutral and 104 with silver weakness. The full captured replay separately verifies at-rest and stale-handle refusal and queues the live request. Stale selection was headless only. https://github.com/kylebrussell/mxo-hd/pull/748#issuecomment-7077003583"
+        }
+      }
+    },
+    "516": {
+      "family": "stock-starter-ability-recipe",
+      "checks": {
+        "stats": {
+          "source": "GOB 516 uses function 2 to add learned rank to Ability Crafting (653). GetAbilityBonusByCategory reads 653 for the ability category, and WriteCodeTest selects the greater of base writing and that category skill.",
+          "runtime": "CraftingHandler.WriteCode reads the loaded 653 total and uses max(649,653) for the ability-recipe contest.",
+          "test": "The stock comparison keeps base writing at 15, changes category skill from 0 to 19, and changes effective skill from 15 to 19 after native reload. https://github.com/kylebrussell/mxo-hd/pull/747#issuecomment-7076943400"
+        },
+        "behavior-tests": {
+          "source": "The shared WriteCodeTest applies the writing contest and charges the discounted Info only on success. The native ability recipe selects exact ingredient bag slots.",
+          "runtime": "The shared Writer transaction revalidates the recipe, analyser and selected slots and commits the Info debit, ingredient consumption and rank-1 bag code together.",
+          "test": "The exact captured replay verifies two 7-Info writes, both ingredient debits, item 46 and the rank-1 descriptor, then full rollback of a stale third request. PR747 reports stock success, both Info changes and ingredient depletion. https://github.com/kylebrussell/mxo-hd/pull/747#issuecomment-7076943400"
+        }
+      }
+    },
+    "1022": {
+      "family": "stock-starter-exile-stakes-and-silver",
+      "checks": {
+        "targeting": {
+          "source": "GOB 1022 Enhanced Wooden Stake uses CastWhenUsed 3, CastWhatHow 0 and enemy selector 3, and general.py resolves its damage on the direct object.",
+          "runtime": "AbilityHandler binds admission and the queued round to the same live interlock opponent, checking the view and spawn before any debit. The ordinary round resolves impact.",
+          "test": "PR748 verifies the stock client blocks activation at rest and the live move costs 20 IS and lands 11 neutral and 832 with wood weakness. The full captured replay separately verifies at-rest and stale-handle refusal and queues the live request. Stale selection was headless only. https://github.com/kylebrussell/mxo-hd/pull/748#issuecomment-7077003583"
+        }
+      }
+    },
+    "1024": {
+      "family": "stock-starter-exile-stakes-and-silver",
+      "checks": {
+        "targeting": {
+          "source": "GOB 1024 Enhanced Silver Bullet uses CastWhenUsed 3, CastWhatHow 0 and enemy selector 3, and general.py resolves its damage on the direct object.",
+          "runtime": "AbilityHandler binds admission and the queued round to the same live interlock opponent, checking the view and spawn before any debit. The ordinary round resolves impact.",
+          "test": "PR748 verifies the stock client blocks activation at rest and the live move costs 20 IS and lands 10 neutral and 787 with silver weakness. The full captured replay separately verifies at-rest and stale-handle refusal and queues the live request. Stale selection was headless only. https://github.com/kylebrussell/mxo-hd/pull/748#issuecomment-7077003583"
+        }
+      }
+    }
+  }
+}
