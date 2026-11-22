@@ -32,6 +32,7 @@ namespace hds{
                 case 0x2a: ClientActionsHandler.Afk(Store.currentClient, rpcData); break;
                 case 0x14d: ClientActionsHandler.Echo(Store.currentClient, rpcData); break;
                 case 0xc6: ClientActionsHandler.Pill(Store.currentClient, rpcData); break;
+                case 0xf6: UtilityAbilities.RequestHackConstruct(Store.currentClient, rpcData); break;
                 case 0x117: ClientActionsHandler.CloseCollector(Store.currentClient, rpcData); break;
                 case 0x141: ClientActionsHandler.CloseElevator(Store.currentClient, rpcData); break;
                 case 0x157: case 0x159: case 0x15b:

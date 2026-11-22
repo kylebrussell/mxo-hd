@@ -1,5 +1,6 @@
 using System.Xml;
 using hds;
+using hds.shared;
 
 namespace hds.Tests;
 
@@ -90,6 +91,84 @@ public class UtilityAbilityTests
         Assert.Equal(0x7600024eu, UtilityAbilities.DisarmMessage(UtilityAbilities.DisarmResult.Disarmed));
         Assert.Equal(0x7600024fu, UtilityAbilities.DisarmMessage(UtilityAbilities.DisarmResult.Failed));
         Assert.Equal(0x76000250u, UtilityAbilities.DisarmMessage(UtilityAbilities.DisarmResult.Critical));
+    }
+
+    [Theory]
+    [InlineData(0, 0u, 0x60000025u)]
+    [InlineData(0, 100u, 0x60000025u)]
+    [InlineData(4, 0u, 0x60000027u)]
+    [InlineData(4, 100u, 0u)]
+    public void HackSelectionUsesServerAbilityAndFactionWithoutSpendingResources(int level, uint faction, uint refusal)
+    {
+        WorldClient client = HackSelectionPlayer(level, faction);
+        // The requested faction and construct IDs differ from the player's actual faction.
+        ReceiveHackSelection(client, "d20400002e160000");
+
+        byte[] expected = refusal == 0
+            ? ServerPackets.BuildSystemChatMessage("Faction construct hacking is unavailable: this server has no faction construct instances. No information was charged.", "SYSTEM")
+            : DuelPackets.BuildSystemString(refusal);
+        var response = Assert.Single(client.messageQueue.RPCMessagesQueue.Cast<SequencedMessage>());
+        int sizePrefix = response.content[0] >= 0x80 ? 2 : 1;
+        Assert.Equal(expected, response.content[sizePrefix..]);
+        Assert.Empty(client.messageQueue.ObjectMessagesQueue);
+        Assert.Equal(9000L, client.playerData.getInfo());
+        Assert.Equal((ushort)80, NumericalUtils.ByteArrayToUint16(client.playerInstance.InnerStrengthAvailable.getValue(), 1));
+    }
+
+    [Theory]
+    [InlineData("d20400002e1600", true, false, MxOLocations.SLUMS)]
+    [InlineData("d20400002e16000000", true, false, MxOLocations.SLUMS)]
+    [InlineData("d20400002e160000", false, false, MxOLocations.SLUMS)]
+    [InlineData("d20400002e160000", true, true, MxOLocations.SLUMS)]
+    [InlineData("d20400002e160000", true, false, MxOLocations.LA)]
+    public void HackSelectionIgnoresBadSizesAndRequestsOutsideTheWorld(string payload, bool onWorld, bool pending, MxOLocations district)
+    {
+        WorldClient client = HackSelectionPlayer(4, 100);
+        client.playerData.setOnWorld(onWorld);
+        client.playerData.worldChangePending = pending;
+        client.playerData.setDistrictId((uint)district);
+
+        ReceiveHackSelection(client, payload);
+
+        Assert.Empty(client.messageQueue.RPCMessagesQueue);
+        Assert.Empty(client.messageQueue.ObjectMessagesQueue);
+        Assert.Equal(9000L, client.playerData.getInfo());
+    }
+
+    private static WorldClient HackSelectionPlayer(int level, uint faction)
+    {
+        var client = (WorldClient)System.Runtime.CompilerServices.RuntimeHelpers.GetUninitializedObject(typeof(WorldClient));
+        client.playerData = new ClientData();
+        client.playerInstance = new PlayerCharacter();
+        client.messageQueue = new MessageQueue();
+        typeof(WorldClient).GetField("lastFlushTick", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!
+            .SetValue(client, long.MaxValue);
+        client.playerData.setDistrictId(1);
+        client.playerData.setOnWorld(true);
+        client.playerData.setInfo(9000);
+        client.playerInstance.FactionID.setValue(faction);
+        client.playerInstance.InnerStrengthAvailable.setValue((ushort)80);
+        if (level != 0)
+        {
+            client.playerData.passives.Loaded[UtilityAbilities.HackConstructKey] = (ushort)level;
+        }
+        return client;
+    }
+
+    private static void ReceiveHackSelection(WorldClient client, string payload)
+    {
+        byte[] body = Convert.FromHexString(payload);
+        byte[] wire = new byte[] { 1, 0, 1, 1, (byte)(body.Length + 2), 0x80, 0xf6 }.Concat(body).ToArray();
+        WorldClient previous = Store.currentClient;
+        try
+        {
+            Store.currentClient = client;
+            Assert.Equal(wire.Length, new Protocol04Manager().parse(0, ref wire));
+        }
+        finally
+        {
+            Store.currentClient = previous;
+        }
     }
 
     [Fact]
