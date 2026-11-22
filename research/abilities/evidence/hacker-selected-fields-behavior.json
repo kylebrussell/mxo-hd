@@ -1,0 +1,61 @@
+{
+  "abilities": {
+    "343": {
+      "checks": {
+        "area": {
+          "source": "GOB 343 stores selected-hostile selector 3 and a 5 m radius. Miasma 2.0 is a single application.",
+          "runtime": "AbilityTargets.LandAround expands from the admitted hostile's location and snapshots eligible recipients.",
+          "test": "SelectedFieldUsesThePrimaryCentreAndEachRecipientOwnContest checks an exact five-metre splash recipient seven metres from the caster, a 5.01 m exclusion, same-organization and hidden exclusions, and separate primary and secondary rolls."
+        },
+        "targeting": {
+          "source": "GOB 343 selects a hostile no more than 16 m away, requires Hacker Style outside combat, and stores the viral test and no sight bypass.",
+          "runtime": "AbilityHandler checks a live loaded selection before the cast and revalidates its spawn and reach before landing. The normal selected hostile resolver admits the centre and checks sight and each recipient contest.",
+          "test": "SelectedFieldUsesTheAdmittedLiveSpawnAndCannotSplashAfterInvalidation covers empty/stale/ally/range/sight/style/combat and a paid invalidation. SelectedFieldUsesThePrimaryCentreAndEachRecipientOwnContest checks the deflected primary leaves a separate successful splash."
+        },
+        "behavior-tests": {
+          "source": "GOB 343 stores a 2 s cast, 14 IS, 28 s reuse, and -21 Melee and Ballistic Defense for 45 s.",
+          "runtime": "The selected hostile resolver sends one field application. TimedEffects and AbilityStats supply both defense consumers and expire the records.",
+          "test": "MiasmaTwoChangesBothDefenseConsumersAndNaturallyClears verifies the typed defenses. SelectedFieldUsesThePrimaryCentreAndEachRecipientOwnContest checks actual non-damaging splash, the independent deflection branch, and expiry. The exact stock Code Nuke bootstrap verifies the shared selector and actual boundary receipts."
+        }
+      }
+    },
+    "401": {
+      "checks": {
+        "area": {
+          "source": "GOB 401 stores selected-hostile selector 3 and a 7 m radius.",
+          "runtime": "AbilityTargets.LandAround expands from the admitted hostile's location and snapshots its eligible recipients.",
+          "test": "SelectedFieldUsesThePrimaryCentreAndEachRecipientOwnContest checks the exact seven-metre hostile boundary nine metres from the caster, the 7.01 m exclusion, and separate party, visibility and contest exclusions."
+        },
+        "targeting": {
+          "source": "GOB 401 selects a hostile no more than 13 m away, requires Hacker Style outside combat, and stores the viral test and no sight bypass.",
+          "runtime": "AbilityHandler checks a live loaded selection and revalidates its spawn and reach before landing. The selected hostile resolver applies sight, then each recipient's viral contest.",
+          "test": "SelectedFieldUsesTheAdmittedLiveSpawnAndCannotSplashAfterInvalidation covers early refusal and paid range invalidation. SelectedFieldUsesThePrimaryCentreAndEachRecipientOwnContest checks a deflected centre and independent splash."
+        },
+        "behavior-tests": {
+          "source": "GOB 401 stores a 2 s cast, 20 IS, 60 s reuse, cost reduction -20 and IS regeneration -35 for 30 s.",
+          "runtime": "TimedEffects owns the two signed modifiers. AbilityCosts applies cost reduction and AbilityHandler consumes regeneration influence.",
+          "test": "InefficiencyFieldsRaiseCastCostAndSlowRegenUntilExpiry checks 25 to 30 effective cost and +8 to +5 regeneration before both restore. SelectedFieldUsesThePrimaryCentreAndEachRecipientOwnContest checks actual non-damaging splash, deflection and expiry. Stock Code Nuke is the exact selector control in disposable bootstrap."
+        }
+      }
+    },
+    "403": {
+      "checks": {
+        "area": {
+          "source": "GOB 403 stores selected-hostile selector 3 and a 5 m radius.",
+          "runtime": "AbilityTargets.LandAround expands from the admitted hostile's location and snapshots its eligible recipients.",
+          "test": "SelectedFieldUsesThePrimaryCentreAndEachRecipientOwnContest verifies the exact five-metre boundary, 5.01 m exclusion, and same-organization and hidden exclusions."
+        },
+        "targeting": {
+          "source": "GOB 403 selects a hostile no more than 15 m away, requires Hacker Style outside combat, and stores the viral test and no sight bypass.",
+          "runtime": "AbilityHandler checks a live loaded selection and revalidates its spawn and reach before landing. The normal selected hostile resolver checks sight and each recipient contest.",
+          "test": "SelectedFieldUsesTheAdmittedLiveSpawnAndCannotSplashAfterInvalidation covers early refusal and paid loss of mapped sight. SelectedFieldUsesThePrimaryCentreAndEachRecipientOwnContest checks a deflected centre and independent successful splash."
+        },
+        "behavior-tests": {
+          "source": "GOB 403 stores a 2 s cast, 15 IS, 30 s reuse, and -50 Viral Defense for 23 s.",
+          "runtime": "TimedEffects applies and removes the signed defense modifier. The viral contest reads stat 183.",
+          "test": "AbilityHostileTests checks the timed -50 Viral Defense consumer. SelectedFieldUsesThePrimaryCentreAndEachRecipientOwnContest checks actual non-damaging splash, deflection and expiry. Stock Code Nuke is the exact selector control in disposable bootstrap."
+        }
+      }
+    }
+  }
+}

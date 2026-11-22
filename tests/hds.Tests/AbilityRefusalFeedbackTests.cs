@@ -656,6 +656,100 @@ public class AbilityRefusalFeedbackTests:IDisposable
         Assert.True(AbilityCooldowns.IsCoolingDown(caster.playerData, overload, TimeUtils.GetSimTimeSeconds()));
     }
 
+    [Theory]
+    [InlineData(343, "empty", AbilityRefusals.InvalidTarget)]
+    [InlineData(401, "ally", AbilityRefusals.InvalidTarget)]
+    [InlineData(403, "stale", AbilityRefusals.InvalidTarget)]
+    [InlineData(343, "far", AbilityRefusals.TargetOutOfRange)]
+    [InlineData(401, "far", AbilityRefusals.TargetOutOfRange)]
+    [InlineData(403, "far", AbilityRefusals.TargetOutOfRange)]
+    [InlineData(343, "blocked", AbilityRefusals.TargetNotInSight)]
+    [InlineData(401, "style", AbilityRefusals.WrongStyle)]
+    [InlineData(403, "combat", AbilityRefusals.MustBeOutsideCombat)]
+    [InlineData(343, "unloaded", AbilityRefusals.NotLoaded)]
+    [InlineData(343, "replacement", 0u)]
+    [InlineData(401, "retreat", 0u)]
+    [InlineData(403, "sight-loss", 0u)]
+    public void SelectedFieldUsesTheAdmittedLiveSpawnAndCannotSplashAfterInvalidation(ushort id, string action, uint refusal)
+    {
+        string root = AppContext.BaseDirectory;
+        while (!File.Exists(Path.Combine(root, "data", "sector_properties.csv")))
+            root = Path.GetDirectoryName(root)!;
+        SectorProperties.Load(Path.Combine(root, "data", "sector_properties.csv"));
+        NavMesh.UseDirectory(Path.Combine(root, "data", "navmesh"));
+        var caster = Client();
+        var target = Client();
+        var nearby = Client();
+        caster.playerData.passives.Loaded[CombatStyles.HackerStyle] = 30;
+        if (action != "unloaded") caster.playerData.passives.Loaded[id] = 30;
+        if (action != "style") caster.playerData.combatStyle = CombatStyles.HackerStyle;
+        caster.playerInstance.OrganizationID.setValue((byte)1);
+        double farX = 21750 - 100 * (id == 343 ? 16 : id == 401 ? 13 : 15) - 1;
+        caster.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(21750, 1095, 16150));
+        var primary = Enter(target, 111, (byte)(action == "ally" ? 1 : 2), action == "far" ? farX : action == "blocked" ? 22350 : 21550);
+        Enter(nearby, 112, 2, 21450);
+        caster.playerData.pvpFlag = true;
+        Store.currentClient = caster;
+
+        var ability = new AbilityItem();
+        ability.setAbilityID(id);
+        ability.setAbilityName("Selected field");
+        ability.setCastAnimStart(new byte[4]);
+        DataLoader.getInstance().AbilityDB.Add(ability);
+        var fight = CombatManager.GetHandler(caster);
+        fight.isCombatRunning = action == "combat";
+        var request = new byte[41];
+        BitConverter.GetBytes(id).CopyTo(request, 0);
+        BitConverter.GetBytes(action == "empty" ? (ushort)0 : primary.ViewID).CopyTo(request, 2);
+        BitConverter.GetBytes((ushort)(action == "stale" ? 8 : 9)).CopyTo(request, 4);
+        double before = caster.playerData.castEndsAt;
+        try
+        {
+            new AbilityHandler().ProcessAbility(ref request);
+            if (refusal == 0)
+            {
+                double end = caster.playerData.castEndsAt;
+                Assert.True(end > TimeUtils.GetSimTimeSeconds());
+                Assert.Equal(500 - AbilityCosts.Cost(id), AbilityHandler.CurrentInnerStrength(caster));
+                if (action == "replacement") primary.spawnId++;
+                if (action == "retreat" || action == "sight-loss")
+                    target.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(action == "retreat" ? farX : 22350, 1095, 16150));
+                DelayedActions.RunDue(end + 1);
+                Assert.True(AbilityCooldowns.IsCoolingDown(caster.playerData, id, TimeUtils.GetSimTimeSeconds()));
+            }
+            else
+            {
+                Assert.Equal(AbilityRefusals.Encode(new(id, refusal)), Assert.Single(Rpcs(caster)));
+                Assert.Equal(before, caster.playerData.castEndsAt);
+                Assert.Equal(500, AbilityHandler.CurrentInnerStrength(caster));
+                Assert.Empty(caster.playerData.cooldownEndsAt);
+            }
+            Assert.Empty(Rpcs(target));
+            Assert.Empty(Rpcs(nearby));
+            Assert.False(TimedEffects.ForPlayer(target).Effects.HasParent(id));
+            Assert.False(TimedEffects.ForPlayer(nearby).Effects.HasParent(id));
+        }
+        finally
+        {
+            fight.isCombatRunning = false;
+            CombatManager.RemoveClient(caster);
+        }
+
+        ClientView Enter(WorldClient player, uint character, byte organization, double x)
+        {
+            player.playerData.pvpFlag = true;
+            player.playerData.setCharID(character);
+            player.playerData.setEntityId(character);
+            player.playerInstance.OrganizationID.setValue(organization);
+            player.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(x, 1095, 16150));
+            WorldServer.Clients.Add(character.ToString(), player);
+            var view = caster.viewMan.addView(character, 12);
+            view.viewCreated = true;
+            view.spawnId = 9;
+            return view;
+        }
+    }
+
     [Fact] public void ModeUsesProvenClosedLoadoutWithoutGmOrRandomControls()
     {
         var plan=new NativeQa.Modes.AbilityRefusalFeedbackMode().Plan;Assert.Equal(new ushort[]{2,17,45,1006,77},plan.Abilities);Assert.True(plan.DevCommands);Assert.False(plan.GmCharacter110);Assert.False(plan.FixedCallbackRolls);

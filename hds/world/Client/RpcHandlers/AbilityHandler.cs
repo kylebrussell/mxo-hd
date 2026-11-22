@@ -65,9 +65,10 @@ namespace hds
                 return;
             }
 
-            // These selected viruses need a live enemy before any cast or reuse, including Code Nuke's splash centre.
+            // These selected abilities bind a live enemy before the cast, including the centre of any splash.
+            bool selectedViralField = AbilityID == 343 || AbilityID == 401 || AbilityID == 403;
             bool selectedViralAttack = AbilityID == 53 || (AbilityID >= 57 && AbilityID <= 60) ||
-                AbilityID == 350 || AbilityID == 351 || AbilityID == 392 || AbilityID == 394;
+                AbilityID == 350 || AbilityID == 351 || AbilityID == 392 || AbilityID == 394 || selectedViralField;
             ushort? lockedDamageTargetSpawn = null;
             if (selectedViralAttack)
             {
@@ -267,6 +268,26 @@ namespace hds
                     (ushort?)Store.currentClient.viewMan.getViewById(currentTargetViewId)?.spawnId)
                 : null;
             var definition = AbilityCatalog.Find(AbilityID);
+            if (selectedViralField)
+            {
+                var caster = Store.currentClient;
+                if (!AbilityTargets.HasSelectionSight(caster, definition, currentTargetViewId))
+                {
+                    Deny(AbilityID, "The target is not in sight.", AbilityRefusals.TargetNotInSight, sendServerText: false);
+                    return;
+                }
+                var fight = CombatManager.GetHandler(caster);
+                if (fight.isCombatRunning || fight.HasActiveInterlock)
+                {
+                    Deny(AbilityID, "This ability cannot be used during combat.", AbilityRefusals.MustBeOutsideCombat, sendServerText: false);
+                    return;
+                }
+                if (CombatStyles.Active(caster) != CombatStyles.HackerStyle)
+                {
+                    Deny(AbilityID, "This ability requires Hacker Style.", AbilityRefusals.WrongStyle, sendServerText: false);
+                    return;
+                }
+            }
             bool selectedGunShot = starterGunCast || AbilityID == 130;
             if (selectedGunShot && !AbilityTargets.HasSelectionSight(Store.currentClient, definition, currentTargetViewId))
             {

@@ -239,4 +239,57 @@ public class FreeCastViralLandingTests : IDisposable
         Assert.Single(caster.messageQueue.ObjectMessagesQueue);Assert.Single(visible.messageQueue.ObjectMessagesQueue);
         foreach(var c in new[]{hidden,foreign,deleting}){Assert.Empty(c.messageQueue.RPCMessagesQueue);Assert.Empty(c.messageQueue.ObjectMessagesQueue);}
     }
+    [Theory]
+    [InlineData(343, 5, 1009, -21)]
+    [InlineData(401, 7, 117, -20)]
+    [InlineData(403, 5, 183, -50)]
+    public void SelectedFieldUsesThePrimaryCentreAndEachRecipientOwnContest(ushort id, int radius, ushort witnessStat, int value)
+    {
+        var caster = Client(110);
+        var primary = Client(111);
+        var edge = Client(112);
+        var outside = Client(113);
+        var ally = Client(114);
+        var unseen = Client(115);
+        Store.currentClient = caster;
+        var names = new[] { caster, primary, edge, outside, ally, unseen };
+        double centre = 200, boundary = centre + radius * 100;
+        double[] positions = { 0, centre, boundary, boundary + 1, centre + 100, centre + 100 };
+        foreach (var (player, x) in names.Zip(positions))
+        {
+            player.playerData.pvpFlag = true;
+            player.playerInstance.OrganizationID.setValue((byte)(player == caster || player == ally ? 1 : 2));
+            player.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(x, 0, 0));
+            if (player != caster && player != unseen)
+                caster.viewMan.addView(player.playerData.getEntityId(), 1).viewCreated = true;
+        }
+        var view = caster.viewMan.FindViewForEntity(primary.playerData.getEntityId());
+        var ability = new AbilityItem();
+        ability.setAbilityID(id);
+        AbilityPassives.SetLoaded(caster, new[] { (id, (ushort)30) });
+
+        try
+        {
+            Assert.True(AbilityBuffs.Apply(caster, 314)); // fixed draw wins against the edge recipient
+            Assert.True(AbilityBuffs.Apply(primary, 272)); // +54 Viral Defense makes the same draw deflect at centre
+            Assert.True(AbilityTargets.Land(caster, ability, view.ViewID, origin: AbilityCastOrigin.NormalFreeCast));
+            Assert.False(TimedEffects.ForPlayer(primary).Effects.HasParent(id));
+            Assert.Equal(FreeCastViralContest.DeflectFx, NumericalUtils.ByteArrayToUint32(primary.playerInstance.EffectID.getValue(), 1));
+            Assert.Equal(value, AbilityStats.Player(edge, witnessStat));
+            Assert.True(TimedEffects.ForPlayer(edge).Effects.HasParent(id));
+            Assert.Equal(1000, PvpCombat.HealthOf(edge));
+            foreach (var excluded in new[] { caster, outside, ally, unseen })
+                Assert.False(TimedEffects.ForPlayer(excluded).Effects.HasParent(id));
+            TimedEffects.RunDue(TimeUtils.GetSimTimeSeconds() + 46);
+            Assert.Equal(0, AbilityStats.Player(edge, witnessStat));
+        }
+        finally
+        {
+            foreach (var player in names)
+            {
+                TimedEffects.Clear(TimedEffects.ForPlayer(player));
+                AbilityBuffs.RemoveAll(player);
+            }
+        }
+    }
 }
