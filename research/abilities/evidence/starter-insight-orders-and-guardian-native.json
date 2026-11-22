@@ -1,0 +1,31 @@
+{
+  "abilities": {
+    "113": {
+      "note": "PR771 controls attacker and defender level at 19. Loading Combat Insight adds 1048 +3, raises the server entry score 100 to 103, and changes raw shield damage 35 to 36. Hindering Shot lowers the score to 92 without changing the 36 raw shield damage. Retail admission formula stays open. https://github.com/kylebrussell/mxo-hd/pull/771#issuecomment-7083097491"
+    },
+    "130": {
+      "note": "PR771 observes the stock Hindering hit (9 for 20 IS), source 130/519 -10 for eight seconds, lower server shield-entry score 103 to 92, and unchanged raw shield damage 36. https://github.com/kylebrussell/mxo-hd/pull/771#issuecomment-7083097491"
+    },
+    "217": {
+      "note": "PR771 verifies native equal-level resist cost 10 IS per attempt, raw damage 35/36/36 and meter 255→166→74→0. Depletion removes 624 and starts 30 s reuse. Original retail admission and underlying meter normalization remain open. https://github.com/kylebrussell/mxo-hd/pull/771#issuecomment-7083097491"
+    },
+    "22": {
+      "note": "PR772 verifies a level-7 Nuker replacing the live pet window, stock Attack and Stay, two observed hits and 10 s own reuse. https://github.com/kylebrussell/mxo-hd/pull/772#issuecomment-7083187469"
+    },
+    "27": {
+      "note": "PR772 captures stock selected view/spawn 4/2 in both 81 51 04 00 02 00 and Attack 81 7b fe 02 04 00 02 00; Stay is 81 7a fe 00. Missing selection and own pet are locally suppressed. A valid level-4 Proxy attacks and stops on Stay, with 8 s own reuse. https://github.com/kylebrussell/mxo-hd/pull/772#issuecomment-7083187469"
+    },
+    "28": {
+      "note": "PR772 verifies a level-7 Rifle Proxy replacing the current pet window, successful stock Attack, Stay stopping hits and 8 s own reuse. First-hit times vary in the observed run and no fixed retail first-hit delay is established. Remote Proxy 2.0 callback ordering stays open. https://github.com/kylebrussell/mxo-hd/pull/772#issuecomment-7083187469"
+    },
+    "46": {
+      "note": "PR773 observes stock reason 9 on the selected friendly player across the blocked NAV gap, before debit or reuse. From the clear stand the cast costs 35 IS and adds 112 +40 for 600 s to that player. The stock move during the cast also confirmed an accepted cast fizzles on lost sight. https://github.com/kylebrussell/mxo-hd/pull/773#issuecomment-7083242346"
+    },
+    "68": {
+      "note": "PR773 observes stock reason 9 on the selected friendly player across the blocked NAV gap, before debit or reuse. From the clear stand the cast costs 40 IS and adds 157 +40 and 180/181/1033 +10 for 300 s to that player. https://github.com/kylebrussell/mxo-hd/pull/773#issuecomment-7083242346"
+    },
+    "173": {
+      "note": "PR773 observes stock reason 9 on the selected friendly player across the blocked NAV gap, before debit or reuse. From the clear stand the cast costs 40 IS and adds 522/524/1032 +24 for 300 s to that player. https://github.com/kylebrussell/mxo-hd/pull/773#issuecomment-7083242346"
+    }
+  }
+}
