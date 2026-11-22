@@ -102,7 +102,14 @@ namespace hds
                 if (!item.Complexity.HasValue) return Finish(client, 0, 0, request.Item, "This item's crafting complexity is unknown.");
                 long cost = CraftingRules.InfoCost(item, Skill(client, 530));
                 if (client.playerData.getInfo() < cost) return Finish(client, 4, 0, request.Item, "Not enough information to compile this item.");
-                bool success = CraftingRules.Succeeds(Skill(client, 706), item.Complexity.Value, Roll(), Skill(client, Specialization(item.Category)));
+                int skill = Skill(client, 706);
+                ushort specialty = Specialization(item.Category);
+                int bonus = Skill(client, specialty);
+                int roll = Roll();
+                bool success = CraftingRules.Succeeds(skill, item.Complexity.Value, roll, bonus);
+                Output.WriteDebugLog($"[COMPILE RECIPE] char={client.playerData.getCharID()} item={request.Item} " +
+                    $"skill={skill} stat={specialty} specialization={bonus} effective={skill + Math.Max(0, bonus) / 10} " +
+                    $"complexity={item.Complexity.Value} roll={roll} info={cost} success={success}");
                 long cash = client.playerData.getInfo() - cost;
                 db.SaveInfo(client, cash);
                 client.playerData.setInfo(cash);
