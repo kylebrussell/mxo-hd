@@ -137,6 +137,78 @@ public class DesperateSpeedTests
         finally { AbilityBuffs.RemoveAll(player); }
     }
 
+    [Theory]
+    [InlineData(176)]
+    [InlineData(254)]
+    public void ChanceRootOverridesBothSpeedAndSlowAndRestoresTheEffectsStillActive(ushort ability)
+    {
+        var player = Client();
+        var subject = TimedEffects.ForPlayer(player);
+        Assert.True(TempMods.TryGet(ability, out var root));
+        Assert.True(TempMods.TryGet(86, out var slow));
+        try
+        {
+            Assert.True(AbilityBuffs.Apply(player, HyperSpeed));
+            double now = TimeUtils.GetSimTimeSeconds();
+            TimedEffects.Apply(subject, root, now, rng: new RootRoll());
+            Assert.False(ControlActions.CanMove(subject.Effects));
+            Assert.Equal(-1f, BitConverter.ToSingle(player.playerInstance.MovementScale.getValue()));
+            Assert.Contains(player.messageQueue.ObjectMessagesQueue.Cast<SequencedMessage>(),
+                message => message.content.AsSpan().IndexOf(Convert.FromHexString("0200028008000080BF")) >= 0);
+
+            TimedEffects.Apply(subject, slow, now);
+            Assert.True(AbilityBuffs.Remove(player, HyperSpeed));
+            Assert.True(AbilityBuffs.Apply(player, 184));
+            Assert.Equal(-1f, BitConverter.ToSingle(player.playerInstance.MovementScale.getValue()));
+            TimedEffects.RunDue(now + 8.01);
+            Assert.True(ControlActions.CanMove(subject.Effects));
+            Assert.Equal(-.35f, BitConverter.ToSingle(player.playerInstance.MovementScale.getValue()));
+            Assert.True(AbilityBuffs.Remove(player, 184));
+            Assert.Equal(-.50f, BitConverter.ToSingle(player.playerInstance.MovementScale.getValue()));
+            Assert.True(TimedEffects.RemoveParent(subject, 86));
+            Assert.Equal(0f, BitConverter.ToSingle(player.playerInstance.MovementScale.getValue()));
+        }
+        finally { AbilityBuffs.RemoveAll(player); }
+    }
+
+    [Fact]
+    public void RemovingOneChanceRootKeepsTheOtherRootAndARefusedProcCannotRefreshIt()
+    {
+        var player = Client();
+        var subject = TimedEffects.ForPlayer(player);
+        Assert.True(TempMods.TryGet(176, out var covering));
+        Assert.True(TempMods.TryGet(254, out var immobilizing));
+        Assert.True(TempMods.TryGet(40, out var freeze));
+        try
+        {
+            Assert.True(AbilityBuffs.Apply(player, HyperSpeed));
+            double now = TimeUtils.GetSimTimeSeconds();
+            Assert.Empty(TimedEffects.Apply(subject, covering, now, rng: new RootRoll(.2)));
+            Assert.Equal(.45f, BitConverter.ToSingle(player.playerInstance.MovementScale.getValue()));
+            TimedEffects.Apply(subject, freeze, now);
+            Assert.False(ControlActions.CanMove(subject.Effects));
+            Assert.Equal(.45f, BitConverter.ToSingle(player.playerInstance.MovementScale.getValue()));
+            Assert.True(TimedEffects.RemoveParent(subject, 40));
+
+            var first = Assert.Single(TimedEffects.Apply(subject, covering, now, rng: new RootRoll()));
+            Assert.Empty(TimedEffects.Apply(subject, covering, now + 2, rng: new RootRoll(.2)));
+            Assert.Same(first, Assert.Single(subject.Effects.Snapshot()));
+            TimedEffects.Apply(subject, immobilizing, now, rng: new RootRoll());
+            Assert.True(TimedEffects.RemoveParent(subject, 176));
+            Assert.False(ControlActions.CanMove(subject.Effects));
+            Assert.Equal(-1f, BitConverter.ToSingle(player.playerInstance.MovementScale.getValue()));
+            Assert.True(TimedEffects.RemoveParent(subject, 254));
+            Assert.True(ControlActions.CanMove(subject.Effects));
+            Assert.Equal(.45f, BitConverter.ToSingle(player.playerInstance.MovementScale.getValue()));
+        }
+        finally { AbilityBuffs.RemoveAll(player); }
+    }
+
+    private sealed class RootRoll(double value = 0) : Random
+    {
+        public override double NextDouble() => value;
+    }
+
     [Fact]
     public void DesperateSpeedReplacesStackingType27HyperSpeedWithoutZeroDrop()
     {

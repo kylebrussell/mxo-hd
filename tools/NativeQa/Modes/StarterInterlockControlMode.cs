@@ -58,12 +58,19 @@ public sealed class StarterInterlockControlMode : NativeQaMode
             $"The full profile uses {Memory}/100 memory at level 50 with rank-{Rank} abilities. CSR faces QAEnemy at {X},{Y},{EnemyZ}, 3 m ahead on the street. Both have 30,000 max HP. The fixture loads an empty ambient NPC roster. Page 2 comes in pairs: Karate/145, SMGs/176, Rifles/105.",
             "Equip the listed weapon, select QAEnemy, open ordinary Close Combat and then select the matching style. If a special misses, wait for its own reuse and retry it. The fixture forces the Enrage and Root procs only on landed specials. Enter submits chat. Keep the selection without Escape.",
             "Overhand Smash 145 already passed native QA. Start this retest with Covering Fire 176. The headless bootstrap still checks the full 145 Withdraw sequence.",
-            "Use ?combatdepth fixture-weapon smg, open Close Combat and reselect SMGs. Use Covering Fire. On char=6114 expect [MODIFIER] source=176 stat=99 value=0 for 8 s. As soon as it lands, enter ?combatdepth fixture-disengage so follow-up interlock hits cannot break the root. The helper measures its current position from the server correction, then attempts the same step during root and again on expiry. Wait for STARTER CONTROL PASS 176.",
+            "Use ?cd w smg, select /target QAEnemy, and right-click Close Combat. Select SMGs (page 2 slot 3) then Covering Fire (slot 4). On char=6114 expect [MODIFIER] source=176 stat=99 value=0 for 8 s. On landing use ?cd stop before follow-up hits break the root. The helper verifies MovementScale -1 to owner and observer while the server rejects movement, then scale 0 and movement recovery. Wait for STARTER CONTROL PASS 176.",
             "Use ?combatdepth fixture-weapon rifle, re-open Close Combat and reselect Rifles. Use Body Shot. Expect [MODIFIER] char=6114 source=105 stat=180 and stat=181 both -5 for 10 s, without a root or enrage from this attack. Both records remove on expiry. Wait for STARTER CONTROL PASS 105."
         });
 
     public override async Task<byte[]> AfterStartAsync(NativeQaBootstrapContext context)
     {
+        string root = context.RepositoryRoot!;
+        SectorProperties.Load(Path.Combine(root, "data", "sector_properties.csv"));
+        NavMesh.UseDirectory(Path.Combine(root, "data", "navmesh"));
+        foreach (var (x, z) in new[] { (X, Z), (X, EnemyZ), (X + 60, EnemyZ - 20) })
+            Check.That(NavMesh.Locate(1, x, Y, z, out var stand) && !stand.indoors && Math.Abs(stand.floorY + 95 - Y) < 1,
+                $"Verified outdoor interlock stand ({x},{Y},{z})");
+        Check.That(NavMesh.HasSightPath(1, X, Y, Z, X, Y, EnemyZ), "The initial helper and caster have clear sight");
         var server = context.ActualServer!;
         var enemy = await HeadlessPlayer.LoginAsync(context.Address, "QAEnemy", "QAEnemy", stockCharacterLoad: true);
         context.Helpers.Add(enemy.Handle, enemy);
@@ -114,13 +121,14 @@ public sealed class StarterInterlockControlMode : NativeQaMode
             await actor.WaitForViewUpdateAsync(2, $"02 80 80 80 80 80 10 {StockAbilityProfile.LittleEndianHex(row.Style)} 00 00");
 
             int recipientAt = enemy.World.RpcSnapshot().Count;
+            var scaleAt = (Owner: enemy.World.ViewSnapshot().Count, Observer: observer.World.ViewSnapshot().Count);
             await UntilLandedAsync(actor, enemy, row, DuelPackets.Handle(view.ViewId, view.SpawnId), recipientAt);
             if (row.Id == Cover)
             {
                 actor.SendChat("?combatdepth fixture-disengage");
                 await actor.WaitForTextAsync("Fixture combat ended.");
             }
-            await VerifyRecipientAsync(server, enemy, observer, observed.ViewId, row, recipientAt, expectedRootPosition);
+            await VerifyRecipientAsync(server, enemy, observer, observed.ViewId, row, recipientAt, scaleAt, expectedRootPosition);
         }
         Check.Equal(0, actor.World.Problems.Count + enemy.World.Problems.Count, "Interlock control replay framing");
         return Array.Empty<byte>();
@@ -146,7 +154,7 @@ public sealed class StarterInterlockControlMode : NativeQaMode
         enemy.World.RpcSnapshot().Skip(from).Any(frame => StockAbilityProfile.Bonus(frame, row.Id, stat, value, row.Seconds, remove));
 
     private static async Task VerifyRecipientAsync(ServerInstance server, HeadlessPlayer enemy, HeadlessPlayer observer,
-        ushort view, Sample row, int from, Position? expectedRootPosition = null)
+        ushort view, Sample row, int from, (int Owner, int Observer) scaleAt, Position? expectedRootPosition = null)
     {
         if (row.Id == Smash)
         {
@@ -166,6 +174,8 @@ public sealed class StarterInterlockControlMode : NativeQaMode
         }
         else if (row.Id == Cover)
         {
+            int ownerRoot = await ObserveScaleAsync(enemy, 2, PlayerViewAttributes.SelfMovementScale, scaleAt.Owner, -1);
+            int observerRoot = await ObserveScaleAsync(observer, view, PlayerViewAttributes.OtherMovementScale, scaleAt.Observer, -1);
             // A rooted movement correction carries the authoritative current position, including
             // any ordinary helper move or teleport made since login.
             Position origin = await CorrectedPositionAsync(enemy, EnemyStand with { X = EnemyStand.X - 20 });
@@ -176,11 +186,13 @@ public sealed class StarterInterlockControlMode : NativeQaMode
                 "Root refuses a step relative to the helper's current position");
 
             await AwaitBonusAsync(row.State, 0, true);
+            await ObserveScaleAsync(enemy, 2, PlayerViewAttributes.SelfMovementScale, ownerRoot, 0);
+            await ObserveScaleAsync(observer, view, PlayerViewAttributes.OtherMovementScale, observerRoot, 0);
             int visibleAt = observer.World.ViewSnapshot().Count;
             Move(enemy, step);
             await ObserveMoveAsync(observer, view, visibleAt, step, "An observer sees the same helper move after root expiry");
             Move(enemy, origin);
-            Console.WriteLine($"STARTER ROOT POSITION {origin.X},{origin.Y},{origin.Z} held, then released to {step.X},{step.Y},{step.Z}");
+            Console.WriteLine($"STARTER ROOT POSITION {origin.X},{origin.Y},{origin.Z} held, then released to {step.X},{step.Y},{step.Z}. Owner and observer MovementScale -1 then 0.");
         }
         else
         {
@@ -203,6 +215,16 @@ public sealed class StarterInterlockControlMode : NativeQaMode
         var packet = BytePattern.Parse($"{StockAbilityProfile.LittleEndianHex(view)} 01 08 {to.Hex}");
         return observer.WaitUntilAsync(() => observer.World.ViewSnapshot().Skip(from).Any(packet.Occurs),
             description, HeadlessPlayer.DefaultTimeout);
+    }
+
+    private static async Task<int> ObserveScaleAsync(HeadlessPlayer player, ushort view, int attribute, int from, float scale)
+    {
+        var wire = PlayerViewAttributes.Build((attribute, PlayerViewAttributes.F32(scale)));
+        var pattern = BytePattern.Parse($"{StockAbilityProfile.LittleEndianHex(view)} {WireFormat.ToHex(wire)}");
+        int match = -1;
+        await player.WaitUntilAsync(() => (match = player.World.ViewSnapshot().FindIndex(from, pattern.Occurs)) >= 0,
+            $"view {view} shows MovementScale {scale}", HeadlessPlayer.DefaultTimeout);
+        return match + 1;
     }
 
     private static async Task<Position> CorrectedPositionAsync(HeadlessPlayer enemy, Position probe)
@@ -237,11 +259,12 @@ public sealed class StarterInterlockControlMode : NativeQaMode
             {
                 Console.WriteLine($"STARTER CONTROL WAITING {row.Id}");
                 int from = next;
+                var scaleAt = (Owner: enemy.World.ViewSnapshot().Count, Observer: observer.World.ViewSnapshot().Count);
                 while (!server.HasExited && !File.Exists(Path.Combine(context.OutputDirectory, "stop")) &&
                     !HasBonus(enemy, from, row, row.State, row.Id == Body ? -5 : 0, false))
                     await Task.Delay(100);
                 if (server.HasExited || File.Exists(Path.Combine(context.OutputDirectory, "stop"))) return;
-                await VerifyRecipientAsync(server, enemy, observer, view, row, from);
+                await VerifyRecipientAsync(server, enemy, observer, view, row, from, scaleAt);
                 next = enemy.World.RpcSnapshot().Count;
             }
         }

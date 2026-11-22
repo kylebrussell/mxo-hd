@@ -360,20 +360,27 @@ namespace hds
 
         public static bool ProjectsTimedMovementDebuff(ushort source) => source == 86 || source == 130;
 
-        private static bool ChangesMovementScale(TimedEffects.Active modifier) =>
+        private static bool ProjectsSignedMovementDebuff(TimedEffects.Active modifier) =>
             ProjectsTimedMovementDebuff(modifier.Parent) && modifier.Target == 115 &&
             modifier.Proc == TempMods.Proc.Stat && modifier.Value < 0;
 
+        private static bool OverridesMovementScale(TimedEffects.Active modifier) =>
+            (modifier.Parent == 176 || modifier.Parent == 254) && modifier.Proc == TempMods.Proc.State &&
+            modifier.Target == TempMods.RootedAbility && modifier.Break == TempMods.BreakRule.Chance;
+
         internal static float WithTimedMovementDebuffs(WorldClient client, float movementScale)
         {
-            int points = TimedEffects.ForPlayer(client).Effects.Snapshot().Where(ChangesMovementScale).Sum(modifier => modifier.Value);
+            var active = TimedEffects.ForPlayer(client).Effects.Snapshot();
+            // Vector26 observes -1 on Immobilizing Shot's EnableRootWithChance state and the remaining scale on removal.
+            if (active.Any(OverridesMovementScale)) return -1f;
+            int points = active.Where(ProjectsSignedMovementDebuff).Sum(modifier => modifier.Value);
             // Retail Crippling Shot 450 combines signed stat 115 points per hundred with the existing scale.
             return points == 0 ? movementScale : (float)((decimal)movementScale + points / 100m);
         }
 
         internal static void PresentTimedMovementChange(WorldClient client, IEnumerable<TimedEffects.Active> changed)
         {
-            if (!changed.Any(ChangesMovementScale)) return;
+            if (!changed.Any(modifier => ProjectsSignedMovementDebuff(modifier) || OverridesMovementScale(modifier))) return;
             float scale = WithTimedMovementDebuffs(client, RemainingMovementScale(client.playerData));
             if (client.playerInstance.MovementScale.isActive() &&
                 BitConverter.ToSingle(client.playerInstance.MovementScale.getValue(), 0) == scale) return;
