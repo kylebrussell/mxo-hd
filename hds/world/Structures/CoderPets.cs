@@ -55,6 +55,7 @@ namespace hds
         public const UInt16 DrainCode = 19, FortifySimulacra = 20, DetonateProxy = 34, StopProxyEffect = 1109, ChargeSimulacra = 603,
             DaemonBoost1 = 609, DaemonBoost2 = 619, DaemonBoostEffect1 = 699, DaemonBoostEffect2 = 700;
         public static readonly UInt16[] Repairs = { 30, 31, 587, 596, 615 };
+        internal static readonly UInt16[] ContinuousLoadAbilities = { FortifySimulacra, 30, ChargeSimulacra };
 
         /// <summary>Abilities whose target must be the caster's own simulacrum (CastValidTarget 11; Decoy1_Test/StopProxy1_Test).</summary>
         public static bool TargetsOwnPet(UInt16 id) => id == DrainCode || id == FortifySimulacra || id == DetonateProxy ||
@@ -260,10 +261,12 @@ namespace hds
         {
             public readonly Pet Target;
             public readonly int CasterLevel, CasterLife, CasterWorld;
-            public OwnPetCast(WorldClient caster, Pet target)
+            internal readonly int? LoadedSince;
+            public OwnPetCast(WorldClient caster, Pet target, int? loadedSince = null)
             {
                 Target = target; CasterLevel = caster.playerInstance.Level.getValue()[0];
                 CasterLife = caster.playerData.lifeGeneration; CasterWorld = caster.playerData.worldGeneration;
+                LoadedSince = loadedSince;
             }
             public bool Matches(WorldClient caster, Pet current) => Target != null && Target == current &&
                 Target.Owner == caster && !Target.Gone && !Target.Mob.getIsDead() &&
@@ -741,7 +744,7 @@ namespace hds
         }
 
         internal static bool IsCastLoaded(WorldClient caster, ushort id) =>
-            (id != DrainCode && id != PowerBoost) || AbilityPassives.IsLoaded(caster, id);
+            (id != DrainCode && id != PowerBoost && !ContinuousLoadAbilities.Contains(id)) || AbilityPassives.IsLoaded(caster, id);
 
         private static bool RequiresOutsideCombat(ushort id) => id == PowerBoost || id == DrainCode;
 
@@ -757,6 +760,12 @@ namespace hds
             }
             if (TargetsOwnPet(id))
             {
+                int? membership = AbilityPassives.PetCastMembership(caster, id);
+                if (ContinuousLoadAbilities.Contains(id) && !membership.HasValue)
+                {
+                    refusal = AbilityRefusals.NotLoaded;
+                    return "Load this ability before using it.";
+                }
                 if (RequiresOutsideCombat(id) && CombatManager.GetHandler(caster).isCombatRunning)
                 {
                     refusal = AbilityRefusals.MustBeOutsideCombat;
@@ -776,7 +785,7 @@ namespace hds
                     refusal = AbilityRefusals.TargetOutOfRange;
                     return "Your simulacrum is out of range.";
                 }
-                cast = new OwnPetCast(caster, pet);
+                cast = new OwnPetCast(caster, pet, membership);
             }
             return null;
         }
@@ -839,6 +848,7 @@ namespace hds
             }
             Pet pet = cast?.Target;
             if (pet == null) return;
+            lock (caster.playerData.loadoutSync)
             lock (pet)
             {
                 if (!cast.Matches(caster, Of(caster)) || !OwnerPresent(pet) || !InAbilityRange(pet, id) ||
@@ -847,7 +857,8 @@ namespace hds
                     Output.WriteDebugLog("[PET] " + id + " fizzles: original pet, owner, range or combat requirement changed");
                     return;
                 }
-                if (!IsCastLoaded(caster, id))
+                if (!IsCastLoaded(caster, id) || ContinuousLoadAbilities.Contains(id) &&
+                    (!cast.LoadedSince.HasValue || cast.LoadedSince != AbilityPassives.PetCastMembership(caster, id)))
                 {
                     Output.WriteDebugLog($"[PET] {id} fizzles: the ability was unloaded during the cast");
                     return;
