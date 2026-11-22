@@ -40,11 +40,12 @@ public static partial class Scenarios
 
         int healthAt = caster.World.ViewSnapshot().Count;
         int friendAt = friend.World.ViewSnapshot().Count;
-        int first = await CastAsync(strong);
-        await caster.WaitForRpcAsync(frame => frame.Opcode == 0x178 && frame.Bytes[2] == strong.Attributes["SimulacraID"][0] &&
-            BitConverter.ToUInt16(frame.Bytes, 4) == 362 && BitConverter.ToUInt16(frame.Bytes, 6) == 1087,
-            "The same Proxy window shows HP 362/1087");
-        await RequireEffectsAsync(first, 1087, 362, 100, 334);
+        var first = await CastAsync(strong);
+        await caster.WaitUntilAsync(() => caster.World.RpcSnapshot().Skip(first.Rpc).Any(frame =>
+            frame.Opcode == 0x178 && frame.Bytes[2] == strong.Attributes["SimulacraID"][0] &&
+            BitConverter.ToUInt16(frame.Bytes, 4) == 362 && BitConverter.ToUInt16(frame.Bytes, 6) == 1087),
+            "The same Proxy window shows HP 362/1087", HeadlessPlayer.DefaultTimeout);
+        await RequireEffectsAsync(first.Log, 1087, 362, 100, 334);
         Check.That(PvpOpponentsFixture.HealthHistory(caster.World.ViewSnapshot(), healthAt, 2, self: true).Contains((ushort)334),
             "The caster receives the separate source heal");
         Check.That(!PvpOpponentsFixture.HealthHistory(friend.World.ViewSnapshot(), friendAt, 2, self: true).Any(),
@@ -54,26 +55,25 @@ public static partial class Scenarios
         caster.SendChat("?health 400");
         await caster.WaitForViewUpdateAsync(2, "02 80 80 80 40 90 01");
         await caster.WaitForRpcAsync("80 bd 01 5f 02 04 00 00 f0 41 00", TimeSpan.FromSeconds(35));
-        int second = await CastAsync(weak);
+        var second = await CastAsync(weak);
         byte weakId = weak.Attributes["SimulacraID"][0];
-        await caster.WaitForRpcAsync($"81 77 {weakId:x2}");
-        await RequireEffectsAsync(second, 224, 0, 400, 500);
-        Check.That(caster.World.RpcSnapshot().Count(frame => frame.Bytes is [0x81, 0x77, var id] && id == weakId) == 1,
+        await RequireEffectsAsync(second.Log, 224, 0, 400, 500);
+        Check.That(caster.World.RpcSnapshot().Skip(second.Rpc).Count(frame => frame.Bytes is [0x81, 0x77, var id] && id == weakId) == 1,
             "Lethal neutral damage terminates the own Proxy once");
         friend.SendChat("?pet");
         await friend.WaitForTextAsync("Nuker Simulacrum L7");
 
-        async Task<int> CastAsync(ViewCreation pet)
+        async Task<(int Log, int Rpc)> CastAsync(ViewCreation pet)
         {
             uint target = DuelPackets.Handle(pet.ViewId, pet.SpawnId);
             caster.SendRpc("81 51 " + WireFormat.ToHex(BitConverter.GetBytes(target)));
             caster.SkipReceived();
-            int from = context.Server.DebugLog().Length;
+            int from = context.Server.DebugLog().Length, cursor = caster.World.RpcSnapshot().Count;
             caster.SendRpc(Request(target));
             var cast = await caster.WaitForRpcAsync("80 ac 5f 02");
             Check.Equal(2f, BitConverter.ToSingle(cast.Bytes, cast.Bytes.Length - 4), "Two-second 607 cast");
             await caster.WaitForRpcAsync("80 bd 01 5f 02 04 00 00 f0 41 01");
-            return from;
+            return (from, cursor);
         }
 
         async Task RefusedAsync(uint target)
@@ -82,6 +82,7 @@ public static partial class Scenarios
             caster.SendRpc(Request(target));
             var expected = AbilityRefusals.Encode(new AbilityRefusals.Record(absorb, AbilityRefusals.InvalidTarget));
             await caster.WaitForRpcAsync(reply => reply.Bytes.AsSpan().SequenceEqual(expected), "Stock invalid target reason 24");
+            await Task.Delay(TimeSpan.FromSeconds(AbilityHandler.DuplicateAbilityWindowSeconds + 0.2));
         }
 
         Task RequireEffectsAsync(int from, int petBefore, int petAfter, int healthBefore, int healthAfter) =>

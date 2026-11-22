@@ -994,6 +994,7 @@ namespace hds
 
         internal static (int Damage, ushort Healing) AbsorbValues(int casterLevel)
         {
+            // 607's direct object receives neutral damage 5. The caster independently receives NeutralHeal 6.
             var modifiers = AbilityCatalog.Find(AbsorbSimulacra).Modifiers;
             var damage = modifiers.Single(mod => mod.Target == 108 && mod.Number("WhenEnabled") == 2 &&
                 mod.Number("DamageType") == 5 && mod.Number("DurationType") == 1);
