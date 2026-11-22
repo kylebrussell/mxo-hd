@@ -426,6 +426,12 @@ def server(i):
         parts.append('loaded membership required at admission and pet effect landing')
     if i == 173:
         parts.append('stock level-19 +24 on the chosen allies feeds melee, ballistic and thrown special attack inputs')
+    if i in (46, 68, 173):
+        parts.append('requires clear sight to the selected ally before charging and at cast completion')
+    if i == 113:
+        parts.append('stock equal-level shield damage 35 to 36 when 1048 +3 is loaded')
+    if i in (22, 27, 28):
+        parts.append('stock Simulacra Attack and Stay verified for this summon')
     if i == 504:
         parts.append('requires active Concealment and consumes it at cast start; stock hit 23 after six seconds')
     if i == 21:
