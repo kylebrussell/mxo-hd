@@ -70,6 +70,32 @@ public class OrdinaryWithdrawalInputTests
         Assert.Equal(0, AbilityStats.SpecialDefense(actor, viralMove));
         Assert.False(AbilityPassives.IsLoaded(actor, 1077));
     }
+    [Theory]
+    [InlineData(true, true, 70, 50, 113, false)]
+    [InlineData(true, false, 69, 49, 112, true)]
+    [InlineData(false, true, 67, 48, 111, true)]
+    [InlineData(false, false, 66, 47, 110, true)]
+    public void PhagePassivesFeedTheirOwnWithdrawViralDefenseAndShieldInputs(bool resist, bool phage,
+        int withdrawal, int viralDefense, int evade, bool entryAllowed)
+    {
+        var actor = Actor();
+        actor.playerData.combatStyle = 17;
+        var loadout = new List<(ushort, ushort)> { (2, 50), (17, 50), (98, 50), (236, 50) };
+        if (resist) loadout.Add((76, 19));
+        if (phage) loadout.Add((83, 50));
+        AbilityPassives.SetLoaded(actor, loadout);
+
+        Assert.Equal(65, AbilityStats.Player(actor, 1005));
+        Assert.Equal(withdrawal, WithdrawalInput.Attack(actor, null, ordinary: true));
+        Assert.Equal(viralDefense, AbilityStats.SpecialDefense(actor, Move(330)));
+        Assert.Equal(47, AbilityStats.SpecialDefense(actor, Move(254)));
+        var entry = CombatInsightEngagement.Calculate(0, 12, 0, 0, 0, AbilityStats.Player(actor, 1049));
+        Assert.Equal(112, entry.Force);
+        Assert.Equal(evade, entry.Evade);
+        Assert.Equal(entryAllowed, entry.Allows);
+        Assert.Equal(phage, AbilityPassives.IsLoaded(actor, 1082));
+    }
+
     [Theory] [InlineData(CombatTactic.Speed,1d)] [InlineData(CombatTactic.Power,1.2d)] [InlineData(CombatTactic.Grab,.9d)] [InlineData(CombatTactic.Block,1d)]
     public void PrimaryTacticFactorsFeedExistingTwoRollsWithoutNewDraws(CombatTactic tactic,double factor)
     {
