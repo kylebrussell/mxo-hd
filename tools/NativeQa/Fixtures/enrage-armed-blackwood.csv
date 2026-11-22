@@ -1,0 +1,2 @@
+district_id;district;handle;level;hpM;hpC;rsi;x_pos;y_pos;z_pos;rotation;is_defeated;is_lootable;flags;state;rsiInfo;aggression;rank;affinity;description;equippedItemID;awareness;
+1;slums;Blackwood Mushfake;5;262;262;b6010058;16304;95;-4284;222;false;false;34;100000;951c00c6;1;2;9;f9070000;2568;1;
