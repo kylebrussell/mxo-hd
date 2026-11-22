@@ -238,6 +238,50 @@ public class AbilityRefusalFeedbackTests:IDisposable
         var fresh=new AbilityRefusalQa.Stamp(c);c.playerData.lifeGeneration++;Assert.False(AbilityRefusalQa.Enqueue(c,"reuse",fresh));
         Store.config.dbParams.DatabaseName="reality_hd";Assert.False(AbilityRefusalQa.Enqueue(c,"reuse",new AbilityRefusalQa.Stamp(c)));
     }
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void OverloadChecksTheOriginalSpawnAfterAdmission(bool fullRequest)
+    {
+        const ushort overload = 66;
+        var caster = Client();
+        var target = Client();
+        caster.playerData.combatStyle = CombatStyles.HackerStyle;
+        caster.playerData.passives.Loaded[overload] = 19;
+        caster.playerInstance.OrganizationID.setValue((byte)1);
+        target.playerInstance.OrganizationID.setValue((byte)2);
+        caster.playerData.pvpFlag = target.playerData.pvpFlag = true;
+        target.playerData.setCharID(111);
+        target.playerData.setEntityId(42);
+        caster.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(17000, 495, 8200));
+        target.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(17000, 495, 6600));
+        WorldServer.Clients.Add("target", target);
+        var view = caster.viewMan.addView(42, 12);
+        view.viewCreated = true;
+        view.spawnId = 9;
+        Store.currentClient = caster;
+
+        var ability = new AbilityItem();
+        ability.setAbilityID(overload);
+        ability.setAbilityName("Overload 1.0");
+        ability.setCastAnimStart(new byte[4]);
+        DataLoader.getInstance().AbilityDB.Add(ability);
+        var request = new byte[fullRequest ? 41 : 4];
+        BitConverter.GetBytes(overload).CopyTo(request, 0);
+        BitConverter.GetBytes(view.ViewID).CopyTo(request, 2);
+        if (fullRequest) BitConverter.GetBytes((ushort)view.spawnId).CopyTo(request, 4);
+
+        new AbilityHandler().ProcessAbility(ref request);
+        double end = caster.playerData.castEndsAt;
+        Assert.True(end > TimeUtils.GetSimTimeSeconds());
+        Assert.Equal(486, AbilityHandler.CurrentInnerStrength(caster));
+        view.spawnId++;
+        DelayedActions.RunDue(end + 1);
+
+        Assert.Empty(Rpcs(target));
+        Assert.True(AbilityCooldowns.IsCoolingDown(caster.playerData, overload, TimeUtils.GetSimTimeSeconds()));
+    }
+
     [Fact] public void ModeUsesProvenClosedLoadoutWithoutGmOrRandomControls()
     {
         var plan=new NativeQa.Modes.AbilityRefusalFeedbackMode().Plan;Assert.Equal(new ushort[]{2,17,45,1006,77},plan.Abilities);Assert.True(plan.DevCommands);Assert.False(plan.GmCharacter110);Assert.False(plan.FixedCallbackRolls);
