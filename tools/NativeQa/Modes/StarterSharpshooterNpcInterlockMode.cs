@@ -9,8 +9,13 @@ public sealed class StarterSharpshooterNpcInterlockMode : NativeQaMode
 {
     private const int Level = 19, X = 17000, Y = 495, Z = 2300, DummyX = 17200;
     private const ushort Sharpshooter = 148;
+    private const string ReturnToStand = "?tp 17000 495 2300 393 11 3 - 40";
     // Full stock Self Defense selection before the close 40 from the gun-special admission batch.
     private const string StockOpen = "80b9110005000300000000000000000000000000000000000000000060070d1e03000000086b0000000000";
+    private const string StockSpeed = "42 00 00 00 00 00 00";
+    // PR797 native PacketLog 1546 and 1905, the SMG and first handgun interlocks' authoritative positions.
+    private const float SmgX = 16930.091796875f;
+    private const float DisplacedX = 16864.998046875f, DisplacedZ = 2302.291015625f;
     private static readonly ushort[] Loadout = new ushort[] { 2, 17, Sharpshooter }
         .SelectMany(id => AbilityPrerequisites.Current.Closure(id).Keys.Append(id)).Distinct().Order().ToArray();
 
@@ -32,9 +37,9 @@ public sealed class StarterSharpshooterNpcInterlockMode : NativeQaMode
         }, extraQaMetadata: new() { ["ScopedStockRows"] = "148", ["NativeCloseableRows"] = 0 },
         readyMessages: new[]
         {
-            $"Level {Level}, CSR ({X},{Y},{Z}) faces the unarmed 30,000 HP Melee Dummy ({DummyX},{Y},{Z}) on verified outdoor NAV. Sharpshooter 148 starts in Archive. Type ?cd w rifle, keep Self Defense and the same tactic, then right-click Close Combat on the dummy. Double-click starts free fire.",
-            "Wait for a regular opposed round after the opener. Expect [SHARPSHOOTER NPC INTERLOCK] loaded148=False modifier=-15. The attack and defence input deltas should both be -15. Type ?qaload 148 in the same fight and expect both deltas 0. Type ?qaunload 148 and expect -15/-15 again.",
-            "Type ?cd stop and wait for the combat HUD to clear. Use ?cd w smg, then right-click Close Combat on the same dummy and expect -10/-10 when 148 is archived. Repeat after ?cd stop with ?cd w handgun and expect -5/-5. Ordinary close opposed rounds only, with no queued moves, withdrawals, or PvP rounds."
+            $"Handgun step only. Level {Level}, CSR ({X},{Y},{Z}) faces the unarmed 30,000 HP Melee Dummy ({DummyX},{Y},{Z}) on verified outdoor NAV, two metres apart. Sharpshooter 148 starts in Archive. Use ?cd w smg then ?cd w handgun and wait for the equipped handgun 2565 message.",
+            $"Type {ReturnToStand} and wait for the camera to settle. If needed, briefly tap strafe and reselect Melee Dummy. Stay within 3 m. Choose Speed, keep Self Defense (page 2 slot 1), and right-click Close Combat on Melee Dummy. Double-click starts free fire.",
+            "Wait for a regular opposed round after the opener. Expect [SHARPSHOOTER NPC INTERLOCK] class=56 loaded148=False modifier=-5, attack 19 to 14 and defence 18 to 13. Keep 148 archived and use no specials or Withdraw. Rifle and SMG already passed native QA."
         });
 
     public override async Task<byte[]> AfterStartAsync(NativeQaBootstrapContext context)
@@ -42,9 +47,11 @@ public sealed class StarterSharpshooterNpcInterlockMode : NativeQaMode
         string root = context.RepositoryRoot!;
         SectorProperties.Load(Path.Combine(root, "data", "sector_properties.csv"));
         NavMesh.UseDirectory(Path.Combine(root, "data", "navmesh"));
-        foreach (int x in new[] { X, DummyX })
-            Check.That(NavMesh.Locate(1, x, Y, Z, out var stand) && !stand.indoors && Math.Abs(stand.floorY + 95 - Y) < 1,
-                $"Verified outdoor NPC interlock stand ({x},{Y},{Z})");
+        foreach ((float x, float z) in new[] { ((float)X, (float)Z), ((float)DummyX, (float)Z), (SmgX, Z), (DisplacedX, DisplacedZ), ((float)X, Z + 10f) })
+            Check.That(NavMesh.Locate(1, x, Y, z, out var stand) && !stand.indoors && Math.Abs(stand.floorY + 95 - Y) < 1,
+                $"Verified outdoor NPC interlock stand ({x},{Y},{z})");
+        Check.That(NavMesh.Locate(1, X, Y, Z, out var home) && (home.sector, home.region, home.polygon) == (0x393, 0x11, 3),
+            "The printed return command has the original street sector, region and polygon");
         Check.That(NavMesh.HasSightPath(1, X, Y, Z, DummyX, Y, Z), "The ordinary NPC target is in clear sight");
 
         if (context.StockProbe is not { } actor) return Array.Empty<byte>();
@@ -59,7 +66,7 @@ public sealed class StarterSharpshooterNpcInterlockMode : NativeQaMode
         uint handle = DuelPackets.Handle(target.ViewId, target.SpawnId);
 
         await CombatFixtureLoadout.VerifyWeaponSwapAsync(actor, context.OwnedDatabase!, "rifle", CombatFixtureWeapons.Rifle);
-        int start = await OpenAsync();
+        int start = await OpenAsync(X, Z);
         await ExpectAsync(start, CombatFixtureWeapons.Rifle, false, -15);
         start = server.DebugLog().Length;
         await ChangeLoadoutAsync(actor, archive, new[] { Sharpshooter }, load: true);
@@ -68,26 +75,56 @@ public sealed class StarterSharpshooterNpcInterlockMode : NativeQaMode
         await ChangeLoadoutAsync(actor, archive, new[] { Sharpshooter }, load: false);
         await ExpectAsync(start, CombatFixtureWeapons.Rifle, false, -15);
 
-        foreach (var (name, weapon, penalty) in new[] { ("smg", CombatFixtureWeapons.Smg, -10), ("handgun", CombatFixtureWeapons.Handgun, -5) })
+        await StopAsync();
+        await CombatFixtureLoadout.VerifyWeaponSwapAsync(actor, context.OwnedDatabase!, "smg", CombatFixtureWeapons.Smg);
+        MoveTo(SmgX, Z);
+        start = await OpenAsync(SmgX, Z);
+        await ExpectAsync(start, CombatFixtureWeapons.Smg, false, -10);
+        await StopAsync();
+        await CombatFixtureLoadout.VerifyWeaponSwapAsync(actor, context.OwnedDatabase!, "handgun", CombatFixtureWeapons.Handgun);
+
+        MoveTo(DisplacedX, DisplacedZ);
+        start = await OpenAsync(DisplacedX, DisplacedZ);
+        await actor.WaitUntilAsync(() =>
         {
-            await StopAsync();
-            await CombatFixtureLoadout.VerifyWeaponSwapAsync(actor, context.OwnedDatabase!, name, weapon);
-            start = await OpenAsync();
-            await ExpectAsync(start, weapon, false, penalty);
-        }
+            string rounds = server.DebugLog()[start..];
+            return Regex.Matches(rounds, @"\[COMBAT-NPC\] action Melee Dummy").Count >= 2 &&
+                Regex.IsMatch(rounds, @"\[COMBAT\] Round [2-9]: Speed");
+        }, "An ordinary Speed round and NPC counter at the native displaced stand", TimeSpan.FromSeconds(18));
+        Check.That(!server.DebugLog()[start..].Contains("[SHARPSHOOTER NPC INTERLOCK]", StringComparison.Ordinal),
+            "The equipped handgun round at 3.35 m stays outside the short-range rule");
+        Console.WriteLine("Native displacement reproduced: ordinary handgun exchange 3.35 m from the dummy, outside the 3 m rule.");
+        await StopAsync();
+
+        actor.SendChat(ReturnToStand);
+        await actor.WaitForTextAsync("Teleported to 393/11");
+        MoveTo(X, Z + 10);
+        start = await OpenAsync(X, Z + 10);
+        await ExpectAsync(start, CombatFixtureWeapons.Handgun, false, -5);
         await StopAsync();
         Check.Equal(0, actor.World.Problems.Count, "NPC interlock and archive framing");
         return Array.Empty<byte>();
 
-        async Task<int> OpenAsync()
+        void MoveTo(float x, float z)
+        {
+            string position = WireFormat.ToHex(new[] { x, Y, z }.SelectMany(BitConverter.GetBytes).ToArray());
+            actor.World.SendViewList(WireFormat.FromHex($"02 00 01 08 {position} 00 00"));
+        }
+
+        async Task<int> OpenAsync(float x, float z)
         {
             actor.SkipReceived();
             string targetHex = WireFormat.ToHex(BitConverter.GetBytes(handle));
+            string centre = WireFormat.ToHex(new[] { (double)x, Y, z }.SelectMany(BitConverter.GetBytes).ToArray());
             int cursor = server.DebugLog().Length;
-            actor.World.SendRpcs(StarterHackerControlTargetMode.WithHandle(StockOpen, handle),
+            int views = actor.World.ViewSnapshot().Count;
+            actor.World.SendRpcs(WireFormat.FromHex(StockSpeed), StarterHackerControlTargetMode.WithHandle(StockOpen, handle),
                 WireFormat.FromHex($"40 {targetHex} 01 6b"));
+            await actor.WaitForRpcAsync("4e 01");
             await actor.WaitForRpcAsync($"40 {targetHex} 00 6b");
             await actor.WaitForRpcAsync("47");
+            await EvidenceRetestWire.ViewSinceAsync(actor, views, 1,
+                $"02 2e 00 ?? ?? 01 {centre} 01 00 00 00 03 00 00 00 02 00 ?? ?? {targetHex} 00");
             return cursor;
         }
 
@@ -95,6 +132,7 @@ public sealed class StarterSharpshooterNpcInterlockMode : NativeQaMode
         {
             actor.SkipReceived();
             actor.SendChat("?cd stop");
+            await actor.WaitForRpcAsync($"46 {WireFormat.ToHex(BitConverter.GetBytes(handle))} 00");
             await actor.WaitForTextAsync("Fixture combat ended. Wait for the stock combat HUD to clear.");
         }
 
