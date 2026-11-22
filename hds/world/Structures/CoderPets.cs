@@ -351,8 +351,15 @@ namespace hds
 
         public static Pet SpawnFor(WorldClient owner, UInt16 ability)
         {
+            lock (owner.playerData.craftingSync) return SpawnForLocked(owner, ability);
+        }
+
+        private static Pet SpawnForLocked(WorldClient owner, UInt16 ability)
+        {
             if (!Summons.TryGetValue(ability, out Summon summon)) return null;
-            Dismiss(owner, false);
+            Pet previous = Of(owner);
+            bool replaceAfterPreparation = ability == 28;
+            if (!replaceAfterPreparation && previous != null) Dismiss(owner, false, previous);
             int casterLevel = owner.playerInstance.Level.getValue()[0];
             int level = SimLevel(summon, casterLevel);
             UInt32 charId = owner.playerData.getCharID();
@@ -409,10 +416,24 @@ namespace hds
                 BaseMaxHealth = max, LastResourceTick = TimeUtils.GetSimTimeSeconds()
             };
             mob.pet = pet;
-            lock (pets) pets[charId] = pet;
-            lock (WorldServer.mobs.SyncRoot) WorldServer.mobs.Add(mob);
-            lock (WorldServer.gameServerEntities.SyncRoot) WorldServer.gameServerEntities.Add(mob);
-            SendWindow(pet, true);
+            if (replaceAfterPreparation)
+            {
+                // RemoteProxy2_Subject creates, reports the creation, then destroys the current summon.
+                // Resolve that sequence as preparation followed by retirement of the previous pet.
+                Output.WriteDebugLog($"[PET] Remote Proxy 2.0 prepared simulacrum {simId}; previous {previous?.SimulacraId ?? 0}");
+                if (previous != null) Dismiss(owner, false, previous);
+            }
+            lock (pet)
+            {
+                lock (pets)
+                {
+                    if (!OwnerPresent(pet) || pets.ContainsKey(charId)) return null;
+                    pets.Add(charId, pet);
+                }
+                lock (WorldServer.mobs.SyncRoot) WorldServer.mobs.Add(mob);
+                lock (WorldServer.gameServerEntities.SyncRoot) WorldServer.gameServerEntities.Add(mob);
+                SendWindow(pet, true);
+            }
             EnsureTimer();
             Output.WriteDebugLog("[PET] " + TimedEffects.PlayerName(owner) + " summoned " + mob.getName() + " L" + level +
                                  " (ability " + ability + ", simulacrum " + simId + ")" +
@@ -508,14 +529,18 @@ namespace hds
 
         private static bool Dismiss(WorldClient owner, bool withEffect, Pet expected)
         {
-            Pet pet;
-            lock (pets)
+            Pet pet = expected ?? Of(owner);
+            if (pet == null || !ReferenceEquals(owner, pet.Owner)) return false;
+            UInt32 charId = owner.playerData.getCharID();
+            lock (pet)
             {
-                if (owner == null || !pets.TryGetValue(owner.playerData.getCharID(), out pet)) return false;
-                if (expected != null && pet != expected) return false;
-                pets.Remove(owner.playerData.getCharID());
+                lock (pets)
+                {
+                    if (!pets.TryGetValue(charId, out Pet current) || current != pet) return false;
+                    pets.Remove(charId);
+                }
+                RemoveLocked(pet, withEffect ? DismissFx : 0);
             }
-            Remove(pet, withEffect ? DismissFx : 0);
             return true;
         }
 
@@ -628,10 +653,7 @@ namespace hds
             if (pet == null) return "You have no simulacrum.";
             if (id != CurrentSimulacrum && id != pet.SimulacraId && id != 0) return "No simulacrum with that ID.";
             if (command == Command.Deactivate)
-            {
-                Dismiss(client);
-                return null;
-            }
+                return Dismiss(client, true, pet) ? null : "You have no active simulacrum.";
             lock (pet)
             {
                 if (pet.Gone || pet.Mob.getIsDead()) return "You have no active simulacrum.";
@@ -1319,6 +1341,7 @@ namespace hds
                 case "summon":
                     if (!Summons.ContainsKey(ability)) return "?pet summon <27|28|29|586|594|22|601|611|616|602|612|617>";
                     Pet pet = SpawnFor(client, ability);
+                    if (pet == null) return "The simulacrum was not summoned.";
                     return pet.Mob.getName() + " (level " + pet.Mob.getLevel() + ", " + pet.Mob.getHealthM() + " health) is next to you.";
                 case "dummy":
                     Mob dummy = SpawnDummy(client, args.Length > 2 && int.TryParse(args[2], out int lvl) ? lvl : 0);

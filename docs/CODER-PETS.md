@@ -132,7 +132,7 @@ Chosen, not retail:
 - **Timing and movement:**
   - Attack period: 3 s. The client has `Simulacra_AttackActionPeriod`, but its value is unknown.
   - Movement: 5 m steps. Follow distance: 2.5 m. Leash: 60 m.
-- **Remote Proxy 2.0:** its script calls `destroyCurrentSimulacrum()` right after creating the simulacrum. We keep the simulacrum, because reproducing that would make the ability useless.
+- **Remote Proxy 2.0:** [the shipped Subject callback](../research/client-scripts/ability/hacker/simulacra.py#L198) creates a proxy, reports the cast, then destroys the current simulacrum. The server prepares the new proxy off-world, retires the exact previous summon if present, and publishes the replacement. The original engine binding's publication timing is unresolved. The stock replacement fixture checks both an empty slot and an existing proxy, plus the separate Deactivate callback.
 - **Drain Code's DecoyDuration 60 s** has no known consumer.
 - **Pet resource baseline (OURS):** maximum 100 IS, starting full, regeneration 2 IS/s, attack/heal cost 10. Charge changes cost to 8 and regeneration to 3/s. No retained script/capture establishes pet sheet resource numbers. Elapsed regen is split at Charge expiry; recasting cannot retroactively buff past time.
 - **Combat curves (OURS):** base hit chance 75%, +2 percentage points per level difference, +active accuracy score, bounded 5%-95%; resistance damage = ceil(raw×100/(100+score)). Fortify's four same-valued scores cover the current retaliation attack; no new NPC ability damage routing is claimed. The sourced700 modifier changes real hit/miss outcomes; its three accuracy stats share this simplified attack model. Pet base damage/healing remains approximate.
