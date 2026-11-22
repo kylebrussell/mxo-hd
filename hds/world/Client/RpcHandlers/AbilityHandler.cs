@@ -27,6 +27,12 @@ namespace hds
             if (PrisonDevices.Handles(AbilityID)) { PrisonDevices.Activate(Store.currentClient, AbilityID, packet); return; }
             UInt16 currentTargetViewId = reader.ReadUInt16(1);
 
+            if (!CoderPets.IsCastLoaded(Store.currentClient, AbilityID))
+            {
+                Deny(AbilityID, "Load this ability before using it.", AbilityRefusals.NotLoaded, sendServerText: false);
+                return;
+            }
+
             // These starter viruses need a live enemy selection, including Logic Bomb's splash centre.
             bool starterViralDamage = AbilityID == 53 || (AbilityID >= 57 && AbilityID <= 60);
             if (starterViralDamage)

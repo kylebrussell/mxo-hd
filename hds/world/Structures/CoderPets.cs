@@ -712,6 +712,9 @@ namespace hds
             }
         }
 
+        internal static bool IsCastLoaded(WorldClient caster, ushort id) =>
+            (id != DrainCode && id != PowerBoost) || AbilityPassives.IsLoaded(caster, id);
+
         private static bool RequiresOutsideCombat(ushort id) => id == PowerBoost || id == DrainCode;
 
         /// <summary>The cast's refusal, or null when it may go ahead (checked before cost and cooldown).</summary>
@@ -814,6 +817,11 @@ namespace hds
                     (RequiresOutsideCombat(id) && CombatManager.GetHandler(caster).isCombatRunning))
                 {
                     Output.WriteDebugLog("[PET] " + id + " fizzles: original pet, owner, range or combat requirement changed");
+                    return;
+                }
+                if (!IsCastLoaded(caster, id))
+                {
+                    Output.WriteDebugLog($"[PET] {id} fizzles: the ability was unloaded during the cast");
                     return;
                 }
                 LandOnPet(caster, pet, id, cast.CasterLevel);
