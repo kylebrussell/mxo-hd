@@ -49,6 +49,38 @@ public class TypedSpecialAttackTests
         Assert.True(AbilityCatalog.Find(33)!.CastSeconds>0); // admission deliberately remains non-queued
     }
 
+    [Fact]
+    public void CombatEnhancementChangesThreeQueuedAttackInputsUntilItsNaturalExpiry()
+    {
+        var caster = Client();
+        caster.playerInstance.Level.setValue((byte)19);
+        var recipient = Client();
+        var attacks = new[] { Move(198), Move(134), Move(105) };
+        int[] ReadInputs(WorldClient client) => attacks.Select(move => AbilityStats.SpecialAttack(client, move)).ToArray();
+        int[] baseline = ReadInputs(recipient);
+        int[] casterBaseline = ReadInputs(caster);
+        int[] increased = baseline.Select(input => input + 24).ToArray();
+
+        Assert.True(AbilityBuffs.Apply(recipient, 173, caster));
+        try
+        {
+            var buff = recipient.playerData.activeBuffs[173];
+            Assert.Equal(300, buff.Definition.Seconds);
+            Assert.Equal(increased, ReadInputs(recipient));
+            Assert.Equal(casterBaseline, ReadInputs(caster));
+
+            TimedEffects.RunDue(buff.Started + 299.99);
+            Assert.Equal(increased, ReadInputs(recipient));
+            TimedEffects.RunDue(buff.Started + 300.01);
+            Assert.False(recipient.playerData.activeBuffs.ContainsKey(173));
+            Assert.Equal(baseline, ReadInputs(recipient));
+        }
+        finally
+        {
+            AbilityBuffs.Remove(recipient, 173);
+        }
+    }
+
     [Theory]
     [InlineData(1120, 15, 1039, 0)]
     [InlineData(1121, 18, 1059, 0)]

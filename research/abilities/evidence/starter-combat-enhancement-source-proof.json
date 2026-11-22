@@ -1,0 +1,13 @@
+{
+  "abilities": {
+    "173": {
+      "checks": {
+        "source-parity": {
+          "source": "GOB 173 targets a selected ally within 10 m. All three 300 s modifier components use character-level function 3 × 1.3 with the positive stored cap 26, for stats 522, 524 and 1032. The shipped client 6251fe10 TestFunction jump table selects 522 for melee type 3, 524 for ballistic type 1 and 1032 for thrown type 4. The original authoritative gameplay caller and full contest arithmetic remain unarchived.",
+          "runtime": "AbilityBuffs snapshots the caster-level modifiers on the legal selected ally. In the chosen queued implementation the production special attack input consumes the corresponding directly published accuracy stat, using the shipped client selector. The modifiers expire on the recipient and can be dismissed together. Friendly sight and continuous Archive membership guard the incoming cast through landing.",
+          "test": "PR769 stock at 041a6bea applied 522/524/1032 +24 for 300 s to each of two selected allies, 40 IS and 13 s own reuse, with no caster or opposing recipient copy. Ordinary PvP queues then read 198 melee 19→43, 134 thrown 26→50 and 105 ballistic 24→48. The round inputs were observed independently of whether the moves dealt damage. PR692 stock at level 15 confirmed all +19 records removed together on dismissal. PR793 captures the full 43-byte selected friend request and local Archive gating. CombatEnhancementChangesThreeQueuedAttackInputsUntilItsNaturalExpiry checks all three remain through 299.99 s and return to baseline after the 300 s window. https://github.com/kylebrussell/mxo-hd/pull/769#issuecomment-7083045194 https://github.com/kylebrussell/mxo-hd/pull/692#issuecomment-7068483964 https://github.com/kylebrussell/mxo-hd/pull/793#issuecomment-7084106305"
+        }
+      }
+    }
+  }
+}
