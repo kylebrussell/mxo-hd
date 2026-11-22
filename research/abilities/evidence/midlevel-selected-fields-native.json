@@ -1,0 +1,36 @@
+{
+  "families": {
+    "hacker-miasma-2-selected-field": {
+      "representative": 343,
+      "result": "pass",
+      "head": "f3000a700390600a998ed7061c867c3725e69f3b",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/851#issuecomment-7087116537",
+      "scope": "Stock at level 30, 58/60 memory, with Hacker Style and the legal ranked profile. Empty and friendly requests were refused at reason 24 without debit, cast or reuse. Dedicated Code 346 at rank 30 supplies +9% on linked cost stat 1053→117. The server subtracts the integer part of that reduction from the stored costs; Execute Program stat 1056 affects maximum IS. A 2 s cast paid 13 IS (700→687) and published 28 s reuse. Enemy 6114 and edge hostile 6113 at 5.00 m from the selected target (7.00 m from CSR) each received source 343 stats 1009/1010 -21 for 45 s and both records expired. No source records on CSR, allied QAFriend or out-of-radius QAFar. No health damage, maximum-vitals change or PvP interlock rounds."
+    },
+    "hacker-inefficiency-1-selected-field": {
+      "representative": 401,
+      "result": "pass",
+      "head": "f3000a700390600a998ed7061c867c3725e69f3b",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/851#issuecomment-7087116537",
+      "scope": "Stock at level 30, 58/60 memory, with Hacker Style and the legal ranked profile. Empty and friendly requests were refused at reason 24 without debit, cast or reuse. Dedicated Code 346 at rank 30 supplies +9% on linked cost stat 1053→117. The server subtracts the integer part of that reduction from the stored costs; Execute Program stat 1056 affects maximum IS. A 2 s cast paid 19 IS (687→668) and published 60 s reuse. Enemy 6114 and exact 7.00 m edge hostile 6113 received source 401 stat 114 -35 and stat 117 -20 for 30 s and both records expired. QAFar at 7.01 m was excluded. No source records on CSR, allied QAFriend or out-of-radius QAFar. No health damage, maximum-vitals change or PvP interlock rounds."
+    },
+    "hacker-disruption-selected-field": {
+      "representative": 403,
+      "result": "pass",
+      "head": "f3000a700390600a998ed7061c867c3725e69f3b",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/851#issuecomment-7087116537",
+      "scope": "Stock at level 30, 58/60 memory, with Hacker Style and the legal ranked profile. Empty and friendly requests were refused at reason 24 without debit, cast or reuse. Dedicated Code 346 at rank 30 supplies +9% on linked cost stat 1053→117. The server subtracts the integer part of that reduction from the stored costs; Execute Program stat 1056 affects maximum IS. A 2 s cast paid 14 IS (668→654) and published 30 s reuse. Enemy 6114 and edge hostile 6113 at 5.00 m received source 403 stat 183 -50 for 23 s and the record expired. No source records on CSR, allied QAFriend or out-of-radius QAFar. No health damage, maximum-vitals change or PvP interlock rounds."
+    }
+  },
+  "abilities": {
+    "343": {
+      "family": "hacker-miasma-2-selected-field"
+    },
+    "401": {
+      "family": "hacker-inefficiency-1-selected-field"
+    },
+    "403": {
+      "family": "hacker-disruption-selected-field"
+    }
+  }
+}

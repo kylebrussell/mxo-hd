@@ -1,0 +1,58 @@
+{
+  "families": {
+    "daemon-boost-one-pet-aura": {
+      "representative": 609,
+      "result": "pass",
+      "head": "ab8d2317",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/832#issuecomment-7086863062",
+      "scope": "Stock 609 cast for 2 s and paid 10 IS. The 699 child reached the caster and nearby allied Healer only. Three five-second upkeeps paid 5 IS each. The next unaffordable tick stopped without a pulse, and the existing children expired."
+    }
+  },
+  "abilities": {
+    "609": {
+      "family": "daemon-boost-one-pet-aura",
+      "checks": {
+        "aura": {
+          "source": "The shipped 609 toggle uses 699 as its finite child, pulses immediately and uses five-second refresh and drain callbacks.",
+          "runtime": "The shared aura scheduler checks the source activation, debits affordable upkeep before sending the next eligible pulse, and stops the parent at shortfall while the existing pet child expires normally.",
+          "test": "PR832 stock verifies the immediate and repeated two-recipient pulses, three exact five-point debits and one localized shortfall stop. Only eligible children refresh, nobody receives a fourth pulse, and the surviving pet loses the boost after the last child expiry. https://github.com/kylebrussell/mxo-hd/pull/832#issuecomment-7086863062"
+        },
+        "pets": {
+          "source": "Shipped 609 applies child 699 to eligible friendly Simulacra. Child modifiers influence the Nuker's viral hit and the Healer's heal for one pulse interval.",
+          "runtime": "AbilityAuras drives the parent and CoderPets applies the per-source typed snapshot to matching live pets within 20 m. Owner and pet lifecycle checks discard retired effects.",
+          "test": "PR832 stock observed the two eligible source/recipient pairs 110→110 and 110→6111, +14/+14 at level 29, and no enemy or far pet. DaemonBoostUsesTheFriendlyOwnerAndInclusivePetRadiusWithIndependentExpiry covers the exact boundary and expiry. https://github.com/kylebrussell/mxo-hd/pull/832#issuecomment-7086863062"
+        },
+        "script": {
+          "source": "The 609 GOB calls ApplyAuraEffect immediately, then applies its 699 effect and ISDrainWithAbilityDeactivation every five seconds.",
+          "runtime": "AbilityAuras starts the 699 child after ordinary cast completion, debits 5 IS before later pulses, and deactivates on shortfall. The finite child expires independently.",
+          "test": "AurasReadTheirDrainAndEffectFromTheTemplate checks the mapped child and scheduler. PR832 stock paid 10 IS then 5/5/5, received the localized shortfall notice and deactivation, and saw no fourth paid pulse and no retained pet influence. https://github.com/kylebrussell/mxo-hd/pull/832#issuecomment-7086863062"
+        },
+        "behavior-tests": {
+          "source": "Shipped 609 specifies 2 s cast, 10 IS, 15 s reuse and 5 IS upkeep every 5 seconds, with a finite friendly-pet child.",
+          "runtime": "AbilityAuras and CoderPets preserve ordinary cost, timing, state transition, eligible recipients and end-of-pulse snapshot cleanup.",
+          "test": "The separate daemon-boost-friendly-pets-server scenario covers the complete path. PR832 verifies the first stock request, cast and reuse, 29→19→14→9→4 IS, own/friendly scope, shortfall notice and remaining child expiry. https://github.com/kylebrussell/mxo-hd/pull/832#issuecomment-7086863062"
+        }
+      }
+    },
+    "699": {
+      "family": "daemon-boost-one-pet-aura",
+      "checks": {
+        "area": {
+          "source": "GOB 699 specifies a 20 metre friendly pet radius and five-second modifier duration.",
+          "runtime": "CoderPets enumerates actual live Daemon pets and checks source readiness, friendly owner, district and range. Each owner receives its own source-bound snapshot.",
+          "test": "DaemonBoostUsesTheFriendlyOwnerAndInclusivePetRadiusWithIndependentExpiry checks inclusion at the boundary and exclusion just beyond, along with hostile owner and stale source exclusion. PR832 stock proves own and nearby allied acceptance with hostile and far exclusion. https://github.com/kylebrussell/mxo-hd/pull/832#issuecomment-7086863062"
+        },
+        "pets": {
+          "source": "The shipped child supplies separate viral damage and healing modifiers from the caster level at function-3 scale 0.5.",
+          "runtime": "CoderPets consumes the viral modifier for a Nuker hit and the healing modifier for Healer output. A Proxy, stale source or expired snapshot contributes neither.",
+          "test": "DaemonBoostAffectsOnlyNukerDamageAndHealerHealingAndCannotFollowAnOldSource covers both typed consumers, Proxy exclusion and lifecycle. PR832 stock confirms +14/+14 at level 29 and live allied healing 9→10, 11→12 and 10→11. https://github.com/kylebrussell/mxo-hd/pull/832#issuecomment-7086863062"
+        },
+        "behavior-tests": {
+          "source": "The linked 699 pulses seed a five-second damage and healing snapshot and refresh on a successful parent upkeep.",
+          "runtime": "The same pet receives refreshed typed input while currently eligible. When the parent stops, the last child naturally expires through the pet ability lifetime.",
+          "test": "The two ProxyTechnicianTests Daemon Boost cases cover independent sources, typed consumers and expiry. PR832 stock confirms three eligible refreshes, no refresh on the shortfall, and ?pet reports zero viral/healing influence after expiry. https://github.com/kylebrussell/mxo-hd/pull/832#issuecomment-7086863062"
+        }
+      }
+    }
+  }
+}

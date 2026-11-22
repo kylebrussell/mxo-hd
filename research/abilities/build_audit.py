@@ -577,6 +577,10 @@ def remaining_items(i, current_status, runtime_summary):
         open_items['source-parity'] = 'Resolve the inferred or unresolved behavior identified in the server column'
     if i == 86:
         open_items['source-parity'] = 'Verify that the signed movement adjustment slows the stock recipient and restores its prior speed on expiry'
+    if i == 485:
+        open_items['source-parity'] = 'Reconcile the captured shortfall timer order and child damage values with the shared aura scheduler'
+    if i == 696:
+        open_items['source-parity'] = 'Reconcile the archived +37 Ballistic and +39 Melee Damage records with the equal caster-level snapshots'
     if i == 872:
         open_items['source-parity'] = 'Verify whether stock retail suppresses the zero-amount restore chat when IS is already capped'
     if not open_items and current_status == 'cosmetic':

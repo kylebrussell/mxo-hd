@@ -1,0 +1,32 @@
+{
+  "families": {
+    "selected-freeze-system-pacify": {
+      "representative": 352,
+      "result": "pass",
+      "head": "5a7aad95",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/847#issuecomment-7087053878",
+      "scope": "Stock Freeze System applied Pacify, independent -48 Viral Resistance and 12-second immunity. During existing immunity, a new attempt paid its normal cost, kept the -48 resistance and sent no new Pacify or immunity."
+    }
+  },
+  "abilities": {
+    "352": {
+      "family": "selected-freeze-system-pacify",
+      "checks": {
+        "targeting": {
+          "source": "GOB 352's selected-hostile route uses a 20 m range, two-second cast and a viral contest.",
+          "runtime": "AbilityHandler checks admission and retains the original spawn through the cast. The common sight and viral landing qualify the recipient before applying Pacify or resistance.",
+          "test": "SelectedPacifyRefusesBeforeCostAndRetainsTheAdmittedSpawn verifies pre-cost rejection and pending invalidation. PR847 stock reason 24 covers empty and ally selections, reason 34 covers 20.01 m, and only the admitted target gains baseline 6 s Pacify (6.54 s in this profile), -48/12 s resistance and 734/681 immunity. https://github.com/kylebrussell/mxo-hd/pull/847#issuecomment-7087053878"
+        }
+      }
+    },
+    "393": {
+      "checks": {
+        "targeting": {
+          "source": "GOB 393 requires a live selected enemy within 14 m and a successful viral contest.",
+          "runtime": "AbilityHandler rejects empty/allied/stale/out-of-range selection before debit and keeps the original spawn until the normal sight/contest path. Damage breaks the state, leaving the separate immunity marker.",
+          "test": "PR847 stock reason 24 covers empty and ally selections and reason 34 covers 15 m. At 2 m the target gets 6.54 s state and 12 s immunity, ordinary Logic Blast breaks the state, and immunity remains. Target IS does not change. The focused admission and viral tests cover stale and deflected cases. https://github.com/kylebrussell/mxo-hd/pull/847#issuecomment-7087053878"
+        }
+      }
+    }
+  }
+}

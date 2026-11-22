@@ -1,0 +1,8 @@
+{
+  "abilities": {
+    "319": {
+      "family": "personal-firewall-recipient",
+      "note": "PR831 stock confirms sight refusal reason 9 without cost, then rank two successfully selects only QAFriend, costs 45 IS, casts 2 s, starts 13 s reuse, adds +80 viral and +20 each physical resistance for 300 s, and removes all four with a +250 heal. Rank one controls show +40/+10 and +75. Armor bit 0x0100 was not visually inspected in that run; the typed resistance and presentation tests capture its lifecycle independently. https://github.com/kylebrussell/mxo-hd/pull/831#issuecomment-7086796476"
+    }
+  }
+}
