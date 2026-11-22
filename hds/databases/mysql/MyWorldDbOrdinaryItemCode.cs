@@ -131,8 +131,8 @@ namespace hds.databases
             return !r.Read() && OrdinaryItemCode.Valid(source.Base, source.Charges) ? source : null;
         }
 
-        /// <summary>OURS: one item per successful charge; failure/cancellation never spends anything.</summary>
-        public ClientActionRequests.Materialized MaterializeOrdinaryItemCode(uint character, OrdinaryItemCode.Entry source, byte tool, long cost)
+        /// <summary>A resolved contest spends Info. A success also spends one code charge and materializes an item.</summary>
+        public ClientActionRequests.Materialized MaterializeOrdinaryItemCode(uint character, OrdinaryItemCode.Entry source, byte tool, long cost, bool contestWon = true)
         {
             var result = new ClientActionRequests.Materialized();
             if (source == null || !OrdinaryItemCode.Valid(source.Base, source.Charges) || !OrdinaryItemCode.Supported(source.Goid) || cost < 0) return result;
@@ -158,15 +158,40 @@ namespace hds.databases
             var stack = bag.FirstOrDefault(i => i.Goid == source.Goid && ItemStacks.IsStackable(source.Goid) && i.Count < ItemStacks.MaxStack);
             ushort slot = stack.Slot == 0 ? Enumerable.Range(1,96).Select(i => (ushort)i).FirstOrDefault(i => bag.All(b => b.Slot != i)) : stack.Slot;
             if (slot == 0) { result.Result = 3; return result; }
+            // CompileTest debits Information before checking the contest roll.
+            // The source, tool, funds and capacity have already been checked.
+            if (!contestWon)
+            {
+                if (!Debit()) return result;
+                CommitInfo();
+                result.Remaining = source.Charges;
+                return result;
+            }
             result.Slot = slot; result.BagCount = stack.Slot == 0 ? 1 : stack.Count + 1;
             c.Parameters.AddWithValue("@slot", slot); c.Parameters.AddWithValue("@count", result.BagCount);
             c.CommandText = stack.Slot == 0 ? "INSERT INTO inventory(charId,goid,slot,count,created) VALUES(@char,@goid,@slot,@count,NOW())" : "UPDATE inventory SET count=@count WHERE charId=@char AND slot=@slot AND goid=@goid";
             if (c.ExecuteNonQuery() != 1) return new ClientActionRequests.Materialized();
             c.CommandText = source.Charges == 1 ? "DELETE FROM char_abilities WHERE char_id=@char AND slot=@source AND ability_id=@code AND level=@charges" : "UPDATE char_abilities SET level=level-1 WHERE char_id=@char AND slot=@source AND ability_id=@code AND level=@charges";
             if (c.ExecuteNonQuery() != 1) return new ClientActionRequests.Materialized();
-            c.CommandText = "UPDATE characters SET cash=cash-@cost WHERE charId=@char AND cash>=@cost";
-            if (c.ExecuteNonQuery() != 1) return new ClientActionRequests.Materialized();
-            tx.Commit(); result.Cash -= cost; result.Remaining = source.Charges - 1; result.Result = 0; return result;
+            if (!Debit()) return new ClientActionRequests.Materialized();
+            CommitInfo();
+            result.Remaining = source.Charges - 1;
+            result.Result = 0;
+            return result;
+
+            bool Debit()
+            {
+                if (cost == 0) return true;
+                c.CommandText = "UPDATE characters SET cash=cash-@cost WHERE charId=@char AND cash>=@cost";
+                return c.ExecuteNonQuery() == 1;
+            }
+
+            void CommitInfo()
+            {
+                tx.Commit();
+                result.Cash -= cost;
+                result.InfoCommitted = true;
+            }
         }
     }
 }

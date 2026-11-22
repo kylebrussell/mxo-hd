@@ -70,18 +70,24 @@ namespace hds
                         if (client.playerData != data || !Ready(client, request.Tool) || data.craftingSession != session ||
                             !Matches(world, life, stamp, data.worldGeneration, data.lifeGeneration, data.castEndsAt))
                         { Finish(client, 1); return; }
-                        if (!OrdinaryItemCode.Succeeds(skill, item.Complexity.Value, Roll(), specialization))
-                        { Output.WriteDebugLog("[COMPILE60] Failed " + request.Item + "; code and Info retained"); Finish(client, 1); return; }
-                        var transfer = db.MaterializeOrdinaryItemCode(data.getCharID(), source, request.Tool, cost);
+                        int roll = Roll();
+                        bool contestWon = OrdinaryItemCode.Succeeds(skill, item.Complexity.Value, roll, specialization);
+                        var transfer = db.MaterializeOrdinaryItemCode(data.getCharID(), source, request.Tool, cost, contestWon);
                         committed = transfer.Result == 0;
                         if (transfer.Result == 0)
                         {
                             client.messageQueue.addRpcMessage(transfer.Remaining == 0 ? CodeStorage.BuildRemove(source.Slot) : OrdinaryItemCode.Update(source.Slot, source.Base, transfer.Remaining));
                             if (transfer.BagCount > 1) client.messageQueue.addRpcMessage(ItemStacks.BuildStackCount(transfer.Slot, transfer.BagCount));
                             else new ServerPackets().sendInventoryItemAdd(transfer.Slot, source.Goid, 0, 0, client);
-                            data.setInfo(transfer.Cash); new ServerPackets().SendInfoCurrent(client, (uint)transfer.Cash);
+                        }
+                        if (transfer.InfoCommitted)
+                        {
+                            data.setInfo(transfer.Cash);
+                            new ServerPackets().SendInfoCurrent(client, (uint)transfer.Cash);
                         }
                         Output.WriteDebugLog("[COMPILE60] Finished " + request.Item + " result " + transfer.Result + " remaining " + transfer.Remaining);
+                        if (!contestWon && transfer.InfoCommitted)
+                            Output.WriteDebugLog($"[COMPILE60] Contest failed item={request.Item} roll={roll} info={cost} cash={transfer.Cash}; code retained");
                         Finish(client, transfer.Result);
                         }, ex =>
                         {

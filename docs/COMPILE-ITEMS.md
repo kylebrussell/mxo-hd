@@ -26,6 +26,10 @@ Matching native close, another ability request, entering combat, positive health
 
 `?compilesession [off]` reports/revokes the actual session only with exact `MXO_DEV_COMMANDS=1`; it cannot grant a tool, load an ability, start a session or compile an item. Existing `?compile` remains a separately gated deterministic QA shortcut; it is not the native activation path.
 
+## Ordinary item-code contest cost
+
+The shipped `crafting_server.py:CompileTest` debits Info before evaluating the contest. A completed ordinary `60` contest now spends the validated quote even when the roll fails. It reports `61 01`, updates the displayed Info, and preserves the archive charge. A win commits the charge, item and Info together. Cancellation and invalid or stale requests return without a debit. The stock fixture `ability-parity-starter-compile-contest-spend` exercises a guaranteed failure followed by an Analyser write and a successful compile.
+
 ## Remaining economy boundary
 
 The tooltip's primary item-code/equipment materialization is **still incomplete**. The existing `60` executor only materializes owned stored bits/fragments under its documented local deterministic policy; ability-code copying, equipment codes, full archive success/charge/purity rules and XP are not reconstructed. The existing `81 2e` implementation assembles known recipes with its script-backed contest and cost. This change fixes activation and session authority for those bounded executors, not the unresolved economy. Ability969 remains partial in the generated audit. Write Code970 is a separate change.

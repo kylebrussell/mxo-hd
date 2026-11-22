@@ -27,6 +27,7 @@ namespace hds
             public ushort Slot;
             public int BagCount, Remaining;
             public long Cash;
+            public bool InfoCommitted;
         }
         // 6208375a..782: ObjectID is the decoded goid, not the packed archive entry.
         public static StoredCompile ParseStoredCompile(byte[] body) => body?.Length == 9 && body[6] == 0 && body[8] <= 1
