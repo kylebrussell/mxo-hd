@@ -12,9 +12,9 @@ public sealed class StarterHackerViralBaseMode : NativeQaMode
     private const ushort Style = CombatStyles.HackerStyle, TransmitVirus = 95, Family = 682;
     private const ushort StyleRank = 2, TransmitRank = 6;
 
-    private sealed record Sample(ushort Id, int BaseDamage, int Cost, int Cast, int Reuse, int SharedReuse, string Capture);
+    internal sealed record Sample(ushort Id, int BaseDamage, int Cost, int Cast, int Reuse, int SharedReuse, string Capture);
 
-    private static readonly Sample[] Samples =
+    internal static readonly Sample[] Samples =
     {
         new(57, 8, 5, 2, 4, 4, StarterHackerViralSightMode.Samples[0].Capture),
         new(53, 12, 18, 4, 8, 4, HarmfulCodeMode.StockViralUse),

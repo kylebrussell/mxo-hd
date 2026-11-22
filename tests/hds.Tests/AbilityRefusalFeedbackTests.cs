@@ -162,7 +162,13 @@ public class AbilityRefusalFeedbackTests:IDisposable
     [InlineData(36, 41)]
     [InlineData(514, 41)]
     [InlineData(36, 4)]
-    public void DelayedCoderCastCannotLandOnANewerSpawnInTheOriginalView(ushort abilityId, int length)
+    [InlineData(53, 41)]
+    [InlineData(57, 41)]
+    [InlineData(58, 41)]
+    [InlineData(59, 41)]
+    [InlineData(60, 41)]
+    [InlineData(60, 4)]
+    public void DelayedHostileCastCannotLandOnANewerSpawnInTheOriginalView(ushort abilityId, int length)
     {
         var caster = Client();
         var target = Client();
@@ -171,7 +177,8 @@ public class AbilityRefusalFeedbackTests:IDisposable
         caster.playerInstance.OrganizationID.setValue((byte)1);
         target.playerInstance.OrganizationID.setValue((byte)2);
         caster.playerData.pvpFlag = target.playerData.pvpFlag = true;
-        caster.playerData.combatStyle = CombatStyles.CoderStyle;
+        caster.playerData.combatStyle = abilityId == 53 || abilityId is >= 57 and <= 60
+            ? CombatStyles.HackerStyle : CombatStyles.CoderStyle;
         WorldServer.Clients.Add("target", target);
         var view = caster.viewMan.addView(42, 12);
         view.viewCreated = true;
@@ -181,7 +188,7 @@ public class AbilityRefusalFeedbackTests:IDisposable
 
         var ability = new AbilityItem();
         ability.setAbilityID(abilityId);
-        ability.setAbilityName("Coder cast");
+        ability.setAbilityName("Selected hostile cast");
         ability.setCastAnimStart(new byte[4]);
         DataLoader.getInstance().AbilityDB.Add(ability);
         var request = new byte[length];
