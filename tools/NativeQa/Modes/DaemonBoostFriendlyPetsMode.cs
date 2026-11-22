@@ -1,4 +1,3 @@
-using System.Buffers.Binary;
 using hds;
 using HeadlessClient;
 
@@ -11,11 +10,9 @@ public sealed class DaemonBoostFriendlyPetsMode : NativeQaMode
     private static readonly ushort[] Abilities = new ushort[] { 2, 17, Coder, Nuker, Patch, Boost }
         .SelectMany(id => AbilityPrerequisites.Current.Closure(id).Keys.Append(id)).Distinct().Order().ToArray();
     private static readonly int Memory = Abilities.Sum(AbilityMemory.Cost);
-    // PR593/603 exact stock summon paths. The older utility fixture's full stock 594 envelope is the template for 609.
+    // PR593/603 exact stock summon paths. The separate HeadlessClient scenario invokes 609 through its dev cast.
     private const string NukerWire = "80b916000000000000000000000000000000000000000000000000000090767241086b0000000000";
     private const string PatchWire = "80b95a02000000000000000000000000000000000000000000000000585ca80001000000086b0000000000";
-    private const string StockSelf = "80b95202000000000000000000000000000000000000000000000000ffff7f7f00000000086b0000000000";
-    private const string BoostFx = "04 80 80 80 c0 ?? ?? c0 44 08 00 28";
 
     public override string Name => "ability-parity-daemon-boost-friendly-pets";
     public override NativeQaModePlan Plan { get; } = new(Abilities, X, Z, Array.Empty<string>(),
@@ -49,7 +46,7 @@ public sealed class DaemonBoostFriendlyPetsMode : NativeQaMode
         SectorProperties.Load(Path.Combine(root, "data", "sector_properties.csv"));
         NavMesh.UseDirectory(Path.Combine(root, "data", "navmesh"));
         var stands = new[] { (X, Z), (X + 150, Z), (FriendX, Z), (FriendX + 150, Z), (EnemyX, Z), (EnemyX + 150, Z),
-            (X, FarZ), (X + 150, FarZ), (X, Z + 800) };
+            (X, FarZ), (X + 150, FarZ) };
         foreach (var (x, z) in stands)
             Check.That(NavMesh.Locate(1, x, Y, z, out var nav) && !nav.indoors && Math.Abs(nav.floorY + 95 - Y) < 1,
                 $"Stand ({x},{Y},{z}) is on outdoor NAV");
@@ -97,43 +94,14 @@ public sealed class DaemonBoostFriendlyPetsMode : NativeQaMode
         var own = await actor.WaitForViewNamedAsync("Nuker Simulacrum");
         await WaitForIsAsync(summonViews, 29);
 
-        actor.SendChat("?pet dummy 1");
-        var dummy = await actor.WaitForViewNamedAsync("Simulacra Dummy");
-        byte[] boost = Convert.FromHexString(StockSelf);
-        BinaryPrimitives.WriteUInt16LittleEndian(boost.AsSpan(2), Boost);
-        int rpc = actor.World.RpcSnapshot().Count, views = actor.World.ViewSnapshot().Count;
-        int log = server.DebugLog().Length;
-        actor.SendRpc(Convert.ToHexString(boost));
-        await EvidenceRetestWire.CastBarAsync(actor, Boost, 2);
-        await EvidenceRetestWire.TimerAsync(actor, rpc, Boost, AbilityCooldowns.OwnTimer, 15);
-        await actor.WaitForViewUpdateAsync(own.ViewId, BoostFx);
-        await WaitForIsAsync(views, 19);
-
-        string handle = $"{StockAbilityProfile.LittleEndianHex(dummy.ViewId)} {StockAbilityProfile.LittleEndianHex(dummy.SpawnId)}";
-        actor.SendRpc("81 51 " + handle);
-        actor.SendRpc("81 7b fe 02 " + handle);
-        await actor.WaitUntilAsync(() => server.DebugLog()[log..].Contains("[PET] typed influence Nuker base") &&
-            server.DebugLog()[log..].Contains("[PET] typed healing base"), "Both typed 699 gameplay consumers apply",
-            TimeSpan.FromSeconds(12));
-        await actor.WaitUntilAsync(() => server.DebugLog()[log..].Contains("[AURA] 609 off"), "Fourth upkeep shortfall deactivates",
-            TimeSpan.FromSeconds(25));
-        var messages = server.DebugLog()[log..].Split('\n');
-        var applications = messages.Where(line => line.Contains("[DAEMON BOOST] 699 source=110")).ToArray();
-        foreach (uint id in new uint[] { actor.CharId, context.Helpers["QAFriend"].CharId })
-            Check.Equal(4, applications.Count(line => line.Contains($"recipient={id} ") && line.Contains("viral=14 healing=14")),
-                $"Four applications to friendly pet owner {id}");
-        Check.That(applications.Length == 8,
-            "Enemy and out-of-range pets are excluded. Applications: " + string.Join(" | ", applications));
-        var balances = actor.World.ViewSnapshot().Skip(views).SelectMany(AbilityParityCoderSweepMode.InnerStrengthUpdates).Distinct().ToArray();
-        Check.That(balances.SequenceEqual(new ushort[] { 19, 14, 9, 4 }), "10 IS activation, three exact 5 IS ticks and no debit on shortfall");
-        int shutdown = server.DebugLog().Length;
-        await Task.Delay(TimeSpan.FromSeconds(5.2));
-        Check.That(!server.DebugLog()[shutdown..].Contains("[DAEMON BOOST] 699 source=110"), "No pulse after the parent switches off");
-        actor.SendChat("?pet");
-        await actor.WaitForTextAsync("aura viral/heal 0/0");
+        int dismissAt = actor.World.RpcSnapshot().Count;
+        byte ownPetId = own.Attributes["SimulacraID"][0];
+        actor.SendRpc("81 7a fe 01");
+        await StockAbilityProfile.ObserveAsync(actor, dismissAt, frame => frame.Bytes is [0x81, 0x77, var id] && id == ownPetId,
+            "Captured Deactivate closes CSR's actual Nuker window");
         Check.Equal(0, actor.World.Problems.Count + context.Helpers.Values.Sum(player => player.World.Problems.Count),
-            "Daemon Boost packet framing");
-        Console.WriteLine("DAEMON BOOST PASS: live friendly pet recipients, typed gameplay, exact cost/upkeep and shortfall.");
+            "Daemon Boost fixture packet framing");
+        Console.WriteLine("DAEMON BOOST NATIVE BOOTSTRAP PASS: captured Coder, 22, 602 and Deactivate only.");
         return Array.Empty<byte>();
 
         Task WaitForIsAsync(int cursor, ushort expected) => actor.WaitUntilAsync(() => actor.World.ViewSnapshot().Skip(cursor)
