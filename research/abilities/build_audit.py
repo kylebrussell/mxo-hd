@@ -267,7 +267,7 @@ def server(i):
         base = {254: 18, 255: 16}[i]
         parts.append(f'stored fixed ballistic base {base} before influence and resistance; requires a live hostile selection at rest; retail scaling unresolved')
     elif i == 130:
-        parts.append('stored fixed ballistic 9 base when legacy endpoints are incomplete; requires a live selected enemy before charging the cast; wider damage and targeting unresolved')
+        parts.append('stored fixed ballistic 9 base when legacy endpoints are incomplete; requires a live opposing selection within 20m before charging the cast; stock reason34 verified; wider damage and targeting unresolved')
     elif i == 134:
         parts.append('stored fixed thrown base 13 before typed influence and resistance; stock Spy interlock landed 14; wider damage and targeting unresolved')
     elif i == 152:
