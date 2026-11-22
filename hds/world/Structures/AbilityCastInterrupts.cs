@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using hds.shared;
 namespace hds
@@ -16,6 +17,7 @@ namespace hds
             internal ushort Ability; internal double End; internal float Seconds;
             internal int World,Life; internal long Generation; internal bool Completed;
             internal Action Landing;
+            internal bool SummonUnloaded;
         }
         // A separate immutable reference keeps ownership distinct from a later cast with equal timestamps.
         public static Cast Begin(WorldClient client,ushort ability,float seconds)
@@ -69,6 +71,14 @@ namespace hds
                 if (cast?.Landing != null && cast.Seconds > 0 && now >= cast.End)
                     Complete(cast, cast.Landing);
             }
+        }
+
+        internal static void NoteUnloadedSummon(WorldClient client, HashSet<ushort> remainingMembership)
+        {
+            // Archive commits and cast completion already share craftingSync.
+            if (states.TryGetValue(client, out var state) && state.Current is { } cast &&
+                CoderPets.StarterSummonRequiresLoaded(cast.Ability) && !remainingMembership.Contains(cast.Ability))
+                cast.SummonUnloaded = true;
         }
         public static bool KnownInterruptible(ushort ability) => AbilityCatalog.Find(ability)?.Number("Ability/IsInterruptable",-1)==1;
         public static int CastThroughPercent(int damage,ushort maximum,short concentration)

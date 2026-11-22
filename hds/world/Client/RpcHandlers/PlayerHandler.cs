@@ -415,6 +415,7 @@ namespace hds
                     }
                 }
                 if(result.Accepted.Length==0) return;
+                if (unload) AbilityCastInterrupts.NoteUnloadedSummon(client, remainingMembership);
                 CombatStyles.ReconcileArchiveSelection(client, remainingMembership);
                 AbilityPassives.SetLoadedFromRows(client,result.Loaded,emittedShadowBase);
                 client.FlushQueue();

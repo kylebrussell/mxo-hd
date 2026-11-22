@@ -746,6 +746,8 @@ namespace hds
             }
         }
 
+        internal static bool StarterSummonRequiresLoaded(ushort id) => id == 22 || id == 27 || id == 28 || id == 29 || id == 602;
+
         internal static bool IsCastLoaded(WorldClient caster, ushort id) =>
             (id != DrainCode && id != PowerBoost && !ContinuousLoadAbilities.Contains(id)) || AbilityPassives.IsLoaded(caster, id);
 
@@ -825,13 +827,16 @@ namespace hds
         }
 
         /// <summary>The cast finished.</summary>
-        internal static void Land(WorldClient caster, UInt16 id, OwnPetCast cast)
+        internal static void Land(WorldClient caster, UInt16 id, OwnPetCast cast, bool summonUnloaded = false)
         {
             if (Summons.ContainsKey(id))
             {
                 lock (caster.playerData.craftingSync)
                 {
-                    if (AbilityPassives.IsLoaded(caster, id)) SpawnFor(caster, id);
+                    if (!summonUnloaded && AbilityPassives.IsLoaded(caster, id))
+                        SpawnFor(caster, id);
+                    else if (StarterSummonRequiresLoaded(id))
+                        Output.WriteDebugLog($"[PET] {id} fizzles: the summon was unloaded during the cast");
                 }
                 return;
             }

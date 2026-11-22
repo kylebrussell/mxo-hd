@@ -29,7 +29,8 @@ namespace hds
 
             bool starterViralDebuffNeedsLoadout = AbilityID == 43 || AbilityID == 48 || AbilityID == 69;
             if (!CoderPets.IsCastLoaded(Store.currentClient, AbilityID) ||
-                (starterViralDebuffNeedsLoadout && !AbilityPassives.IsLoaded(Store.currentClient, AbilityID)))
+                ((starterViralDebuffNeedsLoadout || CoderPets.StarterSummonRequiresLoaded(AbilityID)) &&
+                    !AbilityPassives.IsLoaded(Store.currentClient, AbilityID)))
             {
                 Deny(AbilityID, "Load this ability before using it.", AbilityRefusals.NotLoaded, sendServerText: false);
                 return;
@@ -649,7 +650,7 @@ namespace hds
                 }
                 if (AbilityAuras.Handles(AbilityID)) AbilityAuras.Start(client, AbilityID);
                 if (derez) CoderPets.Derez(client, enemyPet, currentTargetViewId, targetSpawn);
-                if (pet) CoderPets.Land(client, AbilityID, ownPet);
+                if (pet) CoderPets.Land(client, AbilityID, ownPet, normalCast.SummonUnloaded);
                 if (AbilityID == AbilityEmpBlast.Ability) AbilityEmpBlast.Land(client);
                 if (UtilityAbilities.Handles(AbilityID)) UtilityAbilities.Land(client, AbilityID, currentTargetViewId, locatorSlot, selectedLocator);
                 if (CombatSpecials.ActsOnCast(AbilityID)) CombatSpecials.CastTaunt(client);
