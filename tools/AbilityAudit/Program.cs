@@ -84,6 +84,7 @@ var rows = AbilityCatalog.All.Values.OrderBy(e => e.Id).Select(e =>
         cooldown = cooldown ? new { cd.Seconds, cd.Group, cd.GroupSeconds } : null,
         buff_buffer = e.Modifiers.Any(m => m.Text("StatModInitFunc") == "BufferOverflowInit"),
         health_callback = AbilityHealthCallbacks.Describe(e.Id),
+        movement_debuff_scale = AbilityBuffs.ProjectsTimedMovementDebuff(e.Id),
         multifighting = e.Id==140 && typeof(AbilityCatalog).Assembly.GetType("hds.MultifightingInterlock")!=null ? "Recovered multi-on-one math; OURS threshold1/current direct PvP links on ordinary/queued attack and defence; native verifies 0/-10/-15 with one/two/three opponents and -5 with 140 loaded against three; arbitrary multi-NPC absent" : null,
         conditional_stun = AbilityConditionalControls.Handles(e.Id),
         sharpshooter = e.Id==148 && typeof(AbilityCatalog).Assembly.GetType("hds.SharpshooterFreeFire")!=null ?
@@ -142,6 +143,7 @@ File.WriteAllText(output, "[\n" + string.Join(",\n", rows.Select(row => "  " + J
     JsonSerializer.SerializeToElement(row).EnumerateObject()
         .Where(p => p.Name != "mobius" || p.Value.ValueKind != JsonValueKind.Null)
         .Where(p => p.Name != "conditional_stun" || p.Value.GetBoolean())
+        .Where(p => p.Name != "movement_debuff_scale" || p.Value.GetBoolean())
         .Where(p => p.Name != "sharpshooter" || p.Value.GetString() != "")
         .Where(p => p.Name != "consumable_sweep" || p.Value.GetBoolean())
         .Where(p => p.Name != "buff_dispel" || p.Value.GetArrayLength() != 0)

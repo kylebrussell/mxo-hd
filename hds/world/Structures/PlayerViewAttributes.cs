@@ -15,11 +15,11 @@ namespace hds
     public static class PlayerViewAttributes
     {
         // Own view (Object12.setSelfViewAttributes)
-        public const int SelfOrganizationId = 8, SelfMaxHealth = 14, SelfIsDuelDeath = 20, SelfIsDead = 21, SelfInnerStrength = 25, SelfHealth = 27,
+        public const int SelfOrganizationId = 8, SelfMovementScale = 10, SelfMaxHealth = 14, SelfIsDuelDeath = 20, SelfIsDead = 21, SelfInnerStrength = 25, SelfHealth = 27,
             SelfDuelId = 35, SelfDeathPenalty = 38, SelfConditionStateFlags = 42, SelfCombatantMode = 43;
 
         // Another player's view (Object12 AddAttribute's second index)
-        public const int OtherOrganizationId = 4, OtherMaxHealth = 8, OtherIsDuelDeath = 14, OtherIsDead = 15, OtherHealth = 18, OtherEffectId = 23,
+        public const int OtherOrganizationId = 4, OtherMovementScale = 5, OtherMaxHealth = 8, OtherIsDuelDeath = 14, OtherIsDead = 15, OtherHealth = 18, OtherEffectId = 23,
             OtherEffectCounter = 24, OtherDuelId = 26, OtherConditionStateFlags = 30, OtherCombatantMode = 31;
 
         public static byte[] U8(byte value) => new[] { value };

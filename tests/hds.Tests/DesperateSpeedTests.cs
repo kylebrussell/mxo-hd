@@ -74,6 +74,69 @@ public class DesperateSpeedTests
         }
     }
 
+    [Theory]
+    [InlineData(86)]
+    [InlineData(130)]
+    public void TimedMovementDebuffComposesWithExistingSpeedAndRestoresIt(ushort ability)
+    {
+        var player = Client();
+        var subject = TimedEffects.ForPlayer(player);
+        Assert.True(TempMods.TryGet(ability, out var effect));
+        try
+        {
+            Assert.True(AbilityBuffs.Apply(player, HyperSpeed));
+            TimedEffects.Apply(subject, effect, TimeUtils.GetSimTimeSeconds());
+            Assert.Equal(-.05f, BitConverter.ToSingle(player.playerInstance.MovementScale.getValue()));
+            Assert.Contains(player.messageQueue.ObjectMessagesQueue.Cast<SequencedMessage>(),
+                message => message.content.AsSpan().IndexOf(Convert.FromHexString("0200028008CDCC4CBD")) >= 0);
+            Assert.StartsWith("02000288058C1ECDCC4CBD", Convert.ToHexString(ServerPackets.BuildHyperSpeedUpdate(60, 1,
+                scale: AbilityBuffs.WithTimedMovementDebuffs(player, .45f))));
+            Assert.True(TimedEffects.RemoveParent(subject, ability));
+            Assert.Equal(.45f, BitConverter.ToSingle(player.playerInstance.MovementScale.getValue()));
+        }
+        finally { AbilityBuffs.RemoveAll(player); }
+    }
+
+    [Fact]
+    public void SprintStartAndRemovalPreserveTheActiveSlowContribution()
+    {
+        var player = Client();
+        var subject = TimedEffects.ForPlayer(player);
+        Assert.True(TempMods.TryGet(86, out var effect));
+        try
+        {
+            TimedEffects.Apply(subject, effect, TimeUtils.GetSimTimeSeconds());
+            Assert.True(AbilityBuffs.Apply(player, 184));
+            Assert.Equal(-.35f, BitConverter.ToSingle(player.playerInstance.MovementScale.getValue()));
+            Assert.True(AbilityBuffs.Remove(player, 184));
+            Assert.Equal(-.50f, BitConverter.ToSingle(player.playerInstance.MovementScale.getValue()));
+            Assert.True(TimedEffects.RemoveParent(subject, 86));
+            Assert.Equal(0f, BitConverter.ToSingle(player.playerInstance.MovementScale.getValue()));
+        }
+        finally { AbilityBuffs.RemoveAll(player); }
+    }
+
+    [Fact]
+    public void RemovingHinderingShotPreservesActiveSlow()
+    {
+        var player = Client();
+        var subject = TimedEffects.ForPlayer(player);
+        Assert.True(TempMods.TryGet(130, out var hindering));
+        Assert.True(TempMods.TryGet(86, out var slow));
+        try
+        {
+            double now = TimeUtils.GetSimTimeSeconds();
+            TimedEffects.Apply(subject, hindering, now);
+            TimedEffects.Apply(subject, slow, now);
+            Assert.Equal(-1f, BitConverter.ToSingle(player.playerInstance.MovementScale.getValue()));
+            Assert.True(TimedEffects.RemoveParent(subject, 130));
+            Assert.Equal(-.50f, BitConverter.ToSingle(player.playerInstance.MovementScale.getValue()));
+            Assert.True(TimedEffects.RemoveParent(subject, 86));
+            Assert.Equal(0f, BitConverter.ToSingle(player.playerInstance.MovementScale.getValue()));
+        }
+        finally { AbilityBuffs.RemoveAll(player); }
+    }
+
     [Fact]
     public void DesperateSpeedReplacesStackingType27HyperSpeedWithoutZeroDrop()
     {
