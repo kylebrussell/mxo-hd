@@ -1,0 +1,31 @@
+{
+  "abilities": {
+    "33": {
+      "checks": {
+        "source-parity": {
+          "source": "GOB 33 is a selected hostile TestFunction 2 cast with a unique instant health-108 viral type-2 component. ValueFunction 0 and matching MinValue/MaxValue 22 supply the base. The legacy ability CSV has the incomplete 22/0 endpoints. The shipped client influence slice 625ec512–625ec58a supplies the typed damage multiplier and integer conversion.",
+          "runtime": "AbilityHandler uses the fixed 22 before any legacy random draw. The ordinary viral contest guards the selected recipient, then each landed result applies caster viral damage influence 172 once and the existing typed target reduction once. This keeps the single-target result and treats the adopted resistance normalization as server policy.",
+          "test": "AbilityTargetTests verify 22 for separate RNG seeds with the incomplete legacy range. PR718 stock on 8f7e2f23 confirms one 24 hit under rank-19 Coder Style, 15 IS, six-second reuse and reason 34 at 17 m with no cost or reuse. PR633 stock on f5b72ddb adds independent +34 Viral Resistance to the selected target and verifies 24 raw→20 final with no secondary hit. PR639 holds final damage at 27 through the independent accuracy comparison. https://github.com/kylebrussell/mxo-hd/pull/718#issuecomment-7072125698 https://github.com/kylebrussell/mxo-hd/pull/633#issuecomment-7059918580 https://github.com/kylebrussell/mxo-hd/pull/639#issuecomment-7060603514"
+        }
+      }
+    },
+    "36": {
+      "checks": {
+        "source-parity": {
+          "source": "GOB 36 DamageEffect is instant hostile health 108, viral type 2, function 0 and equal fixed endpoints 4. Its CSV legacy range is 0/0. The GOB selects a live hostile at 16 m with selector 3 and then a 2 m radius around that target. The shipped typed influence conversion applies to each landed health result.",
+          "runtime": "The incomplete legacy range takes the fixed catalog base 4. The ordinary cast retains the live selected spawn and range. Each distinct hostile inside the selected target's inclusive radius resolves through the existing viral contest and typed damage paths. The product of the influence multiplier and that recipient's damage then uses the chosen per-recipient typed resistance normalization.",
+          "test": "StarterFixedAbilityDamageTests checks exact base 4 for multiple seeds with the 0/0 CSV range. PR718 stock gives 4 to the primary and hostile 2.00 m from it, no hit to the 2.01 m hostile or ally, 20 IS and 30-second reuse. PR633 gets primary 4 and a +34-resistant hostile secondary raw 4 / final 3. PR766 independently confirms the 6 s cast and no primary or splash when the selected target leaves range before landing. https://github.com/kylebrussell/mxo-hd/pull/718#issuecomment-7072125698 https://github.com/kylebrussell/mxo-hd/pull/633#issuecomment-7059918580 https://github.com/kylebrussell/mxo-hd/pull/766#issuecomment-7082845906"
+        }
+      }
+    },
+    "514": {
+      "checks": {
+        "source-parity": {
+          "source": "GOB 514 DamageEffect is instant hostile health 108, viral type 2 and function 0 with equal raw endpoints 6. Its legacy 0/0 range carries no usable endpoint. The original GOB selects a hostile at 16 m with selector 3 and the hit radius at the selected centre is 2 m. The narrow shipped influence calculation scales each landed typed health result.",
+          "runtime": "The fixed GOB component supplies 6 before ordinary viral contest, caster damage influence and per-recipient typed mitigation. The target belongs to the original captured spawn and the inclusive radius applies around that target when the cast resolves. An expired resistance record restores the same unmodified damage for a subsequent cast.",
+          "test": "StarterFixedAbilityDamageTests verifies base 6 independent of RNG for the real incomplete CSV row. PR718 stock shows 6 primary and 6 at the inclusive 2.00 m edge, zero at 2.01 m or for an ally, 40 IS and 30 s reuse. PR633 verifies secondary raw 6 / final 5 with a fresh +34 resistance and 6 when that buff had expired. PR766 confirms the six-second cast pays 40 IS and produces no hit or splash if the selected target leaves range before impact. https://github.com/kylebrussell/mxo-hd/pull/718#issuecomment-7072125698 https://github.com/kylebrussell/mxo-hd/pull/633#issuecomment-7059918580 https://github.com/kylebrussell/mxo-hd/pull/766#issuecomment-7082845906"
+        }
+      }
+    }
+  }
+}
