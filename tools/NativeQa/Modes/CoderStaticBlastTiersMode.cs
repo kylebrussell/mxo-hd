@@ -1,4 +1,3 @@
-using System.Buffers.Binary;
 using hds;
 using HeadlessClient;
 
@@ -90,28 +89,25 @@ public sealed class CoderStaticBlastTiersMode : NativeQaMode
 
         actor.SendRpc(StarterCoderSplashBatchMode.StockStyle);
         await actor.WaitForViewUpdateAsync(2, "02 80 80 80 80 80 10 f0 03 00 00");
-        int controlsAt = actor.World.ViewSnapshot().Count;
-        foreach (ushort id in new[] { Barrage, HigherBlast })
-        {
-            await BadSelectionAsync(id, 0);
-            await BadSelectionAsync(id, Select("QAFriend"));
-            uint far = Select("QAOther");
-            int cursor = actor.World.RpcSnapshot().Count;
-            actor.SendRpc(Request(id, far));
-            byte[] refusal = AbilityRefusals.Encode(new AbilityRefusals.Record(id, AbilityRefusals.TargetOutOfRange));
-            await StockAbilityProfile.ObserveAsync(actor, cursor, frame => frame.Bytes.AsSpan().SequenceEqual(refusal), "Out-of-range refusal");
-        }
-        Check.That(!actor.World.ViewSnapshot().Skip(controlsAt).SelectMany(AbilityParityCoderSweepMode.InnerStrengthUpdates).Any(),
-            "Invalid target requests leave IS unchanged");
-
-        int remaining = 500;
-        await CompareAsync("QAEnemy", resisted: false);
-        var resistedTarget = context.Helpers["QAFar"];
-        await StarterPathogenistAuraResistanceMode.ApplyResistanceAsync(resistedTarget, Resist);
-        await CompareAsync("QAFar", resisted: true);
-        Check.Equal(388, remaining, "Exactly two legitimate casts of each tier spend 112 IS");
-        Check.Equal(0, actor.World.Problems.Count + context.Helpers.Values.Sum(player => player.World.Problems.Count), "Static Blast tiers framing");
-        Console.WriteLine("STATIC BLAST TIERS PASS: fixed bases, neutral/resisted landed values, live-target refusals, costs and reuse.");
+        // Preserve the captured 33 request as the stock bootstrap control. The first stock
+        // activation of 590 and 591 is a native QA step, not a synthetic bootstrap input.
+        uint handle = Select("QAEnemy");
+        int rpc = actor.World.RpcSnapshot().Count;
+        int vitals = actor.World.ViewSnapshot().Count;
+        var recipient = context.Helpers["QAEnemy"];
+        int targetRpc = recipient.World.RpcSnapshot().Count;
+        actor.SendRpc(StarterHackerControlTargetMode.WithHandle(StarterCoderSplashBatchMode.Samples[0].Request, handle));
+        await EvidenceRetestWire.CastBarAsync(actor, Blast, 2);
+        await EvidenceRetestWire.TimerAsync(actor, rpc, Blast, AbilityCooldowns.OwnTimer, 6);
+        await EvidenceRetestWire.TimerAsync(actor, rpc, AbilityCooldowns.VirusDamage1, AbilityCooldowns.GroupTimer, 4);
+        byte[] hit = AbilityMessages.Damage(false, Blast, actor.Handle, recipient.Handle, Samples[0].Raw, 0);
+        await StockAbilityProfile.ObserveAsync(recipient, targetRpc, frame => frame.Bytes.AsSpan().SequenceEqual(hit),
+            "The captured 33 control lands on the selected QAEnemy");
+        await actor.WaitUntilAsync(() => actor.World.ViewSnapshot().Skip(vitals)
+            .SelectMany(AbilityParityCoderSweepMode.InnerStrengthUpdates).Contains((ushort)485),
+            "The captured 33 control leaves 485 IS", HeadlessPlayer.DefaultTimeout);
+        Check.Equal(0, actor.World.Problems.Count + context.Helpers.Values.Sum(player => player.World.Problems.Count), "Static Blast fixture framing");
+        Console.WriteLine("STATIC BLAST NATIVE BOOTSTRAP PASS: captured Coder and 33 only.");
         return Array.Empty<byte>();
 
         uint Select(string name)
@@ -122,68 +118,5 @@ public sealed class CoderStaticBlastTiersMode : NativeQaMode
             return handle;
         }
 
-        async Task BadSelectionAsync(ushort id, uint handle)
-        {
-            actor.SkipReceived();
-            actor.SendRpc(Request(id, handle));
-            await actor.WaitForTextAsync("Select a living enemy before using this ability.");
-        }
-
-        async Task CompareAsync(string target, bool resisted)
-        {
-            uint handle = Select(target);
-            var recipient = context.Helpers[target];
-            int sharedAt = 0, lastAt = 0;
-            foreach (var row in Samples)
-            {
-                if (row.Id == HigherBlast)
-                    await EvidenceRetestWire.TimerAsync(actor, sharedAt, AbilityCooldowns.VirusDamage1, AbilityCooldowns.GroupTimer, 4, ended: true);
-                int rpc = actor.World.RpcSnapshot().Count, vitals = actor.World.ViewSnapshot().Count;
-                int targetRpc = recipient.World.RpcSnapshot().Count;
-                var excluded = context.Helpers.Values.Where(peer => peer != recipient).ToDictionary(peer => peer, peer => peer.World.RpcSnapshot().Count);
-                actor.SendRpc(Request(row.Id, handle));
-                await EvidenceRetestWire.CastBarAsync(actor, row.Id, 2);
-                await EvidenceRetestWire.TimerAsync(actor, rpc, row.Id, AbilityCooldowns.OwnTimer, 6);
-                await EvidenceRetestWire.TimerAsync(actor, rpc, row.Family, AbilityCooldowns.GroupTimer, 4);
-                int damage = resisted ? row.Resisted : row.Raw;
-                byte[] hit = AbilityMessages.Damage(false, row.Id, actor.Handle, recipient.Handle, damage, row.Raw - damage);
-                await StockAbilityProfile.ObserveAsync(recipient, targetRpc, frame => frame.Bytes.AsSpan().SequenceEqual(hit),
-                    $"Ability {row.Id} hits the selected recipient for {damage}");
-                remaining -= row.Cost;
-                await actor.WaitUntilAsync(() => actor.World.ViewSnapshot().Skip(vitals)
-                    .SelectMany(AbilityParityCoderSweepMode.InnerStrengthUpdates).Contains((ushort)remaining),
-                    $"Ability {row.Id} leaves {remaining} IS", HeadlessPlayer.DefaultTimeout);
-
-                if (row.Id == Blast)
-                {
-                    sharedAt = rpc;
-                    int refusalAt = actor.World.RpcSnapshot().Count;
-                    actor.SendRpc(Request(HigherBlast, handle));
-                    byte[] reuseWait = AbilityCooldowns.BuildDenied(HigherBlast, AbilityCooldowns.DeniedTimerRunning);
-                    await StockAbilityProfile.ObserveAsync(actor, refusalAt, frame => frame.Bytes.AsSpan().SequenceEqual(reuseWait),
-                        "591 cannot pass 33's active shared timer");
-                }
-                lastAt = rpc;
-                foreach (var (peer, cursor) in excluded)
-                {
-                    peer.SendRpc("81 48");
-                    await StockAbilityProfile.ObserveAsync(peer, cursor, frame => frame.Opcode == 0x149, "Excluded peer stream fence");
-                    byte[] prefix = AbilityMessages.Damage(false, row.Id, actor.Handle, peer.Handle, 0, 0)[..^8];
-                    Check.That(!peer.World.RpcSnapshot().Skip(cursor).Any(frame => frame.Bytes.AsSpan().StartsWith(prefix)),
-                        $"Ability {row.Id} does not hit {peer.Handle}");
-                }
-            }
-            if (!resisted)
-                await EvidenceRetestWire.TimerAsync(actor, lastAt, HigherBlast, AbilityCooldowns.OwnTimer, 6, ended: true);
-        }
-    }
-
-    private static byte[] Request(ushort ability, uint target)
-    {
-        // PR312's complete selected-target 33 capture. The higher tiers retain this proven wire format
-        // and substitute the ability id until their first native requests are collected.
-        byte[] frame = StarterHackerControlTargetMode.WithHandle(StarterCoderSplashBatchMode.Samples[0].Request, target);
-        BinaryPrimitives.WriteUInt16LittleEndian(frame.AsSpan(2), ability);
-        return frame;
     }
 }

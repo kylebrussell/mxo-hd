@@ -36,6 +36,11 @@ public static partial class Scenarios
         new Scenario("world-npc-corner-chase",WorldNpcCornerChase,WorldNpcCornerFixture.Environment),
         new Scenario("world-npc-corner-stationary", WorldNpcCornerStationary, WorldNpcCornerFixture.StationaryEnvironment),
         new Scenario("viral-accuracy-bonus",ViralAccuracyBonus,ViralAccuracyBonusEnvironment()),
+        new Scenario("coder-static-blast-tiers-server", CoderStaticBlastTiersServer, new Dictionary<string, string>(StillNpcs)
+        {
+            ["MXO_DEV_COMMANDS"] = "1", ["MXO_PVP_SERVER"] = "1", ["MXO_PVP_MAX_SAFE_LEVEL"] = "15",
+            ["MXO_FREECAST_VIRAL_QA"] = "1", ["MXO_FREECAST_VIRAL_QA_ATTACK15"] = "32766", ["MXO_FREECAST_VIRAL_QA_DEFENSE15"] = "0"
+        }),
         new Scenario("machines-disturbing-trends",MachinesDisturbingTrends,new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="1",["MXO_MISSION_SITE_QA_SEED"]="201101",["MXO_PACKET_LOG"]="1"}),
         new Scenario("invisibility-duration",InvisibilityDuration,InvisibilityDurationFixture.Environment),
         new Scenario("engage-foes-taunt",EngageFoesTaunt,EngageFoesFixture.Environment),
