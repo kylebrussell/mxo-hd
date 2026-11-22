@@ -284,7 +284,7 @@ def server(i):
     elif i == 504:
         parts.append('stored fixed ballistic base 22 with incomplete legacy endpoints; stock landed 23 after fixture-assisted Concealment; armor piercing unresolved')
     elif i == 694:
-        parts.append('Static Field pulse: stored base 1 viral damage with target typed resistance; native reapplication hit/deflect predicate unresolved')
+        parts.append('Static Field pulse: caster-centred 6 m hostile selector; each eligible recipient rolls the stored viral test before one-point damage and typed resistance')
     elif r['direct_damage'] and not r.get('health_callback') and i not in PETS:
         starter_base = {126: 'ballistic 11', 138: 'physical 36', 139: 'physical 12'}.get(i)
         if starter_base is not None:
