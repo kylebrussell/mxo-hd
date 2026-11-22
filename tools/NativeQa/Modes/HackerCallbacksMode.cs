@@ -19,9 +19,12 @@ public sealed class HackerCallbacksMode : NativeQaMode
         (380, "Deflect Bullets 1.0", "self/team: ballistic and thrown defense, concentration +10, delayed FX")
     };
 
+    private static readonly ushort[] Loadout = StockAbilityProfile.Profile(new ushort[] { 2, 17 }
+        .Concat(Cases.Select(entry => entry.Id)).ToArray()).Order().ToArray();
+
     public override string Name => "hacker-callbacks";
     public override NativeQaModePlan Plan { get; } = new(
-        new ushort[] { 2, 17 }.Concat(Cases.Select(entry => entry.Id)).ToArray(), 24699, -1498,
+        Loadout, 24699, -1498,
         Array.Empty<string>(), Array.Empty<string>(),
         new[] { "UPDATE characters SET y=495,healthC=5000,healthM=5000,innerStrC=2000,innerStrM=2000 WHERE charId IN (110,6111)" },
         Bootstrap: "hacker-callbacks-stock-world-entry",
@@ -32,6 +35,7 @@ public sealed class HackerCallbacksMode : NativeQaMode
 
     public override async Task<byte[]> AfterStartAsync(NativeQaBootstrapContext context)
     {
+        Check.That(Loadout.Sum(AbilityMemory.Cost) <= AbilityMemory.ForLevel(50), "The Hacker callbacks profile fits memory");
         var probe = await HeadlessPlayer.LoginAsync(context.Address, "QAFriend", "QAFriend");
         context.Helpers.Add("QAFriend", probe);
         await probe.EnterWorldAsync(); // stock 05 / 0c 01; verify target availability without casting from the probe

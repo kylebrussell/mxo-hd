@@ -49,7 +49,8 @@ namespace hds
             bool selectedViralAreaCast = AbilityID == 475 || AbilityID == 399 || AbilityID == 400 || AbilityID == 404 || AbilityID == 466;
 
             bool starterTargetedControl = AbilityID == 43 || AbilityID == 48;
-            bool needsLoadout = starterTargetedControl || AbilityID == 69 || AbilityID == AbilityAuras.CombatAuraTwo;
+            bool friendlyAura = AbilityAuras.Friendly(AbilityID);
+            bool needsLoadout = starterTargetedControl || AbilityID == 69 || friendlyAura;
             if (!CoderPets.IsCastLoaded(Store.currentClient, AbilityID) ||
                 ((needsLoadout || CoderPets.StarterSummonRequiresLoaded(AbilityID)) &&
                     !AbilityPassives.IsLoaded(Store.currentClient, AbilityID)))
@@ -1217,9 +1218,11 @@ namespace hds
                     else
                         AbilitySupport.Land(client, AbilityID, currentTargetViewId, spawn: targetSpawn);
                 }
-                if (AbilityAuras.Handles(AbilityID)) AbilityAuras.Start(client, AbilityID);
+                if (friendlyAura && (normalCast.UnloadedDuringCast || !AbilityPassives.IsLoaded(client, AbilityID)))
+                    Output.WriteDebugLog($"[ABILITY] {AbilityID} fizzles: the aura was unloaded during the cast");
+                else if (AbilityAuras.Handles(AbilityID)) AbilityAuras.Start(client, AbilityID);
                 if (derez) CoderPets.Derez(client, enemyPet, currentTargetViewId, targetSpawn);
-                if (pet) CoderPets.Land(client, AbilityID, ownPet, normalCast.SummonUnloaded);
+                if (pet) CoderPets.Land(client, AbilityID, ownPet, normalCast.UnloadedDuringCast);
                 if (AbilityID == AbilityEmpBlast.Ability) AbilityEmpBlast.Land(client);
                 if (UtilityAbilities.Handles(AbilityID)) UtilityAbilities.Land(client, AbilityID, currentTargetViewId, locatorSlot, selectedLocator, recallRecipient);
                 if (CombatSpecials.ActsOnCast(AbilityID)) CombatSpecials.CastTaunt(client);

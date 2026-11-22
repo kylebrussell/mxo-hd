@@ -17,7 +17,7 @@ namespace hds
             internal ushort Ability; internal double End; internal float Seconds;
             internal int World,Life; internal long Generation; internal bool Completed;
             internal Action Landing;
-            internal bool SummonUnloaded;
+            internal bool UnloadedDuringCast;
         }
         // A separate immutable reference keeps ownership distinct from a later cast with equal timestamps.
         public static Cast Begin(WorldClient client,ushort ability,float seconds)
@@ -73,12 +73,13 @@ namespace hds
             }
         }
 
-        internal static void NoteUnloadedSummon(WorldClient client, HashSet<ushort> remainingMembership)
+        internal static void NoteUnloadedAbility(WorldClient client, HashSet<ushort> remainingMembership)
         {
             // Archive commits and cast completion already share craftingSync.
             if (states.TryGetValue(client, out var state) && state.Current is { } cast &&
-                CoderPets.StarterSummonRequiresLoaded(cast.Ability) && !remainingMembership.Contains(cast.Ability))
-                cast.SummonUnloaded = true;
+                (CoderPets.StarterSummonRequiresLoaded(cast.Ability) || AbilityAuras.Friendly(cast.Ability)) &&
+                !remainingMembership.Contains(cast.Ability))
+                cast.UnloadedDuringCast = true;
         }
         public static bool KnownInterruptible(ushort ability) => AbilityCatalog.Find(ability)?.Number("Ability/IsInterruptable",-1)==1;
 

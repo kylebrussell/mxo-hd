@@ -188,6 +188,7 @@ public static partial class Scenarios
         new Scenario("reactive-code-area-deflection", context => ReactiveCodeNeutralArea(context, 50, hits: false), ReactiveCodeAreaEnvironment(0, hits: false)),
         new Scenario("ability-health-deflect-lineup", HealthDeflectLineup, FreeCastViralLandingEnvironment(HealthCallbackNpcs)),
         new Scenario("deflect-bullets-child-radius", DeflectBulletsChildRadius, StillNpcs),
+        new Scenario("friendly-aura-loadout", FriendlyAuraLoadout, StillNpcs),
         new Scenario("ability-health-lineup-timings", HealthLineupTimings, HealthCallbackNpcs),
         new Scenario("typed-special-queued", TypedSpecialQueued, StillNpcs),
         new Scenario("typed-special-defense", TypedSpecialDefense, StillNpcs),
