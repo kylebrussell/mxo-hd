@@ -10,6 +10,7 @@ namespace hds
         private const int ResistSeconds = 1800;
         private const int SightX = 22700, SightY = 1095, SightZ = 16100, BlockedX = 21700, ClearX = 22900;
         private const int PickX = 21550, TestTargetX = 21750, TestCastX = 22350, GunFarX = 19600, TestZ = 16150;
+        private const int DebuffDeflectZ = 16350;
 
         internal static string Setup(WorldClient caller, string mode)
         {
@@ -62,6 +63,20 @@ namespace hds
                 Spawn("QA Sight Target", TestTargetX, SightY, TestZ);
                 if (mode == "sight-pick")
                 {
+                    if (Environment.GetEnvironmentVariable("MXO_HACKER_DEBUFF_QA") == "1")
+                    {
+                        if (!NavMesh.Locate(1, TestTargetX, SightY, DebuffDeflectZ, out var deflectStand) ||
+                            deflectStand.indoors || Math.Abs(deflectStand.floorY + 95 - SightY) > 1 ||
+                            !NavMesh.HasSightPath(1, PickX, SightY, TestZ, TestTargetX, SightY, DebuffDeflectZ))
+                            return "Hacker debuff fixture refused: no clear deflect target stand.";
+                        var deflect = Spawn("QA Deflect Target", TestTargetX, SightY, DebuffDeflectZ, level: 26);
+                        TimedEffects.Apply(TimedEffects.ForMob(deflect), new TempMods.Effect
+                        {
+                            Ability = 23,
+                            Mods = new[] { new TempMods.Mod { Kind = TempMods.KindStat, Proc = TempMods.Proc.Stat,
+                                Target = 183, MinValue = 250, MaxValue = 250, Seconds = ResistSeconds } }
+                        }, TimeUtils.GetSimTimeSeconds());
+                    }
                     Move(caller, PickX, SightY, TestZ, yaw: 64);
                     return $"Hacker sight picking stand {PickX},{SightY},{TestZ}. Select QA Sight Target 2 m ahead, then move to the blocked cast stand.";
                 }
@@ -93,6 +108,14 @@ namespace hds
                 Spawn("Viral Neutral", 25200, 495, -1498, level);
                 SeedViralResistance(Spawn("Viral Resisted", 25120, 495, -1618, level));
                 return $"Viral fixture ready. Level-{level} targets are within Tinkering's two-metre splash.";
+            }
+            if (mode == "code-infection" && Environment.GetEnvironmentVariable("MXO_CODE_INFECTION_QA") == "1")
+            {
+                ushort level = caller.playerInstance.Level.getValue()[0];
+                Move(caller, 17000, 495, 6400, yaw: 64);
+                Spawn("QA Infection Neutral", 17400, 495, 6400, level);
+                SeedViralResistance(Spawn("QA Infection Resisted", 17300, 495, 6600, level));
+                return "Code Infection targets ready on the open street. QA Infection Neutral is 4 m east and QA Infection Resisted is diagonally east with +75 Viral Resistance.";
             }
             return "Use ?combatdepth foundations-sight, foundations-cone or foundations-detonate.";
         }
