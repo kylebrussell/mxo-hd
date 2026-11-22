@@ -6,7 +6,7 @@ namespace NativeQa.Modes;
 
 public sealed class StarterMeleeSelectedOpponentMode : NativeQaMode
 {
-    private const int Level = 35, Rank = 19, X = 17000, Y = 495, Z = 2300, DummyX = 17200;
+    private const int Level = 35, Rank = 19, X = 17000, Y = 495, Z = 2300, DummyX = 17200, OtherZ = 2600;
     private const ushort LowBlow = 605, OverhandSmash = 145, CheapShot = 198;
 
     // PR405 stock PacketLog 8745737faaee lines 1190Ã¢â‚¬â€œ1191.
@@ -30,7 +30,8 @@ public sealed class StarterMeleeSelectedOpponentMode : NativeQaMode
         $"UPDATE characters SET level={Level},exp={PlayerProgression.ExperienceForLevel(Level)},y={Y},rotation=64," +
             "healthC=5000,healthM=5000,innerStrC=500,innerStrM=1000 WHERE charId=110",
         $"UPDATE char_abilities SET level=LEAST(level,{Rank}) WHERE char_id=110",
-        $"DELETE FROM inventory WHERE charId=110 AND slot={CombatFixtureWeapons.HandSlot}"
+        $"DELETE FROM inventory WHERE charId=110 AND slot={CombatFixtureWeapons.HandSlot}",
+        $"UPDATE characters SET level={Level},x={X},y={Y},z={OtherZ},alignment=2,pvpflag=1 WHERE charId=6113"
     }, DevCommands: true, hotbarAbilities: Samples.SelectMany(sample => new[] { sample.Style, sample.Id }).ToArray(),
         hotbarWithdraw: true, testMobFixture: "awakened-power-shot-cap.csv",
         environmentOverrides: new() { ["MXO_AGGRO"] = "0", ["MXO_MOB_WANDER"] = "0" },
@@ -53,6 +54,12 @@ public sealed class StarterMeleeSelectedOpponentMode : NativeQaMode
                 $"Melee stand {x},{Y},{Z} is on outdoor NAV");
         Check.That(NavMesh.HasSightPath(1, X, Y, Z, DummyX, Y, Z), "The dummy is visible across the outdoor stand");
         if (context.StockProbe is not { } actor) return Array.Empty<byte>();
+        Check.That(NavMesh.Locate(1, X, Y, OtherZ, out var otherStand) && !otherStand.indoors &&
+            Math.Abs(otherStand.floorY + 95 - Y) < 1 && NavMesh.HasSightPath(1, X, Y, Z, X, Y, OtherZ),
+            "The other selectable player stands on visible outdoor NAV");
+        var other = await HeadlessPlayer.LoginAsync(context.Address, "QAOther", "QAOther", stockCharacterLoad: true);
+        context.Helpers.Add(other.Handle, other);
+        await other.EnterWorldAsync();
 
         var archive = AbilityMemoryUiFixture.Decode(actor.CharacterData[6]).Where(row => AbilityMemory.IsAbility(row.Descriptor))
             .ToDictionary(row => AbilityCatalog.IdOf(row.Descriptor));
@@ -62,6 +69,9 @@ public sealed class StarterMeleeSelectedOpponentMode : NativeQaMode
         var server = context.ActualServer!;
         await actor.EnterWorldAsync();
         NativeQaReadiness.RequireNoAmbientAggro(server, actor);
+        var otherView = await actor.WaitForViewNamedAsync(other.Handle);
+        uint otherHandle = DuelPackets.Handle(otherView.ViewId, otherView.SpawnId);
+        Check.That(otherView.ViewId > 2, "The other player has a live selectable view");
         var dummy = await actor.WaitForViewNamedAsync(CombatFixtureLoadout.DummyName);
         CombatFixtureLoadout.AssertDummy(actor, dummy);
         uint handle = DuelPackets.Handle(dummy.ViewId, dummy.SpawnId);
@@ -82,6 +92,11 @@ public sealed class StarterMeleeSelectedOpponentMode : NativeQaMode
                 $"Style {sample.Style} selected", HeadlessPlayer.DefaultTimeout);
 
             await RefusedAsync(actor, sample.Id, WithHandle(sample.Use, handle ^ 0x10000));
+            if (sample.Id == OverhandSmash)
+            {
+                await RefusedAsync(actor, sample.Id, WithHandle(sample.Use, 0));
+                await RefusedAsync(actor, sample.Id, WithHandle(sample.Use, otherHandle));
+            }
             int timerStart = actor.World.RpcSnapshot().Count;
             int logStart = server.DebugLog().Length;
             actor.SendRpc(WithHandle(sample.Use, handle));
