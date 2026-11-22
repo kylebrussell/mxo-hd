@@ -1,0 +1,23 @@
+{
+  "abilities": {
+    "485": {
+      "checks": {
+        "area": {
+          "source": "GOB 485 calls ApplyAuraEffect with child 696, whose CastDirectObjects 9, RadiusOfEffect 6 and DoesNOTRequireLOS 1 specify a caster-centred team pulse.",
+          "runtime": "AbilityAuras.Pulse passes child 696 to AbilitySupport.Land. AbilitySupport.Targets applies the child's radius to live same-district team members and the caster on every pulse.",
+          "test": "CombatAura696UsesTheChildRadiusOnEveryPulse covers 6.00 m inclusion, 6.01 m exclusion, membership, the downed teammate, and recalculation after swapping the two edge players. PR320 observed the real parent cast, repeated 696 and clean toggle-off. https://github.com/kylebrussell/mxo-hd/pull/320#issuecomment-6999754005"
+        }
+      }
+    },
+    "696": {
+      "family": "hacker-pulse-auras",
+      "checks": {
+        "area": {
+          "source": "GOB 696 stores a 6 metre, sight-independent team radius and 5 second function-3 melee and ballistic damage modifiers.",
+          "runtime": "The real 485 pulse lands 696 through AbilitySupport.Targets. Each accepted player owns a separate child lifetime; the typed melee and ballistic damage consumers read its snapshot.",
+          "test": "CombatAura696UsesTheChildRadiusOnEveryPulse proves the 6.00/6.01 m edge, recomputation on later pulses, both damage consumers, no outsider or downed recipient, and the last child expiry after toggle-off. The stock Actions activation in PR320 logged 696 refresh and toggle-off; the exact replay is hacker-callbacks. https://github.com/kylebrussell/mxo-hd/pull/320#issuecomment-6999754005"
+        }
+      }
+    }
+  }
+}

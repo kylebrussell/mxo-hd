@@ -2,6 +2,7 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using hds;
 using hds.shared;
+using hds.world.Structures;
 
 namespace hds.Tests;
 
@@ -61,6 +62,76 @@ public class HackerBatchBParityTests
         TimedEffects.RunDue(active.Started + 5.01);
         Assert.Equal(100, AbilityStats.ScaleTypedAbilityDamage(member, 0, 100));
         Assert.Equal(100, AbilityStats.ScaleTypedAbilityDamage(member, 1, 100));
+    }
+
+    [Fact]
+    public void CombatAura696UsesTheChildRadiusOnEveryPulse()
+    {
+        var caster = Client(50);
+        var edge = Client(30);
+        var beyond = Client(30);
+        var outsider = Client();
+        var downed = Client();
+        var previous = WorldServer.Clients;
+        var players = new Dictionary<string, WorldClient>
+        {
+            ["caster"] = caster, ["edge"] = edge, ["beyond"] = beyond,
+            ["outsider"] = outsider, ["downed"] = downed
+        };
+        uint nextId = 7090;
+        foreach (var player in players.Values)
+        {
+            player.playerData.setCharID(nextId++);
+            player.playerData.setOnWorld(true);
+        }
+        caster.LivenessClock = () => 0;
+        typeof(WorldClient).GetField("alive", BindingFlags.NonPublic | BindingFlags.Instance)!.SetValue(caster, true);
+        typeof(WorldClient).GetField("<TransportFence>k__BackingField", BindingFlags.NonPublic | BindingFlags.Instance)!
+            .SetValue(caster, new WorldSendFence());
+        edge.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(600, 495, 0));
+        beyond.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(0, 495, 601));
+        outsider.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(150, 495, 0));
+        downed.playerData.isDead = true;
+        var team = SocialGroups.Instance.CreateTeam(caster.playerData.getCharID(), "caster");
+        try
+        {
+            WorldServer.Clients = players;
+            SocialGroups.Instance.AddTeamMember(team.Id, edge.playerData.getCharID(), "edge");
+            SocialGroups.Instance.AddTeamMember(team.Id, beyond.playerData.getCharID(), "beyond");
+            SocialGroups.Instance.AddTeamMember(team.Id, downed.playerData.getCharID(), "downed");
+
+            AbilityAuras.Start(caster, 485);
+            Assert.True(AbilityBuffs.IsActive(caster, 696));
+            Assert.True(AbilityBuffs.IsActive(edge, 696));
+            Assert.False(AbilityBuffs.IsActive(beyond, 696));
+            Assert.False(AbilityBuffs.IsActive(outsider, 696));
+            Assert.False(AbilityBuffs.IsActive(downed, 696));
+            Assert.Equal(125, AbilityStats.ScaleTypedAbilityDamage(edge, 0, 100));
+            Assert.Equal(125, AbilityStats.ScaleTypedAbilityDamage(edge, 1, 100));
+
+            edge.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(601, 495, 0));
+            beyond.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(0, 495, 600));
+            var firstPulse = edge.playerData.activeBuffs[696];
+            AbilityAuras.Tick(caster, 485, 1);
+            Assert.Same(firstPulse, edge.playerData.activeBuffs[696]);
+            Assert.True(AbilityBuffs.IsActive(beyond, 696));
+            Assert.False(AbilityBuffs.IsActive(outsider, 696));
+            Assert.False(AbilityBuffs.IsActive(downed, 696));
+            Assert.Equal(85, AbilityHandler.CurrentInnerStrength(caster));
+
+            AbilityAuras.Stop(caster, 485);
+            Assert.True(AbilityBuffs.IsActive(beyond, 696));
+            var lastPulse = beyond.playerData.activeBuffs[696];
+            TimedEffects.RunDue(lastPulse.Started + 5.01);
+            Assert.All(players.Values, player => Assert.False(AbilityBuffs.IsActive(player, 696)));
+        }
+        finally
+        {
+            AbilityAuras.Clear(caster, announce: false);
+            foreach (var player in players.Values) AbilityBuffs.RemoveAll(player);
+            SocialGroups.Instance.DisbandTeam(team.Id);
+            WorldServer.Clients = previous;
+        }
     }
 
     [Fact]
