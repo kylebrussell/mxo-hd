@@ -1,0 +1,34 @@
+{
+  "abilities": {
+    "38": {
+      "note": "PR764 verifies the caster-centred 8 m radius at level 19 and 8.8 m after the direct 1085/177 bonus. QAOther at 8.40 m is added, while QAFar at 8.81 m receives no contest. Wider retail hit and resistance behavior remains open. https://github.com/kylebrussell/mxo-hd/pull/764#issuecomment-7082717117"
+    },
+    "47": {
+      "note": "PR764 verifies caster-centred 3 to 3.3 m after 1085/177 +10. The extra hostile at 3.20 m receives the same six-second Pacify. https://github.com/kylebrussell/mxo-hd/pull/764#issuecomment-7082717117"
+    },
+    "97": {
+      "note": "PR764 verifies caster-centred 3 to 3.3 m after 1085/177 +10. The extra hostile at 3.20 m receives the same -14 viral accuracy modifier for 27 s. https://github.com/kylebrussell/mxo-hd/pull/764#issuecomment-7082717117"
+    },
+    "1085": {
+      "note": "PR764 verifies the stock grant activation, 20 IS, the 30 s timer, and live +10 to 177, +4 to 342 and +7 to 564. Three different caster-centred abilities use the direct 177 bonus. https://github.com/kylebrussell/mxo-hd/pull/764#issuecomment-7082717117"
+    },
+    "126": {
+      "note": "PR765 confirms stock reason 9 across blocked sight before cast, cost or reuse, with the same target taking 11 for 20 IS from the clear stand and eight-second own reuse. The mid-cast loss of sight is also verified headlessly for Covering Fire. Other contest and effect checks remain open. https://github.com/kylebrussell/mxo-hd/pull/765#issuecomment-7082784229"
+    },
+    "130": {
+      "note": "PR765 confirms stock reason 9 across blocked sight before cast, cost or reuse, with the same target taking 9 for 20 IS from the clear stand and eight-second own reuse. The mid-cast loss of sight is also verified headlessly for Covering Fire. Other contest and effect checks remain open. https://github.com/kylebrussell/mxo-hd/pull/765#issuecomment-7082784229"
+    },
+    "176": {
+      "note": "PR765 confirms stock reason 9 across blocked sight before cast, cost or reuse, with the same target taking 18 for 25 IS from the clear stand and eight-second own reuse. The mid-cast loss of sight is also verified headlessly for Covering Fire. Other contest and effect checks remain open. https://github.com/kylebrussell/mxo-hd/pull/765#issuecomment-7082784229"
+    },
+    "33": {
+      "note": "PR766 stock cast hit only the original in-range enemy for 24 after spending 15 IS and with six-second own reuse. The stock-frame headless companion exercises mid-cast departure for this row, and the unit checks reject a reused view ID with a new spawn. https://github.com/kylebrussell/mxo-hd/pull/766#issuecomment-7082845906"
+    },
+    "36": {
+      "note": "PR766 stock accepted cast spent 20 IS and began 30 s reuse but fizzled without primary or splash after the primary moved from 15 to 17 m. Restoring the same target to range produced 4 damage on each hostile. https://github.com/kylebrussell/mxo-hd/pull/766#issuecomment-7082845906"
+    },
+    "514": {
+      "note": "PR766 stock accepted cast spent 40 IS and began 30 s reuse but fizzled without primary or splash after the primary moved from 15 to 17 m. Restoring the same target to range produced 6 damage on each hostile. https://github.com/kylebrussell/mxo-hd/pull/766#issuecomment-7082845906"
+    }
+  }
+}
