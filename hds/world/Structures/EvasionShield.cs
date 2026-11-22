@@ -108,7 +108,14 @@ namespace hds
         {
             states.Remove(target);
             states.Add(target,new State { Generation=generation,World=target.playerData.worldGeneration,Life=target.playerData.lifeGeneration });
-            Present(target,HasState(target),false);
+            bool on = HasState(target);
+            Present(target, on, false);
+            if (on)
+            {
+                // EvadeCombatInit. evadecombat.txt:75 has both names set to the caster and two zero values.
+                string name = TimedEffects.PlayerName(target);
+                target.messageQueue.addRpcMessage(AbilityMessages.AboutAbility(0x7c0001b9, true, Parent, name, name, 0, 0));
+            }
         }
         internal static void Removed(WorldClient target)
         {
