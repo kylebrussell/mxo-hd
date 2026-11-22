@@ -74,6 +74,22 @@ public class MultifightingInterlockTests : IDisposable
         case "handler":CombatManager.GetHandler(c).pvpFight=null;break;case "removed":s[2].Present=false;break;}
         Assert.Equal(100,Input(f,s[0]));
     }
+    [Theory]
+    [InlineData(696u, -15)]
+    [InlineData(692u, -30)]
+    [InlineData(2498u, -15)]
+    public void PvpInterlockKeepsTheCrowdPenaltyForGunsWithoutAnEdge(uint weapon, int expected)
+    {
+        var (fight, sides) = Group();
+        sides[0].Client.playerInstance.EquippedItemID.setValue(weapon);
+        var penalty = typeof(PvpFight).GetMethod("CloseGunPenalty", Fields)!;
+        var args = new object[] { sides[0], sides[1], fight.CaptureMultifighting() };
+
+        Assert.Equal(expected, penalty.Invoke(fight, args));
+        sides[0].Client.playerData.passives.Loaded[148] = 0;
+        Assert.Equal(0, penalty.Invoke(fight, args));
+    }
+
     [Fact]
     public void SnapshotCannotAdoptRetargetResetUnloadOrNewMembership()
     {

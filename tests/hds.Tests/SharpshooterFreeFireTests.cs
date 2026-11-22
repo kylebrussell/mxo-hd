@@ -28,6 +28,35 @@ public class SharpshooterFreeFireTests
     {Assert.Equal(0,SharpshooterFreeFire.Modifier(weapon,true,1,3,false));Assert.Equal(0,SharpshooterFreeFire.Modifier(weapon,true,20,3,true));}
     [Fact]public void UnknownDistanceDoesNotInventAContactOrModifier()
     {foreach(float m in new[]{float.NaN,float.PositiveInfinity,-1})Assert.Equal(0,SharpshooterFreeFire.Modifier(0x37,false,m,2,false));}
+    [Theory]
+    [InlineData(696u, 2f, false, 0)]
+    [InlineData(696u, 10f, false, 0)]
+    [InlineData(2567u, 2f, true, -15)]
+    [InlineData(8834u, 10f, true, -15)]
+    [InlineData(692u, 2f, true, -30)]
+    [InlineData(692u, 10f, true, 0)]
+    [InlineData(692u, 10f, false, 15)]
+    [InlineData(2498u, 2f, true, -15)]
+    public void FreeFireUsesTheChosenWeaponKindAndPreservesTheCrowdPenalty(uint weapon, float metres, bool crowded, int expected)
+    {
+        var source = Client();
+        var npc = Npc();
+        npc.setXPos(100 + metres * 100);
+        npc.setYPos(495);
+        npc.setZPos(100);
+        if (crowded) npc.setCombatTarget(Client());
+        source.playerInstance.EquippedItemID.setValue(692u);
+
+        var shot = SharpshooterFreeFire.AgainstNpc(source, npc, weapon);
+        Assert.Equal(crowded ? 2 : 1, shot.Opponents);
+        Assert.Equal(100 + expected, shot.AddToAttack(100, weapon));
+
+        source.playerData.passives.Loaded[148] = 0;
+        var loaded = SharpshooterFreeFire.AgainstNpc(source, npc, weapon);
+        int loadedEdge = weapon == 692 && metres > CombatHandler.MeleeReachMetres ? 15 : 0;
+        Assert.Equal(100 + loadedEdge, loaded.AddToAttack(100, weapon));
+    }
+
     [Fact]public void CallbackOnly148UsesLoadedMembershipIncludingLevelZeroAndNormalRemoval()
     {
         var c=Client();Assert.Empty(AbilityPassives.Modifiers(148));Assert.False(AbilityPassives.IsLoaded(c,148));
@@ -43,8 +72,10 @@ public class SharpshooterFreeFireTests
         a.playerData.worldChangePending=true;Assert.Equal(0,SharpshooterFreeFire.NpcOpponents(m,a));m.setIsDead(true);Assert.Equal(0,SharpshooterFreeFire.NpcOpponents(m,b));
     }
     private static void Set(object value,string field,object data)=>value.GetType().GetField(field,BindingFlags.NonPublic|BindingFlags.Instance)!.SetValue(value,data);
-    [Fact]
-    public void OrdinaryNpcGunPairReadsLiveCrowdAndIgnoresStaleMembership()
+    [Theory]
+    [InlineData(692u, -15, -30)]
+    [InlineData(696u, 0, -15)]
+    public void OrdinaryNpcGunPairReadsLiveCrowdAndIgnoresStaleMembership(uint weapon, int single, int crowded)
     {
         var player = Client();
         var helper = Client();
@@ -53,7 +84,7 @@ public class SharpshooterFreeFireTests
         mob.setXPos(300);
         mob.setYPos(495);
         mob.setZPos(100);
-        player.playerInstance.EquippedItemID.setValue(692u);
+        player.playerInstance.EquippedItemID.setValue(weapon);
         var previousClients = WorldServer.Clients;
         WorldServer.Clients = new Dictionary<string, WorldClient>();
         var playerHandler = CombatManager.GetHandler(player);
@@ -68,21 +99,21 @@ public class SharpshooterFreeFireTests
         try
         {
             mob.setCombatTarget(player);
-            AssertInput(-15, 1, loaded: false);
+            AssertInput(single, 1, loaded: false);
             mob.setCombatTarget(helper);
             mob.setCombatTarget(bystander);
             mob.setCombatTarget(player);
-            AssertInput(-30, 2, loaded: false);
+            AssertInput(crowded, 2, loaded: false);
             player.playerData.passives.Loaded[148] = 19;
             AssertInput(0, 2, loaded: true);
             player.playerData.passives.Loaded.Remove(148);
-            AssertInput(-30, 2, loaded: false);
+            AssertInput(crowded, 2, loaded: false);
 
             Set(helperFight, "<IsActive>k__BackingField", false);
-            AssertInput(-15, 1, loaded: false);
+            AssertInput(single, 1, loaded: false);
             Set(helperFight, "<IsActive>k__BackingField", true);
             helper.playerData.worldGeneration++;
-            AssertInput(-15, 1, loaded: false);
+            AssertInput(single, 1, loaded: false);
             mob.setCombatTarget(helper);
             Assert.Null(CombatHandler.NpcInterlockGunAdjustment(playerFight));
             mob.setCombatTarget(player);

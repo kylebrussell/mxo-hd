@@ -695,7 +695,8 @@ namespace hds
 
         private int CloseGunPenalty(Side gunner, Side opponent, MultifightingRound round)
         {
-            byte gun = RangedWeapons.AttackClass(SharpshooterFreeFire.EquippedWeapon(gunner.Client));
+            uint weapon = SharpshooterFreeFire.EquippedWeapon(gunner.Client);
+            byte gun = RangedWeapons.AttackClass(weapon);
             if (gun == 0 || RangedWeapons.IsGun(SharpshooterFreeFire.EquippedWeapon(opponent.Client))) return 0;
             var source = CurrentMember(gunner, round);
             var target = CurrentMember(opponent, round);
@@ -704,7 +705,8 @@ namespace hds
             bool loaded = AbilityPassives.IsLoaded(source.Client, 148);
             if (opponents == 0 || !CurrentMember(target) || !CurrentMember(source)) return 0;
             int modifier = CombatRules.GunAgainstFistsModifier(gun, false, shortRange: true, defenderOpponents: opponents,
-                intoMeleePenaltyNegated: loaded, shortRangePenaltyNegated: loaded);
+                intoMeleePenaltyNegated: loaded, shortRangePenaltyNegated: loaded,
+                shotgun: gun == RangedWeapons.ClassRifle && RangedWeapons.IsShotgun(weapon));
             Output.WriteDebugLog($"[SHARPSHOOTER INTERLOCK] {PvpFlag.Name(source.Client)} loaded148={loaded} attack={modifier} defence={modifier} opponents={opponents}");
             return modifier;
         }

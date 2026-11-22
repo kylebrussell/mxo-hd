@@ -1418,7 +1418,8 @@ namespace hds
             if (!SharpshooterFreeFire.Live(player) || !SharpshooterFreeFire.Live(mob) ||
                 !ReferenceEquals(mob.getCombatTarget(), player) || !ReferenceEquals(session.CurrentNpcOpponent(player), mob) ||
                 !NpcInMeleeReach(session) || RangedWeapons.IsGun(mob.getWeapon())) return null;
-            byte weaponClass = RangedWeapons.AttackClass(SharpshooterFreeFire.EquippedWeapon(player));
+            uint weapon = SharpshooterFreeFire.EquippedWeapon(player);
+            byte weaponClass = RangedWeapons.AttackClass(weapon);
             if (weaponClass == 0) return null;
 
             // Count players with an active link to this NPC, including free fire. Mob membership alone can outlive a session.
@@ -1434,7 +1435,8 @@ namespace hds
 
             bool loaded = AbilityPassives.IsLoaded(player, 148);
             int adjustment = CombatRules.GunAgainstFistsModifier(weaponClass, false, shortRange: true, defenderOpponents: opponents,
-                intoMeleePenaltyNegated: loaded, shortRangePenaltyNegated: loaded);
+                intoMeleePenaltyNegated: loaded, shortRangePenaltyNegated: loaded,
+                shotgun: weaponClass == RangedWeapons.ClassRifle && RangedWeapons.IsShotgun(weapon));
             return (weaponClass, loaded, adjustment, opponents);
         }
 

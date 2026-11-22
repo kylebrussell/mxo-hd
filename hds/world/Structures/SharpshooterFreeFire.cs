@@ -29,11 +29,11 @@ namespace hds
             var entity=m.getEntityId();var death=m.DeathGeneration;var district=m.getDistrict();var instance=m.missionInstance;var phase=m.missionPhase;
             return ()=>Live(m)&&m.getEntityId()==entity&&m.DeathGeneration==death&&m.getDistrict()==district&&m.missionInstance==instance&&m.missionPhase==phase;
         }
-        public static int Modifier(byte gunClass,bool defenderHasGun,float metres,int opponents,bool loaded148)
+        public static int Modifier(byte gunClass,bool defenderHasGun,float metres,int opponents,bool loaded148,bool shotgun=false)
         {
             if(!float.IsFinite(metres)||metres<0)return 0;
             return CombatRules.GunAgainstFistsModifier(gunClass,defenderHasGun,CombatHandler.InMeleeReach(metres),opponents,
-                intoMeleePenaltyNegated:loaded148,shortRangePenaltyNegated:loaded148);
+                intoMeleePenaltyNegated:loaded148,shortRangePenaltyNegated:loaded148,shotgun:shotgun);
         }
         internal static int NpcOpponents(Mob target,WorldClient currentShooter)
         {
@@ -95,7 +95,9 @@ namespace hds
                 if(actualWeapon!=weapon||!validAtCapture||!current()||defenderWeapon()!=targetWeapon||
                     (player!=null&&AbilityPassives.IsLoaded(player,148))!=loaded)return existing;
                 float metres=distance();bool gun=RangedWeapons.IsGun(targetWeapon);
-                int modifier=Modifier(RangedWeapons.AttackClass(weapon),gun,metres,Opponents,loaded);
+                byte gunClass = RangedWeapons.AttackClass(weapon);
+                int modifier = Modifier(gunClass, gun, metres, Opponents, loaded,
+                    shotgun: gunClass == RangedWeapons.ClassRifle && RangedWeapons.IsShotgun(weapon));
                 Output.WriteDebugLog($"[SHARPSHOOTER OURS] actor={actor} class{RangedWeapons.AttackClass(weapon)} defenderGun{gun} metres{metres:F3} opponents{Opponents} countSampled{CountSampled} loaded148{loaded} modifier{modifier} attackBonus{existing}->{existing+modifier}");
                 return existing+modifier;
             }

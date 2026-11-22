@@ -266,14 +266,15 @@ namespace hds
         /// opponent costs 15 more (unless negated).
         /// </summary>
         public static int GunAgainstFistsModifier(byte attackerGunClass, bool defenderHasGun, bool shortRange, int defenderOpponents,
-            bool intoMeleePenaltyNegated = false, bool shortRangePenaltyNegated = false, bool meleeAtRangePenaltyNegated = false)
+            bool intoMeleePenaltyNegated = false, bool shortRangePenaltyNegated = false, bool meleeAtRangePenaltyNegated = false,
+            bool shotgun = false)
         {
             if (attackerGunClass == 0 || defenderHasGun)
             {
                 return 0;
             }
             int baseModifier = defenderOpponents > 1 && !intoMeleePenaltyNegated ? -15 : 0;
-            int edge = GunEdge(attackerGunClass);
+            int edge = shotgun ? 0 : GunEdge(attackerGunClass);
             if (shortRange)
             {
                 return shortRangePenaltyNegated ? baseModifier : baseModifier - edge;
