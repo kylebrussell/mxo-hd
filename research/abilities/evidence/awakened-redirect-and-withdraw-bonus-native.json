@@ -1,0 +1,22 @@
+{
+  "abilities": {
+    "11": {
+      "checks": {
+        "behavior-tests": {
+          "source": "GOB 11 supplies the rank-scaled Super Jump 567 record and 20 IS cost. The retained native caller uses 567 to choose ground and peak. The captured Wan Chai C2/C4 pair establishes that an airborne full-peak redirect keeps the original travel deadline within the observed adjustment and carries exact selected landing coordinates.",
+          "runtime": "AbilityPassives publishes and removes the rank bonus. The server accepts the client-chosen route, schedules short and travelling arcs, debits accepted Hyper-Jumps once, ignores takeoff-only C4 reports, and redirects a live full-peak flight with the original deadline, exact requested coordinates and unchanged IS. Airborne interpolation is a server estimate.",
+          "test": "JumpRecordTests and the AwakenedJumpRankRangeMode stock replays check raw start and cancel framing, ordinary Space cost, shortfalls, rank range, deadline and scope boundaries. Stock PR658 verifies unload gating and reload, PR689 verifies rank-dependent landings, PR705 and PR707 verify short, long and forward arcs, PR711 verifies fixed cost under Efficiency, and PR715 drives the saved redirect through the normal handler during a stock-started flight and observes the return landing, original deadline, one debit and one echo. https://github.com/kylebrussell/mxo-hd/pull/658#issuecomment-7063310107 https://github.com/kylebrussell/mxo-hd/pull/689#issuecomment-7069839925 https://github.com/kylebrussell/mxo-hd/pull/705#issuecomment-7070599974 https://github.com/kylebrussell/mxo-hd/pull/707#issuecomment-7071074425 https://github.com/kylebrussell/mxo-hd/pull/711#issuecomment-7071258222 https://github.com/kylebrussell/mxo-hd/pull/715#issuecomment-7071708147"
+        }
+      }
+    },
+    "76": {
+      "note": "PR714 verifies 1045 +4 on the stock Status panel as part of the separate +6% Contested Withdraw Bonus. It leaves the +25-point direct Status entry and the implemented withdrawal input fixed when unloaded and restored with 83 and 98. The authoritative retail linked consumer remains open. https://github.com/kylebrussell/mxo-hd/pull/714#issuecomment-7071669266"
+    },
+    "83": {
+      "note": "PR714 isolates the 1045 lifecycle from direct ordinary Withdraw. The stock bonus row tracks the three passives at +6%, removed, then +6%. Row 83's +1 is distinct from the +25-point direct Status entry. https://github.com/kylebrussell/mxo-hd/pull/714#issuecomment-7071669266"
+    },
+    "98": {
+      "note": "PR714 verifies the stock +1 1045 record and separate +6% aggregate alongside 76 and 83. The direct +25-point entry and current Withdraw input stay fixed across unload and reload. This closes the Status presentation comparison. The retail gameplay link remains open. https://github.com/kylebrussell/mxo-hd/pull/714#issuecomment-7071669266"
+    }
+  }
+}
