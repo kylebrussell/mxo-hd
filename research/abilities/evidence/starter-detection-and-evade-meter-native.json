@@ -1,0 +1,22 @@
+{
+  "abilities": {
+    "298": {
+      "checks": {
+        "script": {
+          "source": "Detection_Test rolls 0–99 plus current Detect. Detection_DirectObject tests ordinary Disguise or Invisibility, compares strictly to 50 + 8×duration + 4×rank, and removes ordinary or imparted invisibility on success. NPC Detection 627 and NPC admin disguise have different callbacks.",
+          "runtime": "ConcealmentDetection uses one roll for qualifying caster-area opponents, ends the matching stealth generation and sends the counter effect.",
+          "test": "PR720 and its stock-frame replay verify the Countermeasure, 5 IS, 10 s reuse, counter FX, both hostile invisibility forms, ally exclusion and retained Shadow. PR668 confirms ordinary Disguise restoration and PR686 confirms the facing-independent 12 m boundary. https://github.com/kylebrussell/mxo-hd/pull/720#issuecomment-7072619758 https://github.com/kylebrussell/mxo-hd/pull/668#issuecomment-7064793307 https://github.com/kylebrussell/mxo-hd/pull/686#issuecomment-7067494677"
+        },
+        "behavior-tests": {
+          "source": "Detection_Test rolls 0–99 plus current Detect. Detection_DirectObject tests ordinary Disguise or Invisibility, compares strictly to 50 + 8×duration + 4×rank, and removes ordinary or imparted invisibility on success. NPC Detection 627 and NPC admin disguise have different callbacks.",
+          "runtime": "ConcealmentDetection uses one roll for qualifying caster-area opponents, ends the matching stealth generation and sends the counter effect.",
+          "test": "PR720 and its stock-frame replay verify the Countermeasure, 5 IS, 10 s reuse, counter FX, both hostile invisibility forms, ally exclusion and retained Shadow. PR668 confirms ordinary Disguise restoration and PR686 confirms the facing-independent 12 m boundary. https://github.com/kylebrussell/mxo-hd/pull/720#issuecomment-7072619758 https://github.com/kylebrussell/mxo-hd/pull/668#issuecomment-7064793307 https://github.com/kylebrussell/mxo-hd/pull/686#issuecomment-7067494677"
+        }
+      }
+    }
+  },
+  "notes": {
+    "76": "PR721 verifies stat 1049 +2 changes the current entry score 114→112→114 as 76 unloads and reloads, while meter damage stays 36. The 1030 +4 and 1045 +4 records also round-trip. https://github.com/kylebrussell/mxo-hd/pull/721#issuecomment-7072664857",
+    "217": "PR721 verifies 255→163→71→0, 10 IS per resisted entry, 30 s reuse when the final refused attempt breaks the shield, and admission on the fourth attempt. The exact retail predicate, internal pool and force-bonus input remain open. https://github.com/kylebrussell/mxo-hd/pull/721#issuecomment-7072664857"
+  }
+}
