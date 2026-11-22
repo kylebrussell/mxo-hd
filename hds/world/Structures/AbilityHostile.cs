@@ -65,9 +65,10 @@ namespace hds
         /// <summary>One modifier of a hostile template as a tempmod, or null when it is not a numeric/DOT/buffer modifier.</summary>
         public static TempMods.Mod ModOf(ushort ability, AbilityCatalog.Modifier m)
         {
-            // Code Freeze 1.0 gives Force Combat an explicit lifetime matching its root, with DurationType omitted.
-            bool freezeForce = ability == 40 && m.Target == 519 && !m.Has("DurationType") && m.Number("Duration") > 0;
-            if (m.Number("WhenEnabled", -1) != 2 || m.State != 0 || (!Timed(m) && !freezeForce)) return null;
+            // Code Freeze and Crash give Force Combat the same explicit lifetime as their other movement effects.
+            bool forceWithLifetime = (ability == 40 || ability == 396) && m.Target == 519 &&
+                !m.Has("DurationType") && m.Number("Duration") > 0;
+            if (m.Number("WhenEnabled", -1) != 2 || m.State != 0 || (!Timed(m) && !forceWithLifetime)) return null;
             if(AbilitySeverArteryStates.Modifier(ability,m))return new TempMods.Mod { Kind=TempMods.KindFx,Target=710,MinValue=10,MaxValue=10,Seconds=30,Interval=2.5,Proc=TempMods.Proc.SeverState };
             float seconds = (float)m.Number("Duration");
             int value = (int)m.Number("MinValue");

@@ -180,6 +180,7 @@ public class AbilityRefusalFeedbackTests:IDisposable
     [InlineData(392, true)]
     [InlineData(394, false)]
     [InlineData(395, true)]
+    [InlineData(396, true)]
     public void StarterViralDebuffRequiresTheOriginalHostileSpawnAtLanding(ushort id, bool replaceSpawn)
     {
         var caster = Client();

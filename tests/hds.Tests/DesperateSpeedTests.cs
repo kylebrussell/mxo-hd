@@ -77,6 +77,7 @@ public class DesperateSpeedTests
     [Theory]
     [InlineData(86)]
     [InlineData(130)]
+    [InlineData(396)]
     public void TimedMovementDebuffComposesWithExistingSpeedAndRestoresIt(ushort ability)
     {
         var player = Client();
@@ -129,6 +130,43 @@ public class DesperateSpeedTests
         }
 
         float Scale() => BitConverter.ToSingle(player.playerInstance.MovementScale.getValue());
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(Stealth.SneakGrantAbility)]
+    [InlineData(Stealth.InvisibilityGrantAbility)]
+    public void CrashAppliesOneMovementPenaltyInEachStanceAndRestoresItFirst(ushort stance)
+    {
+        var player = Client(level: 50);
+        var subject = TimedEffects.ForPlayer(player);
+        try
+        {
+            if (stance != 0) Assert.NotNull(Stealth.Begin(player, Stealth.Defs[stance], 25));
+            Assert.True(TempMods.TryGet(396, out var crash));
+            double start = TimeUtils.GetSimTimeSeconds();
+            TimedEffects.Apply(subject, crash, start);
+            Assert.Equal(-.50f, BitConverter.ToSingle(player.playerInstance.MovementScale.getValue()));
+            Assert.Equal(-15, AbilityStats.Player(player, 519));
+            Assert.Equal(-50, AbilityStats.Player(player, 520));
+            Assert.Equal(-27, AbilityStats.Player(player, 342));
+            Assert.Equal(-27, AbilityStats.Player(player, 524));
+
+            TimedEffects.RunDue(start + 28.01);
+            Assert.Equal(0f, BitConverter.ToSingle(player.playerInstance.MovementScale.getValue()));
+            Assert.Equal(0, AbilityStats.Player(player, 519));
+            Assert.Equal(0, AbilityStats.Player(player, 520));
+            Assert.Equal(-27, AbilityStats.Player(player, 342));
+            Assert.Equal(-27, AbilityStats.Player(player, 524));
+            TimedEffects.RunDue(start + 42.01);
+            Assert.Equal(0, AbilityStats.Player(player, 342));
+            Assert.Equal(0, AbilityStats.Player(player, 524));
+        }
+        finally
+        {
+            Stealth.End(player, "test cleanup", false);
+            AbilityBuffs.RemoveAll(player);
+        }
     }
 
     [Fact]
