@@ -240,6 +240,7 @@ public class AbilityRefusalFeedbackTests:IDisposable
         enemy.playerInstance.OrganizationID.setValue((byte)2);
         caster.playerData.pvpFlag = enemy.playerData.pvpFlag = true;
         caster.playerData.combatStyle = CombatStyles.HackerStyle;
+        caster.playerData.passives.Loaded[id] = 19;
         WorldServer.Clients.Add("enemy", enemy);
         var view = caster.viewMan.addView(42, 12);
         view.viewCreated = true;
@@ -277,6 +278,31 @@ public class AbilityRefusalFeedbackTests:IDisposable
         foreach(uint ch in new uint[]{0,2,111})Assert.False(Allowed(ch:ch));Assert.False(Allowed(alive:false));Assert.False(Allowed(world:false));Assert.False(Allowed(dead:true));Assert.False(Allowed(pending:true));Assert.False(Allowed(shutdown:true));Assert.False(Allowed(la:true));
         foreach(string name in new[]{"reuse 999","inner 999","7","77","unloaded extra"})Assert.False(AbilityRefusalQa.TrySample(name,out _));
     }
+    [Theory]
+    [InlineData(40)]
+    [InlineData(66)]
+    [InlineData(86)]
+    public void UnloadedStarterDebuffRefusesBeforeCostOrCooldown(ushort id)
+    {
+        var caster = Client();
+        Store.currentClient = caster;
+        double castBefore = caster.playerData.castEndsAt;
+        var request = new byte[41];
+        BitConverter.GetBytes(id).CopyTo(request, 0);
+        BitConverter.GetBytes((ushort)4).CopyTo(request, 2);
+        BitConverter.GetBytes((ushort)2).CopyTo(request, 4);
+
+        new AbilityHandler().ProcessAbility(ref request);
+
+        byte[] packet = Assert.Single(Rpcs(caster));
+        Assert.True(AbilityRefusals.TryDecode(packet, out var refusal));
+        Assert.Equal((uint)id, refusal.AbilityID);
+        Assert.Equal(AbilityRefusals.NotLoaded, refusal.ErrorID);
+        Assert.Equal(500, AbilityHandler.CurrentInnerStrength(caster));
+        Assert.Equal(castBefore, caster.playerData.castEndsAt);
+        Assert.Empty(caster.playerData.cooldownEndsAt);
+    }
+
     [Fact] public void ActualDisplayEnqueueChangesNoResourcesTimersOrLoadedMembershipAndPrunesOnReset()
     {
         var c=Client(123);double beforeCast=c.playerData.castEndsAt;Store.currentClient=c;c.playerData.passives.Loaded[77]=50;c.playerData.cooldownEndsAt[77]=12345;
