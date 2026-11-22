@@ -1,0 +1,28 @@
+{
+  "abilities": {
+    "53": {
+      "note": "PR761 stock level-19 comparison: at +5% combined viral influence, this landed for 12 on the selected neutral-resistance opponent, spent 18 IS and started 8 s own reuse. The second hostile received no hit. The original retail resistance and contest coefficients remain unresolved. https://github.com/kylebrussell/mxo-hd/pull/761#issuecomment-7082467881"
+    },
+    "57": {
+      "note": "PR761 stock level-19 comparison: at +5% combined viral influence, this landed for 8 on the selected neutral-resistance opponent, spent 5 IS and started 4 s own reuse. The second hostile received no hit. The original retail resistance and contest coefficients remain unresolved. https://github.com/kylebrussell/mxo-hd/pull/761#issuecomment-7082467881"
+    },
+    "58": {
+      "note": "PR761 stock level-19 comparison: at +5% combined viral influence, this landed for 11 on the selected neutral-resistance opponent, spent 6 IS and started 4 s own reuse. The second hostile received no hit. The original retail resistance and contest coefficients remain unresolved. https://github.com/kylebrussell/mxo-hd/pull/761#issuecomment-7082467881"
+    },
+    "59": {
+      "note": "PR761 stock level-19 comparison: at +5% combined viral influence, this landed for 17 on the selected neutral-resistance opponent, spent 7 IS and started 4 s own reuse. The second hostile received no hit. The original retail resistance and contest coefficients remain unresolved. https://github.com/kylebrussell/mxo-hd/pull/761#issuecomment-7082467881"
+    },
+    "60": {
+      "note": "PR761 stock level-19 comparison: at +5% combined viral influence, this landed for 7 on the selected neutral-resistance opponent, spent 11 IS and started 2 s own reuse. Also hit the second hostile for 7 at 2 m. The original retail resistance and contest coefficients remain unresolved. https://github.com/kylebrussell/mxo-hd/pull/761#issuecomment-7082467881"
+    },
+    "20": {
+      "note": "PR762 stock Fortify admits the selected own pet at 12.09 m despite the Charge-specific range comparison. It spends 30 IS and moves max HP 224 to 494, with pet resistance 36 for 600 s. The original resistance rating curve is open. https://github.com/kylebrussell/mxo-hd/pull/762#issuecomment-7082527489"
+    },
+    "30": {
+      "note": "PR762 stock Repair from 12.09 m spends 20 IS, restores 20 HP to the Fortified pet and leaves its maximum unchanged. https://github.com/kylebrussell/mxo-hd/pull/762#issuecomment-7082527489"
+    },
+    "603": {
+      "note": "PR762 stock replay verifies the sourced AcousticDecoy1_GetRange multiplier with stat 214 +80: reason 34 at 12.09 m without cost or reuse, and successful cast at 8.14 m for 35 IS and 30 s reuse, with -20% cost and +50% regen for 600 s. The stock-frame bootstrap also exercises a modifier arriving mid-cast and prevents the buff from landing. Retail pet base IS pool, cost and regen remain open. https://github.com/kylebrussell/mxo-hd/pull/762#issuecomment-7082527489"
+    }
+  }
+}
