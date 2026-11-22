@@ -512,6 +512,11 @@ namespace hds
             }
             if (AbilityID == ProxyTechnician.Ability && ProxyTechnician.Refusal(Store.currentClient) is string proxyRefusal)
             { Deny(AbilityID,proxyRefusal); return; }
+            if (AbilityID == DaemonBoost.Ability && !DaemonBoost.Loaded(Store.currentClient))
+            {
+                Deny(AbilityID, "Load this ability before using it.", AbilityRefusals.NotLoaded, sendServerText: false);
+                return;
+            }
             // A toggled aura used while it is on switches off (no cost, cooldown or cast)
             if (AbilityAuras.Stop(Store.currentClient, AbilityID)) return;
             // A special move works only in the style it belongs to (CastRequiredCombatStance, CombatStyles); a loaded

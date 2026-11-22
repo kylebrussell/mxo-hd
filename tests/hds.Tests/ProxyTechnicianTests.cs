@@ -156,6 +156,69 @@ public class ProxyTechnicianTests
     }
 
     [Fact]
+    public void DaemonBoostUsesTheFriendlyOwnerAndInclusivePetRadiusWithIndependentExpiry()
+    {
+        using var source = new Fixture();
+        using var target = new Fixture();
+        source.RemoveOwnPet();
+        source.Owner.playerData.passives.Loaded[609] = 25;
+        source.Owner.playerInstance.Level.setValue((byte)25);
+        target.Pet.Mob.setXPos(2000);
+        Assert.Equal(19, AbilityCatalog.Find(699).Number("Ability/CastDirectObjects"));
+        Assert.Equal(699, AbilityAuras.EffectOf(609));
+        Assert.Equal(5, AbilityAuras.DrainOf(609));
+        Assert.Equal(5, AbilityAuras.IntervalOf(609));
+        var pulse = DaemonBoost.Project(source.Owner, target.Pet, 20);
+        Assert.NotNull(pulse);
+        Assert.Equal((12, 12), DaemonBoost.Values(target.Pet, 24));
+        Assert.Equal(25, pulse.Until);
+        target.Pet.Mob.setXPos(2001);
+        Assert.Null(DaemonBoost.Project(source.Owner, target.Pet, 21));
+
+        target.Pet.Mob.setXPos(1900);
+        target.Owner.playerData.pvpFlag = true;
+        target.Owner.playerInstance.OrganizationID.setValue((byte)2);
+        Assert.Equal(PvpRules.Verdict.Allowed, PvpCombat.Check(source.Owner, target.Owner));
+        Assert.Null(DaemonBoost.Project(source.Owner, target.Pet, 22));
+        Assert.Equal((12, 12), DaemonBoost.Values(target.Pet, 24));
+        Assert.Equal((0, 0), DaemonBoost.Values(target.Pet, 25));
+    }
+
+    [Fact]
+    public void DaemonBoostAffectsOnlyNukerDamageAndHealerHealingAndCannotFollowAnOldSource()
+    {
+        using var source = new Fixture();
+        using var next = new Fixture();
+        using var target = new Fixture();
+        source.Owner.playerData.passives.Loaded[609] = 40;
+        source.Owner.playerInstance.Level.setValue((byte)40);
+        next.Owner.playerData.passives.Loaded[609] = 50;
+        Assert.NotNull(DaemonBoost.Project(source.Owner, target.Pet, 20));
+        target.Pet.Kind = CoderPets.Kind.Proxy;
+        Assert.Equal(80, CoderPets.DaemonBoostDamage(target.Pet, 80, 21));
+        Assert.Equal(80, CoderPets.DaemonBoostHealing(target.Pet, 80, 21));
+        target.Pet.Kind = CoderPets.Kind.Nuker;
+        Assert.Equal(96, CoderPets.DaemonBoostDamage(target.Pet, 80, 21));
+        Assert.Equal(80, CoderPets.DaemonBoostHealing(target.Pet, 80, 21));
+        target.Pet.Kind = CoderPets.Kind.Healer;
+        Assert.Equal(80, CoderPets.DaemonBoostDamage(target.Pet, 80, 21));
+        Assert.Equal(96, CoderPets.DaemonBoostHealing(target.Pet, 80, 21));
+
+        source.Owner.playerData.passives.Loaded.Remove(609);
+        DaemonBoost.LoadoutChanged(source.Owner);
+        Assert.Null(DaemonBoost.Project(source.Owner, target.Pet, 22));
+        Assert.Equal(96, CoderPets.DaemonBoostHealing(target.Pet, 80, 22));
+        Assert.NotNull(DaemonBoost.Project(next.Owner, target.Pet, 23));
+        source.Owner.playerData.lifeGeneration++;
+        Assert.Equal(100, CoderPets.DaemonBoostHealing(target.Pet, 80, 24));
+        next.Owner.playerData.worldGeneration++;
+        Assert.Equal(80, CoderPets.DaemonBoostHealing(target.Pet, 80, 24));
+        Assert.NotNull(DaemonBoost.Project(next.Owner, target.Pet, 25));
+        target.Owner.playerData.lifeGeneration++;
+        Assert.Equal(80, CoderPets.DaemonBoostHealing(target.Pet, 80, 25));
+    }
+
+    [Fact]
     public void ModeOwnsItsIndependentPetRollWithoutLeakingItToDefaultOrOtherModes()
     {
         var plan=NativeQaModes.Find("proxy-technician").Plan;

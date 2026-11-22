@@ -173,6 +173,7 @@ namespace hds
             EvasionShield.LoadoutChanged(client);
             AbilityDesperation.LoadoutChanged(client);
             ProxyTechnician.LoadoutChanged(client);
+            DaemonBoost.LoadoutChanged(client);
             AbilityGrantRegistration.LoadedChanged(client);
         }
 
