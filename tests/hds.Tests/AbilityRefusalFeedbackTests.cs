@@ -250,6 +250,7 @@ public class AbilityRefusalFeedbackTests:IDisposable
         caster.playerData.pvpFlag = target.playerData.pvpFlag = true;
         caster.playerData.combatStyle = abilityId == 53 || abilityId is >= 57 and <= 60
             ? CombatStyles.HackerStyle : CombatStyles.CoderStyle;
+        caster.playerData.passives.Loaded[abilityId] = 50;
         WorldServer.Clients.Add("target", target);
         var view = caster.viewMan.addView(42, 12);
         view.viewCreated = true;
@@ -281,6 +282,33 @@ public class AbilityRefusalFeedbackTests:IDisposable
         Assert.False(TimedEffects.ForPlayer(target).Effects.Has(TempMods.RootedAbility));
         Assert.True(AbilityCooldowns.IsCoolingDown(caster.playerData, abilityId, TimeUtils.GetSimTimeSeconds()));
         Assert.Empty(Rpcs(target));
+    }
+
+    [Theory]
+    [InlineData(53)]
+    [InlineData(57)]
+    [InlineData(58)]
+    [InlineData(59)]
+    [InlineData(60)]
+    public void UnloadedStarterViralDamageCastRefusesBeforeCost(ushort id)
+    {
+        var caster = Client();
+        Store.currentClient = caster;
+        double castBefore = caster.playerData.castEndsAt;
+        var request = new byte[41];
+        BitConverter.GetBytes(id).CopyTo(request, 0);
+        BitConverter.GetBytes((ushort)4).CopyTo(request, 2);
+        BitConverter.GetBytes((ushort)2).CopyTo(request, 4);
+
+        new AbilityHandler().ProcessAbility(ref request);
+
+        byte[] packet = Assert.Single(Rpcs(caster));
+        Assert.True(AbilityRefusals.TryDecode(packet, out var refusal));
+        Assert.Equal((uint)id, refusal.AbilityID);
+        Assert.Equal(AbilityRefusals.NotLoaded, refusal.ErrorID);
+        Assert.Equal(500, AbilityHandler.CurrentInnerStrength(caster));
+        Assert.Equal(castBefore, caster.playerData.castEndsAt);
+        Assert.Empty(caster.playerData.cooldownEndsAt);
     }
 
     [Fact] public void ActualTimerPredicateReportsReuseAndPreservesCostAndTimer()
