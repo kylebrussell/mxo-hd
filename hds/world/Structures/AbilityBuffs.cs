@@ -260,14 +260,15 @@ namespace hds
         /// counter, DissemblingType (retail Hyper-Sprint: 02 00 02 80 88 9a 99 19 3e 80 90 &lt;IS&gt; b0 19 31 46 12
         /// &lt;ctr&gt; 02 00 04).
         /// </summary>
-        public static byte[] BuildMovementBuffUpdate(Buff buff, UInt16 innerStrength, byte counter, ushort? dissemblingType = null)
+        public static byte[] BuildMovementBuffUpdate(Buff buff, UInt16 innerStrength, byte counter, ushort? dissemblingType = null,
+            float? movementScale = null)
         {
             PacketContent pak = new PacketContent();
             pak.AddUint16(2, 1);
             pak.AddByte(0x02);
             pak.AddByte(0x80);
             pak.AddByte(0x88);
-            pak.AddFloat(buff.MovementScale, 1);
+            pak.AddFloat(movementScale ?? buff.MovementScale, 1);
             pak.AddByte(0x80);
             pak.AddByte(0x90);
             pak.AddUint16(innerStrength, 1);
@@ -337,14 +338,15 @@ namespace hds
         private static void PresentMovementScale(WorldClient client, float scale)
         {
             client.playerInstance.MovementScale.setValue(scale);
-            PvpFlag.ToWatchers(client, PlayerViewAttributes.Build((5, PlayerViewAttributes.F32(scale))));
+            PvpFlag.ToWatchers(client, PlayerViewAttributes.Build((PlayerViewAttributes.OtherMovementScale, PlayerViewAttributes.F32(scale))));
         }
 
         private static byte[] ProjectSprintMovement(PlayerCharacter player, float scale, ushort bits)
         {
             player.MovementScale.setValue(scale);
             player.DissemblingType.setValue(bits);
-            return PlayerViewAttributes.Build((5, PlayerViewAttributes.F32(scale)), (27, PlayerViewAttributes.U16(bits)));
+            return PlayerViewAttributes.Build((PlayerViewAttributes.OtherMovementScale, PlayerViewAttributes.F32(scale)),
+                (27, PlayerViewAttributes.U16(bits)));
         }
 
         private static bool IsCatalogSpeedBuff(ushort id) => id == MovementAccelerator || id == 291;
@@ -356,9 +358,32 @@ namespace hds
                     .OrderByDescending(active => active.Generation).FirstOrDefault()?.Definition.MovementScale ?? 0f;
         }
 
+        public static bool ProjectsTimedMovementDebuff(ushort source) => source == 86 || source == 130;
+
+        private static bool ChangesMovementScale(TimedEffects.Active modifier) =>
+            ProjectsTimedMovementDebuff(modifier.Parent) && modifier.Target == 115 &&
+            modifier.Proc == TempMods.Proc.Stat && modifier.Value < 0;
+
+        internal static float WithTimedMovementDebuffs(WorldClient client, float movementScale)
+        {
+            int points = TimedEffects.ForPlayer(client).Effects.Snapshot().Where(ChangesMovementScale).Sum(modifier => modifier.Value);
+            // Retail Crippling Shot 450 combines signed stat 115 points per hundred with the existing scale.
+            return points == 0 ? movementScale : (float)((decimal)movementScale + points / 100m);
+        }
+
+        internal static void PresentTimedMovementChange(WorldClient client, IEnumerable<TimedEffects.Active> changed)
+        {
+            if (!changed.Any(ChangesMovementScale)) return;
+            float scale = WithTimedMovementDebuffs(client, RemainingMovementScale(client.playerData));
+            if (client.playerInstance.MovementScale.isActive() &&
+                BitConverter.ToSingle(client.playerInstance.MovementScale.getValue(), 0) == scale) return;
+            client.messageQueue.addObjectMessage(PlayerViewAttributes.BuildSelf((PlayerViewAttributes.SelfMovementScale, PlayerViewAttributes.F32(scale))), false);
+            PresentMovementScale(client, scale);
+        }
+
         private static byte[] QueueSprintReset(WorldClient client, ClientData data, PlayerCharacter player)
         {
-            float scale = RemainingMovementScale(data);
+            float scale = WithTimedMovementDebuffs(client, RemainingMovementScale(data));
             ushort bits = (ushort)(DissemblingBits(client) | Stealth.BitsOf(client));
             client.messageQueue.addObjectMessage(BuildMovementUpdate(scale, bits), false);
             return ProjectSprintMovement(player, scale, bits);
@@ -554,19 +579,20 @@ namespace hds
                 client.messageQueue.addRpcMessage(record);
             }
             RefreshVitals(client);
+            float movementScale = buff.MovementScale > 0 ? WithTimedMovementDebuffs(client, buff.MovementScale) : 0f;
             if (abilityId == HyperSprint)
             {
                 ushort bits = (ushort)(DissemblingBits(client) | Stealth.BitsOf(client));
                 byte counter = (byte)data.assignSpawnIdCounter();
                 client.messageQueue.addObjectMessage(BuildMovementBuffUpdate(buff,
-                    AbilityHandler.CurrentInnerStrength(client), counter, bits), false);
-                PvpFlag.ToWatchers(client, ProjectSprintMovement(client.playerInstance, buff.MovementScale, bits));
+                    AbilityHandler.CurrentInnerStrength(client), counter, bits, movementScale), false);
+                PvpFlag.ToWatchers(client, ProjectSprintMovement(client.playerInstance, movementScale, bits));
             }
             else if (buff.DissemblingType != 0) PresentDissembling(client);
             if (abilityId == HyperSpeed || IsCatalogSpeedBuff(abilityId))
-                PresentMovementScale(client, buff.MovementScale);
+                PresentMovementScale(client, movementScale);
             if (IsCatalogSpeedBuff(abilityId))
-                client.messageQueue.addObjectMessage(BuildMovementUpdate(buff.MovementScale,
+                client.messageQueue.addObjectMessage(BuildMovementUpdate(movementScale,
                     (ushort)(DissemblingBits(client) | Stealth.BitsOf(client))), false);
             Output.WriteDebugLog("[BUFF] " + abilityId + " on" + (buff.Seconds > 0 ? " for " + buff.Seconds + " s" : ""));
 
@@ -793,7 +819,7 @@ namespace hds
                     PvpFlag.ToWatchers(client, QueueSprintReset(client, data, client.playerInstance));
                 else
                 {
-                    float scale = IsActive(client, HyperSprint) ? RemainingMovementScale(data) : 0f;
+                    float scale = WithTimedMovementDebuffs(client, IsActive(client, HyperSprint) ? RemainingMovementScale(data) : 0f);
                     if (abilityId == HyperSpeed || IsCatalogSpeedBuff(abilityId))
                         PresentMovementScale(client, scale);
                     client.messageQueue.addObjectMessage(BuildMovementUpdate(scale, (ushort)(DissemblingBits(client) | Stealth.BitsOf(client))), false);

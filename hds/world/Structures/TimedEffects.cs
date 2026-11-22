@@ -856,7 +856,9 @@ namespace hds
             }
             AbilityHostile.TellCaster(added.Count > 0 ? added[0].Caster : null, client, effect, added, Name);
             if (AbilityHostile.ChangesVitals(added) || AbilityHostile.ChangesVitals(replaced)) AbilityBuffs.RefreshVitals(client);
-            FlushStateUpdates(added.Concat(replaced));
+            var changed = added.Concat(replaced);
+            AbilityBuffs.PresentTimedMovementChange(client, changed);
+            FlushStateUpdates(changed);
             Output.WriteDebugLog("[EFFECTS] " + effect.Ability + " on " + Name + ": " + added.Count + " tempmods");
         }
 
@@ -936,6 +938,7 @@ namespace hds
                     client.messageQueue.addRpcMessage(AbilityMessages.StateEnd(m.Target, Name));
                 }
             }
+            AbilityBuffs.PresentTimedMovementChange(client, ended);
             FlushStateUpdates(ended);
         }
     }

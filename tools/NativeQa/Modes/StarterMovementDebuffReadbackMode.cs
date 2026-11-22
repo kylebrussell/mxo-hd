@@ -53,15 +53,15 @@ public sealed class StarterMovementDebuffReadbackMode : NativeQaMode
             ["MXO_AGGRO"] = "0", ["MXO_MOB_WANDER"] = "0", ["MXO_PVP_SERVER"] = "1", ["MXO_PVP_MAX_SAFE_LEVEL"] = "15",
             ["MXO_FREECAST_VIRAL_QA"] = "1", ["MXO_FREECAST_VIRAL_QA_ATTACK15"] = "32766",
             ["MXO_FREECAST_VIRAL_QA_DEFENSE15"] = "0"
-        }, extraQaMetadata: new() { ["ScopedStockRows"] = "130,86,62", ["NativeCloseableRows"] = 0 },
+        }, extraQaMetadata: new() { ["ScopedStockRows"] = "130,86,62", ["NativeCloseableRows"] = 1, ["NativeCloseableIds"] = "86" },
         readyMessages: new[]
         {
             $"CSR ({X},{Y},{Z}) faces +Z down the outdoor NAV strip to z={EndZ}. Use {Home} for every sample. Leave page 2 slot 1 and run/walk settings alone. No targeting, sprint, bag clicks or Escape.",
             "Run straight forward for about two seconds. Before every repeat return to HOME and wait for the position to settle. Keep direction and held time the same. Save PacketLog start/stop positions and timestamps for each run so the comparison can use actual elapsed time.",
-            """For Hindering Shot, from HOME submit {"actor":"QAEnemy","action":"cast","target":"CSR_Tester","ability":130}. On [MODIFIER] source=130 stats 115/877/878 -50 and 519 -10 (8 s), run immediately and stop before expiry. After the removes and combat icon clears, repeat from HOME.""",
-            """For Slow, from HOME submit {"actor":"QAOther","action":"cast","target":"CSR_Tester","ability":86}. Sample after source=86 adds 115/877/878 -50, 519 -15 and 524 -19 (28 s). Wait for removal and combat to clear. Repeat from HOME.""",
-            """For the positive control submit {"actor":"QAFriend","action":"cast","target":"CSR_Tester","ability":62} from HOME. Sample after source=62 stat=115 +10 and own MovementScale +0.10. Type ?dismissbuff 62, confirm removal and zero scale, then repeat from HOME.""",
-            "There should be no interlock [PVP] rounds or max [VITALS] changes. Record whether the stock negative modifiers slow the run, then compare each recovery run. The headless fixture checks wire records and NAV. It cannot measure client speed."
+            """For Hindering Shot, from HOME submit {"actor":"QAEnemy","action":"cast","target":"CSR_Tester","ability":130}. On [MODIFIER] source=130 stats 115/877/878 -50 and 519 -10 (8 s), sample MovementScale -0.50 and run immediately. After the removals and scale 0, repeat from HOME.""",
+            """For Slow, from HOME submit {"actor":"QAOther","action":"cast","target":"CSR_Tester","ability":86}. Sample MovementScale -0.50 after source=86 adds 115/877/878 -50, 519 -15 and 524 -19 (28 s). Return HOME while Slow is still active.""",
+            """Submit {"actor":"QAFriend","action":"cast","target":"CSR_Tester","ability":62} before Slow expires. Source 62 stat 115 +10 combines into -0.40 while Slow remains. Sample again at the restored +0.10 after Slow expires. Type ?dismissbuff 62, confirm removal and zero scale, then repeat from HOME.""",
+            "There should be no interlock [PVP] rounds or max [VITALS] changes. Compare the stock slow, recovery and overlap samples with their actual held times. The headless fixture checks owner and observer MovementScale, modifier lifetime, and a Slow refresh."
         });
 
     public override async Task<byte[]> AfterStartAsync(NativeQaBootstrapContext context)
@@ -113,31 +113,53 @@ public sealed class StarterMovementDebuffReadbackMode : NativeQaMode
         string homePosition = WireFormat.ToHex(new[] { (float)X, (float)Y, (float)Z }.SelectMany(BitConverter.GetBytes).ToArray());
         await EvidenceRetestWire.ViewSinceAsync(runner, resetAt, 2, $"01 1c ?? e2 04 12 00 04 00 00 {homePosition}");
 
-        await CheckDebuffAsync(runner, context.Helpers["QAEnemy"], Hindering, 8, (519, -10));
-        await CheckDebuffAsync(runner, context.Helpers["QAOther"], Slow, 28, (519, -15), (524, -19));
-
         var friend = context.Helpers["QAFriend"];
         var friendView = await friend.WaitForViewNamedAsync(runner.Handle);
-        int ownerAt = runner.World.ViewSnapshot().Count;
-        int observerAt = friend.World.ViewSnapshot().Count;
+        var incoming = Windows();
+        var enemy = context.Helpers["QAEnemy"];
+        var hinder = await ApplyDebuffAsync(runner, enemy, Hindering, 8, (519, -10));
+        await ScaleAsync(incoming, -.50f);
+        incoming = Windows();
+        await WaitExpiryAsync(runner, hinder, 8);
+        await ScaleAsync(incoming, 0f);
+
+        var hacker = context.Helpers["QAOther"];
+        int firstSlow = hacker.World.RpcSnapshot().Count;
+        incoming = Windows();
+        var slow = await ApplyDebuffAsync(runner, hacker, Slow, 28, (519, -15), (524, -19));
+        await ScaleAsync(incoming, -.50f);
+        incoming = Windows();
         int start = runner.World.RpcSnapshot().Count;
         await SendSampleAsync(friend, runner.Handle, Accelerator);
         await ObserveAsync(runner, start, frame => Bonus(frame, Accelerator, 115, 10, 600, false), "Accelerator adds +10 movement");
-        await EvidenceRetestWire.ViewSinceAsync(runner, ownerAt, 2, "02 80 88 cd cc cc 3d 80 80 80 02 00 00");
-        await EvidenceRetestWire.ViewSinceAsync(friend, observerAt, friendView.ViewId,
-            WireFormat.ToHex(PlayerViewAttributes.Build((5, PlayerViewAttributes.F32(.10f)))));
-        ownerAt = runner.World.ViewSnapshot().Count;
-        observerAt = friend.World.ViewSnapshot().Count;
+        await ScaleAsync(incoming, -.40f, PositiveMovement(-.40f));
+        await EvidenceRetestWire.TimerAsync(hacker, firstSlow, Slow, AbilityCooldowns.OwnTimer, 8, ended: true);
+        incoming = Windows();
+        var replacement = await ApplyDebuffAsync(runner, hacker, Slow, 28, (519, -15), (524, -19));
+        await WaitExpiryAsync(runner, slow, 8);
+        var renewed = Stopwatch.StartNew();
+        await WaitExpiryAsync(runner, replacement, 28);
+        Check.That(renewed.Elapsed.TotalSeconds >= 26, "The old timer cannot remove the refreshed Slow");
+        await ScaleAsync(incoming, .10f);
+        Check.Equal(0, CountScale(incoming.Own, runner, 2, 0f), "Slow replacement and expiry do not erase Accelerator");
+        incoming = Windows();
         runner.SendChat("?dismissbuff 62");
         await ObserveAsync(runner, start, frame => Bonus(frame, Accelerator, 115, 10, 600, true), "Dismiss removes the original +10");
-        await EvidenceRetestWire.ViewSinceAsync(runner, ownerAt, 2, "02 80 88 00 00 00 00 80 80 80 02 00 00");
-        await EvidenceRetestWire.ViewSinceAsync(friend, observerAt, friendView.ViewId,
-            WireFormat.ToHex(PlayerViewAttributes.Build((5, PlayerViewAttributes.F32(0)))));
+        await ScaleAsync(incoming, 0f, PositiveMovement(0f));
 
         Check.Equal(0, runner.World.Problems.Count + context.Helpers.Values.Sum(helper => helper.World.Problems.Count),
             "Movement readback framing");
-        Console.WriteLine("130/86 stock casts added and expired all records. 62 added and reset owner/observer scale. Stock running remains the native check.");
+        Console.WriteLine("130/86 stock casts project -0.50 on owner and observer. Slow replacement keeps the -0.40 composed scale and expiry restores Accelerator's +0.10.");
         return Array.Empty<byte>();
+
+        (int Own, int Observer) Windows() => (runner.World.ViewSnapshot().Count, friend.World.ViewSnapshot().Count);
+
+        async Task ScaleAsync((int Own, int Observer) cursor, float scale, string? selfUpdate = null)
+        {
+            await EvidenceRetestWire.ViewSinceAsync(runner, cursor.Own, 2, selfUpdate ?? SignedMovement(scale));
+            await EvidenceRetestWire.ViewSinceAsync(friend, cursor.Observer, friendView.ViewId,
+                WireFormat.ToHex(PlayerViewAttributes.Build((PlayerViewAttributes.OtherMovementScale, PlayerViewAttributes.F32(scale)))));
+        }
     }
 
     internal static async Task<object> SendSampleAsync(HeadlessPlayer helper, string target, ushort ability)
@@ -153,7 +175,7 @@ public sealed class StarterMovementDebuffReadbackMode : NativeQaMode
         return new { Ability = ability, Target = target, Request = Convert.ToHexString(request) };
     }
 
-    private static async Task CheckDebuffAsync(HeadlessPlayer runner, HeadlessPlayer helper, ushort ability, int duration,
+    private static async Task<RpcRecord[]> ApplyDebuffAsync(HeadlessPlayer runner, HeadlessPlayer helper, ushort ability, int duration,
         params (ushort Stat, int Value)[] extra)
     {
         int start = runner.World.RpcSnapshot().Count;
@@ -161,18 +183,36 @@ public sealed class StarterMovementDebuffReadbackMode : NativeQaMode
         await SendSampleAsync(helper, runner.Handle, ability);
         await EvidenceRetestWire.CastBarAsync(helper, ability, 2);
         var expected = new (ushort Stat, int Value)[] { (115, -50), (877, -50), (878, -50) }.Concat(extra).ToArray();
+        var records = new List<RpcRecord>();
         foreach (var (stat, value) in expected)
-            await ObserveAsync(runner, start, frame => Bonus(frame, ability, stat, value, duration, false), $"{ability}/{stat} adds {value}");
-        var active = Stopwatch.StartNew();
+            records.Add(await ObserveAsync(runner, start, frame => Bonus(frame, ability, stat, value, duration, false), $"{ability}/{stat} adds {value}"));
         await EvidenceRetestWire.TimerAsync(helper, castAt, ability, AbilityCooldowns.OwnTimer, 8);
+        return records.ToArray();
+    }
+
+    private static async Task WaitExpiryAsync(HeadlessPlayer runner, RpcRecord[] records, int seconds)
+    {
+        var removed = records.Select(record =>
+        {
+            byte[] bytes = record.Bytes.ToArray();
+            bytes[17] = 1;
+            return bytes;
+        }).ToArray();
         await runner.WaitUntilAsync(() =>
         {
-            var frames = runner.World.RpcSnapshot().Skip(start).ToArray();
-            return expected.All(stat => frames.Any(frame => Bonus(frame, ability, stat.Stat, stat.Value, duration, true)));
-        }, $"{ability} expires all original records", TimeSpan.FromSeconds(duration + 6));
-        Check.That(Math.Abs(active.Elapsed.TotalSeconds - duration) < 2, $"{ability} real add-to-remove interval matches {duration} s");
-        Console.WriteLine($"Stock {ability}: verified {expected.Length} modifiers and natural expiry after {active.Elapsed.TotalSeconds:F2} s.");
+            var frames = runner.World.RpcSnapshot();
+            return removed.All(record => frames.Any(frame => frame.Bytes.AsSpan().SequenceEqual(record)));
+        }, "The original modifier records are removed", TimeSpan.FromSeconds(seconds + 6));
     }
+
+    private static int CountScale(int cursor, HeadlessPlayer player, ushort view, float scale) =>
+        player.World.ViewSnapshot().Skip(cursor).Count(BytePattern.Parse($"{LittleEndianHex(view)} {SignedMovement(scale)}").Occurs);
+
+    private static string SignedMovement(float scale) =>
+        WireFormat.ToHex(PlayerViewAttributes.Build((PlayerViewAttributes.SelfMovementScale, PlayerViewAttributes.F32(scale))));
+
+    private static string PositiveMovement(float scale, ushort bits = 0) =>
+        WireFormat.ToHex(AbilityBuffs.BuildMovementUpdate(scale, bits)[2..]);
 
     private static string PutCharacter(uint id, int x, int z, int organization) =>
         $"UPDATE characters SET level={Level},exp={PlayerProgression.ExperienceForLevel(Level)},x={x},y={Y},z={z}," +
