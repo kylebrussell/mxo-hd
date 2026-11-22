@@ -77,6 +77,9 @@ public sealed class StarterEvadeLevelGapMode : NativeQaMode
         await actor.EnterWorldAsync();
         await actor.WaitForViewUpdateAsync(2, PvpOpponentsFixture.SelfFlag);
         NativeQaReadiness.RequireNoAmbientAggro(server, actor);
+        var self = actor.World.CreationSnapshot().Last(view => view.ViewId == 2);
+        string selfHandle = WireFormat.ToHex(BitConverter.GetBytes(DuelPackets.Handle(self.ViewId, self.SpawnId)));
+        byte[] defenderRefusal = WireFormat.FromHex($"4d 0e 01 01 00 {selfHandle}");
         var views = new Dictionary<string, ViewCreation>();
         foreach (var (name, helper) in context.Helpers)
         {
@@ -127,8 +130,11 @@ public sealed class StarterEvadeLevelGapMode : NativeQaMode
             int logAt = server.DebugLog().Length;
             helper.SkipReceived();
             actor.SkipReceived();
+            int from = actor.World.RpcSnapshot().Count;
             helper.SendRpc($"40 {handle} 01 6b");
             await helper.WaitForRpcAsync($"4d 0e 00 01 00 {handle}");
+            await StockAbilityProfile.ObserveAsync(actor, from, frame => frame.Bytes.AsSpan().SequenceEqual(defenderRefusal),
+                "The defender also receives the result, including the shortfall which releases the shield");
             await actor.WaitUntilAsync(() => server.DebugLog()[logAt..].Contains(expected, StringComparison.Ordinal),
                 expected, HeadlessPlayer.DefaultTimeout);
             if (health > 0)

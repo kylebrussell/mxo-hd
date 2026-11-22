@@ -506,17 +506,16 @@ namespace hds
                 data.lastAbilityTime = now;
                 data.lastLocatorSlot = locatorSlot;
             }
-            if (currentAbility.getCastingTime() > 0)
-            {
-                AbilityCooldowns.StartCast(data, now, currentAbility.getCastingTime());
-            }
-
-            // Evade Combat used while it is on switches it off (its cooldown starts then); no cost, no cast.
+            // Switching a toggle off starts its reuse without reserving a cast or spending IS.
             if (switchOff)
             {
                 AbilityBuffs.Remove(Store.currentClient, AbilityID);
                 Store.currentClient.FlushQueue();
                 return;
+            }
+            if (currentAbility.getCastingTime() > 0)
+            {
+                AbilityCooldowns.StartCast(data, now, currentAbility.getCastingTime());
             }
 
             var freeStealth=StealthShieldAbilities.Handles(AbilityID)?StealthShieldAbilities.Capture(Store.currentClient,currentTargetViewId):null;
