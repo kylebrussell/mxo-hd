@@ -305,7 +305,7 @@ namespace hds
         private static void LogMissionPingCleared(string objective) =>
             Output.WriteDebugLog($"[UTILITY] Download Mission Map: ping cleared {objective} (no refresh, expires within {MissionPingSeconds}s)");
 
-        /// <summary>Called under MissionRuntime's mission lock. Ping categories/refresh are choices; roll is retail.</summary>
+        /// <summary>Refreshes the current floor's mission markers under MissionRuntime's mission lock.</summary>
         public static void RevealMission(WorldClient c, MissionProgress progress)
         {
             List<WorldClient> notified;
@@ -325,8 +325,7 @@ namespace hds
                     foreach (var obj in progress.objects.Values.Where(obj => obj.spot != null))
                     {
                         var pose = MissionObjectPoses.For(obj);
-                        if (Add(pose.X, pose.Y, pose.Z, 0) is DataMiningPackets.Ping ping)
-                            objectives[$"{obj.def.kind} {obj.def.id}"] = ping;
+                        AddNamed($"{obj.def.kind} {obj.def.id}", pose.X, pose.Y, pose.Z, 0);
                     }
                 if ((flags & 2) != 0)
                     foreach (Mob mob in progress.hostiles.Where(mob => !mob.getIsDead()))
@@ -340,6 +339,17 @@ namespace hds
                         if (ObjectStates.TrackedState(c, view.entityId) == UtilityAbilities.LockedState)
                             Add(obj.pos_x, obj.pos_y, obj.pos_z, 0);
                     }
+                if ((flags & 8) != 0)
+                    lock (c.playerData.missionMobs)
+                        foreach (var npc in c.playerData.missionMobs.Where(npc => npc.missionNpcId != 0 &&
+                                     npc.isFriendly && npc.getIsSpawned() && !npc.getIsDead()))
+                            AddNamed($"Friendly {npc.getName()}", npc.getXPos(), npc.getYPos(), npc.getZPos(), 1);
+                if ((flags & 16) != 0)
+                    foreach (var waypoint in progress.waypoints)
+                        AddNamed("Mission entrance", waypoint.x, waypoint.y, waypoint.z, 0);
+                if ((flags & 32) != 0)
+                    foreach (var exit in progress.exits)
+                        AddNamed("Mission exit", exit[0], exit[1], exit[2], 0);
 
                 var sent = pings.Distinct().Take(128).ToArray();
                 c.messageQueue.addRpcMessage(DataMiningPackets.Map(sent, MissionPingSeconds));
@@ -353,6 +363,12 @@ namespace hds
                         Output.WriteDebugLog($"[UTILITY] Download Mission Map: ping sent {objective.Key}");
 
                 notified = ShareMissionPings(c, progress, flags, reveal);
+
+                void AddNamed(string label, double px, double py, double pz, byte relationship)
+                {
+                    if (Add(px, py, pz, relationship) is DataMiningPackets.Ping ping)
+                        objectives[label] = ping;
+                }
 
                 DataMiningPackets.Ping? Add(double px, double py, double pz, byte relationship)
                 {
