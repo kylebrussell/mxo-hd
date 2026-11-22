@@ -838,7 +838,9 @@ namespace hds
             // The cost is paid when the ability is used: the retail cost (AbilityCosts), 20 when unknown. This used
             // to set Inner Strength to 50 after every ability (and Hyper-Speed and the cast animation sent their
             // own fixed values, 50 and 237), then cost a flat 20.
+            UInt16 before = CurrentInnerStrength(Store.currentClient);
             UInt16 innerStrength = SpendInnerStrength(Store.currentClient, AbilityCosts.Effective(Store.currentClient, abilityItem.getAbilityID()));
+            Output.WriteDebugLog($"[ABILITY-COST] char={Store.currentClient.playerData.getCharID()} ability={abilityItem.getAbilityID()} paid={before-innerStrength} IS={before}->{innerStrength}");
 
             // Display Cast Bar if it is necessary
             ServerPackets pak = new ServerPackets();
