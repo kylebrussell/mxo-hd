@@ -1,0 +1,19 @@
+{
+  "abilities": {
+    "22": {
+      "note": "PR782 stock selected QA Pet Route Target using 81 51 09 00 08 00 and ordered the level-7 Nuker with 81 7b fe 02 09 00 08 00. It took the open corner step before hitting from clear sight with the owner out of combat. PR798 stock gated the archived summon, then the reloaded cast replaced exactly one window, cost 50 IS and started 10 s reuse. https://github.com/kylebrussell/mxo-hd/pull/782#issuecomment-7084616619 https://github.com/kylebrussell/mxo-hd/pull/798#issuecomment-7084777148"
+    },
+    "27": {
+      "note": "PR782 stock followed CSR around a Mara corner at floor 95, reaching the last open stand about 2.35 m away. When CSR moved upstairs, the same pet remained on the lower floor and kept its window. PR798 stock gated the archived summon and later kept the live level-4 Proxy while a different summon fizzled. https://github.com/kylebrussell/mxo-hd/pull/782#issuecomment-7084616619 https://github.com/kylebrussell/mxo-hd/pull/798#issuecomment-7084777148"
+    },
+    "28": {
+      "note": "PR782 stock ordered the level-7 Rifle Proxy to attack from a clear stand. It landed three ranged hits (15, 14, 15) without movement or owner combat. PR798 stock paid 50 IS then fizzled when Archive unload committed during the eight-second bar. The earlier 27 body and window stayed. A fresh loaded cast spawned a level-7 Proxy and started 8 s reuse. The shipped RemoteProxy2_Subject create-then-destroy sequence remains unresolved. https://github.com/kylebrussell/mxo-hd/pull/782#issuecomment-7084616619 https://github.com/kylebrussell/mxo-hd/pull/798#issuecomment-7084777148"
+    },
+    "29": {
+      "note": "PR798 stock gated the archived 29. The fresh loaded cast paid 50 IS, replaced one prior window with a level-17 Kung Fu Proxy and started 8 s reuse. https://github.com/kylebrussell/mxo-hd/pull/798#issuecomment-7084777148"
+    },
+    "602": {
+      "note": "PR798 stock gated the archived 602. The fresh loaded cast paid 100 IS and replaced one prior window with a level-18 Healer. Unloading 602 dismissed its pet and window, and reloading it left the window closed. https://github.com/kylebrussell/mxo-hd/pull/798#issuecomment-7084777148"
+    }
+  }
+}
