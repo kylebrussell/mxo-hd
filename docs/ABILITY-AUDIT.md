@@ -54,21 +54,22 @@ and the handoff. A baseline made before AB0 has no remaining-item counts.
 
 The [ranked retest fixtures](ABILITY-EVIDENCE-RETESTS.md) document which stock observations can close current rows and how to run the matching headless checks.
 
-## Port pending feature branches
+## Update a lane PR
 
-1. Merge updated master into the feature branch, retaining all feature behavior, source evidence and individual manuals.
-2. Take the updated master's copy of the tracked CSV and both historical snapshots when resolving conflicts. Regenerate the artifact-only bundle from the combined implementation, then review the per-package evidence and delta.
-3. Commit the implementation, tests, manuals and package evidence files. Link the current exact-head audit bundle for the CSV and Markdown. Each lane PR stays independent of the next checkpoint update.
-4. Port NativeQa mode configuration using [the fixture mode guide](../tools/NativeQa/Modes/README.md). Pending Writer and Zen Master branches add their own mode files after merging this structure; do not reintroduce shared Program mode switches. Compile-items and its SeedDisguiseTool/archive metadata from PR135, and Desperation from merged PR130, are already preserved here.
+1. Rebase on current master before posting a ready head. Resolve CSV and historical snapshot conflicts using the updated master's copies.
+2. Add or update the mode using the [NativeQa fixture mode guide](../tools/NativeQa/Modes/README.md). Run the disposable fixture checks before posting READY FOR NATIVE with the exact head and the projected audit delta.
+3. Regenerate the artifact-only bundle to check the current rows. Link the CI bundle for the reviewed head. Keep the package's evidence in its own JSON file.
 
 ## Refresh the tracked CSV
 
-After a group of lane merges, start an audit refresh from current master. Generate the audit with the merged evidence and commit just the tracked CSV in a small audit PR.
+After a group of lane merges, start an audit refresh from current master. Add the native results for the merged packages to their evidence files. Use the tested head and the result link for each passing family. Commit the evidence updates and regenerated tracked CSV together.
 
 ```powershell
+$baseline = Join-Path $env:TEMP 'mxo-ability-audit-base.csv'
+Copy-Item -LiteralPath docs/ABILITY-PARITY.csv -Destination $baseline
 dotnet run --project tools/AbilityAudit
-python research/abilities/build_audit.py
-git add docs/ABILITY-PARITY.csv
+python research/abilities/build_audit.py --baseline $baseline
+git add docs/ABILITY-PARITY.csv research/abilities/evidence
 ```
 
 Use the previous checkpoint as the baseline for the refresh PR's cumulative delta. The historical Markdown and runtime inventory use the separate snapshot-only process.
