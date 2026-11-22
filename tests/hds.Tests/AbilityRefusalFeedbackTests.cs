@@ -136,6 +136,55 @@ public class AbilityRefusalFeedbackTests:IDisposable
         }
     }
 
+    [Theory]
+    [InlineData(21, 41)]
+    [InlineData(33, 41)]
+    [InlineData(36, 41)]
+    [InlineData(514, 41)]
+    [InlineData(36, 4)]
+    public void DelayedCoderCastCannotLandOnANewerSpawnInTheOriginalView(ushort abilityId, int length)
+    {
+        var caster = Client();
+        var target = Client();
+        target.playerData.setCharID(111);
+        target.playerData.setEntityId(42);
+        caster.playerInstance.OrganizationID.setValue((byte)1);
+        target.playerInstance.OrganizationID.setValue((byte)2);
+        caster.playerData.pvpFlag = target.playerData.pvpFlag = true;
+        caster.playerData.combatStyle = CombatStyles.CoderStyle;
+        WorldServer.Clients.Add("target", target);
+        var view = caster.viewMan.addView(42, 12);
+        view.viewCreated = true;
+        view.spawnId = 9;
+        Assert.True(AbilityTargets.HasLiveAttackSelection(caster, view.ViewID, 9, requireOpponent: true));
+        Store.currentClient = caster;
+
+        var ability = new AbilityItem();
+        ability.setAbilityID(abilityId);
+        ability.setAbilityName("Coder cast");
+        ability.setCastAnimStart(new byte[4]);
+        DataLoader.getInstance().AbilityDB.Add(ability);
+        var request = new byte[length];
+        BitConverter.GetBytes(abilityId).CopyTo(request, 0);
+        BitConverter.GetBytes(view.ViewID).CopyTo(request, 2);
+        if (length == 41)
+            BitConverter.GetBytes((ushort)view.spawnId).CopyTo(request, 4);
+
+        new AbilityHandler().ProcessAbility(ref request);
+        double end = caster.playerData.castEndsAt;
+        Assert.True(end > TimeUtils.GetSimTimeSeconds());
+        Assert.Equal(500 - AbilityCosts.Cost(abilityId), AbilityHandler.CurrentInnerStrength(caster));
+        view.spawnId++;
+        Assert.True(AbilityTargets.HasLiveAttackSelection(caster, view.ViewID, (ushort)view.spawnId, requireOpponent: true));
+
+        DelayedActions.RunDue(end + 1);
+
+        Assert.Equal(1000, PvpCombat.HealthOf(target));
+        Assert.False(TimedEffects.ForPlayer(target).Effects.Has(TempMods.RootedAbility));
+        Assert.True(AbilityCooldowns.IsCoolingDown(caster.playerData, abilityId, TimeUtils.GetSimTimeSeconds()));
+        Assert.Empty(Rpcs(target));
+    }
+
     [Fact] public void ActualTimerPredicateReportsReuseAndPreservesCostAndTimer()
     {
         var c=Client(500);double beforeCast=c.playerData.castEndsAt;Store.currentClient=c;double end=TimeUtils.GetSimTimeSeconds()+100;c.playerData.cooldownEndsAt[77]=end;
