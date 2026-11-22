@@ -1,3 +1,4 @@
+using System.Text.Json;
 using hds;
 using HeadlessClient;
 
@@ -15,6 +16,8 @@ public sealed class StarterInterlockControlMode : NativeQaMode
         internal string Hex => WireFormat.ToHex(new[] { X, Y, Z }.SelectMany(BitConverter.GetBytes).ToArray());
     }
     private const ushort Smash = 145, Cover = 176, Body = 105;
+    private const string NativeResults = "starter-interlock-control-recipient.jsonl";
+    private sealed record RootReadback(Position Held, Position Released, float ScaleWhileRooted, float ScaleAfterRoot);
     private const string StockOpen = "80b911000400020000000000000000000000000000000000000000000000000000000000086b0000000000";
     private const string StockWithdraw = "44 01";
     private sealed record Sample(ushort Id, ushort Style, uint Weapon, string WeaponName, string StockStyle, string StockUse,
@@ -59,7 +62,8 @@ public sealed class StarterInterlockControlMode : NativeQaMode
             "Equip the listed weapon, select QAEnemy, open ordinary Close Combat and then select the matching style. If a special misses, wait for its own reuse and retry it. The fixture forces the Enrage and Root procs only on landed specials. Enter submits chat. Keep the selection without Escape.",
             "Overhand Smash 145 already passed native QA. Start this retest with Covering Fire 176. The headless bootstrap still checks the full 145 Withdraw sequence.",
             "Use ?cd w smg, select /target QAEnemy, and right-click Close Combat. Select SMGs (page 2 slot 3) then Covering Fire (slot 4). On char=6114 expect [MODIFIER] source=176 stat=99 value=0 for 8 s. On landing use ?cd stop before follow-up hits break the root. The helper verifies MovementScale -1 to owner and observer while the server rejects movement, then scale 0 and movement recovery. Wait for STARTER CONTROL PASS 176.",
-            "Use ?combatdepth fixture-weapon rifle, re-open Close Combat and reselect Rifles. Use Body Shot. Expect [MODIFIER] char=6114 source=105 stat=180 and stat=181 both -5 for 10 s, without a root or enrage from this attack. Both records remove on expiry. Wait for STARTER CONTROL PASS 105."
+            "Use ?combatdepth fixture-weapon rifle, re-open Close Combat and reselect Rifles. Use Body Shot. Expect [MODIFIER] char=6114 source=105 stat=180 and stat=181 both -5 for 10 s, without a root or enrage from this attack. Both records remove on expiry. Wait for STARTER CONTROL PASS 105.",
+            $"{NativeResults} in the fixture directory records the helper's waiting, verified, failed or stopped status and any movement readback."
         });
 
     public override async Task<byte[]> AfterStartAsync(NativeQaBootstrapContext context)
@@ -153,9 +157,10 @@ public sealed class StarterInterlockControlMode : NativeQaMode
     private static bool HasBonus(HeadlessPlayer enemy, int from, Sample row, ushort stat, int value, bool remove) =>
         enemy.World.RpcSnapshot().Skip(from).Any(frame => StockAbilityProfile.Bonus(frame, row.Id, stat, value, row.Seconds, remove));
 
-    private static async Task VerifyRecipientAsync(ServerInstance server, HeadlessPlayer enemy, HeadlessPlayer observer,
+    private static async Task<RootReadback?> VerifyRecipientAsync(ServerInstance server, HeadlessPlayer enemy, HeadlessPlayer observer,
         ushort view, Sample row, int from, (int Owner, int Observer) scaleAt, Position? expectedRootPosition = null)
     {
+        RootReadback? readback = null;
         if (row.Id == Smash)
         {
             int at = server.DebugLog().Length;
@@ -193,6 +198,7 @@ public sealed class StarterInterlockControlMode : NativeQaMode
             await ObserveMoveAsync(observer, view, visibleAt, step, "An observer sees the same helper move after root expiry");
             Move(enemy, origin);
             Console.WriteLine($"STARTER ROOT POSITION {origin.X},{origin.Y},{origin.Z} held, then released to {step.X},{step.Y},{step.Z}. Owner and observer MovementScale -1 then 0.");
+            readback = new RootReadback(origin, step, -1, 0);
         }
         else
         {
@@ -201,6 +207,7 @@ public sealed class StarterInterlockControlMode : NativeQaMode
             await AwaitBonusAsync(181, -5, true);
         }
         Console.WriteLine($"STARTER CONTROL PASS {row.Id}");
+        return readback;
 
         Task AwaitBonusAsync(ushort stat, int value, bool remove) =>
             enemy.WaitUntilAsync(() => HasBonus(enemy, from, row, stat, value, remove),
@@ -251,27 +258,44 @@ public sealed class StarterInterlockControlMode : NativeQaMode
     private static async Task WatchAsync(NativeQaBootstrapContext context, HeadlessPlayer enemy, HeadlessPlayer observer, ushort view)
     {
         var server = context.ActualServer!;
+        string stop = Path.Combine(context.OutputDirectory, "stop");
+        string results = Path.Combine(context.OutputDirectory, NativeResults);
+        ushort? watching = null;
         try
         {
             int next = enemy.World.RpcSnapshot().Count;
             // The stock 145 pass carries over. Headless replay still verifies all three rows.
             foreach (var row in Samples.Where(row => row.Id != Smash))
             {
-                Console.WriteLine($"STARTER CONTROL WAITING {row.Id}");
+                watching = row.Id;
                 int from = next;
                 var scaleAt = (Owner: enemy.World.ViewSnapshot().Count, Observer: observer.World.ViewSnapshot().Count);
-                while (!server.HasExited && !File.Exists(Path.Combine(context.OutputDirectory, "stop")) &&
+                await RecordAsync("Waiting");
+                Console.WriteLine($"STARTER CONTROL WAITING {row.Id}");
+                while (!server.HasExited && !File.Exists(stop) &&
                     !HasBonus(enemy, from, row, row.State, row.Id == Body ? -5 : 0, false))
                     await Task.Delay(100);
-                if (server.HasExited || File.Exists(Path.Combine(context.OutputDirectory, "stop"))) return;
-                await VerifyRecipientAsync(server, enemy, observer, view, row, from, scaleAt);
+                if (server.HasExited || File.Exists(stop))
+                {
+                    await RecordAsync("Stopped");
+                    return;
+                }
+                var movement = await VerifyRecipientAsync(server, enemy, observer, view, row, from, scaleAt);
                 next = enemy.World.RpcSnapshot().Count;
+                await RecordAsync("Verified", movement);
             }
         }
         catch (Exception error)
         {
-            await File.WriteAllTextAsync(Path.Combine(context.OutputDirectory, "starter-interlock-control-recipient-error.txt"), error.ToString());
             Console.WriteLine($"STARTER CONTROL CHECK FAILED {error.Message}");
+            await RecordAsync("Failed", error: error.Message);
+            await File.WriteAllTextAsync(Path.Combine(context.OutputDirectory, "starter-interlock-control-recipient-error.txt"), error.ToString());
         }
+
+        Task RecordAsync(string status, RootReadback? movement = null, string? error = null) =>
+            File.AppendAllTextAsync(results, JsonSerializer.Serialize(new
+            {
+                At = DateTimeOffset.UtcNow, Ability = watching, Recipient = enemy.CharId, Status = status, Movement = movement, Error = error
+            }) + Environment.NewLine);
     }
 }
