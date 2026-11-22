@@ -146,6 +146,7 @@ public class AbilityRefusalFeedbackTests:IDisposable
         var view = caster.viewMan.addView(42, 12);
         view.viewCreated = true;
         view.spawnId = 9;
+        double castBefore = caster.playerData.castEndsAt;
 
         CheckRefusal(0, 0, AbilityRefusals.InvalidTarget);
         CheckRefusal(view.ViewID, 9, AbilityRefusals.InvalidTarget);
@@ -165,7 +166,7 @@ public class AbilityRefusalFeedbackTests:IDisposable
             Assert.Equal((uint)id, refusal.AbilityID);
             Assert.Equal(reason, refusal.ErrorID);
             Assert.Equal(500, AbilityHandler.CurrentInnerStrength(caster));
-            Assert.Equal(0, caster.playerData.castEndsAt);
+            Assert.Equal(castBefore, caster.playerData.castEndsAt);
             Assert.Empty(caster.playerData.cooldownEndsAt);
         }
     }
