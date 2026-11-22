@@ -1389,6 +1389,84 @@ public class AbilityHostileTests
         }
     }
 
+    [Fact]
+    public void DeflectBulletsKeepsOneChildAcrossTwoCastersAndRechecksRadiusOnPaidPulses()
+    {
+        var first = Participant(77650, 0, 22);
+        var second = Participant(77651, 600, 30, 14);
+        var teammate = Participant(77652, 300, 22);
+        var outside = Participant(77653, -301, 22);
+        var downed = Participant(77654, 150, 22);
+        var outsider = Participant(77655, 150, 22);
+        downed.playerData.isDead = true;
+
+        var groups = SocialGroups.Instance;
+        var team = groups.CreateTeam(77650, "First");
+        groups.AddTeamMember(team.Id, 77651, "Second");
+        groups.AddTeamMember(team.Id, 77652, "Teammate");
+        groups.AddTeamMember(team.Id, 77653, "Outside");
+        groups.AddTeamMember(team.Id, 77654, "Downed");
+
+        var previous = WorldServer.Clients;
+        var previousWorld = Store.world;
+        WorldClient[] players = { first, second, teammate, outside, downed, outsider };
+        WorldServer.Clients = players.ToDictionary(player => player.playerData.getCharID().ToString());
+        Store.world = (WorldServer)RuntimeHelpers.GetUninitializedObject(typeof(WorldServer));
+        try
+        {
+            AbilityAuras.Start(first, 380);
+            Assert.Equal(21, AbilityStats.Player(first, 1010));
+            Assert.Equal(21, AbilityStats.Player(teammate, 1010));
+            Assert.All(new[] { second, outside, downed, outsider }, player => Assert.False(AbilityBuffs.IsActive(player, 692)));
+
+            AbilityAuras.Start(second, 380);
+            Assert.Equal(14, AbilityHandler.CurrentInnerStrength(second));
+            var last = teammate.playerData.activeBuffs[692];
+            Assert.Equal(5, last.Definition.Seconds);
+            Assert.Equal(28, AbilityStats.Player(teammate, 1010));
+            Assert.Equal(21, AbilityStats.Player(first, 1010));
+
+            Assert.True(AbilityAuras.Stop(first, 380));
+            Assert.InRange(first.playerData.cooldownEndsAt[380] - TimeUtils.GetSimTimeSeconds(), 9.9, 10d);
+            AbilityAuras.Tick(first, 380, 1);
+            Assert.Same(last, teammate.playerData.activeBuffs[692]);
+            AbilityAuras.Tick(second, 380, 1);
+            Assert.Equal(7, AbilityHandler.CurrentInnerStrength(second));
+            var refreshed = teammate.playerData.activeBuffs[692];
+            Assert.NotSame(last, refreshed);
+            Assert.Equal(28, AbilityStats.Player(teammate, 1010));
+
+            teammate.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(299, 0, 0));
+            AbilityAuras.Tick(second, 380, 1);
+            Assert.Equal(0, AbilityHandler.CurrentInnerStrength(second));
+            Assert.Same(refreshed, teammate.playerData.activeBuffs[692]);
+            AbilityAuras.Tick(second, 380, 1);
+            Assert.False(AbilityAuras.IsOn(second, 380));
+            TimedEffects.RunDue(refreshed.Started + 5.01);
+            Assert.Equal(0, AbilityStats.Player(teammate, 1010));
+        }
+        finally
+        {
+            AbilityAuras.Clear(first, announce: false);
+            AbilityAuras.Clear(second, announce: false);
+            foreach (var player in players) AbilityBuffs.RemoveAll(player);
+            Store.world = previousWorld;
+            WorldServer.Clients = previous;
+            foreach (uint id in new uint[] { 77654, 77653, 77652, 77651, 77650 }) groups.RemoveTeamMember(team.Id, id);
+        }
+
+        static WorldClient Participant(uint id, double x, byte level, ushort strength = 200)
+        {
+            var player = Client(innerStrength: strength);
+            player.playerData.setCharID(id);
+            player.playerData.setEntityId(id);
+            player.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(x, 0, 0));
+            player.playerInstance.Level.setValue(level);
+            player.viewMan = new ViewManager();
+            return player;
+        }
+    }
+
     [Theory]
     [InlineData(61, 3)]
     [InlineData(89, 12)]
