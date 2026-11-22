@@ -130,6 +130,25 @@ namespace hds
                 }
             }
 
+            ushort? overloadTargetSpawn = null;
+            if (AbilityID == 66)
+            {
+                var caster = Store.currentClient;
+                overloadTargetSpawn = packet.Length == 41 ? BitConverter.ToUInt16(packet, 4) :
+                    (ushort?)caster.viewMan.getViewById(currentTargetViewId)?.spawnId;
+                var player = PvpCombat.PlayerInView(caster, currentTargetViewId);
+                if (!overloadTargetSpawn.HasValue || (player != null && PvpCombat.Check(caster, player) != PvpRules.Verdict.Allowed))
+                {
+                    Deny(AbilityID, "Select a living enemy before using Overload.", AbilityRefusals.InvalidTarget, sendServerText: false);
+                    return;
+                }
+                if (!AbilityTargets.WithinSelectionRange(caster, AbilityID, currentTargetViewId))
+                {
+                    Deny(AbilityID, "The target is out of range.", AbilityRefusals.TargetOutOfRange, sendServerText: false);
+                    return;
+                }
+            }
+
             // Timed gun specials may resolve in interlock or as a selected attack. Both use the same live target.
             bool starterGunCast = AbilityID == 126 || AbilityID == 176;
             ushort? gunTargetSpawn = null;
@@ -735,6 +754,13 @@ namespace hds
             if (CasterHostileArea.Handles(AbilityID))
             {
                 CasterHostileArea.Land(client, ability);
+                return;
+            }
+            if (AbilityID == 66 &&
+                (!AbilityTargets.HasLiveAttackSelection(client, currentTargetViewId, overloadTargetSpawn, requireOpponent: true) ||
+                 !AbilityTargets.WithinSelectionRange(client, AbilityID, currentTargetViewId)))
+            {
+                Output.WriteDebugLog("[ABILITY] 66 fizzles: the selected Overload target changed or left range");
                 return;
             }
             if (SpyGroundBombs.Handles(AbilityID))
