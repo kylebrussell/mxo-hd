@@ -52,19 +52,21 @@ namespace hds
         public static readonly string[] ProxySheets = { "Aikido", "Karate", "KungFu", "Pistol", "Rifle", "SMG" };
 
         public const UInt16 PowerBoost = 25;
+        public const UInt16 AbsorbSimulacra = 607;
         public const UInt16 DrainCode = 19, FortifySimulacra = 20, DetonateProxy = 34, StopProxyEffect = 1109, ChargeSimulacra = 603,
             DaemonBoost1 = DaemonBoost.Ability, DaemonBoost2 = 619, DaemonBoostEffect2 = 700;
         public static readonly UInt16[] Repairs = { 30, 31, 587, 596, 615 };
-        internal static readonly UInt16[] ContinuousLoadAbilities = { FortifySimulacra, 30, ChargeSimulacra };
+        internal static readonly UInt16[] ContinuousLoadAbilities = { FortifySimulacra, 30, ChargeSimulacra, AbsorbSimulacra };
 
-        /// <summary>Abilities whose target must be the caster's own simulacrum (CastValidTarget 11; Decoy1_Test/StopProxy1_Test).</summary>
+        /// <summary>Abilities whose target must be the caster's own simulacrum (CastValidTarget 11 and shipped owner tests).</summary>
         public static bool TargetsOwnPet(UInt16 id) => id == DrainCode || id == FortifySimulacra || id == DetonateProxy ||
-            id == ChargeSimulacra || id == PowerBoost || Repairs.Contains(id);
+            id == ChargeSimulacra || id == PowerBoost || id == AbsorbSimulacra || Repairs.Contains(id);
 
         internal static string DisplayName(UInt16 id) => id switch
         {
             ChargeSimulacra => "Charge Simulacra",
             DetonateProxy => "Detonate Proxy",
+            AbsorbSimulacra => "Absorb Simulacra",
             _ => null
         };
 
@@ -782,7 +784,7 @@ namespace hds
         internal static bool IsCastLoaded(WorldClient caster, ushort id) =>
             (id != DrainCode && id != PowerBoost && !ContinuousLoadAbilities.Contains(id)) || AbilityPassives.IsLoaded(caster, id);
 
-        private static bool RequiresOutsideCombat(ushort id) => id == PowerBoost || id == DrainCode;
+        private static bool RequiresOutsideCombat(ushort id) => id == PowerBoost || id == DrainCode || id == AbsorbSimulacra;
 
         /// <summary>The cast's refusal, or null when it may go ahead (checked before cost and cooldown).</summary>
         internal static string Prepare(WorldClient caster, UInt16 id, UInt16 targetView, UInt16? targetSpawn,
@@ -808,9 +810,13 @@ namespace hds
                     return "You may only use this ability outside combat.";
                 }
                 Pet pet = Of(caster);
+                if (id == AbsorbSimulacra && (targetView <= 2 || pet == null || pet.Mob.getIsDead()))
+                {
+                    refusal = AbilityRefusals.InvalidTarget;
+                    return "Select your living simulacrum first.";
+                }
                 if (pet == null || pet.Mob.getIsDead()) return "You need an active simulacrum.";
-                // Decoy1_Test / StopProxy1_Test / AcousticDecoy2_Test: the direct object must be owned by the subject. Without a
-                // selection (or the caster selected) the caster's own simulacrum is meant.
+                // Decoy1_Test, StopProxy1_Test and AcousticDecoy2_Test check direct-object ownership.
                 if (!MatchesSelection(caster, pet, targetView, targetSpawn))
                 {
                     refusal = AbilityRefusals.InvalidTarget;
@@ -820,6 +826,11 @@ namespace hds
                 {
                     refusal = AbilityRefusals.TargetOutOfRange;
                     return "Your simulacrum is out of range.";
+                }
+                if (id == AbsorbSimulacra && !CombatSight.Between(caster, pet.Mob))
+                {
+                    refusal = AbilityRefusals.TargetNotInSight;
+                    return "Your simulacrum is out of sight.";
                 }
                 cast = new OwnPetCast(caster, pet, membership);
             }
@@ -891,6 +902,7 @@ namespace hds
             lock (pet)
             {
                 if (!cast.Matches(caster, Of(caster)) || !OwnerPresent(pet) || !InAbilityRange(pet, id) ||
+                    (id == AbsorbSimulacra && !CombatSight.Between(caster, pet.Mob)) ||
                     (RequiresOutsideCombat(id) && CombatManager.GetHandler(caster).isCombatRunning))
                 {
                     Output.WriteDebugLog("[PET] " + id + " fizzles: original pet, owner, range or combat requirement changed");
@@ -946,6 +958,17 @@ namespace hds
             {
                 Detonate(pet);
             }
+            else if (id == AbsorbSimulacra)
+            {
+                var (damage, healing) = AbsorbValues(casterLevel);
+                if (damage <= 0 || healing == 0) return;
+                UInt16 petHealth = pet.Mob.getHealthC();
+                UInt16 ownerHealth = PvpCombat.HealthOf(caster);
+                DamagePetLocked(pet, damage, 0);
+                UInt16 healed = AbilityHandler.HealSelf(caster, healing);
+                Output.WriteDebugLog($"[PET] Absorb Simulacra (607) owner={caster.playerData.getCharID()} pet={pet.SimulacraId} type=5 raw={damage} HP {petHealth}->{pet.Mob.getHealthC()}");
+                Output.WriteDebugLog($"[VITALS] char={caster.playerData.getCharID()} ability=607 type=6 raw={healing} HP {ownerHealth} -> {healed}");
+            }
             else if (id == DrainCode)
             {
                 // Drain Code's target health effect and caster IS effect are separate instant GOB records.
@@ -968,6 +991,18 @@ namespace hds
 
         private static UInt32 FirstFx(AbilityCatalog.Entry entry) =>
             (UInt32)(entry?.Modifiers.Select(m => m.Number("ActivationFX")).FirstOrDefault(n => n > 0) ?? 0);
+
+        internal static (int Damage, ushort Healing) AbsorbValues(int casterLevel)
+        {
+            var modifiers = AbilityCatalog.Find(AbsorbSimulacra).Modifiers;
+            var damage = modifiers.Single(mod => mod.Target == 108 && mod.Number("WhenEnabled") == 2 &&
+                mod.Number("DamageType") == 5 && mod.Number("DurationType") == 1);
+            var healing = modifiers.Single(mod => mod.Target == 108 && mod.Number("WhenEnabled") == 1 &&
+                mod.Number("DamageType") == 6 && mod.Number("DurationType") == 1);
+            AbilityValues.TryValue(damage, 0, casterLevel, out int hit);
+            AbilityValues.TryValue(healing, 0, casterLevel, out int heal);
+            return (Math.Max(0, hit), (ushort)Math.Clamp(heal, 0, ushort.MaxValue));
+        }
 
         /// <summary>Repair/Fix Simulacra's stored fixed heal, with the caster's healing influence (as AbilityHealing does for players).</summary>
         public static int FixedHeal(WorldClient caster, AbilityCatalog.Entry entry)
@@ -1332,7 +1367,7 @@ namespace hds
         // ---- Dev command (MXO_DEV_COMMANDS=1) ------------------------------------------------------------------
 
         public static readonly UInt16[] DevAbilities = { 27, 28, 29, 586, 594, 22, 601, 611, 616, 602, 612, 617, 30, 31, 587, 596, 615,
-            20, 25, 603, 34, 19, 609, 619 };
+            20, 25, 603, 34, 19, AbsorbSimulacra, 609, 619 };
 
         /// <summary>?pet: casts through the real ability path, summons directly, orders, and a hostile dummy to fight.</summary>
         public static string DevCommand(WorldClient client, string[] args)

@@ -99,6 +99,22 @@ public class CoderPetTests
         Assert.InRange(CoderPets.MaxHealthAt(25), 337, 1950);
     }
 
+    [Theory]
+    [InlineData(27, 725, 234)]
+    [InlineData(50, 1300, 418)]
+    public void AbsorbUsesTheIndependentStoredOwnerAndPetHealthEffects(int level, int hit, ushort heal)
+    {
+        Assert.Equal((hit, heal), CoderPets.AbsorbValues(level));
+        var ability = AbilityCatalog.Find(CoderPets.AbsorbSimulacra);
+        Assert.Equal(11, ability.Number("Ability/CastValidTarget"));
+        Assert.Equal(15, ability.Number("Ability/SelectionRange"));
+        Assert.Equal(2, ability.CastSeconds);
+        Assert.Equal(25, AbilityCosts.Cost(CoderPets.AbsorbSimulacra));
+        Assert.True(AbilityCooldowns.TryGet(CoderPets.AbsorbSimulacra, out var reuse));
+        Assert.Equal(30, reuse.Seconds);
+        Assert.Contains(CoderPets.AbsorbSimulacra, CoderPets.ContinuousLoadAbilities);
+    }
+
     [Fact]
     public void DetonateValueFollowsTempmods()
     {
