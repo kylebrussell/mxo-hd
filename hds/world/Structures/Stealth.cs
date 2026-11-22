@@ -439,6 +439,17 @@ namespace hds
             lock (client.playerData.upgradeSync) return EndCore(client, why, flush, generation);
         }
 
+        internal static void ConcealmentGrantRemoved(WorldClient client)
+        {
+            // Reuse the 1137 deactivation flow when removing its loaded grant.
+            lock (client.playerData.upgradeSync)
+            {
+                var active = Current(client);
+                if (active?.Def.Ability == ConcealmentGrantAbility && !AbilityPassives.IsLoaded(client, ConcealmentGrantAbility))
+                    EndCore(client, "grant unloaded", true, active.Generation);
+            }
+        }
+
         private static bool EndCore(WorldClient client, string why, bool flush, int generation)
         {
             Holder h = HolderOf(client);

@@ -104,6 +104,31 @@ public class SniperParityTests
     }
 
     [Fact]
+    public void UnloadingConcealmentEndsOnlyItsGrantedStealthState()
+    {
+        var client = Client();
+        (ushort, ushort) parent = (503, 19);
+        (ushort, ushort) shot = (504, 19);
+        AbilityPassives.SetLoaded(client, new[] { parent, shot }, true);
+        var concealment = Stealth.Begin(client, Stealth.Defs[Stealth.ConcealmentGrantAbility], 19);
+        try
+        {
+            AbilityPassives.SetLoaded(client, new[] { parent });
+            Assert.Same(concealment, Stealth.Current(client));
+            AbilityPassives.SetLoaded(client, new[] { shot });
+            Assert.Null(Stealth.Current(client));
+            Assert.Equal(0u, PvpFlag.FlagsOf(client) & (Stealth.ConcealmentFlag | Stealth.StealthedFlag));
+
+            AbilityPassives.SetLoaded(client, new[] { parent });
+            Assert.Null(Stealth.Current(client));
+            var sneak = Stealth.Begin(client, Stealth.Defs[Stealth.SneakGrantAbility], 19);
+            AbilityPassives.SetLoaded(client, Array.Empty<(ushort, ushort)>());
+            Assert.Same(sneak, Stealth.Current(client));
+        }
+        finally { Stealth.Cleared(client); }
+    }
+
+    [Fact]
     public void SniperDisciplineGrantsTheUpgradeAndFeedsBallisticAttackAndDamage()
     {
         var client = Client();
