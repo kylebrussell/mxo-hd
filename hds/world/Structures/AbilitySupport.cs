@@ -8,6 +8,8 @@ namespace hds
     /// <summary>Friendly abilities resolve to players, never to the hostile damage fallback.</summary>
     public static class AbilitySupport
     {
+        internal const ushort PersonalFirewall2 = 319;
+
         public static bool Handles(UInt16 id) => AbilityResurrection.Handles(id) || id==506 ||
             (AbilityCatalog.Find(id)?.Healing == true || AbilityBuffs.IsBuff(id) || AbilityHostile.IsSweep(id)) && !CombatSpecials.Handles(id);
         public static bool RequiresBuffer(ushort id) => id==506 || AbilityBuffs.IsBuff(id) ||
@@ -17,9 +19,11 @@ namespace hds
         public static bool BufferFits(WorldClient target, ushort id) => !RequiresBuffer(id) ||
             AbilityBuffBuffer.CanApply(target,id,AbilityBuffs.TryGet(id,out var buff) ? buff : null);
 
+        internal static bool IsGuardianSupport(ushort id) => id == 46 || id == 68 || id == 173 || id == PersonalFirewall2;
+
         internal static bool SightBlocked(WorldClient caster, WorldClient target, ushort id)
         {
-            if (target == caster || (id != 46 && id != 68 && id != 173)) return false;
+            if (target == caster || !IsGuardianSupport(id)) return false;
             var entry = AbilityCatalog.Find(id);
             return entry?.Number("Ability/CastDirectObjects") == 0 &&
                 entry.Number("Ability/DoesNOTRequireLOS") == 0 && !CombatSight.Between(caster, target);

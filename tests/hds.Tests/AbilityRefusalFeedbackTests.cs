@@ -32,6 +32,110 @@ public class AbilityRefusalFeedbackTests:IDisposable
     }
     static byte[][] Rpcs(WorldClient c)=>c.messageQueue.RPCMessagesQueue.Cast<SequencedMessage>().Select(m=>m.content.Skip(1).ToArray()).ToArray();
 
+    [Fact]
+    public void PersonalFirewall2OutsideCombatGateDoesNotStartItsCast()
+    {
+        var caster = Client();
+        Store.currentClient = caster;
+        caster.playerData.passives.Loaded[319] = 24;
+        caster.playerData.combatStyle = CombatStyles.HackerStyle;
+        var combat = CombatManager.GetHandler(caster);
+        combat.isCombatRunning = true;
+        try
+        {
+            byte[] request = { 0x3f, 0x01, 0x02, 0 };
+            double before = caster.playerData.castEndsAt;
+            new AbilityHandler().ProcessAbility(ref request);
+            Assert.Equal(AbilityRefusals.Encode(new(319, AbilityRefusals.MustBeOutsideCombat)), Assert.Single(Rpcs(caster)));
+            Assert.Equal(before, caster.playerData.castEndsAt);
+            Assert.Equal(500, AbilityHandler.CurrentInnerStrength(caster));
+            Assert.Empty(caster.playerData.cooldownEndsAt);
+        }
+        finally
+        {
+            combat.isCombatRunning = false;
+            CombatManager.RemoveClient(caster);
+        }
+    }
+
+    [Theory]
+    [InlineData("unloaded", AbilityRefusals.NotLoaded)]
+    [InlineData("style", AbilityRefusals.WrongStyle)]
+    [InlineData("far", AbilityRefusals.InvalidTarget)]
+    [InlineData("dead", AbilityRefusals.InvalidTarget)]
+    [InlineData("opponent", AbilityRefusals.InvalidTarget)]
+    [InlineData("blocked", AbilityRefusals.TargetNotInSight)]
+    [InlineData("lost", 0u)]
+    public void PersonalFirewall2ChecksTheSelectedFriendlyPlayerBeforeCastAndLanding(string caseName, uint denialReason)
+    {
+        string root = AppContext.BaseDirectory;
+        while (!File.Exists(Path.Combine(root, "data", "sector_properties.csv")))
+            root = Path.GetDirectoryName(root)!;
+        SectorProperties.Load(Path.Combine(root, "data", "sector_properties.csv"));
+        NavMesh.UseDirectory(Path.Combine(root, "data", "navmesh"));
+
+        var caster = Client();
+        var friend = Client();
+        caster.playerInstance.OrganizationID.setValue((byte)1);
+        friend.playerInstance.OrganizationID.setValue((byte)1);
+        caster.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(21750, 1095, 16150));
+        int friendX = caseName == "far" ? 20550 : caseName == "blocked" ? 22350 : 21550;
+        friend.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(friendX, 1095, 16150));
+        if (caseName == "dead") friend.playerData.isDead = true;
+        if (caseName == "opponent")
+        {
+            caster.playerData.duelId = 2;
+            friend.playerData.duelId = 3;
+        }
+        friend.playerData.setCharID(111);
+        friend.playerData.setEntityId(42);
+        WorldServer.Clients.Add("friend", friend);
+        var view = caster.viewMan.addView(42, 12);
+        view.viewCreated = true;
+        view.spawnId = 9;
+        Store.currentClient = caster;
+        caster.playerData.passives.Loaded[CombatStyles.HackerStyle] = 19;
+        caster.playerData.combatStyle = caseName == "style" ? AbilityProgression.SelfDefenseAbility : CombatStyles.HackerStyle;
+        if (caseName != "unloaded") caster.playerData.passives.Loaded[319] = 24;
+
+        var ability = new AbilityItem();
+        ability.setAbilityID(319);
+        ability.setAbilityName("Personal Firewall 2.0");
+        ability.setCastAnimStart(new byte[4]);
+        DataLoader.getInstance().AbilityDB.Add(ability);
+        var request = new byte[41];
+        BitConverter.GetBytes((ushort)319).CopyTo(request, 0);
+        BitConverter.GetBytes(view.ViewID).CopyTo(request, 2);
+        BitConverter.GetBytes((ushort)view.spawnId).CopyTo(request, 4);
+        double before = caster.playerData.castEndsAt;
+        try
+        {
+            new AbilityHandler().ProcessAbility(ref request);
+            if (denialReason == 0)
+            {
+                double end = caster.playerData.castEndsAt;
+                Assert.True(end > before);
+                Assert.Equal(455, AbilityHandler.CurrentInnerStrength(caster));
+                friend.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(22350, 1095, 16150));
+                DelayedActions.RunDue(end + 1);
+                Assert.True(AbilityCooldowns.IsCoolingDown(caster.playerData, 319, TimeUtils.GetSimTimeSeconds()));
+            }
+            else
+            {
+                Assert.Equal(AbilityRefusals.Encode(new(319, denialReason)), Assert.Single(Rpcs(caster)));
+                Assert.Equal(before, caster.playerData.castEndsAt);
+                Assert.Equal(500, AbilityHandler.CurrentInnerStrength(caster));
+                Assert.Empty(caster.playerData.cooldownEndsAt);
+            }
+            Assert.Empty(Rpcs(friend));
+            Assert.Equal(0, AbilityStats.Player(friend, 157));
+        }
+        finally
+        {
+            CombatManager.RemoveClient(caster);
+        }
+    }
+
     [Theory]
     [InlineData(43, true)]
     [InlineData(48, true)]

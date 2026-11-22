@@ -43,19 +43,23 @@ public class TypedAbilityResistanceTests
         Assert.Equal(100,TypedAbilityResistance.Player(source,target,371,100));AbilityBuffs.RemoveAll(target);
     }
     [Theory]
-    [InlineData(0, 976)]
-    [InlineData(1, 976)]
-    [InlineData(2, 905)]
-    [InlineData(7, 976)]
-    public void PersonalFirewallMitigatesEachSourcedDamageTypeUntilRemoved(int damageType, int expected)
+    [InlineData(68, 0, 976)]
+    [InlineData(68, 1, 976)]
+    [InlineData(68, 2, 905)]
+    [InlineData(68, 7, 976)]
+    [InlineData(319, 0, 952)]
+    [InlineData(319, 1, 952)]
+    [InlineData(319, 2, 811)]
+    [InlineData(319, 7, 952)]
+    public void PersonalFirewallMitigatesEachSourcedDamageTypeUntilRemoved(ushort ability, int damageType, int expected)
     {
         var source = Client();
         var target = Client();
         ushort Hit() => TypedAbilityResistance.Player(source, target, 0, 1000, damageType);
         Assert.Equal(1000, Hit());
-        AbilitySupport.Land(target, 68, 2);
+        AbilitySupport.Land(target, ability, 2);
         Assert.Equal(expected, Hit());
-        Assert.True(AbilityBuffs.Remove(target, 68));
+        Assert.True(AbilityBuffs.Remove(target, ability));
         Assert.Equal(1000, Hit());
     }
 
