@@ -5,7 +5,7 @@ namespace hds
     /// <summary>Native19-byte80ba layout. Named messages do not establish new admission rules.</summary>
     public static class AbilityRefusals
     {
-        public const uint ReuseWait=5, CurrentTactic=6, NotLoaded=7, WrongStyle=13, InsufficientInnerStrength=17,
+        public const uint ReuseWait=5, CurrentTactic=6, NotLoaded=7, TargetNotInSight=9, WrongStyle=13, InsufficientInnerStrength=17,
             MustBeOutsideCombat=21, TargetStateRequired=22, CasterStateRequired=23, InvalidTarget=24, TargetOutOfRange=34, NotEnemySimulacrum=36;
         // The stock 80 ba consumer leaves reason 10 silent. Use only where the script supplies the message.
         public const uint NoClientMessage = 10;
