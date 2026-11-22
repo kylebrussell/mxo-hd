@@ -1439,4 +1439,65 @@ public class AbilityHostileTests
         Assert.Equal(60f, mod.Seconds);
         Assert.True(AbilityHostile.Cleansable(481));
     }
+
+    [Theory]
+    [InlineData((ushort)70, (ushort)18, 3)]
+    [InlineData((ushort)74, (ushort)19, 1)]
+    public void StarterRecoveryPassivesFeedTheStrictSweepThresholdAtStockRanks(ushort ability, ushort rank, int bonus)
+    {
+        const ushort sweep = 320, slow = 86;
+        var caster = Client();
+        var recipient = Client();
+        var target = TimedEffects.ForPlayer(recipient);
+        AbilityPassives.SetLoaded(caster, new[] { (ability, rank) });
+        Assert.Equal(bonus, AbilityStats.Player(caster, 1052));
+        Land(recipient, slow);
+
+        Assert.True(AbilityHostile.ApplySweep(caster, recipient, sweep));
+        var loadedPulse = Assert.Single(target.Effects.Snapshot(), effect => effect.Parent == sweep);
+        Assert.Equal(18, loadedPulse.Value);
+        AbilityHostile.Pulse(target, loadedPulse, new SweepRoll(18 + bonus));
+        Assert.True(target.Effects.HasParent(slow));
+        AbilityHostile.Pulse(target, loadedPulse, new SweepRoll(17 + bonus));
+        Assert.False(target.Effects.HasParent(slow));
+
+        AbilityPassives.SetLoaded(caster, Array.Empty<(ushort, ushort)>());
+        Assert.Equal(0, AbilityStats.Player(caster, 1052));
+        Land(recipient, slow);
+        Assert.True(AbilityHostile.ApplySweep(caster, recipient, sweep));
+        var unloadedPulse = Assert.Single(target.Effects.Snapshot(), effect => effect.Parent == sweep);
+        Assert.Equal(18, unloadedPulse.Value);
+        AbilityHostile.Pulse(target, unloadedPulse, new SweepRoll(18));
+        Assert.True(target.Effects.HasParent(slow));
+        TimedEffects.Clear(target);
+    }
+
+    [Fact]
+    public void QuickRecoveryUsesOnlyLoadedHealthAndSweepModifiersDespiteItsMoveFlags()
+    {
+        const ushort recovery = 70;
+        var entry = AbilityCatalog.Find(recovery);
+        Assert.Equal(1, entry.Number("Ability/HasSuccessInterlockMove"));
+        Assert.Equal(1, entry.Number("Ability/HasDeflectionInterlockMove"));
+        foreach (string field in new[] { "CastWhenUsed", "CastDirectObjects", "TestFunction", "CombatSpecialMove" })
+            Assert.False(entry.Has($"Ability/{field}"));
+        Assert.Equal(new ushort[] { 1052, 1057 }, entry.Modifiers.Select(modifier => modifier.Target).Order().ToArray());
+        Assert.All(entry.Modifiers, modifier =>
+        {
+            Assert.Equal(0, modifier.Number("WhenEnabled", -1));
+            Assert.Equal(2, modifier.Number("DurationType", -1));
+        });
+        Assert.False(AbilitySupport.Handles(recovery));
+        Assert.False(CombatSpecials.TargetsEnemy(recovery));
+
+        var caster = Client(health: 500);
+        var loaded = new[] { (recovery, (ushort)18) };
+        AbilityPassives.SetLoaded(caster, loaded, newWorld: true);
+        Assert.Equal(8, AbilityStats.Player(caster, 1057));
+        Assert.Equal(540, NumericalUtils.ByteArrayToUint16(caster.playerInstance.MaxHealth.getValue(), 1));
+        AbilityPassives.SetLoaded(caster, Array.Empty<(ushort, ushort)>());
+        Assert.Equal(500, NumericalUtils.ByteArrayToUint16(caster.playerInstance.MaxHealth.getValue(), 1));
+        AbilityPassives.SetLoaded(caster, loaded);
+        Assert.Equal(540, NumericalUtils.ByteArrayToUint16(caster.playerInstance.MaxHealth.getValue(), 1));
+    }
 }

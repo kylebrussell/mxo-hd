@@ -1,0 +1,37 @@
+{
+  "abilities": {
+    "70": {
+      "checks": {
+        "targeting": {
+          "source": "Quick Recovery has the stored success and deflection move flags but lacks a cast-use selector, direct-object selector, TestFunction and CombatSpecialMove. GOB 70 contains only two indefinite WhenEnabled=0 modifiers. The legacy abilityIDs.csv row explicitly reports isCastAble=False.",
+          "runtime": "Quick Recovery takes effect through owned Archive membership. AbilityPassives supplies its own maximum-health and Sweep Bonus totals. It has no separate selected-player, special-move or hostile effect to resolve.",
+          "test": "QuickRecoveryUsesOnlyLoadedHealthAndSweepModifiersDespiteItsMoveFlags verifies the complete two-modifier shape, the absent cast fields, the lack of a support or hostile special, and the owner-only maximum-health change across load, unload and reload. PR600 and PR696 verify its normal stock Archive and startup paths. https://github.com/kylebrussell/mxo-hd/pull/600#issuecomment-7056448353 https://github.com/kylebrussell/mxo-hd/pull/696#issuecomment-7069292847"
+        },
+        "stats": {
+          "source": "GOB 70 gives learned-rank function 2 times 0.48 for maximum-health bonus 1057 and function 2 times 0.2 for Sweep Bonus 1052. The shipped NegativeConditionSweepPulse callback compares a random draw strictly below its effective chance value.",
+          "runtime": "AbilityPassives feeds 1057 to maximum-health reconciliation and feeds the caster's 1052 into the ordinary timed sweep snapshot. The Sweep Bonus policy adds chance points once per cast and preserves the published base effect.",
+          "test": "PR600 confirms the stock max-HP swing 545→505→545 and both linked source records. PR696 separately reports 1057 +7 and 1052 +3 at learned rank 15. PR815 observed source 70 +10 in the stock live sweep comparison. The isolated Quick Recovery rank-18 runtime tests measure own maximum 540→500→540 and show the ordinary 320 threshold 21 versus 18 without the passive. https://github.com/kylebrussell/mxo-hd/pull/600#issuecomment-7056448353 https://github.com/kylebrussell/mxo-hd/pull/696#issuecomment-7069292847 https://github.com/kylebrussell/mxo-hd/pull/815#issuecomment-7086057679"
+        },
+        "behavior-tests": {
+          "source": "Quick Recovery supplies both permanent bonuses while the passive remains loaded.",
+          "runtime": "Archive load and unload reconcile maximum health and the caster's Sweep Bonus. Applying a new ordinary timed sweep snapshots the current bonus, with independent recipient debuff eligibility and the ordinary recorded effect duration.",
+          "test": "QuickRecoveryUsesOnlyLoadedHealthAndSweepModifiersDespiteItsMoveFlags covers the durable producer and actual isolated HP effect. StarterRecoveryPassivesFeedTheStrictSweepThresholdAtStockRanks proves that roll 21 keeps the same debuff and roll 20 clears it at rank 18, while an unloaded sweep retains the baseline on roll 18. PR600 and PR815 supply stock producer, health and eligible sweep evidence. https://github.com/kylebrussell/mxo-hd/pull/600#issuecomment-7056448353 https://github.com/kylebrussell/mxo-hd/pull/815#issuecomment-7086057679"
+        }
+      }
+    },
+    "74": {
+      "checks": {
+        "stats": {
+          "source": "GOB 74 gives learned-rank function 2 times 0.481 for friendly area-radius stat 127 and times 0.1 for Sweep Bonus 1052. The recovered stock UBF0 radius selector scales the caster's base metres by the signed stat 127 percentage.",
+          "runtime": "AbilityRadius applies 127 on the established friendly support routes. Ordinary cast sweeps snapshot the caster's live 1052 through the shared adopted pulse policy.",
+          "test": "PR647 verifies 127 +9 and 1052 +1 at rank 19, both source removals and restores, and a 6.25 m teammate becoming ineligible without the radius bonus. PR815 observes source 74 +5 in the stock ordinary sweep. The new focused test isolates source 74 on the same debuff, changing the strict threshold from 18 to 19 at rank 19. https://github.com/kylebrussell/mxo-hd/pull/647#issuecomment-7061801219 https://github.com/kylebrussell/mxo-hd/pull/815#issuecomment-7086057679"
+        },
+        "behavior-tests": {
+          "source": "The two GOB 74 modifiers are permanent while loaded. The native radius read uses the friendly UBF0 predicate and the shipped sweep callback rolls each eligible debuff below its chance.",
+          "runtime": "Caster-side group support and the reviewed friendly 944 effect run through the supported 127 radius calculation. The caster's 1052 modifies the scheduled probability on the ordinary timed sweep while leaving the published base chance and cooldown intact.",
+          "test": "ResistDamageRadiusUsesLoadedCasterPercentAndExactFriendlyStatusCategory covers the exact friendly radius predicate and excludes the hostile control. PR647 isolates the repeatable stock heal eligibility and stat round trip. StarterRecoveryPassivesFeedTheStrictSweepThresholdAtStockRanks independently checks that rank-19 Resist Damage makes roll 18 clear Slow, roll 19 retain it, and unloading restores the baseline. PR815 exercises the stock sweep with 74 present in the fixed bonus. https://github.com/kylebrussell/mxo-hd/pull/647#issuecomment-7061801219 https://github.com/kylebrussell/mxo-hd/pull/815#issuecomment-7086057679"
+        }
+      }
+    }
+  }
+}
