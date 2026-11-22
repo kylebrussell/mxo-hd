@@ -332,12 +332,27 @@ public class CoderPetTests
     public void FortifyAndBoostChangeGameplayOnlyDuringTheirLifetime()
     {
         var pet = ResourcePet(); pet.FortifyResistance = 100; pet.FortifyUntil = 20;
-        Assert.Equal(50, CoderPets.Mitigate(pet, 100, 19));
-        Assert.Equal(100, CoderPets.Mitigate(pet, 100, 20));
+        Assert.Equal(76, CoderPets.MitigateRetaliation(pet, 50, 100, 19));
+        Assert.Equal(100, CoderPets.MitigateRetaliation(pet, 50, 100, 20));
         Assert.Equal(75, CoderPets.HitChance(pet, 50, 10));
         pet.BoostUntil = 15; pet.BoostAccuracy = 65;
         Assert.Equal(95, CoderPets.HitChance(pet, 50, 14));
         Assert.Equal(75, CoderPets.HitChance(pet, 50, 15));
+    }
+
+    [Theory]
+    [InlineData(3, 12)]
+    [InlineData(4, 13)]
+    [InlineData(5, 14)]
+    public void FortifyUsesTheArmorChangeAtTheRetaliationLevels(int attackerLevel, int expected)
+    {
+        var pet = ResourcePet();
+        pet.Mob.setLevel(4);
+        pet.FortifyResistance = 36;
+        pet.FortifyUntil = 20;
+        Assert.Equal(expected, CoderPets.MitigateRetaliation(pet, attackerLevel, 20, 19));
+        Assert.Equal(1, CoderPets.MitigateRetaliation(pet, attackerLevel, 1, 19));
+        Assert.Equal(20, CoderPets.MitigateRetaliation(pet, attackerLevel, 20, 20));
     }
     [Fact]
     public void PowerBoostUsesCasterLevelTypedInfluenceAndReplacesRatherThanStacks()

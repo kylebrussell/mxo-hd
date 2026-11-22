@@ -193,7 +193,7 @@ PETS = {
     28: _summon.format(4, 7) + '; random proxy sheet; shipped create-then-destroy ordering unresolved',
     **{a: _summon.format(lo, hi) + '; Nuker sheet' for a, lo, hi in ((22, 4, 7), (601, 8, 17), (611, 18, 34), (616, 35, 50))},
     **{a: _summon.format(lo, hi) + '; Healer sheet heals owner (amount a choice)' for a, lo, hi in ((602, 12, 22), (612, 23, 43), (617, 44, 50))},
-    20: 'own simulacrum only; Max Health +level x15 for 600s; four resistances +level x2 consumed by retaliation (OURS rating curve)',
+    20: 'own simulacrum only; Max Health +level x15 and four resistance ratings +level x2 for 600s; NPC melee retaliation consumes the Fortify rating using the shipped armor curve normalized to ordinary pet damage (OURS pet caller)',
     603: 'own simulacrum only; sourced 50m range scaled by selection-range debuff at admission and landing; stock brackets the 10m reduced range; 600s IS cost -20%/regen +50%; base pool/cost/regen OURS',
     34: 'own simulacrum only; pet-centred 8m blast on NPCs and eligible hostile players; DetonateProxyProc internal viral child 1109 uses pet-level typed resistance; owner receives normal credit; pet takes 13000 after 0.5s',
     19: 'own simulacrum only; stored 8000 type-5 hit and +50 caster IS verified on a surviving fortified Proxy; DecoyDuration 60s unresolved',
