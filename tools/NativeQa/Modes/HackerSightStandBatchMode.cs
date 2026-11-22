@@ -8,13 +8,15 @@ namespace NativeQa.Modes;
 public sealed class HackerSightStandBatchMode : NativeQaMode
 {
     private const ushort HackerStyle = 1006;
+    // PR443 (1ea85443ffbd) Overload at 1430.
+    internal const string OverloadStock = "80b94200040002000000000000000000000000000000000000000000585cc20001000000086b0000000000";
     private static readonly ushort[] Loadout = Profile(2, 17, HackerStyle, 354, 476, 66).Order().ToArray();
     private static readonly (ushort Ability, float Reuse, string Capture)[] Samples =
     {
-        // PR449 (09f69e027ea5) stock 354 at 1318 and selected 476 at 1702. PR443 (1ea85443ffbd) 66 at 1430.
+        // PR449 (09f69e027ea5) stock 354 at 1318 and selected 476 at 1702.
         (354, 120, "80b96201000000000000000000000000000000000000000000000000585cc40001000000086b0000000000"),
         (476, 120, "80b9dc010e000c0000000000000000000000000000000000000000000000004084d77741086b0000000000"),
-        (66, 43, "80b94200040002000000000000000000000000000000000000000000585cc20001000000086b0000000000")
+        (66, 43, OverloadStock)
     };
 
     public override string Name => "ability-parity-hacker-sight-stands";

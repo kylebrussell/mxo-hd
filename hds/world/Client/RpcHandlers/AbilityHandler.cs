@@ -61,6 +61,13 @@ namespace hds
                 }
             }
 
+            bool starterDebuffNeedsLoadout = AbilityID == 40 || AbilityID == 66 || AbilityID == 86;
+            if (starterDebuffNeedsLoadout && !AbilityPassives.IsLoaded(Store.currentClient, AbilityID))
+            {
+                Deny(AbilityID, "Load this ability before using it.", AbilityRefusals.NotLoaded, sendServerText: false);
+                return;
+            }
+
             // Internal effect templates are reapplied by their sourced parent callbacks, never a free client cast.
             if(AbilityID == AbilityEmpBlast.Weakness) { Deny(AbilityID,"NPC-only ownership marker cannot be activated."); return; }
             if(AbilityID == CoderPets.StopProxyEffect) { Deny(AbilityID,"Use Detonate Proxy on your simulacrum."); return; }
@@ -680,6 +687,12 @@ namespace hds
             {
                 UInt16 stealthTarget = currentTargetViewId;
                 if (ControlActions.CanUseAbilities(client)) Stealth.Land(client, AbilityID, stealthTarget, itemSlot);
+                return;
+            }
+
+            if (starterDebuffNeedsLoadout && !AbilityPassives.IsLoaded(client, AbilityID))
+            {
+                Output.WriteDebugLog($"[ABILITY] {AbilityID} fizzles: the starter debuff was unloaded before landing");
                 return;
             }
 
