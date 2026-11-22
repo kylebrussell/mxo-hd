@@ -1,0 +1,13 @@
+{
+  "abilities": {
+    "44": {
+      "checks": {
+        "source-parity": {
+          "source": "ComputeDownloadMissionMapOutcome returns a six-bit cumulative mask for the successful accept-time roll. The shipped deactivation callback disables the mission map. The stock Positions array supplies green, red and yellow relationship markers.",
+          "runtime": "The server's map policy projects mission objects, hostiles, known locks, friendly actors and authored entrance and exit waypoints from the mask and current floor. It uses the stock 80 c5 marker stream and ends refresh on unload without repeating the accept-time roll on reload.",
+          "test": "[Native PR818](https://github.com/kylebrussell/mxo-hd/pull/818#issuecomment-7086218255) verified stock mission acceptance, no marker with the ability absent, three markers at tier 63 including the green courier, the safe-only tier 7, exit clear/restore at 31/63, and final unload/reload silence. The radar was clipped, so the witness is the stock 80 c5 frames. The disposable replay verifies the floor and tier rules. [PR634](https://github.com/kylebrussell/mxo-hd/pull/634) covers the leader's eligible-team objective ping."
+        }
+      }
+    }
+  }
+}
