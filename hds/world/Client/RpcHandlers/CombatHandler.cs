@@ -343,13 +343,21 @@ namespace hds
             Int16 absorbedByNpc, absorbedByPlayer;
             CombatTactic npcTactic;
             bool npcTurn = !stunned && !CombatSpecials.TurnedAway(mob, player) && mob.TryRetaliate(now, CombatInterlock.RoundMs / 1000.0);
+            var gunAdjustment = !opening && !withdrawing && ability == null && npcTurn && !playerStunned
+                ? SingleNpcInterlockGunAdjustment(session) : null;
             lock (roundRng)
             {
                 npcTactic = CombatInterlock.NpcTactic(roundRng);
+                int attackInput = WithdrawalInput.Attack(player, ability, ordinaryWithdrawal);
+                int defenceInput = AbilityStats.Defense(player, false);
+                int adjustment = gunAdjustment?.Adjustment ?? 0;
+                if (gunAdjustment is { } gun)
+                    Output.WriteDebugLog($"[SHARPSHOOTER NPC INTERLOCK] {PvpFlag.Name(player)} class={gun.WeaponClass} loaded148={gun.Loaded} " +
+                        $"modifier={adjustment} attack={attackInput}->{attackInput + adjustment} defence={defenceInput}->{defenceInput + adjustment} opponents=1");
                 playerHit = CombatInterlock.RollHit(roundRng, playerTactic, playerLevel, npcTactic, mobLevel, out playerAttack, out playerDefense, playerType,
-                    WithdrawalInput.Attack(player,ability,ordinaryWithdrawal), AbilityStats.SpecialDefense(mob, ability), ordinaryWithdrawal) && !playerStunned;
+                    attackInput + adjustment, AbilityStats.SpecialDefense(mob, ability), ordinaryWithdrawal) && !playerStunned;
                 npcHit = CombatInterlock.RollHit(roundRng, npcTactic, mobLevel, playerTactic, playerLevel, out npcAttack, out npcDefense,
-                    CombatTacticType.Normal, AbilityStats.Attack(mob, false), AbilityStats.Defense(player, false)) && !stunned &&
+                    CombatTacticType.Normal, AbilityStats.Attack(mob, false), defenceInput + adjustment) && !stunned &&
                     npcTurn;
                 condition = roundRng.Next(100) < CombatInterlock.ConditionChancePercent;
                 playerDamage = CombatCalculator.CloseCombatDamage(roundRng, playerLevel, mobLevel, playerTactic, out absorbedByNpc, playerType,
@@ -1321,6 +1329,20 @@ namespace hds
             Mob mob = session.DefenderMob;
             return InMeleeReach(CombatCalculator.CalculateDistanceMetres(session.Attacker.playerInstance.Position.getValue(),
                 mob.getXPos(), mob.getYPos(), mob.getZPos()));
+        }
+
+        private static (byte WeaponClass, bool Loaded, int Adjustment)? SingleNpcInterlockGunAdjustment(CombatSession session)
+        {
+            var mob = session.DefenderMob;
+            var player = session.Attacker;
+            if (mob.CombatantCount != 1 || !ReferenceEquals(mob.getCombatTarget(), player) ||
+                !NpcInMeleeReach(session) || RangedWeapons.IsGun(mob.getWeapon())) return null;
+            byte weaponClass = RangedWeapons.AttackClass(SharpshooterFreeFire.EquippedWeapon(player));
+            if (weaponClass == 0) return null;
+            bool loaded = AbilityPassives.IsLoaded(player, 148);
+            int adjustment = CombatRules.GunAgainstFistsModifier(weaponClass, false, shortRange: true, defenderOpponents: 1,
+                intoMeleePenaltyNegated: loaded, shortRangePenaltyNegated: loaded);
+            return (weaponClass, loaded, adjustment);
         }
 
         /// <summary>The NPC runs up to arm's length and faces the player, as an aggroing NPC does.</summary>
