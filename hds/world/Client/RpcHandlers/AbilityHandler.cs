@@ -26,7 +26,7 @@ namespace hds
             AbilityID = AbilityCatalog.Canonical(AbilityID);
             if (PrisonDevices.Handles(AbilityID)) { PrisonDevices.Activate(Store.currentClient, AbilityID, packet); return; }
             UInt16 currentTargetViewId = reader.ReadUInt16(1);
-            bool selectedDespoilerArea = AbilityID == 399 || AbilityID == 400;
+            bool selectedDespoilerArea = AbilityID == 399 || AbilityID == 400 || AbilityID == 404;
 
             bool starterViralDebuffNeedsLoadout = AbilityID == 43 || AbilityID == 48 || AbilityID == 69;
             if (!CoderPets.IsCastLoaded(Store.currentClient, AbilityID) ||
@@ -336,7 +336,7 @@ namespace hds
                     Deny(AbilityID, "The target is not in sight.", AbilityRefusals.TargetNotInSight, sendServerText: false);
                     return;
                 }
-                if (AbilityID == 399)
+                if (AbilityID == 399 || AbilityID == 404)
                 {
                     var fight = CombatManager.GetHandler(caster);
                     if (fight.isCombatRunning || fight.HasActiveInterlock)
