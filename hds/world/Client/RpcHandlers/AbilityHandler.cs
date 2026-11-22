@@ -255,12 +255,15 @@ namespace hds
 
             // The client sends a double-clicked ability twice in a row; count it once.
             ClientData data = Store.currentClient.playerData;
-            if (!CraftingSession.Handles(AbilityID) && data.lastAbilityId == AbilityID && now - data.lastAbilityTime < DuplicateAbilityWindowSeconds)
+            bool nodeSearch = UtilityAbilities.IsDataNodeSearch(AbilityID);
+            UInt16? locatorSlot = nodeSearch ? UtilityAbilities.LocatorBagSlot(packet) : null;
+            if (!CraftingSession.Handles(AbilityID) && data.lastAbilityId == AbilityID &&
+                (!nodeSearch || data.lastLocatorSlot == locatorSlot) && now - data.lastAbilityTime < DuplicateAbilityWindowSeconds)
             {
                 Output.WriteDebugLog("[ABILITY] Duplicate use ignored");
                 return;
             }
-            if (!strictInterlock)
+            if (!strictInterlock && !nodeSearch)
             {
                 data.lastAbilityId = AbilityID;
                 data.lastAbilityTime = now;
@@ -280,10 +283,9 @@ namespace hds
                 Deny(AbilityID, "You cannot act while stunned or pacified.");
                 return;
             }
-            bool nodeSearch = UtilityAbilities.IsDataNodeSearch(AbilityID);
             if (nodeSearch && UtilityAbilities.Level(Store.currentClient, AbilityID) <= 0)
             {
-                Deny(AbilityID,"Load this data-node search ability before activating it.");
+                Deny(AbilityID, "Load this data-node search ability before activating it.", AbilityRefusals.NotLoaded, sendServerText: false);
                 return;
             }
             if (AbilityID == ConcealmentDetection.Ability && AbilityPassives.Level(Store.currentClient, AbilityID) == 0)
@@ -316,9 +318,7 @@ namespace hds
             {
                 return;
             }
-            UInt16? locatorSlot = nodeSearch ? UtilityAbilities.LocatorBagSlot(packet) : null;
-            UInt32? selectedLocator = locatorSlot.HasValue
-                ? UtilityAbilities.ToolFor(Store.currentClient, AbilityID, locatorSlot) : (UInt32?)null;
+            UInt32? selectedLocator = null;
 
             // Internal pill abilities require their owned bag item, even if an ability was loaded.
             if (HealthBoostPills.Handles(AbilityID))
@@ -333,6 +333,26 @@ namespace hds
             {
                 Deny(AbilityID, "You cannot perform special moves while confused.");
                 return;
+            }
+            if (nodeSearch)
+            {
+                // Turning off a running search does not start a cast or require enough IS to start another.
+                var locator = Store.currentClient;
+                if (UtilityAbilities.StopFindDataNode(locator))
+                {
+                    data.lastAbilityId = AbilityID;
+                    data.lastAbilityTime = now;
+                    data.lastLocatorSlot = locatorSlot;
+                    locator.FlushQueue();
+                    return;
+                }
+                selectedLocator = UtilityAbilities.ToolFor(locator, AbilityID, locatorSlot);
+                if (selectedLocator == 0)
+                {
+                    locator.messageQueue.addRpcMessage(DuelPackets.BuildSystemString(UtilityAbilities.ToolFail));
+                    locator.FlushQueue();
+                    return;
+                }
             }
             if (AbilityBuffs.TacticalConflict(Store.currentClient, AbilityID))
             {
@@ -475,6 +495,12 @@ namespace hds
                 ProcessAbilityScript(currentAbility);
                 AbilityCooldowns.Start(caster, AbilityID, now);
                 return;
+            }
+            if (nodeSearch)
+            {
+                data.lastAbilityId = AbilityID;
+                data.lastAbilityTime = now;
+                data.lastLocatorSlot = locatorSlot;
             }
             if (currentAbility.getCastingTime() > 0)
             {
