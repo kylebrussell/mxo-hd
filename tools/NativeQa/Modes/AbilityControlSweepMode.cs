@@ -69,6 +69,8 @@ public sealed class AbilityControlSweepMode : NativeQaMode
         var server = context.ActualServer ?? throw new InvalidOperationException("Control sweep requires the disposable QA server.");
         using var caster = await HeadlessPlayer.LoginAsync(context.Address, "QAFriend", "QAFriend");
         await caster.EnterWorldAsync();
+        caster.SendRpc(StarterHackerViralSightMode.StockStyle);
+        await caster.WaitForViewUpdateAsync(2, "02 80 80 80 80 80 10 ee 03 00 00");
         var targets = new Dictionary<string, ViewCreation>();
         foreach (string name in Samples.Select(sample => sample.Npc).Distinct())
             targets.Add(name, await caster.WaitForViewNamedAsync(name));

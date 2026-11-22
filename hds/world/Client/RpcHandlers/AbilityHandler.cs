@@ -104,6 +104,47 @@ namespace hds
 
             if (AbilityID == AbilityBuffs.SittingEffect) return; // Owned by the normal sit/stand stance requests.
 
+            // Freeze System 2.0 and Code Stop bind the selected hostile before charging a cast.
+            bool selectedPacify = AbilityID == 352 || AbilityID == 393;
+            ushort? pacifySpawn = null;
+            if (selectedPacify)
+            {
+                var caster = Store.currentClient;
+                if (!AbilityPassives.IsLoaded(caster, AbilityID))
+                {
+                    Deny(AbilityID, "Load this ability before using it.", AbilityRefusals.NotLoaded, sendServerText: false);
+                    return;
+                }
+                ushort? viewSpawn = (ushort?)caster.viewMan.getViewById(currentTargetViewId)?.spawnId;
+                pacifySpawn = packet.Length == 41 ? BitConverter.ToUInt16(packet, 4) : viewSpawn;
+                if (!pacifySpawn.HasValue || !AbilityTargets.HasLiveAttackSelection(caster, currentTargetViewId, pacifySpawn, requireOpponent: true))
+                {
+                    Deny(AbilityID, "Choose a living hostile target.", AbilityRefusals.InvalidTarget, sendServerText: false);
+                    return;
+                }
+                if (!AbilityTargets.WithinSelectionRange(caster, AbilityID, currentTargetViewId))
+                {
+                    Deny(AbilityID, "The target is out of range.", AbilityRefusals.TargetOutOfRange, sendServerText: false);
+                    return;
+                }
+                if (!AbilityTargets.HasSelectionSight(caster, AbilityCatalog.Find(AbilityID), currentTargetViewId))
+                {
+                    Deny(AbilityID, "The target is not in sight.", AbilityRefusals.TargetNotInSight, sendServerText: false);
+                    return;
+                }
+                var fight = CombatManager.GetHandler(caster);
+                if (fight.isCombatRunning || fight.HasActiveInterlock)
+                {
+                    Deny(AbilityID, "This ability cannot be used during combat.", AbilityRefusals.MustBeOutsideCombat, sendServerText: false);
+                    return;
+                }
+                if (CombatStyles.Active(caster) != CombatStyles.HackerStyle)
+                {
+                    Deny(AbilityID, "This ability requires Hacker Style.", AbilityRefusals.WrongStyle, sendServerText: false);
+                    return;
+                }
+            }
+
             // These Hacker controls and debuffs require a live selected enemy.
             bool hostileControl = AbilityID == 43 || AbilityID == 48 || AbilityID == 315;
             bool starterMovementDebuff = AbilityID == 40 || AbilityID == 41 || AbilityID == 86;
@@ -824,6 +865,14 @@ namespace hds
             if (CasterHostileArea.Handles(AbilityID))
             {
                 CasterHostileArea.Land(client, ability);
+                return;
+            }
+            if (selectedPacify &&
+                (!AbilityPassives.IsLoaded(client, AbilityID) ||
+                 !AbilityTargets.HasLiveAttackSelection(client, currentTargetViewId, pacifySpawn, requireOpponent: true) ||
+                 !AbilityTargets.WithinSelectionRange(client, AbilityID, currentTargetViewId)))
+            {
+                Output.WriteDebugLog($"[ABILITY] {AbilityID} fizzles: the selected Pacify target or loaded ability changed");
                 return;
             }
             if (AbilityID == 66 &&

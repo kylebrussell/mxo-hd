@@ -221,22 +221,33 @@ public class AbilityHostileTests
         }
     }
 
-    [Fact]
-    public void CodeStopBreaksOnDamageButItsTwelveSecondImmunitySurvives()
+    [Theory]
+    [InlineData(352)]
+    [InlineData(393)]
+    public void SelectedPacifyBreaksOnDamageButItsTwelveSecondImmunitySurvives(ushort id)
     {
         var caster = Client();
         var target = Client();
-        var state = Assert.Single(Land(target, 393, caster));
+        var mods = Land(target, id, caster);
+        var state = Assert.Single(mods, mod => mod.Target == TempMods.MezAbility);
         var effects = TimedEffects.ForPlayer(target);
         Assert.Equal(6, state.Seconds);
+        int resistance = id == 352 ? -48 : 0;
+        Assert.Equal(resistance, AbilityStats.Player(target, 157));
+        Assert.Equal(id == 352 ? 1113 : 1000, TypedAbilityResistance.Player(caster, target, 58, 1000));
+        if (id == 352) Assert.Equal(12, Assert.Single(mods, mod => mod.Target == 157).Seconds);
         var immunity = Assert.Single(effects.Effects.Snapshot(), m => m.Parent == TempMods.ControlImmunityTimerAbility);
         Assert.Equal(12, immunity.Seconds);
+        Assert.Equal(200, AbilityHandler.CurrentInnerStrength(target));
         Assert.False(ControlActions.CanUseAbilities(effects.Effects));
         TimedEffects.HealthChanged(effects, -1, true);
-        Assert.True(effects.Effects.HasParent(393));
+        Assert.True(effects.Effects.HasParent(id));
         TimedEffects.HealthChanged(effects, 1, true, damageEvent: true);
         Assert.True(ControlActions.CanUseAbilities(effects.Effects));
-        Assert.Empty(Land(target, 393, caster));
+        Assert.Equal(0, AbilityStats.Player(target, 157));
+        var immune = Land(target, id, caster);
+        Assert.DoesNotContain(immune, mod => mod.Target == TempMods.MezAbility);
+        Assert.Same(immunity, Assert.Single(effects.Effects.Snapshot(), mod => mod.Parent == TempMods.ControlImmunityTimerAbility));
         TimedEffects.RunDue(immunity.Expires + .01);
         Assert.False(effects.Effects.HasParent(TempMods.ControlImmunityTimerAbility));
     }

@@ -1,0 +1,37 @@
+{
+  "abilities": {
+    "352": {
+      "checks": {
+        "controls": {
+          "source": "GOB 352 applies six seconds of Mez and 12 seconds of Viral Resistance -48 with AddControlImmunityTimer. The shipped damage callback deactivates its parent while the separate immunity persists.",
+          "runtime": "TempMods and TimedEffects install the selected player's linked records and source 734 immunity. Damage clears the parent, and immunity suppresses a new state without suppressing the independent resistance modifier.",
+          "test": "SelectedPacifyBreaksOnDamageButItsTwelveSecondImmunitySurvives verifies the base duration, action block, -48 resistance's typed health effect, damage break and immunity preservation. ActualNpcLandingDeflectsBeforeDamageDebuffAndProcAndOnlyRoutesToVisibleSameWorld verifies the rejected contest cannot install either part."
+        },
+        "behavior-tests": {
+          "source": "GOB 352 uses a loaded Hacker Style cast outside combat on a visible hostile selection within 20 m. It has a two-second cast, 34 IS cost, 15 s reuse, base six-second Mez, -48 Viral Resistance for 12 s and the independent immunity callback.",
+          "runtime": "AbilityHandler checks the selection before cost and retains its spawn across the cast. AbilityTargets and PvpCombat run the normal sight and viral contest and TimedEffects resolves the control and resistance.",
+          "test": "SelectedPacifyRefusesBeforeCostAndRetainsTheAdmittedSpawn checks early refusals and paid invalidation during the cast. SelectedPacifyBreaksOnDamageButItsTwelveSecondImmunitySurvives and ActualNpcLandingDeflectsBeforeDamageDebuffAndProcAndOnlyRoutesToVisibleSameWorld cover the state, resistance, damage break, immunity and defender responses. The companion stock Freeze System 1.0 and Logic Blast bootstrap exercises the shared wire lifecycle."
+        }
+      }
+    },
+    "393": {
+      "checks": {
+        "controls": {
+          "source": "GOB 393 has six-second Mez and a separate twelve-second AddControlImmunityTimer. Damage breaks Mez. Healing does not.",
+          "runtime": "TempMods and TimedEffects apply the state, keep its source 734 immunity after damage breaks the effect, refuse another state while immune, and remove immunity at expiry.",
+          "test": "SelectedPacifyBreaksOnDamageButItsTwelveSecondImmunitySurvives exercises the exact base values for 393, healing, damage, immunity and restoration. The existing stock PR313 and PR321 controls run supplies 393's native family and immunity presentation. https://github.com/kylebrussell/mxo-hd/pull/321#issuecomment-7001527488"
+        },
+        "stats": {
+          "source": "GOB 393's raw zero stat 710 component calls AddControlImmunityTimer for 12 seconds. It carries scheduling data and does not debit Inner Strength.",
+          "runtime": "TimedEffects.ImmunityFor sends the plain source 734 / target 681 zero-valued immunity tuple separately from the state. It never schedules a resource debit.",
+          "test": "SelectedPacifyBreaksOnDamageButItsTwelveSecondImmunitySurvives checks unchanged target Inner Strength, the independent 12 s record and natural expiry. The stock control bootstrap observes the matching zero-value tuple on the shared path."
+        },
+        "behavior-tests": {
+          "source": "GOB 393 uses a loaded Hacker Style cast outside combat on a visible hostile selection within 14 m. It stores a two-second cast, 20 IS, 15 s reuse, base six-second Mez and twelve-second immunity.",
+          "runtime": "AbilityHandler checks the selection before cost and retains its original spawn across the cast. AbilityTargets and TimedEffects own the contest, duration, break and immunity.",
+          "test": "SelectedPacifyRefusesBeforeCostAndRetainsTheAdmittedSpawn checks the refusal, paid invalidation, 14 m selection guard, and load-state changes. SelectedPacifyBreaksOnDamageButItsTwelveSecondImmunitySurvives checks the exact effect and cleanup and ActualNpcLandingDeflectsBeforeDamageDebuffAndProcAndOnlyRoutesToVisibleSameWorld covers the deflected result."
+        }
+      }
+    }
+  }
+}
