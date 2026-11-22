@@ -186,7 +186,7 @@ PETS = {
     **{a: _summon.format(lo, hi) + '; Nuker sheet' for a, lo, hi in ((22, 4, 7), (601, 8, 17), (611, 18, 34), (616, 35, 50))},
     **{a: _summon.format(lo, hi) + '; Healer sheet heals owner (amount a choice)' for a, lo, hi in ((602, 12, 22), (612, 23, 43), (617, 44, 50))},
     20: 'own simulacrum only; Max Health +level x15 for 600s; four resistances +level x2 consumed by retaliation (OURS rating curve)',
-    603: 'own simulacrum only; 600s IS cost -20%/regen +50% consumed by bounded pet IS; base pool/cost/regen OURS',
+    603: 'own simulacrum only; sourced 50m range scaled by selection-range debuff at admission and landing; stock brackets the 10m reduced range; 600s IS cost -20%/regen +50%; base pool/cost/regen OURS',
     34: 'own simulacrum only; pet-centred 8m blast on NPCs and eligible hostile players; DetonateProxyProc internal viral child 1109 uses pet-level typed resistance; owner receives normal credit; pet takes 13000 after 0.5s',
     19: 'own simulacrum only; stored 8000 type-5 hit and +50 caster IS verified on a surviving fortified Proxy; DecoyDuration 60s unresolved',
     609: 'toggle; 5 IS/5s drain with deactivation; 699 typed Viral Damage172/Healing174 influence +level x0.5 within20m; Nuker hit/Healer heal percentage scaling; no Proxy damage',
@@ -244,9 +244,9 @@ def server(i):
         parts.append(f"reuse {cd['Seconds']:g}s" + (f" / group {cd['Group']} {cd['GroupSeconds']:g}s" if cd['Group'] else ''))
     starter_viral_bases = {57: 8, 58: 11, 59: 17, 60: 7}
     if i in starter_viral_bases and not r['damage']:
-        parts.append(f'stored fixed viral base {starter_viral_bases[i]} when legacy endpoints are incomplete; live selected enemy required before cast or reuse; stock selected hits verified; wider damage and targeting unresolved')
+        parts.append(f'stored fixed viral base {starter_viral_bases[i]} when legacy endpoints are incomplete; live selected enemy required before cast or reuse; stock level-19 neutral hits match the stored base at +5% viral influence; retail damage scaling and contest unresolved')
     elif i == 53 and not r['damage']:
-        parts.append('stored fixed viral base 12 with incomplete legacy endpoints; live selected enemy required before cast or reuse; stock Hacker Style landed 14; wider damage and targeting unresolved')
+        parts.append('stored fixed viral base 12 with incomplete legacy endpoints; live selected enemy required before cast or reuse; stock neutral hits 12 at +5% and 14 at +17% viral influence; retail damage scaling and contest unresolved')
     elif i in (105, 176) and not r['damage']:
         base, hit = (8, 8) if i == 105 else (17, 18)
         admission = 'current live interlock opponent only; wider damage scaling unresolved' if i == 105 else 'wider damage and admission unresolved'
