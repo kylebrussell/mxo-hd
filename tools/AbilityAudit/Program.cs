@@ -42,7 +42,7 @@ static string Consumer(ushort stat) => stat switch
     530 or 652 or 653 or 654 or 655 or 656 or 706 or 707 => "crafting",
     649 or 956 => "ordinary CBB Code Writer contest or Info debit, including reviewed apparel, weapon and tool recipes; [evidence](WRITE-CODE.md)",
     954 => "general native client Compile60 timer for supported consumables and reviewed equipment; OURS server scheduling; [evidence](WRITE-CODE.md)",
-    955 => "native client Compile60 consumable-only timer; OURS server scheduling; [evidence](COMPILE-ORDINARY-IC.md)",
+    955 => "native client Compile60 consumable-only timer and matched server completion with 955 removed and restored; [evidence](COMPILE-ORDINARY-IC.md)",
     _ => "total only"
 };
 static string UtilityCoverage(ushort id) => id switch
