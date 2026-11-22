@@ -1,0 +1,38 @@
+{
+  "families": {
+    "stock-starter-holy-water": {
+      "representative": 547,
+      "result": "pass",
+      "head": "60ec071311253f908154395a1e3dcded5b6a3029",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/750#issuecomment-7080402499",
+      "scope": "Both Holy Water variants were gated at rest and used against an active NPC opponent. Neutral and matching weakness hits, IS and reuse were observed. The player cure and RSI callbacks still need coverage."
+    }
+  },
+  "abilities": {
+    "547": {
+      "family": "stock-starter-holy-water",
+      "checks": {
+        "targeting": {
+          "source": "GOB 547 uses enemy selector 3 and CastWhenUsed 3. general.py resolves Holy Water on the direct object.",
+          "runtime": "AbilityHandler uses the same Exile-weapon admission path for both variants. It resolves the current live interlock opponent before charging, then queues the move against that opponent.",
+          "test": "PR750 verifies the stock client blocks the shortcut at rest and sends 547 through the ordinary live-opponent path. It costs 20 IS with no own timer and lands for 11 neutral and 111 with Holy Water weakness. Wooden Stake is a nonmatching control. https://github.com/kylebrussell/mxo-hd/pull/750#issuecomment-7080402499"
+        }
+      }
+    },
+    "1023": {
+      "family": "stock-starter-holy-water",
+      "checks": {
+        "targeting": {
+          "source": "GOB 1023 uses enemy selector 3 and CastWhenUsed 3. general.py resolves Enhanced Holy Water on the direct object.",
+          "runtime": "AbilityHandler uses the same Exile-weapon admission path for both variants. It resolves the current live interlock opponent before charging, then queues the move against that opponent.",
+          "test": "PR750 verifies the stock client blocks the shortcut at rest and sends 1023 through the ordinary live-opponent path. It costs 20 IS with no own timer and lands for 11 neutral and 832 with Holy Water weakness. Wooden Stake is a nonmatching control. https://github.com/kylebrussell/mxo-hd/pull/750#issuecomment-7080402499"
+        }
+      }
+    }
+  },
+  "notes": {
+    "515 Code Crafter": "PR751 exercised a stock timed compile with general time reduction 954 at 25, no consumable reduction, then a successful common-recipe Writer debit. The earlier loadout comparisons establish the isolated passive effects. Signal boost and wider categories remain open. https://github.com/kylebrussell/mxo-hd/pull/751#issuecomment-7080474443",
+    "969 Compiler": "PR751 stock use of the real Compiler on a completed failed contest reports 61 01, spends 14,796 Info, retains the Boost code charge and grants no item. Later compilation of the new Health Pill code spends 8 Info and one charge and produces one item. The full ordinary-ic-compile replay also covers cancellation, late transaction rollback, and cash/source races. Tested head ebe0ab5977bad091e4e5d0db4e9342ccf9cfd7a2. Claude explicitly carried the native result to merged head adee088845161e350eb56faa9b47f04850589ddb. https://github.com/kylebrussell/mxo-hd/pull/751#issuecomment-7080474443 https://github.com/kylebrussell/mxo-hd/pull/751#issuecomment-7080481928",
+    "970 Analyser": "PR751 stock bag activation opens the Writer. The Health Pill 1.0 recipe succeeds at writing skill 15 and complexity 1. Five inputs are consumed, a ten-charge code appears and the balance drops from 2,204 to 2,198. The compiled pill provides a control for code usability. https://github.com/kylebrussell/mxo-hd/pull/751#issuecomment-7080474443"
+  }
+}
