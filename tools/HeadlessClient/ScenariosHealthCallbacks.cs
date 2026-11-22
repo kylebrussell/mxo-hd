@@ -80,10 +80,10 @@ public static partial class Scenarios
 
     private static async Task HealthReactiveArea(ScenarioContext context)
     {
-        var p=await context.AddPlayerAsync(new CharacterSeed("CallbackOwner") {Level=50,Organization=1,Health=1000,MaxHealth=1000,InnerStrength=2000,MaxInnerStrength=2000});
+        var p=await context.AddPlayerAsync(new CharacterSeed("CallbackOwner") {Level=50,Organization=1,Health=1000,MaxHealth=1000,InnerStrength=2000,MaxInnerStrength=2000,OwnedLoadedAbilities=ReactiveCodeProfile(941,945)});
         var friend=await context.AddPlayerAsync(new CharacterSeed("CallbackFriend") {X=17120,Level=50,Organization=1,Health=1000,MaxHealth=1000});
-        var enemy=await context.AddPlayerAsync(new CharacterSeed("CallbackEnemy") {X=17220,Level=50,Organization=2,Health=1000,MaxHealth=1000});
-        await context.Database.ExecuteAsync($"DELETE FROM char_abilities WHERE char_id IN ({p.CharId},{friend.CharId},{enemy.CharId})");
+        var enemy=await context.AddPlayerAsync(new CharacterSeed("CallbackEnemy") {X=17220,Level=50,Organization=2,Health=1000,MaxHealth=1000,OwnedLoadedAbilities=ReactiveCodeProfile(941,945)});
+        await context.Database.ExecuteAsync($"DELETE FROM char_abilities WHERE char_id={friend.CharId}");
         foreach(var actor in new[]{p,friend,enemy}) await actor.EnterWorldAsync();
         await p.WaitForViewNamedAsync(enemy.Handle);await p.WaitForViewNamedAsync(friend.Handle);
         enemy.SendChat("?pvpflag on");await enemy.WaitForViewUpdateAsync(2,OwnPvpFlagOn);

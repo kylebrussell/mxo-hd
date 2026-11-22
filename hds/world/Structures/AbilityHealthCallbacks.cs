@@ -9,6 +9,7 @@ namespace hds
     public static class AbilityHealthCallbacks
     {
         public const ushort LineUpAbility = 506;
+        internal const ushort ReactiveCode = 941, ReactiveCodeEffect = 942;
         private static readonly Random random = new Random();
         public static Func<int> Random15 = () => { lock(random) return random.Next(32768); };
         public static Func<int> Random100 = () => { lock(random) return random.Next(100); };
@@ -53,7 +54,7 @@ namespace hds
             return true;
         }
 
-        public static bool InternalEffect(ushort id) => id==692 || id==693 || id==862 || id==872 || id==942 || id==944;
+        public static bool InternalEffect(ushort id) => id==692 || id==693 || id==862 || id==872 || id==ReactiveCodeEffect || id==944;
         public static string Describe(ushort id) => id switch
         {
             196 => "health callback: one native function0 sample10..19 per application; external damage/healing triggers stored self heal; nested-parent/HP0 guards are ours",
@@ -175,7 +176,7 @@ namespace hds
         public static void Reapply(WorldClient source,ushort effect)
         {
             if(effect==872) return; // Only the validated permanent-parent health transaction can execute this child.
-            if(effect!=862 && effect!=942 && effect!=944) return;
+            if(effect!=862 && effect!=ReactiveCodeEffect && effect!=944) return;
             if(effect==862) { Heal(source,source,effect); return; }
             double x=0,y=0,z=0;
             NumericalUtils.LtVector3dToDoubles(source.playerInstance.Position.getValue(),ref x,ref y,ref z);
@@ -193,8 +194,12 @@ namespace hds
             }
             else
             {
+                // The reapply effect stores a viral test and neutral health damage as separate fields.
+                var contest = AbilityCatalog.Find(effect).Number("Ability/TestFunction") == 2 ? new AbilityItem() : null;
+                contest?.setAbilityID(effect);
                 foreach(var target in AbilityHostile.PlayersInArea(source,x,y,z,radius))
                 {
+                    if (contest != null && !FreeCastViralContest.Player(source, contest, target)) continue;
                     PvpFlag.OnFightStarts(source,true);
                     int damage=PunishingBlows.Player(source,target,Sample(effect,Roll15()));
                     target.messageQueue.addRpcMessage(AbilityMessages.Damage(false,effect,TimedEffects.PlayerName(source),TimedEffects.PlayerName(target),damage,0));
@@ -203,7 +208,10 @@ namespace hds
                     source.FlushQueue();
                 }
                 foreach(var (mob,view) in AbilityHostile.MobsInArea(source,x,y,z,radius))
+                {
+                    if (contest != null && !FreeCastViralContest.Npc(source, contest, mob, source.viewMan.getViewById(view))) continue;
                     CombatManager.GetHandler(source).ApplyAbilityToNpc(mob,view,PunishingBlows.Npc(source,mob,Sample(effect,Roll15())),0x28000a43);
+                }
             }
         }
 

@@ -1,0 +1,23 @@
+{
+  "abilities": {
+    "942": {
+      "checks": {
+        "damage": {
+          "source": "GOB 942's instant health modifier stores DamageType 5, neutral damage, and function 0 with MinValue 50 and MaxValue 150.",
+          "runtime": "AbilityHealthCallbacks.Sample uses the shared native 15-bit half-open draw. The health callback applies neutral damage after the target contest passes and leaves the typed resistance modifiers out of neutral damage.",
+          "test": "reactive-code-area-minimum and reactive-code-area-maximum observe exactly 50 and 149 HP damage with zero resisted on the hostile carrying live Empty Mind +75 Viral Resistance. PR545 recorded two stock neutral 50-HP hits with zero resisted. https://github.com/kylebrussell/mxo-hd/pull/545"
+        },
+        "area": {
+          "source": "GOB 942 stores CastDirectObjects 4 and RadiusOfEffect 3.0. tempmods.ApplyAuraEffectOnHealthChange calls reapplyAbility on the owner whose health changed.",
+          "runtime": "AbilityHealthCallbacks.Reapply centres the effect on that owner's position and uses the common visible, hostile recipient rules.",
+          "test": "The three reactive-code-area replays verify the live owner centre, the exact 3.00 m target, the rejected 3.01 m target, the sight obstruction at 2.50 m and the allied control. PR545 independently witnessed nearby enemy and ally selection. https://github.com/kylebrussell/mxo-hd/pull/545"
+        },
+        "targeting": {
+          "source": "GOB 942 stores TestFunction 2 separately from DamageType 5. The health callback's reapplyAbility call uses the same script entry point as ApplyAuraEffect. Existing 694 and 701 paths evaluate the viral test stored on their child records.",
+          "runtime": "The reconstructed 942 path uses FreeCastViralContest for each eligible player or NPC. The ordinary cast handler continues to reject direct activation of the internal 942 template.",
+          "test": "The reactive-code-area replays observe exactly one contest for the eligible hostile. A forced pass produces the neutral damage; a forced deflection produces no HP change. Sight, distance and allied exclusions never contest. The test also sends an internal-effect request and receives the direct-use refusal. The deflection is a headless result."
+        }
+      }
+    }
+  }
+}

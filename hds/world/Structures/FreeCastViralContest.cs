@@ -57,6 +57,8 @@ namespace hds
                 694 when AbilityAuras.IsOn(source, 89) => 89,
                 701 when AbilityAuras.IsOn(source, 61) => 61,
                 946 when AbilityAuras.IsOn(source, 945) => 945,
+                AbilityHealthCallbacks.ReactiveCodeEffect when AbilityBuffs.IsActive(source, AbilityHealthCallbacks.ReactiveCode) =>
+                    AbilityHealthCallbacks.ReactiveCode,
                 _ => ability
             };
             return AbilityPassives.Level(source,loaded)>0 && !string.Equals(TimedEffects.PlayerName(source),"TheNeo",StringComparison.OrdinalIgnoreCase) &&
