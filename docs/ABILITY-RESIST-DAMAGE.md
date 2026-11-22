@@ -1,6 +1,16 @@
-# Resist Damage74: friendly radius consumer
+# Resist Damage and Sweep Bonus
 
-This partial implementation connects the existing loaded stat127 to friendly area targeting. SweepBonus1052 remains a recorded total without a proven consumer; no sweep chance is changed. Native presentation is unverified.
+Stat 127 applies to friendly area targeting. Stat 1052 adds chance points to ordinary timed sweep casts.
+
+## Sweep Bonus
+
+The shipped `NegativeConditionSweepPulse` callback draws `random.randrange(100)` for each eligible debuff and removes the debuff when `roll < TempMod.Value`. The ordinary templates give Negative Condition Sweep 1.0/2.0 (320/424) base chances of 18%/35%, and Sweep Party 1.0/2.0 (379/487) base chances of 20%/30%. The catalog defines stat 1052 as a separate bonus produced by Repair and Upgrade (71), Dedication (370), and other passives. Its stored attribute link concerns Perception. The archive leaves the original calculation connecting 1052 to the callback value open. [Shipped pulse callback](../research/client-scripts/tempmods.py#L182)
+
+The server adds the caster's signed Sweep Bonus once as percentage points at application or refresh, clamps the pulse threshold to 0–100, and publishes the original effect value and timer. Existing pulses keep their threshold after either actor changes loadout. Items, the separate instant removal callback, and class or event sweeps retain their existing behavior.
+
+The `ability-parity-starter-hacker-sweep-bonus` fixture uses +1 from rank-19 Repair and Upgrade and +3 from rank-30 Dedication, with fixed +10 and +5 from prerequisite sources 70 and 74. Rank 30 satisfies the acquired Corpsman prerequisites. With both tested passives, just 370, just 71, and neither, the stock 320 cast uses thresholds 37, 36, 34, and 33 against a fixed draw of 33. The last case leaves an actual helper Slow active until natural expiry. The isolated bootstrap verifies both outdoor NAV stands, legal Archives, the four 1052 records, unloading the two tested passives independently, and the retained stock helper Slow frame. The direct executable tests verify the pulse result. The first complete stock 320 request is a native capture item.
+
+Native PR676 verifies Repair and Upgrade's heal 8→9 and both source records. PR755 verifies Dedication's healing, two defense, and Sweep Bonus records, as well as the Patcher healing change. The direct tests also isolate each passive's healing and combat defense consumers. [Repair and Upgrade result](https://github.com/kylebrussell/mxo-hd/pull/676#issuecomment-7065776933) [Dedication result](https://github.com/kylebrussell/mxo-hd/pull/755#issuecomment-7081754805)
 
 ## Primary evidence
 
@@ -10,7 +20,7 @@ Native62515e40 reads `Ability/StatusCategory`;62515ef0 compares all four bytes t
 
 Base62519100 reads byte RadiusOfEffect and multiplies100.0 at628706a8. Native UI621ed033 uses the caster method when a character is present and divides100 for metres. The simpler tooltip621e2435 uses the base getter, so the Affects string alone would not prove a caster bonus. Existing server selectors accept metres: the shared helper applies the same dimensionless percentage without another factor100.
 
-74's stored level function2 and binary32 scale0.481 produce stat127+24 at learned50; its second modifier produces stat1052+5. The latter's relationship to TempMod.Value is unresolved. NegativeConditionSweepPulse compares its roll to TempMod.Value, which does not by itself establish an additive1052 bonus.
+74's stored level function 2 and binary32 scale 0.481 produce stat 127 +24 at learned rank 50. Its second modifier produces stat 1052 +5.
 
 ## Scope and checks
 

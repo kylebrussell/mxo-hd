@@ -41,6 +41,7 @@ namespace hds
             public UInt16 Kind;
             public UInt16 Target;
             public Int32 Value;
+            internal int? SweepChance;
             public int DamageType = -1;
             public float Seconds;
             public TempMods.Proc Proc;

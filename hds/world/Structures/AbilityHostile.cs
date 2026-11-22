@@ -300,15 +300,20 @@ namespace hds
                 if (other != id && IsSweep(other) && AbilityCatalog.Find(other)?.Number("Ability/StackingType") == stacking)
                     TimedEffects.RemoveParent(subject, other);
             int value = (int)m.Number("MinValue");
+            // Ordinary cast sweeps snapshot their caster's bonus. Keep the catalog value in the client record.
+            int? sweepChance = null;
+            if (id == 320 || id == 379 || id == 424 || id == 487)
+                sweepChance = Math.Clamp(value + (caster == null ? 0 : AbilityStats.Player(caster, 1052)), 0, 100);
             var effect = new TempMods.Effect { Ability = AbilityCatalog.Canonical(id), Mods = new[] { new TempMods.Mod
             {
                 Kind = TempMods.KindFx, Target = indefinite && m.Target != 0 ? m.Target : AbilityCatalog.Canonical(id),
                 MinValue = value, MaxValue = value, Seconds = indefinite ? float.PositiveInfinity : (float)m.Number("Duration"),
                 Proc = TempMods.Proc.Pulse, Interval = m.Number("UpdateFuncInterval", 5)
             } } };
-            TimedEffects.Apply(subject, effect, TimeUtils.GetSimTimeSeconds(), caster, TimedEffects.PlayerName(caster));
+            TimedEffects.Apply(subject, effect, TimeUtils.GetSimTimeSeconds(), caster, TimedEffects.PlayerName(caster),
+                configure: pulse => pulse.SweepChance = sweepChance);
             if (m.Text("StatModInitFunc") == "NegativeConditionSweepPulse")
-                Pulse(subject, new TimedEffects.Active { Parent = id, Value = value });
+                Pulse(subject, new TimedEffects.Active { Parent = id, Value = value, SweepChance = sweepChance });
             return true;
         }
 
@@ -323,7 +328,11 @@ namespace hds
             foreach (ushort parent in parents)
             {
                 Random effectiveRng = rng ?? (ReferenceEquals(PulseRandom, random) ? DispelCallbackRandom() : PulseRandom);
-                if (Roll(effectiveRng, 100) >= pulse.Value) continue;
+                int roll = Roll(effectiveRng, 100);
+                int chance = pulse.SweepChance ?? pulse.Value;
+                if (pulse.SweepChance.HasValue)
+                    Output.WriteDebugLog($"[SWEEP ROLL] ability={pulse.Parent} target={name} debuff={parent} base={pulse.Value} chance={chance} roll={roll}");
+                if (roll >= chance) continue;
                 bool live = subject.Effects.Snapshot().Any(m => m.Parent == parent && m.Expires > TimeUtils.GetSimTimeSeconds());
                 if (!TimedEffects.RemoveParent(subject, parent)) continue;
                 string target = client != null ? name : subject is MobEffects mob ? mob.Mob.getName() : subject.GetType().Name;

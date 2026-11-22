@@ -740,13 +740,71 @@ public class AbilityHostileTests
         Assert.Equal(TempMods.Proc.Pulse, pulse.Proc);
         Assert.Equal(chance, pulse.Value);
         Assert.Equal(seconds, pulse.Seconds);
-        pulse.Value = 100; // force every roll
-        TimedEffects.RunDue(pulse.Start + 5.01);
+        AbilityHostile.Pulse(subject, pulse, new ZeroRoll());
         Assert.False(subject.Effects.HasParent(343));
         Assert.False(subject.Effects.HasParent(315));
         Assert.True(subject.Effects.HasParent(734));
         Assert.True(subject.Effects.HasParent(ability));
         Assert.True(AbilityBuffs.IsActive(victim, 327));
+    }
+
+    [Theory]
+    [InlineData((ushort)71, (ushort)320, 18)]
+    [InlineData((ushort)370, (ushort)320, 18)]
+    [InlineData((ushort)71, (ushort)379, 20)]
+    [InlineData((ushort)370, (ushort)379, 20)]
+    public void CasterSweepBonusSnapshotsAWholeChancePointWithoutChangingThePublishedValue(ushort passive, ushort ability, int baseChance)
+    {
+        var caster = Client();
+        var recipient = Client();
+        var subject = TimedEffects.ForPlayer(recipient);
+        AbilityPassives.SetLoaded(recipient, new[] { (passive, (ushort)19) });
+        Assert.Equal(1, AbilityStats.Player(recipient, 1052));
+        Land(recipient, 86);
+
+        Assert.True(AbilityHostile.ApplySweep(caster, recipient, ability));
+        var unboosted = Assert.Single(subject.Effects.Snapshot(), effect => effect.Parent == ability);
+        Assert.Equal(baseChance, unboosted.Value);
+        Assert.Equal(baseChance, unboosted.SweepChance);
+        AbilityHostile.Pulse(subject, unboosted, new SweepRoll(baseChance));
+        Assert.True(subject.Effects.HasParent(86));
+
+        AbilityPassives.SetLoaded(caster, new[] { (passive, (ushort)19) });
+        Assert.True(AbilityHostile.ApplySweep(caster, recipient, ability));
+        var boosted = Assert.Single(subject.Effects.Snapshot(), effect => effect.Parent == ability);
+        Assert.Equal(baseChance, boosted.Value);
+        Assert.Equal(baseChance + 1, boosted.SweepChance);
+
+        AbilityPassives.SetLoaded(caster, Array.Empty<(ushort, ushort)>());
+        AbilityHostile.Pulse(subject, boosted, new SweepRoll(baseChance + 1));
+        Assert.True(subject.Effects.HasParent(86));
+        AbilityHostile.Pulse(subject, boosted, new SweepRoll(baseChance));
+        Assert.False(subject.Effects.HasParent(86));
+
+        Assert.True(AbilityHostile.ApplySweep(caster, recipient, ability));
+        Assert.Equal(baseChance, Assert.Single(subject.Effects.Snapshot(), effect => effect.Parent == ability).SweepChance);
+        Assert.True(AbilityHostile.ApplySweep(recipient, recipient, 659));
+        Assert.Null(Assert.Single(subject.Effects.Snapshot(), effect => effect.Parent == 659).SweepChance);
+    }
+
+    [Theory]
+    [InlineData((ushort)71, 0)]
+    [InlineData((ushort)370, 2)]
+    public void SweepPassiveRetainsItsOtherTypedConsumers(ushort passive, int expectedDefense)
+    {
+        var caster = Client();
+        var recipient = Client();
+        Assert.Equal(180, AbilityHealing.Amount(caster, recipient, 1098));
+        AbilityPassives.SetLoaded(caster, new[] { (passive, (ushort)50) });
+        Assert.Equal(5, AbilityStats.Player(caster, 1052));
+        Assert.Equal(5, AbilityStats.Influence(caster, 174));
+        Assert.Equal(188, AbilityHealing.Amount(caster, recipient, 1098));
+        Assert.Equal(expectedDefense, AbilityStats.Defense(caster, ranged: false));
+        Assert.Equal(expectedDefense, AbilityStats.Defense(caster, ranged: true));
+        AbilityPassives.SetLoaded(caster, Array.Empty<(ushort, ushort)>());
+        Assert.Equal(180, AbilityHealing.Amount(caster, recipient, 1098));
+        Assert.Equal(0, AbilityStats.Defense(caster, ranged: false));
+        Assert.Equal(0, AbilityStats.Defense(caster, ranged: true));
     }
 
     [Fact]
