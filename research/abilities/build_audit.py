@@ -106,10 +106,15 @@ for path in sorted((ROOT / 'research/client-scripts').rglob('*.py')):
             functions[match[1]].append((path.relative_to(ROOT).as_posix(), line))
 
 
-def callbacks(i):
+LEGACY_SOLDIER_MODULES = 'research/client-scripts/ability/soldier/old_sm_'
+
+
+def callbacks(i, *, include_legacy=False):
     explicit = {v for m in mods(i) for k, v in m.items() if k.endswith('Func') and isinstance(v, str) and v}
     stem = abilities[i]['name'].removesuffix('Ability')
-    explicit.update(f for f in functions if f.startswith(stem + '_'))
+    # abilities.GetImportObjects omits old_sm_* from the normal server startup.
+    explicit.update(f for f, matches in functions.items() if f.startswith(stem + '_')
+                    and (include_legacy or any(not path.startswith(LEGACY_SOLDIER_MODULES) for path, _ in matches)))
     if i == 85:
         explicit.add('MezzingInit')
     return sorted(explicit)
@@ -117,11 +122,13 @@ def callbacks(i):
 
 def source_links(i):
     links = []
-    for f in callbacks(i):
+    active = set(callbacks(i))
+    for f in callbacks(i, include_legacy=True):
         matches = functions.get(f)
         if matches:
-            path, line = matches[0]
-            links.append(f'[{f}](../{path}#L{line})')
+            path, line = next((match for match in matches if not match[0].startswith(LEGACY_SOLDIER_MODULES)), matches[0])
+            link = f'[{f}](../{path}#L{line})'
+            links.append(link if f in active else f'{link} (legacy module omitted at startup)')
         else:
             links.append(f'`{f}` (native/unresolved)')
     return ', '.join(links)
@@ -157,8 +164,9 @@ def expected(i):
         result.append('heal 10% max health; 1% chance of 10s ability immunity')
     if 'HyperJump' in abilities[i]['name']:
         result.append('hyperjump movement / rank-dependent range')
-    if callbacks(i):
-        result.append(source_links(i))
+    sources = source_links(i)
+    if sources:
+        result.append(sources)
     return '; '.join(dict.fromkeys(result)) or 'Native action / passive metadata; no decoded stored modifier'
 
 
@@ -331,6 +339,8 @@ def server(i):
         parts.append('stock blocked sight denies the selected shot before cast, IS cost or reuse')
     if i in (126, 130):
         parts.append('stock timed shots fizzle if the original target leaves sight before landing')
+    if i in (176, 254):
+        parts.append('chance-root publishes movement scale -1 while held and restores the surviving speed effects on removal; stock-client movement observation remains open')
     if i in (86, 130):
         if r.get('movement_debuff_scale'):
             parts.append('signed stat 115 projects to stock run speed and the remaining scale returns at expiry')

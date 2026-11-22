@@ -1,0 +1,13 @@
+{
+  "abilities": {
+    "105": {
+      "note": "PR805 stock hit for 8, spent 20 IS and applied stats 180 and 181 at -5 for ten seconds. Both expired without root or enrage. https://github.com/kylebrussell/mxo-hd/pull/805#issuecomment-7084941490"
+    },
+    "176": {
+      "note": "PR805 stock landed for 18 and recorded Rooted stat 99 on the intended player for eight seconds, with matching removal after disengage. The headless replay observed movement scale -1 then 0 for the owner and observer, plus denial and release of the same step. The stock session did not observe those helper movement assertions. https://github.com/kylebrussell/mxo-hd/pull/805#issuecomment-7084941490"
+    },
+    "254": {
+      "note": "Tracked retail Immobilizing Shot publishes own-view movement scale -1 on Rooted. Two removals restore 0 and about -0.81, respectively. The state-end notice uses the Rooted string and zero ability fields. A separate ability-term message remains unverified. The PR805 sources link the application and both removal shapes. https://github.com/kylebrussell/mxo-hd/pull/805"
+    }
+  }
+}
