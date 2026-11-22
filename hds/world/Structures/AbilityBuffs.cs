@@ -373,10 +373,14 @@ namespace hds
             return MovementScaleFor(client, buff);
         }
 
-        public static bool ProjectsTimedMovementDebuff(ushort source) => source == 86 || source == 130;
+        private const ushort CrashAbility = 396, RunMovementStat = 115, SneakMovementStat = 877, InvisibleMovementStat = 878;
+
+        public static bool ProjectsTimedMovementDebuff(ushort source) => source == 86 || source == 130 || source == CrashAbility;
 
         private static bool ProjectsSignedMovementDebuff(TimedEffects.Active modifier) =>
-            ProjectsTimedMovementDebuff(modifier.Parent) && modifier.Target == 115 &&
+            ProjectsTimedMovementDebuff(modifier.Parent) &&
+            (modifier.Target == RunMovementStat || modifier.Parent == CrashAbility &&
+                (modifier.Target == SneakMovementStat || modifier.Target == InvisibleMovementStat)) &&
             modifier.Proc == TempMods.Proc.Stat && modifier.Value < 0;
 
         private static bool OverridesMovementScale(TimedEffects.Active modifier) =>
@@ -388,7 +392,16 @@ namespace hds
             var active = TimedEffects.ForPlayer(client).Effects.Snapshot();
             // Vector26 observes -1 on Immobilizing Shot's EnableRootWithChance state and the remaining scale on removal.
             if (active.Any(OverridesMovementScale)) return -1f;
-            int points = active.Where(ProjectsSignedMovementDebuff).Sum(modifier => modifier.Value);
+            ushort crashMovementStat = Stealth.Current(client)?.Def.Kind switch
+            {
+                Stealth.Kind.Sneak => SneakMovementStat,
+                Stealth.Kind.Invisibility => InvisibleMovementStat,
+                Stealth.Kind.Imparted => InvisibleMovementStat,
+                _ => RunMovementStat
+            };
+            // Crash specifies a modifier for each movement stance. Apply only the current channel.
+            int points = active.Where(modifier => ProjectsSignedMovementDebuff(modifier) &&
+                (modifier.Parent != CrashAbility || modifier.Target == crashMovementStat)).Sum(modifier => modifier.Value);
             // Retail Crippling Shot 450 combines signed stat 115 points per hundred with the existing scale.
             return points == 0 ? movementScale : (float)((decimal)movementScale + points / 100m);
         }

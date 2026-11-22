@@ -514,7 +514,9 @@ public class AbilityHostileTests
     public void ScriptedOrNativeDurationModifiersAreNotGuessed()
     {
         Assert.True(TempMods.TryGet(396, out var crash));
-        Assert.DoesNotContain(crash.Mods, m => m.Target == 519); // Force Combat has no stored DurationType
+        var forceCombat = Assert.Single(crash.Mods, m => m.Target == 519);
+        Assert.Equal(-15, forceCombat.MinValue);
+        Assert.Equal(28, forceCombat.Seconds); // explicit lifetime, omitted DurationType
         Assert.True(TempMods.TryGet(354, out var resolve));
         Assert.DoesNotContain(resolve.Mods, m => m.Target == 111); // instant current IS is applied on landing
         Assert.False(TempMods.Has(61));
