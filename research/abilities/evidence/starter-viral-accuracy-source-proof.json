@@ -1,0 +1,31 @@
+{
+  "abilities": {
+    "32": {
+      "checks": {
+        "source-parity": {
+          "source": "GOB 32 adds learned rank function 2 × 0.2 to Viral Accuracy Bonus 1147 while loaded. GOB 342 Viral Transmission links 1147. The shipped AbilityViralFreeAttack reads Viral Transmission from the caster and applies the selected attack tactic before its contest.",
+          "runtime": "AbilityStats.ViralAccuracy adds truncate(character level × capped 1147 / 100) to independently capped direct transmission 342 before FreeCastViralContest applies the tactic. This chosen level normalization matches the server's other accuracy percentage paths. FreeCastViralContest uses it for eligible normal viral casts. The original server's percentage normalization remains unarchived.",
+          "test": "PR639 stock frames on 5c3546e2 show rank-50 32 source 1147 +10 added, removed and restored. The same hostile player and Speed cast returned Static Blast inputs 79/0→73/0→79/0 with damage fixed at 27. Tinkering and Advanced Tinkering read the same profile inputs in their respective states. ViralAccuracyConsumerTests verifies rank and level separately, fixed-draw contest changes, unaffected melee/ballistic inputs and Archive qualification. https://github.com/kylebrussell/mxo-hd/pull/639#issuecomment-7060603514"
+        }
+      }
+    },
+    "64": {
+      "checks": {
+        "source-parity": {
+          "source": "The Network Hacker GOB stores an indefinite fixed +1 Viral Accuracy Bonus 1147 and grants 1078 while loaded. GOB 342 Viral Transmission links 1147. The shipped AbilityViralFreeAttack consumes the current caster Viral Transmission before applying its selected tactic.",
+          "runtime": "Network Hacker supplies its own owned passive record and loaded 1078 grant. FreeCastViralContest reads the common direct 342 plus chosen truncated character-level normalization of the aggregate 1147. Summation before truncation lets the small individual passive change the integer input when another 1147 source is already present. The original server's percentage normalization remains unarchived.",
+          "test": "PR605 stock on e76b8be3 held rank-19 Resist Contagion +5, Hacker style, Speed and the selected Viral Neutral NPC. Removing Network Hacker's sole +1 made the same Logic Blast read 35/0→34/0 with damage still 12. Stock re-add restored the +1 and permitted 1078, which added its separate direct 342 +4 for input 40/0. StarterHackerViralPassiveTransitionsMode validates the separate source records and same-target effect. LoadedDisciplineGrantsTrackMembershipWhenTheParentUnloads isolates the grant and passive removal. https://github.com/kylebrussell/mxo-hd/pull/605#issuecomment-7056914061"
+        }
+      }
+    },
+    "73": {
+      "checks": {
+        "source-parity": {
+          "source": "GOB 73 stores learned-rank function 2 × 0.28 for 1147 and × 0.10 for Stun Duration Bonus 995 while loaded. GOB 342 links 1147 and class-4 Stun 102 links 995. AbilityViralFreeAttack reads caster Viral Transmission before its tactic, and the shipped class-4 duration handler multiplies the floating duration by its linked bonus.",
+          "runtime": "Eligible normal viral casts read direct 342 plus the chosen truncated caster-level percent from aggregate 1147. TimedEffects applies the newly resolved 995 percent to the outgoing Stun's float duration via AbilityControlDurations.Scale. The separate immunity record has its own duration. The original server's 1147 percentage normalization remains unarchived.",
+          "test": "PR645 stock on d7efbf1b held the same hostile player and Hacker style. Rank-50 73 added 995 +5 and 1147 +14. Unloading dropped viral inputs on the same target 88/0→80/0; 57 restored 88/0 after reload. The 38 Stun lasted 3.15 s loaded and 3 s unloaded, each with an independent 8 s immunity record. ResistContagion73ChangesViralAccuracyAndOutgoingStunDuration isolates both consumers and their removal. https://github.com/kylebrussell/mxo-hd/pull/645#issuecomment-7061695350"
+        }
+      }
+    }
+  }
+}
