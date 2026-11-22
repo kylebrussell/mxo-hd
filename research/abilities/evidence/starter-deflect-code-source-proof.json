@@ -1,0 +1,13 @@
+{
+  "abilities": {
+    "23": {
+      "checks": {
+        "source-parity": {
+          "source": "GOB 23 provides learned-rank function 2 × 0.2 to percentage stat 1047 while loaded. The catalog links raw Determination 575 to 1047 and distinguishes raw units from the percentage bonus. The shipped GetAbilityMitigationDuration evaluates raw Determination divided by five against caster level and caps its nominal-duration scale at 0.33. The original engine's numerical combination of raw 575 and bonus 1047 remains unarchived.",
+          "runtime": "Use the stock-compatible normalization of the positive 1047 total as a percentage of the duration remaining after shipped raw-575 mitigation, then preserve the same 33% floor of the pre-mitigation duration. This order and final cap are the chosen server policy. Only the affected hostile state record is shortened. Immunity is constructed from the original state and retains its own configured duration.",
+          "test": "PR518's stock session and independently decoded paired PacketLog records show rank-50 +10% shortening Blind 16→14.4 s (lines 1532/1654), Pacify 6→5.4 s (2207/2280), and Stun 7.35→6.615 s (2549/2631). Unloading 23 removes the bonus and returns Stun to 7.35 s (3000/3070). The separate 734→681 removals at lines 2336, 2674, and 3145 confirm 12 s Pacify immunity and 14 s Stun immunity before and after unload. DeflectCodeTests independently covers raw Determination first, the total floor, and unrelated effects. https://github.com/kylebrussell/mxo-hd/pull/518"
+        }
+      }
+    }
+  }
+}
