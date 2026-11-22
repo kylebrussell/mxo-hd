@@ -13,6 +13,7 @@ namespace hds
         {
             internal int Generation;
             internal readonly Dictionary<ushort, ushort> Loaded = new Dictionary<ushort, ushort>();
+            internal readonly Dictionary<ushort, int> PetCastLoadedSince = new Dictionary<ushort, int>();
             internal readonly Dictionary<string, Active> Records = new Dictionary<string, Active>();
             internal Dictionary<ushort, int> Totals = new Dictionary<ushort, int>();
             internal AbilityShadowPresentation.Owned ShadowOwned;
@@ -82,6 +83,12 @@ namespace hds
             lock(state)return state.Loaded.ContainsKey(AbilityCatalog.Canonical(ability));
         }
 
+        internal static int? PetCastMembership(WorldClient client, ushort ability)
+        {
+            State state = client.playerData.passives;
+            lock (state) return state.PetCastLoadedSince.TryGetValue(ability, out int generation) ? generation : (int?)null;
+        }
+
         public static void Load(WorldClient client, bool newWorld = false)
         {
             var rows = Store.dbManager.MarginDbHandler.LoadAbilities((int)client.playerData.getCharID());
@@ -139,6 +146,13 @@ namespace hds
                             state.Loaded[grant] = AbilityProgression.GrantLevel(id, state.Loaded[id]);
                             pending.Enqueue(grant);
                         }
+                }
+                foreach (ushort id in CoderPets.ContinuousLoadAbilities)
+                {
+                    if (state.Loaded.ContainsKey(id))
+                        state.PetCastLoadedSince.TryAdd(id, state.Generation);
+                    else
+                        state.PetCastLoadedSince.Remove(id);
                 }
                 if (hadMissionMap && !state.Loaded.ContainsKey(UtilityAbilities.DownloadMissionMap))
                     UtilityAbilities.DisableMissionMap(client);

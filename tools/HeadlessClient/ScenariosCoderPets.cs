@@ -54,7 +54,13 @@ public static partial class Scenarios
     }
     private static async Task CoderPetResources(ScenarioContext context)
     {
-        var owner = (await context.AddPlayersInWorldAsync(NearNpc("PetResource") with { Level = 50 }))[0];
+        ushort[] castAbilities = { 19, 20, 603, 619 };
+        var owner = (await context.AddPlayersInWorldAsync(NearNpc("PetResource") with
+        {
+            Level = 50,
+            OwnedLoadedAbilities = HackerRegressionAncestors(castAbilities)
+                .Concat(castAbilities.Select(id => (id, (ushort)50))).Distinct().ToArray()
+        }))[0];
         owner.SendChat("?pet summon 616");
         await owner.WaitForRpcAsync("81 76");
         await owner.WaitForTextAsync("is next to you");

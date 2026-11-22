@@ -76,7 +76,6 @@ namespace hds
 		public UInt16 nextBuffRecordId = AbilityBuffs.FirstRecordId;
 		public int buffGeneration = 0;
         public readonly object upgradeSync = new object();
-        public readonly object loadoutSync = new object();
         public readonly object attributeSync = new object();
         public int attributeGeneration;
         internal IReadOnlyDictionary<byte, ushort> attributeBases;
@@ -91,6 +90,7 @@ namespace hds
         public UInt32 combatSelection = CombatSelection.NoAbility;
         public UInt16 combatStyle = AbilityProgression.SelfDefenseAbility;
         public UInt16 martialArt;
+        // Archive publication shares the gate used by delayed casts and crafting sessions.
         public readonly object craftingSync = new object();
         public CraftingSession.State craftingSession;
         public float deathPenalty = 1;

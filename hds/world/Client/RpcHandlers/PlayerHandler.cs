@@ -366,8 +366,9 @@ namespace hds
             }
 
             WorldClient client=Store.currentClient;
-            lock(client.playerData.loadoutSync)
+            lock (client.playerData.craftingSync)
             {
+                AbilityCastInterrupts.FinishDue(client, TimeUtils.GetSimTimeSeconds());
                 AbilityMemory.Result result;
                 try
                 {
