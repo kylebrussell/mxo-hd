@@ -1,0 +1,13 @@
+{
+  "abilities": {
+    "95": {
+      "checks": {
+        "source-parity": {
+          "source": "GOB 95 supplies separate indefinite, loaded learned-rank function 2 × 0.3 modifiers for Viral Damage Bonus 1031 and Viral Resistance Bonus 1148. GOB 172 links the outgoing bonus, and raw Viral Resistance 157 links the incoming bonus. The shipped 625ec512–625ec58a health modifier influence slice and GetDamageReductionValue's 4 × defender level + 20 resistance range provide the distinct damage and resistance inputs.",
+          "runtime": "AbilityStats.ScaleTypedAbilityDamage applies the linked 1031 through viral influence after producing the underlying hit. The receiving TypedAbilityResistance reads capped general and raw viral resistance, adds the chosen signed truncated (4 × defender level + 20) × 1148 / 100 points once, then applies the existing zero-baseline-normalized typed reduction. The original native rating conversion is unarchived. This chosen policy is confined to the matching damage family.",
+          "test": "PR643 stock on 4b04cec3 measured both source-95 +15 records at rank 50. With the same opposing player and Hacker style, the 57/58 hits were 11/15 loaded, 10/13 unloaded and 11/15 restored. One normally cast incoming 330 per state gave raw 538 / final 496 with +33 rated, 538 without the loaded passive, and 496 when restored. No maximum vitals or interlock round changed. TransmitVirusAndOverclockApplyTheirOwnTypedDamageAndResistance isolates both live consumers and the unaffected ballistic control. TypedResistanceBonusTests checks signed conversion and the capped reduction. https://github.com/kylebrussell/mxo-hd/pull/643#issuecomment-7061064281"
+        }
+      }
+    }
+  }
+}
