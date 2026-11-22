@@ -1,0 +1,31 @@
+{
+  "abilities": {
+    "40": {
+      "note": "PR796 stock locally gated unloaded Code Freeze. Unloading an unrelated Overload during the accepted 18 IS cast still let Code Freeze add its 25 s root and -20 Force Combat. A post-landing unload and reload preserved the original 58 s reuse, and both recipient records expired normally. https://github.com/kylebrussell/mxo-hd/pull/796#issuecomment-7084182289"
+    },
+    "53": {
+      "note": "PR791 stock gated unloaded Harmful Code. Archive unload about 0.4 s into a valid cast left the 18 IS debit and prevented the hit. The subsequent loaded cast hit the original selected target for 12. Original retail damage scaling remains open. https://github.com/kylebrussell/mxo-hd/pull/791#issuecomment-7084254409"
+    },
+    "57": {
+      "note": "PR791 stock gated unloaded Logic Barrage. The normal reloaded cast cost 5 IS and hit the selected hostile for 8. https://github.com/kylebrussell/mxo-hd/pull/791#issuecomment-7084254409"
+    },
+    "58": {
+      "note": "PR791 stock gated unloaded Logic Blast. The normal reloaded cast cost 6 IS and hit the selected hostile for 11. https://github.com/kylebrussell/mxo-hd/pull/791#issuecomment-7084254409"
+    },
+    "59": {
+      "note": "PR791 stock gated unloaded Logic Barrage 2.0. The normal reloaded cast cost 7 IS and hit the selected hostile for 17. https://github.com/kylebrussell/mxo-hd/pull/791#issuecomment-7084254409"
+    },
+    "60": {
+      "note": "PR791 stock gated unloaded Code Nuke. The normal reloaded cast cost 11 IS and hit both the selected hostile and the nearby splash witness for 7. https://github.com/kylebrussell/mxo-hd/pull/791#issuecomment-7084254409"
+    },
+    "66": {
+      "note": "PR796 stock gated unloaded Overload. The reloaded 14 IS cast added four -10 modifiers for 33 s to the selected hostile. They expired on schedule after an unload of the cast ability. https://github.com/kylebrussell/mxo-hd/pull/796#issuecomment-7084182289"
+    },
+    "86": {
+      "note": "PR796 stock gated unloaded Slow. Unloading after the accepted 12 IS cast began caused a fizzle without recipient records. The later loaded cast applied five records for 28 s and all expired after a post-landing unload. https://github.com/kylebrussell/mxo-hd/pull/796#issuecomment-7084182289"
+    },
+    "1137": {
+      "note": "PR780 stock cancelled a pending Concealment about half a second into the bar on Archive unload. The cancellation and normal stealth-off presentation kept the world visible and preserved the stand and hostile target. The 20 IS debit remained, with no activation, modifier or reuse. Concealed Shot stayed gated until a fresh 1137, then hit the original hostile for 23. The disposable replay corrects the out-of-range stock self-position echo from the older head. https://github.com/kylebrussell/mxo-hd/pull/780#issuecomment-7084050308"
+    }
+  }
+}
