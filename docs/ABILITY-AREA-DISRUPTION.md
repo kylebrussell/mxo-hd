@@ -14,6 +14,8 @@ The server samples the caster's position at completion. This fits the shipped se
 
 The level-19 `ability-parity-starter-area-disruption-completion` fixture brackets 8 m and checks an allied control. The headless replay moves the caster from the start to the verified SHIFT stand during the cast and checks the resulting recipient records. In the stock client, test the start with no selection and the shifted cast with the farther helper selected. If stock cancels on an ordinary step, record that client behavior and cast from the printed SHIFT stand.
 
+The [stock run in PR811](https://github.com/kylebrussell/mxo-hd/pull/811#issuecomment-7085668862) accepted both casts. At the original stand only the enemy at 8 m received the control records. After a step during the cast, both enemies received the records from the new centre and the ally remained excluded. The three-second Stun and eight-second immunity both cleared. This verifies the shipped selector and the completion policy on the stock client.
+
 ## Fixture inventory and Claude-only one pass
 
 Discovered `area-disruption-hit` and `area-disruption-deflect`: CSR110 only at17000/495/2300, level50, organization2, owned/loaded2/17/1006/38,5000HP/2000IS, heading0. Existing PvP-server rules flag level50; no GM or flag injection. Strict dev1/actualvalidmxotest per-contest draws only (hit32766/0 or deflect0/32766); generic combat/health/callback/drop RNG unchanged. `?qaload 38` refreshes this already-owned ability through normal80ae if needed; no internal38freegrant.

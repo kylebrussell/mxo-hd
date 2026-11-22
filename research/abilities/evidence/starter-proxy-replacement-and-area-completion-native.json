@@ -1,0 +1,32 @@
+{
+  "abilities": {
+    "28": {
+      "checks": {
+        "script": {
+          "source": "[RemoteProxy2_Subject and RemoteProxy2_Deactivate](../../client-scripts/ability/hacker/simulacra.py#L198) request creation with the level 4–7 clamp, followed by cleanup, and expose an explicit deactivation callback.",
+          "runtime": "CoderPets prepares a valid candidate, retires the exact previous incarnation, then publishes the candidate once. The stock Deactivate order dismisses the current validated pet.",
+          "test": "StarterRemoteProxy2ReplacementMode checks the owner and observer lifecycle. [Native PR810](https://github.com/kylebrussell/mxo-hd/pull/810#issuecomment-7085606765) saw an initial level-5 proxy, old-pet removal before replacement registration in a single packet, and one removal for each stock Deactivate."
+        },
+        "source-parity": {
+          "source": "The ordered Subject calls require one surviving proxy. Resolving cleanup against the captured previous incarnation preserves that outcome and the explicit Deactivate path.",
+          "runtime": "The previous summon survives until the new candidate can be created. On success only the previous registration and view are retired, and Archive interruption preserves the previous summon.",
+          "test": "The [stock PR810 run](https://github.com/kylebrussell/mxo-hd/pull/810#issuecomment-7085606765) saw the old proxy persist through the cast bar and exactly one replacement afterward. Exact replay also checks observer deletion and the interrupted-cast regression."
+        },
+        "behavior-tests": {
+          "source": "GOB 28 and the shipped callbacks specify 50 IS, an eight-second cast, eight-second reuse, a random proxy sheet and the level 4–7 clamp.",
+          "runtime": "AbilityHandler owns cast, cost and reuse. CoderPets handles role, clamped level, registration, orders and replacement or departure cleanup.",
+          "test": "StarterRemoteProxy2ReplacementMode covers costs, the wire lifecycle, replacement and both Deactivate orders. [PR677](https://github.com/kylebrussell/mxo-hd/pull/677) exercises the tier clamp. [PR782](https://github.com/kylebrussell/mxo-hd/pull/782) exercises the rifle proxy's ordinary Attack order and damage."
+        }
+      }
+    },
+    "38": {
+      "checks": {
+        "source-parity": {
+          "source": "The shipped selector 4, radius 8 and the stock description specify enemies within radius of self. The two-second cast and the effect callbacks supply Stun and its separate immunity.",
+          "runtime": "CasterHostileArea samples the caster at completion, uses the normal recipient contest, and filters to valid opponents on the same floor and in sight.",
+          "test": "[Native PR811](https://github.com/kylebrussell/mxo-hd/pull/811#issuecomment-7085668862) hit the 8 m enemy with no selection, excluded the 8.01 m enemy and ally, then accepted a mid-cast step and applied the three-second Stun and eight-second immunity from the new centre. Exact replay brackets the same stands and checks removals."
+        }
+      }
+    }
+  }
+}
