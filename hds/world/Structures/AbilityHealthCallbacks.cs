@@ -8,6 +8,7 @@ namespace hds
     /// <summary>Explicit sourced health callbacks; deterministic catalog recognition never samples runtime RNG.</summary>
     public static class AbilityHealthCallbacks
     {
+        public const ushort LineUpAbility = 506;
         private static readonly Random random = new Random();
         public static Func<int> Random15 = () => { lock(random) return random.Next(32768); };
         public static Func<int> Random100 = () => { lock(random) return random.Next(100); };
@@ -219,29 +220,44 @@ namespace hds
             ServerPackets.SendPlayerAbilityEffect(target,fx);
         }
 
+        internal static uint? LineUpRefusal(WorldClient client, CombatHandler fight)
+        {
+            if (!AbilityPassives.IsLoaded(client, LineUpAbility)) return AbilityRefusals.NotLoaded;
+            if (fight.isCombatRunning || fight.HasActiveInterlock) return AbilityRefusals.MustBeOutsideCombat;
+            if (CombatStyles.Active(client) != CombatStyles.Rifles) return AbilityRefusals.WrongStyle;
+            if (RangedWeapons.AttackClass(SharpshooterFreeFire.EquippedWeapon(client)) != RangedWeapons.ClassRifle)
+                return AbilityRefusals.RequiredItemCategory;
+            if (!Stealth.IsOn(client, Stealth.ConcealmentGrantAbility)) return AbilityRefusals.CasterStateRequired;
+            return null;
+        }
+
         public static bool LineUp(WorldClient client,bool wasConcealed)
         {
             lock(client.playerData.upgradeSync) return LineUpCore(client,wasConcealed);
         }
         private static bool LineUpCore(WorldClient client,bool wasConcealed)
         {
-            if(PvpCombat.HealthOf(client)==0 || !AbilityBuffBuffer.CanApply(client,506)) return false;
+            if(PvpCombat.HealthOf(client)==0 || !AbilityBuffBuffer.CanApply(client, LineUpAbility)) return false;
             var old=new List<ushort>();
             lock(client.playerData.activeBuffs) old.AddRange(client.playerData.activeBuffs.Keys.Where(id=>AbilityCatalog.Find(id)?.Number("Ability/StackingType")==39));
             foreach(var id in old) AbilityBuffs.Remove(client,id);
-            AbilityBuffs.RemoveTimedFamilyConflicts(client,506);
-            var entry=AbilityCatalog.Find(506);
+            AbilityBuffs.RemoveTimedFamilyConflicts(client, LineUpAbility);
+            var entry=AbilityCatalog.Find(LineUpAbility);
+            int level = client.playerInstance.Level.getValue()[0];
             var mods=entry.Modifiers.Where(m=>m.Target!=0 && m.Target!=710).Select(m=>
             {
-                AbilityValues.TryValue(m,0,client.playerInstance.Level.getValue()[0],out int value);
+                AbilityValues.TryValue(m,0,level,out int value);
                 return new TempMods.Mod { Kind=TempMods.KindStat, Target=m.Target, MinValue=value,MaxValue=value,
                     Seconds=(float)m.Number("Duration"),Proc=TempMods.Proc.Stat,
                     Break=m.Text("StatModHealthChangedFunc")=="OnHealthReduceDeactivateAbility"?TempMods.BreakRule.Damage:TempMods.BreakRule.None };
             }).ToArray();
-            TimedEffects.Apply(TimedEffects.ForPlayer(client),new TempMods.Effect {Ability=506,Mods=mods},TimeUtils.GetSimTimeSeconds(),client,TimedEffects.PlayerName(client));
-            if(wasConcealed) Stealth.Begin(client,Stealth.Defs[1137],Stealth.AbilityLevel(client,1137)); // Subject result1
-            Stealth.Begin(client,Stealth.Defs[1137],Stealth.AbilityLevel(client,1137)); // instant ApplyAuraEffect1137
-            Output.WriteDebugLog("[HEALTH-EFFECT] LineUp506 subject="+(wasConcealed?1:2)+" reapply1137");
+            TimedEffects.Apply(TimedEffects.ForPlayer(client),new TempMods.Effect {Ability=LineUpAbility,Mods=mods},TimeUtils.GetSimTimeSeconds(),client,TimedEffects.PlayerName(client));
+            var aura = entry.Modifiers.Single(m => m.Text("StatModInitFunc") == "ApplyAuraEffect");
+            AbilityValues.TryValue(aura, 0, level, out int abilityId);
+            ushort grant = (ushort)abilityId;
+            if (wasConcealed) Stealth.Begin(client, Stealth.Defs[grant], Stealth.AbilityLevel(client, grant));
+            Stealth.Begin(client, Stealth.Defs[grant], Stealth.AbilityLevel(client, grant));
+            Output.WriteDebugLog($"[HEALTH-EFFECT] LineUp506 subject={(wasConcealed ? 1 : 2)} reapply{grant}");
             return true;
         }
     }

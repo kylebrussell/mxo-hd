@@ -1,0 +1,18 @@
+{
+  "abilities": {
+    "506": {
+      "checks": {
+        "stats": {
+          "source": "The 7.6005 GOB stores stat 524 with ValueFunction 3 and scale 1.3 for 20 seconds, stat 171 with ValueFunction 3 and scale 0.5 for 12 seconds, and an instant stat-710 component whose fixed value 1137 is the ability ID consumed by ApplyAuraEffect.",
+          "runtime": "AbilityHealthCallbacks.LineUpCore evaluates both timed components through AbilityValues, uses ApplyAuraEffect's value for the grant, and feeds timed 524 and 171 into AbilityStats.Attack and ScaleTypedAbilityDamage.",
+          "test": "AbilityHealthCallbackTests.LineUpUsesTwoDurationsPreservesConcealmentAndOnlyDamageBreaksTheParent checks +25 ballistic accuracy and +10 ballistic damage at level 20, their actual combat consumers, a neutral melee control, and no stat-710 value or IS drain from reapplying the grant."
+        },
+        "behavior-tests": {
+          "source": "Stored Line Up ability fields and misc.py LineUpTheShot_Test/Subject, plus tempmods.py ApplyAuraEffect and OnHealthReduceDeactivateAbility.",
+          "runtime": "AbilityHandler and AbilityHealthCallbacks enforce the normal cast gates, apply the 4-second cast, 30 IS and 15-second reuse, and execute the separate concealment, ballistic modifiers and health callback behavior.",
+          "test": "AbilityHealthCallbackTests covers normal-use gates, both Subject outcomes, component values, health loss, healing, expiration, buffer and replacement. The ability-health-deflect-lineup and ability-health-lineup-timings headless cases exercise these effects over the live protocol. Native still needs a stock 506 request and passage through both timed-effect windows."
+        }
+      }
+    }
+  }
+}
