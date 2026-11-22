@@ -130,7 +130,10 @@ public static partial class Scenarios
         await failed.WaitForRpcAsync("61 01",TimeSpan.FromSeconds(36));
         Check.That(watch.Elapsed.TotalSeconds>=31.3,"Failure follows actual31.49s execution, not admission refusal");
         Check.Equal(1L,await context.Database.LongAsync($"SELECT level FROM char_abilities WHERE char_id={failed.CharId} AND slot=400"),"Failed roll leaves direct code charge intact");
-        Check.Equal(200000L,await context.Database.LongAsync($"SELECT cash FROM characters WHERE charId={failed.CharId}"),"Failed roll leaves cash intact");
+        Check.Equal(194000L,await context.Database.LongAsync($"SELECT cash FROM characters WHERE charId={failed.CharId}"),"Completed failed roll spends the 6,000 Info quote");
+        Check.That(failed.World.RpcSnapshot().Any(record =>
+            record.Bytes.SequenceEqual(WireFormat.FromHex("80 e4 d0 f5 02 00 00 00 00 00"))),
+            "Failed contest publishes the exact updated Info balance");
         Check.Equal(0L,await context.Database.LongAsync($"SELECT COUNT(*) FROM inventory WHERE charId={failed.CharId} AND goid=39412"),"Failed roll produces no item");
         // Exercise the discovered mode's exact SQL grammar only in this owned throwaway database.
         string configuration=new DirectoryInfo(Path.GetDirectoryName(context.Server.SourceAssembly)!).Parent!.Name;

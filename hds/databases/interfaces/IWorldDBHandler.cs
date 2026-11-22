@@ -10,7 +10,7 @@ namespace hds.databases.interfaces{
     {
         CraftingRequests.WrittenCode WriteRecipeCode(uint character, CraftingRequests.Compile request, long cost, long requiredInfo);
         OrdinaryItemCode.Entry GetOrdinaryItemCode(UInt32 character, UInt16 slot);
-        ClientActionRequests.Materialized MaterializeOrdinaryItemCode(UInt32 character, OrdinaryItemCode.Entry source, byte tool, long cost);
+        ClientActionRequests.Materialized MaterializeOrdinaryItemCode(UInt32 character, OrdinaryItemCode.Entry source, byte tool, long cost, bool contestWon = true);
         PrisonDevices.Owned ReadPrisonDevice(uint character, ushort slot);
         bool MovePrisonDevice(uint character, PrisonDevices.Owned expected, ushort destination);
         List<LocalSupport.Ticket> SupportTickets(UInt32 character);
