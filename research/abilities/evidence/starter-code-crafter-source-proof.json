@@ -1,0 +1,13 @@
+{
+  "abilities": {
+    "515": {
+      "checks": {
+        "source-parity": {
+          "source": "GOB 515 supplies two fixed loaded passive modifiers, general Compile Time Reduction 954 +25 and Code Writing Discount 956 +25, with no separate cast component. Shipped client 6207f650 reads 954 in the ordinary compile timer and reads 955 separately only for IC consumables. Shipped crafting_server.py WriteCodeTest reads CodeWritingDiscountAbility in the info-cost factor before admission. It reads signal boost separately, so that engine system is outside the two Code Crafter effects.",
+          "runtime": "The ordinary compile path reads 954 to compute its bounded server completion time from the shipped client timer. The normal Writer reads 956 on supported recipe validation and debit, comparing the fractional cost before debiting whole Info in the same ingredient transaction. These consumers apply independently of recipe specialization and of the distinct 955 or general Info discount. This credits the two shipped Code Crafter effects in their implemented recipe paths.",
+          "test": "PR563's stock run at bb64b409 checks 954 alone changing the same consumable timer 18→13.5 s and its combination with fixed 955 at 9.045 s versus 12.06 s. The saved 60-to-61 PacketLog corroborates all four windows at whole-second resolution, and the eyewear floor remains 3 s. PR451 stock at 8ff804a0 verified six Info is insufficient for the unrounded 6.75 discounted pill quote and all ingredients remain. PR751 verifies the later stock Writer success debits 6 Info and grants the ten-charge pill code. PR479 also verifies normal equipment Writer and Compiler handling. OrdinaryItemCodeTests.NativeTimerUsesSignedTotalsAndFinalClamp and CraftingRequestTests.WriterChecksAffordabilityBeforeTruncatingTheDebit verify the source-specific formulas. https://github.com/kylebrussell/mxo-hd/pull/563 https://github.com/kylebrussell/mxo-hd/pull/451 https://github.com/kylebrussell/mxo-hd/pull/751#issuecomment-7080474443 https://github.com/kylebrussell/mxo-hd/pull/479"
+        }
+      }
+    }
+  }
+}

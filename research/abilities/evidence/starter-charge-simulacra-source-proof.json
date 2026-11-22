@@ -1,0 +1,13 @@
+{
+  "abilities": {
+    "603": {
+      "checks": {
+        "source-parity": {
+          "source": "GOB 603 stores own-simulacrum targeting, 35 caster IS, a 4 s cast, 30 s reuse and distinct 600 s pet modifiers. Stat 117 reduces action cost 20% and stat 114 raises regeneration 50%. The shipped AcousticDecoy1_GetRange returns 5000 world units times the selection-range-debuff multiplier; GOB names the same 603 resource AcousticDecoy1 while stock Actions labels it Charge Simulacra.",
+          "runtime": "The pet support path checks original owned pet, current range and continuous Archive membership at admission and application. After a successful cast, SpendAction and Regenerate directly consume the sourced percentages on the chosen 100 maximum, 10 IS per action and 2 IS/s pet baseline, for 8 per action and 3/s during Charge. The original retail pet baseline remains unarchived. The actual pet action path skips unaffordable attacks or heals. Charge keeps its own timed lifetime if later unloaded. Regeneration apportions only time inside that lifetime to the increased rate.",
+          "test": "PR762 stock refused 12.09 m and accepted 8.14 m under stat 214 +80 (the reduced 10 m range), then paid 35 IS and logged both 600 s percentages. PR666 independently measured the resulting live pet cost 10→8; Fortify expiry left Charge active. PR790 verified an unload in the cast bar fizzles, while the same live landed pet kept cost 8 on subsequent Archive unload. CoderPetTests.ChargeChangesActualBudgetAndExpiresWithoutRetroactiveRegeneration checks the actual debit boundary, two charged plus one regular regen seconds and return to normal spending. The existing disposable coder-pet-resources scenario runs a charged pet's ordinary Attack after exhausting its pool and observes the resumed attack. https://github.com/kylebrussell/mxo-hd/pull/762#issuecomment-7082527489 https://github.com/kylebrussell/mxo-hd/pull/666#issuecomment-7064421313 https://github.com/kylebrussell/mxo-hd/pull/790#issuecomment-7083931604"
+        }
+      }
+    }
+  }
+}
