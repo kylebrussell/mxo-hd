@@ -1,0 +1,39 @@
+{
+  "abilities": {
+    "184": {
+      "checks": {
+        "stats": {
+          "source": "GOB 184 authors +15 Movement, Sneak Movement and Invisibility Movement, 25 IS on activation and each 5 s interval, and 5 s reuse. SpeedingInit/Term set and clear 0x0400.",
+          "runtime": "AbilityBuffs emits and removes all four records, projects +0.15 to the owner and observers, preserves the active stealth stance, and handles the spent and shortfall branches independently of the stance.",
+          "test": "PR723 measures matched standalone Sprint against the off baseline in Normal, Sneak and Belt (first-stop ratios 1.142, 1.145 and 1.150). Stock also confirms 25 IS every 5 s, all modifier add/remove records, preserved stances and 5 s reuse. Previous PR655 and PR627 cover shortfall and unload. https://github.com/kylebrussell/mxo-hd/pull/723#issuecomment-7073122875 https://github.com/kylebrussell/mxo-hd/pull/655#issuecomment-7062851649 https://github.com/kylebrussell/mxo-hd/pull/627#issuecomment-7059273034"
+        },
+        "consumer": {
+          "source": "GOB 184 authors +15 Movement, Sneak Movement and Invisibility Movement, 25 IS on activation and each 5 s interval, and 5 s reuse. SpeedingInit/Term set and clear 0x0400.",
+          "runtime": "AbilityBuffs emits and removes all four records, projects +0.15 to the owner and observers, preserves the active stealth stance, and handles the spent and shortfall branches independently of the stance.",
+          "test": "PR723 measures matched standalone Sprint against the off baseline in Normal, Sneak and Belt (first-stop ratios 1.142, 1.145 and 1.150). Stock also confirms 25 IS every 5 s, all modifier add/remove records, preserved stances and 5 s reuse. Previous PR655 and PR627 cover shortfall and unload. https://github.com/kylebrussell/mxo-hd/pull/723#issuecomment-7073122875 https://github.com/kylebrussell/mxo-hd/pull/655#issuecomment-7062851649 https://github.com/kylebrussell/mxo-hd/pull/627#issuecomment-7059273034"
+        },
+        "behavior-tests": {
+          "source": "GOB 184 authors +15 Movement, Sneak Movement and Invisibility Movement, 25 IS on activation and each 5 s interval, and 5 s reuse. SpeedingInit/Term set and clear 0x0400.",
+          "runtime": "AbilityBuffs emits and removes all four records, projects +0.15 to the owner and observers, preserves the active stealth stance, and handles the spent and shortfall branches independently of the stance.",
+          "test": "PR723 measures matched standalone Sprint against the off baseline in Normal, Sneak and Belt (first-stop ratios 1.142, 1.145 and 1.150). Stock also confirms 25 IS every 5 s, all modifier add/remove records, preserved stances and 5 s reuse. Previous PR655 and PR627 cover shortfall and unload. https://github.com/kylebrussell/mxo-hd/pull/723#issuecomment-7073122875 https://github.com/kylebrussell/mxo-hd/pull/655#issuecomment-7062851649 https://github.com/kylebrussell/mxo-hd/pull/627#issuecomment-7059273034"
+        }
+      },
+      "note": "The matched run proves the effective Sprint bonus in each stance. Independent use of 877 and 878 by the stock movement engine is not established. Baseline stance slowdown is a separate observation. https://github.com/kylebrussell/mxo-hd/pull/723#issuecomment-7073122875"
+    },
+    "215": {
+      "checks": {
+        "consumer": {
+          "source": "The loaded 215 record is Locate Data Node Skill 703 at the trained rank. LocateDataNode_DirectObject takes range and type from the indirect item, specifies 10 s for the handheld, and passes tool and range to the search. It assigns the skill ID to an unused local.",
+          "runtime": "The passive reports the trained rank. DataMining uses the selected tool's range and type, and AbilityHandler admits the active tool's stop before cast/reuse/IS checks. The locator lifecycle bootstrap verifies expiry, removal and quiet reload, including marker cleanup on unload.",
+          "test": "PR679 verifies +4→+5 at the trainer and the same range and expiry at both ranks. PR724 verifies goggles and handheld by slot, 5 IS per start, marker FX and handheld expiry, quiet reload of +5, and immediate free stop at zero. Marker removal on unload was verified headlessly. https://github.com/kylebrussell/mxo-hd/pull/679#issuecomment-7066256562 https://github.com/kylebrussell/mxo-hd/pull/724#issuecomment-7073024397"
+        },
+        "behavior-tests": {
+          "source": "The loaded 215 record is Locate Data Node Skill 703 at the trained rank. LocateDataNode_DirectObject takes range and type from the indirect item, specifies 10 s for the handheld, and passes tool and range to the search. It assigns the skill ID to an unused local.",
+          "runtime": "The passive reports the trained rank. DataMining uses the selected tool's range and type, and AbilityHandler admits the active tool's stop before cast/reuse/IS checks. The locator lifecycle bootstrap verifies expiry, removal and quiet reload, including marker cleanup on unload.",
+          "test": "PR679 verifies +4→+5 at the trainer and the same range and expiry at both ranks. PR724 verifies goggles and handheld by slot, 5 IS per start, marker FX and handheld expiry, quiet reload of +5, and immediate free stop at zero. Marker removal on unload was verified headlessly. https://github.com/kylebrussell/mxo-hd/pull/679#issuecomment-7066256562 https://github.com/kylebrussell/mxo-hd/pull/724#issuecomment-7073024397"
+        }
+      },
+      "note": "The closure covers base 215 with sourced tool range and lifecycle. Native selection of distinct 621 and tapping economy are outside this evidence. https://github.com/kylebrussell/mxo-hd/pull/724#issuecomment-7073024397"
+    }
+  }
+}
