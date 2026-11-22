@@ -1,0 +1,22 @@
+{
+  "abilities": {
+    "76": {
+      "checks": {
+        "source-parity": {
+          "source": "The shipped Resist Viruses template links learned-rank values to 1045 Contested Withdraw, 1030 Viral Defense and 1049 Evade Interlock separately. PR721 and PR823 provide independent stock client observations for the two entry and withdrawal paths.",
+          "runtime": "Ordinary Withdraw combines the direct contest input with the sum of loaded 1045 contributions as a truncated percentage. The existing Evade entry and viral defense read their distinct linked stats. This closes the executable scope for the chosen Withdraw calculation.",
+          "test": "PR823 stock 44 01 holds direct 65 and the other loaded rows constant: removing 76 changes only its three records and drops input from 70 to 67; reload restores 70. PR721 proves independent Evade entry and shield wear. PhagePassivesFeedTheirOwnWithdrawViralDefenseAndShieldInputs verifies actual viral defense and the unchanged ballistic control. https://github.com/kylebrussell/mxo-hd/pull/823#issuecomment-7086466324 https://github.com/kylebrussell/mxo-hd/pull/721#issuecomment-7072664857"
+        }
+      }
+    },
+    "83": {
+      "checks": {
+        "source-parity": {
+          "source": "Selective Phage has three fixed +1 loaded modifiers (1045, 1030 and 1049) and the registered 1082 grant. The stock client retains them as distinct records.",
+          "runtime": "The loaded passive reconciles the three named consumers and the grant separately. With direct 65, the ordinary Withdraw calculation truncates the loaded percentage contribution after summing all sources.",
+          "test": "PR823 stock input reads 70 to 69 to 70 across Archive and Load while the base and other passives stay fixed. PR694 verifies the paired 1082 grant records and the Evade input; PR653 successfully invoked 1082 from stock. The headless PhagePassivesFeedTheirOwnWithdrawViralDefenseAndShieldInputs test verifies the viral-only consumer. The PR823 Actions panel was visually unchecked. https://github.com/kylebrussell/mxo-hd/pull/823#issuecomment-7086466324 https://github.com/kylebrussell/mxo-hd/pull/694#issuecomment-7068835236 https://github.com/kylebrussell/mxo-hd/pull/653"
+        }
+      }
+    }
+  }
+}
