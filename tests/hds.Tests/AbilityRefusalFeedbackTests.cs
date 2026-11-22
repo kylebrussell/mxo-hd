@@ -31,6 +31,51 @@ public class AbilityRefusalFeedbackTests:IDisposable
         c.playerInstance.InnerStrengthAvailable.setValue(inner);c.playerInstance.InnerStrengthMax.setValue((ushort)1000);c.messageQueue=new();c.viewMan=new();return c;
     }
     static byte[][] Rpcs(WorldClient c)=>c.messageQueue.RPCMessagesQueue.Cast<SequencedMessage>().Select(m=>m.content.Skip(1).ToArray()).ToArray();
+
+    [Theory]
+    [InlineData(43, true)]
+    [InlineData(48, true)]
+    [InlineData(69, true)]
+    [InlineData(69, false)]
+    public void StarterViralDebuffRequiresTheOriginalHostileSpawnAtLanding(ushort id, bool replaceSpawn)
+    {
+        var caster = Client();
+        var enemy = Client();
+        caster.playerData.combatStyle = CombatStyles.HackerStyle;
+        enemy.playerData.setCharID(111);
+        enemy.playerData.setEntityId(42);
+        caster.playerInstance.OrganizationID.setValue((byte)1);
+        enemy.playerInstance.OrganizationID.setValue((byte)2);
+        caster.playerData.pvpFlag = enemy.playerData.pvpFlag = true;
+        WorldServer.Clients.Add("enemy", enemy);
+        var view = caster.viewMan.addView(42, 12);
+        view.viewCreated = true;
+        view.spawnId = 9;
+        Store.currentClient = caster;
+
+        var ability = new AbilityItem();
+        ability.setAbilityID(id);
+        ability.setAbilityName("Starter viral debuff");
+        ability.setCastAnimStart(new byte[4]);
+        DataLoader.getInstance().AbilityDB.Add(ability);
+        var request = new byte[41];
+        BitConverter.GetBytes(id).CopyTo(request, 0);
+        BitConverter.GetBytes(view.ViewID).CopyTo(request, 2);
+        BitConverter.GetBytes((ushort)view.spawnId).CopyTo(request, 4);
+        new AbilityHandler().ProcessAbility(ref request);
+        double end = caster.playerData.castEndsAt;
+        Assert.True(end > TimeUtils.GetSimTimeSeconds());
+        Assert.Equal(500 - AbilityCosts.Cost(id), AbilityHandler.CurrentInnerStrength(caster));
+
+        if (replaceSpawn) view.spawnId++;
+        else enemy.playerInstance.OrganizationID.setValue((byte)1);
+        DelayedActions.RunDue(end + 1);
+
+        Assert.Empty(Rpcs(enemy));
+        Assert.Equal(1000, PvpCombat.HealthOf(enemy));
+        Assert.True(AbilityCooldowns.IsCoolingDown(caster.playerData, id, TimeUtils.GetSimTimeSeconds()));
+    }
+
     [Fact] public void NativeNineteenByteFieldsAreFullWidthAndLossless()
     {
         byte[] raw=Hex("80baefcdab89fe98badcfe1032547678563412");Assert.True(AbilityRefusals.TryDecode(raw,out var r));

@@ -142,6 +142,11 @@ namespace hds
                 return;
             }
 
+            bool starterSelectedViralControl = AbilityID == 43 || AbilityID == 48 || AbilityID == 69;
+            ushort? viralControlTargetSpawn = starterSelectedViralControl
+                ? (packet.Length == 41 ? BitConverter.ToUInt16(packet, 4) :
+                    (ushort?)Store.currentClient.viewMan.getViewById(currentTargetViewId)?.spawnId)
+                : null;
             var definition = AbilityCatalog.Find(AbilityID);
             bool selectedGunShot = starterGunCast || AbilityID == 130;
             if (selectedGunShot && !AbilityTargets.HasSelectionSight(Store.currentClient, definition, currentTargetViewId))
@@ -637,6 +642,15 @@ namespace hds
             if (AbilityID == SixthSense.Ability)
             {
                 SixthSense.Land(client);
+                return;
+            }
+
+            if (starterSelectedViralControl &&
+                (!viralControlTargetSpawn.HasValue ||
+                 !AbilityTargets.HasLiveAttackSelection(client, currentTargetViewId, viralControlTargetSpawn, requireOpponent: true) ||
+                 !AbilityTargets.WithinSelectionRange(client, AbilityID, currentTargetViewId)))
+            {
+                Output.WriteDebugLog($"[ABILITY] {AbilityID} fizzles: the selected viral debuff target changed or left range");
                 return;
             }
 

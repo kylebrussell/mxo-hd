@@ -12,7 +12,7 @@ public sealed class StarterHackerDotResistanceMode : NativeQaMode
     private static readonly int Memory = Abilities.Sum(AbilityMemory.Cost);
 
     // Complete stock activation for 69 from PR439; 58/59 from PR396. Patch only the live target handle.
-    private const string LagUse = "80b94500040002000000000000000000000000000000000000000000585cbb0001000000086b0000000000";
+    internal const string LagUse = "80b94500040002000000000000000000000000000000000000000000585cbb0001000000086b0000000000";
     private const string BlastUse = "80b93a000400020000000000000000000000000000000000000000000000000090767241086b0000000000";
     private const string BarrageUse = "80b93b00040002000000000000000000000000000000000000000000585cba0001000000086b0000000000";
     private const string HackerUse = StarterHackerViralSightMode.StockStyle;
