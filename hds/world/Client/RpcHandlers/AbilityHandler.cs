@@ -67,7 +67,8 @@ namespace hds
 
             // These selected abilities bind a live enemy before the cast, including the centre of any splash.
             bool selectedViralField = AbilityID == 343 || AbilityID == 401 || AbilityID == 403;
-            bool selectedViralAttack = AbilityID == 53 || (AbilityID >= 57 && AbilityID <= 60) ||
+            bool enrage = AbilityID == 588;
+            bool selectedViralAttack = enrage || AbilityID == 53 || (AbilityID >= 57 && AbilityID <= 60) ||
                 AbilityID == 350 || AbilityID == 351 || AbilityID == 392 || AbilityID == 394 || selectedViralField;
             ushort? lockedDamageTargetSpawn = null;
             if (selectedViralAttack)
@@ -289,7 +290,7 @@ namespace hds
                 }
             }
             bool selectedGunShot = starterGunCast || AbilityID == 130;
-            if (selectedGunShot && !AbilityTargets.HasSelectionSight(Store.currentClient, definition, currentTargetViewId))
+            if ((selectedGunShot || enrage) && !AbilityTargets.HasSelectionSight(Store.currentClient, definition, currentTargetViewId))
             {
                 Deny(AbilityID, $"Sight blocked for selected target {currentTargetViewId}.",
                     AbilityRefusals.TargetNotInSight, sendServerText: false);

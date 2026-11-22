@@ -35,6 +35,7 @@ public static partial class Scenarios
         new Scenario("world-npc-chase",WorldNpcChase,new Dictionary<string,string>{["MXO_MOBS"]="world",["MXO_AGGRO"]="1",["MXO_MOB_WANDER"]="0"}),
         new Scenario("world-npc-corner-chase",WorldNpcCornerChase,WorldNpcCornerFixture.Environment),
         new Scenario("world-npc-corner-stationary", WorldNpcCornerStationary, WorldNpcCornerFixture.StationaryEnvironment),
+        new Scenario("coder-enrage-588-server", CoderEnrage588, CoderEnrage588Environment),
         new Scenario("viral-accuracy-bonus",ViralAccuracyBonus,ViralAccuracyBonusEnvironment()),
         new Scenario("coder-static-blast-tiers-server", CoderStaticBlastTiersServer, new Dictionary<string, string>(StillNpcs)
         {

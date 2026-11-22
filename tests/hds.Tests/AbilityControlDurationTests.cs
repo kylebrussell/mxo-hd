@@ -86,6 +86,35 @@ public class AbilityControlDurationTests
     }
 
     [Fact]
+    public void Enrage588AppliesTheUnscaledWithdrawRestrictionUntilExpiry()
+    {
+        const ushort enrage = 588;
+        var entry = AbilityCatalog.Find(enrage);
+        Assert.Equal(0, entry.Number("Ability/CastDirectObjects"));
+        Assert.Equal(3, entry.Number("Ability/CastValidTarget"));
+        Assert.Equal(16, entry.Number("Ability/SelectionRange"));
+        Assert.Equal(27, entry.Number("Ability/AbilityInnerStrengthCost"));
+        Assert.Equal(28, entry.Number("Ability/RecastTime"));
+        Assert.Equal(2, entry.CastSeconds);
+
+        var caster = Client();
+        var affected = TimedEffects.ForPlayer(Client());
+        var other = TimedEffects.ForPlayer(Client());
+        Assert.True(TempMods.TryGet(enrage, out var effect));
+        var state = Assert.Single(TimedEffects.Apply(affected, effect, TimeUtils.GetSimTimeSeconds(), caster));
+        Assert.Equal(TempMods.EnrageAbility, state.Target);
+        Assert.Equal(12, state.Seconds);
+        Assert.False(ControlActions.CanWithdraw(affected.Effects));
+        Assert.True(ControlActions.CanWithdraw(other.Effects));
+        Assert.Empty(affected.Effects.HealthChanged(10, true, new Random(1)));
+        Assert.False(ControlActions.CanWithdraw(affected.Effects));
+        var expired = new List<TimedEffects.Active>();
+        affected.Effects.Advance(TimeUtils.GetSimTimeSeconds() + 13, new List<TimedEffects.Active>(), expired);
+        Assert.Contains(state, expired);
+        Assert.True(ControlActions.CanWithdraw(affected.Effects));
+    }
+
+    [Fact]
     public void ACompletelyReducedTimedStateDoesNotBecomeAnIndefiniteState()
     {
         var caster = Client(); var victim = Client();
