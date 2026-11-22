@@ -238,7 +238,7 @@ namespace hds
                 }
             }
 
-            if (CombatSpecials.IsRifleOpener(AbilityID))
+            if (CombatSpecials.IsRifleOpener(AbilityID) || AbilityID == CombatSpecials.ConcealedShot)
             {
                 var shooter = Store.currentClient;
                 var fight = CombatManager.GetHandler(shooter);
@@ -252,6 +252,14 @@ namespace hds
                 {
                     shooter.messageQueue.addRpcMessage(AbilityRefusals.Encode(new AbilityRefusals.Record(AbilityID, AbilityRefusals.InvalidTarget)));
                     shooter.FlushQueue();
+                    return;
+                }
+                if (AbilityID == CombatSpecials.ConcealedShot && !Stealth.IsOn(shooter, Stealth.ConcealmentGrantAbility))
+                {
+                    shooter.messageQueue.addRpcMessage(AbilityRefusals.Encode(new AbilityRefusals.Record(
+                        AbilityID, AbilityRefusals.CasterStateRequired, states: Stealth.ConcealmentFlag)));
+                    shooter.FlushQueue();
+                    Output.WriteDebugLog("[ABILITY] Denied 504: requires Concealment");
                     return;
                 }
             }

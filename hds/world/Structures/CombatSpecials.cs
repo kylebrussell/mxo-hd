@@ -23,7 +23,7 @@ namespace hds
     public static class CombatSpecials
     {
         public const ushort PoisonKnife = 146, WoundingThrow = 281, SeverArtery = 341, BerserkerAttack = 535, Taunt = 647,
-            SideRollEscape = 121, BackRollEscape = 122, CartwheelEscape = 292, WoodenStake = 207, SilverBullet = 208, HolyWater = 547, WoodenStakePlus = 1022,
+            SideRollEscape = 121, BackRollEscape = 122, CartwheelEscape = 292, WoodenStake = 207, SilverBullet = 208, HolyWater = 547, ConcealedShot = 504, WoodenStakePlus = 1022,
             HolyWaterPlus = 1023, SilverBulletPlus = 1024, PistolEvasive = 242;
         public const ushort KilledOnlyByHolyWater = 432, KilledOnlyBySilver = 463, KilledOnlyByWood = 464;
 
