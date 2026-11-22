@@ -148,16 +148,10 @@ namespace hds
         /// <summary>Which way from the owner's facing to try, in yaw steps (256 to the turn): ahead first, then around.</summary>
         private static readonly int[] Turns = { 0, 16, -16, 32, -32, 48, -48, 64, -64, 96, -96, 128 };
 
-        /// <summary>The steps along the line from the owner to a spot (world units): thinner than any nav polygon.</summary>
-        private const double LineStep = 10;
-
-        /// <summary>Highest step up or down between two points of the line (world units).</summary>
-        private const double MaxStep = 40;
-
         /// <summary>
         /// Where the bot stands: where the owner can see it and walk to it. It tries about 2.5 m in front of the owner,
         /// then turned either way and nearer or further, and takes the first spot reached by a straight line that never
-        /// leaves the nav mesh, never climbs more than <see cref="MaxStep"/> at once, and only crosses from one polygon
+        /// leaves the nav mesh, never climbs more than 40 units at once, and only crosses from one polygon
         /// to another over an edge they share (<see cref="NavMesh.OpenBetween"/>): never through a wall, and never into
         /// another indoor region (another prefab: a room behind a door, an elevator car). Failing that, 3 m along +x
         /// (where the bot used to go) if that is in the owner's own region; failing that, where the owner stands.
@@ -182,7 +176,7 @@ namespace hds
                 {
                     double angle = (yaw + turn) * 2 * Math.PI / 256;
                     double tx = x + distance * Math.Sin(angle), tz = z + distance * Math.Cos(angle);
-                    if (WalkableLine(metr, here, x, z, tx, tz, out at))
+                    if (NavMesh.WalkableLine(metr, here, x, z, tx, tz, out at))
                     {
                         bx = tx; by = at.floorY + 95; bz = tz;
                         return true;
@@ -196,24 +190,6 @@ namespace hds
             }
             bx = x; by = y; bz = z;
             at = here;
-            return true;
-        }
-
-        /// <summary>The line from the owner to the spot, a <see cref="LineStep"/> at a time: see <see cref="Spot"/>.</summary>
-        private static bool WalkableLine(UInt16 district, NavLocation from, double x, double z, double tx, double tz, out NavLocation end)
-        {
-            end = from;
-            int steps = (int)Math.Ceiling(Math.Sqrt((tx - x) * (tx - x) + (tz - z) * (tz - z)) / LineStep);
-            for (int i = 1; i <= steps; i++)
-            {
-                double px = x + (tx - x) * i / steps, pz = z + (tz - z) * i / steps;
-                if (!NavMesh.Locate(district, px, end.floorY + 95, pz, out NavLocation step) || Math.Abs(step.floorY - end.floorY) > MaxStep ||
-                    !NavMesh.OpenBetween(district, end, step))
-                {
-                    return false;
-                }
-                end = step;
-            }
             return true;
         }
 
