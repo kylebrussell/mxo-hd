@@ -76,6 +76,55 @@ public class EnrageNpcUpdatesTests
         }
     }
 
+    [Theory]
+    [InlineData(588, true, false)]
+    [InlineData(588, false, false)]
+    [InlineData(40, true, false)]
+    [InlineData(40, false, true)]
+    public void ExpiryDoesNotRedirectAnOccupiedNpcAndOnlyOrdinaryEffectsCanStartRetaliation(
+        ushort ability, bool anotherPlayerIsFighting, bool shouldRetaliate)
+    {
+        string root = AppContext.BaseDirectory;
+        while (!File.Exists(Path.Combine(root, "data", "sector_properties.csv"))) root = Path.GetDirectoryName(root)!;
+        SectorProperties.Load(Path.Combine(root, "data", "sector_properties.csv"));
+        NavMesh.UseDirectory(Path.Combine(root, "data", "navmesh"));
+        var mob = Npc();
+        var caster = Player();
+        var opponent = Player();
+        caster.viewMan.addView(mob.getEntityId(), 599).viewCreated = true;
+        if (anotherPlayerIsFighting) mob.setCombatTarget(opponent);
+        var subject = TimedEffects.ForMob(mob);
+        Assert.True(TempMods.TryGet(ability, out var effect));
+        var previousClients = WorldServer.Clients;
+        WorldServer.Clients = new Dictionary<string, WorldClient>();
+
+        try
+        {
+            var now = TimeUtils.GetSimTimeSeconds();
+            var applied = TimedEffects.Apply(subject, effect, now, caster: caster);
+            Assert.NotEmpty(applied);
+            mob.setHealthC(450);
+
+            // Expire only this subject, without advancing unrelated test combat.
+            var expired = new List<TimedEffects.Active>();
+            subject.Effects.Advance(applied.Max(mod => mod.Expires) + 0.01, new List<TimedEffects.Active>(), expired);
+            Assert.NotEmpty(expired);
+            subject.Ended(expired);
+
+            Assert.Equal(shouldRetaliate, MobMotion.Chasing(mob));
+            Assert.Same(anotherPlayerIsFighting ? opponent : null, mob.getCombatTarget());
+            Assert.Equal(anotherPlayerIsFighting ? 1 : 0, mob.CombatantCount);
+            Assert.False(CombatManager.GetHandler(caster).isCombatRunning);
+        }
+        finally
+        {
+            MobMotion.ResetFixtureMotion(mob);
+            subject.Effects.RemoveAll();
+            try { CombatManager.RemoveClient(caster); }
+            finally { WorldServer.Clients = previousClients; }
+        }
+    }
+
     private static Mob Npc()
     {
         var mob = new Mob();

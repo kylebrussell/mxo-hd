@@ -7,6 +7,7 @@ public static class EnrageNpcCloseCombatFixture
     public const ushort Ability = 588, Level = 25, HelperLevel = 5;
     public const string NpcName = "Blackwood Mushfake", Release = "44 00";
     public const uint Rifle = 2568;
+    public const ushort FullHealth = 262, NativeStartingHealth = 242;
     public const int NpcX = 16304, Y = 95, NpcZ = -4284;
     public const int CasterX = 15960, CasterZ = -5115;
     // Offset the helper from the caster's sightline while preserving the seven-metre pursuit.
@@ -33,7 +34,7 @@ public static class EnrageNpcCloseCombatFixture
             "The helper is the closer candidate, outside melee reach and inside rifle range");
     }
 
-    public static async Task<ViewCreation> FindNpcAsync(HeadlessPlayer player)
+    public static async Task<ViewCreation> FindNpcAsync(HeadlessPlayer player, ushort expectedHealth = FullHealth)
     {
         ViewCreation? found = null;
         await player.WaitUntilAsync(() => (found = player.World.CreationSnapshot().LastOrDefault(view =>
@@ -42,8 +43,9 @@ public static class EnrageNpcCloseCombatFixture
             $"Birth position of the armed {NpcName}", HeadlessPlayer.DefaultTimeout);
         var npc = found!;
         Check.That(BitConverter.ToUInt32(npc.Attributes["EquippedItemID"]) == Rifle &&
-            npc.Attributes["IsEnemy"][0] == 1 && BitConverter.ToUInt16(npc.Attributes["Health"]) == 262,
-            "The NPC is the live, attackable rifle carrier");
+            npc.Attributes["IsEnemy"][0] == 1 && BitConverter.ToUInt16(npc.Attributes["Health"]) == expectedHealth &&
+            BitConverter.ToUInt16(npc.Attributes["MaxHealth"]) == FullHealth,
+            $"The NPC is the live, attackable rifle carrier at {expectedHealth}/{FullHealth} HP");
         return npc;
     }
 

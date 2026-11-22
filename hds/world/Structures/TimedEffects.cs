@@ -1080,8 +1080,11 @@ namespace hds
         internal override void Ended(List<TimedEffects.Active> ended)
         {
             LogModifiers(ended, added: false);
-            // Damage may have broken a hold; expired controls no longer keep a damaged passive NPC idle.
-            if (mob.getHealthC() > 0 && mob.getHealthC() < mob.getHealthM()) MobAggro.Retaliate(lastCaster, mob);
+            // Enrage expiry only ends its pursuit. Other expirations may resume ordinary retaliation
+            // once nothing else is fighting the NPC.
+            if (mob.CombatantCount == 0 && mob.getHealthC() > 0 && mob.getHealthC() < mob.getHealthM() &&
+                ended.Exists(mod => !mod.UpdatesNpcEnrage))
+                MobAggro.Retaliate(lastCaster, mob);
         }
     }
 }

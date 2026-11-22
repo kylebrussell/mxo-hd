@@ -32,7 +32,7 @@ public sealed class EnrageNpcCloseCombatMode : NativeQaMode
             $"Level {Level}, full ranked prerequisite profile {Memory}/{AbilityMemory.ForLevel(Level)} memory. CSR ({CasterX},{Y},{CasterZ}) faces the only NPC, {NpcName} ({NpcX},{Y},{NpcZ}), 9 m away. QAFriend ({HelperX},{Y},{HelperZ}) is 7 m from the NPC and offset from the click line. All three stands are on clear outdoor NAV.",
             "Stay at the spawn stand. Select Coder Style (page 2 slot 1), single-click Blackwood Mushfake, then cast Enrage 1.0 (slot 2). Save the complete stock 80 b9 request. Expect a 2 s cast, [ABILITY-COST] 27 IS (250 to 223), 28 s reuse and [MODIFIER] source=588 stat=93 add value=0 duration=12s with zero direct HP damage.",
             "Leave both players in place and let the fight hold. About 3 s after landing, expect one [ENRAGE] source=588 seek for char=6111, then [AGGRO] Blackwood Mushfake pursues and attacks 6111. The armed Blackwood visibly runs to QAFriend and starts close combat. Look for the helper's 46 flag 01. CSR stays free to move and receives no opening; expect no opens fire line and no second Enrage seek during the interlock.",
-            "After [MODIFIER] source=588 stat=93 remove, send helper JSON {\"actor\":\"QAFriend\",\"action\":\"stop\"}. This sends 44 00 to release the existing interlock. Expect [COMBAT] Combat ended: AttackerFled, the same helper target handle with 46 flag 00 and no new Enrage seek."
+            "Blackwood starts at 242/262 HP to make the wounded expiry reproducible. After [MODIFIER] source=588 stat=93 remove, wait for another QAFriend round before withdrawal. Confirm no [AGGRO] opens fire on 110, no caster 46 opening and no [MODIFIER] char=110 source=670 add. Then send helper JSON {\"actor\":\"QAFriend\",\"action\":\"stop\"}. This sends 44 00 to release the existing interlock. Expect [COMBAT] Combat ended: AttackerFled, the same helper target handle with 46 flag 00 and no new Enrage seek."
         });
 
     public override async Task<byte[]> AfterStartAsync(NativeQaBootstrapContext context)
@@ -41,7 +41,16 @@ public sealed class EnrageNpcCloseCombatMode : NativeQaMode
         CheckGeometry(context.RepositoryRoot ?? throw new InvalidOperationException("Enrage QA requires repository NAV."));
         var helper = await HeadlessPlayer.LoginAsync(context.Address, "QAFriend", "QAFriend", stockCharacterLoad: true);
         context.Helpers.Add(helper.Handle, helper);
-        await VerifyStartupAsync(helper, HelperLevel, HelperX, HelperZ);
+        var helperNpc = await VerifyStartupAsync(helper, HelperLevel, HelperX, HelperZ, FullHealth);
+        int beforeWound = server.DebugLog().Length;
+        helper.SendChat($"?weaken {NativeStartingHealth}");
+        await helper.WaitUntilAsync(() => server.DebugLog()[beforeWound..]
+            .Contains($"[DEV] Weakened 1 NPCs to {NativeStartingHealth} health", StringComparison.Ordinal),
+            "Only Blackwood starts wounded in this isolated fixture", HeadlessPlayer.DefaultTimeout);
+        uint handle = DuelPackets.Handle(helperNpc.ViewId, helperNpc.SpawnId);
+        helper.SendRpc($"81 51 {WireFormat.ToHex(BitConverter.GetBytes(handle))}");
+        helper.SendChat("?combatdepth status");
+        await helper.WaitForTextAsync($"Combat depth combatants 0, HP {NativeStartingHealth}.");
 
         if (context.StockProbe is { } actor)
         {
@@ -50,22 +59,23 @@ public sealed class EnrageNpcCloseCombatMode : NativeQaMode
             Check.That(Memory <= AbilityMemory.ForLevel(Level) && archive.Keys.ToHashSet().SetEquals(Abilities) &&
                 Abilities.All(id => AbilityPrerequisites.Current.Closure(id).All(need =>
                     archive.TryGetValue(need.Key, out var row) && row.Level >= need.Value)), "Full ranked Enrage profile");
-            await VerifyStartupAsync(actor, Level, CasterX, CasterZ);
+            await VerifyStartupAsync(actor, Level, CasterX, CasterZ, NativeStartingHealth);
         }
         NativeQaReadiness.RequireNoAmbientAggro(server, helper);
-        Console.WriteLine("ARMED ENRAGE NATIVE BOOTSTRAP PASS: startup only, live rifle carrier and idle helper on verified NAV.");
+        Console.WriteLine("ARMED ENRAGE NATIVE BOOTSTRAP PASS: live wounded rifle carrier and idle helper on verified NAV.");
         return Array.Empty<byte>();
 
-        async Task VerifyStartupAsync(HeadlessPlayer player, ushort expectedLevel, int x, int z)
+        async Task<ViewCreation> VerifyStartupAsync(HeadlessPlayer player, ushort expectedLevel, int x, int z, ushort health)
         {
             await player.EnterWorldAsync();
             var self = player.World.CreationSnapshot().Last(view => view.ViewId == 2);
             Check.That(At(self, x, z) && self.Attributes["Level"][0] == expectedLevel,
                 $"{player.Handle} starts at the declared stand and level");
-            await FindNpcAsync(player);
+            var blackwood = await FindNpcAsync(player, health);
             NativeQaReadiness.RequireNoAmbientAggro(server, player);
             Check.That(player.World.Problems.Count == 0 && !player.World.RpcSnapshot().Any(record => record.Opcode == 0x46),
                 $"{player.Handle} is idle and startup framing is clean");
+            return blackwood;
         }
     }
 }
