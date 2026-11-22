@@ -156,8 +156,8 @@ namespace hds
                 }
 
                 CombatManager.GetHandler(caster).StopCombatIfActive(CombatSession.CombatEndReason.AttackerFled);
-                Stealth.Begin(caster, Stealth.Defs[Stealth.InvisibilityGrantAbility],
-                    Stealth.AbilityLevel(caster, Stealth.InvisibilityGrantAbility));
+                if (Stealth.Begin(caster, Stealth.Defs[Stealth.InvisibilityGrantAbility],
+                    Stealth.AbilityLevel(caster, Stealth.InvisibilityGrantAbility)) == null) return;
                 caster.FlushQueue();
                 Output.WriteDebugLog("[SPECIAL] Smoke Bomb: char " + owner.getCharID() + " vanishes into invisibility");
             });

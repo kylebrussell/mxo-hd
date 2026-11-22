@@ -111,7 +111,7 @@ public class SpyBombsAndParalyzingThrowTests
     public void BatchFixtureMemoryScaledDamageEffectsAndCooldownsAreExact()
     {
         var plan = NativeQa.NativeQaModes.Find("ability-parity-spy-bombs-and-paralyzing-throw").Plan;
-        Assert.Equal("ability-sweep-melee.csv", plan.TestMobFixture);
+        Assert.Equal("spy-bombs-and-throw.csv", plan.TestMobFixture);
         Assert.Equal("1", plan.EnvironmentOverrides[CombatFixtureWeapons.ResetMode]);
         Assert.Equal(new ushort[] { SpyStyle, FlashBomb, SmokeBomb, 1132, ParalyzingThrow }, plan.HotbarAbilities);
 
