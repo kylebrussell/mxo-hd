@@ -1,0 +1,16 @@
+{
+  "abilities": {
+    "62": {
+      "note": "PR775 stock repeat at a fixed NAV stand measured 1296.9 units over a two-second baseline, 1412.3 with +0.10 own-view MovementScale, and 1298.8 after dismissal. This isolates the client speed field from the individual 115 bonus record. https://github.com/kylebrussell/mxo-hd/pull/775#issuecomment-7083332405"
+    },
+    "86": {
+      "note": "PR775 stock received source 86 stats 115/877/878 -50, 519 -15 and 524 -19 for 28 s, but ran 1298.6 units against 1296.9 at baseline. The timed records and expiry remain verified. The prior DONE row reopens for actual recipient slowdown and restoration. https://github.com/kylebrussell/mxo-hd/pull/775#issuecomment-7083332405"
+    },
+    "130": {
+      "note": "PR775 stock received source 130 stats 115/877/878 -50 and 519 -10 for 8 s. A two-second run inside the active window reached 1302.4 units against 1296.9 at baseline. Positive control 62 changed client speed. Existing targeting, scaling and choreography checks remain open. https://github.com/kylebrussell/mxo-hd/pull/775#issuecomment-7083332405"
+    },
+    "450": {
+      "note": "Archived retail own view pairs Crippling Shot stat 115 -112 with binary32 MovementScale -1.12 in the same packet (Trinity session lines 1788–1795). In a second retail capture, existing +0.45 at line 31784 becomes -0.73 in the packet adding 450 stat 115 -118 at lines 32023–32028. These two recipient samples establish the signed /100 conversion and addition to the speed baseline. The 877/878 stance-specific mapping remains open. https://github.com/kylebrussell/mxo-hd/blob/6f41ec18/research/packet-dumps/community-intake/20260607T015831Z-hdneo-public-inventory-lastday-rajko-nearend-selected/logs/mxopackets1_crashover2k_trinitys_proxy_second_pc_011_trinity_session.log.txt#L1788 https://github.com/kylebrussell/mxo-hd/blob/6f41ec18/research/packet-dumps/community-intake/20260607T200024Z-hdneo-public-remaining-small-ability-loot-market/logs/mxopackets1_crashover2k_afterwhoruneo_old_world_packets_Vector_abilityloadoutchange.log.txt#L32023"
+    }
+  }
+}

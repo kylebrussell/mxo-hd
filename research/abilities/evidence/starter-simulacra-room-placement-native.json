@@ -1,0 +1,13 @@
+{
+  "abilities": {
+    "22": {
+      "note": "PR776 stock replaced the Rifle Proxy with one level-7 Nuker on the verified Mara room stand (18639.07,1695,3276.07). Its nameplate appeared ahead of CSR inside the room. Activation paid 50 IS and started 10 s own reuse. https://github.com/kylebrussell/mxo-hd/pull/776#issuecomment-7083389132"
+    },
+    "27": {
+      "note": "PR776 stock summoned the level-4 Proxy at the established open street stand (17150,495,2300) before entering the room and again after returning from it. It replaced the active Nuker on return, 50 IS and 8 s own reuse. https://github.com/kylebrussell/mxo-hd/pull/776#issuecomment-7083389132"
+    },
+    "28": {
+      "note": "PR776 stock replaced the level-4 street Proxy with one level-7 Rifle Proxy at (18639.07,1695,3276.07) on the owner's Mara room floor. It used the alternate verified stand when the normal forward position had no walkable floor, charged 50 IS and began 8 s own reuse. https://github.com/kylebrussell/mxo-hd/pull/776#issuecomment-7083389132"
+    }
+  }
+}

@@ -329,6 +329,10 @@ def server(i):
         parts.append('stock level-19 caster-centred radius gains 10% from active Pathogenist Upgrade 1085')
     if i in (126, 130, 176):
         parts.append('stock blocked sight denies the selected shot before cast, IS cost or reuse')
+    if i in (86, 130):
+        parts.append('PR775 stock run found base run speed unchanged with the three -50 movement records active')
+    if i in (22, 27, 28):
+        parts.append('stock summons keep the open street stand or use a verified stand on the same room floor')
     if i in (33, 36, 514):
         parts.append('cast completion rechecks the original target spawn and range before damage or splash')
     if r.get('sharpshooter'):
@@ -528,6 +532,8 @@ def remaining_items(i, current_status, runtime_summary):
         open_items['script'] = 'Verify callback coverage for ' + ', '.join(hooks)
     if 'OURS' in runtime_summary or 'unresolved' in runtime_summary:
         open_items['source-parity'] = 'Resolve the inferred or unresolved behavior identified in the server column'
+    if i == 86:
+        open_items['source-parity'] = 'Verify that the signed movement adjustment slows the stock recipient and restores its prior speed on expiry'
     if i == 872:
         open_items['source-parity'] = 'Verify whether stock retail suppresses the zero-amount restore chat when IS is already capped'
     if not open_items and current_status == 'cosmetic':
