@@ -63,6 +63,26 @@ public class AbilityRefusalFeedbackTests:IDisposable
         Assert.Equal((ushort)4,AbilityHandler.CurrentInnerStrength(c));Assert.Equal((ushort)1000,PvpCombat.HealthOf(c));Assert.Equal(beforeCast,c.playerData.castEndsAt);Assert.Empty(c.playerData.cooldownEndsAt);
     }
     [Theory]
+    [InlineData(19)]
+    [InlineData(25)]
+    public void UnloadedDrainAndPowerBoostRefuseBeforeChangingCastState(ushort ability)
+    {
+        var caster = Client();
+        double castEndsAt = caster.playerData.castEndsAt;
+        Store.currentClient = caster;
+        var request = new byte[41];
+        BitConverter.GetBytes(ability).CopyTo(request, 0);
+
+        new AbilityHandler().ProcessAbility(ref request);
+
+        byte[] expected = AbilityRefusals.Encode(new(ability, AbilityRefusals.NotLoaded));
+        Assert.Equal(expected, Assert.Single(Rpcs(caster)));
+        Assert.Equal((ushort)500, AbilityHandler.CurrentInnerStrength(caster));
+        Assert.Equal(castEndsAt, caster.playerData.castEndsAt);
+        Assert.Empty(caster.playerData.cooldownEndsAt);
+    }
+
+    [Theory]
     [InlineData(36, 0)]
     [InlineData(36, 2)]
     [InlineData(514, 0)]
