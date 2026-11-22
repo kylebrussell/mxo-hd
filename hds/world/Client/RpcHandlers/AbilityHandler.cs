@@ -81,6 +81,22 @@ namespace hds
                 }
             }
 
+            // Timed gun specials may resolve in interlock or as a selected attack. Both use the same live target.
+            bool starterGunCast = AbilityID == 126 || AbilityID == 176;
+            ushort? gunTargetSpawn = null;
+            if (starterGunCast)
+            {
+                var shooter = Store.currentClient;
+                gunTargetSpawn = (ushort?)shooter.viewMan.getViewById(currentTargetViewId)?.spawnId;
+                ushort? requestedSpawn = packet.Length == 41 ? BitConverter.ToUInt16(packet, 4) : gunTargetSpawn;
+                if (!gunTargetSpawn.HasValue ||
+                    !AbilityTargets.HasLiveAttackSelection(shooter, currentTargetViewId, requestedSpawn, requireOpponent: true))
+                {
+                    Deny(AbilityID, "Select a living enemy before using this ability.", AbilityRefusals.InvalidTarget, sendServerText: false);
+                    return;
+                }
+            }
+
             // Hindering Shot is a selected hostile shot. An empty or obsolete handle must not start a cast.
             if (AbilityID == 130)
             {
@@ -105,7 +121,7 @@ namespace hds
                 }
             }
 
-            bool starterRangedControl = AbilityID == 43 || AbilityID == 48 || AbilityID == 130;
+            bool starterRangedControl = AbilityID == 43 || AbilityID == 48 || AbilityID == 130 || starterGunCast;
             if ((starterViralDamage || starterMovementDebuff || starterCoderCast || starterRangedControl || AbilityID == 69) &&
                 !AbilityTargets.WithinSelectionRange(Store.currentClient, AbilityID, currentTargetViewId))
             {
@@ -596,6 +612,12 @@ namespace hds
             }
             // Attack abilities on the current close-combat target hit it (buffs used with a target selected don't).
             ushort hostileView=engageFoes?.PrimaryView??currentTargetViewId;
+            if (starterGunCast && (!AbilityTargets.HasLiveAttackSelection(client, hostileView, gunTargetSpawn, requireOpponent: true) ||
+                !AbilityTargets.WithinSelectionRange(client, AbilityID, hostileView)))
+            {
+                Output.WriteDebugLog($"[ABILITY] {AbilityID} fizzles: the selected gun target changed or left range");
+                return;
+            }
             if (hostileView > 2 && !support && !pet && !derez && definition?.FriendlyTarget != true &&
                 (!ability.getIsBuff() || CombatSpecials.TargetsEnemy(AbilityID) || engageFoes!=null) &&
                 (definition == null || definition.DirectDamage || definition.DamageOverTime || TempMods.Has(AbilityID) ||
