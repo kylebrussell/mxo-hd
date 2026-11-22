@@ -1,0 +1,7 @@
+{
+  "abilities": {
+    "11": {
+      "note": "At cffeef2d, PR711 confirmed Efficiency 321 adds +15 direct stat 117 and discounts Sprint from 25 to 22 IS, while the stock Hyper-Jump gate still reports a 2-IS deficit at 18. With the same modifier active an affordable Hyper-Jump spent 20 IS, exactly as the unbuffed control. Ordinary Space stayed free and the lone stock C4 produced no snap-back or debit. Peak and destination selection still belong to the stock client; the retained route coverage does not establish all trajectory and redirect variants. https://github.com/kylebrussell/mxo-hd/pull/711#issuecomment-7071258222"
+    }
+  }
+}

@@ -408,7 +408,7 @@ def server(i):
     if r.get('special'):
         parts.append(r['special'])
     if i == 11:
-        parts.append('flag-1 Hyper-Jump takes 20 IS on accepted start; ordinary jumps and cancel preserve IS; stock rank 10/11 forward range, short aim and 31.76 m distance-timed aim landing verified; stock peak selection and effective-cost modifiers still open')
+        parts.append('flag-1 Hyper-Jump takes 20 IS on accepted start; ordinary jumps and cancel preserve IS; stock rank 10/11 forward range, short aim and 31.76 m distance-timed aim landing verified; stock keeps 20 IS with Efficiency 117 +15; remaining stock trajectory variants open')
     if not r.get('stealth') and ('Sneak' in abilities[i]['name'] or 'Conceal' in abilities[i]['name']):
         parts.append('stealth detection/AI incomplete')
     if i in PETS:
