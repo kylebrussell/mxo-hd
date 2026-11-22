@@ -176,7 +176,7 @@ UTILITY_NOTES = {538: 'presentation only; no effect executor; prerequisite tier 
 DATA_MINING = {
     345: ('direct stat177 existing captured+21/30s UDB0 target-centred NPC/PvP radius; native owner/UI formula, server landing policy follows74; linked75/1055 unresolved; [evidence](ABILITY-DEBUFF-RADIUS.md)', 'partial'),
     215: ('base215 search, separate cap5/cost5 and native activation ID; shared sourced search with mastery621; actual loaded tool prerequisites and handheld10s expiry; [docs/DATA-MINING.md](DATA-MINING.md)', 'partial'),
-    44: ('retail mission-accept roll and cumulative flags; 80 c5 objective/enemy/known-lock pings; shares leader objective/enemy pings with eligible teammates and stops on unload; bit interpretation ours, native floorplan reveal unresolved; [docs/DATA-MINING.md](DATA-MINING.md)', 'partial'),
+    44: ('shipped mission-accept roll and six cumulative flags; stock 80 c5 marker policy for objects, hostiles, locked doors, friendly NPCs, entrances and exits; same-floor pings and leader objective/hostile sharing; unload ends the reveal, with no restart on reload in the same mission; [docs/DATA-MINING.md](DATA-MINING.md)', 'partial'),
     538: ('GOB prerequisite tier; retains loadout/dependency metadata, no separate Python callback or stored stat to execute; [docs/DATA-MINING.md](DATA-MINING.md)', 'cosmetic'),
     539: ('GOB prerequisite tier; retains loadout/dependency metadata, no separate Python callback or stored stat to execute; tapping economy absent; [docs/DATA-MINING.md](DATA-MINING.md)', 'cosmetic'),
     540: ('goggles search flag highlights same-floor light luggables/carriers within 5 m through shipped luggable-aura FX; exact native white-glow path unverified; [docs/DATA-MINING.md](DATA-MINING.md)', 'partial'),

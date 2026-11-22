@@ -1,0 +1,32 @@
+{
+  "abilities": {
+    "326": {
+      "checks": {
+        "resurrection": {
+          "source": "GOB 326 has the dead friendly target and approval path. RevitalizeRSI_DirectObject sets health and IS to live maxima and uses Action_Resurrect with the 326 motion context.",
+          "runtime": "AbilityResurrection requires a current matching approval from the downed recipient, then restores their maxima and broadcasts the in-place stand.",
+          "test": "[Native PR820](https://github.com/kylebrussell/mxo-hd/pull/820#issuecomment-7086365203) sent 326 from the stock client, paid 100 IS, cast for 4 s and started 45 s reuse. QAFriend stayed down until consent, then set HP/IS 777/333 and stood in place using motion 63. The native client displayed the caster's Revitalize RSI message."
+        },
+        "script": {
+          "source": "RevitalizeRSI_DirectObject restores the recipient, plays Restore RSI, sends both messages and retains the conditional PvP path.",
+          "runtime": "AbilityResurrection restores vitals and publishes sender/recipient feedback and the source-specific motion. The recipient's PvP choice is preserved.",
+          "test": "CallbacksRestoreScriptResourcesAndPreserveTheActualPvpChoice covers both flag states. The disposable ability-resurrection-resources replay observes the owner and observer motions and the one-use approval. [Stock PR820](https://github.com/kylebrussell/mxo-hd/pull/820#issuecomment-7086365203) verifies the complete unflagged path."
+        }
+      }
+    },
+    "375": {
+      "checks": {
+        "resurrection": {
+          "source": "GOB 375 uses the dead friendly target and approval path. ReviveRSI_DirectObject restores live HP and IS maxima and uses Action_Resurrect with the 375 motion context.",
+          "runtime": "AbilityResurrection requires a new matching approval for 375 from the current downed recipient, then restores their maxima and broadcasts the in-place stand.",
+          "test": "[Native PR820](https://github.com/kylebrussell/mxo-hd/pull/820#issuecomment-7086365203) sent 375 after a separate death, paid 100 IS, cast for 6 s and started 30 s reuse. Approval restored HP/IS 777/333 and motion 63 in place. The native client displayed the caster's Revive RSI message."
+        },
+        "script": {
+          "source": "ReviveRSI_DirectObject restores HP and IS, plays Restore RSI, sends both messages and retains the conditional PvP path.",
+          "runtime": "AbilityResurrection publishes the correct motion and feedback for 375 and preserves the recipient's PvP choice.",
+          "test": "CallbacksRestoreScriptResourcesAndPreserveTheActualPvpChoice covers both flag states. Ability-resurrection-resources confirms the 375 owner/observer motion and rejects repeat Yes. [Stock PR820](https://github.com/kylebrussell/mxo-hd/pull/820#issuecomment-7086365203) verifies the unflagged path."
+        }
+      }
+    }
+  }
+}

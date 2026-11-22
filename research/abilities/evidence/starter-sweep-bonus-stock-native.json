@@ -1,0 +1,52 @@
+{
+  "abilities": {
+    "71": {
+      "checks": {
+        "stats": {
+          "source": "GOB 71 supplies function-2 Healing Bonus 1141 and Sweep Bonus 1052 while loaded.",
+          "runtime": "AbilityPassives maintains both rank-scaled records. Healing reads the linked 1141 total and the sweep snapshots the live 1052 total.",
+          "test": "[Native PR676](https://github.com/kylebrussell/mxo-hd/pull/676#issuecomment-7065776933) observed the two +1 records and Group Repairs 8 to 9. [Native PR815](https://github.com/kylebrussell/mxo-hd/pull/815#issuecomment-7086057679) recorded the source-71 1052 round trip."
+        },
+        "consumer": {
+          "source": "NegativeConditionSweepPulse removes eligible debuff parents when the d100 draw is below the pulse's value. Stat 1052 is the separate shipped Sweep Bonus.",
+          "runtime": "The live linked bonus is snapshotted from the caster as added whole percentage points. The published 320 effect value remains 18.",
+          "test": "[Native PR815](https://github.com/kylebrussell/mxo-hd/pull/815#issuecomment-7086057679) observed 36 to 37 and 33 to 34 when source 71 was present, with a roll of 33 demonstrating the second boundary."
+        },
+        "source-parity": {
+          "source": "The shipped d100 callback uses a strict threshold and GOB 71 provides a separate rank-scaled Sweep Bonus.",
+          "runtime": "The compatible server interpretation adds the linked bonus in percentage points to the chance, retaining the stored visible effect.",
+          "test": "The [stock four-way comparison](https://github.com/kylebrussell/mxo-hd/pull/815#issuecomment-7086057679) holds base 18 and roll 33 constant. The one-point 71 comparison changes the removal outcome."
+        },
+        "behavior-tests": {
+          "source": "GOB 71 defines healing and sweep only while loaded.",
+          "runtime": "Healing and ordinary sweep use their matching totals and Archive removal is source-specific.",
+          "test": "SweepPassiveRetainsItsOtherTypedConsumers checks healing. CasterSweepBonusSnapshotsAWholeChancePointWithoutChangingThePublishedValue tests independent removal, direct Sweep and party Sweep. Stock PR676 and PR815 cover both linked consumers."
+        }
+      }
+    },
+    "370": {
+      "checks": {
+        "stats": {
+          "source": "GOB 370 stores function-2 bonuses for melee defense 1143, ballistic defense 1027, healing 1141 and sweep 1052 while loaded.",
+          "runtime": "AbilityPassives applies each record. Typed defenses, heal scaling and the caster's sweep snapshot read their corresponding totals.",
+          "test": "[Native PR755](https://github.com/kylebrussell/mxo-hd/pull/755#issuecomment-7081754805) observed all four +1 records round-trip. [Native PR815](https://github.com/kylebrussell/mxo-hd/pull/815#issuecomment-7086057679) separately observed rank-30 1052 +3 and its removal and reload."
+        },
+        "consumer": {
+          "source": "The shipped sweep callback uses a strict d100 threshold, and 370 supplies the rank-dependent sweep bonus.",
+          "runtime": "The caster's linked 1052 is snapshotted into the removal chance without changing the stock sweep effect record.",
+          "test": "[Native PR815](https://github.com/kylebrussell/mxo-hd/pull/815#issuecomment-7086057679) observed 34 to 37 and 33 to 36 when source 370 was present. The second comparison clears the stock Slow at the same roll of 33."
+        },
+        "source-parity": {
+          "source": "The shipped d100 sweep callback and 370's rank-scaled linked bonus support adding whole chance points.",
+          "runtime": "The server adds the three linked points before the strict draw test and leaves the published effect value at its GOB base.",
+          "test": "The [stock four-way comparison](https://github.com/kylebrussell/mxo-hd/pull/815#issuecomment-7086057679) verified the exact threshold and the natural 28 s lifetime of the control Slow."
+        },
+        "behavior-tests": {
+          "source": "All four rank-scaled bonuses are active while 370 is loaded.",
+          "runtime": "The passive changes its individual defense, healing and sweep consumers and removes each contribution independently.",
+          "test": "SweepPassiveRetainsItsOtherTypedConsumers tests actual heal and defense values. CasterSweepBonusSnapshotsAWholeChancePointWithoutChangingThePublishedValue tests both ordinary sweep forms. Stock PR755 and PR815 verify transitions and the live sweep outcome."
+        }
+      }
+    }
+  }
+}
