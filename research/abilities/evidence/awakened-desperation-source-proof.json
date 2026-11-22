@@ -1,0 +1,13 @@
+{
+  "abilities": {
+    "1149": {
+      "checks": {
+        "source-parity": {
+          "source": "GOB 1149 stores a 10 IS self-cast, buffer 10, reuse 90 s and a 20 s Initiative 1044 modifier initialized by DesperationFunction. The shipped callback snapshots 10 points above half HP and 100 × missing health fraction at or below half HP, multiplied by 1 + Initiative Bonus 1046 / 100. The reviewed client tactic-total helper 625c5df0 can read and add 1044. Its authoritative retail interlock caller and the full tactic input construction remain unarchived.",
+          "runtime": "AbilityDesperation samples health and the current 1046 factor once on application. In the chosen runtime, the capped positive 1044 adds once to the ordinary or queued NPC/PvP interlock attack input. Withdrawal and other escapes, free fire and normal free casts use their respective existing inputs. Healing leaves the active snapshot intact, while expiry removes it from subsequent interlock rounds. The modifier neither schedules turns nor directly multiplies damage.",
+          "test": "Claude's PR259 stock handoff at 19:23 ET (tested head 356709c3) records 100/500 HP applying +80 and two real ordinary Blackwoods NPC interlock rounds using base0/bonus80/total80, with later rounds returning to their ordinary input after removal. The full-health stock control gave +10 and the client blocked an early press before the 90 s timer. PR453 confirmed a native +84 capture at 20% HP with +5% Initiative Bonus and independent expiry. PR506 confirmed +50 at half health persisted while healing above half. InterlockInitiativeTests covers the snapshot, actual input change and expiry, capped queued attacks and escape exclusion. PR259's ordinary disposable PvP proof separately measured 0→50→0. https://github.com/kylebrussell/mxo-hd/pull/259 https://github.com/kylebrussell/mxo-hd/pull/453 https://github.com/kylebrussell/mxo-hd/pull/506"
+        }
+      }
+    }
+  }
+}
