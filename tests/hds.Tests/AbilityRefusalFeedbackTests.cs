@@ -241,6 +241,7 @@ public class AbilityRefusalFeedbackTests:IDisposable
     [InlineData(351)]
     [InlineData(392)]
     [InlineData(394)]
+    [InlineData(588)]
     public void UnloadedStarterViralDebuffRefusesBeforeCastOrCost(ushort id)
     {
         var caster = Client();
@@ -435,6 +436,8 @@ public class AbilityRefusalFeedbackTests:IDisposable
     [InlineData(59, 41)]
     [InlineData(60, 41)]
     [InlineData(60, 4)]
+    [InlineData(588, 41)]
+    [InlineData(588, 4)]
     public void DelayedHostileCastCannotLandOnANewerSpawnInTheOriginalView(ushort abilityId, int length)
     {
         var caster = Client();
@@ -478,6 +481,7 @@ public class AbilityRefusalFeedbackTests:IDisposable
 
         Assert.Equal(1000, PvpCombat.HealthOf(target));
         Assert.False(TimedEffects.ForPlayer(target).Effects.Has(TempMods.RootedAbility));
+        Assert.False(TimedEffects.ForPlayer(target).Effects.Has(TempMods.EnrageAbility));
         Assert.True(AbilityCooldowns.IsCoolingDown(caster.playerData, abilityId, TimeUtils.GetSimTimeSeconds()));
         Assert.Empty(Rpcs(target));
     }
