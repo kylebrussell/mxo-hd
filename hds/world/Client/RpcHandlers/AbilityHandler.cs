@@ -36,11 +36,26 @@ namespace hds
                 return;
             }
 
-            bool starterGuardianSupport = AbilityID == 46 || AbilityID == 68 || AbilityID == 173;
-            if (starterGuardianSupport && !AbilityPassives.IsLoaded(Store.currentClient, AbilityID))
+            bool guardianSupport = AbilitySupport.IsGuardianSupport(AbilityID);
+            if (guardianSupport && !AbilityPassives.IsLoaded(Store.currentClient, AbilityID))
             {
                 Deny(AbilityID, "Load this ability before using it.", AbilityRefusals.NotLoaded, sendServerText: false);
                 return;
+            }
+            if (AbilityID == AbilitySupport.PersonalFirewall2)
+            {
+                var caster = Store.currentClient;
+                var fight = CombatManager.GetHandler(caster);
+                if (fight.isCombatRunning || fight.HasActiveInterlock)
+                {
+                    Deny(AbilityID, "Personal Firewall 2.0 cannot be used during combat.", AbilityRefusals.MustBeOutsideCombat, sendServerText: false);
+                    return;
+                }
+                if (CombatStyles.Active(caster) != CombatStyles.HackerStyle)
+                {
+                    Deny(AbilityID, "Personal Firewall 2.0 requires Hacker Style.", AbilityRefusals.WrongStyle, sendServerText: false);
+                    return;
+                }
             }
 
             bool concealment = AbilityID == Stealth.ConcealmentGrantAbility;
@@ -578,7 +593,7 @@ namespace hds
                 {
                     if (AbilityResurrection.Handles(AbilityID))
                         Deny(AbilityID, "Choose a dead friendly player within range.", AbilityRefusals.InvalidTarget, sendServerText: false);
-                    else if (AbilityID == 46 || AbilityID == 68 || AbilityID == 173)
+                    else if (guardianSupport)
                         Deny(AbilityID, "Choose a living friendly target within range.", AbilityRefusals.InvalidTarget, sendServerText: false);
                     else
                         Deny(AbilityID, "Choose a living friendly target within range.");
@@ -710,7 +725,7 @@ namespace hds
                 }
                 else if (support)
                 {
-                    if (starterGuardianSupport && !AbilityPassives.IsLoaded(client, AbilityID))
+                    if (guardianSupport && !AbilityPassives.IsLoaded(client, AbilityID))
                         Output.WriteDebugLog($"[ABILITY] {AbilityID} fizzles: the starter support ability was unloaded before landing");
                     else
                         AbilitySupport.Land(client, AbilityID, currentTargetViewId, spawn: targetSpawn);

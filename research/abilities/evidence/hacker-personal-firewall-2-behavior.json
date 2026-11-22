@@ -1,0 +1,23 @@
+{
+  "abilities": {
+    "319": {
+      "checks": {
+        "targeting": {
+          "source": "GOB 319 admits a selected friendly target within 10 m, requires Hacker Style, is used outside combat, and has no sight bypass.",
+          "runtime": "AbilityHandler checks load, rest state, style, recipient and sight before charging 319. Delayed AbilitySupport.Land rechecks the original selected spawn and sight.",
+          "test": "AbilityRefusalFeedbackTests checks unavailable, wrong-style, combat, out-of-range, dead, opposing and sight-blocked requests. The pending cast check starts on the clear NAV stand, loses sight before landing and gives the original recipient no effects."
+        },
+        "stats": {
+          "source": "GOB 319 stores +80 Viral Resistance, +20 each to Melee, Ballistic and Thrown Resistance for 300 s, and a 250 HP GenericConstHealthRegenEvent at term. The stat-710 carrier schedules the heal.",
+          "runtime": "AbilityScaledBuffs publishes the sourced resistance values and term callback. AbilityStats feeds all four types into TypedAbilityResistance. AbilityBuffs clears the resistance records and heals a living recipient.",
+          "test": "TypedAbilityResistanceTests.PersonalFirewallMitigatesEachSourcedDamageTypeUntilRemoved exercises actual four-type reduction and its reversal. AbilityScaledBuffTests.PersonalFirewallTermHealsAndPreservesOtherPresentationBits checks both resistance ranks, the exact 250 heal and no heal during death cleanup."
+        },
+        "behavior-tests": {
+          "source": "GOB 319 stores a two-second cast, 45 IS, 13 s reuse and four 300 s defenses. PersonalFirewallInit/Term owns armor bit 0x0100. GenericConstHealthRegenEvent heals 250 on term.",
+          "runtime": "AbilityHandler and AbilitySupport bind the ordinary selected-friendly cast. AbilityScaledBuffs and AbilityBuffs own armor presentation, effects, resistance, cleanup and term health.",
+          "test": "AbilityRefusalFeedbackTests exercised the pre-cost gates and paid fizzle. AbilityScaledBuffTests and TypedAbilityResistanceTests cover armor preservation, live and dead term behavior, modifiers and all four consumers. The native fixture verifies its actual map and full learned loadout, replays exact stock rank-one 68 as a cost, sight, timer and armor control, and prints the stock rank-two steps."
+        }
+      }
+    }
+  }
+}
