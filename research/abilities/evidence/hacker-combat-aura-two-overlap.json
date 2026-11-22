@@ -1,0 +1,13 @@
+{
+  "abilities": {
+    "485": {
+      "checks": {
+        "script": {
+          "source": "GOB 485 names ApplyAuraEffect on init/update for child 696, ISDrainWithAbilityDeactivation with value 15 every five seconds, and DoNothing/AddRecastTimer on the recast component with value 15.",
+          "runtime": "AbilityAuras starts and refreshes the child through AbilitySupport.Land, spends the source's IS, deactivates on shortfall and starts the own timer on stop. The timer record ordering observed in proxy_024 remains open as documented in docs/ABILITY-HACKER-CALLBACKS.md.",
+          "test": "CombatAuraTwoOverlappingSourcesReplaceOneChildAndKeepIndependentUpkeep proves two loaded source activations, replacement across casters without adding damage snapshots, independent 15 IS updates, one source continuing after the other stops, and exact five-second child expiry. It also verifies no parent timer on activation and the 15-second timer on stop. CombatAuraTwoChargesFifteenEachTickAndStopsOnShortfall covers the depletion branch. Stock PR320 recorded 485 and 696. https://github.com/kylebrussell/mxo-hd/pull/320#issuecomment-6999754005"
+        }
+      }
+    }
+  }
+}

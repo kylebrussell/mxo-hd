@@ -135,6 +135,106 @@ public class HackerBatchBParityTests
     }
 
     [Fact]
+    public void CombatAuraTwoOverlappingSourcesReplaceOneChildAndKeepIndependentUpkeep()
+    {
+        const ushort parent = 485, child = 696;
+        var first = Participant(77670, 0, 40);
+        var second = Participant(77671, 1200, 50);
+        var teammate = Participant(77672, 600, 50);
+        var players = new[] { first, second, teammate };
+        var groups = SocialGroups.Instance;
+        var team = groups.CreateTeam(77670, "FirstAura");
+        groups.AddTeamMember(team.Id, 77671, "SecondAura");
+        groups.AddTeamMember(team.Id, 77672, "SharedRecipient");
+        var previousClients = WorldServer.Clients;
+        var previousWorld = Store.world;
+        WorldServer.Clients = players.ToDictionary(player => player.playerData.getCharID().ToString());
+        Store.world = (WorldServer)RuntimeHelpers.GetUninitializedObject(typeof(WorldServer));
+        try
+        {
+            AbilityPassives.SetLoaded(first, new[] { (parent, (ushort)40) });
+            AbilityPassives.SetLoaded(second, new[] { (parent, (ushort)50) });
+            Assert.Equal(15, AbilityCosts.Cost(parent));
+            var reuse = AbilityCooldowns.BuildTimer(parent, AbilityCooldowns.OwnTimer, 15, true);
+
+            AbilityAuras.Start(first, parent);
+            var firstChild = teammate.playerData.activeBuffs[child];
+            AssertDamage(120);
+            Assert.False(AbilityBuffs.IsActive(second, child));
+            Assert.False(HasReuse(first, reuse));
+
+            AbilityAuras.Start(second, parent);
+            var secondChild = teammate.playerData.activeBuffs[child];
+            Assert.NotSame(firstChild, secondChild);
+            AssertDamage(125);
+            Assert.Equal(5, secondChild.Definition.Seconds);
+            Assert.False(HasReuse(second, reuse));
+
+            AbilityAuras.Tick(first, parent, 1);
+            Assert.Equal(85, AbilityHandler.CurrentInnerStrength(first));
+            Assert.Equal(100, AbilityHandler.CurrentInnerStrength(second));
+            AssertDamage(120);
+            var firstRefresh = teammate.playerData.activeBuffs[child];
+
+            Assert.True(AbilityAuras.Stop(first, parent));
+            Assert.True(HasReuse(first, reuse));
+            AbilityAuras.Tick(first, parent, 1);
+            Assert.Equal(85, AbilityHandler.CurrentInnerStrength(first));
+            Assert.Same(firstRefresh, teammate.playerData.activeBuffs[child]);
+            AssertDamage(120);
+
+            AbilityAuras.Tick(second, parent, 1);
+            Assert.Equal(85, AbilityHandler.CurrentInnerStrength(second));
+            var finalChild = teammate.playerData.activeBuffs[child];
+            Assert.NotSame(firstRefresh, finalChild);
+            AssertDamage(125);
+            Assert.True(AbilityAuras.Stop(second, parent));
+            Assert.True(HasReuse(second, reuse));
+
+            TimedEffects.RunDue(finalChild.Started + 4.99);
+            AssertDamage(125);
+            TimedEffects.RunDue(finalChild.Started + 5.01);
+            Assert.False(AbilityBuffs.IsActive(teammate, child));
+            AssertDamage(100);
+        }
+        finally
+        {
+            foreach (var player in players)
+            {
+                AbilityAuras.Clear(player, announce: false);
+                AbilityBuffs.RemoveAll(player);
+            }
+            groups.DisbandTeam(team.Id);
+            Store.world = previousWorld;
+            WorldServer.Clients = previousClients;
+        }
+
+        void AssertDamage(int expected)
+        {
+            Assert.Equal(expected, AbilityStats.ScaleTypedAbilityDamage(teammate, 0, 100));
+            Assert.Equal(expected, AbilityStats.ScaleTypedAbilityDamage(teammate, 1, 100));
+            Assert.Equal(100, AbilityStats.ScaleTypedAbilityDamage(teammate, 2, 100));
+        }
+
+        static bool HasReuse(WorldClient player, byte[] expected) => player.messageQueue.RPCMessagesQueue
+            .OfType<SequencedMessage>().Any(message => message.content.AsSpan(1).SequenceEqual(expected));
+
+        static WorldClient Participant(uint id, int x, byte level)
+        {
+            var player = Client(level);
+            player.playerData.setCharID(id);
+            player.playerData.setEntityId(id);
+            player.playerData.setOnWorld(true);
+            player.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(x, 495, 0));
+            player.LivenessClock = () => 0;
+            const BindingFlags instance = BindingFlags.NonPublic | BindingFlags.Instance;
+            typeof(WorldClient).GetField("alive", instance)!.SetValue(player, true);
+            typeof(WorldClient).GetField("<TransportFence>k__BackingField", instance)!.SetValue(player, new WorldSendFence());
+            return player;
+        }
+    }
+
+    [Fact]
     public void ForceMultiplier1091SweepsOnlyCleansableEffectsAndStopsOnClassReplacement()
     {
         var player = Client();
