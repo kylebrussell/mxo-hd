@@ -70,7 +70,7 @@ namespace hds
             // These selected abilities bind a live enemy before the cast, including the centre of any splash.
             bool selectedViralField = AbilityID == 343 || AbilityID == 401 || AbilityID == 402 || AbilityID == 403;
             bool enrage = AbilityID == 588;
-            bool selectedCoderViral = AbilityID == 597 || AbilityID == 598;
+            bool selectedCoderViral = AbilityID == 595 || AbilityID == 597 || AbilityID == 598;
             bool selectedViralAttack = enrage || AbilityID == 53 || (AbilityID >= 57 && AbilityID <= 60) ||
                 AbilityID == 350 || AbilityID == 351 || AbilityID == 353 ||
                 AbilityID == 392 || AbilityID == 394 || AbilityID == 395 || AbilityID == 396 || selectedViralField || selectedCoderViral;
@@ -998,6 +998,7 @@ namespace hds
                 Output.WriteDebugLog($"[ABILITY] {AbilityID} fizzles: the selected gun target changed, left range or left sight");
                 return;
             }
+            // Stun Pulse's legacy buff flag conflicts with its shipped hostile area selector.
             if (hostileView > 2 && !support && !pet && !derez && definition?.FriendlyTarget != true &&
                 (!ability.getIsBuff() || CombatSpecials.TargetsEnemy(AbilityID) || engageFoes!=null) &&
                 (definition == null || definition.DirectDamage || definition.DamageOverTime || TempMods.Has(AbilityID) ||

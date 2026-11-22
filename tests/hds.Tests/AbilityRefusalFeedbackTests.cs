@@ -852,6 +852,17 @@ public class AbilityRefusalFeedbackTests:IDisposable
     [InlineData(402, "far", AbilityRefusals.TargetOutOfRange)]
     [InlineData(402, "blocked", AbilityRefusals.TargetNotInSight)]
     [InlineData(402, "combat", AbilityRefusals.MustBeOutsideCombat)]
+    [InlineData(595, "empty", AbilityRefusals.InvalidTarget)]
+    [InlineData(595, "ally", AbilityRefusals.InvalidTarget)]
+    [InlineData(595, "stale", AbilityRefusals.InvalidTarget)]
+    [InlineData(595, "far", AbilityRefusals.TargetOutOfRange)]
+    [InlineData(595, "blocked", AbilityRefusals.TargetNotInSight)]
+    [InlineData(595, "style", AbilityRefusals.WrongStyle)]
+    [InlineData(595, "combat", AbilityRefusals.MustBeOutsideCombat)]
+    [InlineData(595, "unloaded", AbilityRefusals.NotLoaded)]
+    [InlineData(595, "replacement", 0u)]
+    [InlineData(595, "retreat", 0u)]
+    [InlineData(595, "sight-loss", 0u)]
     public void SelectedFieldUsesTheAdmittedLiveSpawnAndCannotSplashAfterInvalidation(ushort id, string action, uint refusal)
     {
         string root = AppContext.BaseDirectory;
@@ -862,9 +873,10 @@ public class AbilityRefusalFeedbackTests:IDisposable
         var caster = Client();
         var target = Client();
         var nearby = Client();
-        caster.playerData.passives.Loaded[CombatStyles.HackerStyle] = 30;
-        if (action != "unloaded") caster.playerData.passives.Loaded[id] = 30;
-        if (action != "style") caster.playerData.combatStyle = CombatStyles.HackerStyle;
+        ushort style = CombatStyles.RequiredStyle(id);
+        caster.playerData.passives.Loaded[style] = 38;
+        if (action != "unloaded") caster.playerData.passives.Loaded[id] = 38;
+        if (action != "style") caster.playerData.combatStyle = style;
         caster.playerInstance.OrganizationID.setValue((byte)1);
         double farX = 21750 - 100 * AbilityCatalog.Find(id).Number("Ability/SelectionRange") - 1;
         caster.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(21750, 1095, 16150));
