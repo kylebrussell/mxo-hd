@@ -422,6 +422,12 @@ def server(i):
         parts.append('stealth detection/AI incomplete')
     if i in PETS:
         parts.append(PETS[i])
+    if i in (19, 25):
+        parts.append('loaded membership required at admission and pet effect landing')
+    if i == 173:
+        parts.append('stock level-19 +24 on the chosen allies feeds melee, ballistic and thrown special attack inputs')
+    if i == 504:
+        parts.append('requires active Concealment and consumes it at cast start; stock hit 23 after six seconds')
     if i == 21:
         parts.append('requires a live enemy selection before charging the cast')
     return '; '.join(parts) or 'presentation only; no effect executor'
