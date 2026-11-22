@@ -210,6 +210,8 @@ public class FreeCastViralLandingTests : IDisposable
     [InlineData(336)]
     [InlineData(337)]
     [InlineData(343)]
+    [InlineData(350)]
+    [InlineData(351)]
     [InlineData(468)]
     [InlineData(59)]
     [InlineData(60)]
