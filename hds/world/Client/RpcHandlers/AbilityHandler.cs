@@ -350,6 +350,18 @@ namespace hds
                 return;
             }
 
+            WorldClient recallRecipient = null;
+            if (AbilityID == UtilityAbilities.RecallTeamMember)
+            {
+                ushort? spawn = packet.Length == 41 ? (ushort?)BitConverter.ToUInt16(packet, 4) : null;
+                uint? recallRefusal = UtilityAbilities.RecallRefusal(Store.currentClient, currentTargetViewId, spawn, out recallRecipient);
+                if (recallRefusal.HasValue)
+                {
+                    Deny(AbilityID, $"Recall admission refusal {recallRefusal.Value}.", recallRefusal.Value, sendServerText: false);
+                    return;
+                }
+            }
+
             if (CombatSpecials.IsRifleOpener(AbilityID) || AbilityID == CombatSpecials.ConcealedShot)
             {
                 var shooter = Store.currentClient;
@@ -741,7 +753,7 @@ namespace hds
                 if (derez) CoderPets.Derez(client, enemyPet, currentTargetViewId, targetSpawn);
                 if (pet) CoderPets.Land(client, AbilityID, ownPet, normalCast.SummonUnloaded);
                 if (AbilityID == AbilityEmpBlast.Ability) AbilityEmpBlast.Land(client);
-                if (UtilityAbilities.Handles(AbilityID)) UtilityAbilities.Land(client, AbilityID, currentTargetViewId, locatorSlot, selectedLocator);
+                if (UtilityAbilities.Handles(AbilityID)) UtilityAbilities.Land(client, AbilityID, currentTargetViewId, locatorSlot, selectedLocator, recallRecipient);
                 if (CombatSpecials.ActsOnCast(AbilityID)) CombatSpecials.CastTaunt(client);
                 if (!startingClassUpgrade && AbilityBuffs.CooldownStartsOnUse(ability.getAbilityID()))
                 {

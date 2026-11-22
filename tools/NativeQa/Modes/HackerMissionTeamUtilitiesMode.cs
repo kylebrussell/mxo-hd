@@ -21,19 +21,19 @@ public sealed class HackerMissionTeamUtilitiesMode : NativeQaMode
 
     public override string Name => "ability-parity-hacker-mission-utilities";
     public override NativeQaModePlan Plan { get; } = new(
-        new ushort[] { 2, 17, Map, RecallMember, RecallTeam }, X, Z,
+        new ushort[] { 2, 17, Map, RecallMember, RecallTeam, CombatStyles.HackerStyle }, X, Z,
         Array.Empty<string>(), Array.Empty<string>(),
         new[] { "UPDATE characters SET alignment=3, repMero=100, y=495 WHERE charId=110" }
             .Concat(Stands.Select(stand =>
                 $"UPDATE characters SET x={stand.X}, y=495, z={stand.Z}, alignment=3, pvpflag=0 WHERE handle='{stand.Handle}'"))
             .ToArray(),
-        DevCommands: true, loadAbilityAncestors: true, hotbarAbilities: new[] { Map, RecallMember, RecallTeam },
+        DevCommands: true, loadAbilityAncestors: true, hotbarAbilities: new[] { Map, RecallMember, RecallTeam, CombatStyles.HackerStyle },
         missionFixture: "locked-safe.xml", testMobFixture: "martial-player-controls.csv",
         environmentOverrides: new() { ["MXO_UTILITY_MAP_QA_REVEAL"] = "1", ["MXO_AGGRO"] = "0", ["MXO_MOB_WANDER"] = "0" },
         extraQaMetadata: new() { ["ScopedStockRows"] = "44,382,486", ["NativeCloseableRows"] = 0 },
         readyMessages: new[]
         {
-            "Step A. Form a mission team with QAFriend and QAFar using the normal radial and helper accept. Keep QAOther outside. Their initial stands are separate and within view.",
+            "Step A. Select Hacker Style on page 2 slot 4. Form a mission team with QAFriend and QAFar using the normal radial and helper accept. Keep QAOther outside. Their initial stands are separate and within view.",
             "Step B. Select QAFriend and press page 2 slot 2 (382). Watch QAFriend's avatar actually move beside CSR. QAFar and QAOther must stay in place. Then walk several meters away from QAFriend along the open street so both helpers must visibly move on the next cast.",
             "Step C. With 44 loaded, take the Locked Safe Fixture from Flood and approach its printed safe stand. Confirm CSR gets the Safe 1 minimap ping. Clear selection and use slot 3 Recall Mission Team. Both teammates arrive; QAOther stays outside the team.",
             "Step D. Expect [UTILITY] Download Mission Map: team pings sent owner=110 recipient=6111 and recipient=6112. Move QAOther near the stand through helper teleport if you want the same-floor exclusion. There should be no team ping for 6113. Enter ?qaunload 44 and check the solo and both team clear lines. Pings expire within 3 s. Reloading 44 does not refresh the old mission."
@@ -53,6 +53,8 @@ public sealed class HackerMissionTeamUtilitiesMode : NativeQaMode
         if (context.StockProbe is not { } actor) return Array.Empty<byte>();
         var db = context.OwnedDatabase ?? throw new InvalidOperationException("Expected a disposable mission-utility database.");
         await actor.EnterWorldAsync();
+        actor.SendRpc(StarterHackerViralSightMode.StockStyle);
+        await actor.WaitForViewUpdateAsync(2, "02 80 80 80 80 80 10 ee 03 00 00");
         foreach (var stand in Stands)
         {
             var view = await actor.WaitForViewNamedAsync(stand.Handle);
@@ -66,10 +68,22 @@ public sealed class HackerMissionTeamUtilitiesMode : NativeQaMode
         foreach (var member in new[] { friend, far })
             await outsider.WaitForViewNamedAsync(member.Handle);
         var friendView = await actor.WaitForViewNamedAsync(friend.Handle);
+        var outsiderViewBefore = await actor.WaitForViewNamedAsync(outsider.Handle);
+        uint outsiderHandle = DuelPackets.Handle(outsiderViewBefore.ViewId, outsiderViewBefore.SpawnId);
+        var refusedSelf = await StarterHackerControlTargetMode.RefusedAsync(actor, RecallMember,
+            StarterHackerControlTargetMode.WithHandle(StockRecallMember, 0));
+        var refusedNonMember = await StarterHackerControlTargetMode.RefusedAsync(actor, RecallMember,
+            StarterHackerControlTargetMode.WithHandle(StockRecallMember, outsiderHandle), AbilityRefusals.NotGroupTarget);
+        uint stale = DuelPackets.Handle(friendView.ViewId, (ushort)(friendView.SpawnId ^ 1));
+        var refusedStale = await StarterHackerControlTargetMode.RefusedAsync(actor, RecallMember,
+            StarterHackerControlTargetMode.WithHandle(StockRecallMember, stale));
         byte[] request = Convert.FromHexString(StockRecallMember);
         BinaryPrimitives.WriteUInt32LittleEndian(request.AsSpan(4), friendView.ViewId | ((uint)friendView.SpawnId << 16));
 
+        int singleStart = server.DebugLog().Length;
         var single = await CheckRecallAsync(actor, outsider, request, new[] { friend }, new[] { far, outsider }, (X, Y, Z));
+        Check.That(server.DebugLog()[singleStart..].Contains($"[ABILITY-COST] char={actor.CharId} ability=382 paid=30 "),
+            "Recall Team Member pays the stored 30 IS");
         int returnCursor = friend.World.ViewSnapshot().Count;
         var rest = Stands.Single(value => value.Handle == friend.Handle);
         friend.SendChat($"?tp {rest.X} {Y} {rest.Z} 0 0 0");
@@ -85,7 +99,10 @@ public sealed class HackerMissionTeamUtilitiesMode : NativeQaMode
         var recipients = new[] { friend, far };
         var pingStarts = recipients.ToDictionary(member => member, member => member.World.RpcSnapshot().Count);
         int outsiderAt = outsider.World.RpcSnapshot().Count;
+        int teamStart = server.DebugLog().Length;
         var team = await CheckRecallAsync(actor, outsider, Convert.FromHexString(StockRecallTeam), recipients, new[] { outsider }, missionStand);
+        Check.That(server.DebugLog()[teamStart..].Contains($"[ABILITY-COST] char={actor.CharId} ability=486 paid=75 "),
+            "Recall Mission Team pays the stored 75 IS");
         foreach (var member in recipients)
             await StockAbilityProfile.ObserveAsync(member, pingStarts[member], HasMissionPing, $"{member.Handle} receives a mission objective ping");
         Check.That(!outsider.World.RpcSnapshot().Skip(outsiderAt).Any(HasMissionPing), "A same-floor outsider sees no team ping");
@@ -111,7 +128,11 @@ public sealed class HackerMissionTeamUtilitiesMode : NativeQaMode
             "The old team reveal stops refreshing on unload and does not restart on reload");
         Check.Equal(0, actor.World.Problems.Count, "Mission-utility team and map startup framing");
         await File.WriteAllTextAsync(Path.Combine(context.OutputDirectory, "hacker-mission-utilities.json"),
-            JsonSerializer.Serialize(new { SingleRecall = single, TeamRecall = team, Outsider = outsider.Handle, map.Flags, Map = map.Reveal.Hex }));
+            JsonSerializer.Serialize(new
+            {
+                RefusedSelf = refusedSelf.Hex, RefusedNonMember = refusedNonMember.Hex, RefusedStale = refusedStale.Hex,
+                SingleRecall = single, TeamRecall = team, Outsider = outsider.Handle, map.Flags, Map = map.Reveal.Hex
+            }));
         return Array.Empty<byte>();
     }
 
@@ -124,11 +145,19 @@ public sealed class HackerMissionTeamUtilitiesMode : NativeQaMode
         var creations = watchers.ToDictionary(watcher => watcher, watcher => watcher.World.CreationSnapshot());
         string coordinates = PositionHex(stand.X, stand.Y, stand.Z);
         var teleport = OwnPosition(stand.X, stand.Y, stand.Z);
+        ushort ability = BinaryPrimitives.ReadUInt16LittleEndian(request.AsSpan(2));
+        bool single = ability == RecallMember;
+        uint expectedFx = single ? 0x280006d1u : 0x280006d2u;
+        var ownFx = WireFormat.ToHex(ServerPackets.BuildPlayerAbilityEffect(expectedFx, 0, true)[2..^1]) + " ??";
+        int started = actor.World.RpcSnapshot().Count;
         actor.SendRpc(request);
+        await EvidenceRetestWire.CastBarAsync(actor, ability, 2);
+        await EvidenceRetestWire.TimerAsync(actor, started, ability, AbilityCooldowns.OwnTimer, single ? 30 : 180);
         var proof = new List<object>();
         foreach (var recipient in recipients)
         {
             byte[] own = await WaitForPositionAsync(recipient, cursors[recipient], teleport, "own recall arrival");
+            await EvidenceRetestWire.ViewSinceAsync(recipient, cursors[recipient], 2, ownFx);
             proof.Add(new { Recipient = recipient.Handle, Own = WireFormat.ToHex(own) });
             foreach (var watcher in watchers)
             {

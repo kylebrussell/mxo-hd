@@ -340,8 +340,25 @@ namespace hds
         /// <summary>DisableUsage/Difficulty of the security devices (Security_Panel 466: 10; Security_Desk 377: 0).</summary>
         public static int SecurityDifficulty(UInt16 goid) => goid == 466 ? 10 : 0;
 
+        internal static uint? RecallRefusal(WorldClient caster, ushort targetView, ushort? spawn,
+            out WorldClient recipient)
+        {
+            recipient = null;
+            if (!AbilityPassives.IsLoaded(caster, RecallTeamMember)) return AbilityRefusals.NotLoaded;
+            var fight = CombatManager.GetHandler(caster);
+            if (fight.isCombatRunning || fight.HasActiveInterlock) return AbilityRefusals.MustBeOutsideCombat;
+            if (CombatStyles.Active(caster) != CombatStyles.HackerStyle) return AbilityRefusals.WrongStyle;
+            var selected = AbilitySupport.PlayerInView(caster, targetView, spawn);
+            if (selected == null || selected == caster) return AbilityRefusals.InvalidTarget;
+            var team = SocialGroups.Instance.FindTeamOf(caster.playerData.getCharID());
+            if (team?.HasMember(selected.playerData.getCharID()) != true) return AbilityRefusals.NotGroupTarget;
+            recipient = selected;
+            return null;
+        }
+
         /// <summary>When a cast of one of these abilities ends.</summary>
-        public static void Land(WorldClient client, UInt16 ability, UInt16 targetView, UInt16? itemSlot = null, UInt32? selectedLocator = null)
+        public static void Land(WorldClient client, UInt16 ability, UInt16 targetView, UInt16? itemSlot = null,
+            UInt32? selectedLocator = null, WorldClient recallRecipient = null)
         {
             switch (ability)
             {
@@ -350,7 +367,7 @@ namespace hds
                     break;
                 case RecallTeamMember:
                 case RecallMissionTeam:
-                    Recall(client, ability, targetView);
+                    Recall(client, ability, recallRecipient);
                     break;
                 case FindDataNode:
                 case LocateDataNode:
@@ -380,21 +397,20 @@ namespace hds
             if (result == DisarmResult.Critical) SendState(client, view.entityId, goid, TriggeredState);
         }
 
-        private static void Recall(WorldClient caster, UInt16 ability, UInt16 targetView)
+        private static void Recall(WorldClient caster, UInt16 ability, WorldClient selected)
         {
             LiveTeam team = SocialGroups.Instance.FindTeamOf(caster.playerData.getCharID());
             List<WorldClient> targets;
             if (ability == RecallTeamMember)
             {
-                WorldClient target = AbilitySupport.PlayerInView(caster, targetView);
-                // RecallTeamMember_Test: "Can't recall self"; the client only offers it on a team member
-                if (target == null || target == caster || team == null || !team.HasMember(target.playerData.getCharID()))
+                // Revalidate the original teammate after casting. A departing teammate or reused view must never change the recipient.
+                if (selected == null || team?.HasMember(selected.playerData.getCharID()) != true)
                 {
-                    Output.WriteDebugLog("[UTILITY] Recall Team Member: view " + targetView + " is no other team member");
+                    Output.WriteDebugLog("[UTILITY] Recall Team Member: original recipient is no longer in the team");
                     return;
                 }
-                targets = new List<WorldClient> { target };
-                ToCaster(caster, TeleportingCaster, ability, TimedEffects.PlayerName(target));
+                targets = new List<WorldClient> { selected };
+                ToCaster(caster, TeleportingCaster, ability, TimedEffects.PlayerName(selected));
             }
             else
             {
@@ -417,16 +433,23 @@ namespace hds
                     caster.FlushQueue();
                     continue;
                 }
-                if (CombatManager.GetHandler(target).isCombatRunning || target.playerData.isDead || target.playerData.duelDeath)
+                string targetName = TimedEffects.PlayerName(target);
+                var combat = CombatManager.GetHandler(target);
+                bool singleRecall = ability == RecallTeamMember;
+                if (combat.isCombatRunning || (singleRecall && combat.HasActiveInterlock))
                 {
-                    // Retail sent ID_CLIENT_TELEPORTING_INCOMBAT / _DEAD, which the 7.6005 client's table doesn't have
-                    Output.WriteDebugLog("[UTILITY] Recall: " + TimedEffects.PlayerName(target) + " is fighting or dead");
+                    RecallFailed(caster, $"{targetName} is in combat and cannot be recalled.", singleRecall);
+                    continue;
+                }
+                if (target.playerData.isDead || target.playerData.duelDeath)
+                {
+                    RecallFailed(caster, $"{targetName} is dead and cannot be recalled.", singleRecall);
                     continue;
                 }
 
                 ToTarget(target, TeleportingTarget, ability, casterName);
                 ServerPackets.SendPlayerAbilityEffect(target,
-                    ability == RecallTeamMember ? FxRecallTeamMemberPhaseOut : FxRecallMissionTeamPhaseOut);
+                    singleRecall ? FxRecallTeamMemberPhaseOut : FxRecallMissionTeamPhaseOut);
                 MissionStaging.Teleport(target, x, y, z);
                 target.FlushQueue();
                 PvpFlag.ToWatchers(target, PvpFight.BuildFacing(target.playerInstance.YawInterval.getValue()[0],
@@ -434,6 +457,17 @@ namespace hds
                 Output.WriteDebugLog("[UTILITY] Recalled " + TimedEffects.PlayerName(target) + " to " + casterName + " at " +
                                      x + "," + y + "," + z);
             }
+        }
+
+        private static void RecallFailed(WorldClient caster, string text, bool notify)
+        {
+            // The two script names have no verified local string IDs. Publish the refusal through the system text channel.
+            if (notify)
+            {
+                new ServerPackets().sendSystemChatMessage(caster, text, "BROADCAST");
+                caster.FlushQueue();
+            }
+            Output.WriteDebugLog($"[UTILITY] Recall: {text}");
         }
 
         internal static bool RecallRecipientInWorld(ClientData data) =>
