@@ -16,8 +16,8 @@ public sealed class HackerOneCheckBatchMode : NativeQaMode
     };
     // Team Patcher Upgrade: stock 455f0446826c:26067–26068.
     private const string UpgradeRequest = "80b9410402000100000000000000000000000000000000000000003200000000000000086b0000000000";
-    // Trojan Horse adapts the stock view-zero self action form from PR381.
-    private const string TrojanRequest = "80b9b1030000000000000000000000000000000000000000000000d557377c20000000086b0000000000";
+    // PR545's stock view-zero Trojan Horse request.
+    private const string TrojanRequest = "80b9b103000000000000000000000000000000000000000000000000585cbc0001000000086b0000000000";
 
     public override string Name => "ability-parity-hacker-passives-and-trojan";
     public override NativeQaModePlan Plan { get; } = new(Loadout, CombatFixtureLoadout.CasterX, CombatFixtureLoadout.CasterZ,
@@ -30,13 +30,14 @@ public sealed class HackerOneCheckBatchMode : NativeQaMode
         }, DevCommands: true, loadAbilityAncestors: true, hotbarAbilities: new ushort[] { TeamPatcherUpgrade, TrojanHorse },
         environmentOverrides: new()
         {
-            ["MXO_AGGRO"] = "0", ["MXO_MOB_WANDER"] = "0", ["MXO_PVP_SERVER"] = "1", ["MXO_PVP_MAX_SAFE_LEVEL"] = "15"
+            ["MXO_AGGRO"] = "0", ["MXO_MOB_WANDER"] = "0", ["MXO_PVP_SERVER"] = "1", ["MXO_PVP_MAX_SAFE_LEVEL"] = "15",
+            ["MXO_FREECAST_VIRAL_QA"] = "1", ["MXO_FREECAST_VIRAL_QA_ATTACK15"] = "32766", ["MXO_FREECAST_VIRAL_QA_DEFENSE15"] = "0"
         }, extraQaMetadata: new() { ["ScopedStockRows"] = "92,391,945", ["NativeCloseableRows"] = 3 },
         readyMessages: new[]
         {
             "Step A. Effective Code (391) shows +12 ranged defense, +15 Pacify duration and +12 melee defense under its own Status source. Unload and reload 391 and confirm all three rows leave and return.",
             "Step B. Team Patcher Upgrade appears once in Actions. Unload/reload 92 and confirm the action leaves and returns once. Use page 2 slot 1 with no hostile selection to verify activation.",
-            "Step C. Standing at spawn, clear selection and press page 2 slot 2 for Trojan Horse. QAEnemy is flagged and 2 m east. Observe the 946 pulse removing 20 IS, the caster's recurring 20 IS cost and switch-off on a second press. Keep the outgoing stock 945 request."
+            "Step C. Standing at spawn, clear selection and press page 2 slot 2 for Trojan Horse. QAEnemy is flagged and 2 m east. The fixture fixes the 946 draw to a hit. Observe the pulse removing 20 IS, the caster's recurring 20 IS cost and switch-off on a second press. Keep the outgoing stock 945 request."
         });
 
     public override async Task<byte[]> AfterStartAsync(NativeQaBootstrapContext context)
