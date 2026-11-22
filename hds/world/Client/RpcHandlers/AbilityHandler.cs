@@ -901,9 +901,12 @@ namespace hds
             (float X, float Y, float Z, uint SimMillis)? fullPeakOrigin = null;
             ClientData data = Store.currentClient.playerData;
             JumpRecords.Takeoff? report = null;
+            JumpRecords.Route? route = null;
             if (request.IsHyperJump == 1 && peak == CapturedFullPeak)
             {
-                fullPeakOrigin = ((float)x, (float)y, (float)z, (uint)Math.Round(simSeconds * 1000.0));
+                uint startMs = (uint)Math.Round(simSeconds * 1000.0);
+                fullPeakOrigin = ((float)x, (float)y, (float)z, startMs);
+                route = new JumpRecords.Route(startMs, (x, y, z), request.Destination, peak);
                 if (NavMesh.Locate((ushort)data.getDistrictId(), x, y, z, out var origin) &&
                     Math.Abs(y - (origin.floorY + 95)) <= 4)
                 {
@@ -914,7 +917,7 @@ namespace hds
                 }
             }
 
-            data.PendingJump = new JumpRecords.Flight(endTime, data, report);
+            data.PendingJump = new JumpRecords.Flight(endTime, data, report, route);
             ServerPackets packets = new ServerPackets();
             packets.SendHyperJumpWithOneStep((float)xDest, (float)yDest, (float)zDest, peakHeight, endTime,
                 clientTickSample, fullPeakOrigin);
@@ -1061,31 +1064,33 @@ namespace hds
                     request.Destination.Y + "," + request.Destination.Z);
                 return;
             }
-            data.PendingJump = null;
             double xDest = request.Destination.X, yDest = request.Destination.Y, zDest = request.Destination.Z;
+            if (!double.IsFinite(xDest) || !double.IsFinite(yDest) || !double.IsFinite(zDest)) return;
+            data.PendingJump = null;
             Output.WriteDebugLog("[NAV] Jump cancel to " + xDest + "," + yDest + "," + zDest + ": client " +
                 request.Destination.Sector + "/" + request.Destination.Prefab + "/" + request.Destination.NavPoly);
 
-            // Players current X Z Y
-            double x = 0;
-            double y = 0;
-            double z = 0;
-            byte[] Ltvector3d = Store.currentClient.playerInstance.Position.getValue();
-            NumericalUtils.LtVector3dToDoubles(Ltvector3d, ref x, ref y, ref z);
-            int rotation = (int) Store.currentClient.playerInstance.YawInterval.getValue()[0];
-            float xPos = (float) x;
-            float yPos = (float) y;
-            float zPos = (float) z;
+            (float x, float y, float z) from;
+            uint endTime;
+            if (flight.Value.FullPeakRoute is { } route)
+            {
+                // Retail sends an airborne origin and keeps almost all of the original deadline in both
+                // captured redirects. Retain the accepted deadline instead of starting a new fall timer.
+                endTime = flight.Value.EndMilliseconds;
+                from = route.PositionAt(startTime, endTime);
+                Output.WriteDebugLog(FormattableString.Invariant(
+                    $"[NAV] Hyper-Jump redirect from {from.x:F2},{from.y:F2},{from.z:F2} with {(endTime - startTime) / 1000.0:F3}s left"));
+            }
+            else
+            {
+                double x = 0, y = 0, z = 0;
+                NumericalUtils.LtVector3dToDoubles(Store.currentClient.playerInstance.Position.getValue(), ref x, ref y, ref z);
+                from = ((float)x, (float)y, (float)z);
+                endTime = JumpEndTime(simSeconds, (float)Math.Max(0.0, y - yDest) / 4f);
+            }
 
-            // Start/end are server sim time in ms, like JumpEndTime (these used to be Unix seconds). The fall to
-            // the new destination is timed as a drop from the current height above it.
-            // A straight drop of H takes sqrt(2H/g), which is JumpEndTime's up-and-down time for a peak of H/4.
-            UInt32 endTime = JumpEndTime(simSeconds, (float)Math.Max(0.0, yPos - yDest) / 4f);
-
-            ServerPackets packets = new ServerPackets();
-            // Cancel has only a navigation tail, not a client clock sample to echo.
-            packets.SendHyperJumpUpdate(xPos, yPos, zPos, (float) xDest, (float) yDest, (float) zDest, startTime,
-                endTime);
+            // Cancel carries a navigation tail, without a client clock value to echo.
+            new ServerPackets().SendHyperJumpUpdate(from.x, from.y, from.z, xDest, yDest, zDest, startTime, endTime);
             Store.currentClient.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(xDest, yDest, zDest));
         }
     }

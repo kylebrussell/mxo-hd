@@ -31,19 +31,51 @@ namespace hds
             private readonly uint endMs, district;
             private readonly int world, life;
             internal readonly Takeoff? InitialReport;
+            internal readonly Route? FullPeakRoute;
+            internal uint EndMilliseconds => endMs;
 
-            internal Flight(uint endMs, ClientData owner, Takeoff? initialReport)
+            internal Flight(uint endMs, ClientData owner, Takeoff? initialReport, Route? fullPeakRoute = null)
             {
                 this.endMs = endMs;
                 district = owner.getDistrictId();
                 world = owner.worldGeneration;
                 life = owner.lifeGeneration;
                 InitialReport = initialReport;
+                FullPeakRoute = fullPeakRoute;
             }
 
             internal bool IsCurrent(uint nowMs, ClientData owner) =>
                 unchecked((int)(endMs - nowMs)) >= 0 &&
                 district == owner.getDistrictId() && world == owner.worldGeneration && life == owner.lifeGeneration;
+        }
+
+        internal readonly struct Route
+        {
+            internal readonly uint StartMilliseconds;
+            private readonly (double X, double Y, double Z) origin;
+            private readonly Destination destination;
+            private readonly float peak;
+
+            internal Route(uint startMilliseconds, (double X, double Y, double Z) origin, Destination destination, float peak)
+            {
+                StartMilliseconds = startMilliseconds;
+                this.origin = origin;
+                this.destination = destination;
+                this.peak = peak;
+            }
+
+            internal (float X, float Y, float Z) PositionAt(uint nowMs, uint endMs)
+            {
+                double elapsed = unchecked(nowMs - StartMilliseconds);
+                double duration = Math.Max(1, unchecked(endMs - StartMilliseconds));
+                double progress = Math.Clamp(elapsed / duration, 0, 1);
+                // The server stores the destination on admission. For a redirect, estimate the in-flight
+                // origin from the accepted flight instead of snapping from that stored ground endpoint.
+                double arc = 4 * peak * progress * (1 - progress);
+                return ((float)(origin.X + (destination.X - origin.X) * progress),
+                    (float)(origin.Y + (destination.Y - origin.Y) * progress + arc),
+                    (float)(origin.Z + (destination.Z - origin.Z) * progress));
+            }
         }
 
         internal readonly struct Takeoff

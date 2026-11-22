@@ -342,6 +342,9 @@ namespace hds
                     new ServerPackets().sendSystemChatMessage(client, "Teleported to " + commands[4] + "/" + commands[5], "BROADCAST");
                 }
 
+                if (command.Equals("?jret") && Environment.GetEnvironmentVariable(JumpRedirectQa.Mode) == "1")
+                    new ServerPackets().sendSystemChatMessage(Store.currentClient, JumpRedirectQa.Replay(Store.currentClient), "BROADCAST");
+
                 if (command.Equals("?tactic") && commands.Length == 2 &&
                     Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS") == "1" &&
                     Enum.TryParse(commands[1], true, out CombatTactic devTactic))
