@@ -9,12 +9,12 @@ public sealed class AwakenedStockStealthSpeedMode : NativeQaMode
     private const int Level = 50, X = 24800, Y = 495, Z = -1498;
     private const ushort Speed = 12, Sprint = 184, Spy = CombatStyles.SpyStyle, Sneak = 1111, Invisibility = 1116;
     // Full stock Spy Style and Belt from PR538 (PacketLog 2660 and 2879–2880), and stock Sneak from PR530.
-    private const string SpyUse = "80b95804000000000000000000000000000000000000000000000000585cbe0001000000086b0000000000";
-    private const string BeltUse = "80b95c0400000000000000000000000000000000000000000000000064f11a0090b7433d08280000000000";
-    private const string SneakUse = "80b95704000000000000000000000000000000000000000000000000585cc20001000000086b0000000000";
+    internal const string SpyUse = "80b95804000000000000000000000000000000000000000000000000585cbe0001000000086b0000000000";
+    internal const string BeltUse = "80b95c0400000000000000000000000000000000000000000000000064f11a0090b7433d08280000000000";
+    internal const string SneakUse = "80b95704000000000000000000000000000000000000000000000000585cc20001000000086b0000000000";
     // Full PR658 replay forms.
     private const string SpeedUse = "80b90c00000000000000000000000000000000000000000000000000000015000000071c086b0000000000";
-    private const string SprintUse = "80b9b800000000000000000000000000000000000000000000000000ffff7f7f00000000086b0000000000";
+    internal const string SprintUse = "80b9b800000000000000000000000000000000000000000000000000ffff7f7f00000000086b0000000000";
     private static readonly ushort[] Loadout = StockAbilityProfile.Profile(2, 17, Speed, Sprint, Spy, 151, 175).Order().ToArray();
     private static readonly int Memory = Loadout.Sum(AbilityMemory.Cost);
 
