@@ -6,12 +6,14 @@ namespace NativeQa.Modes;
 public sealed class StarterEvadeReleaseMode : NativeQaMode
 {
     private const int Level = 19, EnemyLevel = 11, X = 17000, Y = 495, Z = 2300, EnemyX = 17120;
-    private const ushort Evade = EvasionShield.Parent, Sprint = 184;
+    private const ushort Evade = EvasionShield.Parent, Sprint = 184, Blur = 49;
 
     // Complete stock Evade request from PR524, Sprint request from PR627.
     private const string EvadeUse = "80b9d9000000000000000000000000000000000000000000000000002000000078f21200086b0000000000";
     private const string SprintUse = "80b9b800000000000000000000000000000000000000000000000000ffff7f7f00000000086b0000000000";
-    private static readonly ushort[] Loadout = StockAbilityProfile.Profile(2, 17, Evade, Sprint).Order().ToArray();
+    // Complete Gaussian Blur request from the stock capture used by StarterEvadeLevelGapMode.
+    private const string BlurUse = "80b93100000000000000000000000000000000000000000000000000ffff7f7f00000000086b0000000000";
+    private static readonly ushort[] Loadout = StockAbilityProfile.Profile(2, 17, Evade, Sprint, Blur).Order().ToArray();
 
     public override string Name => "ability-parity-starter-evade-release";
 
@@ -28,18 +30,19 @@ public sealed class StarterEvadeReleaseMode : NativeQaMode
             "INSERT INTO char_abilities(char_id,slot,ability_id,level,is_loaded) VALUES " +
                 $"(6114,400,{AbilityMessages.AbilityGameObject(2)},{EnemyLevel},1)," +
                 $"(6114,401,{AbilityMessages.AbilityGameObject(17)},{EnemyLevel},1)"
-        }, DevCommands: true, hotbarAbilities: new[] { Evade, Sprint }, testMobFixture: "martial-player-controls.csv",
+        }, DevCommands: true, hotbarAbilities: new[] { Evade, Sprint, Blur }, testMobFixture: "martial-player-controls.csv",
         environmentOverrides: new()
         {
             ["MXO_AGGRO"] = "0", ["MXO_MOB_WANDER"] = "0", ["MXO_PVP_SERVER"] = "1",
             ["MXO_PVP_MAX_SAFE_LEVEL"] = "10", ["MXO_SIMULACRUM_QA_HOLD_IS"] = "1"
-        }, extraQaMetadata: new() { ["ScopedStockRows"] = "217,184", ["NativeCloseableRows"] = 0 },
+        }, extraQaMetadata: new() { ["ScopedStockRows"] = "217,184,49", ["NativeCloseableRows"] = 1 },
         readyMessages: new[]
         {
-            $"Level {Level} CSR ({X},{Y},{Z}) faces level {EnemyLevel} QAEnemy ({EnemyX},{Y},{Z}) on verified outdoor NAV. Start with 160 IS and keep default Speed. QAEnemy starts in Power. Page 2 slots 1 and 2 are Evade Combat and Hyper-Sprint.",
+            $"Level {Level} CSR ({X},{Y},{Z}) faces level {EnemyLevel} QAEnemy ({EnemyX},{Y},{Z}) on verified outdoor NAV. Start with 160 IS and keep default Speed. QAEnemy starts in Power. Page 2 slots 1â€“3 are Evade Combat, Hyper-Sprint and Gaussian Blur.",
             "From rest use slot 1. Expect the 2 s cast, [ABILITY-COST] ability=217 paid=40 and [EVASION] CSR_Tester state on. State 624 and the own shield meter at 255 appear after the cast. Clear any unnecessary selection.",
             """Use helper input {"actor":"QAEnemy","action":"melee","target":"CSR_Tester"}. Expect [EVASION] CSR_Tester resistance IS 120->113 cost=7; shield 255->194 damage=24. Keep the client-visible refusal and the defender's 4d 0e 01 01 00 02 00 <self-spawn> while the helper sees its ordinary attacker result. There should be no [PVP] round or health change.""",
-            "Press slot 1 to end Evade, then slot 2 Hyper-Sprint immediately. Expect 624 removal, the 30 s Evade reuse and no second Evade cast bar or charge. Sprint should activate on the first press, [ABILITY-COST] ability=184 paid=25 and [MODIFIER] source 184 adds 115/877/878 +15. Keep the request times if the stock UI suppresses the immediate Sprint press."
+            "Press slot 1 to end Evade, then slot 2 Hyper-Sprint immediately. Expect 624 removal, the 30 s Evade reuse and no second Evade cast bar or charge. Sprint should activate on the first press, [ABILITY-COST] ability=184 paid=25 and [MODIFIER] source 184 adds 115/877/878 +15. After 1 s and before the first 5 s upkeep, press slot 2 again to stop Sprint and capture the three +15 removals.",
+            "Within the Evade timer, try slot 1 again and try Gaussian Blur in slot 3. Expect the stock gates or reason 5 for Evade and 23 for Blur, with no IS debit or cast. After the 30 s ends, use Evade once. Expect one 2 s cast, [ABILITY-COST] 217 paid=40, a new source 217 state 624 add and a fresh 255 shield. Then slot 3 should cast for 20 IS and add [MODIFIER] source 49 stat 520 +25 for 600 s. No [PVP] round or max [VITALS] change."
         });
 
     public override async Task<byte[]> AfterStartAsync(NativeQaBootstrapContext context)
@@ -106,6 +109,43 @@ public sealed class StarterEvadeReleaseMode : NativeQaMode
         Check.That(!ended.Contains("A cast is running; denied", StringComparison.Ordinal) &&
             ended.Contains("ability=184 paid=25 IS=113->88", StringComparison.Ordinal) &&
             !ended.Contains("ability=217 paid=", StringComparison.Ordinal), "Only Sprint spends IS after the two-request switch");
+        await Task.Delay(TimeSpan.FromSeconds(1));
+        int stopSprint = actor.World.RpcSnapshot().Count;
+        actor.SendRpc(SprintUse);
+        await StockAbilityProfile.ObserveAsync(actor, stopSprint,
+            frame => StockAbilityProfile.Bonus(frame, Sprint, 115, 15, 0, true), "Sprint stops independently");
+
+        await StarterHackerControlTargetMode.RefusedAsync(actor, Evade, WireFormat.FromHex(EvadeUse), AbilityRefusals.ReuseWait);
+        await StarterHackerControlTargetMode.RefusedAsync(actor, Blur, WireFormat.FromHex(BlurUse), AbilityRefusals.CasterStateRequired);
+
+        byte[] endTimer = AbilityCooldowns.BuildTimer(Evade, AbilityCooldowns.OwnTimer, 30, false);
+        await actor.WaitUntilAsync(() => actor.World.RpcSnapshot().Skip(release).Any(frame => frame.Bytes.AsSpan().SequenceEqual(endTimer)),
+            "Evade's 30-second termination timer clears", TimeSpan.FromSeconds(35));
+        int rearm = actor.World.RpcSnapshot().Count, rearmViews = actor.World.ViewSnapshot().Count;
+        int enemyViews = enemy.World.ViewSnapshot().Count;
+        logAt = server.DebugLog().Length;
+        actor.SendRpc(EvadeUse);
+        await EvidenceRetestWire.CastBarAsync(actor, Evade, 2);
+        await StockAbilityProfile.ObserveAsync(actor, rearm,
+            frame => StockAbilityProfile.Bonus(frame, Evade, EvasionShield.StateAbility, 0, 0, false), "A new Evade activation restores 624");
+        byte[] flags = PlayerViewAttributes.U32(PvpFlag.PvpBit | EvasionShield.StateFlag);
+        byte[] fullMeter = PlayerViewAttributes.BuildSelf((30, PlayerViewAttributes.U8(255)),
+            (PlayerViewAttributes.SelfConditionStateFlags, flags));
+        await EvidenceRetestWire.ViewSinceAsync(actor, rearmViews, 2, WireFormat.ToHex(fullMeter[2..]));
+        byte[] otherMeter = PlayerViewAttributes.Build((21, PlayerViewAttributes.U8(255)),
+            (PlayerViewAttributes.OtherConditionStateFlags, flags));
+        await EvidenceRetestWire.ViewSinceAsync(enemy, enemyViews, defender.ViewId, WireFormat.ToHex(otherMeter));
+
+        int blur = actor.World.RpcSnapshot().Count;
+        actor.SendRpc(BlurUse);
+        await EvidenceRetestWire.CastBarAsync(actor, Blur, 2);
+        await StockAbilityProfile.ObserveAsync(actor, blur,
+            frame => StockAbilityProfile.Bonus(frame, Blur, 520, 25, 600, false), "The fresh shield reopens Gaussian Blur admission");
+        string restored = server.DebugLog()[logAt..];
+        Check.That(restored.Contains("ability=217 paid=40 IS=88->48", StringComparison.Ordinal) &&
+            restored.Contains("ability=49 paid=20 IS=48->28", StringComparison.Ordinal),
+            "Only the accepted Evade and Blur casts spend Inner Strength");
+
         Check.Equal(0, actor.World.Problems.Count + enemy.World.Problems.Count, "Stock toggle and combat result framing");
         return Array.Empty<byte>();
     }
