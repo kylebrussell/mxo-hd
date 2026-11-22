@@ -129,6 +129,106 @@ public class FreeCastViralLandingTests : IDisposable
         Assert.Empty(TimedEffects.ForPlayer(secondary).Effects.Snapshot());
     }
 
+    [Theory]
+    [InlineData(399, 800, TempMods.PowerlessAbility, 0, 11.0526, 0, false)]
+    [InlineData(400, 500, TempMods.DOTPlaceHolderAbility, 74, 15, 12, false)]
+    [InlineData(399, 800, TempMods.PowerlessAbility, 0, 11.0526, 0, true)]
+    [InlineData(400, 500, TempMods.DOTPlaceHolderAbility, 74, 15, 12, true)]
+    public void DespoilerFieldsLandOnTheSelectedEnemyAndExactRadiusEdge(
+        ushort id, int edgeRadius, ushort stat, int amount, double duration, int damagePerTick, bool deflectPrimary)
+    {
+        var caster = Client(110);
+        Store.currentClient = caster;
+        caster.playerData.pvpFlag = true;
+        caster.playerInstance.Level.setValue((byte)30);
+        caster.playerInstance.OrganizationID.setValue((byte)1);
+        caster.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(17000, 495, 6400));
+        AbilityPassives.SetLoaded(caster, new NativeQa.Modes.HackerDespoilerAreaControlsMode().Plan.Abilities
+            .Select(ability => (ability, (ushort)30)));
+        CombatStyles.Select(caster, CombatStyles.HackerStyle);
+        Environment.SetEnvironmentVariable("MXO_FREECAST_VIRAL_QA_ATTACK15", "32766");
+        Environment.SetEnvironmentVariable("MXO_FREECAST_VIRAL_QA_DEFENSE15", "0");
+
+        var primary = Recipient(111, 6600);
+        var edge = Recipient(112, 6600 + edgeRadius);
+        var outside = Recipient(113, 6601 + edgeRadius);
+        var ally = Recipient(114, 6700, organization: 1);
+        var unseen = Recipient(115, 6700, visible: false);
+        var view = caster.viewMan.FindViewForEntity(111);
+        var affected = deflectPrimary ? new[] { edge } : new[] { primary, edge };
+        var excluded = deflectPrimary ? new[] { caster, outside, ally, unseen, primary } : new[] { caster, outside, ally, unseen };
+        var subjects = affected.Concat(excluded).Select(TimedEffects.ForPlayer).ToArray();
+        var ability = new AbilityItem();
+        ability.setAbilityID(id);
+
+        try
+        {
+            if (deflectPrimary)
+            {
+                Assert.True(AbilityBuffs.Apply(primary, 272));
+                primary.playerData.combatTactic = CombatTactic.Block;
+                Assert.True(AbilityBuffs.Apply(caster, 314));
+                Environment.SetEnvironmentVariable("MXO_FREECAST_VIRAL_QA_ATTACK15", "0");
+                Environment.SetEnvironmentVariable("MXO_FREECAST_VIRAL_QA_DEFENSE15", "32766");
+            }
+            Assert.True(AbilityTargets.Land(caster, ability, view.ViewID, origin: AbilityCastOrigin.NormalFreeCast));
+            if (deflectPrimary)
+                Assert.Equal(FreeCastViralContest.DeflectFx,
+                    NumericalUtils.ByteArrayToUint32(primary.playerInstance.EffectID.getValue(), 1));
+            var effects = affected.Select(target =>
+            {
+                var subject = TimedEffects.ForPlayer(target);
+                var effect = Assert.Single(subject.Effects.Snapshot());
+                Assert.Equal(id, effect.Parent);
+                Assert.Equal(stat, effect.Target);
+                Assert.Equal(amount, effect.Value);
+                Assert.Equal(duration, effect.Seconds, 3);
+                Assert.Equal(id == 400, ControlActions.CanUseAbilities(subject.Effects));
+                Assert.True(ControlActions.CanMove(subject.Effects));
+                Assert.True(ControlActions.CanUseWeapons(subject.Effects));
+                Assert.True(ControlActions.CanWithdraw(subject.Effects));
+                Assert.Equal(1000, PvpCombat.HealthOf(target));
+                return effect;
+            }).ToArray();
+            Assert.All(excluded, target => Assert.False(TimedEffects.ForPlayer(target).Effects.HasParent(id)));
+
+            if (id == 400)
+                TimedEffects.ForPlayer(edge).Effects.Apply(8,
+                    new[] { new TimedEffects.Active { Target = 157, Value = 43, Seconds = 5.1f, Proc = TempMods.Proc.Stat } },
+                    effects[0].Start);
+            TimedEffects.RunDue(effects.Max(effect => effect.Start) + 2.51);
+            Assert.All(affected, target => Assert.Equal(1000 - damagePerTick + (id == 400 && target == edge ? 2 : 0), PvpCombat.HealthOf(target)));
+            TimedEffects.RunDue(effects.Max(effect => effect.Start) + 5.01);
+            Assert.All(affected, target => Assert.Equal(1000 - 2 * damagePerTick + (id == 400 && target == edge ? 4 : 0), PvpCombat.HealthOf(target)));
+            TimedEffects.RunDue(effects.Max(effect => effect.Expires) + 0.01);
+            TimedEffects.RunDue(effects.Max(effect => effect.Expires) + 3);
+            Assert.All(affected, target => Assert.Equal(1000 - 5 * damagePerTick + (id == 400 && target == edge ? 4 : 0), PvpCombat.HealthOf(target)));
+            Assert.All(excluded, target => Assert.Equal(1000, PvpCombat.HealthOf(target)));
+            Assert.All(subjects, subject =>
+            {
+                Assert.False(subject.Effects.HasParent(id));
+                Assert.True(ControlActions.CanUseAbilities(subject.Effects));
+            });
+        }
+        finally
+        {
+            foreach (var subject in subjects) TimedEffects.Clear(subject);
+            AbilityBuffs.RemoveAll(caster);
+            AbilityBuffs.RemoveAll(primary);
+        }
+
+        WorldClient Recipient(uint id, int z, byte organization = 2, bool visible = true)
+        {
+            var target = Client(id);
+            target.playerData.pvpFlag = true;
+            target.playerInstance.Level.setValue((byte)30);
+            target.playerInstance.OrganizationID.setValue(organization);
+            target.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(17000, 495, z));
+            if (visible) caster.viewMan.addView(id, 1).viewCreated = true;
+            return target;
+        }
+    }
+
     [Fact] public void ExistingUpgradeAttacksAndSereneCalmChangeTheActualCommonContest()
     {
         var c=Client(110);var target=Client(111);Store.currentClient=c;

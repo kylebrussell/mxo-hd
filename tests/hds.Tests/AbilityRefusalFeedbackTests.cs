@@ -513,6 +513,91 @@ public class AbilityRefusalFeedbackTests:IDisposable
         Assert.Empty(caster.playerData.cooldownEndsAt);
     }
 
+    [Theory]
+    [InlineData(399, "empty", AbilityRefusals.InvalidTarget)]
+    [InlineData(400, "ally", AbilityRefusals.InvalidTarget)]
+    [InlineData(399, "range", AbilityRefusals.TargetOutOfRange)]
+    [InlineData(400, "range", AbilityRefusals.TargetOutOfRange)]
+    [InlineData(399, "combat", AbilityRefusals.MustBeOutsideCombat)]
+    [InlineData(400, "style", AbilityRefusals.WrongStyle)]
+    [InlineData(399, "sight", AbilityRefusals.TargetNotInSight)]
+    [InlineData(400, "sight", AbilityRefusals.TargetNotInSight)]
+    [InlineData(399, "unloaded", AbilityRefusals.NotLoaded)]
+    [InlineData(399, "stale", 0u)]
+    [InlineData(400, "left range", 0u)]
+    [InlineData(400, "combat", 0u)]
+    public void DespoilerAreasValidateTheOriginalSelectionBeforeItsSplash(ushort id, string action, uint refusal)
+    {
+        var caster = Client();
+        var target = Client();
+        caster.playerData.passives.Loaded[CombatStyles.HackerStyle] = 30;
+        if (action != "unloaded") caster.playerData.passives.Loaded[id] = 24;
+        if (action != "style") caster.playerData.combatStyle = CombatStyles.HackerStyle;
+        caster.playerInstance.OrganizationID.setValue((byte)1);
+        target.playerInstance.OrganizationID.setValue((byte)(action == "ally" ? 1 : 2));
+        caster.playerData.pvpFlag = target.playerData.pvpFlag = true;
+        target.playerData.setCharID(111);
+        target.playerData.setEntityId(42);
+        target.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(action == "range" ? 1401 : 200, 0, 0));
+        if (action == "sight")
+        {
+            string repository = HeadlessClient.NativeBoundFurnitureFixture.FindRepository();
+            SectorProperties.Load(Path.Combine(repository, "data", "sector_properties.csv"));
+            NavMesh.UseDirectory(Path.Combine(repository, "data", "navmesh"));
+            caster.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(21925, 1095, 16100));
+            target.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(21675, 1095, 16100));
+            Assert.False(NavMesh.HasSightPath(1, 21925, 1095, 16100, 21675, 1095, 16100));
+        }
+        WorldServer.Clients.Add("target", target);
+        var view = caster.viewMan.addView(42, 12);
+        view.viewCreated = true;
+        view.spawnId = 9;
+        Store.currentClient = caster;
+
+        var ability = new AbilityItem();
+        ability.setAbilityID(id);
+        ability.setAbilityName("Despoiler area");
+        ability.setCastAnimStart(new byte[4]);
+        DataLoader.getInstance().AbilityDB.Add(ability);
+        var fight = CombatManager.GetHandler(caster);
+        fight.isCombatRunning = action == "combat";
+        var request = new byte[41];
+        BitConverter.GetBytes(id).CopyTo(request, 0);
+        BitConverter.GetBytes(action == "empty" ? (ushort)0 : view.ViewID).CopyTo(request, 2);
+        BitConverter.GetBytes((ushort)9).CopyTo(request, 4);
+        double before = caster.playerData.castEndsAt;
+        try
+        {
+            new AbilityHandler().ProcessAbility(ref request);
+            if (refusal == 0)
+            {
+                double end = caster.playerData.castEndsAt;
+                Assert.True(end > TimeUtils.GetSimTimeSeconds());
+                Assert.Equal(500 - AbilityCosts.Cost(id), AbilityHandler.CurrentInnerStrength(caster));
+                if (action == "left range")
+                    target.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(1401, 0, 0));
+                else
+                    view.spawnId++;
+                DelayedActions.RunDue(end + 1);
+                Assert.True(AbilityCooldowns.IsCoolingDown(caster.playerData, id, TimeUtils.GetSimTimeSeconds()));
+            }
+            else
+            {
+                Assert.Equal(AbilityRefusals.Encode(new(id, refusal)), Assert.Single(Rpcs(caster)));
+                Assert.Equal(before, caster.playerData.castEndsAt);
+                Assert.Equal(500, AbilityHandler.CurrentInnerStrength(caster));
+                Assert.Empty(caster.playerData.cooldownEndsAt);
+            }
+            Assert.Empty(Rpcs(target));
+            Assert.False(TimedEffects.ForPlayer(target).Effects.HasParent(id));
+        }
+        finally
+        {
+            fight.isCombatRunning = false;
+            CombatManager.RemoveClient(caster);
+        }
+    }
+
     [Fact] public void ActualTimerPredicateReportsReuseAndPreservesCostAndTimer()
     {
         var c=Client(500);double beforeCast=c.playerData.castEndsAt;Store.currentClient=c;double end=TimeUtils.GetSimTimeSeconds()+100;c.playerData.cooldownEndsAt[77]=end;

@@ -26,6 +26,7 @@ namespace hds
             AbilityID = AbilityCatalog.Canonical(AbilityID);
             if (PrisonDevices.Handles(AbilityID)) { PrisonDevices.Activate(Store.currentClient, AbilityID, packet); return; }
             UInt16 currentTargetViewId = reader.ReadUInt16(1);
+            bool selectedDespoilerArea = AbilityID == 399 || AbilityID == 400;
 
             bool starterViralDebuffNeedsLoadout = AbilityID == 43 || AbilityID == 48 || AbilityID == 69;
             if (!CoderPets.IsCastLoaded(Store.currentClient, AbilityID) ||
@@ -71,7 +72,7 @@ namespace hds
             bool selectedViralAttack = enrage || AbilityID == 53 || (AbilityID >= 57 && AbilityID <= 60) ||
                 AbilityID == 350 || AbilityID == 351 || AbilityID == 392 || AbilityID == 394 || selectedViralField;
             ushort? lockedDamageTargetSpawn = null;
-            if (selectedViralAttack)
+            if (selectedViralAttack || selectedDespoilerArea)
             {
                 var caster = Store.currentClient;
                 if (!AbilityPassives.IsLoaded(caster, AbilityID))
@@ -253,7 +254,7 @@ namespace hds
             }
 
             bool starterRangedControl = AbilityID == 43 || AbilityID == 48 || AbilityID == 130 || starterGunCast;
-            if ((selectedViralAttack || starterMovementDebuff || selectedCoderCast || starterRangedControl || AbilityID == 69) &&
+            if ((selectedViralAttack || selectedDespoilerArea || starterMovementDebuff || selectedCoderCast || starterRangedControl || AbilityID == 69) &&
                 !AbilityTargets.WithinSelectionRange(Store.currentClient, AbilityID, currentTargetViewId))
             {
                 Store.currentClient.messageQueue.addRpcMessage(AbilityRefusals.Encode(
@@ -295,6 +296,30 @@ namespace hds
                 Deny(AbilityID, $"Sight blocked for selected target {currentTargetViewId}.",
                     AbilityRefusals.TargetNotInSight, sendServerText: false);
                 return;
+            }
+
+            if (selectedDespoilerArea)
+            {
+                var caster = Store.currentClient;
+                if (!AbilityTargets.HasSelectionSight(caster, definition, currentTargetViewId))
+                {
+                    Deny(AbilityID, "The target is not in sight.", AbilityRefusals.TargetNotInSight, sendServerText: false);
+                    return;
+                }
+                if (AbilityID == 399)
+                {
+                    var fight = CombatManager.GetHandler(caster);
+                    if (fight.isCombatRunning || fight.HasActiveInterlock)
+                    {
+                        Deny(AbilityID, "This ability cannot be used during combat.", AbilityRefusals.MustBeOutsideCombat, sendServerText: false);
+                        return;
+                    }
+                }
+                if (CombatStyles.Active(caster) != CombatStyles.HackerStyle)
+                {
+                    Deny(AbilityID, "This ability requires Hacker Style.", AbilityRefusals.WrongStyle, sendServerText: false);
+                    return;
+                }
             }
 
             // load the ability name from a list to see if we match the right ability
@@ -830,7 +855,7 @@ namespace hds
                 return;
             }
 
-            if ((selectedCoderCast || selectedViralAttack) &&
+            if ((selectedCoderCast || selectedViralAttack || selectedDespoilerArea) &&
                 (!AbilityTargets.HasLiveAttackSelection(client, currentTargetViewId, lockedDamageTargetSpawn, requireOpponent: true) ||
                  !AbilityTargets.WithinSelectionRange(client, AbilityID, currentTargetViewId)))
             {
@@ -839,7 +864,7 @@ namespace hds
                 return;
             }
 
-            if (selectedViralAttack && !AbilityPassives.IsLoaded(client, AbilityID))
+            if ((selectedViralAttack || selectedDespoilerArea) && !AbilityPassives.IsLoaded(client, AbilityID))
             {
                 Output.WriteDebugLog($"[ABILITY] {AbilityID} fizzles: the starter viral ability was unloaded before landing");
                 return;

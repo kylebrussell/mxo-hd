@@ -518,7 +518,8 @@ namespace hds
             // Snapshot immunity from the unmitigated control; its timer is a separate script effect.
             Active originalControl = mods.Find(m => m.Proc == TempMods.Proc.State && TempMods.IsControlState(m.Target) &&
                 !AbilityConditionalControls.InitialPowerless(effect.Ability,m.Target));
-            Active unmitigatedImmunity = originalControl == null ? null : ImmunityFor(effect, originalControl);
+            // Zone of Powerlessness has no immunity initializer. Both retained recipient captures add 399/96 alone.
+            Active unmitigatedImmunity = originalControl == null || effect.Ability == 399 ? null : ImmunityFor(effect, originalControl);
             if (caster != null && !(subject is PlayerEffects playerTarget && playerTarget.Context == caster) && AbilityHostile.IsDebuff(effect.Ability))
                 foreach (Active m in mods)
                     if(effect.Ability!=AbilityReverseBulldog.Ability || m.Proc!=TempMods.Proc.Terminal)
@@ -534,7 +535,7 @@ namespace hds
                     Output.WriteDebugLog("[EFFECTS] " + effect.Ability + ": control immunity, state refused");
                 }
             }
-            else
+            else if (unmitigatedImmunity != null)
             {
                 Active control = mods.Find(m => m.Proc == TempMods.Proc.State && TempMods.IsControlState(m.Target) &&
                     !AbilityConditionalControls.InitialPowerless(effect.Ability,m.Target));
