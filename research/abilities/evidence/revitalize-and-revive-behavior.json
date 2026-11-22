@@ -1,0 +1,22 @@
+{
+  "abilities": {
+    "326": {
+      "checks": {
+        "behavior-tests": {
+          "source": "health.py direct-object handler for GOB 326 restores full HP and IS after resurrection; retail 81 88 carries the ability and answer.",
+          "runtime": "AbilityResurrection.Reply validates the pending authenticated offer, then RestoreVitals and Present update the recipient and observer.",
+          "test": "ability-resurrection-resources casts Revitalize RSI on a dead player over the regular command path, asserts no restoration before consent, matches the offer and motion, verifies recipient and observer resource records, and rejects repeat Yes. ability-resurrection-approval-guards checks refusal, timeout and stale approval separately."
+        }
+      }
+    },
+    "375": {
+      "checks": {
+        "behavior-tests": {
+          "source": "health.py direct-object handler for GOB 375 restores full HP and IS after resurrection; retail 81 88 carries the ability and answer.",
+          "runtime": "AbilityResurrection.Reply validates the pending authenticated offer, then RestoreVitals and Present update the recipient and observer.",
+          "test": "ability-resurrection-resources casts Revive RSI on a dead player over the regular command path, asserts no restoration before consent, matches the offer and motion, verifies recipient and observer resource records, and rejects repeat Yes. ability-resurrection-approval-guards checks refusal, timeout and stale approval separately."
+        }
+      }
+    }
+  }
+}
