@@ -8,6 +8,10 @@ The `ability-parity-starter-hacker-withdraw-bonus` fixture keeps Self Defense at
 
 The isolated stock-frame bootstrap verifies those five inputs and preserves the separate 1045 modifier records. `OrdinaryWithdrawalInputTests.VirologistLoadoutSuppliesBothTypedInputsAndItsUpgrade` also checks that 98 changes typed viral defense at a whole-point boundary and owns grant 1077 only while loaded. Stock Actions already verified that grant and the two passive records through unload and reload. [PR684 native lifecycle](https://github.com/kylebrussell/mxo-hd/pull/684#issuecomment-7067201290)
 
+### Resist Viruses and Selective Phage
+
+`ability-parity-starter-phage-withdraw` compares rank-19 Resist Viruses and Selective Phage on the same NPC interlock and normal `44 01` request. The trained configuration keeps Virologist +1 and Doctor +2 fixed and Self Defense at 65 direct points. The fixed +3 shifts Selective Phage's +1 across a whole-point breakpoint. With both tested passives, only Resist Viruses, both, only Selective Phage, and both again, the effective inputs are 70, 69, 70, 67, and 70. The stock loadout replay tracks all three passive records from each source and the hidden 1082 grant. Existing stock sessions independently observe the live 1049 changes under Evade and its removal while holding the same entry scenario fixed. The executable test also isolates the 1030 contribution to viral defense and verifies ballistic special defense stays at its baseline. [Resist Viruses native Evade comparison](https://github.com/kylebrussell/mxo-hd/pull/721#issuecomment-7072664857) [Selective Phage native Evade comparison](https://github.com/kylebrussell/mxo-hd/pull/694#issuecomment-7068835236)
+
 ## Historical qualification of direct 1005
 
 Only the existing capped direct1005 WithdrawTactics total is consumed. Catalog styles17 and1112 provide min1/min8 plus the same level-scaled1.3 producer, yielding65/72 at learned50 under the existing binary32/truncation implementation. No producer, cap, cost, duration or loaded-membership rules change.

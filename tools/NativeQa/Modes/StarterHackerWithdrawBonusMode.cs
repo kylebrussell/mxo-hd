@@ -5,8 +5,10 @@ namespace NativeQa.Modes;
 
 public sealed class StarterHackerWithdrawBonusMode : NativeQaMode
 {
-    private const int Level = 50, ConcealmentRank = 40, X = 17000, Y = 495, Z = 2300, DummyX = 17200, DirectWithdraw = 65;
-    private const ushort Virologist = 98, Concealment = 503, SelfDefense = 17;
+    internal const int Level = 50, X = 17000, Y = 495, Z = 2300, DummyX = 17200, DirectWithdraw = 65;
+    internal const ushort SelfDefense = 17;
+    private const int ConcealmentRank = 40;
+    private const ushort Virologist = 98, Concealment = 503;
     private static readonly (ushort Ability, int Bonus)[] Sources = { (Virologist, 1), (Concealment, 4) };
     private static readonly ushort[] Loadout = StockAbilityProfile.Profile(2, SelfDefense, Virologist, Concealment)
         .Order().ToArray();
@@ -35,13 +37,7 @@ public sealed class StarterHackerWithdrawBonusMode : NativeQaMode
 
     public override async Task<byte[]> AfterStartAsync(NativeQaBootstrapContext context)
     {
-        string root = context.RepositoryRoot!;
-        SectorProperties.Load(Path.Combine(root, "data", "sector_properties.csv"));
-        NavMesh.UseDirectory(Path.Combine(root, "data", "navmesh"));
-        foreach (int x in new[] { X, DummyX })
-            Check.That(NavMesh.Locate(1, x, Y, Z, out var stand) && !stand.indoors && Math.Abs(stand.floorY + 95 - Y) < 1,
-                $"Outdoor NAV at ({x},{Y},{Z})");
-        Check.That(NavMesh.HasSightPath(1, X, Y, Z, DummyX, Y, Z), "The known clear withdrawal stand has a mapped path to the dummy");
+        VerifyStands(context.RepositoryRoot!);
         if (context.StockProbe is not { } actor) return Array.Empty<byte>();
 
         var archive = AbilityMemoryUiFixture.Decode(actor.CharacterData[6]).Where(row => AbilityMemory.IsAbility(row.Descriptor))
@@ -56,11 +52,10 @@ public sealed class StarterHackerWithdrawBonusMode : NativeQaMode
         NativeQaReadiness.RequireNoAmbientAggro(server, actor);
         var dummy = await actor.WaitForViewNamedAsync(CombatFixtureLoadout.DummyName);
         CombatFixtureLoadout.AssertDummy(actor, dummy);
-        string handle = WireFormat.ToHex(BitConverter.GetBytes(DuelPackets.Handle(dummy.ViewId, dummy.SpawnId)));
         foreach (var (ability, bonus) in Sources)
             await BonusAsync(0, ability, bonus, remove: false);
 
-        await SampleAsync(5, 68);
+        await SampleAsync(actor, server, dummy, 5, 68);
         foreach (var (ability, ownBonus, withoutBonus, withoutInput) in new[]
         {
             (Virologist, 1, 4, 67),
@@ -69,10 +64,10 @@ public sealed class StarterHackerWithdrawBonusMode : NativeQaMode
         {
             int removal = await StockAbilityProfile.ChangeLoadoutAsync(actor, archive, new[] { ability }, load: false);
             await BonusAsync(removal, ability, ownBonus, remove: true);
-            await SampleAsync(withoutBonus, withoutInput);
+            await SampleAsync(actor, server, dummy, withoutBonus, withoutInput);
             int addition = await StockAbilityProfile.ChangeLoadoutAsync(actor, archive, new[] { ability }, load: true);
             await BonusAsync(addition, ability, ownBonus, remove: false);
-            await SampleAsync(5, 68);
+            await SampleAsync(actor, server, dummy, 5, 68);
         }
         Check.Equal(0, actor.World.Problems.Count, "Hacker withdrawal comparison framing");
         return Array.Empty<byte>();
@@ -80,25 +75,37 @@ public sealed class StarterHackerWithdrawBonusMode : NativeQaMode
         Task<RpcRecord> BonusAsync(int from, ushort ability, int bonus, bool remove) =>
             StockAbilityProfile.ObserveAsync(actor, from, frame => StockAbilityProfile.Bonus(frame, ability, 1045, bonus, 0, remove),
                 $"Passive {ability} stat 1045 value {bonus} remove={remove}");
+    }
 
-        async Task SampleAsync(int bonus, int expectedInput)
-        {
-            actor.SkipReceived();
-            actor.SendRpc($"81 51 {handle}");
-            actor.World.SendRpcs(StarterHackerControlTargetMode.WithHandle(AwakenedInterlockAdmissionMode.StockOpen,
-                DuelPackets.Handle(dummy.ViewId, dummy.SpawnId)), WireFormat.FromHex($"40 {handle} 01 6b"));
-            await actor.WaitForRpcAsync($"40 {handle} 00 6b");
-            await actor.WaitForRpcAsync("47");
-            await StockAbilityProfile.ObserveAsync(actor, 0,
-                frame => StockAbilityProfile.Bonus(frame, SelfDefense, 1005, DirectWithdraw, 0, false),
-                "Self Defense's direct withdrawal value");
-            int from = server.DebugLog().Length;
-            actor.SendRpc("44 01");
-            await actor.WaitUntilAsync(() => server.DebugLog()[from..].Contains(
-                    $"[WITHDRAW INPUT OURS] CSR_Tester direct={DirectWithdraw} input={expectedInput} bonus1045={bonus}", StringComparison.Ordinal),
-                "Ordinary Withdraw applies the current linked percentage to the unchanged direct points", HeadlessPlayer.DefaultTimeout);
-            actor.SendChat("?combatdepth fixture-reset");
-            await actor.WaitForTextAsync($"Fixture ready: Melee Dummy view {dummy.ViewId}, spawn {dummy.SpawnId}");
-        }
+    internal static void VerifyStands(string root)
+    {
+        SectorProperties.Load(Path.Combine(root, "data", "sector_properties.csv"));
+        NavMesh.UseDirectory(Path.Combine(root, "data", "navmesh"));
+        foreach (int x in new[] { X, DummyX })
+            Check.That(NavMesh.Locate(1, x, Y, Z, out var stand) && !stand.indoors && Math.Abs(stand.floorY + 95 - Y) < 1,
+                $"Outdoor NAV at ({x},{Y},{Z})");
+        Check.That(NavMesh.HasSightPath(1, X, Y, Z, DummyX, Y, Z), "The known clear withdrawal stand has a mapped path to the dummy");
+    }
+
+    internal static async Task SampleAsync(HeadlessPlayer actor, ServerInstance server, ViewCreation dummy, int bonus, int expectedInput)
+    {
+        uint target = DuelPackets.Handle(dummy.ViewId, dummy.SpawnId);
+        string handle = WireFormat.ToHex(BitConverter.GetBytes(target));
+        actor.SkipReceived();
+        actor.SendRpc($"81 51 {handle}");
+        actor.World.SendRpcs(StarterHackerControlTargetMode.WithHandle(AwakenedInterlockAdmissionMode.StockOpen, target),
+            WireFormat.FromHex($"40 {handle} 01 6b"));
+        await actor.WaitForRpcAsync($"40 {handle} 00 6b");
+        await actor.WaitForRpcAsync("47");
+        await StockAbilityProfile.ObserveAsync(actor, 0,
+            frame => StockAbilityProfile.Bonus(frame, SelfDefense, 1005, DirectWithdraw, 0, false),
+            "Self Defense's direct withdrawal value");
+        int from = server.DebugLog().Length;
+        actor.SendRpc("44 01");
+        await actor.WaitUntilAsync(() => server.DebugLog()[from..].Contains(
+                $"[WITHDRAW INPUT OURS] CSR_Tester direct={DirectWithdraw} input={expectedInput} bonus1045={bonus}", StringComparison.Ordinal),
+            "Ordinary Withdraw applies the current linked percentage to the unchanged direct points", HeadlessPlayer.DefaultTimeout);
+        actor.SendChat("?combatdepth fixture-reset");
+        await actor.WaitForTextAsync($"Fixture ready: Melee Dummy view {dummy.ViewId}, spawn {dummy.SpawnId}");
     }
 }

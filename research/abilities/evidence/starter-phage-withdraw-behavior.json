@@ -1,0 +1,22 @@
+{
+  "abilities": {
+    "76": {
+      "checks": {
+        "behavior-tests": {
+          "source": "Resist Viruses supplies separate learned-rank percentage modifiers for 1030 viral defense, 1045 Contested Withdraw, and 1049 Evade Interlock. At learned rank 19 the GOB value functions yield +4/+4/+2.",
+          "runtime": "The ordinary Withdraw path reads the current 1045 percentage and scales direct 1005. The typed viral-defense path reads 1030. The existing live Evade Combat entry rule reads 1049 and applies it to the defending score.",
+          "test": "PhagePassivesFeedTheirOwnWithdrawViralDefenseAndShieldInputs isolates all three consumers in the combined and individually archived states and checks the ballistic control. The mode ability-parity-starter-phage-withdraw verifies all three packet records and the ordinary 44 01 inputs across independent Archive changes. PR721 verifies the live 1049 shield-entry case and PR714 retains the stock separate Withdraw entry. https://github.com/kylebrussell/mxo-hd/pull/721#issuecomment-7072664857 https://github.com/kylebrussell/mxo-hd/pull/714#issuecomment-7071669266"
+        }
+      }
+    },
+    "83": {
+      "checks": {
+        "behavior-tests": {
+          "source": "Selective Phage supplies +1 to viral defense 1030, Contested Withdraw 1045 and Evade Interlock 1049 while loaded, plus its 1082 grant.",
+          "runtime": "The linked bonuses feed typed viral special defense, ordinary Withdraw, and active Evade Combat entry. Grant reconciliation follows the parent loadout independently of the other passive producers.",
+          "test": "PhagePassivesFeedTheirOwnWithdrawViralDefenseAndShieldInputs isolates the three stats and the grant across four active states. The mode ability-parity-starter-phage-withdraw verifies the trained profile, independent 1045 inputs, hidden 1082 and grant registration records. PR694 verifies the matching grant lifecycle and live Evade score through unload and reload, and PR714 confirms the Withdraw entry in stock Status. https://github.com/kylebrussell/mxo-hd/pull/694#issuecomment-7068835236 https://github.com/kylebrussell/mxo-hd/pull/714#issuecomment-7071669266"
+        }
+      }
+    }
+  }
+}
