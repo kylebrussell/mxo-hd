@@ -1,0 +1,63 @@
+{
+  "families": {
+    "higher-static-blast-tiers": {
+      "representative": 590,
+      "result": "pass",
+      "head": "e4c34958",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/833#issuecomment-7086921777",
+      "scope": "Matched native runs exercised both tiers. The prior a0f66e2c run verified selection refusal, neutral damage and timers; the fixture retest verified selected resistance with no target or gameplay changes for admitted casts. https://github.com/kylebrussell/mxo-hd/pull/833#issuecomment-7086741780"
+    }
+  },
+  "abilities": {
+    "590": {
+      "family": "higher-static-blast-tiers",
+      "checks": {
+        "damage": {
+          "source": "GOB 590 stores a fixed 32-point viral health modifier. Typed mitigation is applied after the Coder source influence.",
+          "runtime": "AbilityHandler selects the fixed GOB value before the incomplete legacy CSV bounds. AbilityTargets and TypedAbilityResistance apply the ordinary selected-target damage path.",
+          "test": "StaticBlastTiersUseTheirFixedViralBaseAndOwnAndGroupReuse and coder-static-blast-tiers-server cover raw 32 and the live outputs. Stock did 39 neutral and 32 with +43 Viral Resistance. https://github.com/kylebrussell/mxo-hd/pull/833#issuecomment-7086741780 https://github.com/kylebrussell/mxo-hd/pull/833#issuecomment-7086921777"
+        },
+        "targeting": {
+          "source": "GOB 590 requires a live selected hostile in its 16 metre range.",
+          "runtime": "The selected-Coder gate checks ownership and target class before debit, locks the original view/spawn through the cast, and uses the common landing path.",
+          "test": "DelayedHostileCastCannotLandOnANewerSpawnInTheOriginalView and the live server replay cover stale/range/refusal. PR833 stock excludes no-target, ally and the 17 m target, then deals damage only to the selected NPC or player. https://github.com/kylebrussell/mxo-hd/pull/833#issuecomment-7086741780 https://github.com/kylebrussell/mxo-hd/pull/833#issuecomment-7086921777"
+        },
+        "source-parity": {
+          "source": "The fixed GOB 32 replaces the unsupported generic 50–80 CSV range.",
+          "runtime": "The ordinary Coder Style influence and typed resistance policy are retained for legal casts.",
+          "test": "Stock neutral 39 and resisted 32 match the executable path. The documented typed resistance curve is the current server policy. https://github.com/kylebrussell/mxo-hd/pull/833#issuecomment-7086741780 https://github.com/kylebrussell/mxo-hd/pull/833#issuecomment-7086921777"
+        },
+        "behavior-tests": {
+          "source": "GOB 590 stores 18 IS, 2 s cast, 6 s own reuse, and group 683 with a 4 s timer.",
+          "runtime": "The selected hostile and the sourced damage both run through ordinary AbilityHandler admission, cast and cooldown handling.",
+          "test": "StaticBlastTiersUseTheirFixedViralBaseAndOwnAndGroupReuse, the complete server replay and both stock runs verify cost and timers, selected damage, surrounding player exclusion and the resistance comparison. https://github.com/kylebrussell/mxo-hd/pull/833#issuecomment-7086741780 https://github.com/kylebrussell/mxo-hd/pull/833#issuecomment-7086921777"
+        }
+      }
+    },
+    "591": {
+      "family": "higher-static-blast-tiers",
+      "checks": {
+        "damage": {
+          "source": "GOB 591 stores a fixed 42-point viral health modifier. Typed mitigation is applied after the Coder source influence.",
+          "runtime": "AbilityHandler selects the fixed GOB value before the incomplete legacy CSV bounds. AbilityTargets and TypedAbilityResistance apply the ordinary selected-target damage path.",
+          "test": "StaticBlastTiersUseTheirFixedViralBaseAndOwnAndGroupReuse and coder-static-blast-tiers-server cover raw 42 and the live outputs. Stock did 51 neutral and 42 with +43 Viral Resistance. https://github.com/kylebrussell/mxo-hd/pull/833#issuecomment-7086741780 https://github.com/kylebrussell/mxo-hd/pull/833#issuecomment-7086921777"
+        },
+        "targeting": {
+          "source": "GOB 591 requires a live selected hostile in its 16 metre range.",
+          "runtime": "The selected-Coder gate checks ownership and target class before debit, locks the original view/spawn through the cast, and uses the common landing path.",
+          "test": "DelayedHostileCastCannotLandOnANewerSpawnInTheOriginalView and the live server replay cover stale/range/refusal. PR833 stock excludes no-target, ally and the 17 m target, then deals damage only to the selected NPC or player. https://github.com/kylebrussell/mxo-hd/pull/833#issuecomment-7086741780 https://github.com/kylebrussell/mxo-hd/pull/833#issuecomment-7086921777"
+        },
+        "source-parity": {
+          "source": "The fixed GOB 42 replaces the unsupported generic 50–80 CSV range.",
+          "runtime": "The ordinary Coder Style influence and typed resistance policy are retained for legal casts.",
+          "test": "Stock neutral 51 and resisted 42 match the executable path. The documented typed resistance curve is the current server policy. https://github.com/kylebrussell/mxo-hd/pull/833#issuecomment-7086741780 https://github.com/kylebrussell/mxo-hd/pull/833#issuecomment-7086921777"
+        },
+        "behavior-tests": {
+          "source": "GOB 591 stores 23 IS, 2 s cast, 6 s own reuse, and group 682 with a 4 s timer.",
+          "runtime": "The selected hostile and the sourced damage both run through ordinary AbilityHandler admission, cast and cooldown handling.",
+          "test": "StaticBlastTiersUseTheirFixedViralBaseAndOwnAndGroupReuse, the complete server replay and both stock runs verify cost and timers, selected damage, surrounding player exclusion and the resistance comparison. https://github.com/kylebrussell/mxo-hd/pull/833#issuecomment-7086741780 https://github.com/kylebrussell/mxo-hd/pull/833#issuecomment-7086921777"
+        }
+      }
+    }
+  }
+}
