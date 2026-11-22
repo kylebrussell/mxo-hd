@@ -212,8 +212,8 @@
       "checks": {
         "behavior-tests": {
           "source": "GOB 621 refers to base 215 and the tool definitions name their loaded prerequisite.",
-          "runtime": "UtilityAbilities keeps a distinct mastery activation ID. DataMining owns FX, search and cleanup.",
-          "test": "data-mining-locator and data-mining-base-and-margin verify distinct activation, tools, markers, expiry, pickup and unload refusal."
+          "runtime": "UtilityAbilities makes ordinary stock 215 free when its validated mastery 621 is loaded and keeps the activation ID matched to the incoming use. DataMining owns FX, search and cleanup.",
+          "test": "data-mining-locator and data-mining-base-and-margin verify tools, markers, expiry, pickup and unload refusal. Native PR814 confirms ordinary goggles retain the 215 request and visible FX with 0/5/0 costs under the mastery load round trip. https://github.com/kylebrussell/mxo-hd/pull/814#issuecomment-7085959063"
         }
       }
     },

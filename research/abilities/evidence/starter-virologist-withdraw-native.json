@@ -1,0 +1,18 @@
+{
+  "abilities": {
+    "98": {
+      "checks": {
+        "consumer": {
+          "source": "GOB 98 gives +1 Contested Withdraw Bonus (stat 1045), in addition to its Viral Defense Bonus and Virologist Upgrade grant. The stock Bonuses display labels 1045 as a percentage.",
+          "runtime": "WithdrawalInput applies the signed percentage to the direct stat 1005 input with integer truncation. Existing level and tactic steps apply afterward. Archiving 98 removes its contribution immediately.",
+          "test": "[Native PR812](https://github.com/kylebrussell/mxo-hd/pull/812#issuecomment-7085782452) verified each +1 add and remove, with direct 65 and contest input 68/67/68 while the independent +4 source stayed loaded. OrdinaryWithdrawalInputTests proves signed input and the live roll path."
+        },
+        "behavior-tests": {
+          "source": "The passive's two one-point modifiers and loaded grant 1077 are active only with Virologist in memory.",
+          "runtime": "AbilityPassives maintains the bonuses and loaded grant. Typed viral defense uses the defense percentage and ordinary Withdraw reads 1045.",
+          "test": "Existing loaded-grant membership and typed-defense tests cover 1077 and the viral defense record. The [stock Withdraw witness](https://github.com/kylebrussell/mxo-hd/pull/812#issuecomment-7085782452) checks both archive transitions, actual contested rolls and the independent Concealment control."
+        }
+      }
+    }
+  }
+}

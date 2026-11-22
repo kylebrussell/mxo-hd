@@ -1,0 +1,16 @@
+{
+  "families": {
+    "line-up-the-shot-concealment-and-health": {
+      "representative": 506,
+      "result": "pass",
+      "head": "cf220194d6ac42f2fe65a36f4196e77f5aaa5ebb",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/813#issuecomment-7085885213",
+      "scope": "Level-20 stock client with Rifles and Concealment refused uncovered 506 locally. Concealed use sent the full stock ability request, charged a single 30 IS, cast for 4 s and reused in 15 s. Stock records showed +10 Ballistic Damage for 12 s and +25 Ballistic Accuracy for 20 s. Healing preserved both. Health loss after 12 s cleared Concealment and left accuracy until 20 s. Early health loss cleared both timed records. The two 1137 reapplications follow the distinct shipped Subject and ApplyAuraEffect callbacks."
+    }
+  },
+  "abilities": {
+    "506": {
+      "family": "line-up-the-shot-concealment-and-health"
+    }
+  }
+}
