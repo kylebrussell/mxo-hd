@@ -116,6 +116,7 @@ namespace hds
         /// <summary>Seconds between a simulacrum's attacks. Client var Simulacra_AttackActionPeriod exists; its value is unknown.</summary>
         public const double AttackPeriodSeconds = 3.0;
         public const string FortifyExpiryQa = "MXO_PET_FORTIFY_EXPIRY_QA";
+        public const string ChargeRangeQa = "MXO_PET_CHARGE_RANGE_QA";
         public const string DrainDamageQa = "MXO_SIMULACRUM_QA_DRAIN_DAMAGE";
         public const string RifleProxyQa = "MXO_SIMULACRUM_QA_RIFLE";
         public const double FollowDistanceMetres = 2.5, MeleeRangeMetres = 2.5, RangedRangeMetres = 15.0, LeashMetres = 60.0;
@@ -1267,6 +1268,21 @@ namespace hds
                     if (exhausted == null) return "No simulacrum.";
                     lock (exhausted) { exhausted.InnerStrength = 0; exhausted.LastResourceTick = TimeUtils.GetSimTimeSeconds(); }
                     return "Simulacrum IS exhausted (dev fixture).";
+                case "fixture-range":
+                    if (Environment.GetEnvironmentVariable(ChargeRangeQa) != "1" ||
+                        client.playerData.getCharID() != 110 ||
+                        !QaLoadout.Allowed(Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS"),
+                            Store.config?.dbParams?.DatabaseName, client.playerData.getCharID(),
+                            client.playerData.getOnWorld() && !client.playerData.worldChangePending,
+                            client.playerData.isDead || client.playerData.duelDeath))
+                        return "Charge range preparation is available only in its disposable fixture.";
+                    // Holds the value supplied by MessageCloud_DirectObject long enough for the stock range comparison.
+                    TimedEffects.Apply(TimedEffects.ForPlayer(client), new TempMods.Effect { Ability = 214, Mods = new[]
+                    {
+                        new TempMods.Mod { Kind = TempMods.KindStat, Proc = TempMods.Proc.Stat, Target = 214,
+                            MinValue = 80, MaxValue = 80, Seconds = 120 }
+                    } }, TimeUtils.GetSimTimeSeconds());
+                    return "Selection range reduced by 80 percent for 120 seconds.";
                 case "fixture-expire-fortify":
                     if (Environment.GetEnvironmentVariable(FortifyExpiryQa) != "1" ||
                         !QaLoadout.Allowed(Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS"),
