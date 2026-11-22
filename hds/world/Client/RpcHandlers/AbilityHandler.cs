@@ -192,7 +192,7 @@ namespace hds
 
 
             bool existingInterlockPath = AbilityID == AwakenedPowerShot.Id || AbilityID == 197 || AbilityID == 198 || AbilityID == 105 ||
-                AbilityID == 145 || AbilityID == MartialArtsStarterAdmission.GuardBreaker || CombatSpecials.IsExileWeapon(AbilityID);
+                AbilityID == 145 || AbilityID == 605 || AbilityID == MartialArtsStarterAdmission.GuardBreaker || CombatSpecials.IsExileWeapon(AbilityID);
             bool martialInterlock = definition?.Number("Ability/CastWhenUsed") == 3 &&
                 definition.Number("Ability/CombatSpecialMove") == 1 &&
                 (CombatStyles.RequiredStyle(AbilityID) switch
