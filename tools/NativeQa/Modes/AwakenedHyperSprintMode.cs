@@ -95,7 +95,7 @@ public sealed class AwakenedHyperSprintMode : NativeQaMode
         return Array.Empty<byte>();
     }
 
-    private static Task<string> Observed(HeadlessPlayer observer, ushort view, int cursor, float speed, ushort bits)
+    internal static Task<string> Observed(HeadlessPlayer observer, ushort view, int cursor, float speed, ushort bits)
     {
         var update = PlayerViewAttributes.Build((5, PlayerViewAttributes.F32(speed)), (27, PlayerViewAttributes.U16(bits)));
         var pattern = BytePattern.Parse(Convert.ToHexString(BitConverter.GetBytes(view).Concat(update).ToArray()));
