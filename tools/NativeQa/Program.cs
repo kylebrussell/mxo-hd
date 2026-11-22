@@ -226,6 +226,9 @@ try
                     if (action == "cast" && fixtureMode is NativeQa.Modes.StarterControlDeflectMode)
                         result = await NativeQa.Modes.StarterControlDeflectMode.SendControlAsync(
                             actor, q.GetProperty("target").GetString()!, q.GetProperty("ability").GetUInt16());
+                    else if (action == "cast" && fixtureMode is NativeQa.Modes.StarterMovementDebuffReadbackMode)
+                        result = await NativeQa.Modes.StarterMovementDebuffReadbackMode.SendSampleAsync(
+                            actor, q.GetProperty("target").GetString()!, q.GetProperty("ability").GetUInt16());
                     else if (action == "cast" && fixtureMode is NativeQa.Modes.AwakenedMovementLifecycleMode)
                         result = await NativeQa.Modes.AwakenedMovementLifecycleMode.SendLockdownAsync(
                             actor, q.GetProperty("target").GetString()!, q.GetProperty("ability").GetUInt16());
