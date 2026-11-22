@@ -75,6 +75,7 @@ namespace hds
             public bool EvadeShield;
         }
 
+        internal const ushort SittingEffect = 671;
         internal const ushort HyperSpeed = 12;
         internal const ushort HyperSprint = 184;
         public const int FamilyHyperDefence = 1, FamilyClassBuff = 2;
@@ -99,6 +100,10 @@ namespace hds
             // These have no numeric modifier; the exclusive switch and combat consumer carry the toggle.
             { 9, new Buff { Exclusive = true, Toggle = true, Family = 20000, Modifiers = Array.Empty<Modifier>() } },
             { 15, new Buff { Exclusive = true, Toggle = true, Family = 20000, Modifiers = Array.Empty<Modifier>() } },
+            // GOB 671 and ProxyM2_m2_packets6 lines 69380-69384, add/remove on the sitting stance.
+            { SittingEffect, new Buff { Modifiers = new[] {
+                Stat(1009, -200), Stat(114, 200), Stat(1010, -200), Stat(112, 300), Stat(1011, -200), Stat(183, -200)
+            } } },
             // Stored Gaussian Blur numeric effect + ImpartBlurInit/Term's kBlur (client62521e2f).
             { 49, new Buff { Seconds = 600, Family = 1013, DissemblingType = 0x40, Modifiers = new[] { Stat(520, 25) } } },
         };
@@ -816,6 +821,7 @@ namespace hds
         /// </summary>
         public static void RemoveAll(WorldClient client)
         {
+            EmoteHandler.ClearSitting(client);
             List<UInt16> ids;
             lock (client.playerData.activeBuffs)
             {

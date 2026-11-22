@@ -27,7 +27,7 @@ public sealed class OperativePassiveConsumersMode : NativeQaMode
         }, extraQaMetadata: new() { ["ScopedStockRows"] = "113,140,143", ["NativeCloseableRows"] = 0 },
         readyMessages: new[]
         {
-            "Page 2 slots 1–3 identify the loaded passives. Verify Force Combat +10, Sitting Health Regen +50%, and Operative Upgrade 1060 in Actions. Before fighting, use ?health 10000, wait two standing regen ticks, then /sit and measure two sitting ticks. Use /stand, ?qaunload 143, ?health 10000 and /sit again. The current consumer gives +400 per two-second tick while standing or sitting unloaded, and +600 while sitting loaded. Stand and restore 143.",
+            "Page 2 slots 1–3 identify the loaded passives. Verify Force Combat +10, Sitting Health Regen +50%, and Operative Upgrade 1060 in Actions. Before fighting, use ?health 10000, wait two standing regen ticks, then /sit and measure two sitting ticks. Use /stand, ?qaunload 143, ?health 10000 and /sit again. The current consumer gives +400 per two-second tick while standing, +1600 sitting unloaded, and +1800 sitting loaded. Stand and restore 143.",
             "For Multi-Fighting, send ordinary melee requests from QAFriend and then QAFar against CSR_Tester. With both direct opponents live, capture [MULTIFIGHTING OURS] opponents2 loadedTrue penalty0. Press Withdraw and submit stop from both helpers. Wait for all rounds to finish. Use ?qaunload 140 and repeat, expecting loadedFalse penalty-10. Verify 113 and 143 remain active.",
             """Helper actions: {"actor":"QAFriend","action":"melee","target":"CSR_Tester"} and the same for QAFar. To end, use {"actor":"QAFriend","action":"stop"} and the same for QAFar. Enter submits a dev command; keep any selection without pressing Escape. Current PvP link policy and natural combat RNG apply."""
         });
@@ -50,11 +50,11 @@ public sealed class OperativePassiveConsumersMode : NativeQaMode
         await CheckPassivesAsync(actor, proof, Bonuses, 0, remove: false);
 
         await RegenAsync(actor, server, sitting: false, expected: 400);
-        await RegenAsync(actor, server, sitting: true, expected: 600);
+        await RegenAsync(actor, server, sitting: true, expected: 1800);
         await StandAsync(actor, server);
         int off = await ChangeLoadoutAsync(actor, rows, new[] { Operative }, load: false);
         await CheckPassivesAsync(actor, proof, Bonuses[1..], off, remove: true);
-        await RegenAsync(actor, server, sitting: true, expected: 400);
+        await RegenAsync(actor, server, sitting: true, expected: 1600);
         await StandAsync(actor, server);
         int on = await ChangeLoadoutAsync(actor, rows, new[] { Operative }, load: true);
         await CheckPassivesAsync(actor, proof, Bonuses[1..], on, remove: false);

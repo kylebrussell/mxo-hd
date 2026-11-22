@@ -77,6 +77,7 @@ namespace hds{
                 SafeFloorProbe.ClearBeforeEpoch(resetClient, resetEpoch);
                 PosterBoxFloorProbe.Clear(resetClient);
                 AbilityAuras.Clear(resetClient, announce: false);
+                EmoteHandler.ClearSitting(resetClient);
                 resetClient.playerData.setOnWorld(false);
                 if (!resetClient.TransportFence.ApplyReset(resetEpoch, () =>
                 {

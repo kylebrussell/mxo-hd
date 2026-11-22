@@ -309,8 +309,10 @@ namespace hds
         }
 
         /// <summary>The stance to the player's own view and everyone else's; sitting also sets ConditionStateFlags 0x00200000.</summary>
-        internal static void SetStance(WorldClient client, byte stance, bool respectStealth = false)
+        internal static void SetStance(WorldClient client, byte stance, bool respectStealth = false, bool playAnimation = true)
         {
+            if (stance == AnimationPackets.StanceSitting &&
+                (client.playerData.isDead || client.playerData.duelDeath || client.playerData.worldChangePending)) return;
             bool wasSitting = client.playerData.stance == AnimationPackets.StanceSitting;
             bool sitting = stance == AnimationPackets.StanceSitting;
             client.playerData.stance = stance;
@@ -320,18 +322,27 @@ namespace hds
                 if (sitting)
                 {
                     client.playerData.conditionStateFlags |= AnimationPackets.SittingFlag;
+                    AbilityBuffs.Apply(client, AbilityBuffs.SittingEffect);
                 }
                 else
                 {
                     client.playerData.conditionStateFlags &= ~AnimationPackets.SittingFlag;
+                    AbilityBuffs.Remove(client, AbilityBuffs.SittingEffect);
                 }
 
                 flags = PvpFlag.FlagsOf(client);
                 client.playerInstance.ConditionStateFlags.setValue(flags.Value);
             }
 
-            Play(client, Next(client, AnimationPackets.KindPlain, stance, null), null, flags, respectStealth);
+            if (playAnimation)
+                Play(client, Next(client, AnimationPackets.KindPlain, stance, null), null, flags, respectStealth);
             Output.WriteDebugLog("[EMOTE] " + SocialHandler.HandleOf(client) + " stance " + stance.ToString("x2"));
+        }
+
+        internal static void ClearSitting(WorldClient client)
+        {
+            if (Stance(client) == AnimationPackets.StanceSitting)
+                SetStance(client, AnimationPackets.StanceStanding, playAnimation: false);
         }
 
         internal static byte[] CurrentStanceUpdate(WorldClient client) =>
