@@ -20,6 +20,9 @@ public sealed class CoderStaticBlastTiersMode : NativeQaMode
     private static readonly int Memory = Loadout.Sum(AbilityMemory.Cost);
     private static readonly ushort[] Defender = { 2, 17, EmptyMind };
 
+    internal static Task ApplyResistanceAsync(HeadlessPlayer defender) =>
+        StarterPathogenistAuraResistanceMode.ApplyResistanceAsync(defender, 43);
+
     public override string Name => "ability-parity-coder-static-blast-tiers";
     public override NativeQaModePlan Plan { get; } = new(Loadout, X, Z, Array.Empty<string>(), Array.Empty<string>(), new[]
     {
