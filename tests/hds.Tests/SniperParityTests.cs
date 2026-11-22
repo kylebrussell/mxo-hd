@@ -104,6 +104,65 @@ public class SniperParityTests
     }
 
     [Fact]
+    public void ConcealmentPassivesFeedBallisticDamageAndLiveInnerStrengthTicks()
+    {
+        var client = Client();
+        var previousClients = WorldServer.Clients;
+        try
+        {
+            WorldServer.Clients = new();
+            AssertInputAndRecovery(100, 116);
+            AbilityPassives.SetLoaded(client, new[] { ((ushort)503, (ushort)50) });
+            Assert.Equal(10, AbilityStats.Player(client, 1059));
+            Assert.Equal(5, AbilityStats.Player(client, 1139));
+            AssertInputAndRecovery(104, 117);
+            AbilityPassives.SetLoaded(client, Array.Empty<(ushort, ushort)>());
+            AssertInputAndRecovery(100, 116);
+        }
+        finally
+        {
+            CombatManager.RemoveClient(client);
+            WorldServer.Clients = previousClients;
+        }
+
+        void AssertInputAndRecovery(ushort ballistic, ushort secondTick)
+        {
+            Assert.Equal(ballistic, AbilityStats.ScaleTypedAbilityDamage(client, 1, 100));
+            Assert.Equal(100, AbilityStats.ScaleTypedAbilityDamage(client, 0, 100));
+            client.playerInstance.InnerStrengthAvailable.setValue((ushort)200);
+            Assert.Null(AbilityHandler.RegenerateInnerStrength(client));
+            client.playerInstance.InnerStrengthAvailable.setValue((ushort)100);
+            Assert.Equal((ushort?)108, AbilityHandler.RegenerateInnerStrength(client));
+            Assert.Equal((ushort?)secondTick, AbilityHandler.RegenerateInnerStrength(client));
+        }
+    }
+
+    [Fact]
+    public void ConcealmentDeterminationShortensNewHostileControlAtTheMitigationThreshold()
+    {
+        var caster = Client();
+        caster.playerInstance.Level.setValue((byte)1);
+        var recipient = Client();
+        var subject = TimedEffects.ForPlayer(recipient);
+        Assert.True(TempMods.TryGet(40, out var effect));
+        AssertDuration(25);
+
+        AbilityPassives.SetLoaded(recipient, new[] { ((ushort)503, (ushort)50) });
+        Assert.Equal(10, AbilityControlDurations.Determination(recipient));
+        AssertDuration(23.35f);
+
+        AbilityPassives.SetLoaded(recipient, Array.Empty<(ushort, ushort)>());
+        AssertDuration(25);
+
+        void AssertDuration(float expected)
+        {
+            var applied = TimedEffects.Apply(subject, effect, TimeUtils.GetSimTimeSeconds(), caster);
+            Assert.Equal(expected, Assert.Single(applied, mod => mod.Target == TempMods.RootedAbility).Seconds, 2);
+            TimedEffects.Clear(subject);
+        }
+    }
+
+    [Fact]
     public void UnloadingConcealmentEndsOnlyItsGrantedStealthState()
     {
         var client = Client();

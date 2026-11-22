@@ -1,0 +1,18 @@
+{
+  "abilities": {
+    "503": {
+      "checks": {
+        "stats": {
+          "source": "Concealment GOB 503 uses learned-level function 2 with 0.2 for Determination 575 and Inner Strength Regen Rate Bonus 1059, and 0.1 for Ballistic Damage Bonus 1139 and Contested Withdraw Bonus 1045. The shipped control mitigation script calculates the duration from the target's Determination and the caster's level.",
+          "runtime": "AbilityPassives publishes the four loaded values. TimedEffects reads 575 when applying a fresh hostile control. AbilityHandler regenerates Inner Strength through influence 114/1059. AbilityStats reads 1139 through ballistic influence 171. Ordinary Withdraw uses the 1005/1045 linked policy introduced in PR812. The shipped combat script leaves the original coefficient and rounding open.",
+          "test": "PR768 native records +3/+3/+1/+1 at rank 19. SniperParityTests.ConcealmentPassivesFeedBallisticDamageAndLiveInnerStrengthTicks and ConcealmentDeterminationShortensNewHostileControlAtTheMitigationThreshold isolate each previously untested consumer through load and unload. PR812 native holds direct withdrawal at 65 and measures 68/65/68 across the source 503 Archive change, with the stock Withdraw reaching the live contest. https://github.com/kylebrussell/mxo-hd/pull/768#issuecomment-7082973621 https://github.com/kylebrussell/mxo-hd/pull/812#issuecomment-7085782452"
+        },
+        "behavior-tests": {
+          "source": "GOB 503 defines four learned-rank passive modifiers and grants Concealment 1137. The decompiled Concealment_RemoveConcealmentStealth removes the concealment dissembling type when that grant is deactivated.",
+          "runtime": "The passive loadout supplies typed combat damage, hostile-control mitigation, Inner Strength ticks, and the linked ordinary Withdraw input. The scaled grant is registered through regular loaded membership, and parent unload cancels a pending cast or ends the active grant while preserving unrelated Sneak.",
+          "test": "The SniperParityTests isolate the three direct consumers as well as the learned grant rank and active stealth teardown. PR812 native isolates the Withdraw baseline and the independent source 503 unload and reload, with the live roll using each effective input. PR768 native verifies all four source records and grant activation. PR778 and PR780 native verify grant unload, active and pending cleanup, independent Sneak, and use after reload. https://github.com/kylebrussell/mxo-hd/pull/768#issuecomment-7082973621 https://github.com/kylebrussell/mxo-hd/pull/778#issuecomment-7083503883 https://github.com/kylebrussell/mxo-hd/pull/780#issuecomment-7084050308 https://github.com/kylebrussell/mxo-hd/pull/812#issuecomment-7085782452"
+        }
+      }
+    }
+  }
+}
