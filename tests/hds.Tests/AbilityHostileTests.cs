@@ -1208,9 +1208,26 @@ public class AbilityHostileTests
         Assert.True(ControlActions.CanUseWeapons(holder));
         Assert.Equal(canUseAbilities, ControlActions.CanUseAbilities(holder));
         Assert.Equal(canWithdraw, ControlActions.CanWithdraw(holder));
+        Assert.False(holder.HasControlImmunity(TimeUtils.GetSimTimeSeconds()));
         TimedEffects.RunDue(applied.Expires + 0.001);
         Assert.True(ControlActions.CanUseAbilities(holder));
         Assert.True(ControlActions.CanWithdraw(holder));
+    }
+
+    [Fact]
+    public void ZoneOfPowerlessnessRespectsAnotherControlSourcesExistingImmunity()
+    {
+        var target = Client();
+        var subject = TimedEffects.ForPlayer(target);
+        try
+        {
+            Land(target, 315);
+            var existing = Assert.Single(subject.Effects.Snapshot(), mod => mod.Parent == TempMods.ControlImmunityTimerAbility);
+            Assert.Empty(Land(target, 399));
+            Assert.Same(existing, Assert.Single(subject.Effects.Snapshot(), mod => mod.Parent == TempMods.ControlImmunityTimerAbility));
+            Assert.False(subject.Effects.HasParent(399));
+        }
+        finally { TimedEffects.Clear(subject); }
     }
 
     [Theory]

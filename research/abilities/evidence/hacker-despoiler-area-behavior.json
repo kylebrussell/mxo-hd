@@ -1,0 +1,42 @@
+{
+  "abilities": {
+    "399": {
+      "checks": {
+        "area": {
+          "source": "GOB stores the selected-hostile centre and 8 m radius without a persistent area object.",
+          "runtime": "AbilityTargets and PvpCombat use the admitted target position and check same-district, eligible visible recipients with individual viral rolls.",
+          "test": "DespoilerFieldsLandOnTheSelectedEnemyAndExactRadiusEdge checks 8.00 m inclusion, 8.01 m exclusion, ally and unseen exclusion, and a successful secondary when the primary deflects. HackerDespoilerAreaControlsMode uses the exact known stock Code Nuke companion in the disposable setup."
+        },
+        "targeting": {
+          "source": "GOB 399/400 stores selected hostile selector 3, reach 14 metres, Hacker Style and TestFunction 2. CastWhenUsed is 1 for 399 and 2 for 400.",
+          "runtime": "AbilityHandler checks a visible, living selected opponent before the cast cost and revalidates the admitted view/spawn and reach before landing. PvpCombat and AbilityTargets check sight and resolve a separate viral test for each recipient.",
+          "test": "DespoilerAreasValidateTheOriginalSelectionBeforeItsSplash covers selected ally, empty, hidden, range, unloaded, style, combat and paid invalidation. DespoilerFieldsLandOnTheSelectedEnemyAndExactRadiusEdge covers independent primary deflection and successful edge splash."
+        }
+      }
+    },
+    "400": {
+      "checks": {
+        "area": {
+          "source": "GOB stores the selected-hostile centre and 5 m radius without a persistent area object.",
+          "runtime": "AbilityTargets and PvpCombat use the admitted target position and check same-district, eligible visible recipients with individual viral rolls.",
+          "test": "DespoilerFieldsLandOnTheSelectedEnemyAndExactRadiusEdge checks 5.00 m inclusion, 5.01 m exclusion, ally and unseen exclusion, and a successful secondary when the primary deflects. HackerDespoilerAreaControlsMode uses the exact known stock Code Nuke companion in the disposable setup."
+        },
+        "targeting": {
+          "source": "GOB 399/400 stores selected hostile selector 3, reach 14 metres, Hacker Style and TestFunction 2. CastWhenUsed is 1 for 399 and 2 for 400.",
+          "runtime": "AbilityHandler checks a visible, living selected opponent before the cast cost and revalidates the admitted view/spawn and reach before landing. PvpCombat and AbilityTargets check sight and resolve a separate viral test for each recipient.",
+          "test": "DespoilerAreasValidateTheOriginalSelectionBeforeItsSplash covers selected ally, empty, hidden, range, unloaded, style, combat and paid invalidation. DespoilerFieldsLandOnTheSelectedEnemyAndExactRadiusEdge covers independent primary deflection and successful edge splash."
+        },
+        "damage": {
+          "source": "GOB 400 stores one non-piercing ViralDOT modifier, fixed pool 59, 15 s, 2.5 s cadence, DamageType 2. The shipped ViralDOT callback applies per-interval damage until expiry. [ViralDOT](../research/client-scripts/tempmods.py#L896)",
+          "runtime": "TimedEffects scales the stored pool with active and loaded Viral Damage before installation. Each actual tick uses current TypedAbilityResistance.",
+          "test": "PlagueZoneAppliesFiveActualHealthTicksAndThenStops verifies the unscaled 59 pool and five ticks of 10. DespoilerFieldsLandOnTheSelectedEnemyAndExactRadiusEdge verifies 74 from the legal level-30 Hacker profile, five ticks of 12, two ticks reduced to 10 on the edge player under +43 Viral Resistance and restored ticks after resistance expiry. No sixth tick or immediate health damage."
+        },
+        "behavior-tests": {
+          "source": "GOB 400 stores 15 IS, a two-second cast, 12 s reuse and one 15 s ViralDOT component. CastWhenUsed 2 permits combat, and no health-hit component is stored.",
+          "runtime": "AbilityHandler validates and charges the selected-cast request, retains target identity through the cast, and uses the existing own reuse and selected splash. TimedEffects implements the sourced DOT and participant-specific expiry.",
+          "test": "DespoilerAreasValidateTheOriginalSelectionBeforeItsSplash verifies charged in-combat cast and reuse with no orphan splash. DespoilerFieldsLandOnTheSelectedEnemyAndExactRadiusEdge verifies full tick lifetime, isolated recipients and both viral contest outcomes. Complete stock 400 input remains the native-family check."
+        }
+      }
+    }
+  }
+}
