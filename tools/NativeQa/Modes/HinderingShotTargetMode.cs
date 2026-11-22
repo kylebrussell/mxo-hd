@@ -73,7 +73,7 @@ public sealed class HinderingShotTargetMode : NativeQaMode
         return Array.Empty<byte>();
     }
 
-    private static async Task Refused(HeadlessPlayer caster, byte[] request, string input)
+    internal static async Task Refused(HeadlessPlayer caster, byte[] request, string input)
     {
         int rpcStart = caster.World.RpcSnapshot().Count;
         var views = caster.World.ViewSnapshot();

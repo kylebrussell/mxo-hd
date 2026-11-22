@@ -81,7 +81,32 @@ namespace hds
                 }
             }
 
-            if ((starterViralDamage || starterMovementDebuff || starterCoderCast || AbilityID == 69) &&
+            // Hindering Shot is a selected hostile shot. An empty or obsolete handle must not start a cast.
+            if (AbilityID == 130)
+            {
+                var shooter = Store.currentClient;
+                var combat = CombatManager.GetHandler(shooter);
+                if (combat.isCombatRunning || combat.HasActiveInterlock)
+                {
+                    shooter.messageQueue.addRpcMessage(AbilityRefusals.Encode(
+                        new AbilityRefusals.Record(AbilityID, AbilityRefusals.MustBeOutsideCombat)));
+                    shooter.FlushQueue();
+                    Output.WriteDebugLog("[ABILITY] Denied 130: requires outside combat");
+                    return;
+                }
+                ushort? spawn = packet.Length == 41 ? (ushort?)BitConverter.ToUInt16(packet, 4) : null;
+                if (!AbilityTargets.HasLiveAttackSelection(shooter, currentTargetViewId, spawn, requireOpponent: true))
+                {
+                    const string notice = "Select a living enemy before using this ability.";
+                    new ServerPackets().sendSystemChatMessage(Store.currentClient, notice, "BROADCAST");
+                    Store.currentClient.FlushQueue();
+                    Output.WriteDebugLog("[ABILITY] Denied " + AbilityID + ": " + notice);
+                    return;
+                }
+            }
+
+            bool starterRangedControl = AbilityID == 43 || AbilityID == 48 || AbilityID == 130;
+            if ((starterViralDamage || starterMovementDebuff || starterCoderCast || starterRangedControl || AbilityID == 69) &&
                 !AbilityTargets.WithinSelectionRange(Store.currentClient, AbilityID, currentTargetViewId))
             {
                 Store.currentClient.messageQueue.addRpcMessage(AbilityRefusals.Encode(
@@ -149,29 +174,6 @@ namespace hds
                 }
             }
 
-            // Hindering Shot is a selected hostile shot. An empty or obsolete handle must not start a cast.
-            if (AbilityID == 130)
-            {
-                var shooter = Store.currentClient;
-                var combat = CombatManager.GetHandler(shooter);
-                if (combat.isCombatRunning || combat.HasActiveInterlock)
-                {
-                    shooter.messageQueue.addRpcMessage(AbilityRefusals.Encode(
-                        new AbilityRefusals.Record(AbilityID, AbilityRefusals.MustBeOutsideCombat)));
-                    shooter.FlushQueue();
-                    Output.WriteDebugLog("[ABILITY] Denied 130: requires outside combat");
-                    return;
-                }
-                ushort? spawn = packet.Length == 41 ? (ushort?)BitConverter.ToUInt16(packet, 4) : null;
-                if (!AbilityTargets.HasLiveAttackSelection(Store.currentClient, currentTargetViewId, spawn))
-                {
-                    const string notice = "Select a living enemy before using this ability.";
-                    new ServerPackets().sendSystemChatMessage(Store.currentClient, notice, "BROADCAST");
-                    Store.currentClient.FlushQueue();
-                    Output.WriteDebugLog("[ABILITY] Denied " + AbilityID + ": " + notice);
-                    return;
-                }
-            }
 
             bool existingInterlockPath = AbilityID == AwakenedPowerShot.Id || AbilityID == 197 || AbilityID == 198 || AbilityID == 105 ||
                 AbilityID == 145 || AbilityID == MartialArtsStarterAdmission.GuardBreaker;
