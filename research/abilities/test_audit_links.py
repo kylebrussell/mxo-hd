@@ -75,6 +75,8 @@ class AuditLinkTests(unittest.TestCase):
         self.assertIn('old_sm_pistol.py', rows['126']['shipped_behavior'])
         self.assertIn('legacy module omitted at startup', rows['126']['shipped_behavior'])
         self.assertNotIn('script: Verify callback coverage for PistolDisarmingShot_DirectObject', rows['126']['remaining'])
-        self.assertIn('script: Verify callback coverage for RemoteProxy2_Deactivate', rows['28']['remaining'])
+        self.assertIn('RemoteProxy2_Deactivate', rows['28']['shipped_behavior'])
+        self.assertEqual('done', rows['28']['status'])
+        self.assertIn('script: Verify callback coverage for RemoteProxy5_Deactivate', rows['594']['remaining'])
 
 if __name__=='__main__': unittest.main()

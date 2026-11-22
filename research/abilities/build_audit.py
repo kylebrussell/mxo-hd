@@ -190,7 +190,7 @@ PETS = {
     25: 'own live pet within10m, noncombat,50IS/4s;300s caster-level snapshot x0.5 melee159/ballistic171 percentage influence on Proxy hits only; ForceCombat519=40 has no consumer (partial)',
     26: 'loaded, outside combat; live opposing player pet within16m through its owner; fixed13000 type5 and ordinary pet death; exact retail opponent rules and lethal activation FX unresolved',
     **{a: _summon.format(lo, hi) + '; random proxy sheet' for a, lo, hi in ((27, 1, 4), (29, 8, 17), (586, 18, 34), (594, 35, 50))},
-    28: _summon.format(4, 7) + '; random proxy sheet; shipped create-then-destroy ordering unresolved',
+    28: _summon.format(4, 7) + '; random proxy sheet; prepares the replacement before retiring the previous summon and publishes one replacement; stock Deactivate removes the current proxy',
     **{a: _summon.format(lo, hi) + '; Nuker sheet' for a, lo, hi in ((22, 4, 7), (601, 8, 17), (611, 18, 34), (616, 35, 50))},
     **{a: _summon.format(lo, hi) + '; Healer sheet heals owner (amount a choice)' for a, lo, hi in ((602, 12, 22), (612, 23, 43), (617, 44, 50))},
     20: 'own simulacrum only; Max Health +level x15 for 600s; four resistances +level x2 consumed by retaliation (OURS rating curve)',
