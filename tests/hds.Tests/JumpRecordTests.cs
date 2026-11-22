@@ -76,6 +76,19 @@ public class JumpRecordTests
         Assert.False(flight.IsCurrent(10, data));
     }
 
+    [Fact]
+    public void FullPeakRedirectOriginFollowsTheActiveFlightAcrossClockWrap()
+    {
+        var destination = new JumpRecords.Destination(unchecked((ulong)BitConverter.DoubleToInt64Bits(20950)),
+            unchecked((ulong)BitConverter.DoubleToInt64Bits(495)), unchecked((ulong)BitConverter.DoubleToInt64Bits(6400)), 1250, 2, 0);
+        uint start = uint.MaxValue - 999;
+        var route = new JumpRecords.Route(start, (17100, 495, 6400), destination, 10300);
+        const uint end = 3000;
+        Assert.Equal((17100f, 495f, 6400f), route.PositionAt(start, end));
+        Assert.Equal((19025f, 10795f, 6400f), route.PositionAt(1000, end));
+        Assert.Equal((20950f, 495f, 6400f), route.PositionAt(end, end));
+    }
+
     [Theory]
     [InlineData(10300f, 7846.40096, 9811)]
     [InlineData(245.828125f, 7872.00121, 9808)]
@@ -143,6 +156,15 @@ public class JumpRecordTests
             JumpRecords.TryCancel(Convert.FromHexString(RetailCancel),out var expected);
             Assert.Equal(expected.Destination.X,x);Assert.Equal(expected.Destination.Y,y);Assert.Equal(expected.Destination.Z,z);
             var cancelView = Assert.Single(c.messageQueue.ObjectMessagesQueue.Cast<SequencedMessage>()).content;
+            Assert.Equal(Convert.FromHexString(RetailCancel).AsSpan(2, 24).ToArray(), cancelView.AsSpan(31, 24).ToArray());
+            if (hyper)
+            {
+                Assert.Equal(BitConverter.ToUInt32(movement, mask + 15), BitConverter.ToUInt32(cancelView, 27));
+                Assert.True(JumpRecords.TryStart(Convert.FromHexString(RetailStart), out var accepted));
+                float startX = BitConverter.ToSingle(cancelView, 6);
+                Assert.InRange(startX, (float)accepted.Destination.X, 17100f);
+                Assert.NotEqual((float)accepted.Destination.X, startX);
+            }
             Assert.Equal(0x10, cancelView[^6]);
             Assert.Equal((ushort)remaining, BitConverter.ToUInt16(cancelView, cancelView.Length - 5));
             c.messageQueue = new();

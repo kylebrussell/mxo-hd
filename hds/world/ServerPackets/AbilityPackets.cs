@@ -169,10 +169,9 @@ namespace hds
                 client.playerData.worldGeneration, client.TransportFence.Capture());
         }
 
-        public void SendHyperJumpUpdate(float xFromPos, float yFromPos, float zFromPos, float xDestPos, float yDestPos,
-            float zDestPos, UInt32 startTime, UInt32 endTime)
+        public void SendHyperJumpUpdate(float xFromPos, float yFromPos, float zFromPos, double xDestPos, double yDestPos,
+            double zDestPos, UInt32 startTime, UInt32 endTime)
         {
-            // ToDo: make real repsonse 
             PacketContent pak = new PacketContent();
             pak.AddByte(0x02);
             pak.AddByte(0x00);
@@ -188,7 +187,7 @@ namespace hds
             pak.AddByte(0x14); // if 0xb8
             pak.AddByte(0x00); // if 0xb8
             pak.AddUint32(endTime, 1);
-            pak.AddDoubleLtVector3d((double) xDestPos, (double) yDestPos, (double) zDestPos);
+            pak.AddDoubleLtVector3d(xDestPos, yDestPos, zDestPos);
             pak.AddByte(0x10);
             pak.AddUint16(AbilityHandler.CurrentInnerStrength(Store.currentClient), 1);
             pak.AddByte(0x00);
