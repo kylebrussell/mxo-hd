@@ -35,6 +35,13 @@ namespace hds
                 return;
             }
 
+            bool starterGuardianSupport = AbilityID == 46 || AbilityID == 68 || AbilityID == 173;
+            if (starterGuardianSupport && !AbilityPassives.IsLoaded(Store.currentClient, AbilityID))
+            {
+                Deny(AbilityID, "Load this ability before using it.", AbilityRefusals.NotLoaded, sendServerText: false);
+                return;
+            }
+
             // These starter viruses need a live enemy selection, including Logic Bomb's splash centre.
             bool starterViralDamage = AbilityID == 53 || (AbilityID >= 57 && AbilityID <= 60);
             ushort? lockedDamageTargetSpawn = null;
@@ -621,7 +628,13 @@ namespace hds
                     AbilityCooldowns.Start(client, AbilityID, TimeUtils.GetSimTimeSeconds());
                 if (corpse != null) AbilityResurrection.Request(client, corpse, AbilityID, casterWorld, casterLife, targetWorld, targetLife);
                 else if (AbilityID==506) AbilityHealthCallbacks.LineUp(client,lineUpConcealed);
-                else if (support) AbilitySupport.Land(client, AbilityID, currentTargetViewId, spawn: targetSpawn);
+                else if (support)
+                {
+                    if (starterGuardianSupport && !AbilityPassives.IsLoaded(client, AbilityID))
+                        Output.WriteDebugLog($"[ABILITY] {AbilityID} fizzles: the starter support ability was unloaded before landing");
+                    else
+                        AbilitySupport.Land(client, AbilityID, currentTargetViewId, spawn: targetSpawn);
+                }
                 if (AbilityAuras.Handles(AbilityID)) AbilityAuras.Start(client, AbilityID);
                 if (derez) CoderPets.Derez(client, enemyPet, currentTargetViewId, targetSpawn);
                 if (pet) CoderPets.Land(client, AbilityID, ownPet);
