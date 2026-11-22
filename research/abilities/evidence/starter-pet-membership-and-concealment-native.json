@@ -1,0 +1,25 @@
+{
+  "abilities": {
+    "19": {
+      "note": "PR767 verifies that stock gates the unloaded ability. After reload, Drain deals 8000 to the selected own Proxy and restores 50 IS, with 58 s own reuse. The stock-frame replay verifies reason 7 before cost and no pet mutation when the ability stays unloaded through completion. https://github.com/kylebrussell/mxo-hd/pull/767#issuecomment-7082913352"
+    },
+    "25": {
+      "note": "PR767 verifies Boost at 50 IS for +9 melee and ballistic influence for 300 s, and that unloading after landing leaves both values on the existing pet. Headless also proves unload during the cast prevents the pending modifier. Force Combat remains open. https://github.com/kylebrussell/mxo-hd/pull/767#issuecomment-7082913352"
+    },
+    "26": {
+      "note": "PR767 confirms stock gating while unloaded and reason 36 when loaded but pointed at the caster’s own pet. The enemy-pet impact remains separately covered by PR753. https://github.com/kylebrussell/mxo-hd/pull/767#issuecomment-7082913352"
+    },
+    "503": {
+      "note": "PR768 records the level-19 loaded parent at 575 +3, 1045 +1, 1059 +3, and 1139 +1. The linked withdrawal consumer remains open. https://github.com/kylebrussell/mxo-hd/pull/768#issuecomment-7082973621"
+    },
+    "504": {
+      "note": "PR768 confirms the stock Concealed condition before cost and reuse. With 1137 active in Rifles, the legal stock request spends 45 IS, consumes 1137 at cast start, and lands for 23 after the six-second cast, with 45 s own reuse. Armor piercing, stun and wider targeting are still open. https://github.com/kylebrussell/mxo-hd/pull/768#issuecomment-7082973621"
+    },
+    "1137": {
+      "note": "PR768 verifies stealth level 19 and owner records 209/623/881, positive health change preserves concealment, damage removes it once, and the admitted Concealed Shot consumes it. QAFriend remains able to see the caster while QAEnemy is hidden. https://github.com/kylebrussell/mxo-hd/pull/768#issuecomment-7082973621"
+    },
+    "173": {
+      "note": "PR769 verifies two stock friendly casts costing 40 IS each, 13 s reuse and +24 to 522/524/1032 for 300 s on each selected ally. Their actual level-19 PvP special attack inputs move 19→43 for Cheap Shot, 26→50 for Leg Sweep and 24→48 for Body Shot. Neither the caster nor the opponent gains any 173 record. The original retail caller and contest remain open. https://github.com/kylebrussell/mxo-hd/pull/769#issuecomment-7083045194"
+    }
+  }
+}
