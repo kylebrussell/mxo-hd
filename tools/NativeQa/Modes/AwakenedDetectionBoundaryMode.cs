@@ -9,7 +9,7 @@ public sealed class AwakenedDetectionBoundaryMode : NativeQaMode
     private const int Level = 18, X = 17000, Y = 495, Z = 2300;
     private const ushort Detect = 298, Locate = 215, Invisible = 1116;
     // PR413, 7c4a7a3b89b7, PacketLog lines 5215–5216. Keep the stock item slot and all trailing bytes.
-    private const string Countermeasure = "80 b9 2a 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 " +
+    internal const string Countermeasure = "80 b9 2a 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 " +
         "00 00 00 00 64 f1 1a 00 b0 30 89 3f 08 08 00 00 00 00 00";
     private static readonly ushort[] Loadout = StockAbilityProfile.Profile(2, 17, Detect, Locate).Order().ToArray();
     private static readonly (string Handle, int Id, int X, int Z, int Org)[] Stands =
