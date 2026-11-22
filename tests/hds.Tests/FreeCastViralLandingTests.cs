@@ -66,6 +66,79 @@ public class FreeCastViralLandingTests : IDisposable
         foreach(var client in WorldServer.Clients.Values){Assert.Empty(client.messageQueue.RPCMessagesQueue);Assert.Empty(client.messageQueue.ObjectMessagesQueue);}
         Assert.Equal(1000,PvpCombat.HealthOf(victim));
     }
+    [Theory]
+    [InlineData(19, 5, 19, 692u, 0, 0, 8)]
+    [InlineData(19, 19, 19, 692u, 0, 0, 8)]
+    [InlineData(50, 19, 19, 692u, 0, 0, 8)]
+    [InlineData(50, 19, 19, 693u, 0, 0, 8)]
+    [InlineData(50, 19, 50, 692u, 0, 0, 9)]
+    [InlineData(50, 19, 19, 692u, 35, 0, 11)]
+    [InlineData(50, 19, 19, 692u, 35, 75, 9)]
+    public void BodyShotUsesItsFixedBaseWithIndependentRankWeaponAndInfluenceInputs(
+        byte level, ushort abilityRank, ushort rifleStyleRank, uint rifle, int ballisticBonus, int resistance, ushort landed)
+    {
+        const ushort bodyShot = 105;
+        var caster = Client(110);
+        var target = Client(111);
+        Store.currentClient = caster;
+        caster.playerData.pvpFlag = target.playerData.pvpFlag = true;
+        caster.playerInstance.Level.setValue(level);
+        target.playerInstance.Level.setValue(level);
+        caster.playerInstance.OrganizationID.setValue((byte)1);
+        target.playerInstance.OrganizationID.setValue((byte)2);
+        caster.viewMan.addView(111, 1).viewCreated = true;
+        caster.playerInstance.EquippedItemID.setValue(rifle);
+        AbilityPassives.SetLoaded(caster, new[] { (bodyShot, abilityRank), (CombatStyles.Rifles, rifleStyleRank) });
+        CombatStyles.Select(caster, CombatStyles.Rifles);
+
+        Assert.Equal(CombatStyles.Rifles, CombatStyles.Active(caster));
+        Assert.Equal(abilityRank, AbilityPassives.Level(caster, bodyShot));
+        var weapon = RangedWeapons.GetStats(rifle);
+        Assert.Equal(RangedWeapons.ClassRifle, weapon.AttackClass);
+        Assert.Equal(rifle == 692 ? 2 : 4, weapon.BaseDamage);
+
+        var source = TimedEffects.ForPlayer(caster);
+        var victim = TimedEffects.ForPlayer(target);
+        var shot = new AbilityItem();
+        shot.setAbilityID(bodyShot);
+        shot.setValueFrom(-5);
+        shot.setValueTo(0);
+        try
+        {
+            var now = TimeUtils.GetSimTimeSeconds();
+            if (ballisticBonus != 0)
+                source.Effects.Apply(383, new[]
+                {
+                    new TimedEffects.Active { Kind = TempMods.KindStat, Target = 171, Value = ballisticBonus, Seconds = 10, Proc = TempMods.Proc.Stat }
+                }, now);
+            if (resistance != 0)
+                victim.Effects.Apply(271, new[]
+                {
+                    new TimedEffects.Active { Kind = TempMods.KindStat, Target = 181, Value = resistance, Seconds = 10, Proc = TempMods.Proc.Stat }
+                }, now);
+            int rifleInfluence = rifleStyleRank == 50 ? 13 : 6;
+            Assert.Equal(rifleInfluence + ballisticBonus, AbilityStats.Influence(caster, 171));
+            Assert.Equal((ushort)8, AbilityHandler.AbilityDamage(shot, new Random(17), characterLevel: level));
+
+            PvpCombat.LandAbilityOn(caster, shot, target);
+
+            Assert.Equal(1000 - landed, PvpCombat.HealthOf(target));
+            Assert.Equal(resistance - 5, AbilityStats.Player(target, 181));
+            var penalties = victim.Effects.Snapshot().Where(effect => effect.Parent == bodyShot).OrderBy(effect => effect.Target).ToArray();
+            Assert.Equal(new ushort[] { 180, 181 }, penalties.Select(effect => effect.Target));
+            Assert.All(penalties, effect =>
+            {
+                Assert.Equal(-5, effect.Value);
+                Assert.Equal(10f, effect.Seconds);
+            });
+        }
+        finally
+        {
+            TimedEffects.Clear(source);
+            TimedEffects.Clear(victim);
+        }
+    }
+
     [Fact]
     public void FastHealingUsesTheSelectedLivingFriendlyPlayerWithinTenMetres()
     {
