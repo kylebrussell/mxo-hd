@@ -249,7 +249,8 @@ def server(i):
         parts.append('stored fixed viral base 12 with incomplete legacy endpoints; live selected enemy required before cast or reuse; stock Hacker Style landed 14; wider damage and targeting unresolved')
     elif i in (105, 176) and not r['damage']:
         base, hit = (8, 8) if i == 105 else (17, 18)
-        parts.append(f'stored fixed ballistic {base} base with incomplete legacy endpoints; stock interlock landed {hit}; wider damage and admission unresolved')
+        admission = 'current live interlock opponent only; wider damage scaling unresolved' if i == 105 else 'wider damage and admission unresolved'
+        parts.append(f'stored fixed ballistic {base} base with incomplete legacy endpoints; stock interlock landed {hit}; {admission}')
     elif r['damage']:
         parts.append(f"captured hit {r['damage']['min']}..{r['damage']['max']}")
     elif i == 504:
@@ -272,7 +273,7 @@ def server(i):
     elif i == 152:
         parts.append('stored fixed thrown base 28 when legacy endpoints are incomplete; stealth opener trigger still unresolved')
     elif i == 145:
-        parts.append('stored fixed physical base 7 before typed influence and resistance; retail scaling unresolved')
+        parts.append('stored fixed physical base 7 before typed influence and resistance; current live interlock opponent only; retail scaling unresolved')
     elif i == 605:
         parts.append('stored fixed physical base 17 before typed influence and resistance; stock Coder interlock landed 19; wider targeting and outcome variants unresolved')
     elif i == 33:

@@ -87,7 +87,7 @@ var rows = AbilityCatalog.All.Values.OrderBy(e => e.Id).Select(e =>
         multifighting = e.Id==140 && typeof(AbilityCatalog).Assembly.GetType("hds.MultifightingInterlock")!=null ? "Recovered multi-on-one math; OURS threshold1/current direct PvP links on ordinary/queued attack and defence; arbitrary multi-NPC absent" : null,
         conditional_stun = AbilityConditionalControls.Handles(e.Id),
         sharpshooter = e.Id==148 && typeof(AbilityCatalog).Assembly.GetType("hds.SharpshooterFreeFire")!=null ?
-            "OURS ordinary free-fire gun-vs-fists attack modifier; loaded148 removes short-range/into-melee penalties; 3m caller threshold and live-opponent snapshot; ordinary two-person close interlock applies the penalty to both rolls; other interlock ranges and multiple opponents unresolved" : "",
+            "OURS ordinary free-fire gun-vs-fists attack modifier; loaded148 removes short-range/into-melee penalties; 3m caller threshold and live-opponent snapshot; ordinary PvP close interlock applies pistol/SMG/rifle and live crowd penalties to both rolls; other ranges and wider roll model unresolved" : "",
         registered_grants = AbilityProgression.GrantsOf(e.Id).Where(child=>AbilityGrantRegistration.Handles(e.Id,child)).ToArray(),
         conditional_thrown_damage = ConditionalThrownDamage.Handles(e.Id),
         conditional_powerless = AbilityConditionalControls.HandlesInitial(e.Id),

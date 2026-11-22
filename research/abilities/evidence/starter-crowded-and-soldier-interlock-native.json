@@ -1,0 +1,23 @@
+{
+  "abilities": {
+    "145": {
+      "checks": {
+        "choreography": {
+          "source": "GOB 145 declares an instant interlock special. The shipped ILDB names move 277 DoubleOverheadSmash for the Karate exchange.",
+          "runtime": "AbilityHandler verifies the live current opponent and queues the move. The ordinary interlock resolver uses CombatAnimations to play the Karate special on the bound opponent.",
+          "test": "PR741 verifies the real stock Karate exchange with move 277, neutral hit 7 and +75 melee-resisted hit 5. The disposable Soldier replay exercises the same stock use in and out of interlock. https://github.com/kylebrussell/mxo-hd/pull/741#issuecomment-7075743659"
+        },
+        "behavior-tests": {
+          "source": "GOB 145 stores a base 7 melee hit, two independent ten-second −10 modifiers and a ten-percent ten-second Enraged proc.",
+          "runtime": "The current-opponent queue binds the special to the live fight. The landed ability applies typed damage, independent accuracy and defence records, and its Enraged roll through the timed holder.",
+          "test": "OverhandSmashDamageTests pins the base and OperativeBatchThreeTests verifies success and miss draws around the ten-percent threshold, both independent stat consumers and timer expiry. PR618 verifies Enraged on a player. PR741 verifies disabled at rest, misses before a hit, the matching resistance comparison, both debuffs, 20 IS and 12 s reuse. https://github.com/kylebrussell/mxo-hd/pull/741#issuecomment-7075743659"
+        }
+      }
+    }
+  },
+  "notes": {
+    "105": "PR741 verifies the stock at-rest client gate, rifle interlock move 11364, hits 8 and 6 against neutral and +75 ballistic resistance, both −5 records for ten seconds, 20 IS and 8 s reuse. The tester used the right-click Close Combat option after stopping ranged free fire. Wider source scaling remains open. https://github.com/kylebrussell/mxo-hd/pull/741#issuecomment-7075743659",
+    "130": "PR741 verifies the legal at-rest handgun opener, hits 9 and 7, movement −50 and Force Combat −10 records for eight seconds, 20 IS and 8 s reuse. The native run did not time the cast. Wider stat consumers and targeting remain open. https://github.com/kylebrussell/mxo-hd/pull/741#issuecomment-7075743659",
+    "148": "PR740 verifies the stock pistol's ordinary PvP close round at −5/−5 with one opponent, −20/−20 with two live opponents, 0/0 after loading 148 in that fight, and −20/−20 after unloading. Other ranges and the wider roll model remain open. https://github.com/kylebrussell/mxo-hd/pull/740#issuecomment-7075622462"
+  }
+}
