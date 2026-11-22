@@ -303,6 +303,7 @@ namespace hds
         public static void GoToLoadingArea(WorldClient client)
         {
             SaveNearestHardlineAsLocation(client);
+            EmoteHandler.ClearSitting(client);
             CraftingSession.End(client);
             client.playerData.setOnWorld(false);
             MissionPersistence.Save(client);

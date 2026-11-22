@@ -47,6 +47,8 @@ namespace hds
             if(AbilityID == CoderPets.StopProxyEffect) { Deny(AbilityID,"Use Detonate Proxy on your simulacrum."); return; }
             if(AbilityHealthCallbacks.InternalEffect(AbilityID)) { Deny(AbilityID,"Use the parent ability, not its internal effect."); return; }
 
+            if (AbilityID == AbilityBuffs.SittingEffect) return; // Owned by the normal sit/stand stance requests.
+
             // These Hacker controls and debuffs require a live selected enemy.
             bool hostileControl = AbilityID == 43 || AbilityID == 48 || AbilityID == 315;
             bool starterMovementDebuff = AbilityID == 40 || AbilityID == 41 || AbilityID == 86;
