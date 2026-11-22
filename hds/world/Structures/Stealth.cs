@@ -519,6 +519,7 @@ namespace hds
             UInt32 all = PvpFlag.FlagsOf(client);
             client.playerInstance.ConditionStateFlags.setValue(all);
             QueueOwnerState(client, bits, all);
+            AbilityBuffs.PresentCurrentMovementScale(client);
             client.FlushQueue();
             PvpFlag.ToWatchers(client, BuildOther(bits, all));
         }
