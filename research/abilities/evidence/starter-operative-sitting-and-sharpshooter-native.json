@@ -1,0 +1,16 @@
+{
+  "abilities": {
+    "143": {
+      "checks": {
+        "source-parity": {
+          "source": "GOB 143 adds +50 to sitting Health Regen stat 526 and grants 1060. Retail ProxyM2_m2_packets6 lines 69362 and 69380–69384 show the six independent temporary 671 records on /sit, including +300 HP regen and +200 IS regen.",
+          "runtime": "The ordinary stance installs and removes source 671. Out-of-combat health recovery independently adds the current 143/526 contribution. Unloading 143 while seated leaves 671 and IS recovery active, and drops the 1060 grant.",
+          "test": "PR737 verifies the five stock steps at level 19. HP ticks are +40/+180/+160/+180/+40 and IS ticks are +8/+24/+24/+24/+8 per two seconds. Native loadout records prove 526 and 1060 remove and return while seated, and /stand removes all six 671 records. https://github.com/kylebrussell/mxo-hd/pull/737#issuecomment-7075295446"
+        }
+      }
+    }
+  },
+  "notes": {
+    "148": "PR738 shows a fixed pistol and tactic at 1.2 m in ordinary two-person interlock. Unloaded/loaded/unloaded 148 changes both attack and defence modifiers −5/0/−5. Other ranges, multi-opponent interlock and the full retail roll model remain open. https://github.com/kylebrussell/mxo-hd/pull/738#issuecomment-7075344571"
+  }
+}
