@@ -64,6 +64,7 @@ namespace hds
 
 		// Last ability used, to drop the duplicate the client sends for a double-click
 		public UInt16 lastAbilityId = 0;
+		public UInt16? lastLocatorSlot;
 		public double lastAbilityTime = -1;
 		public double castEndsAt = -1;
 

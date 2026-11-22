@@ -62,6 +62,7 @@ public sealed class AwakenedDataNodeToolsMode : NativeQaMode
 
         SendLocate(Goggles);
         proof.Add((await actor.WaitForRpcAsync(Disabled)).Hex);
+        await Task.Delay(TimeSpan.FromSeconds(AbilityHandler.DuplicateAbilityWindowSeconds + .1));
         byte[] wrongTool = WireFormat.FromHex(Goggles);
         wrongTool[37] = 9;
         SendLocate(WireFormat.ToHex(wrongTool));
