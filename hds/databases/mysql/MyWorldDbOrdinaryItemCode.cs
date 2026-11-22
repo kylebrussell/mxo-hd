@@ -7,11 +7,12 @@ namespace hds.databases
 {
     public partial class MyWorldDbAccess
     {
-        public CraftingRequests.WrittenCode WriteOrdinaryItemCode(uint character, CraftingRequests.Compile request, int charges, long cost, long requiredInfo)
+        public CraftingRequests.WrittenCode WriteRecipeCode(uint character, CraftingRequests.Compile request, long cost, long requiredInfo)
         {
             var refused = new CraftingRequests.WrittenCode { Result = CraftingRequests.WriterRefused };
-            if (request.SelectedIngredients.Count == 0 || !OrdinaryItemCode.Supported(request.Item) ||
-                charges < 1 || charges > 127 || cost < 0 || requiredInfo < cost)
+            bool abilityCode = CraftingRules.CanWriteAbilityCode(request.Item);
+            if (request.SelectedIngredients.Count == 0 ||
+                (!abilityCode && !OrdinaryItemCode.Supported(request.Item)) || cost < 0 || requiredInfo < cost)
                 return refused;
 
             using var connection = new MySqlConnection(connectionString);
@@ -50,15 +51,16 @@ namespace hds.databases
             command.CommandText = "SELECT slot,goid,count FROM inventory WHERE charId=@char AND slot BETWEEN 0 AND 96 FOR UPDATE";
             using (var rows = command.ExecuteReader())
                 while (rows.Read())
-                    available.Add(new Crafting.InventoryItem(rows.GetUInt16(0), rows.GetUInt32(1), rows.GetInt32(2)));
+                    available.Add(new Crafting.InventoryItem(rows.GetUInt16(0), rows.GetUInt32(1), ItemStacks.CountFromDb(rows.GetInt32(2))));
 
             if (!available.Any(item => item.Slot == request.ToolSlot && item.Goid == CraftingSession.WriterTool)) return refused;
-            int? codeSlot = CentralStorage.FirstFreeSlot(usedCodeSlots);
-            if (!codeSlot.HasValue) return new CraftingRequests.WrittenCode { Result = CraftingRequests.WriterNoSpace };
-            var receipt = new CraftingRequests.WrittenCode
+            var receipt = new CraftingRequests.WrittenCode { Result = CraftingRequests.WriterSuccess, Cash = cash - cost };
+            if (!abilityCode)
             {
-                Result = CraftingRequests.WriterSuccess, Slot = (ushort)codeSlot.Value, Cash = cash - cost
-            };
+                int? codeSlot = CentralStorage.FirstFreeSlot(usedCodeSlots);
+                if (!codeSlot.HasValue) return new CraftingRequests.WrittenCode { Result = CraftingRequests.WriterNoSpace };
+                receipt.Slot = (ushort)codeSlot.Value;
+            }
             command.Parameters.AddWithValue("@slot", 0);
             command.Parameters.AddWithValue("@id", 0);
             command.Parameters.AddWithValue("@count", 0);
@@ -87,11 +89,26 @@ namespace hds.databases
                 receipt.Ingredients.Add((item, remaining));
             }
 
-            command.Parameters["@slot"].Value = receipt.Slot;
-            command.Parameters["@id"].Value = request.Item << 7;
-            command.Parameters["@count"].Value = charges;
-            command.CommandText = "INSERT INTO char_abilities(char_id,slot,ability_id,level,is_loaded,ability_name,added) " +
-                "VALUES(@char,@slot,@id,@count,0,'Written item code',NOW())";
+            if (abilityCode)
+            {
+                var occupied = available.Where(item => Crafting.IsBagSlot(item.Slot)).Select(item => item.Slot).ToHashSet();
+                foreach (var (ingredient, remaining) in receipt.Ingredients)
+                    if (remaining == 0 && Crafting.IsBagSlot(ingredient.Slot))
+                        occupied.Remove(ingredient.Slot);
+                receipt.Slot = Enumerable.Range(1, 96).Select(slot => (ushort)slot).FirstOrDefault(slot => !occupied.Contains(slot));
+                if (receipt.Slot == 0) return new CraftingRequests.WrittenCode { Result = CraftingRequests.WriterNoSpace };
+                command.Parameters["@slot"].Value = receipt.Slot;
+                command.Parameters["@id"].Value = request.Item;
+                command.CommandText = "INSERT INTO inventory(charId,goid,slot,count,created) VALUES(@char,@id,@slot,1,NOW())";
+            }
+            else
+            {
+                command.Parameters["@slot"].Value = receipt.Slot;
+                command.Parameters["@id"].Value = request.Item << 7;
+                command.Parameters["@count"].Value = CraftingRules.Find(request.Item).DefaultCodeCharges.Value;
+                command.CommandText = "INSERT INTO char_abilities(char_id,slot,ability_id,level,is_loaded,ability_name,added) " +
+                    "VALUES(@char,@slot,@id,@count,0,'Written item code',NOW())";
+            }
             if (command.ExecuteNonQuery() != 1) return refused;
             if (cost != 0)
             {
