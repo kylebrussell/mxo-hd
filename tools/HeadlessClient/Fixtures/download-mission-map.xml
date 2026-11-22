@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mission id="399950" title="Mission Map Fixture" description="Locate a mission safe and the courier."
+         plot="1" order="1" org="3" district="1" districtName="slums" contact="Flood" exp="1" info="1">
+  <npc id="2" handle="Map Courier" type="FRIENDLY" at="1" rsi="a8060090" />
+  <phase site="Normal" leave="0">
+    <briefing>Locate the safe and the courier.</briefing>
+    <object id="1" kind="Safe" locked="1" />
+    <objective goal="1" text="Take the disk from the locked safe" type="Search" object="1" item="6786" />
+    <objective goal="2" text="Speak with the courier" type="Talk" npc="2" />
+  </phase>
+</mission>

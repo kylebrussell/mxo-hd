@@ -193,6 +193,9 @@ try
                     announcedEntrance = (progress.Identity, progress.Phase);
                     foreach (string message in MissionCatalogEntrances.Describe(progress, root))
                         Console.WriteLine("READY " + message);
+                    if (fixtureMode is NativeQa.Modes.DownloadMissionMapMode &&
+                        NativeQa.Modes.DownloadMissionMapMode.LobbyStand(progress) is string mapExit)
+                        Console.WriteLine("READY Mission exit NAV stand. Assisted move " + mapExit);
                     foreach (var approach in MissionCatalogObjectApproaches.Find(progress, root, missionFixturePath))
                         Console.WriteLine("READY " + approach.Describe());
                     foreach (string message in PigeonEscortExitFixture.Describe(progress))
