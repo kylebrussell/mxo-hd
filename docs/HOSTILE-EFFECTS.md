@@ -34,7 +34,7 @@ This follow-up gives the hostile Hacker templates an executor on the existing `T
 
 ## Gaps
 
-- **Buffer capacity.** Buffer Overflow 1.0/2.0 and Cancel Upgrade 2.0 keep a removable timed record with the stored amount. The buff buffer itself (`getBuffBufferMax`, MaxBuffBuffer 162, "increases as you gain levels") is native and unreconstructed, so buffs are never refused.
+- **Buffer capacity.** Buffer Overflow 1.0/2.0 and Cancel Upgrade 2.0 reserve the lesser of their stored amount and the recipient's remaining capacity until their record expires or is removed. An upgrade that would exceed the remaining buffer is refused. The server uses the documented `100 + 4 × character level + stat 162` policy for total capacity. [Buffer rules](ABILITY-REMAINING.md)
 - **Crash's Force Combat** stores no DurationType and is not guessed.
 - **Gaussian Blur 49** is a self buff with an `ImpartBlurInit` dissembling callback. The kBlur value is unknown, and its numeric evade part belongs to the beneficial-buff work, so it remains missing.
 - **Static Field's 694** applies its stored raw viral 1 × the caster's influence. The native value function is not applied.

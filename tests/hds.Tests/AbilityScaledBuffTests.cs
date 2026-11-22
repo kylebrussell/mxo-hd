@@ -1092,6 +1092,31 @@ public class AbilityScaledBuffTests
         Assert.Equal(0,AbilityBuffBuffer.Reserved(c));
     }
 
+    [Fact]
+    public void BufferOverflow395BlocksAFreshFirewallUntilItsOwnExpiry()
+    {
+        var recipient = Client(1);
+        var support = Client(30);
+        Assert.True(AbilityBuffs.Apply(recipient, 173, support));
+        Assert.Equal(104, AbilityBuffBuffer.Maximum(recipient));
+        Assert.Equal(10, AbilityBuffBuffer.Used(recipient));
+        Assert.True(AbilitySupport.BufferFits(recipient, 319));
+
+        Assert.True(TimedEffects.ApplyToPlayer(recipient, 395, "Buffer source", support));
+        var active = Assert.Single(TimedEffects.ForPlayer(recipient).Effects.Snapshot(), mod => mod.Parent == 395);
+        Assert.Equal(80, AbilityBuffBuffer.Reserved(recipient));
+        Assert.False(AbilitySupport.BufferFits(recipient, 319));
+        Assert.False(AbilityBuffs.Apply(recipient, 319, support));
+        Assert.True(AbilityBuffs.IsActive(recipient, 173));
+
+        TimedEffects.RunDue(active.Start + 60.01);
+        Assert.Equal(0, AbilityBuffBuffer.Reserved(recipient));
+        Assert.True(AbilityBuffs.Apply(recipient, 319, support));
+        Assert.Equal(34, AbilityBuffBuffer.Used(recipient));
+        Assert.Equal(80, AbilityBuffs.Total(recipient, 157));
+        AbilityBuffs.RemoveAll(recipient);
+    }
+
     [Theory]
     [InlineData(13,159,40,25,5)] [InlineData(16,212,15,1,1)] [InlineData(442,524,20,30,5)]
     public void SourcedTogglesDrainAndDeactivateOnShortfall(ushort id,ushort stat,int expected,int drain,int interval)

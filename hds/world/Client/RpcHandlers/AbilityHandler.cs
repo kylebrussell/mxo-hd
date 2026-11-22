@@ -69,7 +69,7 @@ namespace hds
             bool selectedViralField = AbilityID == 343 || AbilityID == 401 || AbilityID == 403;
             bool enrage = AbilityID == 588;
             bool selectedViralAttack = enrage || AbilityID == 53 || (AbilityID >= 57 && AbilityID <= 60) ||
-                AbilityID == 350 || AbilityID == 351 || AbilityID == 392 || AbilityID == 394 || selectedViralField;
+                AbilityID == 350 || AbilityID == 351 || AbilityID == 392 || AbilityID == 394 || AbilityID == 395 || selectedViralField;
             ushort? lockedDamageTargetSpawn = null;
             if (selectedViralAttack)
             {
