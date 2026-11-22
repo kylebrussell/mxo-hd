@@ -340,4 +340,29 @@ public class AbilityRefusalFeedbackTests:IDisposable
         var plan=new NativeQa.Modes.AbilityRefusalFeedbackMode().Plan;Assert.Equal(new ushort[]{2,17,45,1006,77},plan.Abilities);Assert.True(plan.DevCommands);Assert.False(plan.GmCharacter110);Assert.False(plan.FixedCallbackRolls);
         Assert.Equal("1",plan.EnvironmentOverrides["MXO_ABILITY_REFUSAL_QA"]);Assert.Equal("",NativeQa.NativeQaFixturePlan.EnvironmentFor("")["MXO_ABILITY_REFUSAL_QA"]);
     }
+
+    [Theory]
+    [InlineData(46)]
+    [InlineData(68)]
+    [InlineData(173)]
+    public void UnloadedStarterSupportRefusesBeforeItsCastOrCost(ushort id)
+    {
+        var caster = Client();
+        Store.currentClient = caster;
+        double castBefore = caster.playerData.castEndsAt;
+        var request = new byte[41];
+        BitConverter.GetBytes(id).CopyTo(request, 0);
+        BitConverter.GetBytes((ushort)4).CopyTo(request, 2);
+        BitConverter.GetBytes((ushort)2).CopyTo(request, 4);
+
+        new AbilityHandler().ProcessAbility(ref request);
+
+        byte[] packet = Assert.Single(Rpcs(caster));
+        Assert.True(AbilityRefusals.TryDecode(packet, out var refusal));
+        Assert.Equal((uint)id, refusal.AbilityID);
+        Assert.Equal(AbilityRefusals.NotLoaded, refusal.ErrorID);
+        Assert.Equal(500, AbilityHandler.CurrentInnerStrength(caster));
+        Assert.Equal(castBefore, caster.playerData.castEndsAt);
+        Assert.Empty(caster.playerData.cooldownEndsAt);
+    }
 }

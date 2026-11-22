@@ -7,11 +7,12 @@ namespace NativeQa.Modes;
 
 public sealed class StarterGuardianSightMode : NativeQaMode
 {
-    private const int CasterX = 21750, ClearX = 21550, BlockedX = 22350, FloorY = 1095, StandZ = 16150;
+    internal const int CasterX = 21750, ClearX = 21550, FloorY = 1095, StandZ = 16150;
+    private const int BlockedX = 22350;
     private const int StartingIs = 700;
     private const ushort FastHealing = 46, Firewall = 68, Enhancement = 173;
     private static readonly ushort[] Abilities = Loadout(FastHealing, Firewall, Enhancement);
-    private static readonly (ushort Id, ushort Cost, float Duration, (ushort Stat, int Value)[] Bonuses)[] Samples =
+    internal static readonly (ushort Id, ushort Cost, float Duration, (ushort Stat, int Value)[] Bonuses)[] Samples =
     {
         (FastHealing, 35, 600, new[] { ((ushort)112, 40) }),
         (Firewall, 40, 300, new[] { ((ushort)157, 40), ((ushort)180, 10), ((ushort)181, 10), ((ushort)1033, 10) }),
