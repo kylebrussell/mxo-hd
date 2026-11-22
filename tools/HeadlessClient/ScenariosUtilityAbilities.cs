@@ -59,19 +59,29 @@ public static partial class Scenarios
         var caster = await context.AddPlayerAsync(new CharacterSeed("Recaller") { Level = 50 });
         var member = await context.AddPlayerAsync(new CharacterSeed("Recalled") { X = 17020 + 3000, Level = 50 });
         var outsider = await context.AddPlayerAsync(new CharacterSeed("Outsider") { X = 17020 - 3000, Level = 50 });
+        var casualty = await context.AddPlayerAsync(new CharacterSeed("RecallCasualty") { X = 17020 + 1800, Level = 50 });
         await context.Database.ExecuteAsync($"DELETE FROM char_abilities WHERE char_id={caster.CharId}; " +
             $"INSERT INTO char_abilities(char_id,slot,ability_id,level,is_loaded) VALUES " +
-            $"({caster.CharId},300,{AbilityGoid(382)},50,1),({caster.CharId},301,{AbilityGoid(486)},50,1)");
+            $"({caster.CharId},300,{AbilityGoid(382)},50,1),({caster.CharId},301,{AbilityGoid(486)},50,1),({caster.CharId},302,{AbilityGoid(1006)},50,1)," +
+            $"({member.CharId},300,{AbilityGoid(382)},50,1),({member.CharId},302,{AbilityGoid(1006)},50,1)");
         await caster.EnterWorldAsync();
+        SelectStyle(caster, 1006);
+        await caster.WaitForViewUpdateAsync(2, "02 80 80 80 80 80 10 ee 03 00 00");
         await member.EnterWorldAsync();
+        SelectStyle(member, 1006);
+        await member.WaitForViewUpdateAsync(2, "02 80 80 80 80 80 10 ee 03 00 00");
         await outsider.EnterWorldAsync();
+        await casualty.EnterWorldAsync();
         var seen = await caster.WaitForViewNamedAsync(member.Handle, TimeSpan.FromSeconds(20));
 
-        caster.SendRpc(GroupInvite(Team, member.Handle, ""));
-        await member.WaitForRpcAsync("80 8f 0c 00");
-        member.SendRpc(InviteAnswer(Team, 0, caster.Handle));
-        await member.WaitForRpcAsync("80 8e");
-        await caster.WaitForRpcAsync($"70 03 {Le(member.CharId)} 09 00");
+        foreach (var teammate in new[] { member, casualty })
+        {
+            caster.SendRpc(GroupInvite(Team, teammate.Handle, ""));
+            await teammate.WaitForRpcAsync("80 8f 0c 00");
+            teammate.SendRpc(InviteAnswer(Team, 0, caster.Handle));
+            await teammate.WaitForRpcAsync("80 8e");
+            await caster.WaitForRpcAsync($"70 03 {Le(teammate.CharId)} 09 00");
+        }
 
         Cast(caster, 382, seen.ViewId);
         await caster.WaitForRpcAsync(AbilityLine(0x7a00015b));  // "You begin to teleport a team member to your location."
@@ -79,11 +89,17 @@ public static partial class Scenarios
         await member.WaitUntilAsync(() => context.Server.DebugLog().Contains("Recalled Recalled to Recaller at 17020"),
             "Recall Team Member teleports the member to the caster", TimeSpan.FromSeconds(10));
 
+        casualty.SendChat("?die");
+        await casualty.WaitForRpcAsync("2e 67 00 00 00 00 00 00 00 00 00 00 00 92 00 00 60");
+        var deadView = await member.WaitForViewNamedAsync(casualty.Handle);
+        Cast(member, 382, deadView.ViewId);
+        await member.WaitForTextAsync($"{casualty.Handle} is dead and cannot be recalled.");
         Cast(caster, 486);
         await caster.WaitForRpcAsync(AbilityLine(0x7a000164)); // "You begin to teleport your team to your location."
         await member.WaitUntilAsync(() => context.Server.DebugLog().Split("Recalled Recalled to Recaller").Length >= 3,
             "Recall Mission Team teleports the team", TimeSpan.FromSeconds(10));
         Check.That(!context.Server.DebugLog().Contains("Recalled Outsider"), "Players outside the team stay where they are");
+        Check.That(!context.Server.DebugLog().Contains("Recalled RecallCasualty"), "Dead teammates stay where they died");
         Check.Equal(0, caster.World.Problems.Count, "Recall protocol (caster)");
         Check.Equal(0, member.World.Problems.Count, "Recall protocol (member)");
     }

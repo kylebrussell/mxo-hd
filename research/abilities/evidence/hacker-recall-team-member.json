@@ -1,0 +1,21 @@
+{
+  "abilities": {
+    "382": {
+      "checks": {
+        "script": {
+          "source": "The GOB and ability/hacker/misc.py RecallTeamMember_Test, RecallTeamMember_Subject and RecallTeamMember_DirectObject specify a selected teammate, a self exclusion, two notifications and recipient gating before phase-out and teleport.",
+          "runtime": "UtilityAbilities.RecallRefusal binds the valid team member at cast start. UtilityAbilities.Recall revalidates membership, prevents movement across constructs and for unavailable, fighting or dead recipients, and supplies the two localized success messages, the 0x280006d1 effect and the live destination. Unverified localization IDs for combat and death use system text.",
+          "test": "HackerMissionTeamUtilitiesMode replays the complete PR483 stock request. It verifies the recipient and observer positions and phase-out effect, with no movement for the second teammate or outsider. The utility-recall-team scenario checks both messages and the shared dead-recipient exclusion. PR634 native observed Recruit to Mission, accept, selected Recall Team Member and visibly relocated QAFriend. https://github.com/kylebrussell/mxo-hd/pull/634#issuecomment-7060078149"
+        },
+        "behavior-tests": {
+          "source": "The GOB gives loaded Hacker Style and out-of-combat admission, a two-second cast, 30 Inner Strength, 30-second reuse and no sight requirement. RecallTeamMember_Test and the normal live view establish the selected teammate.",
+          "runtime": "AbilityHandler applies pre-cast admission and keeps the resolved recipient for the delayed utility callback. UtilityAbilities.Land commits the shared recipient guard and move, with ordinary ability costs and timers.",
+          "test": "AbilityRefusalFeedbackTests verifies the loaded, style and rest gates without cast reservation or spending. HackerMissionTeamUtilitiesMode checks self, outsider and stale-spawn refusals without debit, cast or timer, and verifies the normal cast, reuse, exact effect and recipient-only teleport. The utility-recall-team scenario covers the unchanged positive message and teleport path."
+        }
+      }
+    }
+  },
+  "observations": {
+    "486": "PR634 native confirms both recruited mission teammates arrived at the safe. The fixture preserves that route and its current effect in the regression setup. The shipped direct-object callback's 0x280006d1 effect remains an independent item. https://github.com/kylebrussell/mxo-hd/pull/634#issuecomment-7060078149"
+  }
+}

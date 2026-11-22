@@ -137,6 +137,40 @@ public class AbilityRefusalFeedbackTests:IDisposable
     }
 
     [Theory]
+    [InlineData(UtilityAbilities.RecallTeamMember, AbilityRefusals.NotLoaded)]
+    [InlineData(UtilityAbilities.RecallTeamMember, AbilityRefusals.WrongStyle)]
+    [InlineData(UtilityAbilities.RecallTeamMember, AbilityRefusals.MustBeOutsideCombat)]
+    public void RecallCasterFailuresDoNotReserveACastOrSpendInnerStrength(ushort id, uint reason)
+    {
+        var client = Client();
+        Store.currentClient = client;
+        var item = new AbilityItem();
+        item.setAbilityID(id);
+        DataLoader.getInstance().AbilityDB.Add(item);
+        if (reason != AbilityRefusals.NotLoaded) client.playerData.passives.Loaded[id] = 50;
+        client.playerData.passives.Loaded[CombatStyles.HackerStyle] = 50;
+        client.playerData.combatStyle = reason == AbilityRefusals.WrongStyle ? CombatStyles.SelfDefense : CombatStyles.HackerStyle;
+        var combat = CombatManager.GetHandler(client);
+        combat.isCombatRunning = reason == AbilityRefusals.MustBeOutsideCombat;
+        byte[] request = new byte[41];
+        BitConverter.GetBytes(id).CopyTo(request, 0);
+        try
+        {
+            double castEndsAt = client.playerData.castEndsAt;
+            new AbilityHandler().ProcessAbility(ref request);
+            Assert.Equal(AbilityRefusals.Encode(new AbilityRefusals.Record(id, reason)), Assert.Single(Rpcs(client)));
+            Assert.Equal((ushort)500, AbilityHandler.CurrentInnerStrength(client));
+            Assert.Equal(castEndsAt, client.playerData.castEndsAt);
+            Assert.Empty(client.playerData.cooldownEndsAt);
+        }
+        finally
+        {
+            combat.isCombatRunning = false;
+            CombatManager.RemoveClient(client);
+        }
+    }
+
+    [Theory]
     [InlineData(43, true)]
     [InlineData(48, true)]
     [InlineData(69, true)]

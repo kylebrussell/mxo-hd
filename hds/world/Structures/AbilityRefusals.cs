@@ -6,7 +6,7 @@ namespace hds
     public static class AbilityRefusals
     {
         public const uint ReuseWait=5, CurrentTactic=6, NotLoaded=7, TargetNotInSight=9, WrongStyle=13, RequiredItemCategory=15, InsufficientInnerStrength=17,
-            MustBeOutsideCombat=21, TargetStateRequired=22, CasterStateRequired=23, InvalidTarget=24, TargetOutOfRange=34, NotEnemySimulacrum=36;
+            MustBeOutsideCombat=21, TargetStateRequired=22, CasterStateRequired=23, InvalidTarget=24, NotGroupTarget=32, TargetOutOfRange=34, NotEnemySimulacrum=36;
         // The stock 80 ba consumer leaves reason 10 silent. Use only where the script supplies the message.
         public const uint NoClientMessage = 10;
         /// <summary>Compatibility value for unresolved aggregate failures;6 is not a generic busy message.</summary>
