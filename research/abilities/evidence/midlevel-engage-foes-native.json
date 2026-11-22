@@ -1,0 +1,41 @@
+{
+  "families": {
+    "coder-engage-foes-enrage-area": {
+      "representative": 610,
+      "result": "pass",
+      "head": "8f4ac0c3",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/850#issuecomment-7087168434",
+      "scope": "Selected Primary. Two exact in-radius NPC recipients, 50 IS, 2 s cast, 30 s reuse, six-second state and matching most-hated entries. Identical runtime rebased as 7b28d00d."
+    }
+  },
+  "abilities": {
+    "588": {
+      "note": "PR850 independently verified the original 588 request, 27 IS, 2 s cast, 28 s own reuse, and selected NPC state 93 add/removal in 12 s with no HP damage. Its distinct NPC GenericEnrageUpdate consumer is still open. https://github.com/kylebrussell/mxo-hd/pull/850#issuecomment-7087168434"
+    },
+    "610": {
+      "family": "coder-engage-foes-enrage-area",
+      "checks": {
+        "controls": {
+          "source": "GOB 610 stores Enraged state 93 for six seconds.",
+          "runtime": "AbilityHostile applies one standard Enraged record to each admitted NPC and expires the linked record normally.",
+          "test": "Stock PR850 saw the two six-second adds and removals, with no records on excluded targets. ActualLandedRecipientGetsOneOwnerAndNoDamage verifies the ordinary landing. https://github.com/kylebrussell/mxo-hd/pull/850#issuecomment-7087168434"
+        },
+        "area": {
+          "source": "EngageFoes_DirectObject enumerates hostile NPC recipients in an inclusive six-metre radius around the selected NPC.",
+          "runtime": "AbilityHandler and AbilityEngageFoes retain selected target identity and treat additional eligible NPC recipients independently.",
+          "test": "Native PR850 hit the selected Primary and exact Edge only, excluding Outside at 6.01 m and Near CSR. SecondaryRecipientHasAnIndependentDeathAndViewWitness checks live view and target gating. https://github.com/kylebrussell/mxo-hd/pull/850#issuecomment-7087168434"
+        },
+        "script": {
+          "source": "The shipped EngageFoes_DirectObject calls the Enraged effect, and TauntAggro requests most-hated ownership on accepted NPCs.",
+          "runtime": "AbilityEngageFoes calls the existing taunt map only after a successful 610 recipient effect with live caster and recipient witnesses.",
+          "test": "Only610UsesItsStoredInitializerAndExistingEnrage, UncompletedOrCancelledCastHasNoInitializer and the live engage-foes-taunt scenario cover acceptance and exclusions. The stock run saw two most-hated entries and ordinary NPC counter-engagement. https://github.com/kylebrussell/mxo-hd/pull/850#issuecomment-7087168434"
+        },
+        "behavior-tests": {
+          "source": "GOB 610 defines the selected area, 2 s cast, 50 IS, 30 s reuse and six-second Enraged with zero direct damage.",
+          "runtime": "Ordinary cast handling, AbilityHostile and AbilityEngageFoes preserve independent resource, boundary, expiry and NPC threat behavior.",
+          "test": "EngageFoesTests, the disposable NAV fixture and the live engage-foes-taunt scenario, plus the stock cast and exact boundary/expiry observation. https://github.com/kylebrussell/mxo-hd/pull/850#issuecomment-7087168434"
+        }
+      }
+    }
+  }
+}

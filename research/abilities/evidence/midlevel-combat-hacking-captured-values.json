@@ -5,14 +5,24 @@
         "stats": {
           "source": "The complete abilities_usecombathacking.log.txt witness records 1010 +22, 117 +24 and 1009 +22 for 32 s. The GOB preview for the same attributes lists +20/+15/+20.",
           "runtime": "The captured buff definition preserves the stock effect. Typed Melee and Ballistic Defense consume their respective values and AbilityCosts consumes the cost-reduction percentage.",
-          "test": "CapturedCombatHackingChangesTwoDefenseConsumersAndThePaidCostUntilRemoval checks both +22 defense changes and the restored baseline. HackerCombatHackingMode measures the actual Sprint debit 24/18/24 with the required Dedicated Code's +6 held fixed."
+          "test": "CapturedCombatHackingChangesTwoDefenseConsumersAndThePaidCostUntilRemoval checks both +22 defense changes and the restored baseline. HackerCombatHackingMode measures the actual Sprint debit 24/18/24 with the required Dedicated Code's +6 held fixed. Stock PR839 matches the exact records and consumer deltas. https://github.com/kylebrussell/mxo-hd/pull/839#issuecomment-7087324381"
         },
         "behavior-tests": {
           "source": "The archived stock request and reply record the selected-target activation, self-only buff, own reuse 298 s and 32 s linked modifiers.",
           "runtime": "The normal cast and reuse route applies 344 to the caster independently of the selected friend. The three consumers are active only for the shared buff lifetime.",
-          "test": "HackerCombatHackingMode replays the complete stock request against a current friendly handle, asserts cost, bar, timer, source values, natural expiry and no 344 stat records on the selected friend. The test also observes the actual subsequent IS debit before, during and after the buff."
+          "test": "HackerCombatHackingMode replays the complete stock request against a current friendly handle, asserts cost, bar, timer, source values, natural expiry and no 344 stat records on the selected friend. The test also observes the actual subsequent IS debit before, during and after the buff. Stock PR839 matches the exact records and consumer deltas. https://github.com/kylebrussell/mxo-hd/pull/839#issuecomment-7087324381"
         }
-      }
+      },
+      "family": "hacker-combat-hacking-self"
+    }
+  },
+  "families": {
+    "hacker-combat-hacking-self": {
+      "representative": 344,
+      "result": "pass",
+      "head": "49585f5d",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/839#issuecomment-7087324381",
+      "scope": "Stock level-22 selected friendly cast. 2 s, 19 IS under Dedicated Code, 298 s reuse, caster only +22/+24/+22 for 32 s. Subsequent Hyper-Sprint debits 24/18/24 before, during and after the buff."
     }
   }
 }

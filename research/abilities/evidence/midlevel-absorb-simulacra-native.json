@@ -1,0 +1,43 @@
+{
+  "families": {
+    "simulacrum-independent-absorb": {
+      "representative": 607,
+      "result": "pass",
+      "head": "c2bc37b3",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/843#issuecomment-7087229822",
+      "scope": "Two native owned pets. Cast 25 IS/2 s/30 s; durable pet 1087→362 and owner 100→334; L4 pet 224→0 with a single 81 77 and owner 400→500 cap."
+    }
+  },
+  "abilities": {
+    "607": {
+      "family": "simulacrum-independent-absorb",
+      "checks": {
+        "damage": {
+          "source": "GOB 607 stores two distinct level-scaled health effects. Their shipped values resolve to 725 neutral pet damage and 234 neutral owner healing at level 27, and 1300/418 at level 50.",
+          "runtime": "CoderPets.Absorb resolves typed pet life and owner recovery independently, clamps each, and uses ordinary pet death cleanup.",
+          "test": "CoderPetTests.AbsorbUsesTheIndependentStoredOwnerAndPetHealthEffects and absorb-simulacra-server cover the raw values and both caps. Stock pet 1087→362 and owner 100→334; level-four pet 224→0 and owner 400→500. https://github.com/kylebrussell/mxo-hd/pull/843#issuecomment-7087229822"
+        },
+        "targeting": {
+          "source": "GOB 607 and AcousticDecoy2_Test require the caster’s live owned Simulacrum as the direct object.",
+          "runtime": "CoderPets binds the live owned pet, validates its range and sight at admission and completion, and rejects player, foreign, dead and stale targets.",
+          "test": "Stock selected two owned proxies; the replay also rejects empty/foreign and stale live views via the ordinary handler without consuming an effect. https://github.com/kylebrussell/mxo-hd/pull/843#issuecomment-7087229822"
+        },
+        "script": {
+          "source": "The shipped AcousticDecoy2_Test resolves the owner and pet before the direct-object effect.",
+          "runtime": "CoderPets.TryHealAbility dispatches Absorb on the admitted pet. The pet death branch sends one termination and leaves owner recovery independent.",
+          "test": "The captured-mode and the server replay show the durable pet remains in world, while the lethal cast sends one 81 77 removal and caps the heal. https://github.com/kylebrussell/mxo-hd/pull/843#issuecomment-7087229822"
+        },
+        "source-parity": {
+          "source": "The GOB health payloads differ in recipient, timing direction and damage type. The shipped source functions yield -725 pet HP and +234 caster HP at level 27.",
+          "runtime": "The production effect no longer uses the owner heal as pet damage or bases the heal on available pet health.",
+          "test": "Headless and stock samples demonstrate distinct raw numbers, then independently capped owner/pet effects. https://github.com/kylebrussell/mxo-hd/pull/843#issuecomment-7087229822"
+        },
+        "behavior-tests": {
+          "source": "GOB 607 requires selected owned pet, 25 IS, 2 s cast and 30 s own reuse before applying its two health records.",
+          "runtime": "AbilityHandler and CoderPets admission, cast and effect paths with CoderPets death publication.",
+          "test": "AbsorbUsesTheIndependentStoredOwnerAndPetHealthEffects, native bootstrap ability-parity-absorb-simulacra, and live absorb-simulacra-server plus both stock outcomes. https://github.com/kylebrussell/mxo-hd/pull/843#issuecomment-7087229822"
+        }
+      }
+    }
+  }
+}
