@@ -8,6 +8,31 @@ The chosen modern policy uses native integer mean/sigma construction, signed16 n
 
 Captured `81 67` hit/deflect events in `research/protocol/freecast-viral-events.json` establish stringIDs240000f1/f2, flag1, ability-ID type08 and four signed fields attack/0/defense/0. They are byte-tested against source capture records. Deflection uses sourced FX2800059c with unchanged health. Recipients are caster, victim and created-view observers in the same world; hidden/foreign-world observers receive nothing. Existing cost and cooldown policy is retained, including cost paid at cast start.
 
+## Archived level-50 damage for 336 and 337
+
+Both logs capture normal `80 b9` requests from AfterWhoruNeo on July 9, 2009. The Object12 name/level record reads `32` hex (level 50) before the combat sequence. The selected Zombie Lurch views 10/161 and 16/162, plus the later Zombie Rot/Lurch/Curse cohort, all decode at level 52. The captured hit and deflect records witness normal contest outcomes in live PvE. They establish successful target admission for the landed records. Independent line-of-sight geometry and the caster's complete active loadout are still unknown. [Caster view][bomb-caster] · [Lurch creations][bomb-lurch] · [Rot and Lurch creations][bomb-rot] · [Curse creation][bomb-curse] · [Hit and deflect][bomb-contest]
+
+Each row below groups identical `81 67` damage-caster records (string `0x7c0000fa`). Packet counts include area records with the same printed target name. The two reported values are landed and resisted damage. Their sum is inferred pre-mitigation damage, and all pairs fit four-percent mitigation with nearest-integer rounding.
+
+| Ability | Landed | Resisted | Sum | Records | Packet-header lines |
+| --- | ---: | ---: | ---: | ---: | --- |
+| 336 | 250 | 10 | 260 | 1 | [Marketplace 8726][bomb-250] |
+| 336 | 269 | 11 | 280 | 5 | [Combat 13519][bomb-269]; combat 16096, 18332; marketplace 4365, 12747 |
+| 337 | 288 | 12 | 300 | 12 | [Combat 13664][bomb-288]; combat 16853 (2), 17618, 19120 (2); marketplace 1472, 3493 (2), 18048, 22761 (2) |
+| 337 | 346 | 14 | 360 | 4 | [Marketplace 11916][bomb-346] (2); marketplace 27773, 40998 |
+
+The shipped GOB stores fixed viral damage modifiers of 14 and 17. The current server rolls 266–323 and 283–346 as base damage, then applies its usual influence and resistance handling. These captures support retaining the confirmed level-50 outcomes as regression evidence. A neutral unmitigated baseline, the cause of the distinct damage sums and their relation to 14/17, and any lower-level or PvP scaling remain open.
+
+[bomb-caster]: ../research/packet-dumps/community-intake/20260607T003822Z-hdneo-mxopackets1-combat-ability-selected/logs/actions_combat.log.txt#L10978
+[bomb-lurch]: ../research/packet-dumps/community-intake/20260607T003822Z-hdneo-mxopackets1-combat-ability-selected/logs/actions_combat.log.txt#L11960
+[bomb-rot]: ../research/packet-dumps/community-intake/20260607T003822Z-hdneo-mxopackets1-combat-ability-selected/logs/actions_combat_marketplace_abilitychangecoder.log.txt#L2067
+[bomb-curse]: ../research/packet-dumps/community-intake/20260607T003822Z-hdneo-mxopackets1-combat-ability-selected/logs/actions_combat_marketplace_abilitychangecoder.log.txt#L21204
+[bomb-contest]: ../research/packet-dumps/community-intake/20260607T003822Z-hdneo-mxopackets1-combat-ability-selected/logs/actions_combat.log.txt#L16836
+[bomb-250]: ../research/packet-dumps/community-intake/20260607T003822Z-hdneo-mxopackets1-combat-ability-selected/logs/actions_combat_marketplace_abilitychangecoder.log.txt#L8726
+[bomb-269]: ../research/packet-dumps/community-intake/20260607T003822Z-hdneo-mxopackets1-combat-ability-selected/logs/actions_combat.log.txt#L13519
+[bomb-288]: ../research/packet-dumps/community-intake/20260607T003822Z-hdneo-mxopackets1-combat-ability-selected/logs/actions_combat.log.txt#L13664
+[bomb-346]: ../research/packet-dumps/community-intake/20260607T003822Z-hdneo-mxopackets1-combat-ability-selected/logs/actions_combat_marketplace_abilitychangecoder.log.txt#L11916
+
 ## Diagnostic profiles and one-pass native checklist
 
 `freecast-viral-hit` and `freecast-viral-deflect` load2/17/1006/33/57/314/272 at the existing WinterFrost fixture. Neither grants GM status nor changes combat, damage, callback or health RNG. Only this new contest consumes `MXO_FREECAST_VIRAL_QA_ATTACK15`/`DEFENSE15`, gated by exact dev1, marker1, actual validated mxotest_ database, live authenticated non-LA actor, owned loaded ability and protected-character exclusions. Generic callback draw variables remain blank. Default profiles clear all new keys.
