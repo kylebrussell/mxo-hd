@@ -13,7 +13,7 @@ public class OrdinaryWithdrawalInputTests
     }
     static AbilityItem Move(ushort id){var m=new AbilityItem();m.setAbilityID(id);return m;}
     static void Stat(WorldClient c,ushort id,int value)=>TimedEffects.ForPlayer(c).Effects.Apply(id,new[]{new TimedEffects.Active{Proc=TempMods.Proc.Stat,Target=id,Value=value,Seconds=60}},TimeUtils.GetSimTimeSeconds());
-    [Fact] public void RealNormalStylesSupplyPrimary65Then72Then65While1045RemainsUnconsumed()
+    [Fact] public void RealNormalStylesSupplyDirectPointsAndLinkedPercentageIsAppliedOnlyWhileLoaded()
     {
         Assert.Equal((ushort)1045,AbilityCatalog.IdOf((uint)AbilityCatalog.Find(1005)!.Number("AbilityAttributeLink/AttributeLink")));
         Assert.False(AbilityCatalog.Find(1005)!.Has("AbilityAttributeLink/AttributeLevelBonusScale"));
@@ -21,16 +21,54 @@ public class OrdinaryWithdrawalInputTests
         foreach(var row in new[]{(Style:(ushort)17,Raw:65),(Style:(ushort)1112,Raw:72),(Style:(ushort)17,Raw:65)})
         {c.playerData.combatStyle=row.Style;AbilityPassives.Refresh(c,false);Assert.Equal(row.Raw,AbilityStats.Player(c,1005));Assert.Equal(row.Raw,WithdrawalInput.Attack(c,null,true));}
         AbilityPassives.SetLoaded(c,WithdrawalFixture.Abilities.Concat(new ushort[]{120}).Select(id=>(id,(ushort)50)));
-        Assert.Equal(25,AbilityStats.Player(c,1045));Assert.Equal(65,WithdrawalInput.Attack(c,null,true));
+        Assert.Equal(25,AbilityStats.Player(c,1045));Assert.Equal(81,WithdrawalInput.Attack(c,null,true));
         AbilityPassives.SetLoaded(c,WithdrawalFixture.Abilities.Select(id=>(id,(ushort)50)));Assert.Equal(0,AbilityStats.Player(c,1045));Assert.Equal(65,WithdrawalInput.Attack(c,null,true));
         c.playerData=new ClientData();Assert.Equal(0,WithdrawalInput.Attack(c,null,true));
     }
-    [Fact] public void DirectCapAppliesAndLinkedBonusIsNotGuessed()
+    [Fact] public void DirectAndPercentageUseTheirOwnCapsAndRoundBeforeTactic()
     {
         var c=Actor();Stat(c,1005,10000);Stat(c,1045,1000);
-        Assert.Equal(600,AbilityStats.Player(c,1005));Assert.Equal(130,AbilityStats.Player(c,1045));Assert.Equal(600,WithdrawalInput.Attack(c,null,true));
-        var n=Actor();Stat(n,1005,20);Stat(n,1045,-11);Assert.Equal(20,WithdrawalInput.Attack(n,null,true));
-        Stat(n,163,50);Stat(n,522,80);Stat(n,1044,60);Assert.Equal(20,WithdrawalInput.Attack(n,null,true)); // Ordinary-withdraw input is typed, not a duplicate melee/initiative addition.
+        Assert.Equal(600, AbilityStats.Player(c, 1005));
+        Assert.Equal(130, AbilityStats.Player(c, 1045));
+        Assert.Equal(1380, WithdrawalInput.Attack(c, null, ordinary: true));
+
+        var penalized = Actor();
+        Stat(penalized, 1005, 20);
+        Stat(penalized, 1045, -11);
+        Assert.Equal(17, WithdrawalInput.Attack(penalized, null, ordinary: true));
+        Assert.Equal(80, WithdrawalInput.AttackBase(50, 17, CombatTactic.Power));
+
+        Stat(penalized, 163, 50);
+        Stat(penalized, 522, 80);
+        Stat(penalized, 1044, 60);
+        Assert.Equal(17, WithdrawalInput.Attack(penalized, null, ordinary: true));
+
+        var noDirect = Actor();
+        Stat(noDirect, 1045, 25);
+        Assert.Equal(0, WithdrawalInput.Attack(noDirect, null, ordinary: true));
+    }
+
+    [Fact] public void VirologistLoadoutSuppliesBothTypedInputsAndItsUpgrade()
+    {
+        var actor = Actor();
+        var viralMove = Move(330);
+        Stat(actor, 1005, 65);
+        Stat(actor, 1030, 1);
+        AbilityPassives.SetLoaded(actor, new[] { ((ushort)503, (ushort)40) });
+
+        Assert.Equal(67, WithdrawalInput.Attack(actor, null, ordinary: true));
+        Assert.Equal(0, AbilityStats.SpecialDefense(actor, viralMove));
+        Assert.False(AbilityPassives.IsLoaded(actor, 1077));
+
+        AbilityPassives.SetLoaded(actor, new[] { ((ushort)503, (ushort)40), ((ushort)98, (ushort)50) });
+        Assert.Equal(68, WithdrawalInput.Attack(actor, null, ordinary: true));
+        Assert.Equal(1, AbilityStats.SpecialDefense(actor, viralMove));
+        Assert.True(AbilityPassives.IsLoaded(actor, 1077));
+
+        AbilityPassives.SetLoaded(actor, new[] { ((ushort)503, (ushort)40) });
+        Assert.Equal(67, WithdrawalInput.Attack(actor, null, ordinary: true));
+        Assert.Equal(0, AbilityStats.SpecialDefense(actor, viralMove));
+        Assert.False(AbilityPassives.IsLoaded(actor, 1077));
     }
     [Theory] [InlineData(CombatTactic.Speed,1d)] [InlineData(CombatTactic.Power,1.2d)] [InlineData(CombatTactic.Grab,.9d)] [InlineData(CombatTactic.Block,1d)]
     public void PrimaryTacticFactorsFeedExistingTwoRollsWithoutNewDraws(CombatTactic tactic,double factor)
