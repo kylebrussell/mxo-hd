@@ -1,0 +1,13 @@
+{
+  "abilities": {
+    "14": {
+      "checks": {
+        "source-parity": {
+          "source": "GOB 14 specifies a hostile selected interlock special, 60 s reuse, and separate instant function-4 components for melee health damage 108 and caster Inner Strength 111. Each component has stored bounds 10–100 and the template's level endpoints are 12 and 50. Shipped client function 625180c5 interpolates the Gaussian centre with stored binary32 skew 0.8 and six standard deviations per range. The source GOB omits the IS cost field. The original authoritative level input, RNG sequence and cost for this omission remain unarchived.",
+          "runtime": "The chosen implementation uses the caster's character level for the two source-bounded samples and retains the standard 20 IS fallback for a normal ability with no explicit cost. The matching stock request queues against the live current opponent and spends IS only after the target passes view, spawn and current-fight admission. On a hit the server applies standard melee influence and typed resistance to damage, then independently restores caster IS within available headroom and publishes the actual grant. A missed queued round keeps cost and reuse and does not enter the restoration callback.",
+          "test": "PR386 stock refused at rest, then queued against the selected opponent, landed 107 and used its 60 s timer. Its decoded packet lines 1700/1710 show 504→484 debit; lines 1742–1754 show the independent +100 grant, target/caster effects and 584 final IS. PR656 stock at level 18 shows 140→120 for the cost, raw refund roll 25 and grant capped to 20, 140 final, one source-14 callback, damage 76 and 60 s reuse. AwakenedPowerShotTests verifies both source centres, clamp extremes, cap and dead-caster exclusion. The retained disposable exact-wire missed round kept 120 and 60 s reuse with no refund RPC. Both native runs sampled successful hits. https://github.com/kylebrussell/mxo-hd/pull/386#issuecomment-7022030941 https://github.com/kylebrussell/mxo-hd/pull/656#issuecomment-7062900925"
+        }
+      }
+    }
+  }
+}
