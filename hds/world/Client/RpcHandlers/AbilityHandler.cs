@@ -386,9 +386,9 @@ namespace hds
                 Stealth.End(Store.currentClient, "switched off");
                 return;
             }
-            if (stealth && Stealth.Refusal(Store.currentClient, AbilityID, currentTargetViewId) is string refusal)
+            if (stealth && Stealth.Refusal(Store.currentClient, AbilityID, currentTargetViewId, out uint stealthRefusalReason) is string refusal)
             {
-                Deny(AbilityID, refusal);
+                Deny(AbilityID, refusal, stealthRefusalReason);
                 return;
             }
             if (StealthShieldAbilities.Refusal(Store.currentClient,AbilityID,currentTargetViewId) is string freeRefusal)
@@ -529,6 +529,10 @@ namespace hds
             GhostStrikeCallbacks.Bind(ghostStrike,normalCast);
             var engageFoes=AbilityEngageFoes.Capture(Store.currentClient,AbilityID,currentTargetViewId,normalCast);
             var reverseBulldog=AbilityReverseBulldog.Capture(Store.currentClient,AbilityID,currentTargetViewId,normalCast);
+            // Sneak ends aura generations before publishing its IS debit. A pending upkeep
+            // tick then fails the generation check. The Belt still ends its auras when its cast lands.
+            if (AbilityID == Stealth.SneakGrantAbility)
+                Stealth.StopStealthAuras(Store.currentClient);
             ProcessAbilityScript(this.currentAbility);
 
             // When the cast finishes (right away for instant abilities): heals land and, as in retail, the
