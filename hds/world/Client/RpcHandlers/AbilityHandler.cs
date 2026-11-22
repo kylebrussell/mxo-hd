@@ -35,10 +35,14 @@ namespace hds
 
             // These starter viruses need a live enemy selection, including Logic Bomb's splash centre.
             bool starterViralDamage = AbilityID == 53 || (AbilityID >= 57 && AbilityID <= 60);
+            ushort? lockedDamageTargetSpawn = null;
             if (starterViralDamage)
             {
-                ushort? spawn = packet.Length == 41 ? (ushort?)BitConverter.ToUInt16(packet, 4) : null;
-                if (!AbilityTargets.HasLiveAttackSelection(Store.currentClient, currentTargetViewId, spawn, requireOpponent: true))
+                var caster = Store.currentClient;
+                lockedDamageTargetSpawn = (ushort?)caster.viewMan.getViewById(currentTargetViewId)?.spawnId;
+                ushort? requestedSpawn = packet.Length == 41 ? BitConverter.ToUInt16(packet, 4) : lockedDamageTargetSpawn;
+                if (!lockedDamageTargetSpawn.HasValue ||
+                    !AbilityTargets.HasLiveAttackSelection(caster, currentTargetViewId, requestedSpawn, requireOpponent: true))
                 {
                     Store.currentClient.messageQueue.addRpcMessage(AbilityRefusals.Encode(
                         new AbilityRefusals.Record(AbilityID, AbilityRefusals.InvalidTarget)));
@@ -74,13 +78,12 @@ namespace hds
 
             // These starter Coder casts require a live selected target, including the Tinkering area centre.
             bool starterCoderCast = AbilityID == 21 || AbilityID == 33 || AbilityID == 36 || AbilityID == 514;
-            ushort? coderTargetSpawn = null;
             if (starterCoderCast)
             {
                 var caster = Store.currentClient;
-                coderTargetSpawn = (ushort?)caster.viewMan.getViewById(currentTargetViewId)?.spawnId;
-                ushort? requestedSpawn = packet.Length == 41 ? BitConverter.ToUInt16(packet, 4) : coderTargetSpawn;
-                if (!coderTargetSpawn.HasValue ||
+                lockedDamageTargetSpawn = (ushort?)caster.viewMan.getViewById(currentTargetViewId)?.spawnId;
+                ushort? requestedSpawn = packet.Length == 41 ? BitConverter.ToUInt16(packet, 4) : lockedDamageTargetSpawn;
+                if (!lockedDamageTargetSpawn.HasValue ||
                     !AbilityTargets.HasLiveAttackSelection(caster, currentTargetViewId, requestedSpawn, requireOpponent: true))
                 {
                     const string notice = "Select a living enemy before using this ability.";
@@ -620,11 +623,12 @@ namespace hds
                     AbilityCooldowns.Start(client, ability.getAbilityID(), TimeUtils.GetSimTimeSeconds());
                 }
 
-            if (starterCoderCast &&
-                (!AbilityTargets.HasLiveAttackSelection(client, currentTargetViewId, coderTargetSpawn, requireOpponent: true) ||
+            if ((starterCoderCast || starterViralDamage) &&
+                (!AbilityTargets.HasLiveAttackSelection(client, currentTargetViewId, lockedDamageTargetSpawn, requireOpponent: true) ||
                  !AbilityTargets.WithinSelectionRange(client, AbilityID, currentTargetViewId)))
             {
-                Output.WriteDebugLog($"[ABILITY] {AbilityID} fizzles: the selected Coder target changed or left range");
+                string castKind = starterCoderCast ? "Coder" : "viral";
+                Output.WriteDebugLog($"[ABILITY] {AbilityID} fizzles: the selected {castKind} target changed or left range");
                 return;
             }
 
