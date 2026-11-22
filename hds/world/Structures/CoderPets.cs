@@ -513,12 +513,20 @@ namespace hds
             lock (pet) KillLocked(pet);
         }
 
-        private static void KillLocked(Pet pet)
+        private static void KillLocked(Pet pet, uint impactFx = 0)
         {
             if (pet.Gone || !pet.Mob.TryClaimDeath()) return;
             pet.Mob.setHealthC(0);
             RemoveWindow(pet);
-            SendHit(pet, DeathFx);
+            // Keep lethal impact and default death FX in one ordered view list.
+            if (impactFx != 0 && impactFx != DeathFx)
+            {
+                var impact = new PacketContent();
+                impact.AddByteArray(Mob.BuildHitUpdate(0, impactFx, ++pet.Counter));
+                var deathFx = Mob.BuildHitUpdate(0, DeathFx, ++pet.Counter);
+                Store.world?.SendViewUpdateToClientsWhoHasMobSpawned(impact, pet.Mob, deathFx);
+            }
+            else SendHit(pet, DeathFx);
             var death = new PacketContent();
             death.AddByteArray(ServerPackets.BuildNpcDeathUpdate(pet.Mob.NextAnimationSeq(), (byte)pet.Mob.getRotation(),
                 (float)pet.Mob.getXPos(), (float)pet.Mob.getYPos(), (float)pet.Mob.getZPos()));
@@ -1007,7 +1015,11 @@ namespace hds
             if (pet.Gone || pet.Mob.getIsDead()) return;
             int left = Math.Max(0, pet.Mob.getHealthC() - amount);
             pet.Mob.setHealthC((UInt16)left);
-            if (left == 0) { Kill(pet); return; }
+            if (left == 0)
+            {
+                KillLocked(pet, fx);
+                return;
+            }
             SendHit(pet, fx);
         }
 

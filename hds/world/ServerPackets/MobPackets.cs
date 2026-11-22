@@ -38,12 +38,17 @@ namespace hds
             client.FlushQueue();
         }
 
-        public void SendNpcUpdateData(UInt16 viewId, WorldClient client, byte[] updateData)
+        public void SendNpcUpdateData(UInt16 viewId, WorldClient client, byte[] updateData, byte[] followingUpdate = null)
         {
             PacketContent pak = new PacketContent();
             
             pak.AddUint16(viewId, 1);
             pak.AddByteArray(updateData);
+            if (followingUpdate != null)
+            {
+                pak.AddUint16(viewId, 1);
+                pak.AddByteArray(followingUpdate);
+            }
             
             client.messageQueue.addObjectMessage(pak.ReturnFinalPacket(), false);
             client.FlushQueue();

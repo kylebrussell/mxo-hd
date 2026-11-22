@@ -48,11 +48,12 @@ public sealed class ProxyCoderDerezMode : NativeQaMode
             ["MXO_PVP_SERVER"] = "1", ["MXO_PVP_MAX_SAFE_LEVEL"] = "15", ["MXO_SIMULACRUM_QA_HOLD_IS"] = "1"
         }, extraQaMetadata: new() { ["ScopedStockRows"] = "19,25,26,27", ["NativeCloseableRows"] = 0 }, readyMessages: new[]
         {
+            "Impact-effect retest: stay at the starting stand facing east. Select Coder Style (slot 1), clear the target on empty ground, then summon your Proxy (slot 3). With selection clear, use Power Boost (slot 4) and Drain (slot 5) on your own Proxy. IS 200 to 150 to 100 to 150. Then select the isolated QAEnemy Nuker (17450,495,6400) and use slot 2. The older refusal and interlock checks below are optional.",
             "All stands and summon positions are on outdoor NAV floor 400. The helpers move at least 5 m sideways after their Nukers stay, leaving the models separated. The far pet also has its own sightline. Confirm the intended name in the target panel before using the slot.",
             $"Choose Coder Style (page 2 slot 1) outside interlock. No selection is reason 24 (already passed). Use {FaceDummy} to face the Melee Dummy at (17000,495,6950). Then {FaceFriend} to face the friendly Nuker at (16550,495,6400). Try slot 2 on each, expecting reason 36. Use {FaceFar} to face the separate far Nuker at (18750,495,7300), 17.5 m away; expect reason 34 if stock sends. Refusals do not start a cast or reuse or debit IS.",
             $"Use {FaceEnemy} to return to the same stand. Clear the target, summon your own Remote Proxy with slot 3 (200 to 150 IS), and type ?pet passive then ?pet stay. Move QAEnemy via helper chat to ?tp {X} {Y} {EntryZ} 4e2 12 4, then ask it to melee CSR_Tester. Wait for an active [PVP] round. Press slots 4, 5 and 2 during the fight. Stock may refuse locally. Each sent request should get reason 21, no cast or reuse, and neither pet should disappear.",
             "Withdraw with slot 6 and helper stop. Wait until the fight ends, move QAEnemy back via helper chat ?tp 17300 495 7000 4e2 12 2, and select Coder Style again. Clear the target. Slot 4 Power Boost spends 50 IS (150 to 100), takes 4 s, reuses in 8 s, and gives own Proxy [PET] melee=9 ballistic=9 duration=300. Slot 5 Drain takes 2 s and 58 s reuse, removes only your Proxy and restores 100 to 150 IS.",
-            $"Face east ({FaceEnemy}) and select the isolated near Nuker (17450,495,6400). Slot 2 takes 2 s, uses 40 IS (150 to 110), starts 13.5 s reuse and logs [PET] Proxy Coder derezzed Nuker Simulacrum of QAEnemy for 13000. Only that pet disappears. Check no new [PVP] rounds or maximum [VITALS] changes."
+            $"Face east ({FaceEnemy}) and select the isolated near Nuker (17450,495,6400). Slot 2 takes 2 s, uses 40 IS (150 to 110), starts 13.5 s reuse and logs [PET] Proxy Coder derezzed Nuker Simulacrum of QAEnemy for 13000. Capture the zero-HP view updates for 0x280009cd (impact) followed by 0x2800060d (death) and the visible FX. Only the enemy pet disappears. Check no new [PVP] rounds or maximum [VITALS] changes."
         });
 
     public override async Task<byte[]> AfterStartAsync(NativeQaBootstrapContext context)
@@ -100,6 +101,7 @@ public sealed class ProxyCoderDerezMode : NativeQaMode
         var enemy = context.Helpers["QAEnemy"];
         var friendPet = await SeePetAsync(caster, friend.CharId);
         var enemyPet = await SeePetAsync(caster, enemy.CharId);
+        var enemyOwnPet = await SeePetAsync(enemy, enemy.CharId);
         var far = context.Helpers["QAFar"];
         var farPet = await SeePetAsync(caster, far.CharId);
         foreach (var (stand, pet) in Stands.Zip(new[] { friendPet, enemyPet, farPet }))
@@ -185,21 +187,25 @@ public sealed class ProxyCoderDerezMode : NativeQaMode
         await EvidenceRetestWire.CastBarAsync(caster, Boost, 4);
         await EvidenceRetestWire.TimerAsync(caster, boostAt, Boost, AbilityCooldowns.OwnTimer, 8);
         await ExpectIsAsync(100);
+        await caster.WaitForViewUpdateAsync(ownPet.ViewId, "04 80 80 80 c0 e0 00 c0 81 08 00 28");
         await caster.WaitUntilAsync(() => server.DebugLog().Contains("melee=9 ballistic=9 duration=300", StringComparison.Ordinal),
             "Actual level-18 Power Boost on own Proxy", HeadlessPlayer.DefaultTimeout);
 
         int drainAt = caster.World.RpcSnapshot().Count;
+        int drainViewAt = caster.World.ViewSnapshot().Count;
         caster.SkipReceived();
         caster.SendRpc(drain);
         await EvidenceRetestWire.CastBarAsync(caster, Drain, 2);
         await EvidenceRetestWire.TimerAsync(caster, drainAt, Drain, AbilityCooldowns.OwnTimer, 58);
         await StockAbilityProfile.ObserveAsync(caster, drainAt, packet => packet.Opcode == 0x177, "Drain removes only the own Proxy");
         await ExpectIsAsync(150);
+        await AssertEffectsAsync(caster, ownPet.ViewId, drainViewAt, expectImpact: false);
 
         int enemyAt = enemy.World.RpcSnapshot().Count;
         int friendAt = friend.World.RpcSnapshot().Count;
         int farAt = far.World.RpcSnapshot().Count;
         int casterAt = caster.World.RpcSnapshot().Count;
+        int casterViewAt = caster.World.ViewSnapshot().Count, enemyViewAt = enemy.World.ViewSnapshot().Count;
         byte[] request = Use(Handle(enemyPet));
         caster.SendRpc(request);
         await EvidenceRetestWire.CastBarAsync(caster, Derez, 2);
@@ -209,7 +215,8 @@ public sealed class ProxyCoderDerezMode : NativeQaMode
             packet => packet.Bytes.AsSpan().SequenceEqual(message), "sourced Proxy Coder derez caster line");
         var removed = await StockAbilityProfile.ObserveAsync(enemy, enemyAt,
             packet => BytePattern.Parse("81 77").IsMatch(packet.Bytes), "only the target owner's pet window is removed");
-        await caster.WaitForViewUpdateAsync(enemyPet.ViewId, "04 80 80 80 c0 00 00 c0 0d 06 00 28");
+        await AssertEffectsAsync(caster, enemyPet.ViewId, casterViewAt, expectImpact: true);
+        await AssertEffectsAsync(enemy, enemyOwnPet.ViewId, enemyViewAt, expectImpact: true);
         await ExpectIsAsync(110);
         Check.That(!friend.World.RpcSnapshot().Skip(friendAt).Concat(far.World.RpcSnapshot().Skip(farAt))
             .Any(rpc => BytePattern.Parse("81 77").IsMatch(rpc.Bytes)), "The friendly and out-of-range pet windows remain active");
@@ -226,6 +233,21 @@ public sealed class ProxyCoderDerezMode : NativeQaMode
 
         Task ExpectIsAsync(ushort value) => caster.WaitUntilAsync(() => ReadIs() == value,
             $"Current IS {value}", HeadlessPlayer.DefaultTimeout);
+    }
+
+    private static async Task AssertEffectsAsync(HeadlessPlayer viewer, ushort viewId, int start, bool expectImpact)
+    {
+        const string death = "04 80 80 80 c0 00 00 c0 0d 06 00 28";
+        const string impact = "04 80 80 80 c0 00 00 c0 cd 09 00 28";
+        await viewer.WaitForViewUpdateAsync(viewId, death);
+        string handle = StockAbilityProfile.LittleEndianHex(viewId);
+        var deathPattern = BytePattern.Parse($"{handle} {death}");
+        var impactPattern = BytePattern.Parse($"{handle} {impact}");
+        var frames = viewer.World.ViewSnapshot().Skip(start).ToList();
+        Check.Equal(1, frames.Count(deathPattern.Occurs), "The zero-HP death effect appears exactly once");
+        Check.Equal(expectImpact ? 1 : 0, frames.Count(impactPattern.Occurs), "Only the sourced lethal cast publishes its impact FX");
+        var ordered = BytePattern.Parse($"{handle} {impact} 01 ?? {handle} {death} 01 ??");
+        Check.That(!expectImpact || frames.Any(ordered.Occurs), "The lethal impact precedes death FX within one view list");
     }
 
     private static uint Handle(ViewCreation view) => DuelPackets.Handle(view.ViewId, view.SpawnId);
