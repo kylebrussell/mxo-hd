@@ -650,7 +650,8 @@ namespace hds
             {
                 // The client supplies its own lines for range and combat-state refusals.
                 Deny(AbilityID, petRefusal, petRefusalReason, sendServerText:
-                    petRefusalReason != AbilityRefusals.TargetOutOfRange && petRefusalReason != AbilityRefusals.MustBeOutsideCombat);
+                    petRefusalReason != AbilityRefusals.TargetOutOfRange && petRefusalReason != AbilityRefusals.MustBeOutsideCombat &&
+                    petRefusalReason != AbilityRefusals.TargetNotInSight);
                 return;
             }
             bool derez = AbilityID == CoderPets.DerezAbility;
