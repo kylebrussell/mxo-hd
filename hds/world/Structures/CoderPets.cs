@@ -1272,7 +1272,8 @@ namespace hds
             int rawHealing = amount;
             amount = DaemonBoostHealing(pet, amount, now);
             if (amount != rawHealing) Output.WriteDebugLog("[PET] typed healing base " + rawHealing + " final " + amount);
-            AbilityHandler.HealSelf(owner, (UInt16)amount);
+            UInt16 healed = AbilityHandler.HealSelf(owner, (UInt16)amount);
+            Output.WriteDebugLog($"[VITALS] char={owner.playerData.getCharID()} pet={pet.SimulacraId} ability={pet.Ability} HP {current} -> {healed}");
         }
 
         /// <summary>
