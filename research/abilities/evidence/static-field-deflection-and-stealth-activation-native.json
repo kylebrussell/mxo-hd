@@ -1,0 +1,22 @@
+{
+  "abilities": {
+    "694": {
+      "checks": {
+        "targeting": {
+          "source": "GOB 694 stores selector 4, a 6 m caster radius and viral TestFunction 2.",
+          "runtime": "AbilityAuras.Pulse filters hostile recipients by range, view, floor and sight before rolling the child's viral test. A deflection prevents the damage.",
+          "test": "PR733 verified stock deflection on the eligible hostile only. PR574 pinned the radius edge and PR588 verified sight exclusion. https://github.com/kylebrussell/mxo-hd/pull/733#issuecomment-7074653371 https://github.com/kylebrussell/mxo-hd/pull/574 https://github.com/kylebrussell/mxo-hd/pull/588#issuecomment-7054857954"
+        },
+        "behavior-tests": {
+          "source": "GOB 89 uses ApplyAuraEffect to reapply 694 and charges 12 IS per scheduled tick. The child stores one point of viral health damage and TestFunction 2.",
+          "runtime": "The parent pays independently of the result of each recipient's contest. The child can land one point, be absorbed by typed resistance, or deflect before damage.",
+          "test": "StarterStaticFieldPulseContestMode proves deflection, exclusion and paid upkeep. StarterPathogenistAuraSightMode and StarterPathogenistAuraResistanceMode prove the hit and resistance paths. Native PR733 verifies 11 IS activation, 12 IS upkeep, the deflection line and zero damage. PR621 verifies one-point hits and full absorption. https://github.com/kylebrussell/mxo-hd/pull/733#issuecomment-7074653371 https://github.com/kylebrussell/mxo-hd/pull/621#issuecomment-7058773978"
+        }
+      }
+    }
+  },
+  "notes": {
+    "1111": "PR731 confirms a stock Sneak press sends stance 09 and selects walk state 01 (599.7 units over two seconds). Toggle-off sends 00 and restores run state 03 (1295.2 units). PR732 shows Static Field shuts down before the 20 IS Sneak debit at its five-second tick boundary, with no extra 694 pulse or 12 IS drain. https://github.com/kylebrussell/mxo-hd/pull/731#issuecomment-7074247270 https://github.com/kylebrussell/mxo-hd/pull/732#issuecomment-7074615624",
+    "1116": "PR731 confirms stock Belt activation sends stance 1a and selects walk state 01 (719.3 units over two seconds). Toggle-off sends 00 and restores run state 03 (1285.2 units). PR732 verifies the 7.9 m facing-enemy refusal uses reason 10 and the one proximity line with no cost or reuse. At 8.1 m, Belt spends 50 IS and stops Miasma when the cast lands. https://github.com/kylebrussell/mxo-hd/pull/731#issuecomment-7074247270 https://github.com/kylebrussell/mxo-hd/pull/732#issuecomment-7074615624"
+  }
+}
