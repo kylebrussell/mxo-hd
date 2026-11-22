@@ -1,0 +1,30 @@
+{
+  "families": {
+    "stock-invisibility-belt-pace": {
+      "representative": 1116,
+      "result": "pass",
+      "head": "c9437c412c9a281ff451dc36abe09482879fc032",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/728#issuecomment-7073904435",
+      "scope": "Stock Belt activation paid 50 IS, retained the stat-115 −300 modifier for the stance comparison and showed the normal 68 s duration. The disposable pose command supplied the measured stance; it did not prove automatic activation or cleanup."
+    }
+  },
+  "abilities": {
+    "701": {
+      "checks": {
+        "targeting": {
+          "source": "GOB 701 defines selector 4, a 6 m caster radius and viral TestFunction 2.",
+          "runtime": "The aura filters hostility, view, floor, range and sight before the per-recipient viral contest. Both defense modifiers require a successful roll.",
+          "test": "PR729 observed the native deflection line, no defense modifiers on the eligible miss, and no contest for the ally and the out-of-range opponent. PR574 verified the 6.00/6.01 m split, and PR588 verified sight exclusion. https://github.com/kylebrussell/mxo-hd/pull/729#issuecomment-7073944169 https://github.com/kylebrussell/mxo-hd/pull/574 https://github.com/kylebrussell/mxo-hd/pull/588#issuecomment-7054857954"
+        }
+      }
+    },
+    "1116": {
+      "family": "stock-invisibility-belt-pace"
+    }
+  },
+  "notes": {
+    "61": "PR729 confirms activation costs 5 IS and scheduled pulses continue to debit 3 every 5 s when every eligible recipient deflects. https://github.com/kylebrussell/mxo-hd/pull/729#issuecomment-7073944169",
+    "1111": "PR728 matched forward input with stat 115 −200 unchanged. Applying stance 09 switched stock movement state to 01 and reduced distance from 1305.5 to 599.4 units. No client 33 cancelled the pose. https://github.com/kylebrussell/mxo-hd/pull/728#issuecomment-7073904435",
+    "1116": "With stat 115 −300 unchanged, stance 1a switched stock movement state to 01 and reduced distance from 1301.4 to 723.6 units. This is a diagnostic pose comparison. The automatic pose lifecycle and other stealth checks remain open. https://github.com/kylebrussell/mxo-hd/pull/728#issuecomment-7073904435"
+  }
+}
