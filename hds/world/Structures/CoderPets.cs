@@ -826,7 +826,7 @@ namespace hds
         {
             if (Summons.ContainsKey(id))
             {
-                lock (caster.playerData.loadoutSync)
+                lock (caster.playerData.craftingSync)
                 {
                     if (AbilityPassives.IsLoaded(caster, id)) SpawnFor(caster, id);
                 }
@@ -848,7 +848,7 @@ namespace hds
             }
             Pet pet = cast?.Target;
             if (pet == null) return;
-            lock (caster.playerData.loadoutSync)
+            lock (caster.playerData.craftingSync)
             lock (pet)
             {
                 if (!cast.Matches(caster, Of(caster)) || !OwnerPresent(pet) || !InAbilityRange(pet, id) ||
