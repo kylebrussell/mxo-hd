@@ -1,0 +1,13 @@
+{
+  "abilities": {
+    "20": {
+      "checks": {
+        "source-parity": {
+          "source": "GOB 20 supplies max health and typed resistances to the selected owned simulacrum. The shipped combat_calculations.GetDamageReductionValue supplies the armor and level curve used by retaliation.",
+          "runtime": "CoderPets keeps the existing raw melee retaliation, which already accounts for the attacker/pet level relationship, and applies the armor contribution relative to the zero-rating baseline. Fortify removes its max-HP and resistance contributions on expiry without refilling current HP.",
+          "test": "[Native PR819](https://github.com/kylebrussell/mxo-hd/pull/819#issuecomment-7086307822) verified 30 IS, a two-second cast, eight-second reuse, +36 resistance and max HP 224→494→224. Against the same level-4 attacker, raw/final pairs included 11/11 unbuffed, 9/6 and 11/7 fortified, then 10/10 after expiry. The fixture advances the timer to its normal expiry path and the existing rank and retaliation tests bracket the level interaction."
+        }
+      }
+    }
+  }
+}
