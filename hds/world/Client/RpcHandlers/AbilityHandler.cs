@@ -132,10 +132,18 @@ namespace hds
                 return;
             }
 
+            var definition = AbilityCatalog.Find(AbilityID);
+            bool selectedGunShot = starterGunCast || AbilityID == 130;
+            if (selectedGunShot && !AbilityTargets.HasSelectionSight(Store.currentClient, definition, currentTargetViewId))
+            {
+                Deny(AbilityID, $"Sight blocked for selected target {currentTargetViewId}.",
+                    AbilityRefusals.TargetNotInSight, sendServerText: false);
+                return;
+            }
+
             // load the ability name from a list to see if we match the right ability
             DataLoader AbilityLoader = DataLoader.getInstance();
             currentAbility = AbilityLoader.getAbilityByID(AbilityID);
-            var definition = AbilityCatalog.Find(AbilityID);
             if (definition?.Has("Ability/CastingTime") == true) currentAbility.setCastingTime(definition.CastSeconds);
 
             if (AbilityID == ConcealmentDetection.Ability && AbilityPassives.Level(Store.currentClient, AbilityID) > 0 &&
@@ -626,9 +634,10 @@ namespace hds
             // Attack abilities on the current close-combat target hit it (buffs used with a target selected don't).
             ushort hostileView=engageFoes?.PrimaryView??currentTargetViewId;
             if (starterGunCast && (!AbilityTargets.HasLiveAttackSelection(client, hostileView, gunTargetSpawn, requireOpponent: true) ||
-                !AbilityTargets.WithinSelectionRange(client, AbilityID, hostileView)))
+                !AbilityTargets.WithinSelectionRange(client, AbilityID, hostileView) ||
+                !AbilityTargets.HasSelectionSight(client, definition, hostileView)))
             {
-                Output.WriteDebugLog($"[ABILITY] {AbilityID} fizzles: the selected gun target changed or left range");
+                Output.WriteDebugLog($"[ABILITY] {AbilityID} fizzles: the selected gun target changed, left range or left sight");
                 return;
             }
             if (hostileView > 2 && !support && !pet && !derez && definition?.FriendlyTarget != true &&
