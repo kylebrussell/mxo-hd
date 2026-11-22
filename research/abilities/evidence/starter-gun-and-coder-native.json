@@ -1,0 +1,31 @@
+{
+  "abilities": {
+    "21": {
+      "note": "PR795 stock gated the unloaded Lockdown shortcut. The loaded 10 IS cast added root 99 on the selected hostile for 12 s. Root survival through Static Blast remains headless evidence. https://github.com/kylebrussell/mxo-hd/pull/795#issuecomment-7084346243"
+    },
+    "33": {
+      "note": "PR795 stock gated unloaded Static Blast. After loading the prerequisite chain, the regular cast charged 15 IS and hit the intended hostile for 24. Shipped damage scaling remains open. https://github.com/kylebrussell/mxo-hd/pull/795#issuecomment-7084346243"
+    },
+    "36": {
+      "note": "PR795 stock gated unloaded Tinkering. Unloading during the legitimate six-second cast kept the 20 IS debit and prevented both primary and splash damage. The reloaded cast hit the selected enemy and a nearby hostile for 4 each. https://github.com/kylebrussell/mxo-hd/pull/795#issuecomment-7084346243"
+    },
+    "66": {
+      "note": "PR789 stock refused a friendly target with reason 24 and an out-of-range hostile with reason 34 before cast, debit or reuse. A valid cast at 16 m paid 14 IS and fizzled when that hostile moved out during the bar, retaining 43 s reuse. A second cast in range applied 522/524/1009/1010 -10 for 33 s. https://github.com/kylebrussell/mxo-hd/pull/789#issuecomment-7084414068"
+    },
+    "126": {
+      "note": "PR784 stock admitted Disarming Shot at rest. Moving behind a wall during the four-second cast spent the ordinary 20 IS, began 8 s reuse and fizzled before applying an effect. This is the independent landing control for Hindering Shot. https://github.com/kylebrussell/mxo-hd/pull/784#issuecomment-7084471106"
+    },
+    "130": {
+      "note": "PR784 stock Hindering Shot fizzled when a valid selection lost line of sight or moved to the clear 21.5 m stand during its bar. Each cast paid 20 IS and kept 8 s reuse. The clear control hit for 9 and applied its four eight-second penalties. https://github.com/kylebrussell/mxo-hd/pull/784#issuecomment-7084471106"
+    },
+    "504": {
+      "note": "PR787 stock pre-cast line-of-sight (reason 9) and range (reason 34) refusals left Concealment active and IS at 380, without a 504 bar, damage or reuse. The subsequent clear cast consumed Concealment at cast start, spent 45 IS, had a six-second bar, hit for 23 and started 45 s reuse. Armor piercing remains unverified. https://github.com/kylebrussell/mxo-hd/pull/787#issuecomment-7084532010"
+    },
+    "514": {
+      "note": "PR795 stock gated unloaded Advanced Tinkering. The normal reloaded cast spent 40 IS and hit the selected hostile and nearby splash witness for 6 each. https://github.com/kylebrussell/mxo-hd/pull/795#issuecomment-7084346243"
+    },
+    "1137": {
+      "note": "PR787 stock activated Concealment for 20 IS, retained it through two rejected Concealed Shot attempts, then ended it at the start of the first admitted shot. https://github.com/kylebrussell/mxo-hd/pull/787#issuecomment-7084532010"
+    }
+  }
+}

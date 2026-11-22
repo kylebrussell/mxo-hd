@@ -329,6 +329,8 @@ def server(i):
         parts.append('stock level-19 caster-centred radius gains 10% from active Pathogenist Upgrade 1085')
     if i in (126, 130, 176):
         parts.append('stock blocked sight denies the selected shot before cast, IS cost or reuse')
+    if i in (126, 130):
+        parts.append('stock timed shots fizzle if the original target leaves sight before landing')
     if i in (86, 130):
         if r.get('movement_debuff_scale'):
             parts.append('signed stat 115 projects to stock run speed and the remaining scale returns at expiry')
@@ -338,12 +340,16 @@ def server(i):
         parts.append('stock summons keep the open street stand or use a verified stand on the same room floor')
     if i in (33, 36, 53, 57, 58, 59, 60, 514):
         parts.append('cast completion rechecks the original target spawn and range before damage or splash')
+    if i in (21, 33, 36, 514):
+        parts.append('checks loaded membership before charging and before applying the cast')
     if i in (53, 57, 58, 59, 60):
         parts.append('checks loaded membership before charging and applying the timed attack')
     if i in (40, 86):
         parts.append('cast completion requires the original hostile spawn in range before applying its timed effect')
     if i in (40, 66, 86):
         parts.append('checks loaded membership before charging and landing; landed effects and reuse survive unload')
+    if i == 66:
+        parts.append('requires a selected hostile within 16 m at admission and again at landing')
     if i in (40, 86, 130):
         parts.append('the active Force Combat penalty lowers the current engagement score until expiry')
     if i in (43, 48, 69):
@@ -458,7 +464,7 @@ def server(i):
     if i in (20, 603):
         parts.append('unloading preserves the lifetime of the landed pet buff')
     if i == 504:
-        parts.append('requires active Concealment and consumes it at cast start; stock hit 23 after six seconds')
+        parts.append('requires active Concealment; stock range and sight refusals retain it, and an admitted cast consumes it at start and hits for 23 after six seconds')
     if i in (503, 1137):
         parts.append('unloading the parent clears the active Concealment grant, with separate Sneak preserved')
     if i == 1137:
