@@ -10,7 +10,9 @@ Packed client STA SHA2569640747067a1f0b05c81e2a966ae2897822b5684d03905fb2ea3eb73
 
 The shared CasterHostileArea allowlist is exactly97 or38. The old UiLagArea API remains97-only. Existing97 values, fixtures and per-recipient behavior remain unchanged. Each legal current recipient gets one existing normal free-cast contest before ordinary landing. Existing same-world/floor/current-view/PvP/pet rules are server policy. World/life generations precede centre snapshot and are rechecked after snapshot and before every recipient. There is no emitter, pulse or new join authority.
 
-**OURS existing policy:** centre is caster position at completion; native snapshot time is unrecovered. Ordinary movement is not itself a server cast-cancel predicate.38 lacks a stored IsInterruptable flag, so no damage-interrupt default is invented. Existing2s cast ownership/control/world/life/end/generation guards, resource/recast behavior, sourceCastingScript148 and presentation remain unchanged. Existing signed/f32 stat177 UDB0 radius helper is reused; no75/link/magnitude claim.
+The server samples the caster's position at completion. This fits the shipped self-centred selector and applies the effect to enemies near the caster when it lands. Recipients must be living opponents with an active view, on the same floor and in sight. The selected target does not control admission or move the centre. Ordinary movement leaves the server cast active. The existing two-second cast, resource cost, reuse and control lifetimes apply.
+
+The level-19 `ability-parity-starter-area-disruption-completion` fixture brackets 8 m and checks an allied control. The headless replay moves the caster from the start to the verified SHIFT stand during the cast and checks the resulting recipient records. In the stock client, test the start with no selection and the shifted cast with the farther helper selected. If stock cancels on an ordinary step, record that client behavior and cast from the printed SHIFT stand.
 
 ## Fixture inventory and Claude-only one pass
 
