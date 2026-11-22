@@ -75,7 +75,10 @@ namespace hds
                 return 0;
             }
             Store.dbManager.WorldDbHandler.AddItemToInventory(freeSlot, itemID);
-            pak.sendInventoryItemAdd(freeSlot, itemID, 0, type, client);
+            if (AbilityProgression.IsAbilityCode(itemID))
+                client.messageQueue.addRpcMessage(ServerPackets.BuildAbilityCodeAdd(freeSlot, itemID));
+            else
+                pak.sendInventoryItemAdd(freeSlot, itemID, 0, type, client);
             return freeSlot;
         }
 

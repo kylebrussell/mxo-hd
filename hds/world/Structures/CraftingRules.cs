@@ -32,6 +32,15 @@ namespace hds
         private static int? Number(JsonElement value) => value.ValueKind == JsonValueKind.Null ? (int?)null : value.GetInt32();
         public static Item Find(uint goid) => items.Value.TryGetValue(goid, out var item) ? item : null;
 
+        public static bool CanWriteAbilityCode(uint goid)
+        {
+            var item = Find(goid);
+            return AbilityProgression.IsAbilityCode(goid) && item is { CantCraft: false } && item.Complexity >= 0 &&
+                (item.Category & 0xff) == (byte)'A' &&
+                AbilityCatalog.Find(AbilityCatalog.IdOf(goid))?.Number("Ability/AbilityClass") == 0 &&
+                Crafting.Recipes.ContainsKey(goid);
+        }
+
         // constants.Crafting.CompileCompileCostMultiplier = .12, client.dll 6269fd01..fd70.
         public static long InfoCost(Item item, int discount = 0) => (long)((item.Price ?? 1000) * .12 *
             (1 - Math.Clamp(discount, 0, 100) / 100.0));
