@@ -7,6 +7,7 @@ namespace NativeQa.Modes;
 public sealed class StarterSoldierResistanceMode : NativeQaMode
 {
     private const int Level = 50, Resistance = CombatFixtureWeapons.DummyPhysicalResistance;
+    private const int X = 17000, Y = 495, Z = 2300, DummyX = 17200;
     internal sealed record Sample(ushort Id, ushort Style, string Weapon, uint Goid, int Type, int Reuse, int Move,
         string StockStyle, string StockUse, params string[] Effects);
 
@@ -23,14 +24,14 @@ public sealed class StarterSoldierResistanceMode : NativeQaMode
         .Distinct().Order().ToArray();
 
     public override string Name => "ability-parity-starter-soldier-resistance";
-    public override NativeQaModePlan Plan { get; } = new(Loadout, CombatFixtureLoadout.CasterX, CombatFixtureLoadout.CasterZ,
+    public override NativeQaModePlan Plan { get; } = new(Loadout, X, Z,
         Array.Empty<string>(), Array.Empty<string>(), new[]
         {
             CombatFixtureLoadout.SeedWeapons,
-            "UPDATE characters SET y=495,healthC=4000,healthM=4000,innerStrC=1000,innerStrM=1000 WHERE charId=110",
+            $"UPDATE characters SET x={X},y={Y},z={Z},rotation=64,healthC=4000,healthM=4000,innerStrC=1000,innerStrM=1000 WHERE charId=110",
             "UPDATE char_abilities SET level=LEAST(level,15) WHERE char_id=110"
         }, DevCommands: true, hotbarAbilities: Samples.SelectMany(sample => new[] { sample.Style, sample.Id }).ToArray(),
-        testMobFixture: "awakened-interlock-resistance.csv",
+        testMobFixture: "starter-soldier-resistance.csv",
         environmentOverrides: new()
         {
             ["MXO_AGGRO"] = "0", ["MXO_MOB_WANDER"] = "0",
@@ -38,15 +39,27 @@ public sealed class StarterSoldierResistanceMode : NativeQaMode
         }, extraQaMetadata: new() { ["ScopedStockRows"] = "105,130,145", ["NativeCloseableRows"] = 0 },
         readyMessages: new[]
         {
+            $"Outdoor NAV CSR ({X},{Y},{Z}) faces Melee Dummy ({DummyX},{Y},{Z}) east. Strafe and reselect if picking misses. No helper or bag actions.",
+            "At rest with the dummy selected, try Overhand Smash after selecting Karate and Body Shot after selecting Rifles with the rifle equipped. The stock shortcuts stay disabled. If either request reaches the server, expect reason 24 without any [ABILITY-COST], damage or reuse.",
             "Page 2 slots 1–6 are Karate, Overhand Smash, Rifles, Body Shot, Handguns and Hindering Shot. Compare one neutral and one resisted pass on the same passive dummy. Start each attempt with ?combatdepth fixture-reset or the resistance-specific reset. When the ready line names the existing view and the combat HUD clears, click the same dummy. Press Enter to submit commands. Do not press Escape.",
             "For Overhand Smash, enter ?combatdepth fixture-weapon unarmed first. Open Close Combat, reselect Karate, and use slot 2. Check move 277 and both -10 melee records for 10 s. Repeat after the 12 s own reuse with ?combatdepth fixture-reset-resisted for +75 Melee Damage Resistance.",
             "Equip the rifle with ?combatdepth fixture-weapon rifle. Open Close Combat, reselect Rifles, and use slot 4 on the neutral dummy. Check move 11364 and -5 Melee and Ballistic Damage Resistance for 10 s. Repeat after the 8 s own reuse with ?combatdepth fixture-reset-ballistic-resisted for +75 Ballistic Damage Resistance.",
             "Equip the handgun. Select Handguns and use slot 6 from rest, without opening Close Combat. Repeat after 8 s on the ballistic-resistant dummy. Check two-second cast and the eight-second movement and force-combat penalties. Expect Overhand Smash 7 to 5, Body Shot 8 to 6 and Hindering Shot 9 to 7. Retry a missed interlock round after reuse."
         });
 
-    public override Task<byte[]> AfterStartAsync(NativeQaBootstrapContext context) => VerifyAsync(context, Loadout, Samples);
+    public override Task<byte[]> AfterStartAsync(NativeQaBootstrapContext context)
+    {
+        string root = context.RepositoryRoot!;
+        SectorProperties.Load(Path.Combine(root, "data", "sector_properties.csv"));
+        NavMesh.UseDirectory(Path.Combine(root, "data", "navmesh"));
+        foreach (int x in new[] { X, DummyX })
+            Check.That(NavMesh.Locate(1, x, Y, Z, out var stand) && !stand.indoors && Math.Abs(stand.floorY + 95 - Y) < 1,
+                $"Outdoor Soldier stand ({x},{Y},{Z})");
+        Check.That(NavMesh.HasSightPath(1, X, Y, Z, DummyX, Y, Z), "The Soldier stand has a clear path to the dummy");
+        return VerifyAsync(context, Loadout, Samples, verifyAdmission: true);
+    }
 
-    internal static async Task<byte[]> VerifyAsync(NativeQaBootstrapContext context, ushort[] loadout, Sample[] samples, uint? weaponAtLogin = null)
+    internal static async Task<byte[]> VerifyAsync(NativeQaBootstrapContext context, ushort[] loadout, Sample[] samples, uint? weaponAtLogin = null, bool verifyAdmission = false)
     {
         if (context.StockProbe is not { } caster) return Array.Empty<byte>();
         var archive = AbilityMemoryUiFixture.Decode(caster.CharacterData[6]).Where(row => AbilityMemory.IsAbility(row.Descriptor))
@@ -113,17 +126,19 @@ public sealed class StarterSoldierResistanceMode : NativeQaMode
                 caster.SendRpc($"81 51 {hex}");
                 if (sample.Move != 0)
                 {
+                    if (verifyAdmission && !resisted && attempt == 0)
+                    {
+                        await SelectStyleAsync(sample, handle);
+                        await StarterHackerControlTargetMode.RefusedAsync(caster, sample.Id,
+                            StarterHackerControlTargetMode.WithHandle(sample.StockUse, handle));
+                    }
                     caster.SkipReceived();
                     caster.World.SendRpcs(StarterHackerControlTargetMode.WithHandle(AwakenedInterlockAdmissionMode.StockOpen, handle),
                         WireFormat.FromHex($"40 {hex} 01 6b"));
                     await caster.WaitForRpcAsync($"40 {hex} 00 6b");
                     await caster.WaitForRpcAsync("47");
                 }
-                int views = caster.World.ViewSnapshot().Count;
-                caster.SendRpc(StarterHackerControlTargetMode.WithHandle(sample.StockStyle, handle));
-                byte[] selected = PlayerViewAttributes.BuildSelf((39, PlayerViewAttributes.U32(sample.Style)));
-                await caster.WaitUntilAsync(() => caster.World.ViewSnapshot().Skip(views).Any(view => BytePattern.IndexOf(view, selected, 0) >= 0),
-                    $"Select stock style {sample.Style}", HeadlessPlayer.DefaultTimeout);
+                await SelectStyleAsync(sample, handle);
 
                 int debugAt = server.DebugLog().Length;
                 int rpcs = caster.World.RpcSnapshot().Count;
@@ -155,6 +170,15 @@ public sealed class StarterSoldierResistanceMode : NativeQaMode
                 return (int.Parse(mitigation.Groups[1].Value), final);
             }
             throw new ScenarioFailure($"Ability {sample.Id} missed all five attempts.");
+        }
+
+        async Task SelectStyleAsync(Sample sample, uint handle)
+        {
+            int views = caster.World.ViewSnapshot().Count;
+            caster.SendRpc(StarterHackerControlTargetMode.WithHandle(sample.StockStyle, handle));
+            byte[] selected = PlayerViewAttributes.BuildSelf((39, PlayerViewAttributes.U32(sample.Style)));
+            await caster.WaitUntilAsync(() => caster.World.ViewSnapshot().Skip(views).Any(view => BytePattern.IndexOf(view, selected, 0) >= 0),
+                $"Select stock style {sample.Style}", HeadlessPlayer.DefaultTimeout);
         }
     }
 }
