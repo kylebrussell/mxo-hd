@@ -137,6 +137,14 @@ namespace hds
         /// <summary>Abilities this module runs (the states above plus Impart Invisibility and Vanish, which put them on).</summary>
         public static bool Handles(UInt16 id) => Defs.ContainsKey(id) || id == ImpartInvisibilityAbility || id == VanishAbility;
 
+        // tempmods.SneakInit/SneakTerm and InvisibilityInit/InvisibilityTerm.
+        internal static byte MovementStance(ushort ability) => ability switch
+        {
+            SneakGrantAbility => AnimationPackets.StanceSneaking,
+            InvisibilityGrantAbility => AnimationPackets.StanceInvisible,
+            _ => AnimationPackets.StanceStanding
+        };
+
         // ---- per-player state ----
 
         public sealed class State
@@ -354,6 +362,9 @@ namespace hds
                 client.messageQueue.addRpcMessage(AbilityBuffs.BuildModifier(state.Mods[i].Kind, state.RecordIds[i], def.Ability,
                     state.Mods[i].Stat, state.Mods[i].Value, false, state.Seconds));
             Present(client, def.Bits, def.Flags, true);
+            byte stance = MovementStance(def.Ability);
+            if (stance != AnimationPackets.StanceStanding)
+                EmoteHandler.SetStance(client, stance, respectStealth: true);
             Output.WriteDebugLog("[STEALTH] " + TimedEffects.PlayerName(client) + " " + def.Ability + " on (bits " + def.Bits +
                 ", SL " + state.StealthLevel + (state.Seconds > 0 ? ", " + state.Seconds + " s" : "") + ")" + HiddenFromList(client));
 
@@ -407,6 +418,11 @@ namespace hds
         /// <summary>Takes the state off: records off, toggle off, DissemblingType and flags cleared for everyone.</summary>
         public static bool End(WorldClient client, string why, bool flush = true, int generation = -1)
         {
+            lock (client.playerData.upgradeSync) return EndCore(client, why, flush, generation);
+        }
+
+        private static bool EndCore(WorldClient client, string why, bool flush, int generation)
+        {
             Holder h = HolderOf(client);
             State state;
             lock (h)
@@ -422,6 +438,15 @@ namespace hds
             if (state.Def.Kind == Kind.Disguise)
                 PresentModel(client, state.OriginalDescription, state.OriginalUseRsi, state.OriginalTitle);
             Present(client, 0, state.Def.Flags, false);
+            byte stance = MovementStance(state.Def.Ability);
+            if (stance != AnimationPackets.StanceStanding && EmoteHandler.Stance(client) == stance)
+            {
+                var data = client.playerData;
+                if (client.Alive && data.getOnWorld() && !data.worldChangePending && !data.isDead && !data.duelDeath)
+                    EmoteHandler.SetStance(client, AnimationPackets.StanceStanding, respectStealth: true);
+                else
+                    data.stance = AnimationPackets.StanceStanding;
+            }
             if (state.Def.Kind == Kind.Shadow)
                 AbilityCooldowns.Start(client, state.Def.Ability, TimeUtils.GetSimTimeSeconds()); // AddRecastTimer on term
             Output.WriteDebugLog("[STEALTH] " + TimedEffects.PlayerName(client) + " " + state.Def.Ability + " off (" + why + ")");
@@ -469,9 +494,14 @@ namespace hds
         /// <summary>A view of the player was just created: give it the stealth state the creation record doesn't carry.</summary>
         public static void AfterSpawn(WorldClient observer, WorldClient target, UInt16 viewId)
         {
-            UInt16 bits = (ushort)(BitsOf(target) | AbilityBuffs.DissemblingBits(target));
+            if (HiddenFrom(observer, target)) return;
+            State state = Current(target);
+            UInt16 bits = (ushort)((state?.Def.Bits ?? 0) | AbilityBuffs.DissemblingBits(target));
             if (bits == 0) return;
             observer.messageQueue.addObjectMessage(WorldServer.BuildViewUpdate(viewId, BuildOther(bits, PvpFlag.FlagsOf(target))), false);
+            byte stance = MovementStance(state?.Def.Ability ?? 0);
+            if (stance != AnimationPackets.StanceStanding && EmoteHandler.Stance(target) == stance)
+                observer.messageQueue.addObjectMessage(WorldServer.BuildViewUpdate(viewId, EmoteHandler.CurrentStanceUpdate(target)), false);
             observer.FlushQueue();
         }
 

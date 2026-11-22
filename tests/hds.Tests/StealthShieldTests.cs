@@ -25,6 +25,26 @@ public class StealthShieldTests
     }
     private static TempMods.Effect Marker(float seconds=8)=>new(){Ability=1125,Mods=new[]{new TempMods.Mod{Kind=TempMods.KindStat,
         Proc=TempMods.Proc.Terminal,Target=710,Seconds=seconds}}};
+    [Theory]
+    [InlineData(1111, 9)]
+    [InlineData(1116, 26)]
+    public void StealthOwnsItsMovementStanceUntilTheSameStateEnds(ushort ability, byte stance)
+    {
+        var c = Client();
+        var first = Stealth.Begin(c, Stealth.Defs[ability], 19)!;
+        Assert.Equal(stance, EmoteHandler.Stance(c));
+        var replacement = Stealth.Begin(c, Stealth.Defs[ability], 19)!;
+        Assert.False(Stealth.End(c, "stale expiry", generation: first.Generation));
+        Assert.Equal(stance, EmoteHandler.Stance(c));
+        Assert.True(Stealth.End(c, "toggle off", generation: replacement.Generation));
+        Assert.Equal(AnimationPackets.StanceStanding, EmoteHandler.Stance(c));
+
+        Stealth.Begin(c, Stealth.Defs[ability], 19);
+        c.playerData.isDead = true;
+        Stealth.Cleared(c);
+        Assert.Equal(AnimationPackets.StanceStanding, EmoteHandler.Stance(c));
+    }
+
     [Fact]
     public void NativeBuiltinThrowHasAnActionByteAndReceiverLocalTargetWithoutNamed25Prefix()
     {
