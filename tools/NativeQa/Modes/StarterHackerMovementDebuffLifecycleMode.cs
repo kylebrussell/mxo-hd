@@ -10,12 +10,12 @@ public sealed class StarterHackerMovementDebuffLifecycleMode : NativeQaMode
     private const ushort Root = 99, Force = 519;
     private static readonly ushort[] Abilities = StockAbilityProfile.Profile(2, 17, Hacker, Freeze, FreezeTwo, Slow, Blast).Order().ToArray();
     private static readonly int Memory = Abilities.Sum(AbilityMemory.Cost);
-    private static readonly (ushort Stat, int Value)[] RootStats = { (Root, 0), (Force, -20) };
-    private static readonly (ushort Stat, int Value)[] SlowStats = { (115, -50), (519, -15), (524, -19), (877, -50), (878, -50) };
+    internal static readonly (ushort Stat, int Value)[] RootStats = { (Root, 0), (Force, -20) };
+    internal static readonly (ushort Stat, int Value)[] SlowStats = { (115, -50), (519, -15), (524, -19), (877, -50), (878, -50) };
     // Full stock requests used in PR606 and PR597. Patch only the live helper view/spawn.
-    private const string FreezeStock = "80b92800040002000000000000000000000000000000000000000000ffff7f7f00000000086b0000000000";
+    internal const string FreezeStock = "80b92800040002000000000000000000000000000000000000000000ffff7f7f00000000086b0000000000";
     private const string FreezeTwoStock = "80b92900000000000000000000000000000000000000000000000000d557377c20000000086b0000000000";
-    private const string SlowStock = "80b95600040002000000000000000000000000000000000000000000585cbb0001000000086b0000000000";
+    internal const string SlowStock = "80b95600040002000000000000000000000000000000000000000000585cbb0001000000086b0000000000";
     private const string BlastStock = "80b93a000400020000000000000000000000000000000000000000000000000090767241086b0000000000";
 
     public override string Name => "ability-parity-starter-hacker-movement-debuff-lifecycle";

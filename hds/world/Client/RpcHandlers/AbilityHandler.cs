@@ -62,10 +62,13 @@ namespace hds
             // These Hacker controls and debuffs require a live selected enemy.
             bool hostileControl = AbilityID == 43 || AbilityID == 48 || AbilityID == 315;
             bool starterMovementDebuff = AbilityID == 40 || AbilityID == 41 || AbilityID == 86;
+            ushort? movementDebuffTargetSpawn = null;
             if (hostileControl || starterMovementDebuff || AbilityID == 66 || AbilityID == 69 ||
                 AbilityID == 354 || AbilityID == 476)
             {
-                ushort? spawn = packet.Length == 41 ? (ushort?)BitConverter.ToUInt16(packet, 4) : null;
+                if (AbilityID == 40 || AbilityID == 86)
+                    movementDebuffTargetSpawn = (ushort?)Store.currentClient.viewMan.getViewById(currentTargetViewId)?.spawnId;
+                ushort? spawn = packet.Length == 41 ? (ushort?)BitConverter.ToUInt16(packet, 4) : movementDebuffTargetSpawn;
                 if (!AbilityTargets.HasLiveAttackSelection(Store.currentClient, currentTargetViewId, spawn, requireOpponent: hostileControl || starterMovementDebuff))
                 {
                     // Stock reason 24 is ID_TARGET_NOT_VALID. The client supplies the only refusal line.
@@ -681,6 +684,13 @@ namespace hds
                 (definition == null || definition.DirectDamage || definition.DamageOverTime || TempMods.Has(AbilityID) ||
                  AbilityHostile.Lands(AbilityID) || CombatSpecials.TargetsEnemy(AbilityID)))
             {
+                if (movementDebuffTargetSpawn.HasValue &&
+                    (!AbilityTargets.HasLiveAttackSelection(client, hostileView, movementDebuffTargetSpawn, requireOpponent: true) ||
+                     !AbilityTargets.WithinSelectionRange(client, AbilityID, hostileView)))
+                {
+                    Output.WriteDebugLog($"[ABILITY] {AbilityID} fizzles: the selected movement-debuff target changed or left range");
+                    return;
+                }
                 // When the cast ends it lands on that NPC (any NPC in view, starting a fight if there is none):
                 // the retail damage and effect, stuns and damage over time (AbilityTargets). It used to land at once,
                 // and only on the close-combat target.
