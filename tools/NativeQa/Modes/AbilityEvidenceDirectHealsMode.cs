@@ -120,17 +120,11 @@ internal static class EvidenceRetestWire
 
     internal static byte[] Cast(HeadlessPlayer caster, ushort ability, ViewCreation? target = null)
     {
-        byte[] request = CastRequest(ability, target);
-        caster.SendRpc(request);
-        return request;
-    }
-
-    internal static byte[] CastRequest(ushort ability, ViewCreation? target = null)
-    {
         // Ordinary full-length targeted 80 b9 format from the stock PR316 health cast.
         byte[] request = Convert.FromHexString("80b9a0010d000b000000000000000000000000000000000000000000ffff7f7f00000000086b0000000000");
         BinaryPrimitives.WriteUInt16LittleEndian(request.AsSpan(2), ability);
         BinaryPrimitives.WriteUInt32LittleEndian(request.AsSpan(4), target == null ? 0u : target.ViewId | ((uint)target.SpawnId << 16));
+        caster.SendRpc(request);
         return request;
     }
 

@@ -12,6 +12,13 @@ public sealed class StarterGuardianSupportLoadoutMode : NativeQaMode
     private static readonly NativeQaModePlan BasePlan = new StarterGuardianSightMode().Plan;
     private static readonly ushort[] LoadOrder = { 46, 68, 173 };
     private static readonly ushort[] UnloadOrder = { 173, 68, 46 };
+    // Complete landed stock frames from PR773, 12:57:08 / :12 / :17. Only the live target handle changes.
+    private static readonly Dictionary<ushort, string> StockRequests = new()
+    {
+        [46] = "80b92e00040002000000000000000000000000000000000000000000d557377c20000000086b0000000000",
+        [68] = "80b944000400020000000000000000000000000000000000000000001060bf0001000000086b0000000000",
+        [173] = "80b9ad000400020000000000000000000000000000000000000000001060bf0001000000086b0000000000"
+    };
 
     public override string Name => "ability-parity-starter-guardian-support-loadout";
 
@@ -46,13 +53,12 @@ public sealed class StarterGuardianSupportLoadoutMode : NativeQaMode
         if (context.StockProbe is not { } caster) return Array.Empty<byte>();
 
         var archive = VerifyProfile(caster, BasePlan.Abilities.ToArray());
-        await StartAsync(caster, friend, server, pvp: true);
-        var view = await caster.WaitForViewNamedAsync(friend.Handle);
+        uint handle = await StartAsync(caster, friend, server, pvp: true);
         int friendStart = friend.World.RpcSnapshot().Count;
         await StockAbilityProfile.ChangeLoadoutAsync(caster, archive, UnloadOrder, load: false);
         foreach (var sample in Samples)
             await StarterHackerControlTargetMode.RefusedAsync(caster, sample.Id,
-                EvidenceRetestWire.CastRequest(sample.Id, view), AbilityRefusals.NotLoaded);
+                Request(sample.Id), AbilityRefusals.NotLoaded);
         foreach (var sample in Samples)
             Check.That(!SawAnyBonus(friendStart, sample.Id, sample.Duration, sample.Bonuses), $"Unloaded {sample.Id} cannot change QAFriend");
         await StockAbilityProfile.ChangeLoadoutAsync(caster, archive, LoadOrder, load: true);
@@ -96,11 +102,13 @@ public sealed class StarterGuardianSupportLoadoutMode : NativeQaMode
         Console.WriteLine("GUARDIAN SUPPORT LOADOUT PASS 46/68/173");
         return Array.Empty<byte>();
 
+        byte[] Request(ushort ability) => StarterHackerControlTargetMode.WithHandle(StockRequests[ability], handle);
+
         async Task<int> BeginAsync(ushort ability)
         {
             int cursor = caster.World.RpcSnapshot().Count;
             caster.SkipReceived();
-            EvidenceRetestWire.Cast(caster, ability, view);
+            caster.SendRpc(Request(ability));
             await EvidenceRetestWire.CastBarAsync(caster, ability, 2);
             return cursor;
         }
