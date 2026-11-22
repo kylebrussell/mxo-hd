@@ -1,6 +1,6 @@
 # Combat Insight113 and Gaussian Blur49 — OURS entry scores
 
-This is a labelled **OURS approximation**, not retail parity. A new player interlock against current Evade Combat217 compares deterministic force and evasion scores. Combat Insight's existing loaded stat1048 scales force once; Gaussian Blur's existing direct520+25 increases evasion. Neither is added to accuracy, health damage or shield HP. The retail forced-entry caller/probability and shield-health baseline remain unrecovered.
+This is a labelled **OURS approximation**, not retail parity. A new player interlock against current Evade Combat217 compares deterministic force and evasion scores. Combat Insight's existing loaded stat1048 scales force once; Gaussian Blur's existing direct520+25 increases evasion. Neither is added to accuracy or character HP damage. The retail entry predicate remains unresolved. See the shield meter evidence below for what follows a resisted request.
 
 ```
 baseForce = max(0,100 + current tactic ForceCombat + direct519)
@@ -14,9 +14,15 @@ The100 baseline and10 active-evasion margin are explicit OURS normalization. Thi
 
 The starter Evade fixture exercises Execute Program’s +5 Evade Interlock Bonus (1049) inside this same rule. Against a live shield it raises the baseline 110 to 115 and blocks Force 110. Unloading Execute Program restores equality. With the shield off, a loaded bonus has no effect on entry.
 
-The check runs after existing PvP legality, range, ranged-request suppression, same-fight targeting and join-capacity checks, before a new fight mutates combat state. It applies to either client ForcedInterlock flag value. Non-evasion targets, existing interlocks/joins and ranged fire retain their behavior. Positive520 alone cannot recreate the gate when217 is off or1125 suppresses it. The existing target-owned217 generation/world/life state is reused; no new meter, sticky flag, timer, cost or RNG draw is introduced. Existing admitted-round RNG is unchanged. Player-to-NPC and NPC-initiated entry are outside this first consumer because those actors lack the same217 ownership capability.
+The check runs after existing PvP legality, range, ranged-request suppression, same-fight targeting and join-capacity checks, before a new fight mutates combat state. It applies to either client ForcedInterlock flag value. Non-evasion targets, existing interlocks/joins and ranged fire retain their behavior. Positive520 alone cannot recreate the gate when217 is off or1125 suppresses it. The existing target-owned 217 generation and its world and life checks keep resisted requests tied to one shield. Existing admitted-round RNG is unchanged. Player-to-NPC and NPC-initiated entry are outside this first consumer because those actors lack the same217 ownership capability.
 
 The existing4d forced-entry refusal shape is reused, with no recast timer and explicit OURS score text. Exact localized reason14 wording is a native check, not a newly proven retail semantic.
+
+## Shield meter after a resisted request
+
+Retail view 2 attribute 30 is a byte. The retained Vector_zerooneetc capture shows 255 → 166 → 77 → 0 on reason 14 replies. Vector45 shows 255 → 153 → 51 → 0 and, in another fight, 255 → 127 → 0. The zero records include a 217 switch-off. In each sequence the attempt that broke the shield was still resisted. See Vector_zerooneetc packet starts 62241, 64611, 68213 and 68548, and Vector45 packet starts 10011, 10098, 36622, 36810, 36979 and 38605 under `research/packet-dumps/community-intake`.
+
+The current player-versus-player resistance branch now publishes the remaining meter to the defender and observers, including observers entering view later. It applies [the shipped shield damage function](../research/client-scripts/combat_calculations.py#L233) to the two levels and active Force Combat Bonus stat 1048. The rounded damage-to-byte conversion assumes a 100-point scale and reproduces the three observed sequences for 35, 40 and 50 damage. The raw pool and exact bonus input were inferred from the captures. Protection ends on depletion or IS shortfall. Disable Evasion suppresses the meter and restores the same remaining value when it expires.
 
 ## Fixture and qualification scope
 

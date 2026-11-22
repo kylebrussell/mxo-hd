@@ -18,12 +18,12 @@ public sealed class StarterEvadeResistVirusesMode : NativeQaMode
         {
             PvpOpponentsFixture.NativeSql,
             $"UPDATE characters SET level={Level},exp={PlayerProgression.ExperienceForLevel(Level)},x={X},y={Y},z={Z},rotation=64 WHERE charId=110",
-            $"UPDATE characters SET x={EnemyX},y={Y},z={Z} WHERE charId=6114",
+            $"UPDATE characters SET level={Level},exp={PlayerProgression.ExperienceForLevel(Level)},x={EnemyX},y={Y},z={Z} WHERE charId=6114",
             "DELETE FROM inventory WHERE charId IN (110,6114) AND slot=107",
             "DELETE FROM char_abilities WHERE char_id=6114",
             "INSERT INTO char_abilities (char_id,slot,ability_id,level,is_loaded) VALUES " +
-                "(6114,400,2147485696,50,1),(6114,401,2147501056,50,1),(6114,402,2147599360,50,1)"
-        }, DevCommands: true, hotbarAbilities: new[] { Evade }, testMobFixture: "martial-player-controls.csv",
+                $"(6114,400,2147485696,{Level},1),(6114,401,2147501056,{Level},1),(6114,402,2147599360,{Level},1)"
+        }, DevCommands: true, hotbarAbilities: new[] { Evade }, hotbarWithdraw: true, testMobFixture: "martial-player-controls.csv",
         environmentOverrides: new()
         {
             ["MXO_AGGRO"] = "0", ["MXO_MOB_WANDER"] = "0", ["MXO_PVP_SERVER"] = "1",
@@ -31,9 +31,9 @@ public sealed class StarterEvadeResistVirusesMode : NativeQaMode
         }, extraQaMetadata: new() { ["ScopedStockRows"] = "76,113,217", ["NativeCloseableRows"] = 0 },
         readyMessages: new[]
         {
-            "Level-19 CSR (17000,495,6400) faces QAEnemy (17250,495,6400), both clear outdoor NAV. No bag or player-target clicks. Leave CSR on Speed. QAEnemy is in Power with Combat Insight, force 110.",
-            "With Resist Viruses loaded, press page 2 slot 1 Evade Combat at rest. Expect [VITALS] IS 2000 to 1960 and shield 624. Send helper melee on CSR. Check [COMBAT-INSIGHT OURS] for force110 evade114 allowedFalse. Enter ?qaunload 76 on CSR and check [MODIFIER] 1030 +4, 1045 +4, 1049 +2 removals. Repeat helper melee: force110 evade112 allowedFalse. Execute Program and Selective Phage still contribute +1 each.",
-            "Enter ?qaload 76 and check all three records restore. Press slot 1 again to stop the shield, then repeat helper melee. It now admits and starts [PVP] without an evade-score line. Observe the 30 s own reuse from turning the shield off. Withdraw or stop the fixture."
+            "Level-19 CSR (17000,495,6400) faces QAEnemy (17250,495,6400), both clear outdoor NAV. No bag or player-target clicks. Leave CSR on Speed. QAEnemy is level 19, in Power with Combat Insight +3, force 103.",
+            "With Resist Viruses loaded, press page 2 slot 1 Evade Combat at rest. Expect [VITALS] IS 2000 to 1960 and shield 624. Send helper melee on CSR. Check [COMBAT-INSIGHT OURS] for force103 evade114 allowedFalse and [EVASION] IS 1960->1950, shield 255->163. Enter ?qaunload 76 on CSR and check [MODIFIER] 1030 +4, 1045 +4, 1049 +2 removals. Repeat helper melee: force103 evade112 allowedFalse, IS 1950->1940, shield 163->71. Execute Program and Selective Phage still contribute +1 each.",
+            "Enter ?qaload 76 and check all three records restore. Repeat helper melee: IS 1940->1930, shield 71->0, no round, state off, 30 s own reuse. Send helper melee once more. This time it starts a [PVP] round. End with stock Withdraw (page 2 slot 2) and helper stop. Check own shield and the helper observer meter in the capture."
         });
 
     public override async Task<byte[]> AfterStartAsync(NativeQaBootstrapContext context)
@@ -54,7 +54,7 @@ public sealed class StarterEvadeResistVirusesMode : NativeQaMode
             ManageBonusRecord.TryDecode(frame.Bytes, out var record) && record!.SourceId == 1017 && record.TargetId == 1012,
             "Helper selected Power");
         await StockAbilityProfile.ObserveAsync(enemy, 0, frame =>
-            StockAbilityProfile.Bonus(frame, Insight, 1048, 10, 0, false), "Helper Combat Insight +10");
+            StockAbilityProfile.Bonus(frame, Insight, 1048, 3, 0, false), "Helper Combat Insight +3");
         if (context.StockProbe is not { } actor) return Array.Empty<byte>();
 
         var archive = AbilityMemoryUiFixture.Decode(actor.CharacterData[6]).Where(row => AbilityMemory.IsAbility(row.Descriptor))
@@ -77,21 +77,21 @@ public sealed class StarterEvadeResistVirusesMode : NativeQaMode
             .SelectMany(AbilityParityCoderSweepMode.InnerStrengthUpdates).Contains((ushort)1960),
             "Evade spends 40 IS", HeadlessPlayer.DefaultTimeout);
 
-        await AttackAsync(114);
+        await AttackAsync(114, 1950, 163);
         int removed = await StockAbilityProfile.ChangeLoadoutAsync(actor, archive, new[] { Resist }, load: false);
         await ObservePassivesAsync(removed, true);
-        await AttackAsync(112);
+        await AttackAsync(112, 1940, 71);
         int restored = await StockAbilityProfile.ChangeLoadoutAsync(actor, archive, new[] { Resist }, load: true);
         await ObservePassivesAsync(restored, false);
         int shieldOff = actor.World.RpcSnapshot().Count;
-        actor.SendRpc(StockEvade);
+        await AttackAsync(114, 1930, 0);
         await StockAbilityProfile.ObserveAsync(actor, shieldOff, frame =>
             ManageBonusRecord.TryDecode(frame.Bytes, out var record) && record!.SourceId == Evade &&
-            record.TargetId == EvasionShield.StateAbility && record.AddRemoveType == 1, "Evade shield removed");
+            record.TargetId == EvasionShield.StateAbility && record.AddRemoveType == 1, "Evade shield removed by the final resisted attempt");
         await EvidenceRetestWire.TimerAsync(actor, shieldOff, Evade, AbilityCooldowns.OwnTimer, 30);
         await AttackAsync(null);
         Check.Equal(0, actor.World.Problems.Count + enemy.World.Problems.Count, "Evade/Resist stock framing");
-        Console.WriteLine("EVADE RESIST PASS: force 110 versus 114 loaded, versus 112 unloaded, and admitted with shield off.");
+        Console.WriteLine("EVADE RESIST PASS: force 103, shield 255/163/71/0, and admitted with shield off.");
         return Array.Empty<byte>();
 
         async Task ObservePassivesAsync(int from, bool removed)
@@ -101,16 +101,28 @@ public sealed class StarterEvadeResistVirusesMode : NativeQaMode
                     frame => StockAbilityProfile.Bonus(frame, Resist, stat, value, 0, removed), $"Resist Viruses {stat}, remove={removed}");
         }
 
-        async Task AttackAsync(int? evade)
+        async Task AttackAsync(int? evade, ushort expectedIs = 0, byte expectedHealth = 0)
         {
             int logAt = server.DebugLog().Length;
             enemy.SkipReceived();
+            actor.SkipReceived();
             enemy.SendRpc($"40 {handle} 01 6b");
             bool admitted = evade is null;
             await enemy.WaitForRpcAsync(admitted ? $"46 {handle} 01" : $"4d 0e 00 01 00 {handle}");
             Check.That(admitted ? !server.DebugLog()[logAt..].Contains("[COMBAT-INSIGHT OURS]") :
-                server.DebugLog()[logAt..].Contains($"QAEnemy -> CSR_Tester force110 evade{evade} allowedFalse"),
+                server.DebugLog()[logAt..].Contains($"QAEnemy -> CSR_Tester force103 evade{evade} allowedFalse"),
                 "Same attack consumes the current shield and Resist Viruses bonus");
+            if (!admitted)
+            {
+                byte[] own = PlayerViewAttributes.BuildSelf((PlayerViewAttributes.SelfInnerStrength, PlayerViewAttributes.U16(expectedIs)),
+                    (30, PlayerViewAttributes.U8(expectedHealth)));
+                await actor.WaitForViewUpdateAsync(2, WireFormat.ToHex(own[2..]));
+                if (expectedHealth > 0)
+                {
+                    byte[] other = PlayerViewAttributes.Build((21, PlayerViewAttributes.U8(expectedHealth)));
+                    await enemy.WaitForViewUpdateAsync(target.ViewId, WireFormat.ToHex(other));
+                }
+            }
             if (admitted)
             {
                 enemy.SkipReceived();
