@@ -203,6 +203,10 @@ namespace hds
                 Output.WriteDebugLog("[AURA] " + id + " friendly pulse " + effectId);
                 return;
             }
+            // Miasma's authored effect has a viral hit test. The parent toggle and its upkeep
+            // are paid once, while each eligible recipient of the 701 pulse rolls separately.
+            var contest = effectId == 701 && effect.Number("Ability/TestFunction") == 2 ? new AbilityItem() : null;
+            contest?.setAbilityID(effectId);
             double radius = effect.Number("Ability/RadiusOfEffect");
             double x = 0, y = 0, z = 0;
             NumericalUtils.LtVector3dToDoubles(client.playerInstance.Position.getValue(), ref x, ref y, ref z);
@@ -213,6 +217,7 @@ namespace hds
             foreach (var (mob, view) in AbilityHostile.MobsInArea(client, x, y, z, radius))
             {
                 if (!Current(client, id, generation)) break;
+                if (contest != null && !FreeCastViralContest.Npc(client, contest, mob, client.viewMan.getViewById(view))) continue;
                 TimedEffects.ApplyToMob(client, mob, view, effectId);
                 if (damage > 0)
                 {
@@ -224,6 +229,7 @@ namespace hds
             foreach (WorldClient target in AbilityHostile.PlayersInArea(client, x, y, z, radius))
             {
                 if (!Current(client, id, generation)) break;
+                if (contest != null && !FreeCastViralContest.Player(client, contest, target)) continue;
                 PvpFlag.OnFightStarts(client, true);
                 TimedEffects.ApplyToPlayer(target, effectId, name, client);
                 if (effectId == 946) // Trojan Horse's instant Current Inner Strength modifier.

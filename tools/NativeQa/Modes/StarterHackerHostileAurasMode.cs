@@ -27,6 +27,8 @@ public sealed class StarterHackerHostileAurasMode : NativeQaMode
             $"UPDATE characters SET level=50,exp={PlayerProgression.ExperienceForLevel(50)},x={stand.X},y=495,z={stand.Z},healthC=3000,healthM=3000,innerStrC=500,innerStrM=500,alignment={stand.Org},pvpflag=0 WHERE charId={stand.Id}")).ToArray(),
         DevCommands: true, hotbarAbilities: new[] { Miasma, StaticField }, environmentOverrides: new()
         {
+            ["MXO_FREECAST_VIRAL_QA"] = "1", ["MXO_FREECAST_VIRAL_QA_ATTACK15"] = "32766",
+            ["MXO_FREECAST_VIRAL_QA_DEFENSE15"] = "0",
             ["MXO_MOBS"] = "test", ["MXO_AGGRO"] = "0", ["MXO_MOB_WANDER"] = "0",
             ["MXO_PVP_SERVER"] = "1", ["MXO_PVP_MAX_SAFE_LEVEL"] = "15"
         }, extraQaMetadata: new() { ["ScopedStockRows"] = "61,701,89,694", ["NativeCloseableRows"] = 0 },
