@@ -1,0 +1,72 @@
+{
+  "families": {
+    "hacker-movement-accelerator-stock-stances": {
+      "representative": 323,
+      "result": "pass",
+      "head": "ed42ff95",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/868#issuecomment-7087749583",
+      "scope": "Actual 323/423 friendly recipient, exact costs and timers, sibling replacement, active stance-specific scales on owner and observers, and dismissal. Stock matched relative movement distances in normal, Spy Sneak and Belt. Also witnessed Hyper-Speed 12 in all three stances."
+    }
+  },
+  "abilities": {
+    "12": {
+      "checks": {
+        "stats": {
+          "source": "The retained Hyper-Speed record sets normal +45, Sneak/Invisibility +12, all 600 s.",
+          "runtime": "AbilityBuffs preserves the three separate raw records and independently publishes the currently selected movement scale.",
+          "test": "MovementBuffProjectsTheSelectedStanceWithoutStackingChannels measures .45/.12/.12, and stock PR868 confirms its add, active records and matching removals. https://github.com/kylebrussell/mxo-hd/pull/868#issuecomment-7087749583"
+        },
+        "consumer": {
+          "source": "The shipped effect has separate normal, Sneak and Invisibility movement components.",
+          "runtime": "AbilityBuffs and Stealth recompute owner/observer speed from the active stance rather than reusing the normal run channel under stealth.",
+          "test": "Native PR868 reports normal, Spy Sneak, and Belt travel factors 1.43/1.108/1.123 against the respective stance baselines and decodes the exact .12 stealth field. Exiting stance restores the normal channel. https://github.com/kylebrussell/mxo-hd/pull/868#issuecomment-7087749583"
+        },
+        "behavior-tests": {
+          "source": "The retained Hyper-Speed record sets normal +45, Sneak/Invisibility +12, all 600 s. Expected cost 40 IS. The active effect is self-only.",
+          "runtime": "Normal cast applies the timed speed to the caster; normal dismissal/expiry clears its records and MovementScale.",
+          "test": "The exact stock-wire Hyper-Speed/Sneak/Belt/dismiss bootstrap, the focused stance/expiry tests and the native self cast confirm the records and baseline return. https://github.com/kylebrussell/mxo-hd/pull/868#issuecomment-7087749583"
+        }
+      }
+    },
+    "323": {
+      "checks": {
+        "stats": {
+          "source": "GOB 323 stores fixed 25/5/5 for Movement Speed 115, Sneak 877 and Invisibility 878 over 720 s.",
+          "runtime": "AbilityBuffs preserves the three separate raw records and independently publishes the currently selected movement scale.",
+          "test": "MovementBuffProjectsTheSelectedStanceWithoutStackingChannels measures .25/.05/.05, and stock PR868 confirms its add, active records and matching removals. https://github.com/kylebrussell/mxo-hd/pull/868#issuecomment-7087749583"
+        },
+        "consumer": {
+          "source": "The shipped effect has separate normal, Sneak and Invisibility movement components.",
+          "runtime": "AbilityBuffs and Stealth recompute owner/observer speed from the active stance rather than reusing the normal run channel under stealth.",
+          "test": "Native PR868 reports normal, Spy Sneak, and Belt travel factors 1.23/1.03/1.053 against the respective stance baselines and decodes the exact .05 stealth field. Exiting stance restores the normal channel. https://github.com/kylebrussell/mxo-hd/pull/868#issuecomment-7087749583"
+        },
+        "behavior-tests": {
+          "source": "GOB 323 stores fixed 25/5/5 for Movement Speed 115, Sneak 877 and Invisibility 878 over 720 s. Expected cost 40 IS. Own reuse 8 s.",
+          "runtime": "The friendly support route updates only the selected friendly recipient. The movement family replaces and removes the lower tier through normal buff handling.",
+          "test": "The focused stance/expiry tests and native PR868 cover the self comparison, normal friendly cast, costs, reuse, recipient records, sibling replacement and dismissal. https://github.com/kylebrussell/mxo-hd/pull/868#issuecomment-7087749583"
+        }
+      },
+      "family": "hacker-movement-accelerator-stock-stances"
+    },
+    "423": {
+      "checks": {
+        "stats": {
+          "source": "GOB 423 stores fixed 45/10/10 for Movement Speed 115, Sneak 877 and Invisibility 878 over 960 s.",
+          "runtime": "AbilityBuffs preserves the three separate raw records and independently publishes the currently selected movement scale.",
+          "test": "MovementBuffProjectsTheSelectedStanceWithoutStackingChannels measures .45/.10/.10, and stock PR868 confirms its add, active records and matching removals. https://github.com/kylebrussell/mxo-hd/pull/868#issuecomment-7087749583"
+        },
+        "consumer": {
+          "source": "The shipped effect has separate normal, Sneak and Invisibility movement components.",
+          "runtime": "AbilityBuffs and Stealth recompute owner/observer speed from the active stance rather than reusing the normal run channel under stealth.",
+          "test": "Native PR868 reports normal, Spy Sneak, and Belt travel factors 1.42/1.085/1.107 against the respective stance baselines and decodes the exact .10 stealth field. Exiting stance restores the normal channel. https://github.com/kylebrussell/mxo-hd/pull/868#issuecomment-7087749583"
+        },
+        "behavior-tests": {
+          "source": "GOB 423 stores fixed 45/10/10 for Movement Speed 115, Sneak 877 and Invisibility 878 over 960 s. Expected cost 50 IS. Own reuse 10 s.",
+          "runtime": "The friendly support route updates only the selected friendly recipient. The movement family replaces and removes the lower tier through normal buff handling.",
+          "test": "The focused stance/expiry tests and native PR868 cover the self comparison, normal friendly cast, costs, reuse, recipient records, sibling replacement and dismissal. https://github.com/kylebrussell/mxo-hd/pull/868#issuecomment-7087749583"
+        }
+      },
+      "family": "hacker-movement-accelerator-stock-stances"
+    }
+  }
+}
