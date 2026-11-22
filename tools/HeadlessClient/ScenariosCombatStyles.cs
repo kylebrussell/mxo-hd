@@ -1,3 +1,4 @@
+using hds;
 using System.Text.RegularExpressions;
 
 namespace HeadlessClient;
@@ -161,40 +162,48 @@ public static partial class Scenarios
         await knifer.WaitUntilAsync(() => context.Server.DebugLog().Contains("146 ticks on WinterFrost for 3"),
             "ThrownDOT ticks int(26 / 25 x 2.5 + .5)", TimeSpan.FromSeconds(10));
 
-        // Exile weapons on another NPC (not the fight's target, so they land at once): 10, x10 against the weakness
-        knifer.SendChat("?exileweakness wood Trainman");
-        await knifer.WaitForTextAsync("Trainman now has Exile weakness 464");
-        Cast(knifer, 208, trainman.ViewId);
-        // Trainman has 500 health: the health updates show the damage (the debug log can drop lines under load)
-        await knifer.WaitUntilAsync(() => ViewUpdateValues(knifer, trainman.ViewId, NpcHealthUpdate).Contains(490),
-            "Silver Bullet does its base 10 to a wood-weak NPC", TimeSpan.FromSeconds(20));
-        Cast(knifer, 207, trainman.ViewId);
-        await knifer.WaitUntilAsync(() => ViewUpdateValues(knifer, trainman.ViewId, NpcHealthUpdate).Contains(390),
-            "Wooden Stake does x10 to a wood-weak NPC", TimeSpan.FromSeconds(20));
+        // Trainman is neither the current opponent nor a legal substitute for it.
+        foreach (ushort ability in new ushort[] { CombatSpecials.SilverBullet, CombatSpecials.WoodenStake })
+        {
+            knifer.SkipReceived();
+            Cast(knifer, ability, trainman.ViewId);
+            await knifer.WaitForRpcAsync(frame => AbilityRefusals.TryDecode(frame.Bytes, out var refusal) &&
+                refusal.AbilityID == ability && refusal.ErrorID == AbilityRefusals.InvalidTarget,
+                $"Exile attack {ability} refuses the invalid opponent");
+        }
         Check.Equal(0, knifer.World.Problems.Count + brawler.World.Problems.Count, "Specials protocol");
     }
 
     private static async Task CombatExileWeapons(ScenarioContext context)
     {
-        var samples = new[] { (Ability: (ushort)208, Health: (ushort)490),
-            (Ability: (ushort)207, Health: (ushort)390), (Ability: (ushort)1022, Health: (ushort)0) };
-        // A separate owner per cast keeps each item attack on its ordinary direct-object path.
-        var attackers = await context.AddPlayersInWorldAsync(samples.Select(sample =>
-            NearNpc($"Exile{sample.Ability}") with
-            {
-                InnerStrength = 500, MaxInnerStrength = 500,
-                OwnedLoadedAbilities = new[] { (sample.Ability, (ushort)50) }
-            }).ToArray());
-        attackers[0].SendChat("?exileweakness wood Trainman");
-        await attackers[0].WaitForTextAsync("Trainman now has Exile weakness 464");
-        foreach (var (attacker, sample) in attackers.Zip(samples))
+        ushort[] attacks = { CombatSpecials.WoodenStake, CombatSpecials.SilverBullet,
+            CombatSpecials.WoodenStakePlus, CombatSpecials.SilverBulletPlus };
+        var fighter = await context.AddPlayerAsync(NearNpc("ExileWeapons") with
         {
-            var target = await attacker.WaitForViewNamedAsync("Trainman");
-            Cast(attacker, sample.Ability, target.ViewId);
-            await attacker.WaitUntilAsync(() => ViewUpdateValues(attacker, target.ViewId, NpcHealthUpdate).Contains(sample.Health),
-                $"Exile attack {sample.Ability} changes Trainman's health to {sample.Health}", TimeSpan.FromSeconds(15));
-            Check.Equal(0, attacker.World.Problems.Count, "Exile item attack protocol");
+            InnerStrength = 500, MaxInnerStrength = 500,
+            OwnedLoadedAbilities = attacks.Prepend((ushort)17).Select(id => (id, (ushort)50)).ToArray()
+        });
+        await fighter.EnterWorldAsync();
+        var opponent = await fighter.WaitForViewNamedAsync("Trainman");
+        foreach (ushort attack in attacks)
+        {
+            fighter.SkipReceived();
+            Cast(fighter, attack, opponent.ViewId);
+            await fighter.WaitForRpcAsync(frame => AbilityRefusals.TryDecode(frame.Bytes, out var refusal) &&
+                refusal.AbilityID == attack && refusal.ErrorID == AbilityRefusals.InvalidTarget,
+                $"Exile attack {attack} refuses the invalid opponent");
         }
+        string opponentHandle = WireFormat.ToHex(BitConverter.GetBytes(DuelPackets.Handle(opponent.ViewId, opponent.SpawnId)));
+        fighter.SendRpc($"40 {opponentHandle} 01 6b");
+        await fighter.WaitForRpcAsync($"40 {opponentHandle} 00 6b");
+        await fighter.WaitForRpcAsync("47");
+
+        int cursor = context.Server.DebugLog().Length;
+        Cast(fighter, CombatSpecials.WoodenStake, opponent.ViewId);
+        await fighter.WaitUntilAsync(() => context.Server.DebugLog()[cursor..].Contains(
+            "[COMBAT] WoodenStakeAttackAbility is the next move", StringComparison.Ordinal),
+            "The existing legacy request still queues on the live interlock opponent", TimeSpan.FromSeconds(10));
+        Check.Equal(0, fighter.World.Problems.Count, "Exile weapon admission protocol");
     }
 
     /// <summary>The same specials between two flagged players, with the caster buffs.</summary>
