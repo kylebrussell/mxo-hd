@@ -68,10 +68,14 @@ namespace hds
 
             // These starter Coder casts require a live selected target, including the Tinkering area centre.
             bool starterCoderCast = AbilityID == 21 || AbilityID == 33 || AbilityID == 36 || AbilityID == 514;
+            ushort? coderTargetSpawn = null;
             if (starterCoderCast)
             {
-                ushort? spawn = packet.Length == 41 ? (ushort?)BitConverter.ToUInt16(packet, 4) : null;
-                if (!AbilityTargets.HasLiveAttackSelection(Store.currentClient, currentTargetViewId, spawn, requireOpponent: true))
+                var caster = Store.currentClient;
+                coderTargetSpawn = (ushort?)caster.viewMan.getViewById(currentTargetViewId)?.spawnId;
+                ushort? requestedSpawn = packet.Length == 41 ? BitConverter.ToUInt16(packet, 4) : coderTargetSpawn;
+                if (!coderTargetSpawn.HasValue ||
+                    !AbilityTargets.HasLiveAttackSelection(caster, currentTargetViewId, requestedSpawn, requireOpponent: true))
                 {
                     const string notice = "Select a living enemy before using this ability.";
                     new ServerPackets().sendSystemChatMessage(Store.currentClient, notice, "BROADCAST");
@@ -587,6 +591,14 @@ namespace hds
                 {
                     AbilityCooldowns.Start(client, ability.getAbilityID(), TimeUtils.GetSimTimeSeconds());
                 }
+
+            if (starterCoderCast &&
+                (!AbilityTargets.HasLiveAttackSelection(client, currentTargetViewId, coderTargetSpawn, requireOpponent: true) ||
+                 !AbilityTargets.WithinSelectionRange(client, AbilityID, currentTargetViewId)))
+            {
+                Output.WriteDebugLog($"[ABILITY] {AbilityID} fizzles: the selected Coder target changed or left range");
+                return;
+            }
 
             if (AbilityID == ConcealmentDetection.Ability)
             {
