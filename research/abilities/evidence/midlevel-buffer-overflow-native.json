@@ -1,0 +1,33 @@
+{
+  "families": {
+    "hacker-buffer-overflow-selected": {
+      "representative": 395,
+      "result": "pass",
+      "head": "fa98df63",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/857#issuecomment-7087570880",
+      "scope": "Stock empty/ally/range refusal, actual 38 IS/2 s/30 s and 80-point 60-second reservation. Friendly Firewall 319 on the affected target was blocked without payment and succeeded after expiry."
+    }
+  },
+  "abilities": {
+    "395": {
+      "family": "hacker-buffer-overflow-selected",
+      "checks": {
+        "targeting": {
+          "source": "GOB 395 is a selected hostile program with a stored range and ordinary viral test.",
+          "runtime": "AbilityHandler preflights the loaded live opposing view, checks range and its spawn again on landing, and uses the common viral sight and deflection route.",
+          "test": "StarterViralDebuffRequiresTheOriginalHostileSpawnAtLanding catches a respawn before the cast completes. Native PR857 sent reason 24 empty/ally, reason 34 at 15 m, and correctly landed on the living hostile at 2 m. https://github.com/kylebrussell/mxo-hd/pull/857#issuecomment-7087570880"
+        },
+        "source-parity": {
+          "source": "GOB 395 stores an 80-point timed ability-buffer reservation, not a damage or resource effect.",
+          "runtime": "AbilityBuffBuffer reserves up to the available capacity and denies subsequent upgrades when the real occupancy budget is insufficient, using the disclosed local base capacity policy.",
+          "test": "The level-one target retains the 10-point 173 effect while 395 reserves 80 for exactly 60 seconds. The stock helper attempts the same 24-point 319 before and after expiry: first denied without payment and then accepted. https://github.com/kylebrussell/mxo-hd/pull/857#issuecomment-7087570880"
+        },
+        "behavior-tests": {
+          "source": "The GOB sets 38 IS/2 s cast/30 s reuse and one 60 s reservation.",
+          "runtime": "Normal admission, timed effect and buffer logic share the same path for native and headless actors.",
+          "test": "HackerBufferOverflowMode replays retained 173/319 frames. The live helper console proof verifies no cost or reuse during the reservation and the normal helper payment/reuse afterward; stock PR857 independently confirms the refusal, debits, modifiers, expiry and lack of damage. The native run did not separately read the helper reuse frame. https://github.com/kylebrussell/mxo-hd/pull/857#issuecomment-7087570880"
+        }
+      }
+    }
+  }
+}

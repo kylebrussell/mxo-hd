@@ -15,7 +15,7 @@
       }
     },
     "693": {
-      "note": "Reopen source-parity because the archived proxy_024 lines 13012–13038, 13131–13134 and 13257–13263 show the stat-1009 +37 and stat-183 +99 direct records from source 0x02b5 = 693 on the same self caster and recipient, plus a child exclusive and recast sequence. The modeled nominal level-50 +24/+48 and current child refresh do not explain that report. The exact session level/attributes are unavailable. Previously verified pulse FX, five-second records, defense consumers and term cleanse remain credited."
+      "note": "Reopen source-parity because the archived proxy_024 lines 13012–13038, 13131–13134 and 13257–13263 show the stat-1009 +37 and stat-183 +99 direct records from source 0x02b5 = 693 on the same self caster and recipient, plus a child exclusive and recast sequence. The modeled level-50 effective +23/+47 (the binary32 scales truncate just below +24/+48) and current child refresh do not explain that report. The exact session level/attributes are unavailable. Previously verified pulse FX, five-second records, defense consumers and term cleanse remain credited."
     }
   }
 }
