@@ -573,6 +573,21 @@ namespace hds
             if (flags != 0) ServerPackets.SendPlayerAbilityEffect(client, FxGenericAbilityUpgrade);
         }
 
+        /// <summary>RPC 80 f6 carries the requested faction and construct IDs, both u32.</summary>
+        internal static void RequestHackConstruct(WorldClient client, byte[] request)
+        {
+            if (request.Length != 8 || client?.playerInstance == null || client.playerData?.getOnWorld() != true ||
+                client.playerData.worldChangePending || client.playerData.DistrictIsLA())
+            {
+                return;
+            }
+
+            // The requested IDs identify a possible destination. The player's own loaded abilities and faction
+            // determine eligibility. Without a construct registry, neither ID can authorize access or a charge.
+            HackConstruct(client);
+            client.FlushQueue();
+        }
+
         /// <summary>
         /// The hardline's Hack Construct (booth use 7, rule 10024 HardlineHackConstruct): Hack Construct Key loaded and a
         /// faction. The construct war that follows doesn't exist here, so it stops at the checks.

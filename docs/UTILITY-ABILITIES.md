@@ -91,10 +91,15 @@ Not done:
 
 ## Hack Construct Key (166)
 
-`serverrules.py HardlineHackConstruct` (rule 10024) is the hardline's "Hack Construct" (booth use 7). The client itself offers it only to a faction at war.
+The hardline's **Hack Construct** action is booth use 7. Shipped `clientrules.py` rule 10024 requires loaded 166, faction membership, enough Info for `HackConstructInfoCost`, faction flags clear under mask 16, and a faction at war. The shipped server rule checks the first four conditions. Its regional score is four times the loaded ability level, and the target construct accepts only a score strictly greater than its firewall defence.
 
-- Without the ability loaded: `0x60000025` "HackConstruct ability is required."
-- Otherwise: `0x60000027` "You must be in a faction to hack constructs." Factions and construct wars don't exist here.
+The hardline action and the `80 f6` construct selection both report:
+
+- `0x60000025` "HackConstruct ability is required." when 166 is unloaded.
+- `0x60000027` "You must be in a faction to hack constructs." when 166 is loaded and the player has no faction.
+- An unavailable notice when the player has both 166 and a faction.
+
+The selection contains the requested faction and construct IDs. Both checks use the player's server-side faction and ability state. The backend still needs a faction war projection, an active-hack flag, the Info price, a registry of faction construct instances and their defences, and the construct key and ownership lifecycle. No Info or IS is spent on these responses. The stock action is unavailable in the current UI because faction wars are absent.
 
 ## Find Data Node (621) and the data-mining tiers
 
