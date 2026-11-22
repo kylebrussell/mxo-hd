@@ -5,7 +5,8 @@ using hds;
 string output = args.Length > 0 ? args[0] : "artifacts/ability-audit/server_coverage.json";
 static string Consumer(ushort stat) => stat switch
 {
-    1005 when typeof(AbilityCatalog).Assembly.GetType("hds.WithdrawalInput") != null => "Primary direct1005 and withdrawal tactic factors; OURS ordinary44 caller/level baseline; linked1045 coefficient unimplemented; TF6 unchanged",
+    1005 when typeof(AbilityCatalog).Assembly.GetType("hds.WithdrawalInput") != null => "Direct contested Withdraw points and shipped withdrawal tactic factors in ordinary RPC 44",
+    1045 => "Linked percentage of direct contested Withdraw points in ordinary RPC 44; retail rounding and coefficient unverified",
     1044 => "OURS additive interlock attack-base initiative; health snapshot sourced, retail consumer unresolved",
     519 or 520 or 1048 when typeof(AbilityCatalog).Assembly.GetType("hds.CombatInsightEngagement") != null => "OURS deterministic new PvP interlock entry scores, only against current217;1048 force percent,519/520 direct roles; no retail contest/shield HP",
     1049 => "OURS percent of base evasion in the current Evade Combat entry rule",

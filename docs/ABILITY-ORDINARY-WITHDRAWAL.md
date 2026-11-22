@@ -1,4 +1,14 @@
-# Ordinary withdrawal: primary direct1005 consumer
+# Ordinary withdrawal
+
+## Linked Contested Withdraw Bonus
+
+The ordinary Withdraw request (`44 01`) scales the capped direct stat 1005 by the capped stat 1045 percentage. It truncates `direct * max(0, 100 + percent) / 100` to whole points before the existing character-level sum and withdrawal tactic factor. The catalog's 1005 attribute link points to 1045. Stock Status displays 1045 as a separate percentage and 1005 as points. The stat link and display support this scope. The shipped Python contest compares the supplied tactical values but leaves their assembly in native code. The percentage order and integer rounding are a server policy inferred from that evidence. [Stock Status comparison](https://github.com/kylebrussell/mxo-hd/pull/714#issuecomment-7071669266)
+
+The `ability-parity-starter-hacker-withdraw-bonus` fixture keeps Self Defense at +65 direct points and withdraws normally against a Melee Dummy. Rank-40 Concealment 503 supplies +4% and Virologist 98 +1%. Independently removing and restoring 98 and 503 yields effective input 68, 67, 68, 65, 68. The selected ranks make each small passive contribution distinguishable after whole-point truncation. Captures retain the 1045 add/remove records and the effective input for each stock request. The existing RNG, ordinary combat rolls, and TF6 escape path keep their own rules.
+
+The isolated stock-frame bootstrap verifies those five inputs and preserves the separate 1045 modifier records. `OrdinaryWithdrawalInputTests.VirologistLoadoutSuppliesBothTypedInputsAndItsUpgrade` also checks that 98 changes typed viral defense at a whole-point boundary and owns grant 1077 only while loaded. Stock Actions already verified that grant and the two passive records through unload and reload. [PR684 native lifecycle](https://github.com/kylebrussell/mxo-hd/pull/684#issuecomment-7067201290)
+
+## Historical qualification of direct 1005
 
 Only the existing capped direct1005 WithdrawTactics total is consumed. Catalog styles17 and1112 provide min1/min8 plus the same level-scaled1.3 producer, yielding65/72 at learned50 under the existing binary32/truncation implementation. No producer, cap, cost, duration or loaded-membership rules change.
 
