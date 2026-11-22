@@ -330,6 +330,8 @@ namespace hds
         {
             if (!AbilityBuffBuffer.CanApply(client,def.Ability)) return null;
             End(client, "replaced", false);
+            if (def.Ability == SneakGrantAbility || def.Ability == InvisibilityGrantAbility)
+                StopStealthAuras(client);
             int characterLevel = client.playerInstance.Level.getValue()[0];
             var state = new State
             {
@@ -374,6 +376,17 @@ namespace hds
             if (def.Periodic) Schedule(client, generation, UpdateSeconds, Update);
             if (def.Kind == Kind.Shadow) Schedule(client, generation, ShadowDrainSeconds, Drain);
             return state;
+        }
+
+        // utility.turnOffAuras lists these parents. Leave unrelated auras alone.
+        private static void StopStealthAuras(WorldClient client)
+        {
+            foreach (ushort id in AbilityAuras.Active(client))
+                if (id == 42 || id == 485 || id == 378 || id == 380 || id == 61 || id == 89 ||
+                    id == 35 || id == ProxyTechnician.Ability)
+                    AbilityAuras.Stop(client, id);
+            if (CoderPets.IsToggledOn(client, CoderPets.DaemonBoost1) || CoderPets.IsToggledOn(client, CoderPets.DaemonBoost2))
+                CoderPets.ToggleOff(client);
         }
 
         /// <summary>For the log: who in the district loses sight of the player (enemies), so a QA run shows it.</summary>
