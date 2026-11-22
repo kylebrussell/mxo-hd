@@ -282,6 +282,8 @@ def server(i):
         parts.append('stored function-3 thrown base with live enemy selection required; stock level-20 shot landed 37; wider damage and conditional ordering unresolved')
     elif i == 280:
         parts.append('stored fixed thrown base 1 with live enemy selection required; stock landed 1 and rooted for 15.75s with Wicked Aim; wider targeting and breaks unresolved')
+    elif i == 1135:
+        parts.append('stored fixed thrown base 30 before typed influence and resistance; stock landed 46 at +54% influence; wider damage scaling unresolved')
     elif i == 504:
         parts.append('stored fixed ballistic base 22 with incomplete legacy endpoints; stock landed 23 after fixture-assisted Concealment; armor piercing unresolved')
     elif i == 694:

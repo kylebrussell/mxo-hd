@@ -1,0 +1,59 @@
+{
+  "families": {
+    "spy-ground-bombs": {
+      "representative": 107,
+      "result": "pass",
+      "head": "cb481633",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/546#issuecomment-7082231278",
+      "scope": "Two stock ground clicks landed on the fixture dummy. Flash showed the 12 s Blind and landed controls. Smoke showed the 20 s Blind, Belt-backed Invisibility body vanish and stance 1a."
+    },
+    "spy-paralyzing-throw": {
+      "representative": 1135,
+      "result": "pass",
+      "head": "cb481633",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/546#issuecomment-7082231278",
+      "scope": "Stock selected-target throws landed for 46, with an 8.8 s root under the +10% duration profile. The dazed repeat applied 8 s Stun and advertised separate immunity."
+    }
+  },
+  "abilities": {
+    "49": {
+      "note": "PR758 tests the stock Evading condition twice in the same run: the client gates Blur while the shield is down and admits it after reactivation for 20 IS and +25 to stat 520 for 600 s. https://github.com/kylebrussell/mxo-hd/pull/758#issuecomment-7082297661"
+    },
+    "107": {
+      "family": "spy-ground-bombs",
+      "note": "PR546 confirms the stock ground selector and 5 m radius log, 25 IS, 58 s own reuse and a white flash with 12 s Blind. Only one positioned NPC was tested. https://github.com/kylebrussell/mxo-hd/pull/546#issuecomment-7082231278"
+    },
+    "184": {
+      "note": "PR758 confirms independent Sprint activation for 25 IS immediately after Evade terminates; its four modifier records clear and its own 5 s timer starts on manual toggle-off. https://github.com/kylebrussell/mxo-hd/pull/758#issuecomment-7082297661"
+    },
+    "217": {
+      "checks": {
+        "behavior-tests": {
+          "source": "GOB 217 establishes the Evading state; EvadeCombatInit presents activation and SetEvadeCombatTimer starts the 30 s reuse on termination. The shipped combat calculations supply the resistance cost and shield-damage curves.",
+          "runtime": "AbilityBuffs and EvasionShield publish state 624, its owner and observer meter, admission resistance and its debit, release on depletion or shortfall, and a fresh shield after the termination timer clears. The retail entry predicate and internal meter scale remain unresolved outside these verified behaviors.",
+          "test": "StarterEvadeReleaseMode and PR758 verify the activation, resisted entry, explicit release, reuse gate and reactivation on the stock client, with exact owner and observer meter records in the bootstrap. PR754 verifies defender messaging and PR735 exercises the two level costs and shortfall. StealthShieldTests covers suppression and recovery of the same parent. https://github.com/kylebrussell/mxo-hd/pull/758#issuecomment-7082297661 https://github.com/kylebrussell/mxo-hd/pull/754#issuecomment-7081639451 https://github.com/kylebrussell/mxo-hd/pull/735#issuecomment-7074963029"
+        }
+      }
+    },
+    "364": {
+      "family": "spy-ground-bombs",
+      "checks": {
+        "script": {
+          "source": "GOB Smoke Bomb embeds a 0.3 s SmokeBombInit marker. tempmods.py checks for Belt 460 and schedules a 0.2 s VanishInit that checks the Belt again and reapplies Invisibility 1116.",
+          "runtime": "SpyGroundBombs schedules the combined half-second delay, validates the live caster and Belt, and enters the shared Stealth lifecycle for source 1116.",
+          "test": "SpyBombsAndParalyzingThrowTests covers presence and absence of the Belt; the exact-head replay and PR546 confirm native body vanish, stance 1a and stat 115 -300 for 130 s. https://github.com/kylebrussell/mxo-hd/pull/546#issuecomment-7082231278"
+        }
+      }
+    },
+    "1135": {
+      "family": "spy-paralyzing-throw",
+      "checks": {
+        "controls": {
+          "source": "GOB 1135 stores the eight-second root, the signed health-break modifier and the 0.01 s ApplyStunEffectIfDazed marker with fixed eight-second stun and immunity.",
+          "runtime": "AbilityCatalog and TimedEffects preserve the first health change and break on later damage; AbilityConditionalControls appends Stun and separate immunity without replacing the root.",
+          "test": "AbilityParityTests.ChanceRootProtectsItsFirstDamageThenBreaksAtTheScriptThreshold and OperativeBatchTwoTests.ConditionalStunCanRetryAfterClearingAStaleCast exercise these transitions. PR546 observes the scaled 8.8 s root, then the conditional eight-second stun on the Dazed target. https://github.com/kylebrussell/mxo-hd/pull/546#issuecomment-7082231278"
+        }
+      }
+    }
+  }
+}
