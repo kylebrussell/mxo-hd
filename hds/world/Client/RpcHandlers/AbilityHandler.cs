@@ -124,9 +124,10 @@ namespace hds
                 }
             }
 
-            // These starter Coder casts require a live selected target, including the Tinkering area centre.
-            bool starterCoderCast = AbilityID == 21 || AbilityID == 33 || AbilityID == 36 || AbilityID == 514;
-            if (starterCoderCast)
+            // These Coder casts require a live selected target, including the Tinkering area centre.
+            bool selectedCoderCast = AbilityID == 21 || AbilityID == 33 || AbilityID == 36 || AbilityID == 514 ||
+                AbilityID == 590 || AbilityID == 591;
+            if (selectedCoderCast)
             {
                 var caster = Store.currentClient;
                 if (!AbilityPassives.IsLoaded(caster, AbilityID))
@@ -209,7 +210,7 @@ namespace hds
             }
 
             bool starterRangedControl = AbilityID == 43 || AbilityID == 48 || AbilityID == 130 || starterGunCast;
-            if ((selectedViralAttack || starterMovementDebuff || starterCoderCast || starterRangedControl || AbilityID == 69) &&
+            if ((selectedViralAttack || starterMovementDebuff || selectedCoderCast || starterRangedControl || AbilityID == 69) &&
                 !AbilityTargets.WithinSelectionRange(Store.currentClient, AbilityID, currentTargetViewId))
             {
                 Store.currentClient.messageQueue.addRpcMessage(AbilityRefusals.Encode(
@@ -747,17 +748,17 @@ namespace hds
                     AbilityCooldowns.Start(client, ability.getAbilityID(), TimeUtils.GetSimTimeSeconds());
                 }
 
-            if (starterCoderCast && !AbilityPassives.IsLoaded(client, AbilityID))
+            if (selectedCoderCast && !AbilityPassives.IsLoaded(client, AbilityID))
             {
                 Output.WriteDebugLog($"[ABILITY] {AbilityID} fizzles: the Coder ability was unloaded during the cast");
                 return;
             }
 
-            if ((starterCoderCast || selectedViralAttack) &&
+            if ((selectedCoderCast || selectedViralAttack) &&
                 (!AbilityTargets.HasLiveAttackSelection(client, currentTargetViewId, lockedDamageTargetSpawn, requireOpponent: true) ||
                  !AbilityTargets.WithinSelectionRange(client, AbilityID, currentTargetViewId)))
             {
-                string castKind = starterCoderCast ? "Coder" : "viral";
+                string castKind = selectedCoderCast ? "Coder" : "viral";
                 Output.WriteDebugLog($"[ABILITY] {AbilityID} fizzles: the selected {castKind} target changed or left range");
                 return;
             }
@@ -939,12 +940,14 @@ namespace hds
             }
             int from = ability.getValueFrom();
             int to = ability.getValueTo();
-            // Static Blast 1.0 has a fixed viral GOB component and an incomplete legacy CSV range (22/0).
-            if (source?.Id == 33)
+            // These Static Blast tiers have fixed viral GOB components and incomplete legacy CSV ranges.
+            if (source?.Id == 33 || source?.Id == 590 || source?.Id == 591)
             {
                 var hit = source.Modifiers.Single(m => m.Target == 108 && m.Number("DamageType", -1) == 2 &&
                     m.Number("WhenEnabled", -1) == 2 && m.Number("DurationType", -1) == 1);
-                if (AbilityValues.TryValue(hit, 0, 0, out int damage) && damage > 0) return (ushort)damage;
+                if (hit.Number("ValueFunction", -1) == 0 && hit.Has("MinValue") && hit.Has("MaxValue") &&
+                    hit.Number("MinValue") == hit.Number("MaxValue") && AbilityValues.TryValue(hit, 0, 0, out int damage) &&
+                    damage > 0 && damage <= UInt16.MaxValue) return (ushort)damage;
             }
             if (from > 0 && to >= from)
             {

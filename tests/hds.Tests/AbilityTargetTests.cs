@@ -7,17 +7,26 @@ public class AbilityTargetTests
 {
     private static string Hex(byte[] bytes) => StringUtils.bytesToString_NS(bytes).ToLowerInvariant();
 
-    [Fact]
-    public void StaticBlastUsesFixedViralBaseDespiteTheIncompleteLegacyRange()
+    [Theory]
+    [InlineData(33, 12, 22, 15, 682)]
+    [InlineData(590, 20, 32, 18, 683)]
+    [InlineData(591, 27, 42, 23, 682)]
+    public void StaticBlastTiersUseTheirFixedViralBaseAndOwnAndGroupReuse(
+        ushort id, int firstRank, ushort baseDamage, int innerStrength, ushort family)
     {
         var blast = new AbilityItem();
-        blast.setAbilityID(33);
-        blast.setValueFrom(22);
+        blast.setAbilityID(id);
+        blast.setValueFrom((short)baseDamage);
         blast.setValueTo(0);
-        Assert.Equal(22, blast.getValueFrom());
-        Assert.Equal(0, blast.getValueTo());
-        Assert.Equal((ushort)22, AbilityHandler.AbilityDamage(blast, new Random(3)));
-        Assert.Equal((ushort)22, AbilityHandler.AbilityDamage(blast, new Random(177)));
+        Assert.Equal(firstRank, AbilityCatalog.Find(id).Number("Ability/MinValueScaleLevel"));
+        Assert.Equal(baseDamage, AbilityHandler.AbilityDamage(blast, new Random(3)));
+        Assert.Equal(baseDamage, AbilityHandler.AbilityDamage(blast, new Random(177)));
+        Assert.Equal(2, TypedAbilityResistance.StoredType(id));
+        Assert.Equal(innerStrength, AbilityCosts.Cost(id));
+        Assert.True(AbilityCooldowns.TryGet(id, out var cooldown));
+        Assert.Equal(6, cooldown.Seconds);
+        Assert.Equal(family, cooldown.Group);
+        Assert.Equal(4, cooldown.GroupSeconds);
     }
 
     [Fact]

@@ -392,6 +392,8 @@ public class AbilityRefusalFeedbackTests:IDisposable
     [InlineData(33, 41)]
     [InlineData(36, 41)]
     [InlineData(514, 41)]
+    [InlineData(590, 41)]
+    [InlineData(591, 41)]
     [InlineData(36, 4)]
     [InlineData(53, 41)]
     [InlineData(57, 41)]
