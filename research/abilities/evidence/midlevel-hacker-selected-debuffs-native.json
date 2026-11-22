@@ -1,0 +1,63 @@
+{
+  "families": {
+    "hacker-selected-viral-debuff-and-infection": {
+      "representative": 350,
+      "result": "pass",
+      "head": "c2205bdf",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/822#issuecomment-7086666447",
+      "scope": "All four stock requests exercised no-target and ally reason 24, range reason 34, ordinary hit, forced viral deflection and post-cast sight refusal. Code Rot and Overheat applied only their modifier records. Both Infection tiers ran eleven ticks on neutral and resisted NPCs."
+    }
+  },
+  "abilities": {
+    "350": {
+      "family": "hacker-selected-viral-debuff-and-infection",
+      "checks": {
+        "damage": {
+          "source": "GOB 350 stores a 100-point ViralDOT, ticking every 2.5 seconds for 30 seconds. The loaded source influence and typed viral mitigation apply independently.",
+          "runtime": "TempMods snapshots the total at landing. TimedEffects runs the stored cadence and applies typed NPC resistance on each tick.",
+          "test": "VectorVirusDealsElevenRoundedViralTicksBeforeExpiry checks neutral cadence and expiry at the raw baseline. In PR822 the full rank-26 stock profile raises the snapshot to 104 and yields eleven raw 9 ticks. The +75 resist target takes final 6 per tick, with no twelfth tick. https://github.com/kylebrussell/mxo-hd/pull/822#issuecomment-7086666447"
+        },
+        "targeting": {
+          "source": "GOB 350 uses selected hostile targeting, its stored range and a viral test.",
+          "runtime": "AbilityHandler preflights the loaded live view and range, binds the same target through casting and uses the common line-of-sight and viral contest at landing.",
+          "test": "PR822 stock refused no target and ally with reason 24 and 21.5 m with reason 34 before spending IS. The selected NPC takes the DOT after the two-second cast; deflection and paid sight failure both leave the target unaffected. https://github.com/kylebrussell/mxo-hd/pull/822#issuecomment-7086666447"
+        }
+      }
+    },
+    "351": {
+      "family": "hacker-selected-viral-debuff-and-infection",
+      "checks": {
+        "damage": {
+          "source": "GOB 351 stores a 129-point ViralDOT, ticking every 2.5 seconds for 30 seconds. The loaded source influence and typed viral mitigation apply independently.",
+          "runtime": "TempMods snapshots the total at landing. TimedEffects runs the stored cadence and applies typed NPC resistance on each tick.",
+          "test": "VectorVirusDealsElevenRoundedViralTicksBeforeExpiry checks the raw baseline. In PR822 the full rank-26 stock profile raises the snapshot to 135 and yields eleven raw 11 ticks, reduced to 7 under +75 resist. The stock chat confirms a 7-point tick and there is no twelfth tick. https://github.com/kylebrussell/mxo-hd/pull/822#issuecomment-7086666447"
+        },
+        "targeting": {
+          "source": "GOB 351 uses selected hostile targeting, stored range and a viral test. It shares family 702 with rank one.",
+          "runtime": "AbilityHandler binds the admitted hostile through the cast and checks sight and viral hit on landing. The family timer gates early attempts.",
+          "test": "PR822 stock refused no-target, ally and 21.5 m without cost, then applied the DOT only to the selected NPC. Deflection and paid sight failure applied no effect. An early press was held locally with one second remaining; the repeat reached the server. https://github.com/kylebrussell/mxo-hd/pull/822#issuecomment-7086666447"
+        }
+      }
+    },
+    "392": {
+      "family": "hacker-selected-viral-debuff-and-infection",
+      "checks": {
+        "targeting": {
+          "source": "GOB 392 uses the selected hostile, stored range and viral test with stat 342 -39 for 18 seconds.",
+          "runtime": "AbilityHandler fixes the live selection and spawn before cost, then applies the common sight and viral contest before the target's modifier.",
+          "test": "PR822 stock reason 24 for no-target and ally, reason 34 at 21.5 m, in-range -39 for 18 s after 2 s and 20 IS, then deflection and paid sight failure leave no modifier or HP change. https://github.com/kylebrussell/mxo-hd/pull/822#issuecomment-7086666447"
+        }
+      }
+    },
+    "394": {
+      "family": "hacker-selected-viral-debuff-and-infection",
+      "checks": {
+        "targeting": {
+          "source": "GOB 394 uses the selected hostile, stored range and viral test with stats 180 and 181 -52 for 28 seconds.",
+          "runtime": "AbilityHandler fixes the live selection and spawn before cost, then applies the common sight and viral contest before adding the recipient's two modifiers.",
+          "test": "PR822 stock reason 24 for no-target and ally, reason 34 at 21.5 m, in-range -52/-52 for 28 s after 2 s and 20 IS, then deflection and paid sight failure leave no modifier or HP change. https://github.com/kylebrussell/mxo-hd/pull/822#issuecomment-7086666447"
+        }
+      }
+    }
+  }
+}

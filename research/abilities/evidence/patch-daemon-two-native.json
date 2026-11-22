@@ -1,0 +1,19 @@
+{
+  "abilities": {
+    "612": {
+      "family": "simulacrum-summons",
+      "checks": {
+        "script": {
+          "source": "The shipped PatchDaemon2_Subject and PatchDaemon2_Deactivate hooks share the owner-managed Simulacrum lifecycle, and GOB 612 specifies the eight-second cast, 120 IS and ten-second reuse.",
+          "runtime": "CoderPets resolves 612 to a Healer and uses the same owner preparation and publication path as the other Simulacra. The old pet stays active until successful landing, when the owner gets one termination then one registration. Deactivate tears down the one live pet and its future healing.",
+          "test": "PR825 stock switched 602→612 and observed a single 81 77 then 81 76 after the eight-second cast, the new level 23 Healer and its owner-only pulses. /ordersimulacra All Deactivate sent stock 81 7a fe 01 and removed the current window/body with no later heals. https://github.com/kylebrussell/mxo-hd/pull/825#issuecomment-7086526060"
+        },
+        "behavior-tests": {
+          "source": "GOB 612 sets 120 IS, eight-second cast and ten-second reuse for the higher Patch Daemon. The shipped callbacks establish the owned Healer and its Deactivate path.",
+          "runtime": "The existing pet level clamp and Healer curve run on the prepared pet, and the owner's own IS is charged once. The pet heal amount follows the server's rank-derived Healer policy.",
+          "test": "The patch-daemon2-server replay checks the actual replacement, heal ticks and teardown. PR825 stock records 400→280 IS, a measured eight-second cast and ten-second reuse, new level 23 with 937 HP, +8..+11 HP to the owner about every three seconds and no QAFriend heals. Deactivate emitted one termination and the heals stopped. https://github.com/kylebrussell/mxo-hd/pull/825#issuecomment-7086526060"
+        }
+      }
+    }
+  }
+}
