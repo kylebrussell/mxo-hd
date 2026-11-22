@@ -16,7 +16,7 @@ public class AbilityTargetTests
     {
         var blast = new AbilityItem();
         blast.setAbilityID(id);
-        blast.setValueFrom(baseDamage);
+        blast.setValueFrom((short)baseDamage);
         blast.setValueTo(0);
         Assert.Equal(firstRank, AbilityCatalog.Find(id).Number("Ability/MinValueScaleLevel"));
         Assert.Equal(baseDamage, AbilityHandler.AbilityDamage(blast, new Random(3)));

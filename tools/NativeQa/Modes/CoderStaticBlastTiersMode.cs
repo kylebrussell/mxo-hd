@@ -5,7 +5,7 @@ namespace NativeQa.Modes;
 
 public sealed class CoderStaticBlastTiersMode : NativeQaMode
 {
-    private const int Level = 29, X = 17000, Y = 495, Z = 8100, NearZ = 6600, FarZ = 6400, Resist = 43;
+    private const int Level = 29, X = 17000, Y = 495, Z = 8100, NearZ = 6600, FarZ = 6400;
     private const ushort Coder = 1008, EmptyMind = 8, Blast = 33, Barrage = 590, HigherBlast = 591;
     private static readonly (string Name, uint Id, int X, int Z, int Organization)[] Stands =
     {
@@ -14,13 +14,7 @@ public sealed class CoderStaticBlastTiersMode : NativeQaMode
         ("QAFriend", 6111, X, 6950, 1),
         ("QAOther", 6113, X, FarZ, 2)
     };
-    private static readonly (ushort Id, ushort Family, int Cost, int Raw, int Resisted)[] Samples =
-    {
-        (Blast, AbilityCooldowns.VirusDamage1, 15, 26, 21),
-        (Barrage, AbilityCooldowns.VirusEnhancedDamage, 18, 39, 32),
-        (HigherBlast, AbilityCooldowns.VirusDamage1, 23, 51, 42)
-    };
-    private static readonly ushort[] Hotbar = Samples.Select(row => row.Id).Prepend(Coder).ToArray();
+    private static readonly ushort[] Hotbar = { Coder, Blast, Barrage, HigherBlast };
     private static readonly ushort[] Loadout = Hotbar.Concat(new ushort[] { 2, 17 })
         .SelectMany(id => AbilityPrerequisites.Current.Closure(id).Keys.Append(id)).Distinct().Order().ToArray();
     private static readonly int Memory = Loadout.Sum(AbilityMemory.Cost);
@@ -100,7 +94,7 @@ public sealed class CoderStaticBlastTiersMode : NativeQaMode
         await EvidenceRetestWire.CastBarAsync(actor, Blast, 2);
         await EvidenceRetestWire.TimerAsync(actor, rpc, Blast, AbilityCooldowns.OwnTimer, 6);
         await EvidenceRetestWire.TimerAsync(actor, rpc, AbilityCooldowns.VirusDamage1, AbilityCooldowns.GroupTimer, 4);
-        byte[] hit = AbilityMessages.Damage(false, Blast, actor.Handle, recipient.Handle, Samples[0].Raw, 0);
+        byte[] hit = AbilityMessages.Damage(false, Blast, actor.Handle, recipient.Handle, 26, 0);
         await StockAbilityProfile.ObserveAsync(recipient, targetRpc, frame => frame.Bytes.AsSpan().SequenceEqual(hit),
             "The captured 33 control lands on the selected QAEnemy");
         await actor.WaitUntilAsync(() => actor.World.ViewSnapshot().Skip(vitals)
