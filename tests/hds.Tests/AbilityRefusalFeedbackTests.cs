@@ -841,6 +841,100 @@ public class AbilityRefusalFeedbackTests:IDisposable
         }
     }
 
+    [Theory]
+    [InlineData(605, "unloaded", AbilityRefusals.NotLoaded)]
+    [InlineData(618, "unloaded", AbilityRefusals.NotLoaded)]
+    [InlineData(605, "rest", AbilityRefusals.InvalidTarget)]
+    [InlineData(618, "rest", AbilityRefusals.InvalidTarget)]
+    [InlineData(605, "stale", AbilityRefusals.InvalidTarget)]
+    [InlineData(618, "stale", AbilityRefusals.InvalidTarget)]
+    [InlineData(605, "far", AbilityRefusals.TargetOutOfRange)]
+    [InlineData(618, "far", AbilityRefusals.TargetOutOfRange)]
+    [InlineData(605, "blocked", AbilityRefusals.TargetNotInSight)]
+    [InlineData(618, "blocked", AbilityRefusals.TargetNotInSight)]
+    [InlineData(618, "no-stagger", AbilityRefusals.TargetStateRequired)]
+    [InlineData(605, "ready", 0u)]
+    [InlineData(618, "ready", 0u)]
+    public void CoderSpecialsRequireTheLoadedMoveAndLiveCurrentOpponent(ushort id, string scenario, uint reason)
+    {
+        string root = AppContext.BaseDirectory;
+        while (!File.Exists(Path.Combine(root, "data", "sector_properties.csv")))
+            root = Path.GetDirectoryName(root)!;
+        SectorProperties.Load(Path.Combine(root, "data", "sector_properties.csv"));
+        NavMesh.UseDirectory(Path.Combine(root, "data", "navmesh"));
+
+        var caster = Client();
+        Store.currentClient = caster;
+        caster.playerData.passives.Loaded[CombatStyles.CoderStyle] = 19;
+        caster.playerData.combatStyle = CombatStyles.CoderStyle;
+        if (scenario != "unloaded") caster.playerData.passives.Loaded[id] = 38;
+
+        var target = new Mob();
+        target.setEntityId(618000);
+        target.setDistrict(1);
+        target.setHealthC(1000);
+        target.setHealthM(1000);
+        target.setLevel(50);
+        target.setIsSpawned(true);
+        caster.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(21750, 1095, 16150));
+        target.setXPos(scenario == "blocked" ? 22350 : scenario == "far" ? 20149 : 21550);
+        target.setYPos(1095);
+        target.setZPos(16150);
+        var view = caster.viewMan.addView(target.getEntityId(), 1);
+        view.viewCreated = true;
+        view.spawnId = 9;
+        uint handle = DuelPackets.Handle(view.ViewID, view.spawnId);
+        var session = new CombatSession(caster, target, handle, CombatSession.CombatType.Melee)
+        {
+            CurrentMove = new CombatInterlock.Move()
+        };
+        var handler = CombatManager.GetHandler(caster);
+        var sessionField = typeof(CombatHandler).GetField("currentSession", BindingFlags.Instance | BindingFlags.NonPublic)!;
+        typeof(CombatSession).GetField("<IsActive>k__BackingField", BindingFlags.Instance | BindingFlags.NonPublic)!
+            .SetValue(session, true);
+        if (scenario != "rest") sessionField.SetValue(handler, session);
+        var previousMobs = WorldServer.mobs;
+        WorldServer.mobs = new System.Collections.ArrayList { target };
+
+        var ability = new AbilityItem();
+        ability.setAbilityID(id);
+        ability.setAbilityName(AbilityCatalog.Find(id).Name);
+        ability.setCastAnimStart(new byte[4]);
+        DataLoader.getInstance().AbilityDB.Add(ability);
+
+        try
+        {
+            if (reason == 0 && id == 618)
+                TimedEffects.ForMob(target).Effects.Apply(883, TimedEffects.Instantiate(CombatDepthStagger.Effect(30), new Random(1)), TimeUtils.GetSimTimeSeconds());
+            var request = new byte[41];
+            BitConverter.GetBytes(id).CopyTo(request, 0);
+            BitConverter.GetBytes(scenario == "stale" ? handle ^ 0x10000u : handle).CopyTo(request, 2);
+            new AbilityHandler().ProcessAbility(ref request);
+            if (reason != 0)
+            {
+                Assert.Equal(AbilityRefusals.Encode(new(id, reason, states: scenario == "no-stagger" ? 8u : 0u)),
+                    Assert.Single(Rpcs(caster)));
+                Assert.Null(session.QueuedAbility);
+                Assert.Equal(500, AbilityHandler.CurrentInnerStrength(caster));
+                Assert.Empty(caster.playerData.cooldownEndsAt);
+                return;
+            }
+
+            Assert.Same(ability, session.QueuedAbility);
+            Assert.Equal(view.ViewID, session.QueuedAbilityTarget);
+            Assert.Equal(500 - AbilityCosts.Cost(id), AbilityHandler.CurrentInnerStrength(caster));
+            Assert.True(AbilityCooldowns.IsCoolingDown(caster.playerData, id, TimeUtils.GetSimTimeSeconds()));
+            Assert.Equal(1000, target.getHealthC()); // Queuing leaves the target for the real round contest.
+        }
+        finally
+        {
+            TimedEffects.Clear(TimedEffects.ForMob(target));
+            sessionField.SetValue(handler, null);
+            CombatManager.RemoveClient(caster);
+            WorldServer.mobs = previousMobs;
+        }
+    }
+
     [Fact] public void ModeUsesProvenClosedLoadoutWithoutGmOrRandomControls()
     {
         var plan=new NativeQa.Modes.AbilityRefusalFeedbackMode().Plan;Assert.Equal(new ushort[]{2,17,45,1006,77},plan.Abilities);Assert.True(plan.DevCommands);Assert.False(plan.GmCharacter110);Assert.False(plan.FixedCallbackRolls);

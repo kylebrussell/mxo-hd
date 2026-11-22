@@ -438,6 +438,66 @@ public class FreeCastViralLandingTests : IDisposable
         };
     }
 
+    [Theory]
+    [InlineData(605, 17, 19, 33, 0, 19)]
+    [InlineData(605, 17, 19, 0, 75, 15)]
+    [InlineData(618, 66, 38, 33, 0, 77)]
+    [InlineData(618, 66, 38, 0, 75, 63)]
+    public void CoderSpecialsUseFixedPhysicalDamageAndOnlyBashAppliesControl(
+        ushort id, ushort raw, ushort rank, int ballisticBonus, int resistance, ushort expected)
+    {
+        var caster = Client(110);
+        var target = Client(111);
+        caster.playerData.pvpFlag = target.playerData.pvpFlag = true;
+        caster.playerInstance.OrganizationID.setValue((byte)1);
+        target.playerInstance.OrganizationID.setValue((byte)2);
+        caster.viewMan.addView(111, 1).viewCreated = true;
+        AbilityPassives.SetLoaded(caster, new[] { (id, rank), (CombatStyles.CoderStyle, (ushort)19), ((ushort)608, (ushort)50) });
+        CombatStyles.Select(caster, CombatStyles.CoderStyle);
+        var source = TimedEffects.ForPlayer(caster);
+        var victim = TimedEffects.ForPlayer(target);
+        var ability = new AbilityItem();
+        ability.setAbilityID(id);
+
+        try
+        {
+            double now = TimeUtils.GetSimTimeSeconds();
+            source.Effects.Apply(185, new[] { Stat(171, ballisticBonus) }, now);
+            victim.Effects.Apply(271, new[] { Stat(180, resistance) }, now);
+            Assert.Equal(17, AbilityStats.Influence(caster, 159));
+            Assert.Equal(raw, AbilityHandler.AbilityDamage(ability, new Random(17), characterLevel: 50));
+            PvpCombat.LandAbilityOn(caster, ability, target);
+            Assert.Equal(1000 - expected, PvpCombat.HealthOf(target));
+
+            var states = victim.Effects.Snapshot().Where(effect => effect.Parent == id).OrderBy(effect => effect.Target).ToArray();
+            if (id == 605)
+            {
+                Assert.Empty(states);
+                return;
+            }
+
+            Assert.Equal(new[] { TempMods.EnrageAbility, TempMods.StunAbility }, states.Select(effect => effect.Target));
+            Assert.Equal(8, states[0].Seconds);
+            Assert.Equal(4, states[1].Seconds);
+            double afterStun = states[1].Expires + 0.01;
+            TimedEffects.RunDue(afterStun);
+            Assert.True(ControlActions.CanUseAbilities(victim.Effects));
+            Assert.False(ControlActions.CanWithdraw(victim.Effects));
+            TimedEffects.RunDue(states[0].Expires + 0.01);
+            Assert.True(ControlActions.CanWithdraw(victim.Effects));
+        }
+        finally
+        {
+            TimedEffects.Clear(source);
+            TimedEffects.Clear(victim);
+        }
+
+        static TimedEffects.Active Stat(ushort targetStat, int value) => new()
+        {
+            Kind = TempMods.KindStat, Target = targetStat, Value = value, Seconds = 12, Proc = TempMods.Proc.Stat
+        };
+    }
+
     [Fact] public void ExistingUpgradeAttacksAndSereneCalmChangeTheActualCommonContest()
     {
         var c=Client(110);var target=Client(111);Store.currentClient=c;

@@ -387,8 +387,15 @@ namespace hds
             }
 
 
+            bool coderInterlock = AbilityID == 605 || AbilityID == 618;
+            if (coderInterlock && !AbilityPassives.IsLoaded(Store.currentClient, AbilityID))
+            {
+                Deny(AbilityID, "Load this ability before using it.", AbilityRefusals.NotLoaded, sendServerText: false);
+                return;
+            }
+
             bool existingInterlockPath = AbilityID == AwakenedPowerShot.Id || AbilityID == 197 || AbilityID == 198 || AbilityID == 105 ||
-                AbilityID == 145 || AbilityID == 605 || AbilityID == MartialArtsStarterAdmission.GuardBreaker || CombatSpecials.IsExileWeapon(AbilityID);
+                AbilityID == 145 || coderInterlock || AbilityID == MartialArtsStarterAdmission.GuardBreaker || CombatSpecials.IsExileWeapon(AbilityID);
             bool martialInterlock = definition?.Number("Ability/CastWhenUsed") == 3 &&
                 definition.Number("Ability/CombatSpecialMove") == 1 &&
                 (CombatStyles.RequiredStyle(AbilityID) switch
@@ -398,7 +405,8 @@ namespace hds
                     CombatStyles.KungFu => true,
                     _ => false
                 });
-            uint stateMask = AbilityID == 197 ? 2u : martialInterlock ? (uint)definition.Number("Ability/CastRequiredStates") : 0u;
+            uint stateMask = AbilityID == 197 ? 2u :
+                martialInterlock || coderInterlock ? (uint)definition.Number("Ability/CastRequiredStates") : 0u;
             ushort requiredState = stateMask switch
             {
                 2 => TempMods.DazeAbility,
@@ -416,6 +424,16 @@ namespace hds
                 if (!requiredOpponent.HasValue)
                 {
                     DenyMissingInterlock(AbilityID);
+                    return;
+                }
+                if (coderInterlock && !AbilityTargets.WithinSelectionRange(Store.currentClient, AbilityID, currentTargetViewId))
+                {
+                    Deny(AbilityID, "The target is out of range.", AbilityRefusals.TargetOutOfRange, sendServerText: false);
+                    return;
+                }
+                if (coderInterlock && !AbilityTargets.HasSelectionSight(Store.currentClient, definition, currentTargetViewId))
+                {
+                    Deny(AbilityID, "The target is not in sight.", AbilityRefusals.TargetNotInSight, sendServerText: false);
                     return;
                 }
                 if (requiredState != 0 && !CombatManager.GetHandler(Store.currentClient).CurrentOpponentHasState(currentTargetViewId, requiredState))
@@ -1079,6 +1097,7 @@ namespace hds
                 255 => 1,  // Disabling Shot
                 514 => 2,  // Advanced Tinkering
                 605 => 0,  // Low Blow
+                618 => 0,  // Bash
                 _ => null
             };
             if (fixedType.HasValue)
