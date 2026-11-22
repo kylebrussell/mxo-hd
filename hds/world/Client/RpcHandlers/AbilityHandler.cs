@@ -67,7 +67,8 @@ namespace hds
             }
 
             // These selected abilities bind a live enemy before the cast, including the centre of any splash.
-            bool selectedViralField = AbilityID == 343 || AbilityID == 401 || AbilityID == 403;
+            bool stunPulse = AbilityID == 595;
+            bool selectedViralField = stunPulse || AbilityID == 343 || AbilityID == 401 || AbilityID == 403;
             bool enrage = AbilityID == 588;
             bool selectedViralAttack = enrage || AbilityID == 53 || (AbilityID >= 57 && AbilityID <= 60) ||
                 AbilityID == 350 || AbilityID == 351 || AbilityID == 392 || AbilityID == 394 || AbilityID == 395 || selectedViralField;
@@ -284,9 +285,10 @@ namespace hds
                     Deny(AbilityID, "This ability cannot be used during combat.", AbilityRefusals.MustBeOutsideCombat, sendServerText: false);
                     return;
                 }
-                if (CombatStyles.Active(caster) != CombatStyles.HackerStyle)
+                ushort requiredStyle = CombatStyles.RequiredStyle(AbilityID);
+                if (CombatStyles.Active(caster) != requiredStyle)
                 {
-                    Deny(AbilityID, "This ability requires Hacker Style.", AbilityRefusals.WrongStyle, sendServerText: false);
+                    Deny(AbilityID, $"This ability requires {CombatStyles.Name(requiredStyle)}.", AbilityRefusals.WrongStyle, sendServerText: false);
                     return;
                 }
             }
@@ -944,8 +946,9 @@ namespace hds
                 Output.WriteDebugLog($"[ABILITY] {AbilityID} fizzles: the selected gun target changed, left range or left sight");
                 return;
             }
+            // Stun Pulse's legacy buff flag conflicts with its shipped hostile area selector.
             if (hostileView > 2 && !support && !pet && !derez && definition?.FriendlyTarget != true &&
-                (!ability.getIsBuff() || CombatSpecials.TargetsEnemy(AbilityID) || engageFoes!=null) &&
+                (!ability.getIsBuff() || stunPulse || CombatSpecials.TargetsEnemy(AbilityID) || engageFoes!=null) &&
                 (definition == null || definition.DirectDamage || definition.DamageOverTime || TempMods.Has(AbilityID) ||
                  AbilityHostile.Lands(AbilityID) || CombatSpecials.TargetsEnemy(AbilityID)))
             {

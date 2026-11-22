@@ -203,6 +203,137 @@ public class FreeCastViralLandingTests : IDisposable
     }
 
     [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void StunPulseReachesTheSelectedAreaWithIndependentDeflectionAndImmunity(bool deflectPrimary)
+    {
+        const ushort pulse = 595, proxyMaster = 599;
+        const int x = 17000, y = 495, casterZ = 6400, centreZ = 6600;
+        var caster = Client(110);
+        var primary = Recipient(111, centreZ);
+        var edge = Recipient(112, centreZ + 700);
+        var outside = Recipient(113, centreZ + 701);
+        var friendly = Recipient(114, centreZ + 100, 1);
+        var subjects = new[] { primary, edge, outside, friendly }.Select(TimedEffects.ForPlayer).ToArray();
+        var primaryView = caster.viewMan.FindViewForEntity(111);
+        primaryView.spawnId = 9;
+
+        caster.playerInstance.Level.setValue((byte)50);
+        caster.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(x, y, casterZ));
+        caster.playerInstance.OrganizationID.setValue((byte)1);
+        caster.playerInstance.InnerStrengthAvailable.setValue((ushort)700);
+        caster.playerInstance.InnerStrengthMax.setValue((ushort)900);
+        caster.playerData.pvpFlag = true;
+        typeof(WorldClient).GetField("<TransportFence>k__BackingField", BindingFlags.Instance | BindingFlags.NonPublic)!
+            .SetValue(caster, new WorldSendFence());
+        AbilityPassives.SetLoaded(caster, new[] { (pulse, (ushort)38), (CombatStyles.CoderStyle, (ushort)50), (proxyMaster, (ushort)50) });
+        CombatStyles.Select(caster, CombatStyles.CoderStyle);
+        Store.currentClient = caster;
+
+        var loaderField = typeof(DataLoader).GetField("Instance", BindingFlags.Static | BindingFlags.NonPublic)!;
+        object? previous = loaderField.GetValue(null);
+        var loader = (DataLoader)RuntimeHelpers.GetUninitializedObject(typeof(DataLoader));
+        var ability = new AbilityItem();
+        ability.setAbilityID(pulse);
+        ability.setAbilityName("StunPulseAbility");
+        ability.setIsBuff(true); // The legacy data row carries this classification.
+        ability.setCastingTime(6);
+        ability.setCastAnimStart(new byte[4]);
+        loader.AbilityDB = new() { ability };
+        loaderField.SetValue(null, loader);
+
+        try
+        {
+            if (deflectPrimary)
+            {
+                Assert.True(AbilityBuffs.Apply(primary, 272));
+                primary.playerData.combatTactic = CombatTactic.Block;
+                Assert.True(AbilityBuffs.Apply(caster, 314));
+            }
+            else
+            {
+                Environment.SetEnvironmentVariable("MXO_FREECAST_VIRAL_QA_ATTACK15", "32766");
+                Environment.SetEnvironmentVariable("MXO_FREECAST_VIRAL_QA_DEFENSE15", "0");
+            }
+
+            // Server-handler regression input. The native bootstrap uses only captured stock frames.
+            var request = new byte[41];
+            BitConverter.GetBytes(pulse).CopyTo(request, 0);
+            BitConverter.GetBytes(primaryView.ViewID).CopyTo(request, 2);
+            BitConverter.GetBytes((ushort)primaryView.spawnId).CopyTo(request, 4);
+            double before = TimeUtils.GetSimTimeSeconds();
+            new AbilityHandler().ProcessAbility(ref request);
+            double end = caster.playerData.castEndsAt;
+            Assert.InRange(end, before + 6, TimeUtils.GetSimTimeSeconds() + 6);
+            Assert.Equal(30, AbilityCosts.Cost(pulse));
+            Assert.Equal(671, AbilityHandler.CurrentInnerStrength(caster));
+            Assert.All(subjects, subject => Assert.Empty(subject.Effects.Snapshot()));
+            AbilityCastInterrupts.FinishDue(caster, end);
+            Assert.True(AbilityCooldowns.IsCoolingDown(caster.playerData, pulse, TimeUtils.GetSimTimeSeconds()));
+
+            var expected = deflectPrimary ? new[] { edge } : new[] { primary, edge };
+            Assert.True(TempMods.TryGet(pulse, out var effect));
+            var applied = expected.Select(target =>
+            {
+                var subject = TimedEffects.ForPlayer(target);
+                var records = subject.Effects.Snapshot();
+                var stun = Assert.Single(records, effect => effect.Parent == pulse);
+                Assert.Equal(TempMods.StunAbility, stun.Target);
+                Assert.Equal(6, stun.Seconds);
+                var immunity = Assert.Single(records, effect => effect.Parent == TempMods.ControlImmunityTimerAbility);
+                Assert.Equal(TempMods.ISDrainTargetAbility, immunity.Target);
+                Assert.Equal(12, immunity.Seconds);
+                Assert.False(ControlActions.CanUseAbilities(subject.Effects));
+
+                // A successful hostile contest before immunity expires cannot refresh either record.
+                Assert.Empty(TimedEffects.Apply(subject, effect, stun.Start + 1, caster));
+                return (subject, stun, immunity);
+            }).ToArray();
+
+            double afterStun = applied.Max(record => record.stun.Expires) + 0.01;
+            TimedEffects.RunDue(afterStun);
+            Assert.All(applied, record =>
+            {
+                Assert.True(ControlActions.CanUseAbilities(record.subject.Effects));
+                Assert.True(record.subject.Effects.HasControlImmunity(afterStun));
+            });
+
+            double afterImmunity = applied.Max(record => record.immunity.Expires) + 0.01;
+            TimedEffects.RunDue(afterImmunity);
+            Assert.All(applied, record => Assert.False(record.subject.Effects.HasControlImmunity(afterImmunity)));
+
+            if (deflectPrimary)
+            {
+                Assert.Equal(FreeCastViralContest.DeflectFx,
+                    NumericalUtils.ByteArrayToUint32(primary.playerInstance.EffectID.getValue(), 1));
+                Assert.Empty(TimedEffects.ForPlayer(primary).Effects.Snapshot());
+            }
+            Assert.Empty(TimedEffects.ForPlayer(outside).Effects.Snapshot());
+            Assert.Empty(TimedEffects.ForPlayer(friendly).Effects.Snapshot());
+            Assert.All(new[] { caster, primary, edge, outside, friendly }, target => Assert.Equal(1000, PvpCombat.HealthOf(target)));
+        }
+        finally
+        {
+            foreach (var subject in subjects) TimedEffects.Clear(subject);
+            AbilityBuffs.RemoveAll(caster);
+            AbilityBuffs.RemoveAll(primary);
+            CombatManager.RemoveClient(caster);
+            loaderField.SetValue(null, previous);
+        }
+
+        WorldClient Recipient(uint id, int z, byte organization = 2)
+        {
+            var target = Client(id);
+            target.playerData.pvpFlag = true;
+            target.playerInstance.Level.setValue((byte)50);
+            target.playerInstance.OrganizationID.setValue(organization);
+            target.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(x, y, z));
+            caster.viewMan.addView(id, 1).viewCreated = true;
+            return target;
+        }
+    }
+
+    [Theory]
     [InlineData(399, 800, TempMods.PowerlessAbility, 0, 11.0526, 0, false)]
     [InlineData(400, 500, TempMods.DOTPlaceHolderAbility, 74, 15, 12, false)]
     [InlineData(399, 800, TempMods.PowerlessAbility, 0, 11.0526, 0, true)]
