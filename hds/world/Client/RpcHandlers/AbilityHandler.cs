@@ -39,6 +39,11 @@ namespace hds
             if (starterViralDamage)
             {
                 var caster = Store.currentClient;
+                if (!AbilityPassives.IsLoaded(caster, AbilityID))
+                {
+                    Deny(AbilityID, "Load this ability before using it.", AbilityRefusals.NotLoaded, sendServerText: false);
+                    return;
+                }
                 lockedDamageTargetSpawn = (ushort?)caster.viewMan.getViewById(currentTargetViewId)?.spawnId;
                 ushort? requestedSpawn = packet.Length == 41 ? BitConverter.ToUInt16(packet, 4) : lockedDamageTargetSpawn;
                 if (!lockedDamageTargetSpawn.HasValue ||
@@ -629,6 +634,12 @@ namespace hds
             {
                 string castKind = starterCoderCast ? "Coder" : "viral";
                 Output.WriteDebugLog($"[ABILITY] {AbilityID} fizzles: the selected {castKind} target changed or left range");
+                return;
+            }
+
+            if (starterViralDamage && !AbilityPassives.IsLoaded(client, AbilityID))
+            {
+                Output.WriteDebugLog($"[ABILITY] {AbilityID} fizzles: the starter viral ability was unloaded before landing");
                 return;
             }
 
