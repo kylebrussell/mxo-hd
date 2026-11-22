@@ -112,6 +112,7 @@ namespace hds
             if (mode == "code-infection" && Environment.GetEnvironmentVariable("MXO_CODE_INFECTION_QA") == "1")
             {
                 ushort level = caller.playerInstance.Level.getValue()[0];
+                Move(caller, 17000, 495, 6400, yaw: 64);
                 Spawn("QA Infection Neutral", 17400, 495, 6400, level);
                 SeedViralResistance(Spawn("QA Infection Resisted", 17300, 495, 6600, level));
                 return "Code Infection targets ready on the open street. QA Infection Neutral is 4 m east and QA Infection Resisted is diagonally east with +75 Viral Resistance.";

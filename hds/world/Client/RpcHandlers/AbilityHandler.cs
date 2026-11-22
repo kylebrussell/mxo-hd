@@ -50,10 +50,11 @@ namespace hds
                 return;
             }
 
-            // These starter viruses need a live enemy selection, including Logic Bomb's splash centre.
-            bool starterViralDamage = AbilityID == 53 || (AbilityID >= 57 && AbilityID <= 60);
+            // These selected viruses need a live enemy before any cast or reuse, including Code Nuke's splash centre.
+            bool selectedViralAttack = AbilityID == 53 || (AbilityID >= 57 && AbilityID <= 60) ||
+                AbilityID == 350 || AbilityID == 351 || AbilityID == 392 || AbilityID == 394;
             ushort? lockedDamageTargetSpawn = null;
-            if (starterViralDamage)
+            if (selectedViralAttack)
             {
                 var caster = Store.currentClient;
                 if (!AbilityPassives.IsLoaded(caster, AbilityID))
@@ -193,7 +194,7 @@ namespace hds
             }
 
             bool starterRangedControl = AbilityID == 43 || AbilityID == 48 || AbilityID == 130 || starterGunCast;
-            if ((starterViralDamage || starterMovementDebuff || starterCoderCast || starterRangedControl || AbilityID == 69) &&
+            if ((selectedViralAttack || starterMovementDebuff || starterCoderCast || starterRangedControl || AbilityID == 69) &&
                 !AbilityTargets.WithinSelectionRange(Store.currentClient, AbilityID, currentTargetViewId))
             {
                 Store.currentClient.messageQueue.addRpcMessage(AbilityRefusals.Encode(
@@ -732,7 +733,7 @@ namespace hds
                 return;
             }
 
-            if ((starterCoderCast || starterViralDamage) &&
+            if ((starterCoderCast || selectedViralAttack) &&
                 (!AbilityTargets.HasLiveAttackSelection(client, currentTargetViewId, lockedDamageTargetSpawn, requireOpponent: true) ||
                  !AbilityTargets.WithinSelectionRange(client, AbilityID, currentTargetViewId)))
             {
@@ -741,7 +742,7 @@ namespace hds
                 return;
             }
 
-            if (starterViralDamage && !AbilityPassives.IsLoaded(client, AbilityID))
+            if (selectedViralAttack && !AbilityPassives.IsLoaded(client, AbilityID))
             {
                 Output.WriteDebugLog($"[ABILITY] {AbilityID} fizzles: the starter viral ability was unloaded before landing");
                 return;

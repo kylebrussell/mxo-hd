@@ -37,6 +37,10 @@ public class AbilityRefusalFeedbackTests:IDisposable
     [InlineData(48, true)]
     [InlineData(69, true)]
     [InlineData(69, false)]
+    [InlineData(350, true)]
+    [InlineData(351, false)]
+    [InlineData(392, true)]
+    [InlineData(394, false)]
     public void StarterViralDebuffRequiresTheOriginalHostileSpawnAtLanding(ushort id, bool replaceSpawn)
     {
         var caster = Client();
@@ -95,6 +99,10 @@ public class AbilityRefusalFeedbackTests:IDisposable
     [InlineData(43)]
     [InlineData(48)]
     [InlineData(69)]
+    [InlineData(350)]
+    [InlineData(351)]
+    [InlineData(392)]
+    [InlineData(394)]
     public void UnloadedStarterViralDebuffRefusesBeforeCastOrCost(ushort id)
     {
         var caster = Client();
@@ -114,6 +122,52 @@ public class AbilityRefusalFeedbackTests:IDisposable
         Assert.Equal(500, AbilityHandler.CurrentInnerStrength(caster));
         Assert.Equal(castBefore, caster.playerData.castEndsAt);
         Assert.Empty(caster.playerData.cooldownEndsAt);
+    }
+
+    [Theory]
+    [InlineData(350)]
+    [InlineData(351)]
+    [InlineData(392)]
+    [InlineData(394)]
+    public void SelectedHackerDebuffsRefuseMissingFriendlyStaleAndFarTargetsBeforeCost(ushort id)
+    {
+        var caster = Client();
+        var target = Client();
+        Store.currentClient = caster;
+        caster.playerData.passives.Loaded[id] = 26;
+        target.playerData.setCharID(111);
+        target.playerData.setEntityId(42);
+        caster.playerInstance.OrganizationID.setValue((byte)1);
+        target.playerInstance.OrganizationID.setValue((byte)1);
+        caster.playerData.pvpFlag = target.playerData.pvpFlag = true;
+        caster.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(0, 495, 0));
+        target.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(2100, 495, 0));
+        WorldServer.Clients.Add("witness", target);
+        var view = caster.viewMan.addView(42, 12);
+        view.viewCreated = true;
+        view.spawnId = 9;
+
+        CheckRefusal(0, 0, AbilityRefusals.InvalidTarget);
+        CheckRefusal(view.ViewID, 9, AbilityRefusals.InvalidTarget);
+        target.playerInstance.OrganizationID.setValue((byte)2);
+        CheckRefusal(view.ViewID, 8, AbilityRefusals.InvalidTarget);
+        CheckRefusal(view.ViewID, 9, AbilityRefusals.TargetOutOfRange);
+
+        void CheckRefusal(ushort selected, ushort spawn, uint reason)
+        {
+            caster.messageQueue.RPCMessagesQueue.Clear();
+            var request = new byte[41];
+            BitConverter.GetBytes(id).CopyTo(request, 0);
+            BitConverter.GetBytes(selected).CopyTo(request, 2);
+            BitConverter.GetBytes(spawn).CopyTo(request, 4);
+            new AbilityHandler().ProcessAbility(ref request);
+            Assert.True(AbilityRefusals.TryDecode(Assert.Single(Rpcs(caster)), out var refusal));
+            Assert.Equal((uint)id, refusal.AbilityID);
+            Assert.Equal(reason, refusal.ErrorID);
+            Assert.Equal(500, AbilityHandler.CurrentInnerStrength(caster));
+            Assert.Equal(0, caster.playerData.castEndsAt);
+            Assert.Empty(caster.playerData.cooldownEndsAt);
+        }
     }
 
     [Fact] public void PoorFixtureUsesActualMinimumAndCappedRegeneration()
