@@ -92,6 +92,8 @@ namespace hds
             double range = definition?.Number("Ability/SelectionRange") ?? 0;
             if (range > 0 && CombatCalculator.CalculateDistanceMetres(client.playerInstance.Position.getValue(),
                 primary.getXPos(), primary.getYPos(), primary.getZPos()) > range) return false;
+            if (PoisonKnifeContest.Applies(ability.getAbilityID(), origin) && !PoisonKnifeContest.Npc(client, primary))
+                return true;
             var center = (primary.getXPos(), primary.getYPos(), primary.getZPos());
             LandOne(client, ability, targetViewId, sneakOpener, origin, engageFoes, reverseBulldog, ghostStrike);
             LandAround(client, ability, center, origin, engageFoes,

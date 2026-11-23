@@ -403,6 +403,7 @@ namespace hds
             }
             UInt16 abilityId = ability.getAbilityID();
             if(FreeCastViralContest.Applies(abilityId,origin) && !FreeCastViralContest.Player(caster,ability,target))return;
+            if (PoisonKnifeContest.Applies(abilityId, origin) && !PoisonKnifeContest.Player(caster, target)) return;
             UInt16 damage;
             UInt32 fx;
             lock (random)

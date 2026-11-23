@@ -126,7 +126,7 @@ public static partial class Scenarios
     {
         var knifer = await context.AddPlayerAsync(NearNpc("Knifer") with { InnerStrength = 500, MaxInnerStrength = 500 });
         var brawler = await context.AddPlayerAsync(NearNpc("Brawler", 100));
-        await LoadAbilitiesAsync(context, knifer, 1112);
+        await LoadAbilitiesAsync(context, knifer, 1112, 146);
         foreach (var player in new[] { knifer, brawler }) await player.EnterWorldAsync();
         var mob = await knifer.WaitForViewNamedAsync("WinterFrost");
         var trainman = await knifer.WaitForViewNamedAsync("Trainman");
