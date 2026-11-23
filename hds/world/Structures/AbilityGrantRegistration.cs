@@ -104,7 +104,7 @@ namespace hds
             Array.AsReadOnly(new (ushort Source,ushort Target)[] { (175,1116) });
         // Publish source-qualified zero grants from the GOB through the loaded registry.
         private static readonly (ushort Source, ushort Target)[] GunmanPassivePairs =
-            { (128, 1070), (245, 1071), (251, 1073), (440, 1074), (508, 1136) };
+            { (128, 1070), (240, 1075), (245, 1071), (251, 1073), (440, 1074), (508, 1136) };
         private static readonly (ushort Source, ushort Target)[] UtilityMasterPairs = { (620, 1108) };
         private static readonly (ushort Source, ushort Target)[] SpyClassPairs =
             { (155, 1113), (131, 1115), (118, 1119), (283, 1120), (338, 1121), (285, 1122), (389, 1123) };

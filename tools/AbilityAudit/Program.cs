@@ -111,7 +111,7 @@ var rows = AbilityCatalog.All.Values.OrderBy(e => e.Id).Select(e =>
             (m.Target == 108 && m.Number("DamageType", -1) == 3 || m.Text("StatModUpdateFunc") == "HOT"))
             .Select(m => AbilityValues.TryValue(m, 50, 50, out int value) ? (int?)value : null).ToArray(),
         passives = AbilityPassives.Modifiers(e.Id).Select(m => new { stat = m.Target,
-            consumer = Consumer(m.Target),
+            consumer = m.Target == 1046 && (e.Id is 240 or 245) ? "Desperation health snapshot" : Consumer(m.Target),
             function = (int)m.Number("ValueFunction"),
             level50 = AbilityValues.TryValue(m, Math.Min(50, (int)e.Number("Ability/AbilityLevelCap", 50)), 50, out int value) ? (int?)value : null }).ToArray(),
         grants = AbilityProgression.GrantsOf(e.Id),
