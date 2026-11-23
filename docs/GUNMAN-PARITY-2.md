@@ -30,7 +30,7 @@ Operative also gives +4 melee accuracy. Review each gun style with a matching eq
 | 128, 240 | Exact loaded Initiative Bonus records and upgrade grants, removed on unload. The ordinary attack reads Initiative 1044, and the shipped passive supplies linked bonus 1046. The retail coefficient and consumption remain open. |
 | 498 | Known consumers exist for the defense, resistance and Powerless duration bonuses. The modeled Determination duration policy still needs retail comparison, and the row remains open. |
 | 129, 147, 158 | All seven active-style stats feed attack, damage, typed defenses and direct withdrawal. Unit tests cover weapon-class/ILDB selection, and native runs showed style-specific rounds. The retained stock trace did not identify the exact opening stand records. [Native run](https://github.com/kylebrussell/mxo-hd/pull/330#issuecomment-7006864509) |
-| 126 | Stock queued Disarming Shot with move 9522 and the shipped fixed base 11. The client-visible live accuracy range differs from GOB -15. The older DirectObject unequip path remains unresolved. |
+| 126 | Stock used 9522, and the player attack now applies its authored -15 Ballistic Accuracy for 10 s. The retained Special Agent and Great Wall Security Socho captures describe NPC origin. The older DirectObject unequip path remains unresolved. |
 | 176 | Stock single-SMG interlock used 21083 and the shipped fixed base 17. The timed Rooted state holds movement and releases on expiry. The original localized term presentation remains open. |
 | 241 | The native run naturally applied Off Balance with Grab and landed 9527 in Handguns. The same capture proves the move and one Powerless result. The proc distribution, callbacks and damage/targeting remain open. [Native run](https://github.com/kylebrussell/mxo-hd/pull/330#issuecomment-7006864509) |
 | 242 | Shipped caster defenses now land and expire. The active cast replay retains enemy damage. Exact damage, Block callback, and queued choreography remain open. |
@@ -101,3 +101,10 @@ The current GOB uses dual handguns with a two-second cast, a fixed Ballistic bas
 Original 244 results contain 9519 MR at a 390-unit presentation gap and 9534 SR at approximately 140 units. The runtime uses observed 9519 on a queued hit and keeps the ordinary style exchange for a non-landing. The original 9534 input selector remains unverified. [MR entry](../research/packet-dumps/community-intake/20260607T015831Z-hdneo-public-inventory-lastday-rajko-nearend-selected/logs/mxopackets2_RajkoPacketsNearTheEnd_PacketsGotIntoHelAgain.log.txt#L4811-L4819) [SR entry](../research/packet-dumps/community-intake/20260608T130150Z-hdneo-public-warboy-world-game-sanitized-selected/logs/ProxyM2_m2_packets.log.txt#L269586-L269596)
 
 The `ability-parity-pistol-barrage` fixture keeps the same level-27 player as the neutral at-rest target and the armored interlock target. The helper uses the retained Soldier Upgrade during an at-rest Powerless and again after recovery. The retained 129 and Close Combat controls bootstrap the legal dual-handgun profile. The first full 244 request and player recipient records remain native checks.
+
+## Disarming Shot accuracy by caster
+
+The authored UDB0 modifier specifies source 126, target 524 and a fixed -15 for ten seconds. Playable Disarming Shot uses that source. The archived NPC-only distribution stays available to NPC casters. The Special Agent applies -24 on NlOBEE in the linked capture.
+[Special Agent](../research/packet-dumps/community-intake/20260608T122812Z-hdneo-public-endgame-mission-sanitized-selected/logs/mxopackets1_medanon_niobe3dualduality.log.txt#L14679-L14695)
+
+The existing rank-19 player fixture runs the same pistol and distance before, during and after the effect. Its actual Ballistic Accuracy attack input drops by 15 and recovers on the matched removal. Its Melee Accuracy input stays fixed throughout.

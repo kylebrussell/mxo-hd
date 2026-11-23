@@ -6,7 +6,7 @@ Disarming Shot (126), Guard Breaker (138), and Iron Guard (139) have single fixe
 
 Use `ability-parity-starter-interlock-bases` on level-19 CSR110. The live prerequisite profile uses 44 of 50 memory with rank-15 abilities and a pistol equipped.
 
-1. Use Close Combat on **QAEnemy**, who is flagged on the isolated PvP fixture. Once the interlock is active, reselect Handguns and use Disarming Shot from the hotbar. Capture the actual selected-target request, the landed round, the damage presentation, and the targetâ€™s ten-second Ballistic Accuracy penalty and its matching removal. The live path retains the captured range âˆ’34 to âˆ’18 documented at `hds/world/Structures/TempMods.cs:298`. The GOB lists a raw âˆ’15, which is outside this base-damage change. The older Python pistol callback names a weapon-unequip effect. Canonical recipient and invocation still need primary stock evidence.
+1. Use Close Combat on **QAEnemy**, who is flagged on the isolated PvP fixture. Reselect Handguns during interlock and use Disarming Shot. Capture the selected-target request, landed round, damage, and the target's -15 Ballistic Accuracy for ten seconds followed by its matching removal. The current GOB fixes both RangeAccDebuff endpoints at -15. The retained -34 to -18 range is limited to NPC-origin effects. The older Python weapon-unequip callback remains separately qualified.
 2. Leave interlock, unequip the pistol and enter Close Combat with **Melee Dummy**. Reselect Aikido and use Iron Guard. Capture the landed move, the physical result, and the caster's +10 melee and +10 ballistic defense adds and removals after twelve seconds.
 
 ## Isolated Guard Breaker retest
