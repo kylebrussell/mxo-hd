@@ -236,7 +236,8 @@ public static partial class Scenarios
         new Scenario("daemon-boost-accuracy-server", DaemonBoostAccuracyServer,
             new Dictionary<string, string>(PvpOpponentsFixture.Environment)
             {
-                ["MXO_DEV_COMMANDS"] = "1", ["MXO_PROXY_TECHNICIAN_QA_ROLL"] = "80"
+                ["MXO_DEV_COMMANDS"] = "1", ["MXO_PROXY_TECHNICIAN_QA_ROLL"] = "80",
+                [WorldConfig.RemoteProxySheetVariable] = "Simulacra.Karate"
             }),
         new Scenario("daemon-boost-friendly-pets-server", DaemonBoostFriendlyPetsServer,
             new Dictionary<string, string>(StillNpcs)

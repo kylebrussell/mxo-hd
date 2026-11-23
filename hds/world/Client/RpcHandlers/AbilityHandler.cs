@@ -124,7 +124,11 @@ namespace hds
             // Internal effect templates are reapplied by their sourced parent callbacks, never a free client cast.
             if(AbilityID == AbilityEmpBlast.Weakness) { Deny(AbilityID,"NPC-only ownership marker cannot be activated."); return; }
             if(AbilityID == CoderPets.StopProxyEffect) { Deny(AbilityID,"Use Detonate Proxy on your simulacrum."); return; }
-            if(AbilityID == DaemonBoost.AccuracyEffect || AbilityHealthCallbacks.InternalEffect(AbilityID)) { Deny(AbilityID,"Use the parent ability, not its internal effect."); return; }
+            if (AbilityID == DaemonBoost.AccuracyEffect || AbilityHealthCallbacks.InternalEffect(AbilityID))
+            {
+                Deny(AbilityID, "Use the parent ability, not its internal effect.");
+                return;
+            }
 
             if (AbilityID == AbilityBuffs.SittingEffect) return; // Owned by the normal sit/stand stance requests.
 

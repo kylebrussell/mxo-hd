@@ -9,8 +9,9 @@ public static partial class Scenarios
     {
         const ushort level = 50, boost = 619;
         const int x = 17000, y = 495, z = 6400, friendX = 16500, enemyX = 17400, farZ = 7501;
+        const int nukerX = 16600, nukerZ = 6700;
         var stands = new[] { (x, z), (friendX, z), (friendX + 150, z), (enemyX, z), (enemyX + 150, z), (friendX, z + 800),
-            (x - 150, farZ), (x, farZ) };
+            (x - 150, farZ), (x, farZ), (nukerX, nukerZ), (nukerX + 150, nukerZ) };
         SectorProperties.Load(Path.Combine(context.RepositoryRoot, "data", "sector_properties.csv"));
         NavMesh.UseDirectory(Path.Combine(context.RepositoryRoot, "data", "navmesh"));
         foreach (var (standX, standZ) in stands)
@@ -36,16 +37,20 @@ public static partial class Scenarios
         var friend = await context.AddPlayerAsync(Seed("AccuracyAuraFriend", friendX, z, 1, friendlyProfile));
         var enemy = await context.AddPlayerAsync(Seed("AccuracyAuraEnemy", enemyX, z, 2, friendlyProfile));
         var far = await context.AddPlayerAsync(Seed("AccuracyAuraFar", x - 150, farZ, 1, friendlyProfile));
-        var recipients = new[] { friend, enemy, far };
+        var nuker = await context.AddPlayerAsync(Seed("AccuracyAuraNuker", nukerX, nukerZ, 1, Profile(22)));
+        var recipients = new[] { friend, enemy, far, nuker };
         foreach (var player in recipients.Prepend(source)) await PvpOpponentsFixture.EnterAsync(player);
 
-        // Retained stock 594. 619 runs through the server's dev cast on this disposable server only.
-        await Task.WhenAll(recipients.Select(SummonAsync));
+        // Retained stock summons. 619 runs through the server's dev cast on this disposable server only.
+        await Task.WhenAll(recipients.Select(player => SummonAsync(player, ReferenceEquals(player, nuker)
+            ? AdvancedSimulacraNoticeFixture.Nuker1 : AdvancedSimulacraNoticeFixture.Proxy5)));
         Check.That(!source.World.RpcSnapshot().Any(frame => frame.Opcode == 0x176), "The aura caster owns no pet");
         friend.SendChat("?pet dummy 50");
         await friend.WaitForTextAsync("stands 8 m away");
         var dummy = await friend.WaitForViewNamedAsync("Simulacra Dummy");
         friend.SendRpc("81 7b fe 02 " + Le(DuelPackets.Handle(dummy.ViewId, dummy.SpawnId)));
+        var nukerDummy = await nuker.WaitForViewNamedAsync("Simulacra Dummy");
+        nuker.SendRpc("81 7b fe 02 " + Le(DuelPackets.Handle(nukerDummy.ViewId, nukerDummy.SpawnId)));
         string roll = $"attack owner={friend.Handle} bonus=0 roll=80 chance=";
         await friend.WaitUntilAsync(() => context.Server.DebugLog().Contains(roll + "75 hit=False"),
             "The friendly Proxy misses the fixed roll without 700", TimeSpan.FromSeconds(16));
@@ -67,6 +72,11 @@ public static partial class Scenarios
             "The legal enemy and the distant friendly pet are excluded");
         await friend.WaitUntilAsync(() => context.Server.DebugLog()[start..].Contains(roll + "95 hit=True"),
             "The supported attack path consumes the friendly Proxy accuracy", TimeSpan.FromSeconds(9));
+        await source.WaitUntilAsync(() => context.Server.DebugLog()[start..].Contains(
+                "[DAEMON BOOST] 700 attack owner=AccuracyAuraFriend channel=melee accuracy=64") &&
+            context.Server.DebugLog()[start..].Contains(
+                "[DAEMON BOOST] 700 attack owner=AccuracyAuraNuker channel=viral accuracy=64"),
+            "Ordinary Proxy and Nuker attacks each consume their actual linked accuracy channel", TimeSpan.FromSeconds(9));
         await source.WaitUntilAsync(() => context.Server.DebugLog()[start..].Contains(upkeep) &&
             context.Server.DebugLog()[start..].Split(Pulse(friend)).Length >= 3,
             "Five-second upkeep pays and refreshes the original friendly recipient", TimeSpan.FromSeconds(9));
@@ -83,9 +93,9 @@ public static partial class Scenarios
         Check.Equal(0, recipients.Prepend(source).Sum(player => player.World.Problems.Count), "Aura and combat framing");
         Console.WriteLine("DAEMON BOOST 2.0 PASS: a caster without a pet changes the friendly proxy roll from miss to hit; unload lets the child expire.");
 
-        async Task SummonAsync(HeadlessPlayer player)
+        async Task SummonAsync(HeadlessPlayer player, string frame)
         {
-            player.SendRpc("80b95202000000000000000000000000000000000000000000000000ffff7f7f00000000086b0000000000");
+            player.SendRpc(frame);
             await player.WaitForRpcAsync("81 76", TimeSpan.FromSeconds(14));
             player.SendRpc("81 7c fe 05 02");
             await player.WaitForRpcAsync("81 78");

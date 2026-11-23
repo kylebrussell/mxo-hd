@@ -227,6 +227,7 @@ public class ProxyTechnicianTests
         source.RemoveOwnPet();
         source.Owner.playerData.passives.Loaded[619] = 50;
         Assert.True(AbilityAuras.Handles(619));
+        Assert.Equal(47, AbilityBuffBuffer.Size(619));
         Assert.Equal(19, AbilityCatalog.Find(700).Number("Ability/CastDirectObjects"));
         Assert.Equal(700, AbilityAuras.EffectOf(619));
         Assert.Equal(5, AbilityAuras.DrainOf(619));
@@ -256,6 +257,24 @@ public class ProxyTechnicianTests
         target.Pet.Kind = CoderPets.Kind.Proxy;
         Assert.Equal(64, DaemonBoost.Accuracy(target.Pet, 24, ranged: false));
         Assert.Equal(75, CoderPets.HitChance(target.Pet, 50, 25));
+    }
+
+    [Theory]
+    [InlineData(CoderPets.Kind.Proxy, "Karate", 79)]
+    [InlineData(CoderPets.Kind.Proxy, "Rifle", 82)]
+    [InlineData(CoderPets.Kind.Nuker, "Nuker", 86)]
+    [InlineData(CoderPets.Kind.Healer, "Healer", 75)]
+    public void DaemonAccuracyConsumesOnlyTheAttackingPetChannel(CoderPets.Kind kind, string sheet, int expected)
+    {
+        using var source = new Fixture();
+        using var target = new Fixture();
+        target.Pet.Kind = kind;
+        target.Pet.Sheet = sheet;
+        target.Pet.DaemonBoostAccuracyEffect = new DaemonBoost.PulseEffect(source.Owner, target.Owner, 700,
+            (0, 0, 4, 7, 11), 15);
+
+        Assert.Equal(expected, CoderPets.HitChance(target.Pet, 50, 14));
+        Assert.Equal(75, CoderPets.HitChance(target.Pet, 50, 15));
     }
 
     [Fact]

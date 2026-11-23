@@ -10,7 +10,7 @@ public sealed class StarterPetConsumersMode : NativeQaMode
     private const int Level = 18, X = 17000, Y = 495, Z = 2300, TargetX = 17900, TargetZ = 1900;
     private const ushort Coder = 1008, Proxy = 28, Power = 25, Charge = 603, Replacement = 27;
     // Complete PR603 Proxy/Charge and PR619 Power/lower Proxy stock requests.
-    private const string ProxyStock = "80b91c00000000000000000000000000000000000000000000000000585ca80001000000086b0000000000";
+    internal const string ProxyStock = "80b91c00000000000000000000000000000000000000000000000000585ca80001000000086b0000000000";
     private const string PowerStock = "80b91900000000000000000000000000000000000000000000000000ffff7f7f00000000086b0000000000";
     private const string ChargeStock = "80b95b0200000000000000000000000000000000000000000000000000000090767241086b0000000000";
     private const string ReplacementStock = "80b91b00000000000000000000000000000000000000000000000000ffff7f7f00000000086b0000000000";

@@ -298,8 +298,15 @@ namespace hds
         }
 
         // OURS base roll/level curve; sourced 700 accuracy (level*1.3) now changes the actual attack roll.
-        public static double HitChance(Pet pet, int targetLevel, double now) => Math.Clamp(
-            75 + (pet.Mob.getLevel() - targetLevel) * 2 + DaemonBoost.Accuracy(pet, now, Ranged(pet)) + ProxyTechnician.Accuracy(pet,now,Ranged(pet)), 5, 95);
+        public static double HitChance(Pet pet, int targetLevel, double now)
+        {
+            bool ranged = Ranged(pet);
+            int accuracy = DaemonBoost.Accuracy(pet, now, ranged) + ProxyTechnician.Accuracy(pet, now, ranged);
+            return CalculateHitChance(pet, targetLevel, accuracy);
+        }
+
+        private static double CalculateHitChance(Pet pet, int targetLevel, int accuracy) =>
+            Math.Clamp(75 + (pet.Mob.getLevel() - targetLevel) * 2 + accuracy, 5, 95);
 
         public sealed class OwnPetCast
         {
@@ -1320,15 +1327,22 @@ namespace hds
         private static void Attack(Pet pet, Mob target, double now)
         {
             if (!SpendAction(pet, now)) return;
+            bool ranged = Ranged(pet);
+            int daemonAccuracy = DaemonBoost.Accuracy(pet, now, ranged);
+            int technician = ProxyTechnician.Accuracy(pet, now, ranged);
             double roll=ProxyTechnician.AttackRoll(pet,out bool forced);
-            double chance=HitChance(pet,target.getLevel(),now);
-            int technician=ProxyTechnician.Accuracy(pet,now,Ranged(pet));
+            double chance = CalculateHitChance(pet, target.getLevel(), technician + daemonAccuracy);
             if(forced || technician!=0) Output.WriteDebugLog("[PROXYTECH] attack owner="+TimedEffects.PlayerName(pet.Owner)+" bonus="+technician+" roll="+roll+" chance="+chance+" hit="+(roll<chance));
+            if (daemonAccuracy != 0)
+            {
+                string channel = pet.Kind == Kind.Nuker ? "viral" : ranged ? "ballistic" : "melee";
+                Output.WriteDebugLog($"[DAEMON BOOST] 700 attack owner={TimedEffects.PlayerName(pet.Owner)} channel={channel} accuracy={daemonAccuracy}");
+            }
             if (roll >= chance) return;
             UInt16 rawDamage = CombatCalculator.CalculateMobDamageWithTactics(pet.Mob.getLevel(), target.getLevel());
             UInt16 damage = DaemonBoostDamage(pet, PowerBoostDamage(pet, rawDamage, now), now);
             if (damage != rawDamage) Output.WriteDebugLog("[PET] typed influence " + pet.Kind + " base " + rawDamage + " final " + damage);
-            UInt32 fx = Ranged(pet) ? CombatCalculator.GetRandomRangedHitFx() : CombatCalculator.GetRandomMeleeHitFx();
+            UInt32 fx = ranged ? CombatCalculator.GetRandomRangedHitFx() : CombatCalculator.GetRandomMeleeHitFx();
             FaceTowards(pet, target.getXPos(), target.getZPos());
             DamageForOwner(pet, target, damage, fx);
             Output.WriteDebugLog("[PET] " + pet.Mob.getName() + " hits " + target.getName() + " for " + damage);
