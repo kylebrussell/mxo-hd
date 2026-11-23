@@ -1,0 +1,14 @@
+{
+  "families": {
+    "despoiler-field-ranked": {
+      "representative": 404,
+      "result": "pass",
+      "head": "d597b826de20e9e123b1935738c153616291b5c0",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/861#issuecomment-7089586390",
+      "scope": "Stock level-30, 46/60 Memory. Empty and allied selections and the 16.01 m hostile are refused before any cast, debit or reuse. The valid cast takes 6 s, pays 40 IS and starts 30 s own reuse. On the primary and the 4.00 m edge alone, 159/171 add -14 and 522/524 add -39. All eight records remove at 30 s. The 4.01 m hostile, ally and caster receive none. No damage, max-vital change or interlock."
+    }
+  },
+  "abilities": {
+    "404": { "family": "despoiler-field-ranked" }
+  }
+}
