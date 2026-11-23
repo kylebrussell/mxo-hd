@@ -1,0 +1,43 @@
+{
+  "families": {
+    "stock-l22-disabling-shot": {
+      "representative": 255,
+      "result": "pass",
+      "head": "7aae2d1fc81e32595d7d2d7c60034c9854fd855f",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/892#issuecomment-7089296931",
+      "scope": "Stock level-22 rifle opener on the legal 43/52 profile. Direct 255 starts 2 s, pays 20 IS, reuses in 10 s with 5 s group 689, and starts no interlock. Two neutral hits of 17 included one without Powerless and one with a natural proc. Separate 96/734 records last 4 s. Soldier Upgrade is refused during the proc and lands after expiry. Same player with 181 +20 receives 15 from raw 17."
+    }
+  },
+  "abilities": {
+    "255": {
+      "family": "stock-l22-disabling-shot",
+      "checks": {
+        "damage": {
+          "source": "The GOB 255 instant health modifier stores Ballistic DamageType 1 and fixed endpoints 16/16. The legacy row has no valid damage range.",
+          "runtime": "AbilityHandler.AbilityDamage reads the reviewed fixed GOB base. The normal selected player executor applies the loaded Ballistic influence and only the matching typed resistance channel.",
+          "test": "PR892 stock verifies neutral 17 and raw17/final15 on the same L22 player after the captured 1061 adds stat181 +20. The disposable replay uses the retained full input and exact health result. https://github.com/kylebrussell/mxo-hd/pull/892#issuecomment-7089296931"
+        },
+        "controls": {
+          "source": "GOB 255's landed modifier stores Powerless state 96, a 50% roll and a four-second duration. The shared control application starts its separate 734/681 immunity record.",
+          "runtime": "TimedEffects independently rolls the sourced modifier and publishes/removes the state and immunity on its own lifetime. ControlActions denies ability use while the separate targeted player carries Powerless.",
+          "test": "ConditionalControlTests.GunControlsRespectTheirStoredProbabilityAtLanding checks 255 at and below its 50% boundary and expiry. Stock PR892 witnesses no proc, a proc with both four-second removals, a real Soldier Upgrade refusal on that player and acceptance immediately after recovery. https://github.com/kylebrussell/mxo-hd/pull/892#issuecomment-7089296931"
+        },
+        "targeting": {
+          "source": "GOB 255 has CastValidTarget 3, CastWhenUsed 1, SelectionRange 20 and no no-LOS override. PR321/326 established stock 255 is an outside-combat cast.",
+          "runtime": "AbilityHandler requires a living hostile selected enemy and binds its original view/spawn, range and sight before charge. The landing path rechecks that same handle and geometry before effects.",
+          "test": "The retained exact 255 frame in ability-parity-gunman-rifle-opener-scope refused empty, allied and stale handles, blocked sight and clear 20.01 m without a cast/debit/reuse, then hit at the adjacent 20.00 m stand. AbilityRefusalFeedbackTests.DelayedHostileCastCannotLandOnANewerSpawnInTheOriginalView tests full and compact 255 requests. PR892 stock fires at rest on the expected current player. https://github.com/kylebrussell/mxo-hd/pull/892#issuecomment-7089296931"
+        },
+        "source-parity": {
+          "source": "GOB 255 stores exactly Ballistic 16, a two-second out-of-combat opener, 20 IS, 10 seconds own reuse and its separate 50% four-second control. The stored Rifles modifiers and learned prerequisites drive Ballistic influence instead of replacing this base.",
+          "runtime": "The fixed base follows the ordinary typed influence and resistance calculations. The server uses the normal direct caster bar and landing path and never queues an interlock or assigns a special playback to this out-of-combat action.",
+          "test": "The L22 PR892 run corroborates fixed base 16 after active Rifle and prerequisite influence with real result 17, matching typed result 15 only after +20 resistance, exact 20 IS/2 s/10 s/5 s, no special or interlock, and the separate 4 s recipient effect. https://github.com/kylebrussell/mxo-hd/pull/892#issuecomment-7089296931"
+        },
+        "behavior-tests": {
+          "source": "GOB 255 records the billed cast, out-of-combat live hostile selection, fixed Ballistic payload, and 50% four-second Powerless.",
+          "runtime": "Scoped live view/spawn admission, original-target completion, the common typed damage path and shared conditional control executor implement those behaviors.",
+          "test": "Exact retained requests in both PR892 disposable modes verify invalid/stale/geometry controls, neutral resistance and signed typed damage, real timed refusal and recovery, and cost/reuse. ConditionalControlTests.GunControlsRespectTheirStoredProbabilityAtLanding and the focused replacement-spawn handler test isolate RNG edge and lifetime. PR892 passed with the actual stock direct action. https://github.com/kylebrussell/mxo-hd/pull/892#issuecomment-7089296931"
+        }
+      }
+    }
+  }
+}

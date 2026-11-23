@@ -9,7 +9,6 @@
     }
   },
   "abilities": {
-    "254": { "family": "rifle-out-of-combat-openers" },
-    "255": { "family": "rifle-out-of-combat-openers" }
+    "254": { "family": "rifle-out-of-combat-openers" }
   }
 }
