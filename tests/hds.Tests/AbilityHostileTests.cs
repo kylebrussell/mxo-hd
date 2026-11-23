@@ -2,6 +2,7 @@ using System.Runtime.CompilerServices;
 using hds;
 using hds.shared;
 using hds.world.Structures;
+using MxoHd.PacketResearch;
 
 namespace hds.Tests;
 
@@ -911,6 +912,85 @@ public class AbilityHostileTests
             WorldServer.Clients = previous;
             Store.world = previousWorld;
         }
+    }
+
+    [Fact]
+    public void LoadedForceMultiplierRaisesTheOrdinarySweepPartyPulseFromFortyToFortyFive()
+    {
+        const ushort force = 490, grant = 1091, sweep = 487, slow = 86;
+        const int level = 50;
+        const uint leaderId = 77690, memberId = 77691;
+        long experience = PlayerProgression.ExperienceForLevel(level);
+        var profiled = new ushort[] { 2, 17, CombatStyles.HackerStyle, force, sweep }
+            .SelectMany(id => AbilityPrerequisites.Current.Closure(id).Keys.Append(id)).Distinct().Order().ToArray();
+        var archive = profiled.Select((id, slot) => new AbilityMemory.Row((uint)slot, (ushort)slot,
+            AbilityMessages.AbilityGameObject(id), level, loaded: false)).ToArray();
+        var full = AbilityMemory.Plan(archive, archive.Select(ToRequest).ToArray(), unload: false, experience, level);
+        Assert.Null(full.Refusal);
+        Assert.Equal(61, full.Used);
+        Assert.Equal(100, full.Maximum);
+        var forceRequest = ToRequest(Assert.Single(archive, row => row.Ability == force));
+        var removed = AbilityMemory.Plan(full.Loaded, new[] { forceRequest }, unload: true, experience, level);
+        var reloaded = AbilityMemory.Plan(archive.Select(row => row.WithLoaded(row.Ability != force)).ToArray(),
+            new[] { forceRequest }, unload: false, experience, level);
+        Assert.Null(removed.Refusal);
+        Assert.Null(reloaded.Refusal);
+        Assert.Equal(full.Used, reloaded.Used);
+
+        var caster = Client();
+        caster.playerData.setCharID(leaderId);
+        caster.playerData.setEntityId(leaderId);
+        caster.viewMan = new ViewManager();
+        var member = Client();
+        member.playerData.setCharID(memberId);
+        member.playerData.setEntityId(memberId);
+        member.viewMan = new ViewManager();
+        member.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(400, 0, 0));
+        var subject = TimedEffects.ForPlayer(member);
+        var priorClients = WorldServer.Clients;
+        var priorRoll = AbilityHostile.PulseRandom;
+        var team = SocialGroups.Instance.CreateTeam(leaderId, "ForceMultiplier");
+        try
+        {
+            WorldServer.Clients = new() { ["leader"] = caster, ["member"] = member };
+            SocialGroups.Instance.AddTeamMember(team.Id, memberId, "SweepMember");
+            AbilityHostile.PulseRandom = new SweepRoll(42);
+            VerifySample(removed, bonus: 10, chance: 40, cleansed: false);
+            VerifySample(reloaded, bonus: 15, chance: 45, cleansed: true);
+        }
+        finally
+        {
+            TimedEffects.Clear(subject);
+            TimedEffects.Clear(TimedEffects.ForPlayer(caster));
+            SocialGroups.Instance.DisbandTeam(team.Id);
+            AbilityHostile.PulseRandom = priorRoll;
+            WorldServer.Clients = priorClients;
+        }
+
+        void VerifySample(AbilityMemory.Result loadout, int bonus, int chance, bool cleansed)
+        {
+            AbilityPassives.SetLoadedFromRows(caster, loadout.Loaded);
+            Assert.Equal(bonus, AbilityStats.Player(caster, 1052));
+            Assert.Equal(cleansed, AbilityPassives.IsLoaded(caster, grant));
+            Assert.False(AbilityBuffs.IsActive(caster, grant));
+            Land(member, slow);
+            member.messageQueue.RPCMessagesQueue.Clear();
+            AbilitySupport.Land(caster, sweep, 2);
+            var pulse = Assert.Single(subject.Effects.Snapshot(), effect => effect.Parent == sweep);
+            Assert.Equal(chance, pulse.SweepChance);
+            Assert.Equal(pulse.Start + 5, pulse.NextTick);
+            Assert.True(subject.Effects.HasParent(slow));
+            Assert.Single(member.messageQueue.RPCMessagesQueue.Cast<SequencedMessage>(), message =>
+                ManageBonusRecord.TryDecode(message.content.AsSpan(1), out var record) &&
+                record!.SourceId == sweep && record.TargetId == sweep && record.SignedValue == 30 && record.Duration == 25);
+            TimedEffects.RunDue(pulse.Start + 5.01);
+            Assert.Equal(!cleansed, subject.Effects.HasParent(slow));
+            TimedEffects.Clear(subject);
+            TimedEffects.Clear(TimedEffects.ForPlayer(caster));
+        }
+
+        static AbilityProgression.LoadoutEntry ToRequest(AbilityMemory.Row row) =>
+            new() { Slot = row.Slot, Ability = row.Ability, Level = row.Level };
     }
 
     [Fact]
