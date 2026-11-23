@@ -51,6 +51,13 @@ namespace hds
         /// <summary>simulacra.simulacra_choices: Remote Proxy picks one at random.</summary>
         public static readonly string[] ProxySheets = { "Aikido", "Karate", "KungFu", "Pistol", "Rifle", "SMG" };
 
+        internal static string NormalizeProxySheetOverride(string configured)
+        {
+            const string prefix = "Simulacra.";
+            configured = configured?.Trim();
+            return ProxySheets.FirstOrDefault(sheet => string.Equals(configured, prefix + sheet, StringComparison.OrdinalIgnoreCase));
+        }
+
         public const UInt16 PowerBoost = 25;
         public const UInt16 AbsorbSimulacra = 607;
         public const UInt16 DrainCode = 19, FortifySimulacra = 20, DetonateProxy = 34, StopProxyEffect = 1109, ChargeSimulacra = 603,
@@ -380,7 +387,9 @@ namespace hds
             bool female;
             lock (random)
             {
-                sheet = summon.Kind == Kind.Proxy ? ProxySheets[random.Next(ProxySheets.Length)] : summon.Kind.ToString();
+                sheet = summon.Kind == Kind.Proxy
+                    ? Store.worldConfig?.RemoteProxySheet ?? ProxySheets[random.Next(ProxySheets.Length)]
+                    : summon.Kind.ToString();
                 female = random.Next(2) == 0;
             }
 

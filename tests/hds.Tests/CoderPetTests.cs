@@ -70,6 +70,21 @@ public class CoderPetTests
         return client;
     }
 
+    [Theory]
+    [InlineData(null, null)]
+    [InlineData("", null)]
+    [InlineData("Rifle", null)]
+    [InlineData("Simulacra.Healer", null)]
+    [InlineData("Simulacra.Nuker", null)]
+    [InlineData("Simulacra.Aikido", "Aikido")]
+    [InlineData("Simulacra.Karate", "Karate")]
+    [InlineData("Simulacra.KungFu", "KungFu")]
+    [InlineData("Simulacra.Pistol", "Pistol")]
+    [InlineData(" simulacra.rifle ", "Rifle")]
+    [InlineData("Simulacra.SMG", "SMG")]
+    public void ConfiguredProxySheetUsesOnlyAuthoredProxyRoles(string? configured, string? expected) =>
+        Assert.Equal(expected, CoderPets.NormalizeProxySheetOverride(configured));
+
     [Fact]
     public void SummonLevelsFollowSimulacraScript()
     {
