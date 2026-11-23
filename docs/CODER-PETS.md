@@ -188,6 +188,8 @@ The shipped `PowerBoost1Ability` (25) stores own-simulacrum target 11, noncombat
 
 **Partial gap:** 25 also stores Force Combat 519 = 40 for 300 s. Friendly pets have no forced-interlock/shield consumer. No inert Force Combat record is emitted or counted as implementation. The audit therefore keeps 25 partial.
 
+The shipped NPC templates include a passive Evade Interlock rating (772 → stat 520) and an Evade State Flipper (874). The flipper toggles the native interlock state. Player Evade Combat creates a shield through a separate hook. Which ordinary NPCs use the flipper remains unresolved in the placement data. Pet Attack resolves damage directly against NPCs, and pet-owned interlock remains unimplemented. [NPC state flipper](../research/client-scripts/tempmods.py#L1736) · [Player shield creation](../research/client-scripts/tempmods.py#L552)
+
 ### Native follow-up checklist (Claude only)
 
 Use the exact reviewed follow-up head. Commands below are instructions for Claude; no Codex agent runs the fixture. `--build-info` is a read-only exit before lock/database setup.

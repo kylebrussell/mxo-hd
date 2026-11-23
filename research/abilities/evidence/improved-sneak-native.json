@@ -1,0 +1,28 @@
+{
+  "families": {
+    "stock-improved-sneak-mastery": {
+      "representative": 186,
+      "result": "pass",
+      "head": "c79f42d361e6b3e863307c540ed5bab449a378bc",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/882#issuecomment-7088695555",
+      "scope": "Level-25 CSR with Sneak rank 25, mastery rank 1 and legal 29/55 memory. Actions sends direct 186 with 80 b9 ba 00. A 2 s cast spends the server's current 20 IS and shows no own reuse. Source 186 adds 509 +10, 115 -200, 209 +25 and state 881. Repressing the shortcut, unloading the active mastery and revealing it each release 186. Re-equipping stays off and ordinary 1111 activates independently. No PvP round or max-vital change."
+    }
+  },
+  "abilities": {
+    "186": {
+      "family": "stock-improved-sneak-mastery",
+      "checks": {
+        "stealth-detection": {
+          "source": "GOB 186 points MasteryBaseAbility at Sneak 151 with a rank-25 prerequisite, has no separate detection modifier or callback, and stores DetectionDifficultyChange 0. utility.SneakTest reads the active Stealth level for the observer contest.",
+          "runtime": "Stealth uses the loaded 1111 grant's rank for direct 186; the ordinary sight, distance, facing and awareness path controls observation and re-creation of the observer view.",
+          "test": "PR882 starts QAEnemy at 16 m outside the logged 13 m initial radius. After Countermeasures 293 (+80 awareness), the helper closes to 2.5 m and the periodic contest logs SA 93 / SL 25, then all four source-186 removals and off (revealed). SneakScaledGrantTests.ImprovedSneakUsesTheLinkedRankAndKeepsItsOwnRecords checks rank-derived source records. https://github.com/kylebrussell/mxo-hd/pull/882#issuecomment-7088695555"
+        },
+        "behavior-tests": {
+          "source": "GOB 186 is a two-second, out-of-combat exclusive self-toggle linked to Sneak at rank 25. Its row has no own stored modifiers or callbacks.",
+          "runtime": "Stealth uses the linked rank and shared Sneaking presentation for 186, preserves its distinct records and activation ID, tears it down on linked unload, and cancels an admitted cast when the mastery or prerequisite unloads.",
+          "test": "SneakScaledGrantTests.ShippedImprovedSneakDefinesTheMasteryLinkAndNoOwnModifiers, ImprovedSneakUsesTheLinkedRankAndKeepsItsOwnRecords, UnderRankAndUnloadedMasteryFailBeforeActivation and UnloadingDuringTheCastCancelsItEvenIfTheMasteryIsReloaded. The stock direct action, four add/remove records, off, active unload, quiet reload and independent 1111 control passed. https://github.com/kylebrussell/mxo-hd/pull/882#issuecomment-7088695555"
+        }
+      }
+    }
+  }
+}
