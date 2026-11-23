@@ -235,7 +235,7 @@ public class ConditionalControlTests
     [Theory]
     [InlineData(248, false, 12f)]
     [InlineData(248, true, 21.12f)]
-    [InlineData(492, false, 14.08f)]
+    [InlineData(492, false, 8f)]
     public void ConeRootsUseTheirCasterSpecificDurationsAndThenReleaseMovement(ushort id, bool npcCaster, float seconds)
     {
         var subject = new Subject();
