@@ -2032,7 +2032,6 @@ public class AbilityRefusalFeedbackTests:IDisposable
         var ability = new AbilityItem();
         ability.setAbilityID(CombatSpecials.PistolEvasive);
         ability.setAbilityName("Pistol Evasive");
-        ability.setIsBuff(true); // Legacy CSV flag; the effect still requires a landed enemy hit.
         ability.setValueFrom(20);
         ability.setCastAnimStart(new byte[4]);
         DataLoader.getInstance().AbilityDB.Add(ability);
