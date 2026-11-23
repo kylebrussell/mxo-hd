@@ -42,12 +42,12 @@ public sealed class StarterSpyThrownResistanceMode : NativeQaMode
         {
             ["MXO_AGGRO"] = "0",
             ["MXO_MOB_WANDER"] = "0",
-            [CombatFixtureWeapons.ResetMode] = "1"
+            [CombatFixtureWeapons.ResetMode] = "1", ["MXO_POISON_KNIFE_QA"] = "dummy"
         },
         readyMessages: new[]
         {
             "Level 50, rank 50, unarmed (44/100 memory), spawned 2.52 m behind level-50 Melee Dummy. Page 2 slots: 1=1112 Spy Style, 2=1111 Sneak, 3=134 Leg Sweep, 4=152 Spinning Backsweep, 5=146 Poison Knife, 6=281 Wounding Throw.",
-            "Step A (Neutral Melee Dummy): Select Melee Dummy, open Close Combat, reselect Spy Style (slot 1), and land Leg Sweep (slot 3): expect neutral hit 16 and Stat 1009 -15 (10 s). Reset with '?combatdepth fixture-reset', strafe/turn for fresh dummy, click it, slot 1 (Spy Style), slot 2 (Sneak), slot 4 (152 Spinning Backsweep): expect neutral hit 132. Reset again, strafe/select, slot 1 (Spy Style), slot 5 (146 Poison Knife) and slot 6 (281 Wounding Throw): capture neutral ThrownDOT ticks (146 tick 2 every 2.5 s; 281 tick 8 every 5.0 s).",
+            "Step A (Neutral Melee Dummy): Select Melee Dummy, open Close Combat, reselect Spy Style (slot 1), and land Leg Sweep (slot 3): expect neutral hit 16 and Stat 1009 -15 (10 s). Reset with '?combatdepth fixture-reset', strafe/turn for fresh dummy, click it, slot 1 (Spy Style), slot 2 (Sneak), slot 4 (152 Spinning Backsweep): expect neutral hit 132. Reset again, strafe/select, slot 1 (Spy Style), slot 5 (146 Poison Knife) and slot 6 (281 Wounding Throw): capture neutral ThrownDOT ticks (146 tick 2 every 2.5 s; 281 tick 8 every 5.0 s). The fixture pins only Poison Knife versus Melee Dummy.",
             "Step B (Resisted Melee Dummy +75 Thrown Damage Resistance via '?combatdepth fixture-reset-thrown-resisted'): Repeat the same 4 moves against the +75 Thrown-resisted dummy (using '?combatdepth fixture-reset-thrown-resisted', strafe/select, Spy Style before each). Expect '[TYPED-RESISTANCE OURS] <id> type7 total75' reducing every hit/tick: 134 Leg Sweep 16 -> 13, 152 Spinning Backsweep 132 -> 108, 146 Poison Knife tick 2 -> 1, and 281 Wounding Throw tick 8 -> 6."
         },
         extraQaMetadata: new()
@@ -60,9 +60,8 @@ public sealed class StarterSpyThrownResistanceMode : NativeQaMode
 
     public override async Task<byte[]> AfterStartAsync(NativeQaBootstrapContext context)
     {
-        if (context.Server == null) return Array.Empty<byte>();
+        if (context.StockProbe is not { } caster) return Array.Empty<byte>();
         var server = context.ActualServer ?? throw new InvalidOperationException("Expected disposable server.");
-        using var caster = await HeadlessPlayer.LoginAsync(context.Address, "CSR_AbilityQA", "CSR_Tester", stockCharacterLoad: true);
 
         await caster.EnterWorldAsync();
         NativeQaReadiness.RequireNoAmbientAggro(server, caster);

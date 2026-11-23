@@ -26,6 +26,8 @@ namespace hds
             AbilityID = AbilityCatalog.Canonical(AbilityID);
             if (PrisonDevices.Handles(AbilityID)) { PrisonDevices.Activate(Store.currentClient, AbilityID, packet); return; }
             UInt16 currentTargetViewId = reader.ReadUInt16(1);
+            bool poisonKnife = AbilityID == CombatSpecials.PoisonKnife;
+            ushort? poisonTargetSpawn = null;
             bool dualSmgCone = CombatSpecials.IsDualSmgConeOpener(AbilityID);
             ushort? coneSpawn = null;
             if (dualSmgCone)
@@ -530,7 +532,9 @@ namespace hds
 
             {
                 ushort? spawn = packet.Length == 41 ? (ushort?)BitConverter.ToUInt16(packet, 4) : null;
-                if (SpyAbilityRegistry.TryRefuse(Store.currentClient, AbilityID, currentTargetViewId, spawn, out uint refusalReason))
+                if (poisonKnife)
+                    poisonTargetSpawn = spawn ?? (ushort?)Store.currentClient.viewMan.getViewById(currentTargetViewId)?.spawnId;
+                if (SpyAbilityRegistry.TryRefuse(Store.currentClient, AbilityID, currentTargetViewId, poisonKnife ? poisonTargetSpawn : spawn, out uint refusalReason))
                 {
                     Store.currentClient.messageQueue.addRpcMessage(AbilityRefusals.Encode(new AbilityRefusals.Record(AbilityID, refusalReason)));
                     Store.currentClient.FlushQueue();
@@ -1271,6 +1275,17 @@ namespace hds
             }
             // Attack abilities on the current close-combat target hit it (buffs used with a target selected don't).
             ushort hostileView=engageFoes?.PrimaryView??currentTargetViewId;
+            if (poisonKnife)
+            {
+                if (!poisonTargetSpawn.HasValue ||
+                    ThrownDotAdmission.TryRefuse(client, AbilityID, hostileView, poisonTargetSpawn, out _))
+                {
+                    Output.WriteDebugLog("[ABILITY] 146 fizzles: the selected target, style, loadout or combat state changed");
+                    return;
+                }
+                AbilityTargets.Land(client, ability, hostileView, sneakOpener, AbilityCastOrigin.NormalFreeCast);
+                return;
+            }
             if (sniperShot)
             {
                 var fight = CombatManager.GetHandler(client);

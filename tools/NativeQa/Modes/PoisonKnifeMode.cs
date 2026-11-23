@@ -1,6 +1,6 @@
 using HeadlessClient;
 using hds;
-using MxoHd.PacketResearch;
+using static NativeQa.Modes.StarterHackerControlTargetMode;
 
 namespace NativeQa.Modes;
 
@@ -22,11 +22,11 @@ public sealed class PoisonKnifeMode : NativeQaMode
             $"UPDATE char_abilities SET level={Rank} WHERE char_id=110",
             $"DELETE FROM inventory WHERE charId=110 AND slot={CombatFixtureWeapons.HandSlot}"
         }, DevCommands: true, testMobFixture: CombatFixtureLoadout.MeleeCsv,
-        environmentOverrides: new() { ["MXO_AGGRO"] = "0", ["MXO_MOB_WANDER"] = "0" },
+        environmentOverrides: new() { ["MXO_AGGRO"] = "0", ["MXO_MOB_WANDER"] = "0", ["MXO_POISON_KNIFE_QA"] = "dummy" },
         readyMessages: new[]
         {
             "Level 4, rank 4, Spy Style (1112) active, unarmed, outside interlock. First clear selection and try Poison Knife (146): expect native refusal 24 (one yellow 'Target is not valid.'), no IS spent, no cast bar and no reuse.",
-            "Select Melee Dummy (3 m west) and cast Poison Knife (146) outside interlock. Expect 15 IS spent (500 -> 485), 2.0 s cast bar (80 ac), 0 direct hit ('[ABILITY] 146 lands on view 4 for 0'), ThrownDOT applied ('[EFFECTS] 146 on Melee Dummy: Dot 1157 18 25 s', base 17 + 6% rank-4 Spy Style = 18), ticks every 2.5 s for 2 damage ('[EFFECTS] 146 ticks on Melee Dummy for 2', 9 ticks total), 20.0 s own reuse and 3.0 s shared family 1216 reuse."
+            "Select Melee Dummy (3 m west) and cast Poison Knife (146) outside interlock. This disposable fixture pins the throw-versus-dummy contest draws. Expect 15 IS spent (500 -> 485), 2.0 s cast bar (80 ac), 0 direct hit ('[ABILITY] 146 lands on view 4 for 0'), ThrownDOT applied ('[EFFECTS] 146 on Melee Dummy: Dot 1157 18 25 s', base 17 + 6% rank-4 Spy Style = 18), ticks every 2.5 s for 2 damage ('[EFFECTS] 146 ticks on Melee Dummy for 2', 9 ticks total), 20.0 s own reuse and 3.0 s shared family 1216 reuse."
         },
         extraQaMetadata: new()
         {
@@ -49,13 +49,13 @@ public sealed class PoisonKnifeMode : NativeQaMode
         await StarterFixedDamageMode.SelectStyle(caster, self, SpyStyle, 1034);
 
         int refuseStart = server.DebugLog().Length;
-        caster.SendRpc(new AbilityUseRecord(PoisonKnife, 0, 0, 0, 0, 0, 0x6b, 0x6b, 0, 0).Encode());
+        caster.SendRpc(WithHandle(StarterSpyCombatAdmissionMode.PoisonCast, 0));
         await caster.WaitUntilAsync(() => server.DebugLog()[refuseStart..].Contains("[ABILITY] Denied 146: native refusal 24", StringComparison.Ordinal),
             "Poison Knife rejects empty target with native refusal 24", TimeSpan.FromSeconds(5));
 
         int castStart = server.DebugLog().Length;
         int rpcCursor = caster.World.RpcSnapshot().Count;
-        caster.SendRpc(new AbilityUseRecord(PoisonKnife, DuelPackets.Handle(dummy.ViewId, dummy.SpawnId), 0, 0, 0, 0, 0x6b, 0x6b, 0, 0).Encode());
+        caster.SendRpc(WithHandle(StarterSpyCombatAdmissionMode.PoisonCast, DuelPackets.Handle(dummy.ViewId, dummy.SpawnId)));
         await caster.WaitUntilAsync(() => server.DebugLog()[castStart..].Contains("[EFFECTS] 146 ticks on Melee Dummy for 2", StringComparison.Ordinal),
             "Poison Knife applies ThrownDOT and delivers its first 2-damage tick", TimeSpan.FromSeconds(10));
 

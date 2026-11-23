@@ -290,7 +290,7 @@ public static partial class Scenarios
             ["MXO_CONDITIONAL_THROW_QA"] = "1",
             ["MXO_CONDITIONAL_POWERLESS_QA"] = "1"
         }),
-        new Scenario("combat-specials-npc", CombatSpecialsNpc, StillNpcs),
+        new Scenario("combat-specials-npc", CombatSpecialsNpc, new Dictionary<string, string>(StillNpcs) { ["MXO_DEV_COMMANDS"] = "1", ["MXO_POISON_KNIFE_QA"] = "combat-style-regression" }),
         new Scenario("combat-exile-weapons", CombatExileWeapons, StillNpcs),
         new Scenario("combat-specials-pvp", CombatSpecialsPvp, StillNpcs),
         new Scenario("native-crafting-requests", NativeCraftingRequests, StillNpcs),

@@ -11,7 +11,7 @@ public sealed class StarterSpyCombatAdmissionMode : NativeQaMode
     // Complete stock casts from PR423, PR424, PR434 and PR438.
     private const string StyleCast = "80b958040400020000000000000000000000000000000000000000000000000000000000086b0000000000";
     private const string SneakCast = "80b95704040002000000000000000000000000000000000000000000585cbf0001000000086b0000000000";
-    private const string PoisonCast = "80b99200000000000000000000000000000000000000000000000000d557377c20000000086b0000000000";
+    internal const string PoisonCast = "80b99200000000000000000000000000000000000000000000000000d557377c20000000086b0000000000";
     private const string SenseCast = "80b99500000000000000000000000000000000000000000000000000585cc70001000000086b0000000000";
     private const string BacksweepCast = "80b99800040002000000000000000000000000000000000000000000585cbf0001000000086b0000000000";
     private static readonly ushort[] Loadout = StockAbilityProfile.Profile(2, 17, 151, SpyStyle, Poison, Sense, Backsweep)
@@ -28,7 +28,7 @@ public sealed class StarterSpyCombatAdmissionMode : NativeQaMode
         hotbarAbilities: new[] { SpyStyle, Sneak, Poison, Sense, Backsweep },
         environmentOverrides: new()
         {
-            ["MXO_AGGRO"] = "0", ["MXO_MOB_WANDER"] = "0", [CombatFixtureWeapons.ResetMode] = "1"
+            ["MXO_AGGRO"] = "0", ["MXO_MOB_WANDER"] = "0", [CombatFixtureWeapons.ResetMode] = "1", ["MXO_POISON_KNIFE_QA"] = "dummy"
         }, extraQaMetadata: new() { ["ScopedStockRows"] = "146,149,152", ["NativeCloseableRows"] = 0, ["LoadedMemory"] = Loadout.Sum(AbilityMemory.Cost), ["MemoryCapacity"] = AbilityMemory.ForLevel(Level) },
         readyMessages: new[]
         {

@@ -44,7 +44,7 @@ The only producer is `6219f0a0(u16)`. It builds `43 <u16>`, sends it and stores 
 
 A `CombatSpecialMove` ability's `CastRequiredCombatStance` names its style: Karate (Berserker Attack 535, Sky High Sidekick 267), Aikido (Tomo Nage 412), Spy Style (Wounding Throw 281), Self Defense (Cheap Shot 198, Head Butt 197), Handguns, Rifles and so on. The client's `80 ba` handler (`621e5280`, string table `621e5698`, index = code âˆ’ 2) shows code 13 as `ID_ABILITY_NOT_IN_CORRECT_STYLE` "You are not in the correct combat style to use this ability." That suggests retail refused wrong-style moves rather than switching. The server sends that code when the required style isn't loaded. When the required style **is** loaded, it still switches to it (the same records as above) and lets the move through. No client code was found that sends `3e` for a special move, so this switch is a server choice. Strict retail behaviour would refuse with code 13 here too; changing to that would also need the Paralyzing Throw parity scenario and the NativeQa root checks to select the style first.
 
-Abilities that have a stance but aren't special moves are **not** gated yet. That covers viruses (Hacker Style), Enrage (Coder Style), Poison Knife and Sever Artery (Spy Style), and they work in any style. Whether the native client auto-switches for them still needs native QA.
+Abilities that have a stance but aren't special moves are **not** gated yet. That covers viruses (Hacker Style), Enrage (Coder Style), Sever Artery (Spy Style), and they work in any style. Poison Knife requires active Spy Style. Whether the native client auto-switches for them still needs native QA.
 
 ## Style shown to other players
 
@@ -72,13 +72,13 @@ Precise Blow 15 and Punishing Blows 16 are toggles (`IsAToggleAbility`, not `IsC
 
 ## Stock special-move bindings
 
-The shipped ILDB’s `RULS` chunks include length-prefixed GOB ability symbols. The extractor checks each symbol within the reviewed move group. A checked binding takes precedence over the legacy name table. For Punch Reversal, the selected record follows the opponent’s style and tactic where the ILDB supplies a variant.
+The shipped ILDBï¿½s `RULS` chunks include length-prefixed GOB ability symbols. The extractor checks each symbol within the reviewed move group. A checked binding takes precedence over the legacy name table. For Punch Reversal, the selected record follows the opponentï¿½s style and tactic where the ILDB supplies a variant.
 
 | Ability | Selected stock move | ID |
 |---|---|---|
 | Controlled Burst 250 | SubM Burst MR | 21082 |
 | Three Round Burst 256 | 3 round burst MR | 11367 |
-| Punch Reversal Catch Slam 407 | AikidoAbility RevSlamChicken vs SS, SP or SD | 827–829 |
+| Punch Reversal Catch Slam 407 | AikidoAbility RevSlamChicken vs SS, SP or SD | 827ï¿½829 |
 | Tomo Nage 412 | AikidoAbility TomoNage with the explicit Tomo Nage rule | 751 |
 | Machinegun Kick 532 | Karate MachGunKick long | 5934 |
 
@@ -86,14 +86,14 @@ Controlled Burst and Three Round Burst keep their stored cast times. On cast com
 
 Hindering Shot 130, Bullet Spray 247 and Sniper Shot 505 remain open. Their catalog symbols have no matching activation rule in the reviewed stock special groups. Wrist Throw 534 has a stock symbol in an Aikido-gated record, while its GOB stance is Karate, so the existing alias still needs reconciliation. Similarity of move names alone does not resolve these bindings.
 
-Sever Artery 341 is the catalog’s existing `RandomCombatStateChance` caller and already executes the shipped roll logic. The Exile weapon scripts test ownership of the three weakness grants. The available NPC spawn data lacks those grants, so the existing name-based classifications remain server policy.
+Sever Artery 341 is the catalogï¿½s existing `RandomCombatStateChance` caller and already executes the shipped roll logic. The Exile weapon scripts test ownership of the three weakness grants. The available NPC spawn data lacks those grants, so the existing name-based classifications remain server policy.
 
 ### Native check for the rule bindings
 
 Use the `style-choreography` NativeQa mode with the isolated 30,000 HP Melee Dummy 3 m west. The fixture loads all shipped ability ancestors and required styles. Its Ready output prints the expected moves.
 
 1. Use `?combatdepth fixture-weapon unarmed`, then select Self Defense 17 and interlock the dummy. Head Butt 197 needs a Dazed target. Land a Speed round that Dazes the dummy or use `?combatdepth daze 30`. Check move 284.
-2. Select Aikido 101 and make the dummy Off Balance with a landed Grab round or `?combatdepth offbalance 30` before using Tomo Nage 412. Punch Reversal 407 has no target condition. See [martial hotbar conditions](ABILITY-MARTIAL-HOTBAR-CONDITIONS.md). Check 751 and 827–829.
+2. Select Aikido 101 and make the dummy Off Balance with a landed Grab round or `?combatdepth offbalance 30` before using Tomo Nage 412. Punch Reversal 407 has no target condition. See [martial hotbar conditions](ABILITY-MARTIAL-HOTBAR-CONDITIONS.md). Check 751 and 827ï¿½829.
 3. Select Karate 132 and Kung-Fu 133 and land Sky High Sidekick 267 and Suicidal Butterfly 428. Check 5937 and 8084.
 Start each gun choreography mode below with a fresh world entry. Each fixture seeds its weapon in stock hand slot 105 before the character loads.
 1. Select the listed style, target Melee Dummy, and use stock **Close Combat**. If the action is unavailable, land the loaded Logic Barrage while at rest and wait for Melee Dummy to initiate interlock.
@@ -151,3 +151,11 @@ CSR_Tester starts beside the test NPC cluster with Karate, Kung-Fu, Hacker/Coder
 7. Record whether a viral ability (Hacker Style stance) auto-switches the client's style. That decides whether non-special stance abilities should be gated.
 
 Stop with the `stop` file and verify `stopped.json` and the released lock, as the fixture README describes.
+
+## Poison Knife selection and ranged contest
+
+The current GOB defines 146 as a two-second Spy cast at a living hostile within 20 m outside combat. The server validates the original view and spawn, loaded ability, style, combat, sight and range before the cast spends IS and when it lands. The selected cast uses the shipped ranged TestFunction 1 inputs, direct ranged accuracy 524 and defense 1010. The separately authored damage is a type-7 ThrownDOT, with raw total 17, a 25-second duration and a 2.5-second update. With rank-14 Spy Style that total is 18, which gives two damage per tick before resistance. [Current GOB](../data/ability_catalog.json#L149) Â· [Ranged contest](../research/client-scripts/generic_free_attacks.py#L110) Â· [ThrownDOT callback](../research/client-scripts/tempmods.py#L935)
+
+The normal ranged contest calls the shared attacker/defender roll functions with ranges 100 and 69 and chooses a hit only when attack exceeds defense. The retained TestFunction 1 Deadly Shot victim trace has a hit at 34/32 (0x7a0002d6) and a deflection at 43/75 (0x7a000218). The fixture verifies both exact recipient result envelopes and the selected Poison Knife runtime with stock requests. It uses a private caster result notice. The original caster-localized string IDs remain open. [Original hit](../research/packet-dumps/community-intake/20260607T024558Z-hdneo-public-mission-code-rajko-worldstate-sanitized-selected/logs/mxopackets1_crashover2k_afterwhoruneo_old_world_packets_Vector26_manythings_4bill_upgradeabilitie_buyzionkey_start_keymission_gotowhite.log.txt#L15992-L15994) Â· [Original deflection](../research/packet-dumps/community-intake/20260607T024558Z-hdneo-public-mission-code-rajko-worldstate-sanitized-selected/logs/mxopackets1_crashover2k_afterwhoruneo_old_world_packets_Vector26_manythings_4bill_upgradeabilitie_buyzionkey_start_keymission_gotowhite.log.txt#L25290-L25292)
+
+PR424 and PR527 already establish the stock selected NPC cast, 15 IS, and 20/3-second own/family reuse. PR552 supplies the native type-7 resistance control, from two neutral tick damage to one with +75 Thrown Resistance. The new fixture compares selected player hit and deflection, no-cost admission failures, and the same DOT expiry. Its disposable draw aid is tied to the named player or legacy dummy in the matching fixture. [PR424](https://github.com/kylebrussell/mxo-hd/pull/424) Â· [PR527](https://github.com/kylebrussell/mxo-hd/pull/527) Â· [PR552](https://github.com/kylebrussell/mxo-hd/pull/552)

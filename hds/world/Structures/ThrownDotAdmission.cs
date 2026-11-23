@@ -16,10 +16,10 @@ namespace hds
             if (canonical != CombatSpecials.PoisonKnife && canonical != CombatSpecials.WoundingThrow)
                 return false;
 
-            if (canonical == CombatSpecials.PoisonKnife && CombatManager.GetHandler(caster).isCombatRunning)
+            if (canonical == CombatSpecials.PoisonKnife)
             {
-                reason = AbilityRefusals.MustBeOutsideCombat;
-                return true;
+                reason = PoisonKnifeRefusal(caster, targetViewId, spawn);
+                return reason != 0;
             }
             if (!AbilityTargets.HasLiveAttackSelection(caster, targetViewId, spawn))
             {
@@ -27,6 +27,24 @@ namespace hds
                 return true;
             }
             return false;
+        }
+
+        private static uint PoisonKnifeRefusal(WorldClient caster, ushort view, ushort? spawn)
+        {
+            var fight = CombatManager.GetHandler(caster);
+            if (fight.isCombatRunning || fight.HasActiveInterlock)
+                return AbilityRefusals.MustBeOutsideCombat;
+            if (!AbilityTargets.HasLiveAttackSelection(caster, view, spawn, requireOpponent: true))
+                return AbilityRefusals.InvalidTarget;
+            if (!AbilityPassives.IsLoaded(caster, CombatSpecials.PoisonKnife))
+                return AbilityRefusals.NotLoaded;
+            if (CombatStyles.Active(caster) != CombatStyles.SpyStyle)
+                return AbilityRefusals.WrongStyle;
+            if (!AbilityTargets.WithinSelectionRange(caster, CombatSpecials.PoisonKnife, view))
+                return AbilityRefusals.TargetOutOfRange;
+            if (!AbilityTargets.HasSelectionSight(caster, AbilityCatalog.Find(CombatSpecials.PoisonKnife), view))
+                return AbilityRefusals.TargetNotInSight;
+            return 0;
         }
     }
 
