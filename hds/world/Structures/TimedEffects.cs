@@ -913,7 +913,7 @@ namespace hds
             {
                 ushort before = PvpCombat.HealthOf(client);
                 ushort maximum = NumericalUtils.ByteArrayToUint16(client.playerInstance.MaxHealth.getValue(), 1);
-                int heal = Math.Min(damage, maximum - before);
+                int heal = TempMods.HotAmount(before, maximum, damage);
                 if (heal > 0)
                 {
                     ushort after = AbilityHandler.HealSelf(client, (ushort)heal);
