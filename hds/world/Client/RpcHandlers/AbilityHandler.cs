@@ -333,8 +333,8 @@ namespace hds
 
             bool selectedTimedGun = protectedGunSpecial || pistolEvasive || dualPistolDash;
             bool rifleOpener = CombatSpecials.IsRifleOpener(AbilityID);
-            bool cripplingShot = AbilityID == CombatSpecials.CripplingShot;
-            bool protectedRifleOpener = AbilityID == CombatSpecials.WoundingShot || cripplingShot;
+            bool explicitRifleStyle = AbilityID == CombatSpecials.CripplingShot || AbilityID == CombatSpecials.DeadlyShot;
+            bool protectedRifleOpener = AbilityID == CombatSpecials.WoundingShot || explicitRifleStyle;
             ushort? gunTargetSpawn = null;
             if (selectedTimedGun)
             {
@@ -709,9 +709,9 @@ namespace hds
                     Deny(AbilityID, "Equip a rifle-category weapon before using this shot.", AbilityRefusals.RequiredItemCategory, sendServerText: false);
                     return;
                 }
-                if (cripplingShot && CombatStyles.Active(shooter) != CombatStyles.Rifles)
+                if (explicitRifleStyle && CombatStyles.Active(shooter) != CombatStyles.Rifles)
                 {
-                    Deny(AbilityID, "Select Rifles before using Crippling Shot.", AbilityRefusals.WrongStyle, sendServerText: false);
+                    Deny(AbilityID, "Select Rifles before using this shot.", AbilityRefusals.WrongStyle, sendServerText: false);
                     return;
                 }
                 ushort? spawn = packet.Length == 41 ? BitConverter.ToUInt16(packet, 4) :
@@ -1361,7 +1361,7 @@ namespace hds
                 {
                     var fight = CombatManager.GetHandler(client);
                     if (!AbilityPassives.IsLoaded(client, AbilityID) || !CombatSpecials.HasEquippedRifle(client) ||
-                        !CombatStyles.CanUse(client, AbilityID) || (cripplingShot && CombatStyles.Active(client) != CombatStyles.Rifles) ||
+                        !CombatStyles.CanUse(client, AbilityID) || (explicitRifleStyle && CombatStyles.Active(client) != CombatStyles.Rifles) ||
                         fight.isCombatRunning || fight.HasActiveInterlock)
                     {
                         Output.WriteDebugLog($"[ABILITY] {AbilityID} fizzles: the loaded shot, rifle category, style or combat state changed");
@@ -1492,6 +1492,7 @@ namespace hds
                 CombatSpecials.ConcealedShot => 1,
                 CombatSpecials.SniperShot => 1,
                 CombatSpecials.CripplingShot => 1,
+                CombatSpecials.DeadlyShot => 1,
                 CombatSpecials.PistolBarrage => 1,
                 CombatSpecials.DualPistolPointBlank => 1,
                 CombatSpecials.DualPistolDash => 1,

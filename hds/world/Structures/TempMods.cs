@@ -299,7 +299,7 @@ namespace hds
             // RangedDefenseTactics -44 instead)
             { 502, E(502, Stat(522, -34, 8)) },
             // Deadly Shot, Vector 31513: captured four-second stun.
-            { 454, E(454, State(StunAbility, 4)) },
+            { CombatSpecials.DeadlyShot, E(CombatSpecials.DeadlyShot, State(StunAbility, 4)) },
             // Warboy ProxyM2_m2_packets_5 28162 records 21.12 s from a Cypherite SMG Specialist.
             // This is the captured effective NPC duration. The player template stores 12 s.
             // Rajko MaraCCyphs 51874-51892 records 14.08 s from the same NPC class. Player Pinning Fire is 8 s.
@@ -342,7 +342,7 @@ namespace hds
             Effect source = AbilityHostile.Merge(AbilityCatalog.Controls(id), AbilityHostile.Catalog(id));
             // These captured values were applied by NPC casters. Player applications use the authored values.
             bool npcCapture = id == 126 || id == 248 || id == CombatSpecials.PinningFire ||
-                id == CombatSpecials.CripplingShot || id == AbilityHostile.FreezeArea2;
+                id == CombatSpecials.CripplingShot || id == CombatSpecials.DeadlyShot || id == AbilityHostile.FreezeArea2;
             if ((!npcCaster && npcCapture) || !Retail.TryGetValue(id, out var captured))
             {
                 effect = source;

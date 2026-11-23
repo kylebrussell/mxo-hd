@@ -311,6 +311,8 @@ try
                     await NativeQa.Modes.ConcealmentGrantMode.SendPhaseAsync(actor, q.GetProperty("phase").GetString()!);
                 else if (fixtureMode is NativeQa.Modes.EscapeAndEvasionMode && action == "escape-and-evasion-reveal")
                     await NativeQa.Modes.EscapeAndEvasionMode.RevealAsync(actor);
+                else if (fixtureMode is NativeQa.Modes.DeadlyShotMode && action == "deadly-shot-armor")
+                    await NativeQa.Modes.PistolSlideMode.ApplyArmorAsync(actor);
                 else if (fixtureMode is NativeQa.Modes.SniperShotMode && action == "sniper-armor")
                     await NativeQa.Modes.PistolSlideMode.ApplyArmorAsync(actor);
                 else if (fixtureMode is NativeQa.Modes.CripplingShotMode && action == "crippling-speed-and-armor")

@@ -1116,10 +1116,27 @@ public class AbilityRefusalFeedbackTests:IDisposable
     [InlineData("style during cast", 0u, 450)]
     [InlineData("rifle", 0u, 450)]
     [InlineData("armored", 0u, 450)]
+    [InlineData("unloaded", AbilityRefusals.NotLoaded, 454)]
+    [InlineData("weapon", AbilityRefusals.RequiredItemCategory, 454)]
+    [InlineData("style", AbilityRefusals.WrongStyle, 454)]
+    [InlineData("active combat", AbilityRefusals.MustBeOutsideCombat, 454)]
+    [InlineData("empty", AbilityRefusals.InvalidTarget, 454)]
+    [InlineData("ally", AbilityRefusals.InvalidTarget, 454)]
+    [InlineData("stale", AbilityRefusals.InvalidTarget, 454)]
+    [InlineData("far", AbilityRefusals.TargetOutOfRange, 454)]
+    [InlineData("blocked", AbilityRefusals.TargetNotInSight, 454)]
+    [InlineData("combat during cast", 0u, 454)]
+    [InlineData("out of range during cast", 0u, 454)]
+    [InlineData("style during cast", 0u, 454)]
+    [InlineData("weapon during cast", 0u, 454)]
+    [InlineData("new spawn during cast", 0u, 454)]
+    [InlineData("rifle", 0u, 454)]
+    [InlineData("armored", 0u, 454)]
     public void ProtectedRifleOpenersUseAnOutsideCombatRifleAndTheirOriginalLiveTarget(string scenario, uint reason, ushort id)
     {
         bool crippling = id == CombatSpecials.CripplingShot;
-        ushort level = crippling ? (ushort)42 : (ushort)20;
+        bool deadly = id == CombatSpecials.DeadlyShot;
+        ushort level = deadly ? (ushort)46 : crippling ? (ushort)42 : (ushort)20;
         string root = AppContext.BaseDirectory;
         while (!File.Exists(Path.Combine(root, "data", "sector_properties.csv"))) root = Path.GetDirectoryName(root)!;
         SectorProperties.Load(Path.Combine(root, "data", "sector_properties.csv"));
@@ -1155,7 +1172,7 @@ public class AbilityRefusalFeedbackTests:IDisposable
         var item = new AbilityItem();
         item.setAbilityID(id);
         item.setAbilityName(AbilityCatalog.Find(id).Name);
-        if (!crippling) item.setValueFrom(6);
+        if (!crippling && !deadly) item.setValueFrom(6);
         item.setCastAnimStart(new byte[4]);
         DataLoader.getInstance().AbilityDB.Add(item);
         Store.currentClient = caster;
@@ -1164,7 +1181,7 @@ public class AbilityRefusalFeedbackTests:IDisposable
         // In-process handler input. The stock replays keep the original 254/255 frames.
         var request = new byte[41];
         BitConverter.GetBytes(id).CopyTo(request, 0);
-        BitConverter.GetBytes(scenario == "empty" ? 0u : DuelPackets.Handle(view.ViewID, view.spawnId)).CopyTo(request, 2);
+        BitConverter.GetBytes(scenario == "empty" ? 0u : DuelPackets.Handle(view.ViewID, scenario == "stale" ? (ushort)8 : view.spawnId)).CopyTo(request, 2);
         var effects = TimedEffects.ForPlayer(victim);
         if (scenario == "armored")
             effects.Effects.Apply(1061, new[] { new TimedEffects.Active { Target = 181, Value = 20, Seconds = 60 } },
@@ -1183,11 +1200,13 @@ public class AbilityRefusalFeedbackTests:IDisposable
 
             double castEnd = caster.playerData.castEndsAt;
             Assert.True(castEnd > TimeUtils.GetSimTimeSeconds());
-            Assert.Equal(crippling ? 455 : 480, AbilityHandler.CurrentInnerStrength(caster));
+            Assert.Equal(deadly || crippling ? 455 : 480, AbilityHandler.CurrentInnerStrength(caster));
             Assert.Equal(1000, PvpCombat.HealthOf(victim));
             if (scenario == "combat during cast") combat.isCombatRunning = true;
             if (scenario == "out of range during cast") MoveTarget(19749);
             if (scenario == "style during cast") caster.playerData.combatStyle = CombatStyles.SelfDefense;
+            if (scenario == "weapon during cast") caster.playerInstance.EquippedItemID.setValue(2565u);
+            if (scenario == "new spawn during cast") view.spawnId++;
             AbilityCastInterrupts.FinishDue(caster, castEnd + .01);
             Assert.True(AbilityCooldowns.IsCoolingDown(caster.playerData, id, TimeUtils.GetSimTimeSeconds()));
             if (crippling && (scenario is "rifle" or "armored"))
@@ -1203,6 +1222,13 @@ public class AbilityRefusalFeedbackTests:IDisposable
                 TimedEffects.RunDue(slows[0].Expires + .01);
                 Assert.False(effects.Effects.HasParent(id));
                 Assert.Equal(0f, BitConverter.ToSingle(victim.playerInstance.MovementScale.getValue()));
+                Assert.False(combat.HasActiveInterlock);
+            }
+            else if (deadly && (scenario is "rifle" or "armored"))
+            {
+                Assert.Equal(61, AbilityHandler.AbilityDamage(item, new Random(1)));
+                Assert.Equal(21, AbilityStats.Influence(caster, 171));
+                Assert.Equal(scenario == "armored" ? 931 : 927, PvpCombat.HealthOf(victim));
                 Assert.False(combat.HasActiveInterlock);
             }
             else if (scenario is "rifle" or "shotgun")
