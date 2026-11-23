@@ -244,6 +244,14 @@ def server(i):
         return 'stored level 99 selected-load prerequisite with no parent or grant path in the shipped ability catalog; seeded damage, periodic FX and IS drain verified; [evidence](ABILITY-AWAKENED-COMBAT-ACTIVES.md#hyper-strength-access)'
     if i in DATA_MINING:
         return DATA_MINING[i][0]
+    if i == 331:
+        return '27 base IS, 8s cast and 15s own/shared684 reuse; loaded Hacker Style at rest binds the original visible hostile through landing; stock verifies 24/34 refusals and one selected-target hit; current generic damage and archived magnitude remain unresolved'
+    if i == 415:
+        return '23 base IS, 4s cast and 8s own/4s shared682 reuse; loaded Hacker Style at rest binds the original visible hostile through landing; fixed viral base52, ordinary caster influence and typed resistance; stock 75 neutral and61 resisted'
+    if i == 481:
+        return '47 IS, 2s cast and 30s reuse; bound selected hostile within14m and live Archive membership through landing; 150-point buffer record for60s, capped by the documented server capacity; existing upgrades stay active; term returns capacity'
+    if i == 488:
+        return '50 IS, 4s cast and 10s reuse; bound selected hostile within16m and live Archive membership through landing; removes one eligible upgrade and adds a 150-point buffer record for50s under the documented server capacity; term returns capacity; no HP damage or target IS debit'
     if i == 1092:
         return '20 base IS and 30s reuse; caster-only captured Concentration +7, Heal and Upgrade Area Radius +10 and Healing +6; the live interruption, recipient range and heal totals consume them; Team Patcher replacement removes all three; [evidence](https://github.com/kylebrussell/mxo-hd/pull/960#issuecomment-7098249561)'
     r, f = coverage[i], fields(i)
@@ -501,6 +509,7 @@ def server(i):
         parts.append('unloading the parent clears the active Concealment grant, with separate Sneak preserved')
     if i == 1137:
         parts.append('Archive unload cancels a pending cast and republishes the normal owner stealth-off state and stance')
+        parts.append('two-second cast in Rifles at rest, refuses a watching hostile; sets Concealed, Stealthed and learned-rank Stealth; stops the active aura and uses pose 1a until release to standing')
     if i == 21:
         parts.append('requires a live enemy selection before charging the cast')
     return '; '.join(parts) or 'presentation only; no effect executor'

@@ -1,0 +1,53 @@
+{
+  "families": {
+    "specialist-duelist-actions-and-desperation": {
+      "representative": 495,
+      "result": "pass",
+      "head": "fb44dfb7bb709cce4bddaaed819438e6ea5fad6d",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/969#issuecomment-7100138893",
+      "scope": "Both stock L50 disciplines are loaded in 93/100 memory. 495 supplies 995 +2, 1139 +4, 1046 +1 and one live 1072 Actions entry. 497 supplies 1027 +5, 1042 +2, 1046 +2 and one live 1076 entry. Updating each through Archive affects only that parent's three records and granted action. Stock Desperation at held 1/500 HP samples +108 Initiative with both loaded, spends 10 IS and starts a 90-second own timer. Pulling both parents drops 93→88→83 memory and retires all six original records, while the sampled +108 remains through its own 20-second expiry. Both grants and typed consumers have independent executable controls."
+    }
+  },
+  "abilities": {
+    "495": {
+      "family": "specialist-duelist-actions-and-desperation",
+      "checks": {
+        "stats": {
+          "source": "GOB 495 supplies fixed Stun Duration 995 +2, Ballistic Damage 1139 +4, Initiative Bonus 1046 +1 and the zero-valued 1072 grant.",
+          "runtime": "Loaded passives publish these independent records. The typed ballistic damage path consumes 1139, state 102 reads 995 through AbilityControlDurations, and AbilityScaledBuffs reads 1046 when creating Desperation's 1044 snapshot.",
+          "test": "MixedGunmanParityTests.SpecialistAndDuelistFeedTheirTypedConsumersAndDesperation verifies +4 ballistic with unchanged melee, linked Stun 4→4.08 with unaffected Root and the independently sampled +1. PR969 stock observed all three exact source-495 records and their isolated removal/reload."
+        },
+        "consumer": {
+          "source": "GOB 495 supplies Initiative Bonus 1046 +1. The shipped DesperationFunction multiplies the missing-health snapshot by 1 + current 1046 / 100.",
+          "runtime": "AbilityScaledBuffs.Resolve reads the live stat at activation, and the resulting 1044 modifier keeps that fixed value until its own expiry. Wider original Initiative caller policy remains unchanged.",
+          "test": "The four load combinations isolate 495's +1 and the other discipline's +2. PR969 stock observed the +108 result with them active, retained +108 after the 495/497 source records left and its matching removal at 20 seconds."
+        },
+        "behavior-tests": {
+          "source": "GOB 495 has three fixed load-only modifiers and one permanent zero-valued grant. The recovered Desperation callback samples its Initiative input once.",
+          "runtime": "AbilityGrantRegistration uses the shipped parent/child relation for one live native Actions entry after readiness. The ordinary loaded, typed damage and control, and Desperation paths converge on the source-495 records and their matching removals.",
+          "test": "The specialist-duelist fixture exercises stock archive and Desperation frames. PR969 saw 1072 leave and return exactly once while Direct Fire and Pinning Fire stayed. Unit tests check separate damage, the Stun duration and removal controls."
+        }
+      }
+    },
+    "497": {
+      "family": "specialist-duelist-actions-and-desperation",
+      "checks": {
+        "stats": {
+          "source": "GOB 497 supplies fixed Ballistic Defense 1027 +5, Powerless Duration 1042 +2, Initiative Bonus 1046 +2 and the zero-valued 1076 grant.",
+          "runtime": "Loaded passives publish all three independent records. The ranged defence consumer reads 1027, state 96 reads 1042 through AbilityControlDurations, and AbilityScaledBuffs samples 1046 into Desperation.",
+          "test": "MixedGunmanParityTests.SpecialistAndDuelistFeedTheirTypedConsumersAndDesperation checks the ranged defence delta with unchanged melee, Powerless 4→4.08 with unaffected Root and the independently sampled +2. PR969 stock observed all three exact source records and their isolated removal/reload."
+        },
+        "consumer": {
+          "source": "GOB 497 supplies Initiative Bonus 1046 +2. The shipped DesperationFunction samples that live total as a percent multiplier.",
+          "runtime": "AbilityScaledBuffs.Resolve feeds current 1046 into the fixed health-based 1044 snapshot. That value remains live through parent unload and retires with its own source record.",
+          "test": "The four saved profile combinations isolate the 497 contribution. PR969 recorded 108 Initiative while the two sources were loaded, the same 108 after the parents were removed and the exact 20-second matched expiration."
+        },
+        "behavior-tests": {
+          "source": "GOB 497 has three fixed load-only modifiers and the permanent 1076 grant; the shipped callback reads the Initiative modifier when Desperation starts.",
+          "runtime": "The live parent grant sends one Actions entry after readiness and follows the parent across Archive loads/unloads. Separate typed ranged defence and Powerless-duration consumers read only their own targets.",
+          "test": "The specialist-duelist fixture uses the ordinary stock archive and Desperation frames. PR969 confirmed 1076's isolated departure/re-entry while Dash and Point Blank stayed. Unit tests cover linked and neutral controls and the full typed snapshot."
+        }
+      }
+    }
+  }
+}

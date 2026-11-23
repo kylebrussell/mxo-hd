@@ -1,0 +1,44 @@
+{
+  "families": {
+    "hacker-harmful-code-and-cannon-selection": {
+      "representative": 415,
+      "result": "pass",
+      "head": "c76e5fcb",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/970#issuecomment-7100349466",
+      "scope": "Both stock casts refuse an empty selection, ally and distant hostile before spending. Harmful Code 3.0 uses 22 IS in the loaded profile, lands after four seconds for 75 against the clear selected enemy and 61 under +75 resistance, starts 8 s own and 4 s shared 682 reuse, and hits only the selected recipient. Logic Cannon uses 26 IS at rest for an eight-second selected hit and 15 s own/shared 684. Its historical damage stays unresolved."
+    }
+  },
+  "abilities": {
+    "415": {
+      "family": "hacker-harmful-code-and-cannon-selection",
+      "checks": {
+        "damage": {
+          "source": "GOB 415 gives a fixed 52-point instant Viral health modifier. Ordinary caster influence precedes the target's typed resistance.",
+          "runtime": "The selected-cast path applies the fixed authored base with the loaded viral influence, then normal recipient resistance. The selected target supplies the sole health event.",
+          "test": "HarmfulCodeThreeUsesTheShippedHealthValueOnTheSelectedOrdinaryCast verifies the unmitigated and resistance branches. Stock PR970 observes 75 neutral and raw75/final61 under source8 stat157 +75, with no other target event. https://github.com/kylebrussell/mxo-hd/pull/970#issuecomment-7100349466"
+        },
+        "targeting": {
+          "source": "GOB 415 requires Hacker Style, an at-rest cast and a live selected hostile within its range, with the ordinary viral contest.",
+          "runtime": "AbilityHandler checks loadout, style, current combat, hostile view, range and sight at admission and binds the same current spawn through completion.",
+          "test": "Focused selected-cast tests check load and spawn invalidation and linked single-target delivery. Stock refused empty and ally selections with 24 and distant selection with 34 before IS or reuse, and landed only on each subsequently selected hostile. https://github.com/kylebrussell/mxo-hd/pull/970#issuecomment-7100349466"
+        },
+        "behavior-tests": {
+          "source": "The GOB specifies a four-second selected viral cast, 23 base IS, 8 s own reuse and 4 s family 682 reuse. Loaded Stand Off supplies the existing IS reduction.",
+          "runtime": "The ordinary player cast uses the owned row and original hostile throughout, applies fixed typed damage, consumes 22 IS under the legal loaded profile and publishes both authored timers.",
+          "test": "Stock PR970 records two 22 IS debits, four seconds, both timers and actual neutral/mitigated damage. The direct handler test independently exercises refusal during combat, unchanged starting IS on refusal and normal finish with the typed health and timer changes. https://github.com/kylebrussell/mxo-hd/pull/970#issuecomment-7100349466"
+        }
+      }
+    },
+    "331": {
+      "family": "hacker-harmful-code-and-cannon-selection",
+      "note": "PR970 saw a single positive Logic Cannon hit at rest for 108 after the correct paid cast, plus three pre-debit refusals. Retained original effective damage requires separate calibration. https://github.com/kylebrussell/mxo-hd/pull/970#issuecomment-7100349466",
+      "checks": {
+        "targeting": {
+          "source": "GOB 331 requires selected-hostile Hacker Style use at rest. The retained old proxy_020 80 b9 preserves the original selected view/spawn layout.",
+          "runtime": "The scoped selected-cast predicate checks the loaded entry, at-rest style and combat state and the valid visible original hostile, then keeps the same spawn through completion.",
+          "test": "The retained 331 replay exercises refusal and an ordinary original-target landing. PR970 stock refused 24 and 34 before spending and admitted only QAEnemy on the positive cast. https://github.com/kylebrussell/mxo-hd/pull/970#issuecomment-7100349466"
+        }
+      }
+    }
+  }
+}
