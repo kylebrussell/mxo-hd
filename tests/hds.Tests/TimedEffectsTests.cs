@@ -359,11 +359,12 @@ public class TimedEffectsTests
     }
 
     [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public void ImmobilizingShotSendsTheCapturedRootMessageAndExistingReleaseMessage(bool damageBreak)
+    [InlineData(176, false, 2)]
+    [InlineData(176, true, 2)]
+    [InlineData(254, false, 4)]
+    [InlineData(254, true, 4)]
+    public void RootWithBreakChancePublishesAuthoredActivationAndOneStateEnd(ushort ability, bool damageBreak, int recordCount)
     {
-        const ushort ability = 254;
         const string casterName = "Korron";
         const string victimName = "AfterWhoruNeo";
         var caster = NewClient();
@@ -378,15 +379,16 @@ public class TimedEffectsTests
             modifier => modifier.Text("StatModInitFunc") == "EnableRootWithChance");
         Assert.Equal(AbilityMessages.RootCaster, init.Number("ActivationStringSubject"));
         Assert.Equal(AbilityMessages.RootTarget, init.Number("ActivationStringTarget"));
-        Assert.True(TempMods.TryGet(ability, out var immobilizing));
+        Assert.True(TempMods.TryGet(ability, out var effect));
         try
         {
-            TimedEffects.Apply(subject, immobilizing, now, caster, casterName);
+            var active = TimedEffects.Apply(subject, effect, now, caster, casterName, fixtureProc: true);
             var applied = Rpcs(victim);
-            Assert.Equal("8167170020005201007c00fe000000000000003000000807004b6f72726f6e000e00416674657257686f72754e656f0002003200000000000000",
+            string wireAbility = Hex(BitConverter.GetBytes(ability));
+            Assert.Equal($"8167170020005201007c00{wireAbility}0000000000003000000807004b6f72726f6e000e00416674657257686f72754e656f0002003200000000000000",
                 Assert.Single(applied, rpc => rpc.StartsWith("8167", StringComparison.Ordinal)));
             var adds = applied.Where(rpc => rpc.StartsWith("80bc", StringComparison.Ordinal)).ToArray();
-            Assert.Equal(4, adds.Length);
+            Assert.Equal(recordCount, adds.Length);
             Assert.Equal(Hex(AbilityMessages.AboutAbility(AbilityMessages.RootCaster, true, ability, casterName, victimName, 50, 0)),
                 Assert.Single(Rpcs(caster)));
             Assert.False(ControlActions.CanMove(subject.Effects));
@@ -397,7 +399,7 @@ public class TimedEffectsTests
                 Assert.Empty(subject.Effects.HealthChanged(1, true, new RootBreakRoll(50)));
                 Assert.False(ControlActions.CanMove(subject.Effects));
                 var removed = subject.Effects.HealthChanged(1, true, new RootBreakRoll(49));
-                Assert.Equal(3, removed.Count);
+                Assert.Equal(active.Count, removed.Count);
                 subject.Ended(removed);
             }
             else TimedEffects.RunDue(now + 8.01);

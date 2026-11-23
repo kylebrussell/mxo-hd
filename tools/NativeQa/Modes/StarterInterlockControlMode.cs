@@ -55,14 +55,14 @@ public sealed class StarterInterlockControlMode : NativeQaMode
             ["MXO_PVP_SERVER"] = "1", ["MXO_PVP_MAX_SAFE_LEVEL"] = "15",
             [CombatFixtureWeapons.WeaponMode] = "1", [CombatFixtureWeapons.DisengageMode] = "1",
             [StarterInterlockControlQa.Mode] = "1"
-        }, extraQaMetadata: new() { ["ScopedStockRows"] = "145,176,105", ["NativeCloseableRows"] = 0, ["MemoryUsed"] = Memory },
+        }, extraQaMetadata: new() { ["ScopedStockRows"] = "145,176,105", ["NativeCloseableRows"] = 1, ["MemoryUsed"] = Memory },
         readyMessages: new[]
         {
             $"The full profile uses {Memory}/100 memory at level 50 with rank-{Rank} abilities. CSR faces QAEnemy at {X},{Y},{EnemyZ}, 3 m ahead on the street. Both have 30,000 max HP. The fixture loads an empty ambient NPC roster. Page 2 comes in pairs: Karate/145, SMGs/176, Rifles/105.",
             "Equip the listed weapon, select QAEnemy, open ordinary Close Combat and then select the matching style. If a special misses, wait for its own reuse and retry it. The fixture forces the Enrage and Root procs only on landed specials. Enter submits chat. Keep the selection without Escape.",
-            "Overhand Smash 145 already passed native QA. Start this retest with Covering Fire 176. The headless bootstrap still checks the full 145 Withdraw sequence.",
-            "Use ?cd w smg, select /target QAEnemy, and right-click Close Combat. Select SMGs (page 2 slot 3) then Covering Fire (slot 4). On char=6114 expect [MODIFIER] source=176 stat=99 value=0 for 8 s. On landing use ?cd stop before follow-up hits break the root. The helper verifies MovementScale -1 to owner and observer while the server rejects movement, then scale 0 and movement recovery. Wait for STARTER CONTROL PASS 176.",
-            "Use ?combatdepth fixture-weapon rifle, re-open Close Combat and reselect Rifles. Use Body Shot. Expect [MODIFIER] char=6114 source=105 stat=180 and stat=181 both -5 for 10 s, without a root or enrage from this attack. Both records remove on expiry. Wait for STARTER CONTROL PASS 105.",
+            "Only the Covering Fire 176 retest is required. Overhand Smash 145 and Body Shot 105 are existing regression controls.",
+            "Use ?cd w smg, select /target QAEnemy and use its right-click Close Combat. Reselect SMGs (page 2 slot 3), then Covering Fire (slot 4). Retain the stock 176 request and look for the caster's localized Root message. Expect 25 IS, 4 s / 8 s / 5 s (689), 21083, and [MODIFIER] char=6114 source=176 stat=99 value=0 for 8 s. Use ?cd stop on landing before follow-up hits break the root. The helper verifies its recipient Root message, scale -1 on both views, movement correction, a single existing Rooted state-end and scale/movement recovery. Wait for STARTER CONTROL PASS 176.",
+            "Optional Body Shot control: use ?cd w rifle, re-open Close Combat and reselect Rifles. Expect [MODIFIER] char=6114 source=105 stats 180 and 181 each -5 for 10 s, paired removals, and no root or enrage. Wait for STARTER CONTROL PASS 105.",
             $"{NativeResults} in the fixture directory records the helper's waiting, verified, failed or stopped status and any movement readback."
         });
 
@@ -124,6 +124,7 @@ public sealed class StarterInterlockControlMode : NativeQaMode
             actor.SendRpc(StarterHackerControlTargetMode.WithHandle(row.StockStyle, DuelPackets.Handle(view.ViewId, view.SpawnId)));
             await actor.WaitForViewUpdateAsync(2, $"02 80 80 80 80 80 10 {StockAbilityProfile.LittleEndianHex(row.Style)} 00 00");
 
+            int casterAt = actor.World.RpcSnapshot().Count;
             int recipientAt = enemy.World.RpcSnapshot().Count;
             var scaleAt = (Owner: enemy.World.ViewSnapshot().Count, Observer: observer.World.ViewSnapshot().Count);
             await UntilLandedAsync(actor, enemy, row, DuelPackets.Handle(view.ViewId, view.SpawnId), recipientAt);
@@ -131,6 +132,11 @@ public sealed class StarterInterlockControlMode : NativeQaMode
             {
                 actor.SendChat("?combatdepth fixture-disengage");
                 await actor.WaitForTextAsync("Fixture combat ended.");
+                byte[] message = AbilityMessages.AboutAbility(AbilityMessages.RootCaster, true, Cover, actor.Handle, enemy.Handle, 50, 0);
+                await StockAbilityProfile.ObserveAsync(actor, casterAt, frame => frame.Bytes.AsSpan().SequenceEqual(message),
+                    "Covering Fire's caster receives the authored Root line once");
+                Check.Equal(1, actor.World.RpcSnapshot().Skip(casterAt).Count(frame => frame.Bytes.AsSpan().SequenceEqual(message)),
+                    "One caster line for the landed Root proc");
             }
             await VerifyRecipientAsync(server, enemy, observer, observed.ViewId, row, recipientAt, scaleAt, expectedRootPosition);
         }
@@ -179,6 +185,9 @@ public sealed class StarterInterlockControlMode : NativeQaMode
         }
         else if (row.Id == Cover)
         {
+            byte[] root = AbilityMessages.AboutAbility(AbilityMessages.RootTarget, false, Cover, "CSR_Tester", enemy.Handle, 50, 0);
+            await StockAbilityProfile.ObserveAsync(enemy, from, frame => frame.Bytes.AsSpan().SequenceEqual(root),
+                "Covering Fire's recipient receives the authored Root line and 50 percent break chance");
             int ownerRoot = await ObserveScaleAsync(enemy, 2, PlayerViewAttributes.SelfMovementScale, scaleAt.Owner, -1);
             int observerRoot = await ObserveScaleAsync(observer, view, PlayerViewAttributes.OtherMovementScale, scaleAt.Observer, -1);
             // A rooted movement correction carries the authoritative current position, including
@@ -191,12 +200,17 @@ public sealed class StarterInterlockControlMode : NativeQaMode
                 "Root refuses a step relative to the helper's current position");
 
             await AwaitBonusAsync(row.State, 0, true);
+            byte[] stateEnd = AbilityMessages.StateEnd(row.State, enemy.Handle);
+            await StockAbilityProfile.ObserveAsync(enemy, from, frame => frame.Bytes.AsSpan().SequenceEqual(stateEnd),
+                "Covering Fire ends with the ordinary Rooted release message");
             await ObserveScaleAsync(enemy, 2, PlayerViewAttributes.SelfMovementScale, ownerRoot, 0);
             await ObserveScaleAsync(observer, view, PlayerViewAttributes.OtherMovementScale, observerRoot, 0);
             int visibleAt = observer.World.ViewSnapshot().Count;
             Move(enemy, step);
             await ObserveMoveAsync(observer, view, visibleAt, step, "An observer sees the same helper move after root expiry");
             Move(enemy, origin);
+            Check.Equal(1, enemy.World.RpcSnapshot().Skip(from).Count(frame => frame.Bytes.AsSpan().SequenceEqual(stateEnd)),
+                "One Rooted state-end for the completed Covering Fire proc");
             Console.WriteLine($"STARTER ROOT POSITION {origin.X},{origin.Y},{origin.Z} held, then released to {step.X},{step.Y},{step.Z}. Owner and observer MovementScale -1 then 0.");
             readback = new RootReadback(origin, step, -1, 0);
         }
