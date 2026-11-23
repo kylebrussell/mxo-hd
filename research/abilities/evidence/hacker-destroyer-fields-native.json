@@ -1,0 +1,87 @@
+{
+  "families": {
+    "destroyer-area-enrage-stock": {
+      "representative": 462,
+      "result": "pass",
+      "head": "584e56dbb6fd44a32af61811fad1a3292c6849c2",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/926#issuecomment-7092207121",
+      "scope": "Stock Enrage Foes used the selected hostile at 2 s, 26 IS and 30 s reuse. Enraged plus its linked state lasted 6 s on two opposing players, with no separate 734. A separate Blackwood cast produced one seek and pursuit toward the closer helper; stock witnessed ordering through removal, with precise 3 s cadence established headlessly."
+    },
+    "destroyer-inefficiency-field-stock": {
+      "representative": 467,
+      "result": "pass",
+      "head": "584e56dbb6fd44a32af61811fad1a3292c6849c2",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/926#issuecomment-7092207121",
+      "scope": "Stock Inefficiency Field 2.0 cast for 4 s at 25 IS, used 60 s reuse and applied stat 117 -30 and 114 -80 for 30 s to the selected opponent and 7.00 m opposing helper only. 13.01 m selection was refused before cost and all intended removals arrived."
+    },
+    "destroyer-resistance-field-stock": {
+      "representative": 1088,
+      "result": "pass",
+      "head": "584e56dbb6fd44a32af61811fad1a3292c6849c2",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/926#issuecomment-7092207121",
+      "scope": "The stock inherited Destroyer action used 4 s, 40 IS and 90 s reuse. It applied all four -120 resistance records for 30 s at the selected opponent and 5.00 m edge only, with eight matching removals."
+    }
+  },
+  "abilities": {
+    "462": {
+      "family": "destroyer-area-enrage-stock",
+      "checks": {
+        "area": {
+          "source": "GOB 462 uses selected direct object 3 and a 6 m hostile area.",
+          "runtime": "AbilityTargets.LandAround centers on the selected target and checks the secondary's range, sight, visibility and opposition before its separate contest.",
+          "test": "PR926 saw state 93 and its linked record on QAEnemy and the 6.00 m opposing helper, with paired removes. The 6.01 m opponent and in-range ally received neither. SelectedFieldUsesThePrimaryCentreAndEachRecipientOwnContest also verifies secondary selection when the primary deflects. https://github.com/kylebrussell/mxo-hd/pull/926#issuecomment-7092207121"
+        },
+        "targeting": {
+          "source": "GOB 462 requires Hacker Style outside combat, selected-hostile sight and 16 m range, and the normal viral contest.",
+          "runtime": "AbilityHandler checks Archive membership and the selected live spawn before costs and retains the captured spawn through the delayed cast.",
+          "test": "PR926 saw no cost, cast or reuse on stock empty, ally and 16.01 m requests. SelectedFieldUsesTheAdmittedLiveSpawnAndCannotSplashAfterInvalidation covers an expired spawn, and SelectedFieldUsesThePrimaryCentreAndEachRecipientOwnContest verifies deflect versus a separately legal recipient. https://github.com/kylebrussell/mxo-hd/pull/926#issuecomment-7092207121"
+        },
+        "behavior-tests": {
+          "source": "GOB 462 stores 26 IS, 2 s cast, 30 s reuse and state 93 for 6 s. GOB 93 invokes GenericEnrageUpdate every 3 s and gates withdrawal without a separate control immunity modifier.",
+          "runtime": "TimedEffects schedules the NPC-only Enrage pursuit and clears the state at expiry. ControlActions consumes the state on a player without scheduling an NPC pulse.",
+          "test": "PR926 stock confirms timers, linked state, the player expiry and one Blackwood seek followed by pursuit and removal. NpcEnrageCastsUseTheShippedThreeSecondUpdates pins one scheduled pulse before 6 s; HackerAreaControlsApplyOnlyTheirOwnActionGateUntilExpiry verifies the 462 player actions and expiry. The public 462 cast excerpt remains abbreviated. https://github.com/kylebrussell/mxo-hd/pull/926#issuecomment-7092207121"
+        }
+      }
+    },
+    "467": {
+      "family": "destroyer-inefficiency-field-stock",
+      "checks": {
+        "area": {
+          "source": "GOB 467 uses selected direct object 3 and a 7 m hostile area.",
+          "runtime": "AbilityTargets.LandAround uses the selected target position and rechecks each secondary's radius, sight and hostility.",
+          "test": "PR926 stock applied both records on QAEnemy and the 7.00 m opposing helper, and excluded the 7.01 m opponent and the ally. SelectedFieldUsesThePrimaryCentreAndEachRecipientOwnContest also verifies the separate primary and secondary contests. https://github.com/kylebrussell/mxo-hd/pull/926#issuecomment-7092207121"
+        },
+        "targeting": {
+          "source": "GOB 467 uses Hacker Style outside combat with a selected visible hostile within 13 m and a viral contest.",
+          "runtime": "AbilityHandler records the selected spawn before the cast; the normal landing rechecks sight, range and each hostile recipient independently.",
+          "test": "PR926 stock saw empty and ally reason 24, and both 13.01 m and 16.01 m reason 34, all before cast, cost or reuse. SelectedFieldUsesTheAdmittedLiveSpawnAndCannotSplashAfterInvalidation checks blocked and retreat cases. https://github.com/kylebrussell/mxo-hd/pull/926#issuecomment-7092207121"
+        },
+        "behavior-tests": {
+          "source": "GOB 467 stores 25 IS, 4 s cast, 60 s reuse, and 30 s of stat 117 -30 and 114 -80.",
+          "runtime": "The ordinary cast installs timed IS cost and regeneration records. AbilityCosts.Effective and AbilityHandler.RegenAmount consume the signed values during their lifetime.",
+          "test": "PR926 stock observed both exact stats, all removes, and the cast/debit/reuse values. InefficiencyFieldsRaiseCastCostAndSlowRegenUntilExpiry checks the paired gameplay consumers and recovery. The public 467 cast excerpt remains abbreviated. https://github.com/kylebrussell/mxo-hd/pull/926#issuecomment-7092207121"
+        }
+      }
+    },
+    "1088": {
+      "family": "destroyer-resistance-field-stock",
+      "checks": {
+        "area": {
+          "source": "GOB 1088 uses selected direct object 3 and a 5 m hostile area. abilities_use_destroyer_at_corrupted.log.txt lines 198–199 carries the selected view and spawn.",
+          "runtime": "AbilityTargets.LandAround admits each visible opposing instance independently around the live primary.",
+          "test": "PR926 stock and the exact retained 43-byte bootstrap observe four typed records and matching removes on QAEnemy and the 5.00 m opposing helper only. The 5.01 m opposing helper and nearer ally receive nothing. https://github.com/kylebrussell/mxo-hd/pull/926#issuecomment-7092207121"
+        },
+        "targeting": {
+          "source": "GOB 1088 uses the grant from 469, Hacker Style, outside-combat admission, hostile sight within 16 m and a viral contest.",
+          "runtime": "AbilityHandler requires the inherited Archive action and keeps the selected spawn through cast completion. The ordinary hostile landing checks sight and applies one contest to each eligible recipient.",
+          "test": "PR926 stock observes 24/24/34 for no target, ally, and 16.01 m before charge. SelectedFieldUsesTheAdmittedLiveSpawnAndCannotSplashAfterInvalidation verifies unloaded/ongoing-combat and sight loss. SelectedFieldUsesThePrimaryCentreAndEachRecipientOwnContest verifies a deflected primary and valid opposing secondary. The headless Archive unload/reload verifies the owning grant. https://github.com/kylebrussell/mxo-hd/pull/926#issuecomment-7092207121"
+        },
+        "behavior-tests": {
+          "source": "GOB 1088 stores 40 IS, 4 s cast, 90 s reuse and stats 157, 180, 181 and 1033 at -120 each for 30 s.",
+          "runtime": "Normal selected landing applies the timed typed modifiers, and TypedAbilityResistance observes them in the corresponding damage calculations until expiry.",
+          "test": "PR926 stock and exact retained request replay confirm cost, cast bar, reuse, and all eight modifier adds and removals. DestroyerIncreasesTakenDamageByReducingTheMatchingResistance checks matching damage types and the runtime effect of the lowered ratings. https://github.com/kylebrussell/mxo-hd/pull/926#issuecomment-7092207121"
+        }
+      }
+    }
+  }
+}
