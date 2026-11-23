@@ -20,7 +20,9 @@ namespace hds
         public static bool Dismiss(WorldClient client, ushort id)
         {
             if (!CanDismiss(id)) return false;
-            bool removed = AbilityAuras.Stop(client, id);
+            var stealth = id == Stealth.EscapeAndEvasionAbility ? Stealth.Current(client) : null;
+            bool removed = stealth?.Def.Ability == id && Stealth.End(client, "dismissed", false, stealth.Generation);
+            removed |= AbilityAuras.Stop(client, id);
             removed |= AbilityBuffs.Remove(client, id);
             removed |= TimedEffects.RemoveParent(TimedEffects.ForPlayer(client), id);
             if (removed) client.FlushQueue();
