@@ -1124,6 +1124,52 @@ public class FreeCastViralLandingTests : IDisposable
         Assert.Equal((ushort)1000, secondary.getHealthC());
     }
 
+    [Fact]
+    public void ArtilleristFixtureIncludesTheFullDedicatedCodeInfluences()
+    {
+        var caster = Client(110);
+        caster.playerInstance.Level.setValue((byte)30);
+        var profile = new NativeQa.Modes.HackerArtilleristAreaMode().Plan.Abilities;
+        AbilityPassives.SetLoaded(caster, profile.Select(id => (id, (ushort)30)));
+        CombatStyles.Select(caster, CombatStyles.HackerStyle);
+
+        Assert.Equal(30, AbilityStats.Influence(caster, 172));
+        Assert.Equal(9, AbilityStats.Influence(caster, 117));
+        Assert.Equal(13, AbilityCosts.Effective(caster, 336));
+        Assert.Equal(17, AbilityCosts.Effective(caster, 337));
+    }
+
+    [Fact]
+    public void CodeNukeTwoAppliesPowerOnceBeforeTargetViralResistance()
+    {
+        var caster = Client(110);
+        var target = Client(111);
+        caster.playerInstance.Level.setValue((byte)30);
+        target.playerInstance.Level.setValue((byte)30);
+        const ushort logicBomb = 336, codeNuke = 337;
+        const int subtotal = 300;
+
+        caster.playerData.combatTactic = CombatTactic.Speed;
+        Assert.Equal(300, AbilityStats.ScaleAbilityDamage(caster, codeNuke, subtotal));
+        caster.playerData.combatTactic = CombatTactic.Power;
+        ushort powered = AbilityStats.ScaleAbilityDamage(caster, codeNuke, subtotal);
+        Assert.Equal(360, powered);
+        Assert.Equal(300, AbilityStats.ScaleAbilityDamage(caster, logicBomb, subtotal));
+        Assert.Equal(360, TypedAbilityResistance.Player(caster, target, codeNuke, powered));
+
+        Assert.True(AbilityBuffs.Apply(target, 8));
+        try
+        {
+            Assert.Equal(45, AbilityStats.Player(target, 157));
+            Assert.Equal(298, TypedAbilityResistance.Player(caster, target, codeNuke, powered));
+        }
+        finally
+        {
+            AbilityBuffs.Remove(target, 8);
+        }
+        Assert.Equal(360, TypedAbilityResistance.Player(caster, target, codeNuke, powered));
+    }
+
     [Theory]
     [InlineData(21)]
     [InlineData(36)]

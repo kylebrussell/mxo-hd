@@ -39,6 +39,7 @@ namespace hds
                     return;
                 }
             }
+            bool selectedArtilleristArea = AbilityID == 336 || AbilityID == 337;
             bool selectedDespoilerArea = AbilityID == 399 || AbilityID == 400 || AbilityID == 404;
 
             bool starterViralDebuffNeedsLoadout = AbilityID == 43 || AbilityID == 48 || AbilityID == 69;
@@ -88,7 +89,8 @@ namespace hds
             bool selectedDestroyerField = AbilityID == 462 || AbilityID == 467 || AbilityID == 1088;
             bool selectedViralAttack = enrage || AbilityID == 53 || (AbilityID >= 57 && AbilityID <= 60) ||
                 AbilityID == 350 || AbilityID == 351 || AbilityID == 353 ||
-                AbilityID == 392 || AbilityID == 394 || AbilityID == 395 || AbilityID == 396 || selectedViralField || selectedCoderViral;
+                AbilityID == 392 || AbilityID == 394 || AbilityID == 395 || AbilityID == 396 ||
+                selectedViralField || selectedCoderViral || selectedArtilleristArea;
             ushort? lockedDamageTargetSpawn = null;
             bool selectedHostileCast = selectedViralAttack || selectedDespoilerArea || selectedHackerCast || selectedDestroyerField;
             if (selectedHostileCast)
@@ -401,7 +403,7 @@ namespace hds
                 return;
             }
 
-            if (selectedDespoilerArea)
+            if (selectedDespoilerArea || selectedArtilleristArea)
             {
                 var caster = Store.currentClient;
                 if (!AbilityTargets.HasSelectionSight(caster, definition, currentTargetViewId))

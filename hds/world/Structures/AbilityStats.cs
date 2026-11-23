@@ -41,7 +41,11 @@ namespace hds
             int type = modifier != null ? (int)modifier.Number("DamageType") : CombatSpecials.ExileDamageType(ability);
             if (modifier == null && type < 0 && TempMods.TryGet(ability, out var effect) && effect.Virus)
                 type = 2;
-            return ScaleTypedAbilityDamage(caster, type, amount);
+            ushort influenced = ScaleTypedAbilityDamage(caster, type, amount);
+            // Retained Code Nuke 2.0 hits separate at Speed 300 and Power 360 before target mitigation.
+            if (ability == 337 && caster.playerData.combatTactic == CombatTactic.Power)
+                return (ushort)Math.Min(ushort.MaxValue, (int)(influenced * (double)CombatCalculator.TacticDamageMultiplier(CombatTactic.Power)));
+            return influenced;
         }
 
         internal static ushort ScaleTypedAbilityDamage(WorldClient caster, int type, int amount)

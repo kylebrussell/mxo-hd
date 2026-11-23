@@ -21,7 +21,13 @@ Each row below groups identical `81 67` damage-caster records (string `0x7c0000f
 | 337 | 288 | 12 | 300 | 12 | [Combat 13664][bomb-288]; combat 16853 (2), 17618, 19120 (2); marketplace 1472, 3493 (2), 18048, 22761 (2) |
 | 337 | 346 | 14 | 360 | 4 | [Marketplace 11916][bomb-346] (2); marketplace 27773, 40998 |
 
-The shipped GOB stores fixed viral damage modifiers of 14 and 17. The current server rolls 266–323 and 283–346 as base damage, then applies its usual influence and resistance handling. These captures support retaining the confirmed level-50 outcomes as regression evidence. A neutral unmitigated baseline, the cause of the distinct damage sums and their relation to 14/17, and any lower-level or PvP scaling remain open.
+The shipped GOB stores fixed viral damage modifiers of 14 and 17. The current server retains the capture-calibrated pre-influence roll bands 266–323 and 283–346 and applies the target's typed resistance after the offensive stages. The relation of the fixed modifiers to those historical damage totals, level and PvP scaling, and the full cause of the two 336 totals remain open.
+
+Nine of the twelve 337 caster records totaling 300 follow a Speed request visible within the same capture file. The other three also total 300, but occur before the first recorded tactic request in the second file. All four totaling 360 follow Power, with the same latest tactic at request and landing. On the selected Zombie Curse at view 15/spawn 173, the Speed cast returns 288 landed plus 12 resisted. Power returns 346 plus 14 twice. Daze expires one second before the first of those Power hits, and the second has no recorded Daze at request or landing. That matches the shipped 1.2 multiplier on a 300 pre-tactic subtotal under these observed conditions. The server applies that Power factor to 337 at landing, after current viral influence and before typed mitigation. [Speed result][nuke-speed] · [Power request][nuke-paired-power] · [Daze removal and Power result][nuke-power-after-daze] · [Second Power result][nuke-power-repeat] · [Shipped damage calculation](../research/client-scripts/combat_calculations.py#L301)
+
+For 336, both requests select Zombie Rot at view 5/spawn 167. The earlier hit returns 250 landed plus 10 resisted while Daze source 199 has stat 172 reduced by five. The matching Daze record is removed immediately after the hit. The later hit returns 269 plus 11 after Daze has gone. That request occurs during Power and switches to Speed just before landing. The caster retains Hacker Style's +46 stat 172 for both hits. These observations distinguish the two samples' conditions without establishing how much of the 20-point difference comes from Daze. The server retains the existing 336 calibration. [Daze add][bomb-daze-add] · [Earlier request and hit][bomb-dazed-cast] · [Daze removal][bomb-daze-remove] · [Later request][bomb-switch-cast] · [Speed and later hit][bomb-switch-speed]
+
+The first file records three stat 1031 contributions of +15 from Transmit Virus, +5 from Dedicated Code and +2 from equipment 45868. The subsequent Archive changes remove the ability contributions after the fight. These are individual modifier records. The captures do not expose the complete caster damage or target resistance inputs at each hit, or the mapping from authored 14 and 17 to the value passed to GetFullAbilityDamage. [Source records][bomb-damage-sources] · [Hacker Style record][bomb-style] · [Later Archive unload][bomb-archive]
 
 [bomb-caster]: ../research/packet-dumps/community-intake/20260607T003822Z-hdneo-mxopackets1-combat-ability-selected/logs/actions_combat.log.txt#L10978
 [bomb-lurch]: ../research/packet-dumps/community-intake/20260607T003822Z-hdneo-mxopackets1-combat-ability-selected/logs/actions_combat.log.txt#L11960
@@ -32,6 +38,18 @@ The shipped GOB stores fixed viral damage modifiers of 14 and 17. The current se
 [bomb-269]: ../research/packet-dumps/community-intake/20260607T003822Z-hdneo-mxopackets1-combat-ability-selected/logs/actions_combat.log.txt#L13519
 [bomb-288]: ../research/packet-dumps/community-intake/20260607T003822Z-hdneo-mxopackets1-combat-ability-selected/logs/actions_combat.log.txt#L13664
 [bomb-346]: ../research/packet-dumps/community-intake/20260607T003822Z-hdneo-mxopackets1-combat-ability-selected/logs/actions_combat_marketplace_abilitychangecoder.log.txt#L11916
+[nuke-speed]: ../research/packet-dumps/community-intake/20260607T003822Z-hdneo-mxopackets1-combat-ability-selected/logs/actions_combat_marketplace_abilitychangecoder.log.txt#L22371-L22769
+[nuke-paired-power]: ../research/packet-dumps/community-intake/20260607T003822Z-hdneo-mxopackets1-combat-ability-selected/logs/actions_combat_marketplace_abilitychangecoder.log.txt#L27207-L27427
+[nuke-power-after-daze]: ../research/packet-dumps/community-intake/20260607T003822Z-hdneo-mxopackets1-combat-ability-selected/logs/actions_combat_marketplace_abilitychangecoder.log.txt#L27654-L27782
+[nuke-power-repeat]: ../research/packet-dumps/community-intake/20260607T003822Z-hdneo-mxopackets1-combat-ability-selected/logs/actions_combat_marketplace_abilitychangecoder.log.txt#L40772-L41005
+[bomb-daze-add]: ../research/packet-dumps/community-intake/20260607T003822Z-hdneo-mxopackets1-combat-ability-selected/logs/actions_combat_marketplace_abilitychangecoder.log.txt#L7824-L7842
+[bomb-dazed-cast]: ../research/packet-dumps/community-intake/20260607T003822Z-hdneo-mxopackets1-combat-ability-selected/logs/actions_combat_marketplace_abilitychangecoder.log.txt#L8232-L8732
+[bomb-daze-remove]: ../research/packet-dumps/community-intake/20260607T003822Z-hdneo-mxopackets1-combat-ability-selected/logs/actions_combat_marketplace_abilitychangecoder.log.txt#L8739-L8758
+[bomb-style]: ../research/packet-dumps/community-intake/20260607T003822Z-hdneo-mxopackets1-combat-ability-selected/logs/actions_combat_marketplace_abilitychangecoder.log.txt#L7132-L7152
+[bomb-archive]: ../research/packet-dumps/community-intake/20260607T003822Z-hdneo-mxopackets1-combat-ability-selected/logs/actions_combat_marketplace_abilitychangecoder.log.txt#L65568-L65608
+[bomb-damage-sources]: ../research/packet-dumps/community-intake/20260607T003822Z-hdneo-mxopackets1-combat-ability-selected/logs/actions_combat.log.txt#L11193-L11325
+[bomb-switch-cast]: ../research/packet-dumps/community-intake/20260607T003822Z-hdneo-mxopackets1-combat-ability-selected/logs/actions_combat_marketplace_abilitychangecoder.log.txt#L12203
+[bomb-switch-speed]: ../research/packet-dumps/community-intake/20260607T003822Z-hdneo-mxopackets1-combat-ability-selected/logs/actions_combat_marketplace_abilitychangecoder.log.txt#L12675-L12754
 
 ## Diagnostic profiles and one-pass native checklist
 
