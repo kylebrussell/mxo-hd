@@ -1,0 +1,14 @@
+{
+  "abilities": {
+    "466": {
+      "note": "PR985 stock verified pools 619 and 614 on the selected enemy and its 5.00 m neighbor, with five raw 103/102 ticks and removal at 15 s. The authored 97 and historical 424/444 do not establish the current damage scaling. The stock retarget arrived in the landing second, so the exact retained replay supplies the original-anchor fizzle proof. https://github.com/kylebrussell/mxo-hd/pull/985#issuecomment-7106428543 Stock no-target, ally and 16.01 m refusals cost nothing. PlagueZoneTwoBindsTheOriginalSelectedOpponent covers sight, stale spawn and in-combat use. The full hit and deflect check remains open.",
+      "checks": {
+        "area": {
+          "source": "GOB 466 uses a selected hostile as the center of a 5 m splash.",
+          "runtime": "The original selected opponent supplies the splash center after landing revalidation. Eligible hostiles receive independent DOT pools.",
+          "test": "HackerPlagueZoneTwoMode and exact stock PR985 include the selected enemy and the 5.00 m hostile, exclude the 5.01 m hostile and the in-radius ally, and verify five ticks and both removals. https://github.com/kylebrussell/mxo-hd/pull/985#issuecomment-7106428543"
+        }
+      }
+    }
+  }
+}
