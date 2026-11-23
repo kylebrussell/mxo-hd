@@ -670,6 +670,10 @@ namespace hds
                 Output.WriteDebugLog("[COMBAT] Close combat aborted - target mob not found (or a simulacrum)");
                 return;
             }
+            if (npcStarted && pvpFight == null && packet.Length > 4 && packet[4] != 0 &&
+                !CombatInsightEngagement.AllowsNpc(targetMob, client, targetViewWithSpawnId))
+                return;
+
             if (pvpFight != null)
             {
                 // Locked in close combat with another player: the way out is a withdrawal (44), not an NPC

@@ -3,7 +3,7 @@ using System;
 namespace hds
 {
     /// <summary>OURS deterministic entry scores, not a recovered retail contest or1048->519 attribute link.
-    /// Only a new player interlock against current Evade Combat217 uses these scores.</summary>
+    /// A new interlock against current Evade Combat217 uses these scores.</summary>
     public static class CombatInsightEngagement
     {
         internal readonly struct Scores
@@ -68,7 +68,50 @@ namespace hds
             if(!EvasionShield.HasState(target))return true;
             Output.WriteDebugLog($"[COMBAT-INSIGHT OURS] {PvpFlag.Name(source)} -> {PvpFlag.Name(target)} force{scores.Force} evade{scores.Evade} allowed{scores.Allows}");
             if (scores.Allows || !applyResistanceCost) return scores.Allows;
-            return EvasionShield.ResistEntry(source, target, generation.Value, scope);
+            return EvasionShield.ResistEntry(target, generation.Value, source.playerInstance.Level.getValue()[0],
+                AbilityStats.Player(source, 1048), () => scope.Current);
+        }
+
+        internal static bool AllowsNpc(Mob source, WorldClient target, uint handle)
+        {
+            int? generation = EvasionShield.ActiveGeneration(target);
+            if (!generation.HasValue) return true;
+
+            var owner = target.playerData;
+            uint character = owner.getCharID(), district = owner.getDistrictId();
+            int world = owner.worldGeneration, life = owner.lifeGeneration, npcLife = source.DeathGeneration;
+            long transport = target.TransportFence.Capture();
+            var view = target.viewMan.getViewById((ushort)handle);
+            ulong entity = source.getEntityId();
+            bool Current() => ReferenceEquals(target.playerData, owner) && target.Alive && owner.getOnWorld() &&
+                !owner.worldChangePending && !owner.DistrictIsLA() && !owner.isDead && !owner.duelDeath &&
+                !owner.waitForRPCShutDown && PvpCombat.HealthOf(target) > 0 &&
+                owner.getCharID() == character && owner.getDistrictId() == district &&
+                owner.worldGeneration == world && owner.lifeGeneration == life && target.TransportFence.IsCurrent(transport) &&
+                !source.isFriendly && !source.PassiveTarget && source.getIsSpawned() && !source.getIsDead() &&
+                source.getHealthC() > 0 && source.getDistrict() == district &&
+                source.DeathGeneration == npcLife && source.getEntityId() == entity &&
+                view != null && view.viewCreated && !view.viewNeedsToBeDeleted && view.spawnId == (handle >> 16) &&
+                view.entityId == entity && ReferenceEquals(target.viewMan.getViewById(view.ViewID), view);
+
+            if (!Current()) return false;
+            // An NPC has no selected round tactic before entry. Only its live modeled modifiers contribute here.
+            int insight = AbilityStats.Npc(source, 1048);
+            var scores = Calculate(0, AbilityStats.Npc(source, 519), insight,
+                CombatTactics.Get(owner.combatTactic).EvadeInterlock,
+                AbilityStats.Player(target, 520), AbilityStats.Player(target, 1049));
+            if (!Current()) return false;
+            if (!EvasionShield.HasState(target)) return true;
+
+            byte attackerLevel = (byte)Math.Clamp((int)source.getLevel(), 1, byte.MaxValue);
+            Output.WriteDebugLog($"[COMBAT-INSIGHT OURS] NPC {source.getName()} level={attackerLevel} -> {PvpFlag.Name(target)} force{scores.Force} evade{scores.Evade} allowed{scores.Allows}");
+            if (scores.Allows) return true;
+
+            // Chase arrival, retaliation and the visibility scheduler share the existing NPC action clock.
+            double now = TimeUtils.GetSimTimeSeconds();
+            if (!source.TryRetaliate(now, MobAggro.RetrySeconds)) return false;
+            owner.lastAggroAt = Math.Max(owner.lastAggroAt, now);
+            return EvasionShield.ResistEntry(target, generation.Value, attackerLevel, insight, Current);
         }
     }
 }
