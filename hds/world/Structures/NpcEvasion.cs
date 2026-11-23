@@ -13,6 +13,7 @@ namespace hds
         private CoderPets.Pet engagedPet;
 
         internal byte Health => (byte)Volatile.Read(ref health);
+        internal bool HasEngagedPet => Volatile.Read(ref engagedPet) != null;
 
         internal static NpcEvasion FromSpawnRow(string[] row, Mob mob)
         {
@@ -26,7 +27,7 @@ namespace hds
 
         internal void Reset()
         {
-            DisplacePet();
+            Interlocked.Exchange(ref engagedPet, null);
             Volatile.Write(ref health, byte.MaxValue);
         }
 
@@ -39,8 +40,6 @@ namespace hds
         }
 
         internal void ReleasePet(CoderPets.Pet pet) => Interlocked.CompareExchange(ref engagedPet, null, pet);
-
-        internal void DisplacePet() => Interlocked.Exchange(ref engagedPet, null);
 
         internal void ApplyCreation(AttributeClass3827 view, uint flags)
         {
@@ -124,7 +123,6 @@ namespace hds
                 }
 
                 Volatile.Write(ref engagedPet, pet);
-                if (target.CombatantCount != 0) ReleasePet(pet);
                 return true;
             }
         }

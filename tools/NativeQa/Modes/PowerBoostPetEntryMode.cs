@@ -33,9 +33,9 @@ public sealed class PowerBoostPetEntryMode : NativeQaMode
         readyMessages: new[]
         {
             $"L{Level}, {Memory}/{AbilityMemory.ForLevel(Level)} with all prerequisites. CSR ({CasterX},{Y},{Z}) faces the shielded Crossbones Tar ({X},{Y},{Z}); QAFriend observes from ({X},{Y},{WatcherZ}). All stands and the Proxy spawn are on clear outdoor NAV. Page 2 slots 1 Coder, 2 Remote Proxy 2.0, 3 Power Boost. Use 1 then 2 with selection clear. The fixture selects a L7 Karate Simulacrum with 337 HP.",
-            "Select Crossbones Tar and click Attack in the Simulacra window. Retain the full stock 81 7b. At contact, [PET ENTRY] force519=0 force=100 evade=110 resisted shield=255->166. Stock Stay as soon as that first line appears. Crossbones and the same pet keep their HP, and 46 is absent.",
+            "Select Crossbones Tar and click Attack in the Simulacra window. Retain the full stock 81 7b. At contact, [PET ENTRY] force519=0 force=100 evade=110 resisted shield=255->166. Press stock Stay within 3 s of that first line, before Attack retries. Require exactly one refusal and one meter update. Crossbones and the same pet keep their HP, and 46 is absent.",
             "Clear selection and press slot 3. Expect 50 IS, 4 s cast, 8 s reuse, +9 melee/ballistic for 300 s. Select the same Crossbones Tar and press pet Attack, then Stay once both hit directions appear. [PET ENTRY] force519=40 force=140 evade=110 admitted shield=166. No shield debit. Target HP falls and [PET RETALIATION] reduces the same pet's HP. QAFriend gets both actual view HP changes.",
-            "With the buff still present, use ?weaken 1 and stock pet Attack to kill the Tar. Wait for a fresh view after eight seconds. The old order ceases and the fresh shield starts at ff. Remain in world until 300 seconds have passed from the Power Boost landing. With the same Karate pet, select the fresh Tar and click stock Attack once more. Expect force519=0 and 255->166 again, no HP damage. Finish with Stay."
+            "With the buff still present, use ?weaken 1 and stock pet Attack to kill the Tar. Wait for a fresh view after eight seconds. The old order ceases and the fresh shield starts at ff. Remain in world until 300 seconds have passed from the Power Boost landing. With the same Karate pet, select the fresh Tar and click stock Attack once more. Expect one new force519=0 refusal and one 255->166 meter update, no HP damage. Press Stay within 3 s."
         });
 
     public override async Task<byte[]> AfterStartAsync(NativeQaBootstrapContext context)
@@ -85,7 +85,7 @@ public sealed class PowerBoostPetEntryMode : NativeQaMode
         await observer.WaitUntilAsync(() => Health(observer, watchedNpc, hitsAt).Any(hp => hp < 337) &&
             Health(observer, watchedPet, hitsAt).Any(hp => hp < 337), "The observer sees reciprocal HP loss on this pair", TimeSpan.FromSeconds(24));
         await StayAsync();
-        Check.That(!SawShieldUpdate(observer, watchedNpc, hitsAt), "Successful forced entry leaves the shield meter untouched");
+        Check.Equal(0, ShieldUpdateCount(observer, watchedNpc, hitsAt), "Successful forced entry leaves the shield meter untouched");
         Check.That(server.DebugLog()[pairAt..].Contains("[PET RETALIATION] attacker=Crossbones Tar", StringComparison.Ordinal),
             "The same NPC actually returns damage to its admitted pet");
 
@@ -128,10 +128,14 @@ public sealed class PowerBoostPetEntryMode : NativeQaMode
             Attack(npc);
             await WaitLogAsync(before, "force519=0 force=100 evade=110 resisted shield=255->166", "The unboosted pet entry is resisted");
             await StayAsync();
-            await observer.WaitForViewUpdateAsync(observerNpc.ViewId, "04 80 80 80 80 10 a6");
+            await EvidenceRetestWire.ViewSinceAsync(observer, views, observerNpc.ViewId, "04 80 80 80 80 10 a6");
+            Check.Equal(1, ShieldUpdateCount(observer, observerNpc, views), "Exactly one fresh meter update after the refusal");
             Check.That(!Health(observer, observerNpc, views).Any() && !Health(observer, observerPet, views).Any(),
                 "A refused attack sends no damage to either actor");
-            Check.That(!server.DebugLog()[before..].Contains("[PET RETALIATION] attacker=Crossbones Tar", StringComparison.Ordinal),
+            string[] attempt = server.DebugLog()[before..].Split('\n');
+            Check.Equal(1, attempt.Count(line => line.Contains("[PET ENTRY]", StringComparison.Ordinal)),
+                "Exactly one entry refusal before Stay");
+            Check.That(!attempt.Any(line => line.Contains("[PET RETALIATION] attacker=Crossbones Tar", StringComparison.Ordinal)),
                 "The target cannot retaliate against a pet whose entry was refused");
         }
 
@@ -170,10 +174,10 @@ public sealed class PowerBoostPetEntryMode : NativeQaMode
     private static void CheckShield(ViewCreation npc) =>
         Check.Equal(byte.MaxValue, npc.Attributes["EvadeShieldHealth"][0], "Full shield on the exact captured Tar view");
 
-    private static bool SawShieldUpdate(HeadlessPlayer watcher, ViewCreation npc, int start)
+    private static int ShieldUpdateCount(HeadlessPlayer watcher, ViewCreation npc, int start)
     {
         byte[] prefix = BitConverter.GetBytes(npc.ViewId).Concat(Convert.FromHexString("048080808010")).ToArray();
-        return watcher.World.ViewSnapshot().Skip(start).Any(frame => BytePattern.IndexOf(frame, prefix, 0) >= 0);
+        return watcher.World.ViewSnapshot().Skip(start).Count(frame => BytePattern.IndexOf(frame, prefix, 0) >= 0);
     }
 
     private static IEnumerable<ushort> Health(HeadlessPlayer watcher, ViewCreation entity, int start)

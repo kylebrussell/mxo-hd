@@ -331,7 +331,7 @@ namespace hds
                 {
                     // A short player session may end before the NPC gets another action.
                     // It cannot erase the ongoing cooldown from the preceding pet retaliation.
-                    if (!lastRetaliationAgainstPet) nextRetaliation = 0;
+                    if (!lastRetaliationAgainstPet && CapturedEvasion?.HasEngagedPet != true) nextRetaliation = 0;
                     if (!is_dead) currentState = (int)statusList.STANDING;
                 }
             }
@@ -742,12 +742,7 @@ namespace hds
         /// </summary>
         public void setCombatTarget(WorldClient target)
         {
-            lock (combatSync)
-            {
-                combatants.Add(target);
-                combatTarget = target;
-                CapturedEvasion?.DisplacePet();
-            }
+            lock (combatSync) { combatants.Add(target); combatTarget = target; }
         }
 
         /// <summary>
