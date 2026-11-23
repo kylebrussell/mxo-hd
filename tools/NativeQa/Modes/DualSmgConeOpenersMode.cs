@@ -1,3 +1,6 @@
+using System.Globalization;
+using System.Text;
+using System.Text.RegularExpressions;
 using hds;
 using HeadlessClient;
 using static NativeQa.Modes.StarterHackerControlTargetMode;
@@ -36,15 +39,37 @@ public sealed class DualSmgConeOpenersMode : NativeQaMode
         DevCommands: true, hotbarAbilities: new[] { Style, BulletSpray, SuppressionFire }, environmentOverrides: new()
         {
             ["MXO_AGGRO"] = "0", ["MXO_MOB_WANDER"] = "0", ["MXO_PVP_SERVER"] = "1", ["MXO_PVP_MAX_SAFE_LEVEL"] = "15",
-            ["MXO_SIMULACRUM_QA_HOLD_IS"] = "1", [CombatFixtureWeapons.DisengageMode] = "1"
+            ["MXO_SIMULACRUM_QA_HOLD_IS"] = "1", [CombatFixtureWeapons.DisengageMode] = "1",
+            [CombatDepthDev.ConePositionMode] = "1"
         }, extraQaMetadata: new() { ["ScopedStockRows"] = "247,248", ["NativeCloseableRows"] = 2 }, readyMessages: new[]
         {
             $"Level {Level}, {Loadout.Sum(AbilityMemory.Cost)}/{AbilityMemory.ForLevel(Level)} memory and stocked dual SMGs in hand. Outdoor NAV CSR ({X},{Y},{Z}) faces QAEnemy ({X},{Y},{Z+300}). Page 2 is Submachine Guns, Bullet Spray, Suppression Fire.",
             "Select Submachine Guns. Try slots 2 and 3 with an empty target, QAFriend and QAOther at 8.01 m. Expect local refusal or server 24/34, with no IS, cast or reuse. Use /target by helper name.",
-            "Move QAOther to (17289,495,7100). QAFar is (17291,495,7100). Aim at QAEnemy. Stock Bullet Spray hits QAEnemy and QAOther inside the 22.5-degree half-angle and excludes QAFar and allied QAFriend. Expect [PVP] 27 damage from 25 Ballistic base, 2 s cast, 30 IS, 10 s own and 5 s group 690. A natural 15% Enrage lasts 8 s. Save the full 247 request and both hit lines. A separate roll can occur on each hit.",
-            "Wait for group reuse. Move QAOther to (17000,495,7200) and QAFar to (17000,495,7201). Aim at QAEnemy and cast stock Suppression Fire. Expect [PVP] 16 damage from 15 Ballistic base, 4 s cast, 35 IS, 10 s own and 5 s group 690, and paired Rooted 99 for 12 s with MovementScale -1 through release on QAEnemy and QAOther only. Save the first full 248 request. During the root, try moving QAOther to z7220. It should stay at z7200. Repeat the same move after removal and confirm z7220. The archived longer duration comes from an NPC cast.",
+            "Move QAOther to (17289,495,7100). QAFar is (17291,495,7100). Aim at QAEnemy. Stock Bullet Spray hits QAEnemy and QAOther inside the 22.5-degree half-angle and excludes QAFar and allied QAFriend. Expect [PVP] 28 damage from 25 Ballistic base and +16 influence (158 +9, 125 +3, 246 +4), 2 s cast, 30 IS, 10 s own and 5 s group 690. A natural 15% Enrage lasts 8 s. Save the full 247 request and both hit lines. A separate roll can occur on each hit.",
+            "Wait for group reuse. Move QAOther to (17000,495,7200) and QAFar to (17000,495,7201). Aim at QAEnemy and cast stock Suppression Fire. Expect [PVP] 17 damage from 15 Ballistic base with the same +16 influence, 4 s cast, 35 IS, 10 s own and 5 s group 690, and paired Rooted 99 for 12 s with MovementScale -1 through release on QAEnemy and QAOther only. Save the first full 248 request. For QAOther, use action=cone-move with x=17000,y=495,z=7220 during the root. The response should report authoritative Z=7200. Repeat after removal and verify Z=7220. The archived longer duration comes from an NPC cast.",
             "Neither opener enters close combat or sends an interlock move. After reuse, start ordinary Close Combat on QAEnemy, reselect Submachine Guns, and try both slots to exercise the stock outside-combat gate. Helper move JSON uses actor, action=move, x/y/z. Try another Bullet Spray only after reuse if no Enrage procs; the headless proc test separately checks both sides of the 15% threshold."
         });
+
+    internal static async Task<(double X, double Y, double Z)> MoveAndReadPositionAsync(
+        HeadlessPlayer actor, float x, float y, float z)
+    {
+        if (actor.Handle != "QAOther") throw new InvalidOperationException("Use QAOther for the cone move witness.");
+        var bytes = new List<byte>(WireFormat.FromHex("02 00 01 08"));
+        foreach (float coordinate in new[] { x, y, z }) bytes.AddRange(BitConverter.GetBytes(coordinate));
+        bytes.AddRange(new byte[] { 0, 0 });
+        actor.World.SendViewList(bytes.ToArray());
+
+        actor.SkipReceived();
+        actor.SendRpc("81 48");
+        await actor.WaitForRpcAsync("81 49");
+        actor.SendChat("?combatdepth cone-position");
+        var record = await actor.WaitForTextAsync("Cone position (", TimeSpan.FromSeconds(3));
+        var result = Regex.Match(Encoding.Latin1.GetString(record.Bytes), @"Cone position \(([^,]+),([^,]+),([^)]+)\)");
+        Check.That(result.Success, "Read the server's authoritative cone witness position");
+        return (Coordinate(1), Coordinate(2), Coordinate(3));
+
+        double Coordinate(int index) => double.Parse(result.Groups[index].Value, CultureInfo.InvariantCulture);
+    }
 
     public override async Task<byte[]> AfterStartAsync(NativeQaBootstrapContext context)
     {
@@ -92,8 +117,16 @@ public sealed class DualSmgConeOpenersMode : NativeQaMode
         actor.SendRpc(WithHandle(StockStyle, DuelPackets.Handle(selected.ViewId, selected.SpawnId)));
         await actor.WaitForViewUpdateAsync(2, "02 80 80 80 80 80 10 9e 00 00 00");
         await ObserveAsync(actor, styleAt, frame => Bonus(frame, Style, 171, 9, 0, false), "Level 33 Submachine Guns publishes +9 Ballistic Damage");
+        await ObserveAsync(actor, 0, frame => Bonus(frame, 125, 1139, 3, 0, false), "Covering Fire contributes +3 linked Ballistic Damage");
+        await ObserveAsync(actor, 0, frame => Bonus(frame, 246, 1139, 4, 0, false), "Dual SMGs contributes +4 linked Ballistic Damage");
+
+        var witness = context.Helpers["QAOther"];
+        Check.Equal(((double)X, (double)Y, (double)(Z + 820)), await MoveAndReadPositionAsync(witness, X, Y, Z + 820),
+            "Cone move reports the witness position from the server");
+        Check.Equal(((double)X, (double)Y, (double)(Z + 801)), await MoveAndReadPositionAsync(witness, X, Y, Z + 801),
+            "Cone witness returns to its initial stand");
         Check.Equal(0, actor.World.Problems.Count + context.Helpers.Values.Sum(helper => helper.World.Problems.Count), "Dual-SMG bootstrap framing");
-        Console.WriteLine("DUAL SMG CONE BOOTSTRAP PASS: stock Archive reload, visible stands, equipped dual SMGs and retained Submachine Guns selection.");
+        Console.WriteLine("DUAL SMG CONE BOOTSTRAP PASS: stock Archive reload, visible stands, equipped dual SMGs, full Ballistic influence and authoritative witness moves.");
         return Array.Empty<byte>();
     }
 }

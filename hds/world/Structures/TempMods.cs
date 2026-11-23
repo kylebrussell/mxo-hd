@@ -332,13 +332,20 @@ namespace hds
             return TryGet(abilityId, out _);
         }
 
-        public static bool TryGet(UInt16 id, out Effect effect)
+        public static bool TryGet(UInt16 id, out Effect effect) => TryGet(id, out effect, npcCaster: false);
+
+        internal static bool TryGet(UInt16 id, out Effect effect, bool npcCaster)
         {
             id = AbilityCatalog.Canonical(id);
             // AbilityHostile's catalog debuffs also give the thrown specials (Poison Knife, Wounding Throw, Sever Artery,
             // CombatSpecials) their stored ThrownDOT and timed debuffs
             Effect source = AbilityHostile.Merge(AbilityCatalog.Controls(id), AbilityHostile.Catalog(id));
-            if (!Retail.TryGetValue(id, out var captured)) { effect = source; return effect != null; }
+            // The 21.12 s Suppression Fire capture is from an NPC cast. Playable casts use the authored 12 s root.
+            if ((id == 248 && !npcCaster) || !Retail.TryGetValue(id, out var captured))
+            {
+                effect = source;
+                return effect != null;
+            }
             var mods = new List<Mod>();
             foreach (Mod m in captured.Mods)
             {

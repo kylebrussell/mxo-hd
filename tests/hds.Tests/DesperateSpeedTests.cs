@@ -232,6 +232,29 @@ public class DesperateSpeedTests
     }
 
     [Theory]
+    [InlineData(false, 12f)]
+    [InlineData(true, 21.12f)]
+    public void SuppressionFireUsesAuthoredPlayerAndArchivedNpcDurations(bool npcCaster, float seconds)
+    {
+        var recipient = Client(24801, 33);
+        var caster = npcCaster ? null : Client(24802, 33);
+        var subject = TimedEffects.ForPlayer(recipient);
+        try
+        {
+            Assert.True(TimedEffects.ApplyToPlayer(recipient, 248, "Shooter", caster));
+            var root = Assert.Single(subject.Effects.Snapshot(), mod => mod.Target == TempMods.RootedAbility);
+            Assert.Equal(seconds, root.Seconds);
+            Assert.False(ControlActions.CanMove(subject.Effects));
+            TimedEffects.RunDue(root.Expires + .01);
+            Assert.True(ControlActions.CanMove(subject.Effects));
+        }
+        finally
+        {
+            TimedEffects.Clear(subject);
+        }
+    }
+
+    [Theory]
     [InlineData(176)]
     [InlineData(248)]
     [InlineData(254)]

@@ -183,13 +183,14 @@ public class ConditionalControlTests
     }
 
     [Theory]
-    [InlineData(248, 21.12f)]
-    [InlineData(492, 14.08f)]
-    public void ConeRootsUseTheirCapturedDurationsAndThenReleaseMovement(ushort id, float seconds)
+    [InlineData(248, false, 12f)]
+    [InlineData(248, true, 21.12f)]
+    [InlineData(492, false, 14.08f)]
+    public void ConeRootsUseTheirCasterSpecificDurationsAndThenReleaseMovement(ushort id, bool npcCaster, float seconds)
     {
         var subject = new Subject();
         double now = TimeUtils.GetSimTimeSeconds();
-        Assert.True(TempMods.TryGet(id, out var effect));
+        Assert.True(TempMods.TryGet(id, out var effect, npcCaster));
         var root = Assert.Single(TimedEffects.Apply(subject, effect, now));
         Assert.Equal(TempMods.RootedAbility, root.Target);
         Assert.Equal(seconds, root.Seconds);

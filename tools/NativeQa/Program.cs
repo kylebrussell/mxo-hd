@@ -358,6 +358,12 @@ try
                 else if (fixtureMode is NativeQa.Modes.HackerBufferOverflowMode && action == "buffer-firewall")
                     await NativeQa.Modes.HackerBufferOverflowMode.SendFirewallAsync(actor, helpers["QAEnemy"]);
                 else if (action == "stop") actor.SendRpc("44 00");
+                else if (fixtureMode is NativeQa.Modes.DualSmgConeOpenersMode && action == "cone-move")
+                {
+                    var position = await NativeQa.Modes.DualSmgConeOpenersMode.MoveAndReadPositionAsync(
+                        actor, q.GetProperty("x").GetSingle(), q.GetProperty("y").GetSingle(), q.GetProperty("z").GetSingle());
+                    result = new { actor.Handle, position.X, position.Y, position.Z };
+                }
                 else if (action == "move")
                 {
                     var bytes = new List<byte>(WireFormat.FromHex("02 00 01 08"));

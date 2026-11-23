@@ -5,6 +5,8 @@ namespace hds
     /// <summary>Disposable combat fixtures. Every entry checks the dev flag, including direct callers.</summary>
     public static class CombatDepthDev
     {
+        public const string ConePositionMode = "MXO_DUAL_SMG_CONE_POSITION";
+
         public static string Run(WorldClient caller, string[] args)
         {
             if (Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS") != "1") return "Combat depth requires MXO_DEV_COMMANDS=1.";
@@ -25,6 +27,18 @@ namespace hds
             if (command == "fixture-reset") return CombatFixtureWeapons.ResetDummy(caller);
             if (command == "fixture-reset-resisted") return CombatFixtureWeapons.ResetDummy(caller, addPhysicalResistance: true);
             if (command == "fixture-reset-thrown-resisted") return CombatFixtureWeapons.ResetDummy(caller, resistanceStat: 1033);
+            if (command == "cone-position" && args.Length == 1)
+            {
+                uint character = caller.playerData.getCharID();
+                if (Environment.GetEnvironmentVariable(ConePositionMode) != "1" || character != 6113 ||
+                    !QaLoadout.Allowed(Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS"),
+                        Store.config?.dbParams?.DatabaseName, character, caller.playerData.getOnWorld(), caller.playerData.isDead))
+                    return "Cone position requires the disposable QAOther fixture.";
+
+                double x = 0, y = 0, z = 0;
+                NumericalUtils.LtVector3dToDoubles(caller.playerInstance.Position.getValue(), ref x, ref y, ref z);
+                return FormattableString.Invariant($"Cone position ({x:R},{y:R},{z:R})");
+            }
             if (command == "rejuvenate-maxima")
             {
                 var database = Store.config?.dbParams?.DatabaseName;

@@ -51,24 +51,26 @@ public class StarterGunmanShotDamageTests
     }
 
     [Theory]
-    [InlineData(247, 25, 27, 25)]
-    [InlineData(248, 15, 16, 14)]
+    [InlineData(247, 25, 28, 26)]
+    [InlineData(248, 15, 17, 15)]
     public void DualSmgConesUseTheMatchingBallisticInfluenceAndResistance(ushort ability, int basis, ushort raw, ushort resisted)
     {
-        var caster = PlayerWithStat(158, 171, 9);
-        var target = PlayerWithStat(1061, 181, 20);
+        var caster = PlayerWithStats((158, 171, 9), (125, 1139, 3), (246, 1139, 4));
+        var target = PlayerWithStats((1061, 181, 20));
+        Assert.Equal(16, AbilityStats.Influence(caster, 171));
         Assert.Equal(raw, AbilityStats.ScaleAbilityDamage(caster, ability, basis));
         Assert.Equal(resisted, TypedAbilityResistance.Player(caster, target, ability, raw));
 
-        static WorldClient PlayerWithStat(ushort source, ushort stat, int value)
+        static WorldClient PlayerWithStats(params (ushort Source, ushort Stat, int Value)[] modifiers)
         {
             var player = (WorldClient)RuntimeHelpers.GetUninitializedObject(typeof(WorldClient));
             player.playerData = new ClientData();
             player.playerInstance = new PlayerCharacter();
             player.playerInstance.Level.setValue((byte)33);
-            TimedEffects.ForPlayer(player).Effects.Apply(source,
-                new[] { new TimedEffects.Active { Proc = TempMods.Proc.Stat, Target = stat, Value = value, Seconds = 10 } },
-                TimeUtils.GetSimTimeSeconds());
+            foreach (var (source, stat, value) in modifiers)
+                TimedEffects.ForPlayer(player).Effects.Apply(source,
+                    new[] { new TimedEffects.Active { Proc = TempMods.Proc.Stat, Target = stat, Value = value, Seconds = 10 } },
+                    TimeUtils.GetSimTimeSeconds());
             return player;
         }
     }
