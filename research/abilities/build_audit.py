@@ -344,6 +344,8 @@ def server(i):
         parts.append('stored fixed viral base 64 and selected hostile cast; stock applied 87 neutral and 71 under +75 Viral Resistance')
     elif i == 694:
         parts.append('Static Field pulse: caster-centred 6 m hostile selector; each eligible recipient rolls the stored viral test before one-point damage and typed resistance')
+    elif i == 454:
+        parts.append('current player path uses the stored fixed ballistic damage; NPC capture path is separate')
     elif i == 453:
         parts.append('fixed ballistic base 6 on a won rifle withdrawal; stock 7 neutral and 6 armored; original +11 tactical input unresolved')
     elif r['direct_damage'] and not r.get('health_callback') and i not in PETS:
@@ -497,13 +499,15 @@ def server(i):
         parts.append('loaded dual-handgun Pistol Whip queues only against the original Dazed interlock opponent; stock move 287')
     elif i == 502:
         parts.append('4s dual-handgun cast queues only on the original fight; stock 9532 at 140 units, 9525 fallback; separate at-rest cast lands directly')
+    elif i == 454:
+        parts.append('loaded Rifles opener at rest; fixed ballistic base 61, 2s cast bound to the original hostile, and stock 73 neutral / 69 armored; historical damage and named move selector unresolved')
     elif i == 453:
         parts.append('requires active Rifles and the original live interlock opponent; move 11356 withdraws and restores movement on a win; loss or tie keeps interlock')
     elif r.get('special_move_style'):
         parts.append(f"special move: needs {name(r['special_move_style'])} (auto-switch when loaded)")
     if r.get('sneak_bonus'):
         parts.append(f"stealth-started opener +{r['sneak_bonus']} scripted bonus (trigger/addition policy; COMBAT-DEPTH.md)")
-    if r.get('special_animation') and i not in (453, 501, 502):
+    if r.get('special_animation') and i not in (453, 454, 501, 502):
         source = 'canonical ability symbol in stock ILDB rule' if r.get('special_animation_rule') else 'name mapping policy'
         parts.append(f"named ILDB special choreography {r['special_animation']} ({source})")
     if r.get('stealth_shield'):

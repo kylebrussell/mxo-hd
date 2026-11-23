@@ -1,0 +1,45 @@
+{
+  "families": {
+    "deadly-shot-stock-opener": {
+      "representative": 454,
+      "result": "pass",
+      "head": "8b2693e181fb61f02d3e8307843c5a8dbb66c95d",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/1006#issuecomment-7108874265",
+      "scope": "Stock at-rest Rifles opener refused range and sight without spend, cast for two seconds twice and hit for 73 neutral and 69 with +20 resistance. The disposable marker override let stock observe the 0.01 s marker, four-second Stun, linked −20 tactics, independent immunity and removals."
+    },
+    "transmit-code-stock-resistance": {
+      "representative": 593,
+      "result": "pass",
+      "head": "be8c6d41",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/1005#issuecomment-7108772838",
+      "scope": "Stock recipient saw 1146/1148 +10 added and removed. Three exact retained helper casts delivered 640/0, 606/34 and 640/0 damage/resisted across normal Archive load and unload handlers. This verifies the modeled viral consumer, not its original retail coefficient."
+    }
+  },
+  "abilities": {
+    "593": {
+      "family": "transmit-code-stock-resistance",
+      "note": "Stock native confirmed same loaded prerequisites and no unrelated changes. Original retail coefficient plus the stock thrown/DOT comparisons remain open. https://github.com/kylebrussell/mxo-hd/pull/1005#issuecomment-7108772838"
+    },
+    "454": {
+      "family": "deadly-shot-stock-opener",
+      "note": "Historical player damage magnitude, named move selection and complete direct contest remain open. https://github.com/kylebrussell/mxo-hd/pull/1006#issuecomment-7108874265",
+      "checks": {
+        "proc": {
+          "source": "Current player GOB 454 defines a 10% 0.01-second value-4 marker on landing.",
+          "runtime": "A successful player hit can install the authored marker. The existing NPC branch keeps its separate retained behavior. The disposable QA override is separately fenced.",
+          "test": "The ConditionalControlTests rifle chance matrix exercises the authored threshold and player/NPC split. PR1006 exercised the positive proc and matching expiration on both normal stock hits. https://github.com/kylebrussell/mxo-hd/pull/1006#issuecomment-7108874265"
+        },
+        "script": {
+          "source": "ApplyStunWithTimer uses the marker value for independent Stun and immunity. The retained Deadly Shot receiver stack identifies the targetless marker, Stun, linked tactics and term records.",
+          "runtime": "The player callback installs 454/102, linked 102/0 and 102/163, and independent 734/681. A repeat cannot reset an immune recipient.",
+          "test": "DeadlyShotPreservesTheNpcStunAndThePlayersIndependentStunStack and DeadlyShotTerminalMarkerPreservesTheCapturedTargetlessWirePair cover the callback and exact marker. Stock PR1006 observed the four-second stack and all removals twice. https://github.com/kylebrussell/mxo-hd/pull/1006#issuecomment-7108874265"
+        },
+        "controls": {
+          "source": "The shipped ApplyStunWithTimer callback takes marker value 4; the retained Deadly Shot stack contains separate four-second Stun and immunity plus Combat Tactics −20.",
+          "runtime": "The player Stun gates combat inputs through the existing Stun state, publishes the linked tactics modifier, and clears it with the state. Independent immunity prevents repeated marker application from resetting either original record.",
+          "test": "DeadlyShotPreservesTheNpcStunAndThePlayersIndependentStunStack verifies actual roll inputs, preserved immunity and the matched removals. Stock PR1006 measured two four-second Stun groups and independent immunity, including 102/163 −20 and matching teardown. https://github.com/kylebrussell/mxo-hd/pull/1006#issuecomment-7108874265"
+        }
+      }
+    }
+  }
+}
