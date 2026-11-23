@@ -98,7 +98,7 @@ namespace hds
         private CombatPresentation presentation;
         private readonly List<Side> members = new List<Side>();
         private long membershipVersion;
-        private (Side Caster, Side Opponent, uint Handle, long Membership)? rifleEscapeWin;
+        private (Side Caster, Side Opponent, uint Handle, long Membership, ushort Ability)? roundAid;
         public const int MaximumFighters = 6;
         public int FighterCount { get { lock (sync) return members.Count(s => s.Present); } }
         internal WorldClient[] CurrentOpponents(WorldClient target)
@@ -452,41 +452,64 @@ namespace hds
             }
         }
 
-        internal bool ArmRifleEscapeWin(WorldClient client)
+        internal bool ArmRoundAid(WorldClient client, ushort ability)
         {
             lock (sync)
             {
                 var side = SideOf(client);
                 var opponent = side?.Other;
-                if (opponent?.Client.playerData.getCharID() != 6114 ||
+                if (!CombatFixtureWeapons.RoundAidAllowed(client, ability) || opponent?.Client.playerData.getCharID() != 6114 ||
                     !MatchesQueuedOpponent(client, side.OpponentHandle)) return false;
 
-                rifleEscapeWin = (side, opponent, side.OpponentHandle, membershipVersion);
+                roundAid = (side, opponent, side.OpponentHandle, membershipVersion, ability);
                 return true;
             }
         }
 
-        // Only an admitted 453 in the armed QA pairing can consume the aid. All roll generation,
-        // selection, damage, choreography and withdrawal still go through the normal round.
-        internal void ApplyRifleEscapeWin(Side caster, Side opponent, AbilityItem ability, ref ushort attack, ref ushort opposingAttack)
+        private bool ConsumeRoundAid(Side caster, Side opponent, ushort ability)
         {
             lock (sync)
             {
-                if (!rifleEscapeWin.HasValue || !CombatSpecials.IsRifleEscape(ability?.getAbilityID())) return;
-                var arm = rifleEscapeWin.Value;
-                if (arm.Caster != caster || arm.Opponent != opponent || arm.Membership != membershipVersion ||
-                    opponent.Client.playerData.getCharID() != 6114 || !CombatFixtureWeapons.RifleEscapeWinAllowed(caster.Client) ||
-                    !MatchesQueuedOpponent(caster.Client, arm.Handle)) return;
+                if (!roundAid.HasValue) return false;
+                var arm = roundAid.Value;
+                if (arm.Ability != ability || arm.Caster != caster || arm.Opponent != opponent || arm.Membership != membershipVersion ||
+                    opponent.Client.playerData.getCharID() != 6114 || !CombatFixtureWeapons.RoundAidAllowed(caster.Client, ability) ||
+                    !MatchesQueuedOpponent(caster.Client, arm.Handle)) return false;
 
-                rifleEscapeWin = null;
-                ushort originalAttack = attack, originalOpposingAttack = opposingAttack;
-                if (attack <= opposingAttack)
-                {
-                    attack = Math.Max((ushort)1, attack);
-                    opposingAttack = (ushort)(attack - 1);
-                }
-                Output.WriteDebugLog($"[RIFLE ESCAPE QA] 453 win consumed for CSR_Tester against QAEnemy: {originalAttack}/{originalOpposingAttack} -> {attack}/{opposingAttack}");
+                roundAid = null;
+                return true;
             }
+        }
+
+        internal void ApplyRifleEscapeWin(Side caster, Side opponent, AbilityItem ability, ref ushort attack, ref ushort opposingAttack)
+        {
+            if (!CombatSpecials.IsRifleEscape(ability?.getAbilityID()) ||
+                !ConsumeRoundAid(caster, opponent, CombatSpecials.RifleButtSmash)) return;
+
+            ushort originalAttack = attack, originalOpposingAttack = opposingAttack;
+            if (attack <= opposingAttack)
+            {
+                attack = Math.Max((ushort)1, attack);
+                opposingAttack = (ushort)(attack - 1);
+            }
+            Output.WriteDebugLog($"[RIFLE ESCAPE QA] 453 win consumed for CSR_Tester against QAEnemy: {originalAttack}/{originalOpposingAttack} -> {attack}/{opposingAttack}");
+        }
+
+        // The fight calls this only for an ordinary exchange, after rolling both sides.
+        // The fixture changes the hit comparison. The same outcome, damage and presentation code still runs.
+        internal bool ApplyPistolWhipLoss(Side caster, Side opponent, ushort? ability,
+            ref ushort attack, ushort opposingDefence, ref ushort opposingAttack, ushort defence)
+        {
+            if (ability != CombatSpecials.PistolWhip || defence == ushort.MaxValue ||
+                opponent.Client.playerData.combatTactic == CombatTactic.Block ||
+                ControlActions.Incapacitated(TimedEffects.ForPlayer(opponent.Client).Effects) ||
+                !ConsumeRoundAid(caster, opponent, CombatSpecials.PistolWhip)) return false;
+
+            ushort originalAttack = attack, originalOpposingAttack = opposingAttack;
+            attack = Math.Min(attack, opposingDefence);
+            opposingAttack = Math.Max(opposingAttack, (ushort)(defence + 1));
+            Output.WriteDebugLog($"[PISTOL WHIP QA] 501 loss consumed for CSR_Tester against QAEnemy: {originalAttack}/{originalOpposingAttack} -> {attack}/{opposingAttack}");
+            return true;
         }
 
         public bool QueueAbility(WorldClient client, AbilityItem ability, UInt16 targetViewId, bool sneakOpener = false,
@@ -751,6 +774,20 @@ namespace hds
 
                 if (!opening && !bothWithdraw && pEscape)
                     ApplyRifleEscapeWin(p, n, pAbility, ref pAttack, ref nAttack);
+
+                if (!opening && counter && !pAttemptsWithdrawal && !nAttemptsWithdrawal)
+                {
+                    if (nAbility == null && ApplyPistolWhipLoss(p, n, pAbility?.getAbilityID(), ref pAttack, nDefense, ref nAttack, pDefense))
+                    {
+                        pHit = false;
+                        nHit = true;
+                    }
+                    else if (pAbility == null && ApplyPistolWhipLoss(n, p, nAbility?.getAbilityID(), ref nAttack, pDefense, ref pAttack, nDefense))
+                    {
+                        nHit = false;
+                        pHit = true;
+                    }
+                }
 
                 CombatRules.Outcome outcome = bothWithdraw
                     ? CombatRules.SuccessfulWithdrawal(pEscape)
