@@ -37,7 +37,7 @@
     },
     "597": {
       "family": "stock-proxy-master-selected-viral",
-      "note": "PR885 confirms a four-second cast, 43 IS at the loaded discount, 30-second reuse, two ten-second Enrage records and removals on eligible selected-area recipients. The shared player Enrage controls remain open. https://github.com/kylebrussell/mxo-hd/pull/885#issuecomment-7088896662",
+      "note": "PR885 confirms the four-second cast, 43 IS after the loaded reduction, 30 s reuse, the exact 5.00 m edge and paired ten-second Enrage records. PR883 separately verifies the natural nine-second player effect under Deflect Code and live shared retarget behavior using a disclosed 45-second state hold. https://github.com/kylebrussell/mxo-hd/pull/885#issuecomment-7088992093 https://github.com/kylebrussell/mxo-hd/pull/883#issuecomment-7090902540 https://github.com/kylebrussell/mxo-hd/pull/883#issuecomment-7091177642",
       "checks": {
         "area": {
           "source": "GOB 597 uses a selected hostile with five-metre radius and ten-second Enraged.",
@@ -48,6 +48,16 @@
           "source": "GOB 597 requires an outside-combat selected enemy in Coder Style, within 16 m.",
           "runtime": "The current view and spawn, style, visibility and hostile range bind before cost and are rechecked on the selected cast path.",
           "test": "PR885 verifies empty and allied refusal and an accepted actual enemy. The coder-upper-viral-server scenario checks invalid, style and stale-spawn controls, actual recipients and expiry. https://github.com/kylebrussell/mxo-hd/pull/885#issuecomment-7088896662"
+        },
+        "controls": {
+          "source": "GOB 597 supplies a ten-second Enraged state. tempmods.py EnrageInit and EnrageTerm gate withdrawal, target changes and AllowedToISBlock. GenericEnrageUpdate pursues the closest enemy in sight when the affected NPC has no fight. The shipped Block calculation awards ten Inner Strength per round.",
+          "runtime": "ControlActions gates withdrawal and interlock retargeting while state 93 is live. The normal round applies the shipped ISBlock interpretation by suppressing the Block IS award while continuing the round and tactic. TimedEffects publishes matching add and remove. The NPC three-second update and expiry remain independent of the player gates.",
+          "test": "PR883 stock observes +10/0/+10 Block awards across the natural state twice and uses /target to send real 40, with a calm switch, refusal under the disclosed 45-second state hold and successful echo, 46 transition and rounds after removal. The exact outgoing 597 disposable replay proves the same shared gates during the natural cast. EnrageNpcUpdatesTests covers the independent NPC updates, expiry and existing Withdraw gate. https://github.com/kylebrussell/mxo-hd/pull/883#issuecomment-7090902540 https://github.com/kylebrussell/mxo-hd/pull/883#issuecomment-7091177642"
+        },
+        "behavior-tests": {
+          "source": "GOB 597 requires a selected hostile in Coder Style, casts for four seconds, starts 30 s own reuse, and applies a ten-second non-damaging Enraged state within five metres of the admitted target with a viral contest. The Enrage script calls the player controls and NPC update callbacks.",
+          "runtime": "The selected hostile cast checks admission and retention, applies the discount, reuse and area eligibility, and publishes Enraged through TimedEffects. CombatHandler, PvpCombat and ControlActions consume the state for the Block round award, live target choice and withdrawal. The NPC scheduler performs only eligible pursuit until the state expires.",
+          "test": "PR885 confirms the stock 597 frame, debit, cast, reuse, original target, exact area edge, ally/next-centimetre exclusions and state records. PR883 native tests the natural player Block award, the held retarget refusal and the live release. The retained 597 disposable and EnrageNpcUpdatesTests cover admission through expiry, existing withdrawal denial and independent NPC pursuit. https://github.com/kylebrussell/mxo-hd/pull/885#issuecomment-7088992093 https://github.com/kylebrussell/mxo-hd/pull/883#issuecomment-7090902540 https://github.com/kylebrussell/mxo-hd/pull/883#issuecomment-7091177642"
         }
       }
     },
