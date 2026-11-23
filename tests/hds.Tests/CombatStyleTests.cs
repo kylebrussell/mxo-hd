@@ -283,8 +283,8 @@ public class CombatStyleTests
     public void ControlledBurstMissPublishesTheOrdinaryStyleRound(bool opponentHits, bool shooterLeads, uint expectedAnimation)
     {
         const ulong combatEntity = 8030;
-        var shooter = ReadyFighter(21750);
-        var opponent = ReadyFighter(21550);
+        var shooter = ReadyPresentationFighter(combatEntity, 21750);
+        var opponent = ReadyPresentationFighter(combatEntity, 21550);
         AbilityPassives.SetLoaded(shooter, new (ushort, ushort)[] { (2, 27), (CombatStyles.SubmachineGuns, 27) });
         shooter.playerInstance.EquippedItemID.setValue(2503u);
         CombatStyles.Select(shooter, CombatStyles.SubmachineGuns);
@@ -327,19 +327,84 @@ public class CombatStyleTests
             presentation.End();
             WorldServer.Clients = previousClients;
         }
+    }
 
-        static WorldClient ReadyFighter(int x)
+    [Theory]
+    [InlineData(242, 2565u, 1095, true, 9530u)]
+    [InlineData(242, 2565u, 1105, true, 9529u)]
+    [InlineData(244, 2496u, 1095, true, 9534u)]
+    [InlineData(244, 2496u, 1105, true, 9519u)]
+    [InlineData(242, 2565u, 1095, false, 0u)]
+    [InlineData(244, 2496u, 1095, false, 0u)]
+    public void PistolSpecialRoundUsesTheMoveForItsEmittedPairPose(ushort ability, uint weapon, int opponentY, bool landed, uint variant)
+    {
+        const ulong combatEntity = 8031;
+        var shooter = ReadyPresentationFighter(combatEntity, 21550);
+        var opponent = ReadyPresentationFighter(combatEntity, 21750, opponentY, 16080);
+        AbilityPassives.SetLoaded(shooter, new (ushort, ushort)[] { (2, 27), (CombatStyles.Handguns, 27) });
+        shooter.playerInstance.EquippedItemID.setValue(weapon);
+        CombatStyles.Select(shooter, CombatStyles.Handguns);
+        shooter.messageQueue.ObjectMessagesQueue.Clear();
+
+        var handler = new AttributeClass3664("ILCombatHandler", 55);
+        handler.Position.setValue(NumericalUtils.doublesToLtVector3d(21550, 1095, 16150));
+        var previousClients = WorldServer.Clients;
+        WorldServer.Clients = new Dictionary<string, WorldClient>();
+        var presentation = new CombatPresentation(shooter, opponent, null, handler, combatEntity);
+        try
         {
-            var client = Client();
-            client.playerInstance.Level.setValue((byte)27);
-            client.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(x, 1095, 16150));
-            client.playerData.setOnWorld(true);
-            client.LivenessClock = () => 0;
-            client.Alive = true;
-            client.viewMan = new ViewManager();
-            client.viewMan.addView(combatEntity, 55).viewCreated = true;
-            return client;
+            var outcome = CombatRules.Resolve(
+                new CombatRules.Fighter { Tactic = CombatTactic.Speed, Hits = landed, SpecialMove = true, AttackRoll = 40, Damage = 19, Health = 100 },
+                new CombatRules.Fighter { Tactic = CombatTactic.Power, Hits = false, AttackRoll = 31, Damage = 11, Health = 100 },
+                playerAttacksFirst: true, opening: false);
+            Assert.Equal(landed, outcome.SpecialMoveLands);
+            Assert.Equal(0, outcome.DamageToNpc); // A landed special applies damage through its separate ability route.
+            uint flags = outcome.Flags;
+            presentation.Round(outcome.PlayerWins, flags, CombatTactic.Speed, CombatTactic.Power,
+                attackerRoll: 40, defenderRoll: 31, opening: false, specialAbility: ability, specialLanded: outcome.SpecialMoveLands);
+
+            byte[] update = Assert.Single(shooter.messageQueue.ObjectMessagesQueue.Cast<SequencedMessage>()).content;
+            Assert.Equal(157, update.Length);
+            int firstOffset = 36 + 6, secondOffset = 36 + 18;
+            float dx = BitConverter.ToSingle(update, firstOffset) - BitConverter.ToSingle(update, secondOffset);
+            float dz = BitConverter.ToSingle(update, firstOffset + 8) - BitConverter.ToSingle(update, secondOffset + 8);
+            Assert.Equal(140f, MathF.Sqrt(dx * dx + dz * dz), precision: 3);
+            Assert.Equal(opponentY - 1095, BitConverter.ToSingle(update, secondOffset + 4) - BitConverter.ToSingle(update, firstOffset + 4));
+            if (!landed)
+            {
+                Assert.Null(CombatAnimations.Special(ability, false, CombatTactic.Power, 'S', shortPistolPose: true));
+                char gunStyle = weapon == CombatFixtureWeapons.DualHandguns ? 'D' : 'P';
+                variant = outcome.PlayerWins
+                    ? CombatAnimations.Choose(CombatTactic.Speed, CombatTactic.Power, flags, 1, gunStyle, 'S').Id
+                    : CombatAnimations.Choose(CombatTactic.Power, CombatTactic.Speed, flags, 1, 'S', gunStyle).Id;
+            }
+            Assert.Equal(CombatRoundEntry.Reference(variant), BitConverter.ToUInt64(update, 36 + 61));
+            if (variant is 9530u or 9534u)
+            {
+                ushort duration = variant == 9530 ? (ushort)2836 : (ushort)5363;
+                Assert.Equal(duration, BitConverter.ToUInt16(update, 36 + 40));
+                Assert.Equal(duration, BitConverter.ToUInt16(update, 36 + 42));
+            }
+            Assert.Equal(update, Assert.Single(opponent.messageQueue.ObjectMessagesQueue.Cast<SequencedMessage>()).content);
         }
+        finally
+        {
+            presentation.End();
+            WorldServer.Clients = previousClients;
+        }
+    }
+
+    private static WorldClient ReadyPresentationFighter(ulong combatEntity, int x, int y = 1095, int z = 16150)
+    {
+        var client = Client();
+        client.playerInstance.Level.setValue((byte)27);
+        client.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(x, y, z));
+        client.playerData.setOnWorld(true);
+        client.LivenessClock = () => 0;
+        client.Alive = true;
+        client.viewMan = new ViewManager();
+        client.viewMan.addView(combatEntity, 55).viewCreated = true;
+        return client;
     }
 
     [Theory]

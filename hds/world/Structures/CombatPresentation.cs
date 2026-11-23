@@ -8,6 +8,7 @@ namespace hds
     /// Observers receive creation/init/round/delete only; they never receive participant RPCs or own combat flags.</summary>
     public sealed class CombatPresentation
     {
+        private const float PairHalfSpacing = 70;
         private static readonly object registrySync = new object();
         private static readonly HashSet<CombatPresentation> registry = new HashSet<CombatPresentation>();
         private readonly object sync = new object();
@@ -36,7 +37,7 @@ namespace hds
             double dx = bx - ax, dz = bz - az, length = Math.Sqrt(dx * dx + dz * dz);
             if (length < 0.01) { dx = 0; dz = 1; length = 1; }
             // Retail keeps the fighters 70 world units either side of the centre after the approach.
-            aOffset = new[] { (float)(-70 * dx / length), 0f, (float)(-70 * dz / length) };
+            aOffset = new[] { (float)(-PairHalfSpacing * dx / length), 0f, (float)(-PairHalfSpacing * dz / length) };
             bOffset = new[] { -aOffset[0], (float)(by - ay), -aOffset[2] };
             fighters.Add(1, attacker); offsets.Add(1, aOffset); offsets.Add(2, bOffset);
             if (defender != null) fighters.Add(2, defender);
@@ -144,14 +145,17 @@ namespace hds
                 // Each player fights in their active style's exchange set; NPCs use Self-Defense's (CombatStyles.Letter)
                 char firstStyle = CombatStyles.Letter(fighters.TryGetValue(firstSlot, out var f1) ? f1 : null);
                 char secondStyle = CombatStyles.Letter(fighters.TryGetValue(secondSlot, out var f2) ? f2 : null);
-                var animation = CombatAnimations.Special(specialAbility, specialLanded, attackerWins ? defenderTactic : attackerTactic, secondStyle) ??
+                float[] firstOffset = offsets[firstSlot], secondOffset = offsets[secondSlot];
+                bool shortPistolPose = specialLanded && (specialAbility == CombatSpecials.PistolEvasive || specialAbility == CombatSpecials.PistolBarrage) &&
+                    HasClosePairSpacing(firstOffset, secondOffset);
+                var animation = CombatAnimations.Special(specialAbility, specialLanded, secondTactic, secondStyle, shortPistolPose) ??
                     CombatAnimations.Choose(firstTactic, secondTactic, flags, sequence, firstStyle, secondStyle);
                 ushort approach = opening ? (ushort)300 : (ushort)0;
                 ushort duration = (ushort)(animation.DurationMs + (opening ? 1300 : 0));
                 var entry = new CombatRoundEntry
                 {
                     FirstSlot = attackerWins ? attackerSlot : defenderSlot, SecondSlot = attackerWins ? defenderSlot : attackerSlot,
-                    FirstOffset = offsets[attackerWins ? attackerSlot : defenderSlot], SecondOffset = offsets[attackerWins ? defenderSlot : attackerSlot],
+                    FirstOffset = firstOffset, SecondOffset = secondOffset,
                     FirstApproachMs = approach, SecondApproachMs = approach,
                     Sequence = checked((ushort)sequence), StartMs = unchecked(CombatHandler.CombatStartTime() - started) + 200,
                     FirstDurationMs = duration, SecondDurationMs = duration, Animation = animation.Reference,
@@ -170,6 +174,16 @@ namespace hds
                 Output.WriteDebugLog($"[COMBAT-VIEW] Round {sequence}: animation {animation.Id} ({animation.Name}){transitions}, {observers.Count} observers");
             }
         }
+        // The recorded SR assets match the emitted 140-unit, same-floor pose.
+        // This is a pose match with float tolerance, independent of the contest's range.
+        private static bool HasClosePairSpacing(float[] first, float[] second)
+        {
+            const float Tolerance = .001f;
+            float x = first[0] - second[0], z = first[2] - second[2];
+            return MathF.Abs(first[1] - second[1]) <= Tolerance &&
+                MathF.Abs(MathF.Sqrt(x * x + z * z) - PairHalfSpacing * 2) <= Tolerance;
+        }
+
         private void SendToFighter(WorldClient client, byte[] update)
         {
             ClientView view = client.viewMan.FindViewForEntity(entity);
