@@ -61,7 +61,8 @@ namespace hds
                     AbilityHealthCallbacks.ReactiveCode,
                 _ => ability
             };
-            return AbilityPassives.Level(source,loaded)>0 && !string.Equals(TimedEffects.PlayerName(source),"TheNeo",StringComparison.OrdinalIgnoreCase) &&
+            // Granted activations can have rank zero even when their owning discipline is loaded.
+            return AbilityPassives.IsLoaded(source,loaded) && !string.Equals(TimedEffects.PlayerName(source),"TheNeo",StringComparison.OrdinalIgnoreCase) &&
                 QaAllowed(Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS"),Store.config?.dbParams?.DatabaseName,source.playerData.getCharID(),
                     source.playerData.getOnWorld(),source.playerData.isDead,Environment.GetEnvironmentVariable("MXO_FREECAST_VIRAL_QA"),
                     Environment.GetEnvironmentVariable(AttackQa),Environment.GetEnvironmentVariable(DefenseQa),out a,out d);

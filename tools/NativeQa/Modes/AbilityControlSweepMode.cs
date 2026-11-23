@@ -25,7 +25,8 @@ public sealed class AbilityControlSweepMode : NativeQaMode
     public override string Name => "ability-controls-sweep";
 
     public override NativeQaModePlan Plan { get; } = new(
-        new ushort[] { 2, 17, 1006 }.Concat(Samples.Select(sample => sample.Ability)).ToArray(), 24800, -1498,
+        new ushort[] { 2, 17, 1006, 470 }.Concat(Samples.Where(sample => sample.Ability != 1081)
+            .Select(sample => sample.Ability)).ToArray(), 24800, -1498,
         Array.Empty<string>(),
         new[] { "UPDATE characters SET healthC=5000,healthM=5000,innerStrC=2000,innerStrM=2000 WHERE charId=110" },
         new[] { "UPDATE characters SET x=24800,y=495,z=-1498,healthC=5000,healthM=5000 WHERE charId=6111" },
@@ -85,7 +86,8 @@ public sealed class AbilityControlSweepMode : NativeQaMode
         var proof = new List<object>();
         DateTime latestExpiry = DateTime.UtcNow;
         DateTime immunityExpiry = DateTime.UtcNow;
-        foreach (Sample sample in Samples)
+        // Ravager Downgrade uses its normal grant in the stock sequence. No full 1081 cast is retained.
+        foreach (Sample sample in Samples.Where(sample => sample.Ability != 1081))
         {
             TimeSpan waitForImmunity = immunityExpiry - DateTime.UtcNow;
             if (sample.Immunity > 0 && waitForImmunity > TimeSpan.Zero)

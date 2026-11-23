@@ -985,6 +985,8 @@ public class FreeCastViralLandingTests : IDisposable
     [InlineData(343, 5, 1009, -21)]
     [InlineData(401, 7, 117, -20)]
     [InlineData(403, 5, 183, -50)]
+    [InlineData(360, 5, 157, -100)]
+    [InlineData(1081, 0, 183, -12)]
     public void SelectedFieldUsesThePrimaryCentreAndEachRecipientOwnContest(ushort id, int radius, ushort witnessStat, int value)
     {
         var caster = Client(110);
@@ -1008,15 +1010,43 @@ public class FreeCastViralLandingTests : IDisposable
         var view = caster.viewMan.FindViewForEntity(primary.playerData.getEntityId());
         var ability = new AbilityItem();
         ability.setAbilityID(id);
-        AbilityPassives.SetLoaded(caster, new[] { (id, (ushort)30) });
+        AbilityPassives.SetLoaded(caster, new[] { (id == 1081 ? (ushort)470 : id, (ushort)50) });
 
         try
         {
+            Assert.True(FreeCastViralContest.TryQaDraw(caster, id, out _, out _));
             Assert.True(AbilityBuffs.Apply(caster, 314)); // fixed draw wins against the edge recipient
             Assert.True(AbilityBuffs.Apply(primary, 272)); // +54 Viral Defense makes the same draw deflect at centre
+            if (id == 1081) Assert.True(AbilityBuffs.Apply(primary, 46));
             Assert.True(AbilityTargets.Land(caster, ability, view.ViewID, origin: AbilityCastOrigin.NormalFreeCast));
             Assert.False(TimedEffects.ForPlayer(primary).Effects.HasParent(id));
             Assert.Equal(FreeCastViralContest.DeflectFx, NumericalUtils.ByteArrayToUint32(primary.playerInstance.EffectID.getValue(), 1));
+            if (id == 1081)
+            {
+                // A successful single-target Ravager hit has no area fallback after a deflection.
+                Assert.False(TimedEffects.ForPlayer(edge).Effects.HasParent(id));
+                Assert.True(AbilityBuffs.IsActive(primary, 46));
+                AbilityBuffs.Remove(primary, 272);
+                Assert.True(AbilityTargets.Land(caster, ability, view.ViewID, origin: AbilityCastOrigin.NormalFreeCast));
+                Assert.False(AbilityBuffs.IsActive(primary, 46));
+                Assert.False(ControlActions.CanChangeTactic(TimedEffects.ForPlayer(primary).Effects));
+                Assert.Equal(-12, AbilityStats.Player(primary, 183));
+                Assert.Equal(1000, PvpCombat.HealthOf(primary));
+                Assert.False(PvpCombat.Damage(primary, 1));
+                Assert.False(ControlActions.CanChangeTactic(TimedEffects.ForPlayer(primary).Effects));
+                Assert.All(names.Where(player => player != primary), player =>
+                    Assert.False(TimedEffects.ForPlayer(player).Effects.HasParent(id)));
+                double started = TimedEffects.ForPlayer(primary).Effects.Snapshot().Single(effect =>
+                    effect.Parent == id && effect.Target == TempMods.ConfuseAbility).Start;
+                TimedEffects.RunDue(started + 8.01);
+                Assert.True(ControlActions.CanChangeTactic(TimedEffects.ForPlayer(primary).Effects));
+                Assert.Equal(-12, AbilityStats.Player(primary, 183));
+                TimedEffects.RunDue(started + 30.01);
+                Assert.Equal(0, AbilityStats.Player(primary, 183));
+                AbilityPassives.SetLoaded(caster, Array.Empty<(ushort, ushort)>());
+                Assert.False(FreeCastViralContest.TryQaDraw(caster, id, out _, out _));
+                return;
+            }
             Assert.Equal(value, AbilityStats.Player(edge, witnessStat));
             Assert.Contains(TimedEffects.ForPlayer(edge).Effects.Snapshot(), effect =>
                 effect.Parent == id && effect.Target == witnessStat && effect.Value == value);

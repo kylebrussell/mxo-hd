@@ -1,3 +1,5 @@
+using hds;
+
 namespace HeadlessClient;
 public static partial class Scenarios
 {
@@ -13,7 +15,9 @@ public static partial class Scenarios
         await ConcentrationFixture.PrepareEnemyAsync(enemy);caster.SendChat("?pvpflag on");await caster.WaitForViewUpdateAsync(2,OwnPvpFlagOn);
         if(loaded)Check.That(caster.Received(PassiveRecord(628,564,30)).Count>0,"Loaded628 supplies exact native-value30 concentration");
         var target=await caster.WaitForViewNamedAsync(enemy.Handle);var victim=await enemy.WaitForViewNamedAsync(caster.Handle);
-        Cast(caster,360,target.ViewId);await caster.WaitForRpcAsync("80 ac 68 01");
+        SelectStyle(caster,CombatStyles.HackerStyle);
+        await caster.WaitForViewUpdateAsync(2,"02 80 80 80 80 80 10 ee 03 00 00");
+        caster.SendRpc(ConcentrationFixture.InsidiousRequest(target));await caster.WaitForRpcAsync("80 ac 68 01");
         await Task.Delay(400);Cast(enemy,261,victim.ViewId);
         await caster.WaitUntilAsync(()=>context.Server.DebugLog().Contains("MachinegunFistComboAbility lands on ConcentrateCaster"),"Actual wire damage during four-second cast",TimeSpan.FromSeconds(10));
         await caster.WaitUntilAsync(()=>context.Server.DebugLog().Contains("[CAST-INTERRUPT] 360 loss="),"Qualified damage invokes sourced concentration rule",TimeSpan.FromSeconds(8));
@@ -47,7 +51,9 @@ public static partial class Scenarios
             caster.SendChat("?combatdepth hurtme 100 next");await caster.WaitForTextAsync("Concentration damage armed: 100");
             await Task.Delay(1200);
             Check.Equal(before,context.Server.DebugLog().Split("[CAST-INTERRUPT-QA] real self damage").Length,"Arming before a cast cannot damage the actor");
-            Cast(caster,360,target.ViewId);await caster.WaitForRpcAsync("80 ac 68 01");
+            SelectStyle(caster,CombatStyles.HackerStyle);
+            await caster.WaitForViewUpdateAsync(2,"02 80 80 80 80 80 10 ee 03 00 00");
+            caster.SendRpc(ConcentrationFixture.InsidiousRequest(target));await caster.WaitForRpcAsync("80 ac 68 01");
             await caster.WaitUntilAsync(()=>context.Server.DebugLog().Split("[CAST-INTERRUPT-QA] real self damage").Length==before+1,
                 "One-shot chat arm invokes real damage during actual next360 cast",TimeSpan.FromSeconds(8));
             Check.That(context.Server.DebugLog().Contains("loss=100 concentration="+(loaded?30:0)+" through="+(loaded?90:75)+" roll=85"),"Actual fixture damage uses existing interrupt-only roll");
