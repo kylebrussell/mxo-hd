@@ -45,7 +45,7 @@ namespace hds
                 126 => RangedWeapons.ClassPistol,
                 176 => RangedWeapons.ClassSubmachinegun,
                 CombatSpecials.ControlledBurst => RangedWeapons.ClassDualSubmachinegun,
-                256 => RangedWeapons.ClassRifle,
+                CombatSpecials.ThreeRoundBurst => RangedWeapons.ClassRifle,
                 _ => 0
             };
             return requiredWeapon != 0 && CombatStyles.CanUse(caster, ability) &&
@@ -55,7 +55,8 @@ namespace hds
         internal static bool CanResolveQueuedAbility(WorldClient caster, AbilityItem ability) =>
             ControlActions.CanUseAbilities(caster) && (ability == null ||
                 ControlActions.CanPerformSpecialMove(caster, ability.getAbilityID()) &&
-                (ability.getAbilityID() != CombatSpecials.ControlledBurst || AbilityPassives.IsLoaded(caster, CombatSpecials.ControlledBurst)) &&
+                (ability.getAbilityID() != CombatSpecials.ControlledBurst && ability.getAbilityID() != CombatSpecials.ThreeRoundBurst ||
+                 AbilityPassives.IsLoaded(caster, ability.getAbilityID())) &&
                 (ability.getAbilityID() == CombatSpecials.SlidingVolley
                     ? AbilityPassives.IsLoaded(caster, CombatSpecials.SlidingVolley) &&
                       CombatSpecials.HasEquippedDualSubmachineGuns(caster) && CombatStyles.CanUse(caster, CombatSpecials.SlidingVolley)

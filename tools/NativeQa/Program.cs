@@ -325,6 +325,12 @@ try
                     NativeQa.Modes.SlidingVolleyMode.SendWithdraw(actor);
                 else if (fixtureMode is NativeQa.Modes.SlidingVolleyMode && action == "volley-records")
                     result = NativeQa.Modes.SlidingVolleyMode.Records(actor);
+                else if (fixtureMode is NativeQa.Modes.ThreeRoundBurstMode && action == "three-round-armor")
+                    await NativeQa.Modes.PistolSlideMode.ApplyArmorAsync(actor);
+                else if (fixtureMode is NativeQa.Modes.ThreeRoundBurstMode && action == "three-round-probe")
+                    NativeQa.Modes.ThreeRoundBurstMode.ProbeStun(actor);
+                else if (fixtureMode is NativeQa.Modes.ThreeRoundBurstMode && action == "three-round-records")
+                    result = NativeQa.Modes.ThreeRoundBurstMode.Records(actor);
                 else if (fixtureMode is NativeQa.Modes.StarterMovementObserverMode && action == "movement-observer-arrive")
                     result = await NativeQa.Modes.StarterMovementObserverMode.ArriveAsync(actor);
                 else if (fixtureMode is NativeQa.Modes.StarterStealthObserverMode && action == "stealth-observer-pass")

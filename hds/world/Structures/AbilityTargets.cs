@@ -117,6 +117,14 @@ namespace hds
                 PvpCombat.HealthOf(player) > 0 && (!requireOpponent || PvpCombat.Check(caster, player) == PvpRules.Verdict.Allowed);
         }
 
+        internal static bool HasSelectionState(WorldClient caster, ushort view, ushort state)
+        {
+            var mob = FindMob(caster, view, out _);
+            var player = mob == null ? PvpCombat.PlayerInView(caster, view) : null;
+            var holder = mob != null ? (TimedEffects.Subject)TimedEffects.ForMob(mob) : player != null ? TimedEffects.ForPlayer(player) : null;
+            return CombatHandler.HasOpponentState(holder, state, TimeUtils.GetSimTimeSeconds());
+        }
+
         internal static bool WithinSelectionRange(WorldClient caster, ushort ability, ushort targetView)
         {
             double range = AbilityCatalog.Find(ability)?.Number("Ability/SelectionRange") ?? 0;

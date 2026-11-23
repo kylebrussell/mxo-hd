@@ -231,30 +231,31 @@ namespace hds
             }
 
             // Timed gun specials may resolve in interlock or as a selected attack. Both use the same live target.
-            bool controlledBurst = AbilityID == CombatSpecials.ControlledBurst;
-            object controlledBurstFight = null;
-            uint? controlledBurstOpponent = null;
-            if (controlledBurst)
+            bool threeRoundBurst = AbilityID == CombatSpecials.ThreeRoundBurst;
+            bool protectedGunSpecial = AbilityID == CombatSpecials.ControlledBurst || threeRoundBurst;
+            object gunSpecialFight = null;
+            uint? gunSpecialOpponent = null;
+            if (protectedGunSpecial)
             {
                 var shooter = Store.currentClient;
                 if (!AbilityPassives.IsLoaded(shooter, AbilityID))
                 {
-                    Deny(AbilityID, "Load Controlled Burst before using it.", AbilityRefusals.NotLoaded, sendServerText: false);
+                    Deny(AbilityID, "Load this special before using it.", AbilityRefusals.NotLoaded, sendServerText: false);
                     return;
                 }
-                if (!CombatSpecials.HasEquippedDualSubmachineGuns(shooter))
+                if (!CombatSpecials.HasTimedSpecialWeapon(shooter, AbilityID))
                 {
-                    Deny(AbilityID, "Controlled Burst requires dual submachine guns.", AbilityRefusals.RequiredItemCategory, sendServerText: false);
+                    Deny(AbilityID, "Equip the required weapon for this special.", AbilityRefusals.RequiredItemCategory, sendServerText: false);
                     return;
                 }
 
                 var combat = CombatManager.GetHandler(shooter);
-                controlledBurstFight = combat.ActiveInterlockIdentity;
-                if (controlledBurstFight != null)
+                gunSpecialFight = combat.ActiveInterlockIdentity;
+                if (gunSpecialFight != null)
                 {
                     ushort? requestSpawn = packet.Length == 41 ? (ushort?)BitConverter.ToUInt16(packet, 4) : null;
-                    controlledBurstOpponent = combat.PowerShotOpponent(currentTargetViewId, requestSpawn);
-                    if (!controlledBurstOpponent.HasValue)
+                    gunSpecialOpponent = combat.PowerShotOpponent(currentTargetViewId, requestSpawn);
+                    if (!gunSpecialOpponent.HasValue)
                     {
                         DenyMissingInterlock(AbilityID);
                         return;
@@ -262,7 +263,7 @@ namespace hds
                 }
             }
 
-            bool starterGunCast = AbilityID == 126 || AbilityID == 176 || controlledBurst;
+            bool starterGunCast = AbilityID == 126 || AbilityID == 176 || protectedGunSpecial;
             bool rifleOpener = CombatSpecials.IsRifleOpener(AbilityID);
             bool woundingShot = AbilityID == CombatSpecials.WoundingShot;
             ushort? gunTargetSpawn = null;
@@ -275,6 +276,13 @@ namespace hds
                     !AbilityTargets.HasLiveAttackSelection(shooter, currentTargetViewId, requestedSpawn, requireOpponent: true))
                 {
                     Deny(AbilityID, "Select a living enemy before using this ability.", AbilityRefusals.InvalidTarget, sendServerText: false);
+                    return;
+                }
+                if (threeRoundBurst && !AbilityTargets.HasSelectionState(shooter, currentTargetViewId, TempMods.StaggeredAbility))
+                {
+                    shooter.messageQueue.addRpcMessage(AbilityRefusals.Encode(
+                        new AbilityRefusals.Record(AbilityID, AbilityRefusals.TargetStateRequired, states: 8)));
+                    shooter.FlushQueue();
                     return;
                 }
             }
@@ -1105,23 +1113,24 @@ namespace hds
                 Output.WriteDebugLog($"[ABILITY] {AbilityID} fizzles: the selected gun target changed, left range or left sight");
                 return;
             }
-            if (controlledBurst)
+            if (protectedGunSpecial)
             {
                 var combat = CombatManager.GetHandler(client);
-                if (!AbilityPassives.IsLoaded(client, AbilityID) || !CombatSpecials.HasEquippedDualSubmachineGuns(client) ||
-                    !ReferenceEquals(combat.ActiveInterlockIdentity, controlledBurstFight))
+                if (!AbilityPassives.IsLoaded(client, AbilityID) || !CombatSpecials.HasTimedSpecialWeapon(client, AbilityID) ||
+                    !ReferenceEquals(combat.ActiveInterlockIdentity, gunSpecialFight))
                 {
-                    Output.WriteDebugLog("[ABILITY] 250 fizzles: the loadout, weapon or interlock changed");
+                    Output.WriteDebugLog($"[ABILITY] {AbilityID} fizzles: the loadout, weapon or interlock changed");
                     return;
                 }
 
-                if (controlledBurstFight != null)
+                if (gunSpecialFight != null)
                 {
                     if (!CombatAnimations.CanQueueGunCast(client, AbilityID) ||
-                        !combat.QueueRoundAbility(ability, hostileView, sneakOpener, controlledBurstOpponent))
-                        Output.WriteDebugLog("[ABILITY] 250 fizzles: the original interlock special could not queue");
+                        !combat.QueueRoundAbility(ability, hostileView, sneakOpener, gunSpecialOpponent))
+                        Output.WriteDebugLog($"[ABILITY] {AbilityID} fizzles: the original interlock special could not queue");
                     return;
                 }
+                if (threeRoundBurst && !CombatStyles.CanUse(client, AbilityID)) return;
             }
             // Stun Pulse's legacy buff flag conflicts with its shipped hostile area selector.
             if (hostileView > 2 && !support && !pet && !derez && definition?.FriendlyTarget != true &&
@@ -1261,6 +1270,7 @@ namespace hds
                 504 => 1,  // Concealed Shot
                 CombatSpecials.ControlledBurst => 1,
                 CombatSpecials.SlidingVolley => 1,
+                CombatSpecials.ThreeRoundBurst => 1,
                 36 => 2,   // Tinkering
                 105 => 1,  // Body Shot
                 243 => 1,  // Pistol Aerial
