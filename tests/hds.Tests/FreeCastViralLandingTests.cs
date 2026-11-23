@@ -981,6 +981,9 @@ public class FreeCastViralLandingTests : IDisposable
         foreach(var c in new[]{hidden,foreign,deleting}){Assert.Empty(c.messageQueue.RPCMessagesQueue);Assert.Empty(c.messageQueue.ObjectMessagesQueue);}
     }
     [Theory]
+    [InlineData(462, 6, TempMods.EnrageAbility, 0)]
+    [InlineData(467, 7, 117, -30)]
+    [InlineData(1088, 5, 157, -120)]
     [InlineData(333, 4, TempMods.StunAbility, 0)]
     [InlineData(343, 5, 1009, -21)]
     [InlineData(401, 7, 117, -20)]
@@ -1010,7 +1013,8 @@ public class FreeCastViralLandingTests : IDisposable
         var view = caster.viewMan.FindViewForEntity(primary.playerData.getEntityId());
         var ability = new AbilityItem();
         ability.setAbilityID(id);
-        AbilityPassives.SetLoaded(caster, new[] { (id == 1081 ? (ushort)470 : id, (ushort)50) });
+        ushort archiveAbility = id switch { 1081 => 470, 1088 => 469, _ => id };
+        AbilityPassives.SetLoaded(caster, new[] { (archiveAbility, (ushort)50) });
 
         try
         {
@@ -1050,6 +1054,8 @@ public class FreeCastViralLandingTests : IDisposable
             Assert.Equal(value, AbilityStats.Player(edge, witnessStat));
             Assert.Contains(TimedEffects.ForPlayer(edge).Effects.Snapshot(), effect =>
                 effect.Parent == id && effect.Target == witnessStat && effect.Value == value);
+            if (id == 1088)
+                Assert.All(new ushort[] { 157, 180, 181, 1033 }, stat => Assert.Equal(-120, AbilityStats.Player(edge, stat)));
             Assert.Equal(1000, PvpCombat.HealthOf(edge));
             foreach (var excluded in new[] { caster, outside, ally, unseen })
                 Assert.False(TimedEffects.ForPlayer(excluded).Effects.HasParent(id));

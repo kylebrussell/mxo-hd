@@ -8,9 +8,10 @@ namespace hds.Tests;
 public class EnrageNpcUpdatesTests
 {
     [Theory]
-    [InlineData(588, 12)]
-    [InlineData(597, 10)]
-    public void BothNpcEnrageCastsUseTheShippedThreeSecondUpdates(ushort ability, int duration)
+    [InlineData(462, 6, 1)]
+    [InlineData(588, 12, 3)]
+    [InlineData(597, 10, 3)]
+    public void NpcEnrageCastsUseTheShippedThreeSecondUpdates(ushort ability, int duration, int pulses)
     {
         var mob = Npc();
         var subject = TimedEffects.ForMob(mob);
@@ -25,7 +26,7 @@ public class EnrageNpcUpdatesTests
             var ticks = new List<TimedEffects.Active>();
             var expired = new List<TimedEffects.Active>();
             subject.Effects.Advance(now + duration - 0.01, ticks, expired);
-            Assert.Equal(new[] { state, state, state }, ticks);
+            Assert.Equal(Enumerable.Repeat(state, pulses), ticks);
             Assert.Empty(expired);
             subject.Effects.Advance(now + duration, ticks, expired);
             Assert.Same(state, Assert.Single(expired));
@@ -79,6 +80,8 @@ public class EnrageNpcUpdatesTests
     }
 
     [Theory]
+    [InlineData(462, true, false)]
+    [InlineData(462, false, false)]
     [InlineData(588, true, false)]
     [InlineData(588, false, false)]
     [InlineData(597, true, false)]

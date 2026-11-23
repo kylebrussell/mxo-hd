@@ -72,11 +72,12 @@ namespace hds
                 AbilityID == 403 || AbilityID == 465 || AbilityID == 360 || AbilityID == 1081;
             bool enrage = AbilityID == 588;
             bool selectedCoderViral = AbilityID == 595 || AbilityID == 597 || AbilityID == 598;
+            bool selectedDestroyerField = AbilityID == 462 || AbilityID == 467 || AbilityID == 1088;
             bool selectedViralAttack = enrage || AbilityID == 53 || (AbilityID >= 57 && AbilityID <= 60) ||
                 AbilityID == 350 || AbilityID == 351 || AbilityID == 353 ||
                 AbilityID == 392 || AbilityID == 394 || AbilityID == 395 || AbilityID == 396 || selectedViralField || selectedCoderViral;
             ushort? lockedDamageTargetSpawn = null;
-            bool selectedHostileCast = selectedViralAttack || selectedDespoilerArea || selectedHackerCast;
+            bool selectedHostileCast = selectedViralAttack || selectedDespoilerArea || selectedHackerCast || selectedDestroyerField;
             if (selectedHostileCast)
             {
                 var caster = Store.currentClient;
@@ -299,7 +300,7 @@ namespace hds
                     }
                 }
             }
-            if (selectedViralField || selectedCoderViral)
+            if (selectedViralField || selectedCoderViral || selectedDestroyerField)
             {
                 var caster = Store.currentClient;
                 if (!AbilityTargets.HasSelectionSight(caster, definition, currentTargetViewId))
