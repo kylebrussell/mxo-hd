@@ -70,7 +70,7 @@ public static partial class Scenarios
         int rollingISStart = second.World.ViewSnapshot().Count;
         ushort rollingBalance = RefusalOwnValue(second, "InnerStrengthAvailable", isUpdate);
         int refreshStart = edge.World.RpcSnapshot().Count;
-        var final = await Pair(edge, refreshStart, 14, 28);
+        await Pair(edge, refreshStart, 14, 28);
         var rollingIS = ViewUpdateValues(second, 2, isUpdate, rollingISStart).Prepend(rollingBalance);
         Check.That(rollingIS.Zip(rollingIS.Skip(1)).Any(pair => pair.First - pair.Second == 7),
             "The remaining source pays its next seven-IS tick");
@@ -78,11 +78,35 @@ public static partial class Scenarios
         Check.That(stoppedIS.Zip(stoppedIS.Skip(1)).All(pair => pair.First <= pair.Second),
             "The dismissed source stops paying upkeep");
 
+        await second.WaitUntilAsync(() => second.World.RpcSnapshot().Count(frame => ChildSwitch(frame, true)) == 2,
+            "The owner's first child refresh arrives", HeadlessPlayer.DefaultTimeout);
+        var ownerRefresh = second.World.RpcSnapshot();
+        Check.That(ownerRefresh.Where(frame => ChildSwitch(frame, true) || ChildSwitch(frame, false))
+            .Select(frame => frame.Bytes[^1]).SequenceEqual(new byte[] { 1, 0, 1 }),
+            "The existing exclusive child is replaced on the first five-second refresh");
+        Check.Equal(1, ownerRefresh.Count(frame => ChildTimer(frame, true)),
+            "The first refresh does not restart a running ten-second child reuse");
+
+        int cycleAt = ownerRefresh.Count;
+        int nextSnapshotAt = edge.World.RpcSnapshot().Count;
+        var clear = await Watch(second, cycleAt, frame => ChildTimer(frame, false), "The original child timer clears");
+        var restart = await Watch(second, cycleAt, frame => ChildTimer(frame, true), "The next eligible pulse starts child reuse");
+        var newCycle = second.World.RpcSnapshot();
+        Check.That(newCycle.IndexOf(clear) < newCycle.IndexOf(restart), "Child reuse clears before its restart");
+        var final = await Pair(edge, nextSnapshotAt, 14, 28);
+
         int offAt = edge.World.RpcSnapshot().Count;
         await Stop(second);
         Check.That(Defenses(edge, offAt).All(record => record.AddRemoveType != 1), "Dismissal preserves the most recent child snapshot");
         foreach (var (stat, record) in new[] { (melee, final.Melee), (viral, final.Viral) })
             await Watch(edge, offAt, frame => IsRemoval(frame, child, stat, record), $"Target stat {stat} expires with its own record");
+        await Watch(second, newCycle.IndexOf(restart) + 1, frame => ChildSwitch(frame, false),
+            "The owner's child expires after the parent stops refreshing it");
+        await Watch(second, newCycle.IndexOf(restart) + 1, frame => ChildTimer(frame, false),
+            "The last child reuse clears after parent dismissal");
+        Check.Equal(2, second.World.RpcSnapshot().Count(frame => ChildTimer(frame, true)), "Dismissed aura does not restart child reuse");
+        Check.That(edge.World.RpcSnapshot().All(frame => !ChildTimer(frame, true) && !ChildSwitch(frame, true)),
+            "The observed self-witness child presentation is scoped to the caster");
 
         var active = new Dictionary<ushort, ushort>();
         foreach (var record in Defenses(edge, start))
@@ -110,8 +134,12 @@ public static partial class Scenarios
                 $"{caster.Handle} starts the stock-shaped 10-second reuse");
             var on = await Watch(caster, cursor, frame => frame.Bytes.AsSpan().SequenceEqual(AbilityBuffs.BuildExclusive(parent, true)),
                 $"{caster.Handle} enables the aura");
+            var childOn = await Watch(caster, cursor, frame => ChildSwitch(frame, true), $"{caster.Handle} enables the exclusive child");
+            var childReuse = await Watch(caster, cursor, frame => ChildTimer(frame, true), $"{caster.Handle} starts separate child reuse");
             var rpcs = caster.World.RpcSnapshot();
             Check.That(rpcs.IndexOf(timer) < rpcs.IndexOf(on), "The own timer precedes exclusive on in the captured order");
+            Check.That(rpcs.IndexOf(on) < rpcs.IndexOf(childOn) && rpcs.IndexOf(childOn) < rpcs.IndexOf(childReuse),
+                "Parent on precedes child on and its own timer");
             Check.That(context.Server.DebugLog().Contains($"[ABILITY-COST] char={caster.CharId} ability=378 paid=10 IS="),
                 "The real cast pays the stored 10 IS");
         }
@@ -142,6 +170,12 @@ public static partial class Scenarios
         static bool IsRemoval(RpcRecord frame, ushort source, ushort stat, ushort recordId) =>
             ManageBonusRecord.TryDecode(frame.Bytes, out var record) && record!.SourceId == source && record.TargetId == stat &&
             record.RecordId == recordId && record.AddRemoveType == 1;
+
+        static bool ChildSwitch(RpcRecord frame, bool on) =>
+            frame.Bytes.AsSpan().SequenceEqual(AbilityBuffs.BuildExclusive(child, on));
+
+        static bool ChildTimer(RpcRecord frame, bool start) =>
+            frame.Bytes.AsSpan().SequenceEqual(AbilityCooldowns.BuildTimer(child, AbilityCooldowns.OwnTimer, 10, start));
 
         static async Task<RpcRecord> Watch(HeadlessPlayer player, int cursor, Func<RpcRecord, bool> match, string description)
         {

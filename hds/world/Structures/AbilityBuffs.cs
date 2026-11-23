@@ -570,6 +570,11 @@ namespace hds
                 return false;
             }
 
+            // The retained self-pulse shows an exclusive child record, separate from its five-second stats.
+            bool ownDeflectChild = abilityId == Virii.DeflectVirus1Child && ReferenceEquals(caster, client) &&
+                AbilityAuras.IsOn(client, Virii.DeflectVirus1Ability);
+            if (ownDeflectChild) buff.Exclusive = true;
+
             if (!AbilityBuffBuffer.CanApply(client, abilityId, buff))
             {
                 Output.WriteDebugLog("[BUFF] " + abilityId + " refused: upgrade buffer full");
@@ -614,6 +619,17 @@ namespace hds
             if (buff.Exclusive)
             {
                 client.messageQueue.addRpcMessage(BuildExclusive(abilityId, true));
+            }
+            if (ownDeflectChild)
+            {
+                var lifetime = new DrainLifetime(client);
+                client.TransportFence.TryRun(lifetime.Transport, () =>
+                {
+                    double now = TimeUtils.GetSimTimeSeconds();
+                    if (lifetime.Current && !AbilityCooldowns.IsTimerRunning(lifetime.Data, abilityId, now))
+                        AbilityCooldowns.StartCaptured(client, abilityId, now, lifetime.Data, lifetime.Player,
+                            lifetime.World, lifetime.Life, lifetime.Transport);
+                });
             }
             if (buff.EvadeShield)
             {
