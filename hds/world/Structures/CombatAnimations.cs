@@ -89,7 +89,8 @@ namespace hds
             {282,"Blinding Throw SR"},{1135,"Paralyzing Throw SR"}
         };
         public static IEnumerable<ushort> MappedSpecials => specialNames.Keys.Concat(boundSpecials.Value.Select(group => group.Key));
-        public static Move Special(ushort ability, bool landed, CombatTactic targetTactic, char targetStyle = 'S')
+        public static Move Special(ushort ability, bool landed, CombatTactic targetTactic, char targetStyle = 'S',
+            bool shortPistolPose = false)
         {
             ability = AbilityCatalog.Canonical(ability);
             string target = " vs " + targetStyle + Suffix(targetTactic);
@@ -111,6 +112,13 @@ namespace hds
                 // Failed choreography is only selected where the ILDB actually names it.
                 return All.FirstOrDefault(m => m.Flags == 0x100 && m.Name == name + "_Failed");
             }
+            if (shortPistolPose)
+                name = ability switch
+                {
+                    CombatSpecials.PistolEvasive => "Pistol Evasive SR",
+                    CombatSpecials.PistolBarrage => "Pistol Barrage SR",
+                    _ => name
+                };
             string versus = name + target;
             return All.FirstOrDefault(m => m.Flags == 0x100 && m.Name == versus) ??
                 All.FirstOrDefault(m => m.Flags == 0x100 && m.Name == name) ??

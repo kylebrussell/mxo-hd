@@ -310,6 +310,8 @@ try
                     await NativeQa.Modes.PistolSlideMode.ApplyArmorAsync(actor);
                 else if (fixtureMode is NativeQa.Modes.PistolSlideMode && action == "slide-armor")
                     await NativeQa.Modes.PistolSlideMode.ApplyArmorAsync(actor);
+                else if (fixtureMode is NativeQa.Modes.PistolShortPoseMode && action == "pistol-pose-armor")
+                    await NativeQa.Modes.PistolSlideMode.ApplyArmorAsync(actor);
                 else if (fixtureMode is NativeQa.Modes.PistolEvasiveMode && action == "evasive-armor")
                     await NativeQa.Modes.PistolSlideMode.ApplyArmorAsync(actor);
                 else if (fixtureMode is NativeQa.Modes.PistolBarrageMode && action == "barrage-probe")

@@ -6,7 +6,7 @@ namespace hds
     /// <summary>Weapon and fight setup confined to disposable NativeQa profiles.</summary>
     public static class CombatFixtureWeapons
     {
-        public const uint Handgun = 2565, Rifle = 692, Smg = 698, DualSmgs = 2503;
+        public const uint Handgun = 2565, DualHandguns = 2496, Rifle = 692, Smg = 698, DualSmgs = 2503;
         public const byte HandSlot = InventoryHandler.WeaponSlot;
         public const string WeaponMode = "MXO_COMBAT_FIXTURE_WEAPONS";
         public const string DisengageMode = "MXO_COMBAT_FIXTURE_DISENGAGE";
@@ -34,12 +34,13 @@ namespace hds
             uint goid = weapon switch
             {
                 "handgun" => Handgun,
+                "dual-handgun" => DualHandguns,
                 "rifle" => Rifle,
                 "smg" => Smg,
                 "dual-smg" => DualSmgs,
                 _ => 0
             };
-            if (goid == 0) return "Use ?combatdepth fixture-weapon handgun, rifle, smg, dual-smg or unarmed.";
+            if (goid == 0) return "Use ?combatdepth fixture-weapon handgun, dual-handgun, rifle, smg, dual-smg or unarmed.";
             if (SharpshooterFreeFire.EquippedWeapon(caller) == goid)
                 return $"Fixture already has {weapon} ({goid}) in hand slot {HandSlot}. No inventory move was needed.";
             return Equip(caller, goid)
