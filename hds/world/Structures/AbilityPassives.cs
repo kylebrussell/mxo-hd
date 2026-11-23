@@ -115,6 +115,7 @@ namespace hds
             var pet = CoderPets.Of(client);
             bool deactivateSummon;
             bool lostConcealment;
+            bool hadImprovedSneak;
             bool writeCodeAdded;
             lock (state)
             {
@@ -125,6 +126,7 @@ namespace hds
                 bool hadWriteCode = state.Loaded.ContainsKey(CraftingSession.WriteCode);
                 bool hadSummon = pet != null && state.Loaded.ContainsKey(pet.Ability);
                 bool hadConcealment = state.Loaded.ContainsKey(Stealth.ConcealmentGrantAbility);
+                hadImprovedSneak = state.Loaded.ContainsKey(Stealth.ImprovedSneakAbility);
                 state.Loaded.Clear();
                 foreach (var row in rows)
                 {
@@ -163,6 +165,7 @@ namespace hds
             }
             if (deactivateSummon) CoderPets.DeactivateUnloadedSummon(client, pet);
             if (lostConcealment) Stealth.ConcealmentGrantRemoved(client);
+            if (hadImprovedSneak) Stealth.ImprovedSneakLoadoutChanged(client);
             if (newWorld) CraftingSession.End(client, false);
             else
             {

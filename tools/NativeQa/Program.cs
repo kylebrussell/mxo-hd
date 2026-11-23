@@ -307,6 +307,8 @@ try
                     result = await NativeQa.Modes.StarterMovementObserverMode.ArriveAsync(actor);
                 else if (fixtureMode is NativeQa.Modes.StarterStealthObserverMode && action == "stealth-observer-pass")
                     await NativeQa.Modes.StarterStealthObserverMode.RunPassAsync(actor);
+                else if (fixtureMode is NativeQa.Modes.ImprovedSneakMode && action == "improved-sneak-reveal")
+                    await NativeQa.Modes.ImprovedSneakMode.RevealAsync(actor);
                 else if (fixtureMode is NativeQa.Modes.AwakenedDetectionDisguiseMode && action == "detect-disguises")
                     result = await NativeQa.Modes.AwakenedDetectionDisguiseMode.PrepareWitnessesAsync(actor, helpers);
                 else if (fixtureMode is NativeQa.Modes.MarketplaceBreadthMode market && action == "marketplace")

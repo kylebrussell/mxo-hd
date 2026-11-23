@@ -141,6 +141,7 @@ namespace hds
         internal static byte MovementStance(ushort ability) => ability switch
         {
             SneakGrantAbility => AnimationPackets.StanceSneaking,
+            ImprovedSneakAbility => AnimationPackets.StanceSneaking,
             InvisibilityGrantAbility => AnimationPackets.StanceInvisible,
             _ => AnimationPackets.StanceStanding
         };
@@ -218,6 +219,16 @@ namespace hds
             return Math.Max(1, level);
         }
 
+        internal static int LoadedImprovedSneakRank(WorldClient client)
+        {
+            const ushort sneakMasteryPrerequisiteRank = 25;
+            var passives = client.playerData.passives;
+            lock (passives)
+                return passives.Loaded.ContainsKey(ImprovedSneakAbility) &&
+                    passives.Loaded.TryGetValue(SneakGrantAbility, out ushort inheritedRank) &&
+                    inheritedRank >= sneakMasteryPrerequisiteRank ? inheritedRank : 0;
+        }
+
         /// <summary>The records a state sends, from the catalog's stored modifiers at this ability and character level.</summary>
         public static List<AbilityBuffs.Modifier> ModifiersFor(Def def, int abilityLevel, int characterLevel)
         {
@@ -265,6 +276,21 @@ namespace hds
                 if (CombatManager.GetHandler(target).isCombatRunning) return "Your target is in combat.";
                 if ((BitsOf(target) & Invisible) != 0) return "Your target is already invisible.";
                 return null;
+            }
+            if (id == ImprovedSneakAbility)
+            {
+                if (LoadedImprovedSneakRank(client) == 0)
+                {
+                    reason = AbilityRefusals.NotLoaded;
+                    return "Load Improved Sneak and its Sneak prerequisite.";
+                }
+
+                var combat = CombatManager.GetHandler(client);
+                if (combat.isCombatRunning || combat.HasActiveInterlock)
+                {
+                    reason = AbilityRefusals.MustBeOutsideCombat;
+                    return "You cannot start Improved Sneak while in combat.";
+                }
             }
             if (!AbilityBuffBuffer.CanApply(client,id)) return "Your upgrade buffer is full.";
             if (id == VanishAbility) return null; // "Vanish Prox Override": no enemy test
@@ -322,6 +348,15 @@ namespace hds
                 });
                 return;
             }
+            if (id == ImprovedSneakAbility)
+            {
+                // The existing mastery borrows the Sneak grant's modifiers. ValueFunction 2
+                // uses the rank of that loaded grant, rather than the mastery item's rank.
+                int rank = LoadedImprovedSneakRank(client);
+                if (rank != 0 && Refusal(client, id, targetView, out _) == null)
+                    Begin(client, Defs[id], rank);
+                return;
+            }
             if (Defs.TryGetValue(id, out Def def)) Begin(client, def, AbilityLevel(client, id));
         }
 
@@ -365,9 +400,7 @@ namespace hds
             lock (h) { state.Generation = ++h.Generation; h.Current = state; }
 
             if (def.Toggle) client.messageQueue.addRpcMessage(AbilityBuffs.BuildExclusive(def.Ability, true));
-            for (int i = 0; i < state.Mods.Count; i++)
-                client.messageQueue.addRpcMessage(AbilityBuffs.BuildModifier(state.Mods[i].Kind, state.RecordIds[i], def.Ability,
-                    state.Mods[i].Stat, state.Mods[i].Value, false, state.Seconds));
+            PresentModifiers(client, state, remove: false);
             Present(client, def.Bits, def.Flags, true);
             byte stance = MovementStance(def.Ability);
             if (stance != AnimationPackets.StanceStanding)
@@ -450,6 +483,18 @@ namespace hds
             }
         }
 
+        internal static void ImprovedSneakLoadoutChanged(WorldClient client)
+        {
+            if (LoadedImprovedSneakRank(client) != 0) return;
+            AbilityCastInterrupts.CancelPending(client, ImprovedSneakAbility);
+            lock (client.playerData.upgradeSync)
+            {
+                var active = Current(client);
+                if (active?.Def.Ability == ImprovedSneakAbility && LoadedImprovedSneakRank(client) == 0)
+                    EndCore(client, "mastery or prerequisite unloaded", true, active.Generation);
+            }
+        }
+
         internal static void StopPredictedConcealment(WorldClient client)
         {
             // The Archive interaction interrupted a cast whose stance the owner predicted locally.
@@ -471,9 +516,7 @@ namespace hds
                 if (state == null || generation >= 0 && state.Generation != generation) return false;
                 h.Current = null;
             }
-            for (int i = 0; i < state.Mods.Count; i++)
-                client.messageQueue.addRpcMessage(AbilityBuffs.BuildModifier(state.Mods[i].Kind, state.RecordIds[i], state.Def.Ability,
-                    state.Mods[i].Stat, state.Mods[i].Value, true, state.Seconds));
+            PresentModifiers(client, state, remove: true);
             if (state.Def.Toggle) client.messageQueue.addRpcMessage(AbilityBuffs.BuildExclusive(state.Def.Ability, false));
             if (state.Def.Kind == Kind.Disguise)
                 PresentModel(client, state.OriginalDescription, state.OriginalUseRsi, state.OriginalTitle);
@@ -492,6 +535,19 @@ namespace hds
             Output.WriteDebugLog("[STEALTH] " + TimedEffects.PlayerName(client) + " " + state.Def.Ability + " off (" + why + ")");
             if (flush) client.FlushQueue();
             return true;
+        }
+
+        private static void PresentModifiers(WorldClient client, State state, bool remove)
+        {
+            for (int i = 0; i < state.Mods.Count; i++)
+            {
+                var modifier = state.Mods[i];
+                client.messageQueue.addRpcMessage(AbilityBuffs.BuildModifier(modifier.Kind, state.RecordIds[i], state.Def.Ability,
+                    modifier.Stat, modifier.Value, remove, state.Seconds));
+                if (state.Def.Ability == ImprovedSneakAbility)
+                    Output.WriteDebugLog(FormattableString.Invariant(
+                        $"[MODIFIER] char={client.playerData.getCharID()} source={state.Def.Ability} stat={modifier.Stat} {(remove ? "remove" : "add")} value={modifier.Value:+0;-0;0} duration={state.Seconds:G}s"));
+            }
         }
 
         private static void PresentModel(WorldClient client, byte[] description, byte[] useRsi, byte[] title)

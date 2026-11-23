@@ -15,6 +15,14 @@ Sneak, Improved Sneak, Escape and Evasion, Concealment, Invisibility, Impart Inv
   - Imparted invisibility (629): kInvisible only, for 120 s.
   - Master Shadow: kShadowObject for 180 s, taking 25 IS every 5 s (ISDrainWithAbilityDeactivation). It ends when IS runs short, and its recast starts when it ends (AddRecastTimer).
 
+## Improved Sneak (186)
+
+The shipped catalog defines 186 as a two-second, out-of-combat exclusive toggle, with a rank-25 prerequisite on Sneak 151 and a mastery link to that same ability. The 186 template stores no own modifiers or callbacks and has an explicit DetectionDifficultyChange of zero. The stored 151 grant supplies the actual learned rank to 1111. The older Actions collector trace establishes the no-tool and self-cast eligibility fields. The group and the outbound ID from a mastery action still need a stock observation.
+
+The server already uses ordinary Sneak's effects for a direct 186 request. That path now reads the loaded 1111 rank for its 209 record, applies the same Sneaking pose, and retains 186 on its own toggle and modifier records. It uses the existing ordinary distance, facing and sight contest with no additional difficulty bonus. Unloading the mastery or its prerequisite ends its active state and cancels an unfinished cast. An ordinary 1111 activation remains its own ability when both rows are loaded. These are the server's explicit mastery behavior and lifetime. The original engine's activation selection and effective mastery rank remain open.
+
+Fixture `ability-parity-improved-sneak` seeds the real owned prerequisites at level 25, uses rank-25 Sneak and rank-1 Improved Sneak, and discovers the first stock 186 request in Actions or from the supplied page-2 shortcut. Its headless bootstrap replays only the previously captured Spy Style, ordinary Sneak and Countermeasures inputs. The helper starts outside the documented 13 m detection radius and approaches during an active state with the normal +80 awareness buff. A request that activates 1111 is ordinary Sneak evidence.
+
 ## Detection (evidence)
 
 `abilitylib.sneakTest(SA, SL, NL, dist)` is native (client.dll 0x62513950, arguments are bytes):
