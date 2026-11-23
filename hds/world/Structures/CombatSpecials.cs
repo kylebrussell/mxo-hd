@@ -66,6 +66,7 @@ namespace hds
         {
             id = AbilityCatalog.Canonical(id);
             if (IsRifleOpener(id)) return "Rifles opener: 2-second cast outside combat; damage and effects at cast completion";
+            if (IsDualSmgConeOpener(id)) return "Dual SMG cone opener selects a live hostile within 8 m outside combat and checks the same spawn on landing";
             if (id == AwakenedPowerShot.Id) return "Power Shot: live current interlock opponent only; shipped function-4 melee damage and independent capped caster Inner Strength on landing; retail scaling and cost pending";
             if (thrownDots.Contains(id)) return id == SeverArtery
                 ? "stored ThrownDOT + 30 s slow/ForceCombat debuffs on the target; sourced10% init/2.5s RandomCombatStateChance chooses199/200/201 for10s"
@@ -84,6 +85,22 @@ namespace hds
 
         /// <summary>Moves used on an enemy target (they go through the round queue or land on the target when cast).</summary>
         public static bool TargetsEnemy(ushort id) => Handles(id) && AbilityCatalog.Canonical(id) != Taunt;
+
+        internal static bool IsDualSmgConeOpener(ushort id) => id == 247 || id == 248;
+
+        internal static uint? DualSmgConeRefusal(WorldClient caster, ushort id, ushort view, ushort? spawn)
+        {
+            if (!AbilityPassives.IsLoaded(caster, id)) return AbilityRefusals.NotLoaded;
+            var fight = CombatManager.GetHandler(caster);
+            if (fight.isCombatRunning || fight.HasActiveInterlock) return AbilityRefusals.MustBeOutsideCombat;
+            if (RangedWeapons.GetStats(SharpshooterFreeFire.EquippedWeapon(caster))?.Category != "IWDS")
+                return AbilityRefusals.RequiredItemCategory;
+            if (!spawn.HasValue || !AbilityTargets.HasLiveAttackSelection(caster, view, spawn, requireOpponent: true))
+                return AbilityRefusals.InvalidTarget;
+            if (!AbilityTargets.WithinSelectionRange(caster, id, view)) return AbilityRefusals.TargetOutOfRange;
+            if (!AbilityTargets.HasSelectionSight(caster, AbilityCatalog.Find(id), view)) return AbilityRefusals.TargetNotInSight;
+            return null;
+        }
 
         /// <summary>Abilities that act around the caster when the cast ends (no target needed).</summary>
         public static bool ActsOnCast(ushort id) => AbilityCatalog.Canonical(id) == Taunt;

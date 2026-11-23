@@ -476,6 +476,164 @@ public class AbilityRefusalFeedbackTests:IDisposable
     }
 
     [Theory]
+    [InlineData(247, 20, 25, 30, 2)]
+    [InlineData(248, 25, 15, 35, 4)]
+    public void DualSmgConeLandsItsFixedBallisticComponentOnlyOnEligibleRecipients(
+        ushort id, byte level, ushort storedDamage, int cost, float castSeconds)
+    {
+        LoadDualSmgConeNav();
+        var caster = DualSmgTestCaster(id, level);
+        caster.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(17000, 495, 6400));
+        var primary = NewConePlayer(caster, 111, level, 17000, 495, 6600);
+        var inside = NewConePlayer(caster, 112, level, 17165, 495, 6800);
+        var edge = NewConePlayer(caster, 113, level, 17000, 495, 7200);
+        var wide = NewConePlayer(caster, 114, level, 17166, 495, 6800);
+        var far = NewConePlayer(caster, 115, level, 17000, 495, 7201);
+        var ally = NewConePlayer(caster, 116, level, 16900, 495, 6800, friendly: true);
+        var admitted = new[] { primary, inside, edge };
+        var excluded = new[] { wide, far, ally };
+        Assert.All(admitted.Concat(excluded), actor => Assert.True(CombatSight.Between(caster, actor)));
+
+        ushort damage = AbilityStats.ScaleAbilityDamage(caster, id, storedDamage);
+        var request = DualSmgRequest(id, caster.viewMan.FindViewForEntity(primary.playerData.getEntityId()));
+        var previousMobs = WorldServer.mobs;
+        WorldServer.mobs = new System.Collections.ArrayList();
+        try
+        {
+            double startedAt = TimeUtils.GetSimTimeSeconds();
+            new AbilityHandler().ProcessAbility(ref request);
+            double end = caster.playerData.castEndsAt;
+            Assert.InRange(end - startedAt, castSeconds - .01, castSeconds + 1);
+            Assert.Equal(500 - cost, AbilityHandler.CurrentInnerStrength(caster));
+            Assert.All(admitted, actor => Assert.Equal(1000, PvpCombat.HealthOf(actor)));
+            AbilityCastInterrupts.FinishDue(caster, end + .01);
+
+            Assert.All(admitted, actor => Assert.Equal(1000 - damage, PvpCombat.HealthOf(actor)));
+            Assert.All(excluded, actor => Assert.Equal(1000, PvpCombat.HealthOf(actor)));
+            Assert.False(CombatManager.GetHandler(caster).HasActiveInterlock);
+            if (id == 248)
+            {
+                Assert.All(admitted, actor => Assert.True(TimedEffects.ForPlayer(actor).Effects.Has(TempMods.RootedAbility)));
+                Assert.All(excluded, actor => Assert.False(TimedEffects.ForPlayer(actor).Effects.Has(TempMods.RootedAbility)));
+            }
+        }
+        finally
+        {
+            foreach (var actor in admitted.Concat(excluded)) TimedEffects.Clear(TimedEffects.ForPlayer(actor));
+            CombatManager.RemoveClient(caster);
+            WorldServer.mobs = previousMobs;
+        }
+    }
+
+    [Theory]
+    [InlineData(247, "single SMG", AbilityRefusals.RequiredItemCategory)]
+    [InlineData(248, "unloaded", AbilityRefusals.NotLoaded)]
+    [InlineData(247, "combat", AbilityRefusals.MustBeOutsideCombat)]
+    [InlineData(248, "ally", AbilityRefusals.InvalidTarget)]
+    [InlineData(247, "stale", AbilityRefusals.InvalidTarget)]
+    [InlineData(248, "far", AbilityRefusals.TargetOutOfRange)]
+    [InlineData(247, "blocked", AbilityRefusals.TargetNotInSight)]
+    [InlineData(248, "retreat", 0u)]
+    public void DualSmgConeRefusesBeforeCostOrPreservesTheAdmittedAim(ushort id, string scenario, uint refusal)
+    {
+        LoadDualSmgConeNav();
+        var caster = DualSmgTestCaster(id, 25, loaded: scenario != "unloaded", dual: scenario != "single SMG");
+        caster.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(21750, 1095, 16150));
+        var victim = NewConePlayer(caster, 111, 25, scenario == "far" ? 20949 : scenario == "blocked" ? 22350 : 21550, 1095, 16150,
+            friendly: scenario == "ally");
+        var bystander = NewConePlayer(caster, 112, 25, 21500, 1095, 16150);
+        var view = caster.viewMan.FindViewForEntity(victim.playerData.getEntityId());
+        var request = DualSmgRequest(id, view, scenario == "stale");
+        var handler = CombatManager.GetHandler(caster);
+        handler.isCombatRunning = scenario == "combat";
+        try
+        {
+            new AbilityHandler().ProcessAbility(ref request);
+            if (refusal != 0)
+            {
+                Assert.Equal(AbilityRefusals.Encode(new(id, refusal)), Assert.Single(Rpcs(caster)));
+                Assert.Equal(500, AbilityHandler.CurrentInnerStrength(caster));
+                Assert.Empty(caster.playerData.cooldownEndsAt);
+            }
+            else
+            {
+                Assert.Equal(465, AbilityHandler.CurrentInnerStrength(caster));
+                victim.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(20949, 1095, 16150));
+                AbilityCastInterrupts.FinishDue(caster, caster.playerData.castEndsAt + .01);
+            }
+            Assert.Equal(1000, PvpCombat.HealthOf(victim));
+            Assert.Equal(1000, PvpCombat.HealthOf(bystander));
+        }
+        finally
+        {
+            handler.isCombatRunning = false;
+            CombatManager.RemoveClient(caster);
+            TimedEffects.Clear(TimedEffects.ForPlayer(victim));
+            TimedEffects.Clear(TimedEffects.ForPlayer(bystander));
+        }
+    }
+
+    private static WorldClient DualSmgTestCaster(ushort id, byte level, bool loaded = true, bool dual = true)
+    {
+        var caster = Client();
+        caster.playerData.setEntityId(110);
+        caster.playerData.pvpFlag = true;
+        caster.playerInstance.Level.setValue(level);
+        caster.playerInstance.OrganizationID.setValue((byte)1);
+        caster.playerInstance.EquippedItemID.setValue(dual ? 2503u : 698u);
+        var profile = new ushort[] { 2, 17, CombatStyles.SubmachineGuns, id }
+            .SelectMany(ability => AbilityPrerequisites.Current.Closure(ability).Keys.Append(ability)).Distinct().ToArray();
+        Assert.True(profile.Sum(AbilityMemory.Cost) <= AbilityMemory.ForLevel(level));
+        AbilityPassives.SetLoaded(caster, profile.Where(ability => loaded || ability != id).Select(ability => (ability, (ushort)level)));
+        CombatStyles.Select(caster, CombatStyles.SubmachineGuns);
+        caster.messageQueue.RPCMessagesQueue.Clear();
+        caster.messageQueue.ObjectMessagesQueue.Clear();
+        WorldServer.Clients.Add("caster", caster);
+        Store.currentClient = caster;
+        var item = new AbilityItem();
+        item.setAbilityID(id);
+        item.setAbilityName(AbilityCatalog.Find(id).Name);
+        item.setIsBuff(true);
+        item.setValueFrom(id == 247 ? (short)25 : (short)0);
+        item.setCastAnimStart(new byte[4]);
+        DataLoader.getInstance().AbilityDB.Add(item);
+        return caster;
+    }
+
+    private static WorldClient NewConePlayer(WorldClient caster, uint id, byte level, double x, double y, double z, bool friendly = false)
+    {
+        var actor = Client();
+        actor.playerData.setCharID(id);
+        actor.playerData.setEntityId(id);
+        actor.playerData.pvpFlag = true;
+        actor.playerInstance.Level.setValue(level);
+        actor.playerInstance.OrganizationID.setValue(friendly ? (byte)1 : (byte)2);
+        actor.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(x, y, z));
+        WorldServer.Clients.Add(id.ToString(), actor);
+        var view = caster.viewMan.addView(id, 12);
+        view.viewCreated = true;
+        view.spawnId = 9;
+        return actor;
+    }
+
+    private static byte[] DualSmgRequest(ushort id, ClientView view, bool stale = false)
+    {
+        // Exercise the ordinary handler in process without inventing a captured stock request.
+        var request = new byte[41];
+        BitConverter.GetBytes(id).CopyTo(request, 0);
+        BitConverter.GetBytes(DuelPackets.Handle(view.ViewID, stale ? 8u : view.spawnId)).CopyTo(request, 2);
+        return request;
+    }
+
+    private static void LoadDualSmgConeNav()
+    {
+        string root = AppContext.BaseDirectory;
+        while (!File.Exists(Path.Combine(root, "data", "sector_properties.csv"))) root = Path.GetDirectoryName(root)!;
+        SectorProperties.Load(Path.Combine(root, "data", "sector_properties.csv"));
+        NavMesh.UseDirectory(Path.Combine(root, "data", "navmesh"));
+    }
+
+    [Theory]
     [InlineData(36, 0)]
     [InlineData(36, 2)]
     [InlineData(514, 0)]

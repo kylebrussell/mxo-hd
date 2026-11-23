@@ -15,18 +15,18 @@ public sealed class AbilityParityGunmanProcSweepMode : AbilitySweepMode
         new(256, "Three Round Burst", "Staggered Melee Dummy in Rifles interlock", "record landed hit",
             "40% stun roll on landing; observe move 11367 and immunity", "4 s stun / 4 s immunity on proc", 20),
         new(158, "Submachine Guns", "self with SMG", "0", "Submachine Guns style", "while selected", 0),
-        new(247, "Bullet Spray", "Melee Dummy outside combat in SMG Style", "record landed primary hit",
-            "record Enraged if the 15% roll procs", "8 s on proc", 30),
-        new(248, "Suppression Fire", "Melee Dummy outside combat in SMG Style", "record landed primary hit",
-            "record Rooted and any break; leave cone admission unclaimed in this isolated fixture", "12 s GOB input", 35),
+        new(247, "Bullet Spray", "Melee Dummy outside combat in Submachine Guns with a dual SMG", "25 stored ballistic base",
+            "2 s cast and a 15% Enrage roll", "8 s on proc", 30),
+        new(248, "Suppression Fire", "Melee Dummy outside combat in Submachine Guns with a dual SMG", "15 stored ballistic base",
+            "4 s cast and Rooted; record the duration that reaches the recipient", "12 s GOB input", 35),
         new(250, "Controlled Burst", "Melee Dummy in SMG interlock", "record landed hit",
             "observe move 21082 and Enraged if the 40% roll procs", "8 s on proc", 30),
         new(496, "Full Auto Redux", "Dazed Melee Dummy in SMG interlock", "record landed hit",
             "check both accuracy penalties on the actual recipient", "8 s", 45)
     }, new ushort[] { 2, 17 }, firearms: true, isolatedMelee: true, staggerFixture: true, additionalInstructions: new[]
     {
-        "Retest 248 first, before any damage opens a retaliatory fight. Equip the single SMG with ?combatdepth fixture-weapon smg, select style 158 and face Melee Dummy. With the HUD clear and no family timer, activate 248 before interlock.",
-        "For 496, enter SMG interlock and reselect 158 if necessary. With the dummy selected use ?combatdepth daze 30; confirm Dazed 199 before activating 496. Capture the request and both Melee and Ballistic Accuracy penalties on the target.",
+        "Retest 247 and 248 from rest with ?combatdepth fixture-weapon dual-smg, style 158 and Melee Dummy selected within 8 m. Capture the full first use of each. Wait for family reuse and leave combat before the next opener.",
+        "For 496, use ?combatdepth fixture-weapon smg, enter SMG interlock and reselect 158 if necessary. With the dummy selected use ?combatdepth daze 30; confirm Dazed 199 before activating 496. Capture the request and both Melee and Ballistic Accuracy penalties on the target.",
         "Wait for the family reuse timer shared with 496 to clear. Equip the rifle and use Close Combat on Melee Dummy. Reselect Rifles 147 if Close Combat switched to Self Defense. With the dummy selected and interlock active, use ?combatdepth stagger 30; confirm Staggered 201 before activating 256. Capture the request and resolved round.",
         "The hand weapon and Free Attack dropdown are separate selections. The prior swap put rifle 692 in bag slot 8, then moved SMG 698 into the hand. Stock explicitly selected the displaced rifle with 3f 08 00 10 00 00 00. Select the SMG explicitly when testing ranged Free Attack."
     }) { }
@@ -47,13 +47,7 @@ public sealed class AbilityParityGunmanProcSweepMode : AbilitySweepMode
 
         await CombatFixtureLoadout.VerifyWeaponSwapAsync(caster, database, "smg", hds.CombatFixtureWeapons.Smg);
         await Style(158);
-        Check.That(!server.DebugLog().Contains("[COMBAT] Close combat requested", StringComparison.Ordinal),
-            "Suppression Fire starts before any interlock");
-        await Cast(248);
-        await caster.WaitUntilAsync(() => server.DebugLog().Contains($"[ABILITY] 248 lands on view {dummy.ViewId} for ") &&
-            server.DebugLog().Contains($"[EFFECTS] 248 on Melee Dummy: State {hds.TempMods.RootedAbility}"),
-            "Suppression Fire lands and roots Melee Dummy from the ordinary non-interlock cast", TimeSpan.FromSeconds(15));
-
+        // The first full 247 and 248 requests belong to the stock client.
         await Interlock(158);
         await Condition("daze", "884/199", 2);
         await Cast(496);

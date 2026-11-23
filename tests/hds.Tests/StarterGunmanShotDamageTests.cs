@@ -9,6 +9,8 @@ public class StarterGunmanShotDamageTests
     [InlineData(176, 50, 0, 17)]
     [InlineData(243, 0, 0, 16)]
     [InlineData(CombatSpecials.ControlledBurst, 0, 0, 26)]
+    [InlineData(247, 25, 0, 25)]
+    [InlineData(248, 0, 0, 15)]
     public void IncompleteLegacyEndpointsUseFixedBallisticBase(ushort id, short oldMin, ushort oldMax, ushort expected)
     {
         string root = AppContext.BaseDirectory;
