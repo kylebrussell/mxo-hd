@@ -137,10 +137,11 @@ namespace hds
 
             if (AbilityID == AbilityBuffs.SittingEffect) return; // Owned by the normal sit/stand stance requests.
 
-            // Freeze System 2.0 and Code Stop bind the selected hostile before charging a cast.
-            bool selectedPacify = AbilityID == 352 || AbilityID == 393;
-            ushort? pacifySpawn = null;
-            if (selectedPacify)
+            // Freeze System 2.0, Vector and Code Stop bind a single hostile before charging a cast.
+            bool vectorControl = AbilityID == 355;
+            bool selectedDirectControl = AbilityID == 352 || vectorControl || AbilityID == 393;
+            ushort? controlSpawn = null;
+            if (selectedDirectControl)
             {
                 var caster = Store.currentClient;
                 if (!AbilityPassives.IsLoaded(caster, AbilityID))
@@ -149,8 +150,8 @@ namespace hds
                     return;
                 }
                 ushort? viewSpawn = (ushort?)caster.viewMan.getViewById(currentTargetViewId)?.spawnId;
-                pacifySpawn = packet.Length == 41 ? BitConverter.ToUInt16(packet, 4) : viewSpawn;
-                if (!pacifySpawn.HasValue || !AbilityTargets.HasLiveAttackSelection(caster, currentTargetViewId, pacifySpawn, requireOpponent: true))
+                controlSpawn = packet.Length == 41 ? BitConverter.ToUInt16(packet, 4) : viewSpawn;
+                if (!controlSpawn.HasValue || !AbilityTargets.HasLiveAttackSelection(caster, currentTargetViewId, controlSpawn, requireOpponent: true))
                 {
                     Deny(AbilityID, "Choose a living hostile target.", AbilityRefusals.InvalidTarget, sendServerText: false);
                     return;
@@ -1211,13 +1212,23 @@ namespace hds
                 CasterHostileArea.Land(client, ability);
                 return;
             }
-            if (selectedPacify &&
+            if (selectedDirectControl &&
                 (!AbilityPassives.IsLoaded(client, AbilityID) ||
-                 !AbilityTargets.HasLiveAttackSelection(client, currentTargetViewId, pacifySpawn, requireOpponent: true) ||
+                 !AbilityTargets.HasLiveAttackSelection(client, currentTargetViewId, controlSpawn, requireOpponent: true) ||
                  !AbilityTargets.WithinSelectionRange(client, AbilityID, currentTargetViewId)))
             {
-                Output.WriteDebugLog($"[ABILITY] {AbilityID} fizzles: the selected Pacify target or loaded ability changed");
+                Output.WriteDebugLog($"[ABILITY] {AbilityID} fizzles: the selected control target or loaded ability changed");
                 return;
+            }
+            if (vectorControl)
+            {
+                var fight = CombatManager.GetHandler(client);
+                if (!AbilityTargets.HasSelectionSight(client, definition, currentTargetViewId) ||
+                    CombatStyles.Active(client) != CombatStyles.HackerStyle || fight.isCombatRunning || fight.HasActiveInterlock)
+                {
+                    Output.WriteDebugLog($"[ABILITY] {AbilityID} fizzles: the selected target left sight or the caster changed style or entered combat");
+                    return;
+                }
             }
             if (AbilityID == 66 &&
                 (!AbilityTargets.HasLiveAttackSelection(client, currentTargetViewId, overloadTargetSpawn, requireOpponent: true) ||
