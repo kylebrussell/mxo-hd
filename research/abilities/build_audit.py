@@ -321,7 +321,7 @@ def server(i):
         base = {254: 18, 255: 16}[i]
         parts.append(f'stored fixed ballistic base {base} before influence and resistance; requires a live hostile selection at rest; retail scaling unresolved')
     elif i == 130:
-        parts.append('stored fixed ballistic 9 base when legacy endpoints are incomplete; requires a live opposing selection within 20m before charging the cast; stock reason34 verified; wider damage and targeting unresolved')
+        parts.append('fixed ballistic base 9; the loaded single-handgun ability requires Handguns and a live opposing selection within 20m at rest; 2s cast rechecks weapon, style, combat and target on landing; stock reasons 13/15/34, no-target notice and direct damage 9')
     elif i == 134:
         parts.append('stored fixed thrown base 13 before typed influence and resistance; stock Spy interlock landed 14; wider damage and targeting unresolved')
     elif i == 152:
@@ -489,11 +489,17 @@ def server(i):
     style = [m for m in r.get('style', []) if m['level50'] is not None]
     if style:
         parts.append('active-style modifiers via 3e/80 b9 (@50: ' + ', '.join(f"{name(m['stat'])} {m['level50']:+d}" for m in style) + '); ' + ('stock weapon exchanges and opening transitions with a matching equipped gun' if r.get('weapon_style_exchange') else 'style interlock exchanges'))
-    if r.get('special_move_style'):
+    if i == 130:
+        parts.append('direct cast with separate run, Sneak and Invisibility movement channels; exact named pistol motion unresolved')
+    elif i == 501:
+        parts.append('loaded dual-handgun Pistol Whip queues only against the original Dazed interlock opponent; stock move 287')
+    elif i == 502:
+        parts.append('4s dual-handgun cast queues only on the original fight; stock 9532 at 140 units, 9525 fallback; separate at-rest cast lands directly')
+    elif r.get('special_move_style'):
         parts.append(f"special move: needs {name(r['special_move_style'])} (auto-switch when loaded)")
     if r.get('sneak_bonus'):
         parts.append(f"stealth-started opener +{r['sneak_bonus']} scripted bonus (trigger/addition policy; COMBAT-DEPTH.md)")
-    if r.get('special_animation'):
+    if r.get('special_animation') and i not in (501, 502):
         source = 'canonical ability symbol in stock ILDB rule' if r.get('special_animation_rule') else 'name mapping policy'
         parts.append(f"named ILDB special choreography {r['special_animation']} ({source})")
     if r.get('stealth_shield'):
