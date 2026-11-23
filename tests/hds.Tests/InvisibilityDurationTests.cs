@@ -42,6 +42,66 @@ public class InvisibilityDurationTests
         Assert.True(AbilityBuffs.Remove(c,1117));Assert.Equal(0,AbilityStats.Player(c,644));Assert.Equal(expires,state.Expires);
         DelayedActions.RunDue(expires-1);Assert.Same(state,Stealth.Current(c));DelayedActions.RunDue(expires+1);Assert.Null(Stealth.Current(c));
     }
+    [Fact]
+    public void ShadowUpgradeUsesTheDirectInvisibleMovementChannelAndRestoresItWithoutChangingLifetime()
+    {
+        var actor = Client();
+        AbilityPassives.SetLoaded(actor, InvisibilityDurationFixture.Abilities.Select(id => (id, (ushort)50)));
+        Assert.Equal(25, AbilityStats.Player(actor, 1051));
+        Assert.NotNull(Stealth.Begin(actor, Stealth.Defs[1116], 50));
+        Assert.Equal(0f, Scale());
+        Stealth.Cleared(actor);
+
+        Assert.True(AbilityBuffs.Apply(actor, 1117));
+        Assert.Equal(0f, Scale());
+        Assert.NotNull(Stealth.Begin(actor, Stealth.Defs[1111], 50));
+        Assert.Equal(0f, Scale());
+        Stealth.Cleared(actor);
+
+        var belt = Stealth.Begin(actor, Stealth.Defs[1116], 50);
+        Assert.Equal(133, belt.Seconds);
+        Assert.Equal(.10f, Scale());
+        Assert.True(AbilityBuffs.Apply(actor, 12));
+        Assert.Equal(.22f, Scale(), 5);
+        Assert.True(AbilityBuffs.Remove(actor, 1117));
+        Assert.Equal(.12f, Scale());
+        Assert.Same(belt, Stealth.Current(actor));
+        Assert.Equal(133, belt.Expires - belt.Started, 5);
+        Assert.True(AbilityBuffs.Remove(actor, 12));
+        Assert.Equal(0f, Scale());
+        Stealth.Cleared(actor);
+
+        float Scale() => BitConverter.ToSingle(actor.playerInstance.MovementScale.getValue());
+    }
+
+    [Fact]
+    public void ShadowUpgradeFeedsTheOrdinaryWithdrawalAndTypedThrowInputs()
+    {
+        var actor = Client();
+        AbilityPassives.SetLoaded(actor, NativeQa.Modes.ShadowUpgradeConsumersMode.Abilities.Select(id => (id, (ushort)50)));
+        CombatStyles.Select(actor, CombatStyles.SelfDefense);
+        var sweep = new AbilityItem();
+        sweep.setAbilityID(134);
+        Assert.Equal(65, AbilityStats.Player(actor, 1005));
+        Assert.Equal(25, AbilityStats.Player(actor, 1045));
+        Assert.Equal(81, WithdrawalInput.Attack(actor, null, ordinary: true));
+        CombatStyles.Select(actor, CombatStyles.SpyStyle);
+        Assert.Equal(66, AbilityStats.SpecialAttack(actor, sweep));
+
+        Assert.True(AbilityBuffs.Apply(actor, 1117));
+        Assert.Equal(71, AbilityStats.SpecialAttack(actor, sweep));
+        CombatStyles.Select(actor, CombatStyles.SelfDefense);
+        Assert.Equal(71, AbilityStats.Player(actor, 1005));
+        Assert.Equal(88, WithdrawalInput.Attack(actor, null, ordinary: true));
+
+        Assert.True(AbilityBuffs.Remove(actor, 1117));
+        Assert.Equal(65, AbilityStats.Player(actor, 1005));
+        Assert.Equal(25, AbilityStats.Player(actor, 1045));
+        Assert.Equal(81, WithdrawalInput.Attack(actor, null, ordinary: true));
+        CombatStyles.Select(actor, CombatStyles.SpyStyle);
+        Assert.Equal(66, AbilityStats.SpecialAttack(actor, sweep));
+    }
+
     [Fact] public void ExistingInvisibilityDoesNotExtendWhenDurationBuffArrivesLater()
     {
         var c=Client();var state=Stealth.Begin(c,Stealth.Defs[1116],50);double expires=state.Expires;

@@ -357,8 +357,17 @@ namespace hds
             float stanceScale = stealth?.Def.Ability == Stealth.EscapeAndEvasionAbility
                 ? stealth.Mods.Where(modifier => modifier.Stat == SneakMovementStat).Sum(modifier => modifier.Value) / 100f
                 : 0f;
-            if (buff == null) return stanceScale;
             ushort stat = MovementStatFor(stealth);
+            if (stat == InvisibleMovementStat)
+            {
+                // Shadow Upgrade writes direct points to the same channel as Movement Accelerator.
+                lock (client.playerData.activeBuffs)
+                    if (client.playerData.activeBuffs.TryGetValue(AbilityShadowPresentation.Child, out var shadow) &&
+                        ActiveDefinition(shadow, out Buff upgrade))
+                        stanceScale += upgrade.Modifiers.Where(modifier =>
+                            modifier.Kind == KindStat && modifier.Stat == InvisibleMovementStat).Sum(modifier => modifier.Value) / 100f;
+            }
+            if (buff == null) return stanceScale;
             if (stat == RunMovementStat) return buff.MovementScale;
             Modifier modifier = Array.Find(buff.Modifiers, entry => entry.Stat == stat);
             return stanceScale + (modifier.Stat == stat ? modifier.Value / 100f : buff.MovementScale);
@@ -665,6 +674,7 @@ namespace hds
             if (IsCatalogSpeedBuff(abilityId))
                 client.messageQueue.addObjectMessage(BuildMovementUpdate(movementScale,
                     (ushort)(DissemblingBits(client) | Stealth.BitsOf(client))), false);
+            if (abilityId == AbilityShadowPresentation.Child) PresentCurrentMovementScale(client);
             Output.WriteDebugLog("[BUFF] " + abilityId + " on" + (buff.Seconds > 0 ? " for " + buff.Seconds + " s" : ""));
 
             if (HasClassSweep(abilityId))
@@ -895,6 +905,7 @@ namespace hds
                     client.messageQueue.addObjectMessage(BuildMovementUpdate(scale, (ushort)(DissemblingBits(client) | Stealth.BitsOf(client))), false);
                 }
             }
+            if (abilityId == AbilityShadowPresentation.Child && !keepMovement) PresentCurrentMovementScale(client);
             if (buff.EvadeShield)
             {
                 EvasionShield.Removed(client);
