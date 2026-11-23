@@ -115,6 +115,41 @@ public class AbilityControlDurationTests
     }
 
     [Fact]
+    public void EnrageSuppressesTheBlockRoundAwardUntilExpiryWithoutLockingTheTactic()
+    {
+        var blocked = Client();
+        var unaffected = Client();
+        blocked.playerInstance.InnerStrengthAvailable.setValue((ushort)100);
+        unaffected.playerInstance.InnerStrengthAvailable.setValue((ushort)100);
+        blocked.playerData.combatTactic = CombatTactic.Block;
+        unaffected.playerData.combatTactic = CombatTactic.Block;
+        CombatHandler.ApplyRoundInnerStrength(blocked);
+        Assert.Equal((ushort)110, AbilityHandler.CurrentInnerStrength(blocked));
+
+        double now = TimeUtils.GetSimTimeSeconds();
+        var subject = TimedEffects.ForPlayer(blocked);
+        Assert.True(TempMods.TryGet(588, out var effect));
+        var enrage = Assert.Single(TimedEffects.Apply(subject, effect, now, Client()));
+        Assert.Equal(TempMods.EnrageAbility, enrage.Target);
+        Assert.True(ControlActions.CanChangeTactic(subject.Effects));
+        CombatHandler.ApplyRoundInnerStrength(blocked);
+        CombatHandler.ApplyRoundInnerStrength(unaffected);
+        Assert.Equal((ushort)110, AbilityHandler.CurrentInnerStrength(blocked));
+        Assert.Equal((ushort)110, AbilityHandler.CurrentInnerStrength(unaffected));
+        Assert.Equal(CombatTactic.Block, blocked.playerData.combatTactic);
+
+        blocked.playerData.combatTactic = CombatTactic.Power;
+        CombatHandler.ApplyRoundInnerStrength(blocked);
+        Assert.Equal((ushort)110, AbilityHandler.CurrentInnerStrength(blocked));
+        blocked.playerData.combatTactic = CombatTactic.Block;
+        var expired = new List<TimedEffects.Active>();
+        subject.Effects.Advance(now + enrage.Seconds + 1, new List<TimedEffects.Active>(), expired);
+        Assert.Contains(enrage, expired);
+        CombatHandler.ApplyRoundInnerStrength(blocked);
+        Assert.Equal((ushort)120, AbilityHandler.CurrentInnerStrength(blocked));
+    }
+
+    [Fact]
     public void ACompletelyReducedTimedStateDoesNotBecomeAnIndefiniteState()
     {
         var caster = Client(); var victim = Client();

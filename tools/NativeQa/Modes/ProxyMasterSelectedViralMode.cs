@@ -48,7 +48,7 @@ public sealed class ProxyMasterSelectedViralMode : NativeQaMode
             ["MXO_FREECAST_VIRAL_QA_ATTACK15"] = "32766", ["MXO_FREECAST_VIRAL_QA_DEFENSE15"] = "0",
             [AreaTargetDiagnostics.Variable] = "1"
         },
-        extraQaMetadata: new() { ["ScopedStockRows"] = "595,597,598", ["NativeCloseableRows"] = 0, ["MemoryUsed"] = Memory },
+        extraQaMetadata: new() { ["ScopedStockRows"] = "595,597,598", ["NativeCloseableRows"] = 1, ["MemoryUsed"] = Memory },
         readyMessages: new[]
         {
             $"Level {Level}, ranks 38/41/44 and {Memory}/{AbilityMemory.ForLevel(Level)} memory. CSR ({X},{Y},{CasterZ}) faces QAEnemy ({X},{Y},{CentreZ}) at 2 m. QAOther starts at ({X},{Y},{EnrageEdgeZ}), 5.00 m from QAEnemy. QAFar ({X},{Y},{OutsideZ}) is 7.01 m from QAEnemy. In-radius QAFriend is allied at ({X + 100},{Y},{CentreZ}). All stands are clear of WinterFrost and Trainman.",
@@ -59,7 +59,8 @@ public sealed class ProxyMasterSelectedViralMode : NativeQaMode
             "Optional interlock retarget stage. You can skip the original three rows already passed by PR885. Use /target QAEnemy and its radial Close Combat to open ordinary PvP. Wait until the first exchange. QAEnemy is the original opponent, and QAOther starts 7 m from CSR on the same clear outdoor line. Keep CSR still, then use /target QAOther to select your alternate before arming the stage.",
             """Send {"actor":"QAFar","action":"enrage-retarget"} once. QAFar casts the captured Enrage 2.0 request while outside the fight (4 s, 43 IS, 30 s own reuse). Expect [MODIFIER] char=110 source=597 stat=93 add value=0 duration=9s. QAOther joins your existing fight immediately after that add. The helper prints ENRAGE RETARGET ARMED when QAOther is in the fight.""",
             "While Enraged, try radial Close Combat on the selected QAOther. Save the stock 40 or the local refusal if the client sends none. Selection may change but the fight must keep QAEnemy. There should be no old 46 flag 00, new 40 echo or new 46 flag 01 on CSR. If the request reaches the server, expect [PVP] Target change refused for CSR_Tester: Enraged.",
-            "After [MODIFIER] char=110 source=597 stat=93 remove, repeat the same radial Close Combat on QAOther. Expect the old 46 flag 00, new 40 echo, and new 46 flag 01 for QAOther. Save the full native 40 attempts and matching server replies. This stage covers the shared PvP interlock retarget gate. The ISBlock mapping remains open."
+            "After [MODIFIER] char=110 source=597 stat=93 remove, repeat the same radial Close Combat on QAOther. Expect the old 46 flag 00, new 40 echo, and new 46 flag 01 for QAOther. Save the full native 40 attempts and matching server replies.",
+            "Optional IS Block sample during this same fight. Before arming, choose Block under Actions > Awakened and wait for one +10 own IS round. Keep Block selected through the cast, retarget attempts and recovery. The fixture holds background IS regeneration, so compare one live Block round without the award while stat 93 is active and one +10 round after removal. Save the 42, rounds and own IS views. The server interprets the separate shipped ISBlock flag as the Block round IS award. Stock verification is pending."
         });
 
     public override async Task<byte[]> AfterStartAsync(NativeQaBootstrapContext context)
@@ -142,7 +143,7 @@ public sealed class ProxyMasterSelectedViralMode : NativeQaMode
         await VerifyRetargetAsync(caster, context.Helpers, server);
         Check.Equal(0, caster.World.Problems.Count + context.Helpers.Values.Sum(helper => helper.World.Problems.Count),
             "Static Blast control framing");
-        Console.WriteLine("PROXY MASTER BOOTSTRAP PASS. Exact stock Coder Style, Static Blast, Enrage 2.0 and Close Combat. Interlock target stays unchanged during Enrage, then changes after expiry.");
+        Console.WriteLine("PROXY MASTER BOOTSTRAP PASS. The stock Block tactic remains usable in live rounds, its +10 IS award pauses during Enrage, and award and retarget both resume after expiry.");
         return Array.Empty<byte>();
     }
 
@@ -188,8 +189,18 @@ public sealed class ProxyMasterSelectedViralMode : NativeQaMode
         string alternate = HandleHex(await recipient.WaitForViewNamedAsync("QAOther"));
         recipient.SendRpc($"40 {original} 01 6b");
         await recipient.WaitForRpcAsync($"46 {original} 01");
+        ushort originalIs = ReadInnerStrength();
+        int blockStart = recipient.World.ViewSnapshot().Count;
+        await SelectTacticAsync(3, "Block");
+        await WaitForInnerStrengthAsync(blockStart, (ushort)(originalIs + 10), "Block awards ten IS before Enrage");
+        await SelectTacticAsync(0, "Speed");
+
         int logCursor = server.DebugLog().Length;
         await ArmRetargetAsync(helpers["QAFar"], helpers, server);
+        ushort heldIs = ReadInnerStrength();
+        int innerStrengthCursor = recipient.World.ViewSnapshot().Count;
+        int blockRoundLog = server.DebugLog().Length;
+        await SelectTacticAsync(3, "Block");
         recipient.SendRpc($"81 51 {alternate}");
         recipient.SendChat("?combatdepth shieldstatus");
         await recipient.WaitForTextAsync("target=QAOther");
@@ -199,6 +210,14 @@ public sealed class ProxyMasterSelectedViralMode : NativeQaMode
         await recipient.WaitUntilAsync(() => server.DebugLog()[logCursor..]
             .Contains("[PVP] Target change refused for CSR_Tester: Enraged", StringComparison.Ordinal),
             "The Enraged recipient retains the original combat target", TimeSpan.FromSeconds(4));
+        await recipient.WaitUntilAsync(() => server.DebugLog()[blockRoundLog..].Split('\n').Any(line =>
+            line.StartsWith("[PVP] Round ", StringComparison.Ordinal) && !line.Contains("(opening)", StringComparison.Ordinal) &&
+            line.Contains("CSR_Tester Block (", StringComparison.Ordinal)),
+            "The Enraged recipient still fights normal Block rounds", TimeSpan.FromSeconds(6));
+        recipient.SendChat("?combatdepth shieldstatus");
+        await recipient.WaitForTextAsync("target=QAOther");
+        Check.That(!recipient.World.ViewSnapshot().Skip(innerStrengthCursor).SelectMany(AbilityParityCoderSweepMode.InnerStrengthUpdates).Any(),
+            "A live round on Block awards no Inner Strength while Enraged");
         await recipient.WaitUntilAsync(() => server.DebugLog()[logCursor..]
             .Contains("[MODIFIER] char=110 source=597 stat=93 remove", StringComparison.Ordinal),
             "Enrage 2.0 expires naturally", TimeSpan.FromSeconds(13));
@@ -209,6 +228,22 @@ public sealed class ProxyMasterSelectedViralMode : NativeQaMode
         recipient.SkipReceived();
         recipient.SendRpc($"40 {alternate} 01 6b");
         foreach (string packet in swap) await recipient.WaitForRpcAsync(packet);
+        await WaitForInnerStrengthAsync(innerStrengthCursor, (ushort)(heldIs + 10), "The Block round award returns after Enrage expires");
+
+        ushort ReadInnerStrength() => recipient.World.ViewSnapshot().SelectMany(AbilityParityCoderSweepMode.InnerStrengthUpdates).Last();
+
+        Task WaitForInnerStrengthAsync(int cursor, ushort value, string description) =>
+            recipient.WaitUntilAsync(() => recipient.World.ViewSnapshot().Skip(cursor).SelectMany(AbilityParityCoderSweepMode.InnerStrengthUpdates)
+                .Contains(value), description, TimeSpan.FromSeconds(8));
+
+        async Task SelectTacticAsync(byte tactic, string name)
+        {
+            int cursor = server.DebugLog().Length;
+            recipient.SendRpc($"42 {tactic:x2} 00 00 00 00 00");
+            await recipient.WaitUntilAsync(() => server.DebugLog()[cursor..]
+                .Contains($"[COMBAT] Tactic changed to {name} (Normal) for CSR_Tester", StringComparison.Ordinal),
+                $"The stock {name} tactic request reaches the live fight", HeadlessPlayer.DefaultTimeout);
+        }
     }
 
     private static string HandleHex(ViewCreation view) => WireFormat.ToHex(BitConverter.GetBytes(DuelPackets.Handle(view.ViewId, view.SpawnId)));
