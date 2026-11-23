@@ -1,0 +1,43 @@
+{
+  "families": {
+    "crippling-shot-player-native": {
+      "representative": 450,
+      "result": "pass",
+      "head": "1e6d9dee54ba9b6e0c17b5a338696738ea75fb8e",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/979#issuecomment-7101681296",
+      "scope": "Stock L42, 55/84, rifle 692 and Rifles style. Reason24 ally/34 far with no debit. Real request prefix 80 b9 c2 01 04 00 02 00, 45 IS paid, 2 s, 10 s own and 5 s group690. QAEnemy only, 58 neutral, then 54 at +20 Ballistic Resistance. Three source450 records 115/877/878 fixed -75 for 8 s and exact paired removals, on both casts. Actual recipient MovementScale [-.75,0,-.30,+.45]. Distinct historically captured NPC magnitude ranges and extreme sub -1 projection remain qualified."
+    }
+  },
+  "abilities": {
+    "450": {
+      "family": "crippling-shot-player-native",
+      "checks": {
+        "damage": {
+          "source": "Current GOB player ability450 fixes Ballistic base 49 and 45 IS. Retained retail NPC-origin records represent a different role.",
+          "runtime": "The loaded Rifle and ballistic influence produce 58 at neutral, and ordinary target Ballistic Resistance reduces the same shot to 54 at +20.",
+          "test": "AbilityRefusalFeedbackTests.ProtectedRifleOpenersUseAnOutsideCombatRifleAndTheirOriginalLiveTarget tests neutral/armored cast endings. PR979 measured 58/54, including typed log type1 total20 raw58 final54."
+        },
+        "targeting": {
+          "source": "GOB cast overrides require Rifles, matching rifle, hostile selected within 20 m, at rest and a two-second cast.",
+          "runtime": "Normal AbilityHandler validates the live selected spawn, sight, range, loaded profile, equipped weapon and fight state before committing, preserving original cast route at landing.",
+          "test": "Focused refusal and lifetime tests check wrong weapon/style, combat, sight/range and range/style/combat changes during the cast. The shared live-attack gate independently checks spawn identity. Native ally code24 and 20.01 m code34 cost nothing. Actual hostile alone received the live shot."
+        },
+        "stats": {
+          "source": "GOB fixed -75 for each of Run115, Sneak877 and Invisibility878, eight seconds. NPC original recipient records independently establish signed hundredth units and composition.",
+          "runtime": "TempMods chooses authored player magnitudes; AbilityBuffs selects one movement channel for the current stance and composes any surviving effects on natural expiry.",
+          "test": "DesperateSpeedTests.CripplingShotProjectsOnlyTheCurrentChannelAndRestoresTheLiveSpeed isolates all three channels using archived unequal samples and the fixed current player values. Native witnessed all paired eight-second live records and recipient -.75/0, then -.30/.45 across an ordinary active Hyper-Speed."
+        },
+        "source-parity": {
+          "source": "Current GOB fixes Ballistic49 and three -75 for 8s, with Rifle/outside-combat/20 m/2s; separate archival NPC records show their own ranges.",
+          "runtime": "Authored player and captured NPC values are routed by caster role. The runtime produces signed current stance scale and restored other contributions. Historic extreme NPC clamp and original NPC damage remain distinct.",
+          "test": "PR979 stock checks both typed outputs, cast, 45 IS, exact own/family reuses, all timed player records, and recipient signed updates. Scoped tests preserve the NPC range as an independent role."
+        },
+        "behavior-tests": {
+          "source": "Stored player Rifle shot uses one legal original enemy, fixed typed Ballistic damage, exact cast/IS/reuse and three timed movement channels.",
+          "runtime": "Player effects, ordinary hostile view and weapon gate, typed damage, currently selected movement channel and release all use production paths.",
+          "test": "AbilityRefusalFeedbackTests and DesperateSpeedTests exercise exact damage, state and caster/target lifetime, timed records and each movement stance. Retained stock bootstrap tests legal rifle and helper controls; PR979 supplies actual stock request, both hits, timers and full movement sequence."
+        }
+      }
+    }
+  }
+}
