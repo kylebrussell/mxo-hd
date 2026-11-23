@@ -72,6 +72,10 @@ public class ConditionalControlTests
         AssertTermStun(AbilityConditionalControls.PistolAerial, .40f, false);
 
     [Fact]
+    public void ConcealedShotKeepsItsAuthoredChanceAndFourSecondImmunity() =>
+        AssertTermStun(CombatSpecials.ConcealedShot, .30f, false, .10f);
+
+    [Fact]
     public void PistolAerialTermMarkerUsesTheArchivedTargetlessAddAndRemoveFrames()
     {
         const ushort pistolAerial = AbilityConditionalControls.PistolAerial;
@@ -89,34 +93,48 @@ public class ConditionalControlTests
     }
 
     [Fact]
-    public void PistolAerialRepeatDuringImmunityKeepsTheExistingStackUntilExpiry()
+    public void PistolAerialRepeatDuringImmunityKeepsTheExistingStackUntilExpiry() =>
+        AssertRepeatedMarkerPreservesStun(AbilityConditionalControls.PistolAerial, .01f);
+
+    [Fact]
+    public void ConcealedShotRepeatDuringImmunityKeepsTheExistingStackUntilExpiry() =>
+        AssertRepeatedMarkerPreservesStun(CombatSpecials.ConcealedShot, .10f);
+
+    private static void AssertRepeatedMarkerPreservesStun(ushort ability, float delay)
     {
-        const ushort ability = AbilityConditionalControls.PistolAerial;
         double now = TimeUtils.GetSimTimeSeconds();
         var subject = new Subject();
         Assert.True(TempMods.TryGet(ability, out var effect));
         try
         {
             TimedEffects.Apply(subject, effect, now, rng: new FixedProcRoll(0));
-            TimedEffects.RunDue(now + .02);
+            TimedEffects.RunDue(now + delay + .01);
             var stun = Assert.Single(subject.Effects.Snapshot(), mod => mod.Target == TempMods.StunAbility);
             var penalty = Assert.Single(subject.Effects.Snapshot(), AbilityConditionalControls.IsLinkedStunTactics);
+            var immunity = Assert.Single(subject.Effects.Snapshot(), mod => mod.Parent == TempMods.ControlImmunityTimerAbility);
             Assert.Equal(stun.Expires, penalty.Expires);
             TimedEffects.Apply(subject, effect, now + 1, rng: new FixedProcRoll(0));
-            TimedEffects.RunDue(now + 1.02);
+            TimedEffects.RunDue(now + 1 + delay + .01);
             Assert.Same(stun, Assert.Single(subject.Effects.Snapshot(), mod => mod.Target == TempMods.StunAbility));
             Assert.Same(penalty, Assert.Single(subject.Effects.Snapshot(), AbilityConditionalControls.IsLinkedStunTactics));
+            Assert.Same(immunity, Assert.Single(subject.Effects.Snapshot(), mod => mod.Parent == TempMods.ControlImmunityTimerAbility));
             Assert.Equal(-20, subject.Effects.Total(TempMods.CombatTacticsAbility));
-            TimedEffects.RunDue(now + 4.03);
+            TimedEffects.RunDue(stun.Expires + .001);
             Assert.True(subject.Effects.IsEmpty);
         }
         finally { TimedEffects.Clear(subject); }
     }
 
     [Fact]
-    public void ThreeRoundBurstStunLowersBothAttackInputsAndRemovesTheSameLinkedRecord()
+    public void ThreeRoundBurstStunLowersBothAttackInputsAndRemovesTheSameLinkedRecord() =>
+        AssertRifleTermStunLowersAttack(CombatSpecials.ThreeRoundBurst, .01f);
+
+    [Fact]
+    public void ConcealedShotStunLowersBothAttackInputsAndRemovesTheSameLinkedRecord() =>
+        AssertRifleTermStunLowersAttack(CombatSpecials.ConcealedShot, .10f);
+
+    private static void AssertRifleTermStunLowersAttack(ushort ability, float delay)
     {
-        const ushort ability = CombatSpecials.ThreeRoundBurst;
         var client = (WorldClient)System.Runtime.CompilerServices.RuntimeHelpers.GetUninitializedObject(typeof(WorldClient));
         client.playerData = new ClientData();
         client.playerInstance = new PlayerCharacter();
@@ -134,8 +152,12 @@ public class ConditionalControlTests
             Assert.Equal(ability, marker.Target);
             Assert.True(MxoHd.PacketResearch.ManageBonusRecord.TryDecode(PlayerEffects.Record(marker, false), out var markerRecord));
             Assert.Equal(ability, markerRecord!.TargetId);
+            Assert.Equal(delay, marker.Seconds);
 
-            TimedEffects.RunDue(now + .02);
+            TimedEffects.RunDue(marker.Expires - .001);
+            Assert.Equal(melee, AbilityStats.Attack(client, ranged: false));
+            Assert.Equal(ballistic, AbilityStats.Attack(client, ranged: true));
+            TimedEffects.RunDue(marker.Expires + .001);
             var stun = Assert.Single(subject.Effects.Snapshot(), mod => mod.Target == TempMods.StunAbility);
             var penalty = Assert.Single(subject.Effects.Snapshot(), AbilityConditionalControls.IsLinkedStunTactics);
             var immunity = Assert.Single(subject.Effects.Snapshot(), mod => mod.Parent == TempMods.ControlImmunityTimerAbility);
@@ -152,7 +174,7 @@ public class ConditionalControlTests
             Assert.Equal(melee - 20, AbilityStats.Attack(client, ranged: false));
             Assert.Equal(ballistic - 20, AbilityStats.Attack(client, ranged: true));
 
-            TimedEffects.RunDue(now + 4.03);
+            TimedEffects.RunDue(stun.Expires + .001);
             var remove = PlayerEffects.Record(penalty, true);
             Assert.Contains(client.messageQueue.RPCMessagesQueue.Cast<SequencedMessage>(),
                 message => message.content.AsSpan(1).SequenceEqual(remove));
@@ -163,12 +185,12 @@ public class ConditionalControlTests
         finally { TimedEffects.Clear(subject); }
     }
 
-    private static void AssertTermStun(ushort id, float chance, bool dot)
+    private static void AssertTermStun(ushort id, float chance, bool dot, float delay = .01f)
     {
         Assert.True(TempMods.TryGet(id, out var effect));
         var marker = Assert.Single(effect.Mods, mod => mod.Proc == TempMods.Proc.Terminal);
         Assert.Equal(chance, marker.Chance);
-        Assert.Equal(.01f, marker.Seconds);
+        Assert.Equal(delay, marker.Seconds);
         Assert.Equal(4, marker.MinValue);
 
         double now = TimeUtils.GetSimTimeSeconds();
@@ -183,14 +205,14 @@ public class ConditionalControlTests
         TimedEffects.Apply(hit, effect, now, rng: hitRoll);
         TimedEffects.Apply(immune, effect, now, rng: immuneRoll);
         Assert.False(hit.Effects.Has(TempMods.StunAbility));
-        TimedEffects.RunDue(now + .02);
+        TimedEffects.RunDue(now + delay + .01);
         Assert.All(new[] { missRoll, hitRoll, immuneRoll }, roll => Assert.Equal(1, roll.Calls));
         Assert.False(miss.Effects.Has(TempMods.StunAbility));
         Assert.False(immune.Effects.Has(TempMods.StunAbility));
         Assert.Equal(4, Assert.Single(hit.Effects.Snapshot(), mod => mod.Target == TempMods.StunAbility).Seconds);
         Assert.Equal(4, Assert.Single(hit.Effects.Snapshot(), mod => mod.Parent == 734).Seconds);
         Assert.Equal(dot, hit.Effects.Snapshot().Any(mod => mod.Proc == TempMods.Proc.Dot));
-        TimedEffects.RunDue(now + 4.03);
+        TimedEffects.RunDue(now + delay + 4.02);
         Assert.False(hit.Effects.Has(TempMods.StunAbility));
         Assert.False(hit.Effects.Has(TempMods.ISDrainTargetAbility));
         foreach (var subject in new[] { miss, hit, immune })

@@ -7,6 +7,7 @@ namespace hds
     {
         public const string Mode = "MXO_STARTER_INTERLOCK_CONTROL_QA";
         public const string PistolAerialMode = "MXO_PISTOL_AERIAL_QA";
+        public const string ConcealedShotMode = "MXO_CONCEALED_SHOT_STUN_QA";
         public const int AerialImmunitySeconds = 40;
 
         // Force only the state modifier branch. Interlock admission, hit contest, damage
@@ -17,6 +18,7 @@ namespace hds
                 145 => Allowed(caster, Mode, 110),
                 176 => Allowed(caster, Mode, 110),
                 AbilityConditionalControls.PistolAerial => Allowed(caster, PistolAerialMode, 110),
+                CombatSpecials.ConcealedShot => Allowed(caster, ConcealedShotMode, 110),
                 _ => false
             });
 
