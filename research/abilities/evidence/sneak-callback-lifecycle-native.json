@@ -1,0 +1,23 @@
+{
+  "abilities": {
+    "1111": {
+      "checks": {
+        "stats": {
+          "source": "GOB 1111 authors 115 -200, rank-scaled Stealth 209, Noise Modifier 509 +10 and state 881. SneakGrant_Test checks watchers, SneakInit ends auras, SneakUpdate runs the watcher check every five seconds, SneakTerm clears the stance, and OnHealthReduceDeactivateAbility ends the state on health loss below max.",
+          "runtime": "The ordinary Sneak grant publishes the four records and owned pose. A heal leaves the state active, while the normal health-change callback terminates it on health loss. The observer helper changes position and waits for the next game's reveal update. It never invokes the detection callback itself. Source 509 is established as a published modifier, while the sampled movement NoiseLevel is a distinct input.",
+          "test": "Stock PR1034 confirmed 20 IS, exact records and pose, retained ally view, healing without termination, all four removals after health loss, and reveal with actual hostile view recreation at SA13/SL15/roll35. It observed watcher refusal without cost and explicit off without a second debit. SneakCallbackLifecycleMode replays the captured cast and all three endings on a disposable server. PR731 and PR732 already verify the gait transition and aura cancellation. The existing reason 6 refusal produced tactic wording plus the watcher line. https://github.com/kylebrussell/mxo-hd/pull/1034#issuecomment-7116825980"
+        },
+        "script": {
+          "source": "GOB 1111 authors 115 -200, rank-scaled Stealth 209, Noise Modifier 509 +10 and state 881. SneakGrant_Test checks watchers, SneakInit ends auras, SneakUpdate runs the watcher check every five seconds, SneakTerm clears the stance, and OnHealthReduceDeactivateAbility ends the state on health loss below max.",
+          "runtime": "The ordinary Sneak grant publishes the four records and owned pose. A heal leaves the state active, while the normal health-change callback terminates it on health loss. The observer helper changes position and waits for the next game's reveal update. It never invokes the detection callback itself. Source 509 is established as a published modifier, while the sampled movement NoiseLevel is a distinct input.",
+          "test": "Stock PR1034 confirmed 20 IS, exact records and pose, retained ally view, healing without termination, all four removals after health loss, and reveal with actual hostile view recreation at SA13/SL15/roll35. It observed watcher refusal without cost and explicit off without a second debit. SneakCallbackLifecycleMode replays the captured cast and all three endings on a disposable server. PR731 and PR732 already verify the gait transition and aura cancellation. The existing reason 6 refusal produced tactic wording plus the watcher line. https://github.com/kylebrussell/mxo-hd/pull/1034#issuecomment-7116825980"
+        },
+        "behavior-tests": {
+          "source": "GOB 1111 authors 115 -200, rank-scaled Stealth 209, Noise Modifier 509 +10 and state 881. SneakGrant_Test checks watchers, SneakInit ends auras, SneakUpdate runs the watcher check every five seconds, SneakTerm clears the stance, and OnHealthReduceDeactivateAbility ends the state on health loss below max.",
+          "runtime": "The ordinary Sneak grant publishes the four records and owned pose. A heal leaves the state active, while the normal health-change callback terminates it on health loss. The observer helper changes position and waits for the next game's reveal update. It never invokes the detection callback itself. Source 509 is established as a published modifier, while the sampled movement NoiseLevel is a distinct input.",
+          "test": "Stock PR1034 confirmed 20 IS, exact records and pose, retained ally view, healing without termination, all four removals after health loss, and reveal with actual hostile view recreation at SA13/SL15/roll35. It observed watcher refusal without cost and explicit off without a second debit. SneakCallbackLifecycleMode replays the captured cast and all three endings on a disposable server. PR731 and PR732 already verify the gait transition and aura cancellation. The existing reason 6 refusal produced tactic wording plus the watcher line. https://github.com/kylebrussell/mxo-hd/pull/1034#issuecomment-7116825980"
+        }
+      }
+    }
+  }
+}
