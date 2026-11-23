@@ -9,7 +9,7 @@ public sealed class StarterHackerCostBonusesMode : NativeQaMode
     private const ushort StandOff = 309, DedicatedCode = 346, Hacker = 1006, Freeze = 40, Evade = 217;
     // Complete stock PR606 Freeze and PR524 Evade requests. Only Freeze gets a live handle.
     private const string FreezeUse = "80b92800040002000000000000000000000000000000000000000000ffff7f7f00000000086b0000000000";
-    private const string EvadeUse = "80b9d9000000000000000000000000000000000000000000000000002000000078f21200086b0000000000";
+    internal const string EvadeUse = "80b9d9000000000000000000000000000000000000000000000000002000000078f21200086b0000000000";
     private const int EnemyX = 17400;
     private static readonly ushort[] Loadout = new ushort[] { 2, 17, StandOff, DedicatedCode, Hacker, Freeze, Evade }
         .SelectMany(id => AbilityPrerequisites.Current.Closure(id).Keys.Append(id)).Distinct().Order().ToArray();

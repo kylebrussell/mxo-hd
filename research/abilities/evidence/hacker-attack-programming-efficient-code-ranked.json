@@ -1,0 +1,32 @@
+{
+  "abilities": {
+    "471": {
+      "checks": {
+        "stats": {
+          "source": "The shipped Attack Programming template stores learned-rank function 2 at scales 0.1 to 1053 and 0.3 to 1059. At rank 50 those individual loaded records are +5 IS cost reduction and +15 IS regeneration.",
+          "runtime": "1053 feeds ordinary cost admission and spend via 117. It changes the captured 40-point Evade cast to 38. 1059 feeds ordinary two-second resting regeneration via 114, with Execute Program's +10 and Ravager's +5 fixed across the comparison.",
+          "test": "AttackProgrammingChangesRestingRegenAndEvadeCostInItsRankedProfile uses the complete ranked profile and checks real cost and regen consumers. HackerAttackProgrammingEfficientCodeMode observes the two source records, exact stock Evade spend 38/40 and the natural own-view regeneration sequence 52/46 IS over five resting ticks across ordinary unload/reload."
+        },
+        "behavior-tests": {
+          "source": "Attack Programming attaches its two modifiers only while loaded. The stored root character level is 33.",
+          "runtime": "Ordinary Archive changes add or remove both records independently of the other loaded producers. Reload restores resting +10/+11 per two-second tick.",
+          "test": "The exact captured-style shared fixture archives 471 through the ordinary loadout path and restores it. Its server differential verifies the two costs and three resting regeneration conditions with the same full profile. The fixture keeps 477 fixed during those comparisons."
+        }
+      }
+    },
+    "477": {
+      "checks": {
+        "stats": {
+          "source": "At learned rank 50 Efficient Code stores +5 Stun Duration Bonus 995 and +10 each to 996 ballistic accuracy, 997 melee accuracy, 1139 ballistic damage, and 1142 melee damage.",
+          "runtime": "996/997 feed the two modeled weapon accuracy inputs. 1139/1142 feed typed ballistic and melee damage. 995 increases the linked Stun duration while the separately authored immunity lifetime remains independent.",
+          "test": "EfficientCodeRoundTripsItsIndependentAccuracyDamageAndStunConsumers checks real combat accuracy, damage and duration consumers with the complete profile before, during and after load. HackerAttackProgrammingEfficientCodeMode checks five separate live packet records and 3.30/3.15 s Area Disruption stuns with constant 8 s immunity."
+        },
+        "behavior-tests": {
+          "source": "Efficient Code attaches five separate learned-rank modifiers while loaded. The stored root character level is 33 and Resist Contagion supplies a distinct +5 Stun Duration in the selected profile.",
+          "runtime": "Ordinary Archive removes only 477's five records; the remaining +5 Stun Duration produces a 3.15 s control from the fixed 3 s base. Reload restores both typed accuracy/damage pairs and 477's independent duration contribution.",
+          "test": "The headless stock replay independently unloads/reloads 477, verifies all five exact modifier transitions and uses captured Area Disruption for both duration states with 471 restored. The ranked consumer test isolates all combat effects across both load states."
+        }
+      }
+    }
+  }
+}
