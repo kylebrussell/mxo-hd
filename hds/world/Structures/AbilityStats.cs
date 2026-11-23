@@ -63,13 +63,27 @@ namespace hds
         };
         public static int SpecialAttack(WorldClient attacker, AbilityItem ability)
         {
-            int test = ability == null ? -1 : (int)(AbilityCatalog.Find(ability.getAbilityID())?.Number("Ability/TestFunction", -1) ?? -1);
+            var definition = ability == null ? null : AbilityCatalog.Find(ability.getAbilityID());
+            int test = (int)(definition?.Number("Ability/TestFunction", -1) ?? -1);
             ushort stat = SpecialAttackStat(test);
             // Linked accuracy bonus policy is OURS: the same level-scaled percentage convention as melee/ranged.
             // Exact retail linked-stat coefficients remain unrecovered.
             int total = test == 1 ? Attack(attacker, true) : stat == 342 || stat == 1032 ?
                 Player(attacker, 163) + (stat == 342 ? ViralAccuracy(attacker) : ThrownAccuracy(attacker)) +
                 (TimedEffects.ForPlayer(attacker).Effects.HasAt(TempMods.BlindAbility, TimeUtils.GetSimTimeSeconds()) ? -30 : 0) : Attack(attacker, false);
+            // Use the authored flat tactic adjustment for style-bound queued gun moves. Their original
+            // tacticalValue producer is unknown; keep the free-cast, escape and item contest rules separate.
+            if (test == 1 && definition.Number("Ability/CastWhenUsed") == 3 &&
+                definition.Number("Ability/HasSuccessInterlockMove") == 1 &&
+                definition.Number("Ability/CastRequiredCombatStance") != 0)
+            {
+                int bonus = (int)definition.Number("Ability/TacticBonus");
+                if (bonus != 0)
+                {
+                    Output.WriteDebugLog($"[SPECIAL-TACTIC OURS] ability={definition.Id} bonus={bonus} base={total} total={total + bonus}");
+                    total += bonus;
+                }
+            }
             if (ability != null) Output.WriteDebugLog("[COMBAT-ATTACK OURS] special " + ability.getAbilityID() + " stat " + stat + " total " + total);
             return total;
         }
