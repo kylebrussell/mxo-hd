@@ -27,7 +27,7 @@ public sealed class DeflectVirusOwnerChildMode : NativeQaMode
             $"Level {Level}, complete {Memory}/{AbilityMemory.ForLevel(Level)} prerequisite memory. Verified outdoor NAV at ({X},{Y},{Z}), away from WinterFrost. Stay at this stand and leave selection clear.",
             "Press Deflect Virus 1.0 on page 2 slot 1 once. Expect 2 s cast, 10 IS, parent own reuse 10 s then exclusive on, followed by owner 693 exclusive on and a separate 10 s own timer. [MODIFIER] source693 stat1009 +14 and stat183 +28, each 5 s.",
             "At the first five-second refresh the owner gets child off then on, with one running child timer. At the next refresh the first child timer clears and restarts. The parent consumes 7 IS at each five-second refresh.",
-            "After that second refresh, Shift+right-click the Deflect Virus buff (parent 378, stock 80 bb 7a 01). Look for parent off, then 693 off and matching modifier removals when the remaining pulse expires. The last child timer clears without restarting. Save your PacketLog and any visible status icon behavior."
+            "After that second refresh, press page 2 slot 1 again to toggle the parent off. Expect parent off, then 693 off and matching modifier removals when the remaining pulse expires. The last child timer clears without restarting. Save the PacketLog. The disposable replay also exercises the captured 80 bb dismissal."
         });
 
     public override async Task<byte[]> AfterStartAsync(NativeQaBootstrapContext context)
