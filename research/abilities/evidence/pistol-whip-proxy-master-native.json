@@ -1,0 +1,27 @@
+{
+  "families": {
+    "proxy-master-stock-recipient": {
+      "representative": 1107,
+      "result": "pass",
+      "head": "20112438f48aeda29a1cc5d25486012566afe835",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/1003#issuecomment-7108209660",
+      "scope": "Stock 1107 used the visible selected owned Proxy. The two-second cast spent 190 IS and started 15-second own reuse. The same pet changed from 2.00 to 3.00 IS/s and cost 10.00 to 7.50. Archive unload removed the action and parent bonus while the already landed effect persisted. Deactivate and resummon produced a new pet ID with baseline cost 10.00."
+    }
+  },
+  "abilities": {
+    "501": {
+      "checks": {
+        "choreography": {
+          "source": "The retained 140-unit Pistol Whip win links 501 to ILDB move 287. The ordinary resolver keeps the opposing tactic exchange when the queued Whip loses.",
+          "runtime": "A winning queued 501 uses its named presentation. On an ordinary lost exchange the opponent uses the ordinary round animation, no 501 hit or state lands, and interlock continues.",
+          "test": "PR995 stock performed the winning 287 and landed Blind. PR1002 stock, with one disposable roll aid, observed ordinary opponent win 0x1 and animation 20496, no 287 or 501 hit/Blind, and continued interlock. The fixture changes the hit comparison only. https://github.com/kylebrussell/mxo-hd/pull/995#issuecomment-7105522085 https://github.com/kylebrussell/mxo-hd/pull/1002#issuecomment-7108073444"
+        }
+      },
+      "note": "Historical landed damage and Blind duration remain open."
+    },
+    "1107": {
+      "family": "proxy-master-stock-recipient",
+      "note": "PR1003 verifies the ordinary stock use and measures the real pet resource clock before and after the grant. The source +50% regeneration and −25% cost apply to the same pet. Stock Archive unload and reload affect the grant without removing its landed effect; the replacement starts at baseline. Pet HP regeneration, NegativeConditionSweepPulse, full stats and the original retail baseline remain open. https://github.com/kylebrussell/mxo-hd/pull/1003#issuecomment-7108209660"
+    }
+  }
+}
