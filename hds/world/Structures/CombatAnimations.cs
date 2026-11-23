@@ -63,6 +63,9 @@ namespace hds
                 ControlActions.CanPerformSpecialMove(caster, ability.getAbilityID()) &&
                 ((!CombatSpecials.ProtectsTimedGunCast(ability.getAbilityID()) && ability.getAbilityID() != CombatSpecials.PistolEvasive) ||
                  AbilityPassives.IsLoaded(caster, ability.getAbilityID())) &&
+                (ability.getAbilityID() != CombatSpecials.DualPistolPointBlank ||
+                    AbilityPassives.IsLoaded(caster, CombatSpecials.DualPistolPointBlank) &&
+                    CombatSpecials.HasEquippedDualHandguns(caster) && CombatStyles.CanUse(caster, CombatSpecials.DualPistolPointBlank)) &&
                 (ability.getAbilityID() == CombatSpecials.SlidingVolley
                     ? AbilityPassives.IsLoaded(caster, CombatSpecials.SlidingVolley) &&
                       CombatSpecials.HasEquippedDualSubmachineGuns(caster) && CombatStyles.CanUse(caster, CombatSpecials.SlidingVolley)
@@ -77,7 +80,7 @@ namespace hds
             {152,"Backsweep"},{153,"Drop Kick"},{286,"Twist Throw"},{287,"Suplex"},{288,"Topsy Turvy"},
             {289,"Punt"},{385,"Diving Frankensteiner"},{386,"Freedom to Joints"},{387,"Running Bulldog"},{388,"Reverse Pulldown"},
             {241,"Pistol Slide"},{242,"Pistol Evasive MR"},{243,"Pistol Aerial"},{244,"Pistol Barrage MR"},
-            {126,"Pistol Disarming Shot"},{501,"Pistol Whip"},{502,"Pistol Execution MR"},
+            {126,"Pistol Disarming Shot"},{CombatSpecials.DualPistolPointBlank,"Pistol Point Blank MR"},{501,"Pistol Whip"},{502,"Pistol Execution MR"},
             {105,"Rifle Body Shot MR"},{253,"Rifle WoundingShot"},{453,"Rifle RifleButt"},{454,"Rifle DeadlyShot"},
             {176,"SubM CoveringFire"},{248,"SubM SupressionFire"},{249,"SubM SlidingVolley"},
             {494,"SubM FullAuto"},{496,"SubM FullAutoRedux"},
@@ -119,6 +122,7 @@ namespace hds
                 {
                     CombatSpecials.PistolEvasive => "Pistol Evasive SR",
                     CombatSpecials.PistolBarrage => "Pistol Barrage SR",
+                    CombatSpecials.DualPistolPointBlank => "Pistol Point Blank SR",
                     _ => name
                 };
             string versus = name + target;

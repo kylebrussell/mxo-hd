@@ -893,6 +893,13 @@ namespace hds
                     {
                         client.messageQueue.addRpcMessage(AbilityMessages.AboutAbility(line, flag, effect.Ability, caster, Name, values));
                     }
+                    if (effect.Ability == CombatSpecials.DualPistolPointBlank && m.Target == TempMods.PowerlessAbility &&
+                        m.Caster is WorldClient shooter && shooter != client)
+                    {
+                        uint casterLine = AbilityMessages.CasterStateLine(m.Target, out int[] casterValues);
+                        shooter.messageQueue.addRpcMessage(AbilityMessages.AboutAbility(casterLine, true, effect.Ability, caster, Name, casterValues));
+                        shooter.FlushQueue();
+                    }
                 }
             }
             if (linkedStun)

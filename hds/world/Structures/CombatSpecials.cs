@@ -29,6 +29,7 @@ namespace hds
 
         internal const ushort PistolBarrage = 244, SlidingVolley = 249, ControlledBurst = 250, ThreeRoundBurst = 256,
             FullAuto = 494, FullAutoRedux = 496;
+        public const ushort DualPistolPointBlank = 499;
 
         internal static bool IsFullAuto(ushort? ability) => ability == FullAuto || ability == FullAutoRedux;
 
@@ -38,7 +39,10 @@ namespace hds
 
         internal static bool KeepsQueuedOpponent(ushort? ability) =>
             ability == 126 || ability == 176 || ability == SlidingVolley || ability == PistolEvasive ||
-            ability == PistolBarrage || IsFullAuto(ability);
+            ability == PistolBarrage || IsFullAuto(ability) || ability == DualPistolPointBlank;
+
+        internal static bool HasEquippedDualHandguns(WorldClient caster) =>
+            RangedWeapons.GetStats(SharpshooterFreeFire.EquippedWeapon(caster))?.Category == "IWDH";
 
         internal static bool HasEquippedDualSubmachineGuns(WorldClient caster) =>
             RangedWeapons.GetStats(SharpshooterFreeFire.EquippedWeapon(caster))?.Category == "IWDS";
@@ -48,7 +52,7 @@ namespace hds
             126 => CombatAnimations.HasRequiredGunWeapon(caster, ability),
             176 => CombatAnimations.HasRequiredGunWeapon(caster, ability),
             ThreeRoundBurst => HasEquippedRifle(caster),
-            PistolBarrage => RangedWeapons.GetStats(SharpshooterFreeFire.EquippedWeapon(caster))?.Category == "IWDH",
+            PistolBarrage => HasEquippedDualHandguns(caster),
             _ => HasEquippedDualSubmachineGuns(caster)
         };
 

@@ -57,7 +57,8 @@ namespace hds
             return style != 0 && AbilityPassives.Level(client, style) > 0 || style == SelfDefense ? style : SelfDefense;
         }
 
-        public static bool IsSpecialMove(ushort ability) => AbilityCatalog.Find(ability)?.Number("Ability/CombatSpecialMove") == 1;
+        public static bool IsSpecialMove(ushort ability) =>
+            ability == CombatSpecials.DualPistolPointBlank || AbilityCatalog.Find(ability)?.Number("Ability/CombatSpecialMove") == 1;
 
         /// <summary>Whether the special move can be used in the current style (abilities that aren't special moves always can).</summary>
         public static bool CanUse(WorldClient client, ushort ability)
