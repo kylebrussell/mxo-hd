@@ -1,0 +1,23 @@
+{
+  "abilities": {
+    "479": {
+      "checks": {
+        "controls": {
+          "source": "GOB 479 authors six-second Pacify. The AddControlImmunityTimer callback uses the resistance term's twelve seconds. Pacify and its resistance rider release on damage.",
+          "runtime": "Player casts use the authored state, and the separate 734/681 record has its own expiry. Each eligible target owns its own damage-break lifecycle.",
+          "test": "FreezeArea479ChoosesValuesByCasterAndDamageBreakLeavesImmunity and SelectedHighRankPacifyRetainsTheSeparateNaturalStateAndImmunityExpiry cover both contexts, natural removal and the damage break. Stock saw 6.90 seconds with Effective Code's +15%, then paired state expiry. Logic Blast broke QAEnemy's paired state and resistance, and its immunity and QAOther's records completed their original timers. https://github.com/kylebrussell/mxo-hd/pull/936#issuecomment-7093321298"
+        },
+        "stats": {
+          "source": "The shipped 479 player modifier sets Viral Resistance -80 for twelve seconds. The archived NPC application gives -100 over the same duration.",
+          "runtime": "Caster-aware recovery keeps the NPC result while the player stat flows into typed Viral Resistance and the regular modifier lifecycle.",
+          "test": "Stock added -80 on the two eligible opponents, with own records and matched expiry. Logic Blast jumped from 15 to 17 through QAEnemy's -80 while QAOther's stat remained. Executable player/NPC tests verify the two distinct values. https://github.com/kylebrussell/mxo-hd/pull/936#issuecomment-7093321298"
+        },
+        "behavior-tests": {
+          "source": "GOB 479 specifies a two-second selected-hostile Hacker cast with base cost 38 IS, fifteen-second reuse, a six-metre target-centred area, Pacify, susceptibility and independent immunity.",
+          "runtime": "The selected-area contest qualifies the original spawn and each hostile recipient. Their player/NPC control modifiers use the source-appropriate values and release independently.",
+          "test": "The selected admission and area tests, the real player/NPC application test, and native PR931/936 cover cost, cast and reuse, hostile edge and ally exclusions, typed resistance, natural expiry and damage break. https://github.com/kylebrussell/mxo-hd/pull/936#issuecomment-7093321298"
+        }
+      }
+    }
+  }
+}
