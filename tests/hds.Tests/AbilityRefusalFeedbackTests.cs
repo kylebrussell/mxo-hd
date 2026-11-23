@@ -2634,9 +2634,167 @@ public class AbilityRefusalFeedbackTests:IDisposable
         .Where(packet => packet is [0x81, 0x6e, ..] && packet.Length == 11)
         .Select(packet => BitConverter.ToUInt32(packet, 2)).ToArray();
 
+    [Theory]
+    [InlineData("queued", 0u)]
+    [InlineData("at rest", AbilityRefusals.InvalidTarget)]
+    [InlineData("wrong weapon", AbilityRefusals.RequiredItemCategory)]
+    [InlineData("wrong style", AbilityRefusals.WrongStyle)]
+    [InlineData("unloaded", AbilityRefusals.NotLoaded)]
+    [InlineData("other spawn", AbilityRefusals.InvalidTarget)]
+    public void RifleButtSmashQueuesOnlyAgainstItsCurrentOpponent(string scenario, uint reason)
+    {
+        const ushort id = CombatSpecials.RifleButtSmash;
+        var caster = TimedGunSpecialCaster(id, scenario == "unloaded", scenario == "wrong weapon");
+        if (scenario == "wrong style")
+            CombatStyles.Select(caster, CombatStyles.SelfDefense);
+        caster.messageQueue.RPCMessagesQueue.Clear();
+        var target = new Mob();
+        target.setEntityId(250000);
+        target.setDistrict(1);
+        target.setHealthC(1000);
+        target.setHealthM(1000);
+        target.setLevel(39);
+        target.setIsSpawned(true);
+        target.setXPos(21550);
+        target.setYPos(1095);
+        target.setZPos(16150);
+        var view = caster.viewMan.addView(target.getEntityId(), 1);
+        view.viewCreated = true;
+        view.spawnId = 9;
+        uint handle = DuelPackets.Handle(view.ViewID, view.spawnId);
+        var fight = new CombatSession(caster, target, handle, CombatSession.CombatType.Melee)
+        {
+            CurrentMove = new CombatInterlock.Move()
+        };
+        typeof(CombatSession).GetField("<IsActive>k__BackingField", BindingFlags.Instance | BindingFlags.NonPublic)!
+            .SetValue(fight, true);
+        var handler = CombatManager.GetHandler(caster);
+        var sessionField = typeof(CombatHandler).GetField("currentSession", BindingFlags.Instance | BindingFlags.NonPublic)!;
+        sessionField.SetValue(handler, scenario == "at rest" ? null : fight);
+        var previousMobs = WorldServer.mobs;
+        WorldServer.mobs = new System.Collections.ArrayList { target };
+        try
+        {
+            var request = TimedGunSpecialRequest(id, scenario == "other spawn" ? handle ^ 0x10000 : handle);
+            new AbilityHandler().ProcessAbility(ref request);
+            Assert.Equal(1000, target.getHealthC());
+            if (reason != 0)
+            {
+                Assert.Equal(AbilityRefusals.Encode(new(id, reason)), Assert.Single(Rpcs(caster)));
+                Assert.Null(fight.QueuedAbility);
+                Assert.Equal(500, AbilityHandler.CurrentInnerStrength(caster));
+                return;
+            }
+
+            var ability = Assert.IsType<AbilityItem>(fight.QueuedAbility);
+            Assert.Equal(460, AbilityHandler.CurrentInnerStrength(caster));
+            Assert.Equal(view.ViewID, fight.QueuedAbilityTarget);
+            Assert.True(AbilityCooldowns.IsCoolingDown(caster.playerData, id, TimeUtils.GetSimTimeSeconds()));
+            Assert.True(handler.CanResolveNpcQueuedAbility(fight, ability));
+            Assert.Equal(11356u, CombatAnimations.Special(id, true, CombatTactic.Speed)?.Id);
+            Assert.Null(CombatAnimations.Special(id, false, CombatTactic.Speed));
+            Assert.Equal(6, AbilityHandler.AbilityDamage(ability, new Random(1)));
+            Assert.Equal(AbilityStats.Attack(caster, false), AbilityStats.SpecialAttack(caster, ability));
+
+            view.spawnId++;
+            Assert.False(handler.CanResolveNpcQueuedAbility(fight, ability));
+            view.spawnId--;
+            caster.playerInstance.EquippedItemID.setValue(698u);
+            Assert.False(handler.CanResolveNpcQueuedAbility(fight, ability));
+            caster.playerInstance.EquippedItemID.setValue(692u);
+            caster.playerData.passives.Loaded.Remove(id);
+            Assert.False(handler.CanResolveNpcQueuedAbility(fight, ability));
+        }
+        finally
+        {
+            sessionField.SetValue(handler, null);
+            CombatManager.RemoveClient(caster);
+            WorldServer.mobs = previousMobs;
+        }
+    }
+
+    [Fact]
+    public void RifleEscapeWinAidIsDisposablePairScopedAndConsumedOnce()
+    {
+        var caster = Client();
+        var enemy = Client();
+        enemy.playerData.setCharID(6114);
+        enemy.playerData.setEntityId(6114);
+        var view = caster.viewMan.addView(6114, 1);
+        view.viewCreated = true;
+        view.spawnId = 9;
+        var fight = (PvpFight)typeof(PvpFight).GetConstructor(BindingFlags.Instance | BindingFlags.NonPublic,
+            null, new[] { typeof(WorldClient), typeof(WorldClient) }, null)!.Invoke(new object[] { caster, enemy });
+        var active = typeof(PvpFight).GetField("<IsActive>k__BackingField", BindingFlags.Instance | BindingFlags.NonPublic)!;
+        active.SetValue(fight, true);
+        fight.Attacker.Move = new CombatInterlock.Move();
+        fight.Attacker.OpponentHandle = DuelPackets.Handle(view.ViewID, view.spawnId);
+        var handler = CombatManager.GetHandler(caster);
+        handler.pvpFight = fight;
+        var mode = CombatFixtureWeapons.RifleEscapeWinMode;
+        string? priorMode = Environment.GetEnvironmentVariable(mode);
+        const string denied = "Rifle Butt Smash win aid requires the disposable rifle fixture.";
+        const string needsFight = "Rifle Butt Smash win aid requires the active interlock with QAEnemy.";
+        const string armed = "Next Rifle Butt Smash against QAEnemy is armed for one winning withdrawal roll.";
+        var dbField = typeof(ServerConfig).GetField("_dbParams", BindingFlags.Instance | BindingFlags.NonPublic)!;
+        var db = dbField.GetValue(Store.config);
+        try
+        {
+            Environment.SetEnvironmentVariable(mode, null);
+            Assert.Equal(denied, Arm());
+            Environment.SetEnvironmentVariable(mode, "1");
+            dbField.SetValue(Store.config, new DbParams { DatabaseName = "mxo_live" });
+            Assert.Equal(denied, Arm());
+            dbField.SetValue(Store.config, db);
+            caster.playerData.setCharID(2);
+            Assert.Equal(denied, Arm());
+            caster.playerData.setCharID(110);
+            enemy.playerData.setCharID(6111);
+            Assert.Equal(needsFight, Arm());
+            enemy.playerData.setCharID(6114);
+            Assert.Equal(armed, Arm());
+            Assert.Equal(armed, Arm());
+
+            Assert.Equal((0, 120), Rolls(126));
+            Environment.SetEnvironmentVariable(mode, null);
+            Assert.Equal((0, 120), Rolls(453));
+            Environment.SetEnvironmentVariable(mode, "1");
+            enemy.playerData.setCharID(6111);
+            Assert.Equal((0, 120), Rolls(453));
+            enemy.playerData.setCharID(6114);
+            view.spawnId++;
+            Assert.Equal((0, 120), Rolls(453));
+            view.spawnId--;
+            Assert.Equal((1, 0), Rolls(453));
+            Assert.Equal((0, 120), Rolls(453));
+
+            Assert.Equal(armed, Arm());
+            active.SetValue(fight, false);
+            Assert.Equal((0, 120), Rolls(453));
+            Assert.Equal(needsFight, Arm());
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable(mode, priorMode);
+            dbField.SetValue(Store.config, db);
+            handler.pvpFight = null;
+            CombatManager.RemoveClient(caster);
+        }
+
+        string Arm() => CombatDepthDev.Run(caster, new[] { "rb" });
+        (int, int) Rolls(ushort id)
+        {
+            var ability = new AbilityItem();
+            ability.setAbilityID(id);
+            ushort attack = 0, defence = 120;
+            fight.ApplyRifleEscapeWin(fight.Attacker, fight.Defender, ability, ref attack, ref defence);
+            return (attack, defence);
+        }
+    }
+
     private static WorldClient TimedGunSpecialCaster(ushort id, bool unloaded = false, bool wrongWeapon = false)
     {
-        bool rifle = id == CombatSpecials.ThreeRoundBurst;
+        bool rifle = id is CombatSpecials.ThreeRoundBurst or CombatSpecials.RifleButtSmash;
         bool instantDualPistol = CombatSpecials.IsInstantDualPistolSpecial(id);
         bool barrage = id == CombatSpecials.PistolBarrage;
         bool dash = id == CombatSpecials.DualPistolDash;
@@ -2647,7 +2805,7 @@ public class AbilityRefusalFeedbackTests:IDisposable
         {
             126 or 176 => 19,
             CombatSpecials.DualPistolDash => 36,
-            CombatSpecials.PistolWhip => 39,
+            CombatSpecials.PistolWhip or CombatSpecials.RifleButtSmash => 39,
             CombatSpecials.DualPistolPointBlank => 42,
             CombatSpecials.FullAuto or CombatSpecials.FullAutoRedux or CombatSpecials.DualPistolExecution => 46,
             _ => 27
@@ -2660,7 +2818,7 @@ public class AbilityRefusalFeedbackTests:IDisposable
         var caster = Client();
         caster.playerInstance.Level.setValue(level);
         caster.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(21750, 1095, 16150));
-        uint weapon = id switch { 126 => 2565, 176 => 698, CombatSpecials.ThreeRoundBurst => 692, _ => dualPistol ? 2496u : 2503u };
+        uint weapon = id switch { 126 => 2565, 176 => 698, CombatSpecials.ThreeRoundBurst or CombatSpecials.RifleButtSmash => 692, _ => dualPistol ? 2496u : 2503u };
         caster.playerInstance.EquippedItemID.setValue(wrongWeapon ? (dualPistol ? 2565u : id == 176 ? 2503u : 698u) : weapon);
         var profile = new ushort[] { 2, 17, style, id }
             .SelectMany(entry => AbilityPrerequisites.Current.Closure(entry).Keys.Append(entry)).Distinct().ToArray();
@@ -2675,7 +2833,7 @@ public class AbilityRefusalFeedbackTests:IDisposable
         ability.setAbilityID(id);
         ability.setAbilityName(AbilityCatalog.Find(id).Name);
         ability.setIsCastable(true);
-        ability.setCastingTime(instantDualPistol || dash ? (ushort)0 : barrage ? (ushort)2 : (ushort)4);
+        ability.setCastingTime(instantDualPistol || dash || id == CombatSpecials.RifleButtSmash ? (ushort)0 : barrage ? (ushort)2 : (ushort)4);
         ability.setCastAnimStart(new byte[4]);
         DataLoader.getInstance().AbilityDB.Add(ability);
         return caster;

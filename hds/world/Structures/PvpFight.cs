@@ -98,6 +98,7 @@ namespace hds
         private CombatPresentation presentation;
         private readonly List<Side> members = new List<Side>();
         private long membershipVersion;
+        private (Side Caster, Side Opponent, uint Handle, long Membership)? rifleEscapeWin;
         public const int MaximumFighters = 6;
         public int FighterCount { get { lock (sync) return members.Count(s => s.Present); } }
         internal WorldClient[] CurrentOpponents(WorldClient target)
@@ -451,6 +452,43 @@ namespace hds
             }
         }
 
+        internal bool ArmRifleEscapeWin(WorldClient client)
+        {
+            lock (sync)
+            {
+                var side = SideOf(client);
+                var opponent = side?.Other;
+                if (opponent?.Client.playerData.getCharID() != 6114 ||
+                    !MatchesQueuedOpponent(client, side.OpponentHandle)) return false;
+
+                rifleEscapeWin = (side, opponent, side.OpponentHandle, membershipVersion);
+                return true;
+            }
+        }
+
+        // Only an admitted 453 in the armed QA pairing can consume the aid. All roll generation,
+        // selection, damage, choreography and withdrawal still go through the normal round.
+        internal void ApplyRifleEscapeWin(Side caster, Side opponent, AbilityItem ability, ref ushort attack, ref ushort opposingAttack)
+        {
+            lock (sync)
+            {
+                if (!rifleEscapeWin.HasValue || !CombatSpecials.IsRifleEscape(ability?.getAbilityID())) return;
+                var arm = rifleEscapeWin.Value;
+                if (arm.Caster != caster || arm.Opponent != opponent || arm.Membership != membershipVersion ||
+                    opponent.Client.playerData.getCharID() != 6114 || !CombatFixtureWeapons.RifleEscapeWinAllowed(caster.Client) ||
+                    !MatchesQueuedOpponent(caster.Client, arm.Handle)) return;
+
+                rifleEscapeWin = null;
+                ushort originalAttack = attack, originalOpposingAttack = opposingAttack;
+                if (attack <= opposingAttack)
+                {
+                    attack = Math.Max((ushort)1, attack);
+                    opposingAttack = (ushort)(attack - 1);
+                }
+                Output.WriteDebugLog($"[RIFLE ESCAPE QA] 453 win consumed for CSR_Tester against QAEnemy: {originalAttack}/{originalOpposingAttack} -> {attack}/{opposingAttack}");
+            }
+        }
+
         public bool QueueAbility(WorldClient client, AbilityItem ability, UInt16 targetViewId, bool sneakOpener = false,
             uint? requiredOpponent = null)
         {
@@ -645,24 +683,35 @@ namespace hds
                 // The roles of CombatRules.Resolve: its "player" may withdraw, so a withdrawing defender takes that role
                 foreach (Side side in new[] { first, second })
                     if (!ControlActions.CanWithdraw(TimedEffects.ForPlayer(side.Client).Effects)) side.Withdrawing = false;
-                bool bothWithdraw = first.Withdrawing && second.Withdrawing && counter && !opening;
-                Side p = second.Withdrawing && !first.Withdrawing && counter && !opening ? second : first;
-                Side n = p == first ? second : first;
+                AbilityItem firstAbility = opening ? null : QueuedAbilityForRound(first, second);
+                AbilityItem secondAbility = opening || !counter ? null : QueuedAbilityForRound(second, first);
+                if (!CombatAnimations.CanResolveQueuedAbility(first.Client, firstAbility)) firstAbility = null;
+                if (!CombatAnimations.CanResolveQueuedAbility(second.Client, secondAbility)) secondAbility = null;
+                bool firstEscape = CombatSpecials.IsRifleEscape(firstAbility?.getAbilityID());
+                bool secondEscape = CombatSpecials.IsRifleEscape(secondAbility?.getAbilityID());
+                bool firstWithdraws = first.Withdrawing || firstEscape;
+                bool secondWithdraws = second.Withdrawing || secondEscape;
+                bool bothWithdraw = firstWithdraws && secondWithdraws && counter && !opening;
+                // When both choose withdrawal, the original resolver uses the attacker for an escape result.
+                bool secondResolves = counter && !opening && secondWithdraws &&
+                    (!firstWithdraws || bothWithdraw && (firstEscape || secondEscape));
+                Side p = secondResolves ? second : first;
+                Side n = secondResolves ? first : second;
+                bool pAttemptsWithdrawal = secondResolves ? secondWithdraws : firstWithdraws;
+                bool nAttemptsWithdrawal = secondResolves ? firstWithdraws : secondWithdraws;
+                bool pEscape = secondResolves ? secondEscape : firstEscape;
 
                 int pLevel = PvpFlag.LevelOf(p.Client), nLevel = PvpFlag.LevelOf(n.Client);
                 CombatTactic pTactic = p.Client.playerData.combatTactic, nTactic = n.Client.playerData.combatTactic;
                 CombatTacticType pType = CombatTactics.Type(p.Client), nType = CombatTactics.Type(n.Client);
-                AbilityItem pAbility = opening ? null : QueuedAbilityForRound(p, n),
-                    nAbility = opening ? null : QueuedAbilityForRound(n, p);
-                if (!counter) nAbility = null;
-                if (!CombatAnimations.CanResolveQueuedAbility(p.Client, pAbility)) pAbility = null;
-                if (!CombatAnimations.CanResolveQueuedAbility(n.Client, nAbility)) nAbility = null;
+                AbilityItem pAbility = secondResolves ? secondAbility : firstAbility;
+                AbilityItem nAbility = secondResolves ? firstAbility : secondAbility;
                 bool pWithdrawal=WithdrawalInput.Ordinary(p.Withdrawing,opening,pAbility,p.OrdinaryWithdrawalRequested);
                 bool nWithdrawal=WithdrawalInput.Ordinary(n.Withdrawing,opening,nAbility,n.OrdinaryWithdrawalRequested);
                 // Combat_modifiers.py defines the short-range gun penalty for both rolls.
                 // Use the opponent's current direct links to distinguish shooting into a melee.
                 bool closeGunExchange = !opening && counter && pAbility == null && nAbility == null &&
-                    !p.Withdrawing && !n.Withdrawing && CombatHandler.InMeleeReach(PvpCombat.MetresBetween(p.Client, n.Client));
+                    !pAttemptsWithdrawal && !nAttemptsWithdrawal && CombatHandler.InMeleeReach(PvpCombat.MetresBetween(p.Client, n.Client));
                 int pGunPenalty = closeGunExchange ? CloseGunPenalty(p, n, multifighting) : 0;
                 int nGunPenalty = closeGunExchange ? CloseGunPenalty(n, p, multifighting) : 0;
                 if (!opening)
@@ -700,8 +749,11 @@ namespace hds
                     pFirst = !counter || CombatRules.PlayerAttacksFirst(pTactic, nTactic, opening, p == first, () => rng.Next(2) == 0);
                 }
 
+                if (!opening && !bothWithdraw && pEscape)
+                    ApplyRifleEscapeWin(p, n, pAbility, ref pAttack, ref nAttack);
+
                 CombatRules.Outcome outcome = bothWithdraw
-                    ? new CombatRules.Outcome { PlayerWins = true, Flags = CombatRules.Withdraw, Withdrew = true }
+                    ? CombatRules.SuccessfulWithdrawal(pEscape)
                     : CombatRules.Resolve(
                         new CombatRules.Fighter
                         {
@@ -713,7 +765,7 @@ namespace hds
                             Tactic = nTactic, Hits = nHit, AttackRoll = nAttack, SpecialMove = nAbility != null,
                             Damage = nDamage, Absorbed = absorbedByP, Health = PvpCombat.HealthOf(n.Client)
                         },
-                        pFirst, opening, p.Withdrawing);
+                        pFirst, opening, pAttemptsWithdrawal, pEscape);
 
                 // The moves this round decided carry the rolls (attack roll as the value, defense roll first)
                 CombatInterlock.Move pDecided = p.Move, nDecided = n.Move;
@@ -723,7 +775,7 @@ namespace hds
                 nDecided.R1 = nDefense;
 
                 SendRound(p, pDecided, nDecided, outcome.PlayerWins, outcome.Flags, outcome.DamageToPlayer, outcome.PlayerAbsorbed,
-                    outcome.DamageToNpc, outcome.NpcAbsorbed, opening, p.Withdrawing && !opening ? pAttack - nAttack : 0, PvpCombat.HandleOf(p.Client,n.Client));
+                    outcome.DamageToNpc, outcome.NpcAbsorbed, opening, pAttemptsWithdrawal && !opening ? pAttack - nAttack : 0, PvpCombat.HandleOf(p.Client,n.Client));
                 SendRound(n, nDecided, pDecided, !outcome.PlayerWins, outcome.Flags, outcome.DamageToNpc, outcome.NpcAbsorbed,
                     outcome.DamageToPlayer, outcome.PlayerAbsorbed, opening && counter, 0, PvpCombat.HandleOf(n.Client,p.Client));
                 presentation.RoundPair(p.Slot, n.Slot, outcome.PlayerWins, outcome.Flags,
@@ -738,6 +790,12 @@ namespace hds
                 if (outcome.Withdrew)
                 {
                     withdrew = p;
+                    if (outcome.SpecialMoveLands)
+                    {
+                        landedBy = p;
+                        landed = pAbility;
+                        sneakOpener = p.SneakOpener;
+                    }
                 }
                 else if (special)
                 {
@@ -777,6 +835,8 @@ namespace hds
             // Outside the fight's lock: these end the fight, and may end a duel
             if (withdrew != null)
             {
+                if (landed != null)
+                    PvpCombat.LandAbilityOn(withdrew.Client, landed, (withdrew == first ? second : first).Client, sneakOpener);
                 Output.WriteDebugLog("[PVP] " + PvpFlag.Name(withdrew.Client) + " withdraws");
                 End(EndReason.Withdrew, withdrew.Client);
             }

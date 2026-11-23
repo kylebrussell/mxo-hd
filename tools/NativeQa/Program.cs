@@ -323,6 +323,8 @@ try
                     result = NativeQa.Modes.DualPistolDashMode.Records(actor);
                 else if (fixtureMode is NativeQa.Modes.DualPistolPointBlankMode && action == "point-blank-armor")
                     await NativeQa.Modes.PistolSlideMode.ApplyArmorAsync(actor);
+                else if (fixtureMode is NativeQa.Modes.RifleButtSmashMode && action == "rifle-butt-armor")
+                    await NativeQa.Modes.PistolSlideMode.ApplyArmorAsync(actor);
                 else if (fixtureMode is NativeQa.Modes.PistolSlideMode && action == "slide-armor")
                     await NativeQa.Modes.PistolSlideMode.ApplyArmorAsync(actor);
                 else if (fixtureMode is NativeQa.Modes.PistolShortPoseMode && action == "pistol-pose-armor")

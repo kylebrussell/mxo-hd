@@ -184,6 +184,20 @@ public class CombatRulesTests
         Assert.Equal((0, 0), (o.DamageToPlayer, o.DamageToNpc));
     }
 
+    [Theory]
+    [InlineData(90, 91, false)]
+    [InlineData(90, 90, false)]
+    [InlineData(91, 90, true)]
+    public void RifleEscapeUsesTheTacticalComparisonInsteadOfOrdinaryHits(int playerRoll, int opponentRoll, bool succeeds)
+    {
+        var outcome = CombatRules.Resolve(F(CombatTactic.Power, true, 30, specialMove: true, attackRoll: playerRoll),
+            F(CombatTactic.Grab, true, 40, attackRoll: opponentRoll), true, false, true, true);
+        Assert.Equal(succeeds, outcome.Withdrew);
+        Assert.Equal(succeeds, outcome.SpecialMoveLands);
+        Assert.Equal(succeeds ? CombatRules.SpecialMove : CombatRules.AttackerHits, outcome.Flags);
+        Assert.Equal((succeeds ? 0 : 40, 0), (outcome.DamageToPlayer, outcome.DamageToNpc));
+    }
+
     [Fact]
     public void FailedWithdrawalIsARoundTheWithdrawerCantHit()
     {

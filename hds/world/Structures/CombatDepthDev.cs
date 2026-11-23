@@ -23,6 +23,7 @@ namespace hds
             if (command == "cip") return CombatFoundationsQa.Setup(caller, "code-infection");
             if (command == "fixture-weapon" || command == "w") return CombatFixtureWeapons.Set(caller, args.Length == 2 ? args[1] : "");
             if (command == "fixture-disengage" || command == "stop") return CombatFixtureWeapons.Disengage(caller);
+            if (command == "rb" && args.Length == 1) return CombatFixtureWeapons.ArmRifleEscapeWin(caller);
             if (command == "fixture-reset-ballistic-resisted") return CombatFixtureWeapons.ResetDummy(caller, resistanceStat: 181);
             if (command == "fixture-reset") return CombatFixtureWeapons.ResetDummy(caller);
             if (command == "fixture-reset-resisted") return CombatFixtureWeapons.ResetDummy(caller, addPhysicalResistance: true);
