@@ -87,8 +87,10 @@ public class MultifightingInterlockTests : IDisposable
         Assert.Equal(90,Input(f,s[0]));
         s[2].Client.playerData.setDistrictId(2);Assert.Equal(100,Input(f,s[0]));
     }
-    [Fact]
-    public void SlidingVolleyCannotTransferToANewOpponentOrRespawn()
+    [Theory]
+    [InlineData(249, "Sliding Volley")]
+    [InlineData(242, "Pistol Evasive")]
+    public void SelectedSpecialCannotTransferToANewOpponentOrRespawn(ushort id, string name)
     {
         var (fight, sides) = Group();
         Set(fight, "rng", new Random(1));
@@ -99,12 +101,13 @@ public class MultifightingInterlockTests : IDisposable
         var replacement = AddView(other, 4002, 10);
         uint handle = DuelPackets.Handle(original.ViewID, original.spawnId);
         shooter.OpponentHandle = handle;
-        var volley = new AbilityItem();
-        volley.setAbilityID(CombatSpecials.SlidingVolley);
-        volley.setAbilityName("Sliding Volley");
+        var ability = new AbilityItem();
+        ability.setAbilityID(id);
+        ability.setAbilityName(name);
+        Assert.False(fight.QueueAbility(shooter.Client, ability, original.ViewID));
 
-        Assert.True(fight.QueueAbility(shooter.Client, volley, original.ViewID, requiredOpponent: handle));
-        Assert.Same(volley, PvpFight.QueuedAbilityForRound(shooter, opponent));
+        Assert.True(fight.QueueAbility(shooter.Client, ability, original.ViewID, requiredOpponent: handle));
+        Assert.Same(ability, PvpFight.QueuedAbilityForRound(shooter, opponent));
         Assert.Null(PvpFight.QueuedAbilityForRound(shooter, other));
         original.spawnId++;
         Assert.Null(PvpFight.QueuedAbilityForRound(shooter, opponent));
@@ -118,8 +121,8 @@ public class MultifightingInterlockTests : IDisposable
         Assert.Null(shooter.QueuedAbility);
         Assert.True(fight.ChangeTarget(shooter.Client, opponent.Client, Retarget(handle)));
         Assert.Null(PvpFight.QueuedAbilityForRound(shooter, opponent));
-        Assert.True(fight.QueueAbility(shooter.Client, volley, original.ViewID, requiredOpponent: handle));
-        Assert.Same(volley, PvpFight.QueuedAbilityForRound(shooter, opponent));
+        Assert.True(fight.QueueAbility(shooter.Client, ability, original.ViewID, requiredOpponent: handle));
+        Assert.Same(ability, PvpFight.QueuedAbilityForRound(shooter, opponent));
 
         ClientView AddView(PvpFight.Side side, uint entity, ushort spawn)
         {

@@ -2001,6 +2001,10 @@ public class AbilityRefusalFeedbackTests:IDisposable
                 Assert.Equal(view.ViewID, session.QueuedAbilityTarget);
                 Assert.True(CombatAnimations.CanResolveQueuedAbility(caster, queued));
                 Assert.Equal(AbilityStats.Attack(caster, ranged: true) + 10, AbilityStats.SpecialAttack(caster, queued));
+                Assert.True(handler.CanResolveNpcQueuedAbility(session, queued));
+                view.spawnId++;
+                Assert.False(handler.CanResolveNpcQueuedAbility(session, queued));
+                view.spawnId--;
                 Assert.Equal(9529u, CombatAnimations.Special(id, true, CombatTactic.Speed)?.Id);
                 Assert.Null(CombatAnimations.Special(id, false, CombatTactic.Speed));
                 caster.playerData.passives.Loaded.Remove(id);
