@@ -10,7 +10,7 @@ public sealed class ProxyCoderDerezMode : NativeQaMode
     private const ushort Derez = 26, Coder = 1008, Daemon = 22, Proxy = 27, Drain = 19, Boost = 25;
     private const int Level = 18, X = 17000, Y = 495, Z = 6400, DummyZ = 6950, FarZ = 7300, EntryZ = 6550;
     // Complete stock Logic Daemon request from the PR593 dismissal batch.
-    private const string StockDaemon = "80b916000000000000000000000000000000000000000000000000000090767241086b0000000000";
+    internal const string StockDaemon = "80b916000000000000000000000000000000000000000000000000000090767241086b0000000000";
     private const string StockProxy = "80b91b00000000000000000000000000000000000000000000000000585cb40001000000086b0000000000";
     private const string StockDrain = "80b913000e000f000000000000000000000000000000000000000000585cb40001000000086b0000000000";
     private const string StockBoost = "80b91900000000000000000000000000000000000000000000000000ffff7f7f00000000086b0000000000";
@@ -252,7 +252,7 @@ public sealed class ProxyCoderDerezMode : NativeQaMode
 
     private static uint Handle(ViewCreation view) => DuelPackets.Handle(view.ViewId, view.SpawnId);
 
-    private static byte[] Use(uint selectedHandle)
+    internal static byte[] Use(uint selectedHandle)
     {
         // Stock Proxy Coder requests in PR401 capture 29da6f3e7d68, lines 6409 and 10443.
         byte[] request = Convert.FromHexString(selectedHandle == 0
@@ -262,7 +262,7 @@ public sealed class ProxyCoderDerezMode : NativeQaMode
         return request;
     }
 
-    private static async Task<ViewCreation> SeePetAsync(HeadlessPlayer caster, uint owner, string? name = "Nuker Simulacrum")
+    internal static async Task<ViewCreation> SeePetAsync(HeadlessPlayer caster, uint owner, string? name = "Nuker Simulacrum")
     {
         ViewCreation? pet = null;
         await caster.WaitUntilAsync(() => (pet = caster.World.CreationSnapshot().LastOrDefault(view =>
