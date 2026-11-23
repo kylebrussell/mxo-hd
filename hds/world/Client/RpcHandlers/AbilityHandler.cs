@@ -52,7 +52,8 @@ namespace hds
             }
 
             bool guardianSupport = AbilitySupport.IsGuardianSupport(AbilityID);
-            if (guardianSupport && !AbilityPassives.IsLoaded(Store.currentClient, AbilityID))
+            bool supportNeedsLoadout = guardianSupport || AbilityID == AbilitySupport.ViralShielding;
+            if (supportNeedsLoadout && !AbilityPassives.IsLoaded(Store.currentClient, AbilityID))
             {
                 Deny(AbilityID, "Load this ability before using it.", AbilityRefusals.NotLoaded, sendServerText: false);
                 return;
@@ -1044,8 +1045,8 @@ namespace hds
                 }
                 else if (support)
                 {
-                    if (guardianSupport && !AbilityPassives.IsLoaded(client, AbilityID))
-                        Output.WriteDebugLog($"[ABILITY] {AbilityID} fizzles: the starter support ability was unloaded before landing");
+                    if (supportNeedsLoadout && !AbilityPassives.IsLoaded(client, AbilityID))
+                        Output.WriteDebugLog($"[ABILITY] {AbilityID} fizzles: the {(guardianSupport ? "starter support ability" : "support ability")} was unloaded before landing");
                     else
                         AbilitySupport.Land(client, AbilityID, currentTargetViewId, spawn: targetSpawn);
                 }

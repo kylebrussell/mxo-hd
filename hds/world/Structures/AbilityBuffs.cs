@@ -870,9 +870,11 @@ namespace hds
             if (!keepVitals) RefreshVitals(client);
             if (buff.RefundIS > 0)
             {
-                ushort inner=(ushort)Math.Min(AbilityHandler.MaxInnerStrength(client),AbilityHandler.CurrentInnerStrength(client)+buff.RefundIS);
+                ushort before = AbilityHandler.CurrentInnerStrength(client);
+                ushort inner = (ushort)Math.Min(AbilityHandler.MaxInnerStrength(client), before + buff.RefundIS);
                 client.playerInstance.InnerStrengthAvailable.setValue(inner);
                 new ServerPackets().sendISCurrent(client,inner);
+                Output.WriteDebugLog($"[VITALS] char={data.getCharID()} RefundIS source={abilityId} IS={before}->{inner}");
             }
             // Do not allow a term heal during death cleanup to leave positive HP on a dead character.
             if(buff.TermHeal>0 && !data.isDead && !data.duelDeath) AbilityHandler.HealSelf(client,(ushort)buff.TermHeal);

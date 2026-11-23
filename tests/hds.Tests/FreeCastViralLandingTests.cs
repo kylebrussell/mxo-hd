@@ -1068,6 +1068,157 @@ public class FreeCastViralLandingTests : IDisposable
         finally { TimedEffects.Clear(target); }
     }
 
+    [Fact]
+    public void ViralShieldingLandsAroundTheCasterAndFeedsTypedDefenseUntilEachRecipientTerms()
+    {
+        const ushort shield = AbilitySupport.ViralShielding, firewall = 63, thrown = 279;
+        var caster = Client(105);
+        var near = Client(111);
+        var edge = Client(112);
+        var outside = Client(113);
+        var outsider = Client(110);
+        var clients = new[] { caster, near, edge, outside, outsider };
+        int[] positions = { 0, 1000, 1239, 1241, 200 };
+        for (int i = 0; i < clients.Length; i++)
+        {
+            clients[i].playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(positions[i], 495, 0));
+            clients[i].playerInstance.InnerStrengthMax.setValue((ushort)1000);
+            clients[i].playerInstance.InnerStrengthAvailable.setValue((ushort)400);
+            clients[i].playerInstance.OrganizationID.setValue((byte)1);
+        }
+        near.playerData.pvpFlag = outsider.playerData.pvpFlag = true;
+        near.playerData.combatTactic = CombatTactic.Grab;
+        outsider.playerInstance.OrganizationID.setValue((byte)2);
+        outsider.viewMan.addView(near.playerData.getEntityId(), 1).viewCreated = true;
+        ushort selected = caster.viewMan.addView(outsider.playerData.getEntityId(), 1).ViewID;
+        caster.viewMan.getViewById(selected).viewCreated = true;
+        var throwMove = new AbilityItem();
+        throwMove.setAbilityID(thrown);
+        var viral = new AbilityItem();
+        viral.setAbilityID(33);
+        AbilityPassives.SetLoaded(outsider, new[] { ((ushort)33, (ushort)50) });
+        Assert.True(AbilityBuffs.Apply(outsider, 314));
+        Store.currentClient = caster;
+        var previousWorld = Store.world;
+        var groups = hds.world.Structures.SocialGroups.Instance;
+        var team = groups.CreateTeam(caster.playerData.getCharID(), "Shield lead");
+        try
+        {
+            Store.world = (WorldServer)RuntimeHelpers.GetUninitializedObject(typeof(WorldServer));
+            foreach (var recipient in new[] { near, edge, outside })
+                groups.AddTeamMember(team.Id, recipient.playerData.getCharID(), TimedEffects.PlayerName(recipient));
+
+            Assert.Equal(10, AbilityRadius.Metres(caster, shield));
+            Assert.Equal(new[] { caster, near }, AbilitySupport.Targets(caster, shield, selected));
+            ushort[] roots = { shield, firewall, 439, 74, 1006, 17, 2 };
+            var loadout = roots.Concat(roots.SelectMany(id => AbilityPrerequisites.Current.Closure(id).Keys))
+                .Distinct().Select(id => (id, (ushort)50)).ToArray();
+            Assert.True(loadout.Sum(row => AbilityMemory.Cost(row.id)) <= AbilityMemory.ForLevel(50));
+            AbilityPassives.SetLoaded(caster, loadout);
+            CombatStyles.Select(caster, CombatStyles.HackerStyle);
+            Assert.Equal(CombatStyles.HackerStyle, CombatStyles.Active(caster));
+            Assert.Equal(24, AbilityStats.Player(caster, 127));
+            Assert.Equal(new[] { caster, near, edge }, AbilitySupport.Targets(caster, shield, selected));
+            int melee = AbilityStats.Defense(near, false);
+            int ballistic = AbilityStats.Defense(near, true);
+            int thrownDefense = AbilityStats.SpecialDefense(near, throwMove);
+            Assert.True(FreeCastViralContest.Player(outsider, viral, near));
+
+            // A constructed request body exercises dispatch. The native fixture only replays retained stock frames.
+            var request = new byte[41];
+            BitConverter.GetBytes(shield).CopyTo(request, 0);
+            BitConverter.GetBytes(selected).CopyTo(request, 2);
+            var handler = new AbilityHandler();
+            double before = TimeUtils.GetSimTimeSeconds();
+            handler.ProcessAbility(ref request);
+            double landed = caster.playerData.castEndsAt;
+            Assert.InRange(landed, before + 8, TimeUtils.GetSimTimeSeconds() + 8);
+            Assert.Equal(300, AbilityHandler.CurrentInnerStrength(caster));
+            Assert.All(clients, recipient => Assert.False(AbilityBuffs.IsActive(recipient, shield)));
+            AbilityCastInterrupts.FinishDue(caster, landed);
+            Assert.True(AbilityCooldowns.TryGet(shield, out var reuse));
+            Assert.Equal(15, reuse.Seconds);
+            Assert.True(AbilityCooldowns.IsCoolingDown(caster.playerData, shield, TimeUtils.GetSimTimeSeconds()));
+
+            foreach (var recipient in new[] { caster, near, edge })
+            {
+                Assert.Equal(300, recipient.playerData.activeBuffs[shield].Definition.Seconds);
+                Assert.Equal(47, AbilityBuffs.Total(recipient, 183));
+                foreach (ushort stat in new ushort[] { 1009, 1010, 1011 })
+                    Assert.Equal(11, AbilityBuffs.Total(recipient, stat));
+                Assert.Equal(0, AbilityBuffs.Total(recipient, 710));
+            }
+            Assert.False(AbilityBuffs.IsActive(outside, shield));
+            Assert.False(AbilityBuffs.IsActive(outsider, shield));
+            Assert.Equal(melee + 11, AbilityStats.Defense(near, false));
+            Assert.Equal(ballistic + 11, AbilityStats.Defense(near, true));
+            Assert.Equal(thrownDefense + 11, AbilityStats.SpecialDefense(near, throwMove));
+            Assert.False(FreeCastViralContest.Player(outsider, viral, near));
+
+            // Archive removal only affects subsequent casts. Each existing recipient owns its own term.
+            AbilityPassives.SetLoaded(caster, loadout.Where(row => row.id != shield));
+            Assert.All(new[] { caster, near, edge }, recipient => Assert.True(AbilityBuffs.IsActive(recipient, shield)));
+            Assert.True(AbilityCancellation.Dismiss(near, shield));
+            Assert.Equal(425, AbilityHandler.CurrentInnerStrength(near));
+            Assert.False(AbilityCancellation.Dismiss(near, shield));
+            Assert.Equal(425, AbilityHandler.CurrentInnerStrength(near));
+            Assert.Equal(melee, AbilityStats.Defense(near, false));
+            Assert.Equal(ballistic, AbilityStats.Defense(near, true));
+            Assert.Equal(thrownDefense, AbilityStats.SpecialDefense(near, throwMove));
+            Assert.True(FreeCastViralContest.Player(outsider, viral, near));
+
+            TimedEffects.ForPlayer(edge).Due(TimeUtils.GetSimTimeSeconds() + 301);
+            Assert.False(AbilityBuffs.IsActive(edge, shield));
+            Assert.Equal(425, AbilityHandler.CurrentInnerStrength(edge));
+            AbilitySupport.Land(caster, firewall, selected);
+            Assert.False(AbilityBuffs.IsActive(caster, shield));
+            Assert.Equal(325, AbilityHandler.CurrentInnerStrength(caster));
+            Assert.Equal(425, AbilityHandler.CurrentInnerStrength(near));
+            Assert.Equal(425, AbilityHandler.CurrentInnerStrength(edge));
+            Assert.Equal(400, AbilityHandler.CurrentInnerStrength(outside));
+            Assert.Equal(400, AbilityHandler.CurrentInnerStrength(outsider));
+        }
+        finally
+        {
+            foreach (var client in clients)
+            {
+                AbilityBuffs.RemoveAll(client);
+                groups.RemoveTeamMember(team.Id, client.playerData.getCharID());
+            }
+            Store.world = previousWorld;
+        }
+    }
+
+    [Fact]
+    public void UnloadedViralShieldingRefusesBeforeCostAndLosesAnUnloadedPendingCast()
+    {
+        const ushort shield = AbilitySupport.ViralShielding;
+        var caster = Client(110);
+        Store.currentClient = caster;
+        caster.playerInstance.InnerStrengthMax.setValue((ushort)1000);
+        caster.playerInstance.InnerStrengthAvailable.setValue((ushort)400);
+        var request = new byte[41];
+        BitConverter.GetBytes(shield).CopyTo(request, 0);
+        var handler = new AbilityHandler();
+        byte[] refusal = AbilityRefusals.Encode(new AbilityRefusals.Record(shield, AbilityRefusals.NotLoaded));
+        handler.ProcessAbility(ref request);
+        Assert.Contains(caster.messageQueue.RPCMessagesQueue.Cast<SequencedMessage>(), message => message.content.AsSpan(1).SequenceEqual(refusal));
+        Assert.Equal(400, AbilityHandler.CurrentInnerStrength(caster));
+        Assert.False(AbilityCooldowns.IsCoolingDown(caster.playerData, shield, TimeUtils.GetSimTimeSeconds()));
+
+        var style = (CombatStyles.HackerStyle, (ushort)50);
+        AbilityPassives.SetLoaded(caster, new[] { style, (shield, (ushort)50) });
+        CombatStyles.Select(caster, style.Item1);
+        handler.ProcessAbility(ref request);
+        double landed = caster.playerData.castEndsAt;
+        Assert.Equal(300, AbilityHandler.CurrentInnerStrength(caster));
+        AbilityPassives.SetLoaded(caster, new[] { style });
+        AbilityCastInterrupts.FinishDue(caster, landed);
+        Assert.False(AbilityBuffs.IsActive(caster, shield));
+        Assert.Equal(300, AbilityHandler.CurrentInnerStrength(caster));
+        Assert.True(AbilityCooldowns.IsCoolingDown(caster.playerData, shield, TimeUtils.GetSimTimeSeconds()));
+    }
+
     [Fact] public void ExistingUpgradeAttacksAndSereneCalmChangeTheActualCommonContest()
     {
         var c=Client(110);var target=Client(111);Store.currentClient=c;

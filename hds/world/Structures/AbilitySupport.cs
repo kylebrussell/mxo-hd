@@ -9,6 +9,7 @@ namespace hds
     public static class AbilitySupport
     {
         internal const ushort PersonalFirewall2 = 319;
+        internal const ushort ViralShielding = 436;
 
         public static bool Handles(UInt16 id) => AbilityResurrection.Handles(id) || id==506 ||
             (AbilityCatalog.Find(id)?.Healing == true || AbilityBuffs.IsBuff(id) || AbilityHostile.IsSweep(id)) && !CombatSpecials.Handles(id);
