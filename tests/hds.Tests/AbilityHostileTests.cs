@@ -1129,7 +1129,7 @@ public class AbilityHostileTests
     }
 
     [Theory]
-    [InlineData(399, TempMods.PowerlessAbility, 10.14f, false, true)]
+    [InlineData(399, TempMods.PowerlessAbility, 6f, false, true)]
     [InlineData(462, TempMods.EnrageAbility, 6f, true, false)]
     public void HackerAreaControlsApplyOnlyTheirOwnActionGateUntilExpiry(
         ushort ability, ushort state, float seconds, bool canUseAbilities, bool canWithdraw)

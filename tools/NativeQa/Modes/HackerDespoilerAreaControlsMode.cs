@@ -40,12 +40,12 @@ public sealed class HackerDespoilerAreaControlsMode : NativeQaMode
             ["MXO_FREECAST_VIRAL_QA_ATTACK15"] = "32766", ["MXO_FREECAST_VIRAL_QA_DEFENSE15"] = "0",
             [AreaTargetDiagnostics.Variable] = "1"
         },
-        extraQaMetadata: new() { ["ScopedStockRows"] = "399,400", ["NativeCloseableRows"] = 1 },
+        extraQaMetadata: new() { ["ScopedStockRows"] = "399,400", ["NativeCloseableRows"] = 0 },
         readyMessages: new[]
         {
             $"Level {Level}, {Abilities.Sum(AbilityMemory.Cost)}/{AbilityMemory.ForLevel(Level)} memory. Verified outdoor NAV CSR ({X},{Y},{Z}) faces QAEnemy ({X},{Y},{CentreZ}) at 2 m. QAOther ({X},{Y},{PowerlessEdgeZ}) is 8.00 m from QAEnemy, QAFar ({X},{Y},{PowerlessOutsideZ}) is 8.01 m, and QAFriend ({X + 100},{Y},{CentreZ}) is the in-radius ally. All are clear of WinterFrost's ice.",
             "Select Hacker Style (page 2 slot 1). Test slots 2 and 3 with no target and then with /target QAFriend. Expect local refusal or reason 24 with no IS, cast bar, reuse, or effects. Then /target QAEnemy and leave the selection there.",
-            "Press slot 2 for Zone of Powerlessness 399 at rest. Save the first complete stock request. Expect a 2 s cast, 30 IS (700 to 670), 30 s reuse, and [MODIFIER] add source=399 stat=96 on QAEnemy and QAOther. The captured 10.14 s baseline is extended to about 11.05 s by loaded Repel Combat. Neither player should receive a new source=734 stat=681 timer. No HP damage, ally or out-of-radius effect.",
+            "Press slot 2 for Zone of Powerlessness 399 at rest and save the complete stock request. Expect a 2 s cast, 30 IS (700 to 670), 30 s reuse, and [MODIFIER] source=399 stat=96 on QAEnemy and QAOther. The shipped six-second base becomes 6.54 s with this profile's +9% from Repel Combat. Neither player should receive a new source=734 stat=681 timer. No HP damage, ally or out-of-radius effect. The inputs behind the older 9.9 s and 10.14 s live records remain unresolved.",
             $$"""For Plague Zone 1.0, move QAOther to the 5.00 m edge and QAFar to 5.01 m using helper requests {"actor":"QAOther","action":"move","x":{{X}},"y":{{Y}},"z":{{PlagueEdgeZ}}} and {"actor":"QAFar","action":"move","x":{{X}},"y":{{Y}},"z":{{PlagueOutsideZ}}}. Keep QAEnemy selected and press slot 3. Save the first complete stock request. Expect 2 s, 15 IS (670 to 655), 12 s reuse, and [MODIFIER] source=400 stat=1157 +74 for 15 s on QAEnemy and QAOther only, followed by five [EFFECTS] ticks of 12 per recipient and no sixth. Slot 4 is the exact stock Code Nuke bootstrap control."""
         });
 

@@ -450,9 +450,9 @@ public class FreeCastViralLandingTests : IDisposable
     }
 
     [Theory]
-    [InlineData(399, 800, TempMods.PowerlessAbility, 0, 11.0526, 0, false)]
+    [InlineData(399, 800, TempMods.PowerlessAbility, 0, 6.54, 0, false)]
     [InlineData(400, 500, TempMods.DOTPlaceHolderAbility, 74, 15, 12, false)]
-    [InlineData(399, 800, TempMods.PowerlessAbility, 0, 11.0526, 0, true)]
+    [InlineData(399, 800, TempMods.PowerlessAbility, 0, 6.54, 0, true)]
     [InlineData(400, 500, TempMods.DOTPlaceHolderAbility, 74, 15, 12, true)]
     [InlineData(353, 500, TempMods.DOTPlaceHolderAbility, 114, 30, 10, false)]
     [InlineData(402, 600, 115, -125, 18, 0, false)]

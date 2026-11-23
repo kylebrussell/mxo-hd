@@ -269,8 +269,6 @@ namespace hds
             // Freeze Area 2.0, Rajko MaraCThenTimeDOut 60983: ViralResistance -100 for 12 s, pacified 10.02 s, immunity 12 s
             { 479, new Effect { Ability = 479, Virus = true, ImmunitySeconds = 12,
                 Mods = new[] { Stat(157, -100, 12), State(MezAbility, 10.02f) } } },
-            // Zone of Powerlessness, crashover2k proxy_unsorted_Packets1 20393 (9.9 s) and entilsar lastday2 74159 (10.14 s)
-            { 399, Virus(399, State(PowerlessAbility, 10.14f)) },
 
             // ---- Spy ----
             // Neuro Dart, old_world Vector 33458: 15 s of slows and defence debuffs and 264 damage over time
