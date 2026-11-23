@@ -16,6 +16,7 @@ public class ProxyTechnicianTests
         Assert.Equal(expected,value.Melee);Assert.Equal(expected,value.Ballistic);Assert.Equal(105,value.Until);
         Assert.Equal(698,AbilityAuras.EffectOf(589));Assert.Equal(5,AbilityAuras.DrainOf(589));Assert.Equal(5,AbilityAuras.IntervalOf(589));
         Assert.True(AbilityAuras.Handles(589));Assert.False(AbilityAuras.Handles(35));
+        Assert.Equal(30, AbilityBuffBuffer.Size(589));
         Assert.Equal(20,AbilityCatalog.Find(698).Number("Ability/RadiusOfEffect"));
     }
 
