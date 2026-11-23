@@ -287,6 +287,56 @@ public class CombatInsightEngagementTests
     }
 
     [Fact]
+    public void NpcForcedEntryRejectsStaleSpawnAndChargesAtMostOncePerNpcAction()
+    {
+        using var fixture = new Fixture();
+        var defender = fixture.Target;
+        defender.playerInstance.Level.setValue((byte)19);
+        defender.playerInstance.InnerStrengthAvailable.setValue((ushort)19);
+        defender.playerData.selfSpawnIdCounter = 0x5e;
+        var npc = new Mob();
+        npc.setName("Test Corrupted");
+        npc.setEntityId(61700);
+        npc.setDistrict(1);
+        npc.setLevel(11);
+        npc.setHealthM(100);
+        npc.setHealthC(100);
+        npc.setIsSpawned(true);
+        var view = defender.viewMan.addView(npc.getEntityId(), 599);
+        view.viewCreated = true;
+        view.spawnId = 0x75;
+        var handler = new CombatHandler(defender);
+        WorldServer.mobs.Add(npc);
+        try
+        {
+            ForceEntry(view.spawnId + 1);
+            Assert.Equal(19, AbilityHandler.CurrentInnerStrength(defender));
+            Assert.Equal(byte.MaxValue, defender.playerInstance.EvadeShieldHealth.getValue()[0]);
+
+            ForceEntry(view.spawnId);
+            ForceEntry(view.spawnId);
+            Assert.Equal(12, AbilityHandler.CurrentInnerStrength(defender));
+            Assert.Equal((byte)194, defender.playerInstance.EvadeShieldHealth.getValue()[0]);
+            Assert.False(handler.isCombatRunning);
+
+            byte[] refusal = Convert.FromHexString("4d0e01010002005e00");
+            Assert.Single(defender.messageQueue.RPCMessagesQueue.Cast<SequencedMessage>(),
+                rpc => rpc.content.AsSpan(1).SequenceEqual(refusal));
+        }
+        finally
+        {
+            WorldServer.mobs.Remove(npc);
+        }
+
+        void ForceEntry(uint spawn)
+        {
+            byte[] packet = BitConverter.GetBytes(DuelPackets.Handle(view.ViewID, spawn))
+                .Concat(new byte[] { 1, 0x6b }).ToArray();
+            handler.ProcessRequestCloseCombat(ref packet, npcStarted: true);
+        }
+    }
+
+    [Fact]
     public void StaleEntryAndAnEntryThatBeatsTheShieldSpendNoDefenderIs()
     {
         using var fixture = new Fixture();

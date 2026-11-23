@@ -1,0 +1,2 @@
+district_id;district;handle;level;hpM;hpC;rsi;x_pos;y_pos;z_pos;rotation;is_defeated;is_lootable
+1;slums;QA Corrupted;11;2000;2000;60000040;17000;495;6900;128;false;false

@@ -54,19 +54,18 @@ namespace hds
             return (byte)Math.Max(0, health - loss);
         }
 
-        internal static bool ResistEntry(WorldClient source, WorldClient target, int generation,
-            CombatInsightEngagement.Scope scope)
+        internal static bool ResistEntry(WorldClient target, int generation, byte attackerLevel, int forceBonus,
+            Func<bool> current)
         {
             var data = target.playerData;
-            byte attackerLevel = source.playerInstance.Level.getValue()[0];
             byte defenderLevel = target.playerInstance.Level.getValue()[0];
             ushort cost = ResistanceCost(attackerLevel, defenderLevel);
-            int damage = ShieldDamage(attackerLevel, defenderLevel, AbilityStats.Player(source, 1048));
+            int damage = ShieldDamage(attackerLevel, defenderLevel, forceBonus);
             ushort before, after;
             byte healthBefore, healthAfter;
             lock (data.activeBuffs)
             {
-                if (!scope.Current) return false;
+                if (!current()) return false;
                 if (ActiveGeneration(target) != generation) return !HasState(target);
                 if (!states.TryGetValue(target, out var state) || state.Health == 0) return false;
                 before = AbilityHandler.CurrentInnerStrength(target);
@@ -90,26 +89,26 @@ namespace hds
             string name = TimedEffects.PlayerName(target);
             if (before < cost)
             {
-                if (scope.Current && AbilityBuffs.Remove(target, Parent, generation: generation))
+                if (current() && AbilityBuffs.Remove(target, Parent, generation: generation))
                 {
                     Output.WriteDebugLog($"[EVASION] {name} resistance shortfall required={cost} available={before}, shield released");
-                    PublishResistanceResult(target, scope);
+                    PublishResistanceResult(target, current);
                     target.FlushQueue();
                 }
                 return false;
             }
 
             Output.WriteDebugLog($"[EVASION] {name} resistance IS {before}->{after} cost={cost}; shield {healthBefore}->{healthAfter} damage={damage}");
-            if (scope.Current && healthAfter == 0)
+            if (current() && healthAfter == 0)
                 AbilityBuffs.Remove(target, Parent, generation: generation);
             else if (ActiveGeneration(target) == generation && target.playerInstance.EvadeShieldHealth.getValue()[0] == healthAfter)
                 PvpFlag.ToWatchers(target, PlayerViewAttributes.Build((21, PlayerViewAttributes.U8(healthAfter))));
-            PublishResistanceResult(target, scope);
+            PublishResistanceResult(target, current);
             target.FlushQueue();
             return false;
         }
 
-        private static void PublishResistanceResult(WorldClient defender, CombatInsightEngagement.Scope scope)
+        private static void PublishResistanceResult(WorldClient defender, Func<bool> current)
         {
             // Vector45:10015 and Vector_zerooneetc:64619 carry a result on the defender's
             // channel, target-reason set, with its own view/spawn. The attempt remains refused
@@ -117,7 +116,7 @@ namespace hds
             int world = defender.playerData.worldGeneration;
             long transport = defender.TransportFence.Capture();
             uint self = PvpCombat.HandleOf(defender, defender);
-            if (!scope.Current) return;
+            if (!current()) return;
             defender.messageQueue.AddWorldBoundRpc(PvpCombat.BuildCombatRefused(14, true, self, forceCombat: true), world, transport);
             defender.FlushQueue();
         }
