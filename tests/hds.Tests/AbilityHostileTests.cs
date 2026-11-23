@@ -253,6 +253,52 @@ public class AbilityHostileTests
         Assert.False(effects.Effects.HasParent(TempMods.ControlImmunityTimerAbility));
     }
 
+    [Theory]
+    [InlineData(473, 4f, 8f, -80)]
+    [InlineData(479, 10.02f, 12f, -100)]
+    public void SelectedHighRankPacifyRetainsTheSeparateNaturalStateAndImmunityExpiry(ushort id, float stateSeconds,
+        float immunitySeconds, int resistance)
+    {
+        var caster = Client();
+        var target = Client();
+        var subject = TimedEffects.ForPlayer(target);
+        try
+        {
+            var mods = Land(target, id, caster);
+            var state = Assert.Single(mods, mod => mod.Target == TempMods.MezAbility);
+            var immunity = Assert.Single(subject.Effects.Snapshot(), mod => mod.Parent == TempMods.ControlImmunityTimerAbility);
+            Assert.Equal(stateSeconds, state.Seconds);
+            Assert.Equal(immunitySeconds, immunity.Seconds);
+            Assert.Equal(immunitySeconds, Assert.Single(mods, mod => mod.Target == 157).Seconds);
+            Assert.Equal(resistance, AbilityStats.Player(target, 157));
+            Assert.True(TypedAbilityResistance.Player(caster, target, 58, 1000) > 1000);
+            Assert.False(ControlActions.CanUseAbilities(subject.Effects));
+
+            TimedEffects.RunDue(state.Expires + .01);
+            Assert.True(ControlActions.CanUseAbilities(subject.Effects));
+            Assert.Equal(resistance, AbilityStats.Player(target, 157));
+            Assert.Same(immunity, Assert.Single(subject.Effects.Snapshot(), mod => mod.Parent == TempMods.ControlImmunityTimerAbility));
+
+            TimedEffects.RunDue(immunity.Expires + .01);
+            Assert.False(subject.Effects.HasParent(TempMods.ControlImmunityTimerAbility));
+            Assert.Equal(0, AbilityStats.Player(target, 157));
+            Assert.Equal(1000, TypedAbilityResistance.Player(caster, target, 58, 1000));
+
+            Land(target, id, caster);
+            immunity = Assert.Single(subject.Effects.Snapshot(), mod => mod.Parent == TempMods.ControlImmunityTimerAbility);
+            TimedEffects.HealthChanged(subject, -1, true);
+            Assert.False(ControlActions.CanUseAbilities(subject.Effects));
+            TimedEffects.HealthChanged(subject, 1, true, damageEvent: true);
+            Assert.True(ControlActions.CanUseAbilities(subject.Effects));
+            Assert.Equal(0, AbilityStats.Player(target, 157));
+            Assert.Same(immunity, Assert.Single(subject.Effects.Snapshot(), mod => mod.Parent == TempMods.ControlImmunityTimerAbility));
+        }
+        finally
+        {
+            TimedEffects.Clear(subject);
+        }
+    }
+
     [Fact]
     public void ResistCombatAppliesTwentyEvasionForSixHundredSeconds()
     {

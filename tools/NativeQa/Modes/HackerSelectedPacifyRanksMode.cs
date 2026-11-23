@@ -81,27 +81,32 @@ public sealed class HackerSelectedPacifyRanksMode : NativeQaMode
         await caster.WaitForViewUpdateAsync(2, "02 80 80 80 80 80 10 ee 03 00 00");
         caster.SendRpc($"81 51 {WireFormat.ToHex(BitConverter.GetBytes(handle))}");
 
+        await VerifyRankOnePacifyAsync(caster, enemy, handle, PacifySeconds);
+        Check.Equal(0, caster.World.Problems.Count + context.Helpers.Values.Sum(helper => helper.World.Problems.Count),
+            "Rank-one stock control framing");
+        Console.WriteLine("SELECTED PACIFY BOOTSTRAP PASS: stock 48/58 control; rank-two and Code Stop stock frames pending.");
+        return Array.Empty<byte>();
+    }
+
+    internal static async Task VerifyRankOnePacifyAsync(HeadlessPlayer caster, HeadlessPlayer enemy, uint handle, float pacifySeconds)
+    {
         int cast = caster.World.RpcSnapshot().Count;
         int recipient = enemy.World.RpcSnapshot().Count;
         caster.SendRpc(StarterHackerControlTargetMode.WithHandle(EarlyHackerControlRecoveryMode.PacifyRequest, handle));
         await EvidenceRetestWire.CastBarAsync(caster, Freeze1, 2);
         await EvidenceRetestWire.TimerAsync(caster, cast, Freeze1, AbilityCooldowns.OwnTimer, 43);
-        var state = await ModifierAsync(Freeze1, TempMods.MezAbility, 0, PacifySeconds, false);
+        var state = await ModifierAsync(Freeze1, TempMods.MezAbility, 0, pacifySeconds, false);
         var immunity = await ModifierAsync(TempMods.ControlImmunityTimerAbility, TempMods.ISDrainTargetAbility, 0, ImmunitySeconds, false);
         await ModifierAsync(Freeze1, 157, -20, ImmunitySeconds, false);
         caster.SkipReceived();
         caster.SendRpc(StarterHackerControlTargetMode.WithHandle(StarterHackerDotResistanceMode.BlastUse, handle));
         await EvidenceRetestWire.CastBarAsync(caster, Blast, 2);
-        await ModifierAsync(Freeze1, TempMods.MezAbility, 0, PacifySeconds, true, state.RecordId);
+        await ModifierAsync(Freeze1, TempMods.MezAbility, 0, pacifySeconds, true, state.RecordId);
         await ModifierAsync(Freeze1, 157, -20, ImmunitySeconds, true);
         Check.That(!enemy.World.RpcSnapshot().Skip(recipient).Any(frame =>
             StockAbilityProfile.Bonus(frame, TempMods.ControlImmunityTimerAbility, TempMods.ISDrainTargetAbility, 0, ImmunitySeconds, true)),
             "The damage break removes Freeze without removing its original immunity");
         await ModifierAsync(TempMods.ControlImmunityTimerAbility, TempMods.ISDrainTargetAbility, 0, ImmunitySeconds, true, immunity.RecordId);
-        Check.Equal(0, caster.World.Problems.Count + context.Helpers.Values.Sum(helper => helper.World.Problems.Count),
-            "Rank-one stock control framing");
-        Console.WriteLine("SELECTED PACIFY BOOTSTRAP PASS: stock 48/58 control; rank-two and Code Stop stock frames pending.");
-        return Array.Empty<byte>();
 
         async Task<ManageBonusRecord> ModifierAsync(ushort source, ushort stat, int value, float duration, bool removed, ushort? locator = null)
         {

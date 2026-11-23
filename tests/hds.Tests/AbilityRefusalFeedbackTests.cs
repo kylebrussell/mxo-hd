@@ -1083,6 +1083,16 @@ public class AbilityRefusalFeedbackTests:IDisposable
     }
 
     [Theory]
+    [InlineData(473, "empty", AbilityRefusals.InvalidTarget)]
+    [InlineData(473, "far", AbilityRefusals.TargetOutOfRange)]
+    [InlineData(473, "blocked", AbilityRefusals.TargetNotInSight)]
+    [InlineData(473, "replacement", 0u)]
+    [InlineData(473, "unloaded", AbilityRefusals.NotLoaded)]
+    [InlineData(479, "ally", AbilityRefusals.InvalidTarget)]
+    [InlineData(479, "far", AbilityRefusals.TargetOutOfRange)]
+    [InlineData(479, "style", AbilityRefusals.WrongStyle)]
+    [InlineData(479, "combat", AbilityRefusals.MustBeOutsideCombat)]
+    [InlineData(479, "retreat", 0u)]
     [InlineData(462, "empty", AbilityRefusals.InvalidTarget)]
     [InlineData(462, "far", AbilityRefusals.TargetOutOfRange)]
     [InlineData(462, "replacement", 0u)]
