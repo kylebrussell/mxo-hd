@@ -1,0 +1,53 @@
+{
+  "families": {
+    "hacker-devastation-field-native": {
+      "representative": 468,
+      "result": "pass",
+      "head": "a2996168",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/983#issuecomment-7102357271",
+      "scope": "Stock level-50 61/100 loadout. Ally and 16.01 m refusals before debit. The primary and exact 6.00 m opposing recipient each take 1 viral damage, while the 6.01 m player and ally are excluded. A natural third-cast proc on QAEnemy shows the 0.1 s internal callback marker, six-second Stun, linked -20 Combat Tactics and separate six-second control immunity. The other eligible recipient did not proc on that cast."
+    }
+  },
+  "abilities": {
+    "468": {
+      "family": "hacker-devastation-field-native",
+      "checks": {
+        "damage": {
+          "source": "GOB 468 DamageModifier targets CurrentHealth 108 with DamageType 2 (viral), DurationType 1, ValueFunction 0, and MinValue = MaxValue = 1. The separate StatModifier / MaxValue 6 belongs to the stun callback, not health damage.",
+          "runtime": "The ordinary damage resolver uses the fixed one-point GOB health modifier. Caster viral influence and selected-recipient typed resistance use their existing shared paths.",
+          "test": "DevastationFieldUsesItsShippedPointAndTheOriginalSelectedArea verifies ordinary 1 neutral damage, full absorption of that one point under typed resistance, and no damage after in-flight target replacement. Stock observed the exact one point on QAEnemy and QAOther on every cast. https://github.com/kylebrussell/mxo-hd/pull/983#issuecomment-7102357271"
+        },
+        "controls": {
+          "source": "GOB 468's terminal marker passes fixed value six to tempmods.py ApplyStunWithTimer. The script adds a six-second Stun and a separate six-second immunity unless the target has existing control immunity.",
+          "runtime": "The ordinary term callback adds state 102, its linked -20 Combat Tactics, and source734 stat681 for six seconds each. Immunity suppresses a repeat without resetting the current state or immunity. Paired caster/recipient notices are sent on the successful branch.",
+          "test": "Stock QAEnemy received the marker, Stun records 263–265 including 163 -20, and immunity record266 on the third cast. The marker was removed after .1 s, and the Stun group and immunity removed at six seconds. DevastationFieldSendsBothStunNoticesAndPreservesExistingImmunity tests actual paired outputs and the private refusal; the numeric stock refusal string ID is unverified. https://github.com/kylebrussell/mxo-hd/pull/983#issuecomment-7102357271"
+        },
+        "area": {
+          "source": "GOB sets CastDirectObjects 3 and six-metre effect radius around the selected hostile.",
+          "runtime": "The existing hostile area resolver uses the valid selected target's position and filters each candidate by opponent, sight and radius. Eligible targets run independent normal contests and chance checks.",
+          "test": "Stock centre (17000,495,6700), QAOther included at 6.0000 m, QAFar rejected at 6.0100 m, QAFriend NotOpponent. Only QAEnemy/QAOther took health damage; QAOther did not roll a Stun on cast 3. The production cast test repeats the boundary and checks stale primary cannot splash. https://github.com/kylebrussell/mxo-hd/pull/983#issuecomment-7102357271"
+        },
+        "targeting": {
+          "source": "GOB specifies Hacker Style, CastWhenUsed 1 at rest, a selected hostile within 16 m and the ordinary viral contest.",
+          "runtime": "Normal 80 b9 admission checks memory, hostile spawn, sight, range, required style and at-rest condition. The landing validates the same living hostile spawn before completing the area; the existing contest can deflect the hit and all proc work for that target.",
+          "test": "Stock ally reason24 and 16.01 m reason34 came without IS or reuse. The selected target at 3 m admitted. DevastationFieldUsesItsShippedPointAndTheOriginalSelectedArea checks unloaded and in-combat refusal and stale target, and ActualNpcLandingDeflectsBeforeDamageDebuffAndProcAndOnlyRoutesToVisibleSameWorld covers the normal NPC deflection. https://github.com/kylebrussell/mxo-hd/pull/983#issuecomment-7102357271"
+        },
+        "script": {
+          "source": "GOB's StatModifier has Duration .1 s, ProcTriggerChance .5, fixed MinValue/MaxValue 6 and StatModTermFunc ApplyStunWithTimer. The shipped script refuses existing control immunity and issues paired caster/target notifications on success.",
+          "runtime": "The ordinary TimedEffects rolls once per eligible recipient and calls the script mapping on marker term. Pre-existing immunity is preserved. The visible caster-only lower-stacking notice uses the same private server transport as Pistol Aerial; exact retail localized numeric metadata remains unverified.",
+          "test": "DevastationFieldRollsAtLandingAndStunsOnlyOnTermWithoutImmunity checks .499999/.5, term timing, suppression and expiry. DevastationFieldSendsBothStunNoticesAndPreservesExistingImmunity checks paired notices and state reapplication. Stock casts 1–2 rolled no Stun; cast3 procced on QAEnemy with the .1 s marker and both later removals. https://github.com/kylebrussell/mxo-hd/pull/983#issuecomment-7102357271"
+        },
+        "source-parity": {
+          "source": "The shipped health modifier is explicitly one and the separate .1 s callback value is six. No original retail 468 wire or damage magnitude was recovered from tracked captures.",
+          "runtime": "The ordinary sourced implementation no longer falls back to arbitrary direct damage. The GOB-backed magnitude matches the stock-visible 1-point hit on the server and the separate script-defined Stun/immunity lifecycle.",
+          "test": "Actual stock 468 produced 1 raw neutral on two recipients and observed a natural six-second proc. Catalog-backed headless tests independently verify the fixed modifier, typed target resistance, chance and paired callback behavior. https://github.com/kylebrussell/mxo-hd/pull/983#issuecomment-7102357271"
+        },
+        "behavior-tests": {
+          "source": "GOB 468 stores 56 IS, eight-second cast, 30-second own reuse, separately selected one-point viral hit and 50% terminal control proc.",
+          "runtime": "The real cast path consumes 56 IS exactly once, publishes normal cast and reuse records, then resolves the original target area's normal hit and terminal callback.",
+          "test": "Stock ran 500→444→388→332. Windup and landing were eight seconds apart, with a 30-second own timer. The ordinary handler, timed effect, and NPC deflection tests verify ownership, time, no invalid splash, both proc branches, immunity and recovery. The PR comment publishes the request prefix only; no complete 468 fixture replay is claimed. https://github.com/kylebrussell/mxo-hd/pull/983#issuecomment-7102357271"
+        }
+      }
+    }
+  }
+}
