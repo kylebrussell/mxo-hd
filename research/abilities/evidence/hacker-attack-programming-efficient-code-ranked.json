@@ -1,6 +1,23 @@
 {
+  "families": {
+    "attack-programming-ranked": {
+      "representative": 471,
+      "result": "pass",
+      "head": "49ed7d6f8f5b67132ffdc1bae1518458e6e8793c",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/895#issuecomment-7089079985",
+      "scope": "The stock client and logs witnessed both learned-rank bonus records, 52/46/52 IS across windows of five resting ticks, and Evade paying 38 with 471 loaded versus 40 with it unloaded."
+    },
+    "efficient-code-ranked": {
+      "representative": 477,
+      "result": "pass",
+      "head": "49ed7d6f8f5b67132ffdc1bae1518458e6e8793c",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/895#issuecomment-7089079985",
+      "scope": "The stock client witnessed all five source-477 records, their removal and return, and Area Disruption stunning for 3.30 s then 3.15 s with 477 unloaded. Its separate 8 s immunity and 14 IS cost stayed constant. The typed accuracy and damage consumers have separate executable tests."
+    }
+  },
   "abilities": {
     "471": {
+      "family": "attack-programming-ranked",
       "checks": {
         "stats": {
           "source": "The shipped Attack Programming template stores learned-rank function 2 at scales 0.1 to 1053 and 0.3 to 1059. At rank 50 those individual loaded records are +5 IS cost reduction and +15 IS regeneration.",
@@ -15,6 +32,7 @@
       }
     },
     "477": {
+      "family": "efficient-code-ranked",
       "checks": {
         "stats": {
           "source": "At learned rank 50 Efficient Code stores +5 Stun Duration Bonus 995 and +10 each to 996 ballistic accuracy, 997 melee accuracy, 1139 ballistic damage, and 1142 melee damage.",
