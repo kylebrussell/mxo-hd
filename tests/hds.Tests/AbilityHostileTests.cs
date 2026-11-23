@@ -877,6 +877,7 @@ public class AbilityHostileTests
     public void CombatAuraTwoChargesFifteenEachTickAndStopsOnShortfall()
     {
         var caster = Client(innerStrength: 30);
+        caster.playerData.passives.Loaded[485] = 50;
         var previous = WorldServer.Clients;
         WorldServer.Clients = new Dictionary<string, WorldClient>();
         try

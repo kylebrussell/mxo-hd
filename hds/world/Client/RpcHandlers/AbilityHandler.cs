@@ -42,9 +42,9 @@ namespace hds
             bool selectedArtilleristArea = AbilityID == 336 || AbilityID == 337;
             bool selectedDespoilerArea = AbilityID == 399 || AbilityID == 400 || AbilityID == 404;
 
-            bool starterViralDebuffNeedsLoadout = AbilityID == 43 || AbilityID == 48 || AbilityID == 69;
+            bool needsLoadout = AbilityID == 43 || AbilityID == 48 || AbilityID == 69 || AbilityID == AbilityAuras.CombatAuraTwo;
             if (!CoderPets.IsCastLoaded(Store.currentClient, AbilityID) ||
-                ((starterViralDebuffNeedsLoadout || CoderPets.StarterSummonRequiresLoaded(AbilityID)) &&
+                ((needsLoadout || CoderPets.StarterSummonRequiresLoaded(AbilityID)) &&
                     !AbilityPassives.IsLoaded(Store.currentClient, AbilityID)))
             {
                 Deny(AbilityID, "Load this ability before using it.", AbilityRefusals.NotLoaded, sendServerText: false);

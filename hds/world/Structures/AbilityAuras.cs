@@ -22,6 +22,7 @@ namespace hds
     public static class AbilityAuras
     {
         public const uint DrainDeactivated = 0xc60020b4;
+        internal const ushort CombatAuraTwo = 485;
 
         private sealed class State
         {
@@ -55,18 +56,27 @@ namespace hds
         // proxy_024 records parent, aura/drain target, and value before the child pulse. Use the captured callback order.
         private static IEnumerable<AbilityCatalog.Modifier> CapturedParentModifiers(ushort id)
         {
-            if (id != 378 && id != 485) yield break;
+            if (id != 378 && id != CombatAuraTwo) yield break;
             yield return Callback(id, "ApplyAuraEffect");
-            if (id == 485) yield return AbilityCatalog.Find(id).Modifiers.Single(m => m.Text("StatModTermFunc") == "AddRecastTimer");
+            if (id == CombatAuraTwo) yield return AbilityCatalog.Find(id).Modifiers.Single(m => m.Text("StatModTermFunc") == "AddRecastTimer");
             yield return Callback(id, "ISDrainWithAbilityDeactivation");
         }
 
         private static void SendParentRecords(WorldClient client, ushort id, Activation activation, bool off)
         {
             foreach (var record in activation.ParentRecords)
+            {
                 client.messageQueue.AddWorldBoundRpc(
                     AbilityBuffs.BuildModifier(TempMods.KindLinked, record.Id, id, record.Target, record.Value, off, 0),
                     activation.Lifetime.World, activation.Lifetime.Transport);
+                // In proxy_024 the recast starts after removal of the term marker, before removal of the drain record.
+                if (off && id == CombatAuraTwo && record.Target == 0)
+                {
+                    var lifetime = activation.Lifetime;
+                    AbilityCooldowns.StartCaptured(client, id, TimeUtils.GetSimTimeSeconds(), lifetime.Data,
+                        lifetime.Player, lifetime.World, lifetime.Life, lifetime.Transport);
+                }
+            }
         }
 
         /// <summary>Supported hostile, support and friendly simulacra auras.</summary>
@@ -75,7 +85,12 @@ namespace hds
 
         // Explicit beneficial parents only. Deflect Virus's child term sweep is executed by its saved buff definition.
         // Beneficial parents retain the existing off-time cooldown policy; default native timing remains unverified.
-        public static bool Friendly(ushort id) => id == 42 || id == 485 || id == 378 || id == 380;
+        public static bool Friendly(ushort id) => id == 42 || id == CombatAuraTwo || id == 378 || id == 380;
+
+        internal static void LoadoutChanged(WorldClient client)
+        {
+            if (!AbilityPassives.IsLoaded(client, CombatAuraTwo)) Stop(client, CombatAuraTwo);
+        }
 
         public static ushort EffectOf(ushort id) => (ushort)(Callback(id, "ApplyAuraEffect")?.Number("MinValue") ?? 0);
 
@@ -107,6 +122,7 @@ namespace hds
             {
                 if (!lifetime.Current || lifetime.Data.isDead || lifetime.Data.duelDeath ||
                     state.On.TryGetValue(id, out var existing) && existing.Current) return;
+                if (id == CombatAuraTwo && !AbilityPassives.IsLoaded(client, id)) return;
                 generation = state.Generation + 1;
                 if (id == ProxyTechnician.Ability && !ProxyTechnician.Begin(client,generation)) return;
                 if (DaemonBoost.Handles(id) && !DaemonBoost.Loaded(client, id)) return;
@@ -125,7 +141,7 @@ namespace hds
             {
                 // The retained Deflect Virus and Combat Aura 2.0 announcements carry these two values.
                 int[] values = id == 378 ? new[] { (int)EffectOf(id), 0 } :
-                    id == 485 ? new[] { DrainOf(id), 0 } : Array.Empty<int>();
+                    id == CombatAuraTwo ? new[] { DrainOf(id), 0 } : Array.Empty<int>();
                 client.messageQueue.AddWorldBoundRpc(AbilityMessages.AboutAbility(onSelf, true, id, name, name, values),
                     lifetime.World, lifetime.Transport);
             }
@@ -176,12 +192,7 @@ namespace hds
                 }
                 if (available < drain)
                 {
-                    if (!generation.HasValue || Current(client, id, generation.Value))
-                    {
-                        string name = TimedEffects.PlayerName(client);
-                        client.messageQueue.addRpcMessage(AbilityMessages.AboutAbility(DrainDeactivated, true, id, name, name, drain - available));
-                        Stop(client, id, generation);
-                    }
+                    Stop(client, id, generation, shortfall: drain - available);
                     return false;
                 }
                 if (id == ProxyTechnician.Ability) Output.WriteDebugLog(
@@ -275,7 +286,7 @@ namespace hds
         }
 
         /// <summary>Switches the aura off (toggled again, IS shortfall, death, a Delete Upgrade). Returns whether it was on.</summary>
-        public static bool Stop(WorldClient client, ushort id, int? generation = null, bool announce = true)
+        public static bool Stop(WorldClient client, ushort id, int? generation = null, bool announce = true, int shortfall = 0)
         {
             id = AbilityCatalog.Canonical(id);
             var state = states.GetOrCreateValue(client);
@@ -287,12 +298,22 @@ namespace hds
                 if (id == ProxyTechnician.Ability) ProxyTechnician.End(client);
                 if (!active.Lifetime.ScopeCurrent || !announce) return false;
             }
+            if (id != CombatAuraTwo && shortfall > 0) PublishShortfall();
             SendParentRecords(client, id, active, true);
             client.messageQueue.AddWorldBoundRpc(AbilityBuffs.BuildExclusive(id, false), active.Lifetime.World, active.Lifetime.Transport);
-            if (Friendly(id) && id != Virii.DeflectVirus1Ability) AbilityCooldowns.Start(client, id, TimeUtils.GetSimTimeSeconds());
+            if (id == CombatAuraTwo && shortfall > 0) PublishShortfall();
+            if (Friendly(id) && id != Virii.DeflectVirus1Ability && id != CombatAuraTwo)
+                AbilityCooldowns.Start(client, id, TimeUtils.GetSimTimeSeconds());
             client.FlushQueue();
             Output.WriteDebugLog("[AURA] " + id + " off for " + TimedEffects.PlayerName(client));
             return true;
+
+            void PublishShortfall()
+            {
+                string name = TimedEffects.PlayerName(client);
+                client.messageQueue.AddWorldBoundRpc(AbilityMessages.AboutAbility(DrainDeactivated, true, id, name, name, shortfall),
+                    active.Lifetime.World, active.Lifetime.Transport);
+            }
         }
 
         internal static void Clear(WorldClient client, bool announce)

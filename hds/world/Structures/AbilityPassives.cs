@@ -177,6 +177,7 @@ namespace hds
             AbilityDesperation.LoadoutChanged(client);
             ProxyTechnician.LoadoutChanged(client);
             DaemonBoost.LoadoutChanged(client);
+            AbilityAuras.LoadoutChanged(client);
             AbilityGrantRegistration.LoadedChanged(client);
         }
 
