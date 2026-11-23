@@ -205,7 +205,7 @@ PETS = {
 PET_REPAIRS = {30, 31, 587, 596, 615}
 
 PASSIVE_LIMITS = {
-    18: 'discipline metadata; no stored stat or decoded gameplay callback',
+    18: 'discipline metadata; shipped CoderApplication documents seven temporary crafting bonuses; native caller and buff value open; [evidence](ABILITY-CODER-PARITY-1.md)',
     35: 'ApplyAuraEffect pulses 697 on friendly simulacra; incoming viral casts on player pets are unsupported',
     52: 'shipped ComputerHack can check the loaded Hacker ability; the numeric Computer Hacking contest follows an unconditional return',
     75: 'the direct stat177 radius consumer has no recovered link to bonus1055; [evidence](ABILITY-DEBUFF-RADIUS.md)',
@@ -223,6 +223,8 @@ PASSIVE_LIMITS = {
 
 
 def server(i):
+    if i in (947, 948):
+        return 'stored level 99 selected-load prerequisite exceeds the level 50 cap; no shipped prerequisite or grant includes this ability in another load; [qualification proof](https://github.com/kylebrussell/mxo-hd/pull/880)'
     if i == 1149:
         if any(m['consumer'] != 'total only' for m in coverage[i].get('buff_stats', [])):
             return "OURS: capped Initiative1044 adds attack-base points once in NPC/PvP interlock, excluding escape/freefire/freecast; sourced20s health snapshot, IS10/reuse90/buffer10; retail gameplay caller unresolved; [policy](DESPERATION-INITIATIVE.md)"
@@ -487,7 +489,7 @@ def server(i):
 
 
 def status(i):
-    if i in (7, 13, 871):
+    if i in (7, 13, 871, 947, 948):
         return 'inaccessible'
     if i in DATA_MINING:
         return DATA_MINING[i][1]
@@ -508,6 +510,8 @@ def status(i):
 
 def remaining_items(i, current_status, runtime_summary):
     if current_status == 'inaccessible':
+        if i in (947, 948):
+            return {'access': 'Establish an ordinary load or grant path at playable levels'}
         if i == 13:
             return {'access': 'Recover any ordinary retail unlock independent of the level 99 selected-load gate'}
         return {'access': 'Resolve the stored character level 99 prerequisite against the retail level cap'}

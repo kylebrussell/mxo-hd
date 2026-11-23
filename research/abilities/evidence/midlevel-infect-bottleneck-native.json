@@ -1,0 +1,54 @@
+{
+  "families": {
+    "hacker-infect-bottleneck-selected-area": {
+      "representative": 402,
+      "result": "pass",
+      "head": "8547ef869a64b29656ff4c3153f7ccbeb2556226",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/873#issuecomment-7088259016",
+      "scope": "Stock empty and ally refusals, selected-area casts, exact recipient edges, movement-scale add and removal for Bottleneck, and eleven timed viral ticks for Infect. Infect magnitude and scaling remain open."
+    }
+  },
+  "abilities": {
+    "353": {
+      "family": "hacker-infect-bottleneck-selected-area",
+      "note": "Native PR873 confirms the current level-24 profile: 15 IS, two-second cast, twelve-second reuse, +549 stored live total and eleven 46-point ticks. The older morpheuZZZ session is a level-50 witness for a 450-point total. Neither establishes the relationship to the raw GOB 94 or its wider source scaling. https://github.com/kylebrussell/mxo-hd/pull/873#issuecomment-7088259016",
+      "checks": {
+        "area": {
+          "source": "GOB 353 specifies a five-metre radius around the selected direct object and a 30-second ViralDOT.",
+          "runtime": "AbilityHandler snapshots the selected hostile handle. AbilityTargets applies the target-centred recipient filter at landing.",
+          "test": "In stock PR873 the selected hostile and exact 5.00 m edge alone get the timed record and all eleven ticks. The 5.01 m hostile and allied helper receive nothing. DespoilerFieldsLandOnTheSelectedEnemyAndExactRadiusEdge verifies the same boundary with a live timed effect. https://github.com/kylebrussell/mxo-hd/pull/873#issuecomment-7088259016"
+        },
+        "targeting": {
+          "source": "GOB 353 requires a selected hostile, has a stored selection range and carries the per-recipient viral test.",
+          "runtime": "AbilityHandler rejects invalid selections before costs, fences the original view and spawn through completion, and applies the shared hostile and sight filters before the viral contest.",
+          "test": "Stock PR873 exercises empty and friendly refusals with no cost or timer, then accepts the selected hostile. The updated AbilityRefusalFeedbackTests cover missing, out-of-range and substituted selection cases. The ordinary primary and splash contest path is covered by FreeCastViralLandingTests. https://github.com/kylebrussell/mxo-hd/pull/873#issuecomment-7088259016"
+        }
+      }
+    },
+    "402": {
+      "family": "hacker-infect-bottleneck-selected-area",
+      "checks": {
+        "area": {
+          "source": "GOB 402 stores a selected direct object and a six-metre radius.",
+          "runtime": "AbilityTargets anchors the hostile recipient checks to the selected object's current position on landing.",
+          "test": "PR873 applies all four records only to the primary and the hostile at exactly 6.00 m. The 6.01 m hostile and allied helper are excluded. DespoilerFieldsLandOnTheSelectedEnemyAndExactRadiusEdge covers the same branch. https://github.com/kylebrussell/mxo-hd/pull/873#issuecomment-7088259016"
+        },
+        "targeting": {
+          "source": "GOB 402 specifies a selected hostile outside combat and a viral test.",
+          "runtime": "The strict selection path validates hostile identity, range and sight before costs. The shared area landing path applies the per-recipient viral contest.",
+          "test": "PR873 observes normal empty/friendly refusals and the accepted selected cast. AbilityRefusalFeedbackTests add invalid range, blocked sight, combat and stale selection controls. FreeCastViralLandingTests cover admitted area recipients and the viral contest. https://github.com/kylebrussell/mxo-hd/pull/873#issuecomment-7088259016"
+        },
+        "stats": {
+          "source": "GOB 402 supplies Movement, Sneak Movement and Invisibility Movement at -125, with Force Combat -25, all for 18 seconds.",
+          "runtime": "AbilityBuffs projects the appropriate movement channel to owner and observers; the signed scale has a lower bound of -1. CombatInsightEngagement reads the Force Combat record during the Evade Combat entry contest.",
+          "test": "PR873 observes eight adds/removals with -1 observer scale on both admitted views and zero on expiry. BottleneckDebuffStopsBaseMovementWithoutDiscardingASeparateSpeedBuff and BottleneckFieldReducesTheLiveForceScoreUntilExpiry cover the movement channel and actual interlock inputs. https://github.com/kylebrussell/mxo-hd/pull/873#issuecomment-7088259016"
+        },
+        "behavior-tests": {
+          "source": "GOB 402 defines a selected-area non-damaging cast for 23 IS, two-second cast, 30-second reuse and four 18-second modifiers.",
+          "runtime": "Ordinary cast admission, FreeCastViralContest, TimedEffects and the separate movement and force consumers share the actual cast and remover paths.",
+          "test": "Stock PR873 measures the cast, cost, reuse, four records per admitted player, no HP or root, and eight removals. AbilityRefusalFeedbackTests, FreeCastViralLandingTests, DesperateSpeedTests and CombatInsightEngagementTests cover pre-cost refusals, radius, coexistence with a positive speed buff and timed force consumption. https://github.com/kylebrussell/mxo-hd/pull/873#issuecomment-7088259016"
+        }
+      }
+    }
+  }
+}
