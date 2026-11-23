@@ -586,7 +586,7 @@ def remaining_items(i, current_status, runtime_summary):
     if i == 485:
         open_items['source-parity'] = 'Reconcile the captured shortfall timer order and child damage values with the shared aura scheduler'
     if i == 693:
-        open_items['source-parity'] = 'Reconcile the archived +37 Melee and +99 Viral Defense records and child recast presentation'
+        open_items['source-parity'] = 'Reconcile the archived +37 Melee and +99 Viral Defense records with the authored caster-level values'
     if i == 696:
         open_items['source-parity'] = 'Reconcile the archived +37 Ballistic and +39 Melee Damage records with the equal caster-level snapshots'
     if i == 872:
