@@ -97,7 +97,7 @@ namespace hds
             LandAround(client, ability, center, origin, engageFoes,
                 skipMob: primary);
             // Enrage's zero-damage cast starts pursuit through its timed callback, even on a previously wounded NPC.
-            if (ability.getAbilityID() != MobAggro.EnrageAbility && !primary.getIsDead() && primary.getHealthC() < primary.getHealthM())
+            if (!MobAggro.UsesEnragePursuit(ability.getAbilityID()) && !primary.getIsDead() && primary.getHealthC() < primary.getHealthM())
                 MobAggro.Retaliate(client, primary);
             return true;
         }
