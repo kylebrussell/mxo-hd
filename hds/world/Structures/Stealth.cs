@@ -137,12 +137,13 @@ namespace hds
         /// <summary>Abilities this module runs (the states above plus Impart Invisibility and Vanish, which put them on).</summary>
         public static bool Handles(UInt16 id) => Defs.ContainsKey(id) || id == ImpartInvisibilityAbility || id == VanishAbility;
 
-        // SneakInit, InvisibilityInit and EscapeandEvasion_DirectObject select these stances.
+        // SneakInit, ConcealInit, InvisibilityInit and EscapeandEvasion_DirectObject select these stances.
         internal static byte MovementStance(ushort ability) => ability switch
         {
             EscapeAndEvasionAbility => AnimationPackets.StanceSneaking,
             SneakGrantAbility => AnimationPackets.StanceSneaking,
             ImprovedSneakAbility => AnimationPackets.StanceSneaking,
+            ConcealmentGrantAbility => AnimationPackets.StanceInvisible,
             InvisibilityGrantAbility => AnimationPackets.StanceInvisible,
             _ => AnimationPackets.StanceStanding
         };
@@ -283,6 +284,20 @@ namespace hds
                     return "You cannot use Escape and Evasion while in combat.";
                 }
             }
+            if (id == ConcealmentGrantAbility)
+            {
+                var combat = CombatManager.GetHandler(client);
+                if (combat.isCombatRunning || combat.HasActiveInterlock)
+                {
+                    reason = AbilityRefusals.MustBeOutsideCombat;
+                    return "You cannot use Concealment while in combat.";
+                }
+                if (CombatStyles.Active(client) != CombatStyles.RequiredStyle(id))
+                {
+                    reason = AbilityRefusals.WrongStyle;
+                    return "Concealment requires the Rifles style.";
+                }
+            }
             if(id==SneakGrantAbility && StealthShieldAbilities.PendingRestealth(client))return "Sneak is waiting for Disable Evasion's restealth callback.";
             if (id == ImpartInvisibilityAbility)
             {
@@ -311,12 +326,19 @@ namespace hds
             if (!AbilityBuffBuffer.CanApply(client,id)) return "Your upgrade buffer is full.";
             if (id == VanishAbility) return null; // "Vanish Prox Override": no enemy test
             if (!Defs.TryGetValue(id, out Def def)) return null;
-            if (def.Kind == Kind.Sneak && EnemyWatching(client, DetectionRangeUnits(AbilityLevel(client, SneakGrantAbility))))
+            if (def.Kind == Kind.Sneak && EnemyWatching(client, id == ConcealmentGrantAbility ? ConcealmentWatchingRange(client) :
+                DetectionRangeUnits(AbilityLevel(client, SneakGrantAbility))))
             {
                 if (id == EscapeAndEvasionAbility)
                 {
                     reason = AbilityRefusals.NoClientMessage;
                     return "You cannot use Escape and Evasion while an enemy is watching.";
+                }
+
+                if (id == ConcealmentGrantAbility)
+                {
+                    reason = AbilityRefusals.NoClientMessage;
+                    return "You cannot use Concealment while an enemy is watching.";
                 }
 
                 return "You cannot sneak while an enemy is watching."; // InitialSneakTest
@@ -430,8 +452,8 @@ namespace hds
             byte stance = MovementStance(def.Ability);
             if (stance != AnimationPackets.StanceStanding)
                 EmoteHandler.SetStance(client, stance, respectStealth: true);
-            // EscapeandEvasion_DirectObject turns off the listed auras when the cast lands.
-            if (def.Ability == EscapeAndEvasionAbility) StopStealthAuras(client);
+            // The two DirectObject callbacks turn off listed auras after applying the stealth state.
+            if (def.Ability == EscapeAndEvasionAbility || def.Ability == ConcealmentGrantAbility) StopStealthAuras(client);
             Output.WriteDebugLog("[STEALTH] " + TimedEffects.PlayerName(client) + " " + def.Ability + " on (bits " + def.Bits +
                 ", SL " + state.StealthLevel + (state.Seconds > 0 ? ", " + state.Seconds + " s" : "") + ")" + HiddenFromList(client));
 
@@ -480,6 +502,15 @@ namespace hds
         /// <summary>SneakUpdate: an enemy player in range, facing the sneaker, who passes sneakTest reveals them.</summary>
         private static void Update(WorldClient client, State state)
         {
+            if (state.Def.Ability == ConcealmentGrantAbility)
+            {
+                lock (client.playerData.upgradeSync)
+                {
+                    if (Current(client)?.Generation != state.Generation) return;
+                    if (EmoteHandler.Stance(client) != AnimationPackets.StanceInvisible)
+                        EmoteHandler.SetStance(client, AnimationPackets.StanceInvisible, respectStealth: true);
+                }
+            }
             if (DetectedByPlayer(client, state)) End(client, "revealed", true, state.Generation);
         }
 
@@ -569,7 +600,7 @@ namespace hds
                 var modifier = state.Mods[i];
                 client.messageQueue.addRpcMessage(AbilityBuffs.BuildModifier(modifier.Kind, state.RecordIds[i], state.Def.Ability,
                     modifier.Stat, modifier.Value, remove, state.Seconds));
-                if (state.Def.Ability == ImprovedSneakAbility)
+                if (state.Def.Ability == ImprovedSneakAbility || state.Def.Ability == ConcealmentGrantAbility)
                     Output.WriteDebugLog(FormattableString.Invariant(
                         $"[MODIFIER] char={client.playerData.getCharID()} source={state.Def.Ability} stat={modifier.Stat} {(remove ? "remove" : "add")} value={modifier.Value:+0;-0;0} duration={state.Seconds:G}s"));
             }
@@ -655,8 +686,12 @@ namespace hds
 
         // ---- detection ----
 
+        // The shipped GetSneakLevel reads the ordinary 1111 grant, not the Concealment rank.
+        internal static double ConcealmentWatchingRange(WorldClient client) => DetectionRangeUnits(AbilityPassives.Level(client, SneakGrantAbility));
+
         private static double PeriodicDetectionRange(WorldClient client, State state)
         {
+            if (state.Def.Ability == ConcealmentGrantAbility) return ConcealmentWatchingRange(client);
             // GetSneakLevel reads the current grant. Developer fixtures can create a state without a loaded grant.
             int learned = AbilityPassives.Level(client, SneakGrantAbility);
             return DetectionRangeUnits(learned > 0 ? learned : state.Level);

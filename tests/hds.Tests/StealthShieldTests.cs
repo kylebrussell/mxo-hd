@@ -27,6 +27,7 @@ public class StealthShieldTests
         Proc=TempMods.Proc.Terminal,Target=710,Seconds=seconds}}};
     [Theory]
     [InlineData(1111, 9)]
+    [InlineData(1137, 26)]
     [InlineData(1116, 26)]
     public void StealthOwnsItsMovementStanceUntilTheSameStateEnds(ushort ability, byte stance)
     {

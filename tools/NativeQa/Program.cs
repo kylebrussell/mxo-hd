@@ -304,6 +304,8 @@ try
                 else if ((fixtureMode is NativeQa.Modes.HackerParitySweepMode or NativeQa.Modes.HackerSecondPassMode) && action == "hacker-group-arrive")
                     result = await NativeQa.Modes.HackerParitySweepMode.ArriveAsync(helpers,
                         fixtureMode is NativeQa.Modes.HackerSecondPassMode ? NativeQa.Modes.HackerSecondPassMode.Stands : null);
+                else if (fixtureMode is NativeQa.Modes.ConcealmentGrantMode && action == "concealment-grant")
+                    await NativeQa.Modes.ConcealmentGrantMode.SendPhaseAsync(actor, q.GetProperty("phase").GetString()!);
                 else if (fixtureMode is NativeQa.Modes.EscapeAndEvasionMode && action == "escape-and-evasion-reveal")
                     await NativeQa.Modes.EscapeAndEvasionMode.RevealAsync(actor);
                 else if (fixtureMode is NativeQa.Modes.SniperShotMode && action == "sniper-armor")
