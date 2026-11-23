@@ -265,9 +265,9 @@ namespace hds
                     Deny(AbilityID, "Equip the required weapon for this special.", AbilityRefusals.RequiredItemCategory, sendServerText: false);
                     return;
                 }
-                if (CombatSpecials.IsFullAuto(AbilityID) && !CombatStyles.CanUse(shooter, AbilityID))
+                if ((CombatSpecials.IsFullAuto(AbilityID) || AbilityID == CombatSpecials.DualPistolExecution) && !CombatStyles.CanUse(shooter, AbilityID))
                 {
-                    Deny(AbilityID, "Select Submachine Guns before using this special.", AbilityRefusals.WrongStyle, sendServerText: false);
+                    Deny(AbilityID, "Select the required style before using this special.", AbilityRefusals.WrongStyle, sendServerText: false);
                     return;
                 }
 
@@ -544,8 +544,8 @@ namespace hds
             bool pistolSlide = AbilityID == 241;
             bool pistolAerial = AbilityID == AbilityConditionalControls.PistolAerial;
             bool slidingVolley = AbilityID == CombatSpecials.SlidingVolley;
-            bool pointBlank = AbilityID == CombatSpecials.DualPistolPointBlank;
-            bool checkedInterlockSelection = coderInterlock || pistolSlide || pistolAerial || slidingVolley || pointBlank;
+            bool instantDualPistol = CombatSpecials.IsInstantDualPistolSpecial(AbilityID);
+            bool checkedInterlockSelection = coderInterlock || pistolSlide || pistolAerial || slidingVolley || instantDualPistol;
             if (checkedInterlockSelection && !AbilityPassives.IsLoaded(Store.currentClient, AbilityID))
             {
                 Deny(AbilityID, "Load this ability before using it.", AbilityRefusals.NotLoaded, sendServerText: false);
@@ -558,17 +558,17 @@ namespace hds
                 return;
             }
 
-            if (pointBlank)
+            if (instantDualPistol)
             {
                 var shooter = Store.currentClient;
                 if (!CombatSpecials.HasEquippedDualHandguns(shooter))
                 {
-                    Deny(AbilityID, "Dual Pistol Point Blank requires dual handguns.", AbilityRefusals.RequiredItemCategory, sendServerText: false);
+                    Deny(AbilityID, "This special requires dual handguns.", AbilityRefusals.RequiredItemCategory, sendServerText: false);
                     return;
                 }
                 if (!CombatStyles.CanUse(shooter, AbilityID))
                 {
-                    Deny(AbilityID, "Select Handguns before using Dual Pistol Point Blank.", AbilityRefusals.WrongStyle, sendServerText: false);
+                    Deny(AbilityID, "Select Handguns before using this special.", AbilityRefusals.WrongStyle, sendServerText: false);
                     return;
                 }
             }
@@ -585,7 +585,7 @@ namespace hds
                     _ => false
                 });
             uint stateMask = AbilityID == 197 ? 2u :
-                martialInterlock || coderInterlock || pistolSlide || slidingVolley || pointBlank ? (uint)definition.Number("Ability/CastRequiredStates") : 0u;
+                martialInterlock || coderInterlock || pistolSlide || slidingVolley || instantDualPistol ? (uint)definition.Number("Ability/CastRequiredStates") : 0u;
             ushort requiredState = stateMask switch
             {
                 2 => TempMods.DazeAbility,

@@ -148,7 +148,8 @@ namespace hds
                 float[] firstOffset = offsets[firstSlot], secondOffset = offsets[secondSlot];
                 bool shortPistolPose = specialLanded &&
                     (specialAbility == CombatSpecials.PistolEvasive || specialAbility == CombatSpecials.PistolBarrage ||
-                     specialAbility == CombatSpecials.DualPistolPointBlank) && HasClosePairSpacing(firstOffset, secondOffset);
+                     specialAbility == CombatSpecials.DualPistolPointBlank || specialAbility == CombatSpecials.DualPistolExecution) &&
+                    HasClosePairSpacing(firstOffset, secondOffset);
                 var animation = CombatAnimations.Special(specialAbility, specialLanded, secondTactic, secondStyle, shortPistolPose) ??
                     CombatAnimations.Choose(firstTactic, secondTactic, flags, sequence, firstStyle, secondStyle);
                 ushort approach = opening ? (ushort)300 : (ushort)0;
