@@ -1,0 +1,82 @@
+{
+  "abilities": {
+    "247": {
+      "checks": {
+        "damage": {
+          "source": "GOB 247 stores one instant Ballistic health modifier with fixed base 25.",
+          "runtime": "The normal hostile effect expands the cone once and applies Ballistic style and linked bonuses, then each recipient's typed resistance.",
+          "test": "DualSmgConesUseTheMatchingBallisticInfluenceAndResistance verifies +9/+3/+4 inputs and 28→26 against +20 resistance. The stock run landed 28 on each eligible opponent. https://github.com/kylebrussell/mxo-hd/pull/913#issuecomment-7092924331"
+        },
+        "controls": {
+          "source": "GOB 247 stores a 15% landed Enrage for eight seconds.",
+          "runtime": "Each eligible landed recipient resolves the authored chance independently through the standard Enraged state.",
+          "test": "ConditionalControlTests tests both sides of the 15% roll and expiry. The live retest saw the non-proc branch, and PR357 previously witnessed a natural eight-second Enrage from 247 on the stock-selected dummy. https://github.com/kylebrussell/mxo-hd/pull/357#issuecomment-7015751646 https://github.com/kylebrussell/mxo-hd/pull/913#issuecomment-7092924331"
+        },
+        "area": {
+          "source": "GOB 247 specifies a selected-hostile 45-degree cone of 8 m.",
+          "runtime": "Expansion uses the admitted aim and rechecks hostile membership and visible valid recipients. Exactly-on-boundary candidates are eligible.",
+          "test": "DualSmgConeLandsItsFixedBallisticComponentOnlyOnEligibleRecipients tests yaw, radius and exclusion. Stock admitted QAOther just inside the half-angle and excluded the just-outside QAFar and allied QAFriend. https://github.com/kylebrussell/mxo-hd/pull/913#issuecomment-7092924331"
+        },
+        "targeting": {
+          "source": "GOB 247 requires a selected enemy and the dual-SMG weapon category from rest.",
+          "runtime": "Normal admission checks the selected live view/spawn, range and sight, and keeps the original aim through the cast; no active-interlock entry is created.",
+          "test": "DualSmgConeRefusesBeforeCostOrPreservesTheAdmittedAim covers the selected, missing, stale, wrong weapon, line-of-sight and current-fight cases. Both native heads supply scoped refusals, and the retest saw the stock actions blocked in active interlock. https://github.com/kylebrussell/mxo-hd/pull/913#issuecomment-7092924331"
+        },
+        "choreography": {
+          "source": "GOB 247 stores a 2 s outside-combat cast with no success-interlock move.",
+          "runtime": "The ordinary timed cast presents a direct multi-recipient hit after release.",
+          "test": "Stock Bullet Spray showed the 2 s cast and direct hit, and its hotbar refused in an active fight; neither action opened an interlock. https://github.com/kylebrussell/mxo-hd/pull/913#issuecomment-7092924331"
+        },
+        "source-parity": {
+          "source": "The GOB supplies base 25, 30 IS, 2 s cast, 10/5 s own/group 690, 45 degrees and 8 m, plus its authored landed control.",
+          "runtime": "Player casts use the authored weapon, selected cone, fixed Ballistic base and control. The longer archived 248 root is preserved for its NPC caster context.",
+          "test": "Native verifies 30 IS, 2 s, 10/5 s, scope and 28 damage with all loaded bonuses. Both context timings and all typed calculations have focused tests. https://github.com/kylebrussell/mxo-hd/pull/913#issuecomment-7092924331"
+        },
+        "behavior-tests": {
+          "source": "Shipped ability fields and modifiers define the cast gates, typed hit, cone membership and landed control.",
+          "runtime": "Standard selection and the shared hostile effect, resistance and timed-control executors consume those values.",
+          "test": "The player recipient, boundary, no-target/debit, resistance and timed-control regressions supplement the observed stock casts, visible effects and matched removal data. https://github.com/kylebrussell/mxo-hd/pull/913#issuecomment-7092924331"
+        }
+      }
+    },
+    "248": {
+      "checks": {
+        "damage": {
+          "source": "GOB 248 stores one instant Ballistic health modifier with fixed base 15.",
+          "runtime": "The normal hostile effect expands the cone once and applies Ballistic style and linked bonuses, then each recipient's typed resistance.",
+          "test": "DualSmgConesUseTheMatchingBallisticInfluenceAndResistance verifies +9/+3/+4 inputs and 17→15 against +20 resistance. The stock run landed 17 on each eligible opponent. https://github.com/kylebrussell/mxo-hd/pull/913#issuecomment-7092924331"
+        },
+        "controls": {
+          "source": "GOB 248 applies Rooted 99 for 12 seconds. The 21.12-second archived application is from an NPC caster.",
+          "runtime": "The normal player route applies 12 seconds with paired root records and movement suppression, and releases the same movement state at expiry.",
+          "test": "SuppressionFireUsesAuthoredPlayerAndArchivedNpcDurations exercises both caster paths. Stock saw paired records removed after 12 seconds and server position Z=7200 during the attempted move versus Z=7220 after expiry. https://github.com/kylebrussell/mxo-hd/pull/913#issuecomment-7092924331"
+        },
+        "area": {
+          "source": "GOB 248 specifies a selected-hostile 45-degree cone of 8 m.",
+          "runtime": "Expansion uses the admitted aim and rechecks hostile membership and visible valid recipients. Exactly-on-boundary candidates are eligible.",
+          "test": "DualSmgConeLandsItsFixedBallisticComponentOnlyOnEligibleRecipients tests range and scope. Stock at 8.00 and 8.01 m saw only the nearer extra recipient get the hit and Rooted pair. https://github.com/kylebrussell/mxo-hd/pull/913#issuecomment-7092924331"
+        },
+        "targeting": {
+          "source": "GOB 248 requires a selected enemy and the dual-SMG weapon category from rest.",
+          "runtime": "Normal admission checks the selected live view/spawn, range and sight, and keeps the original aim through the cast; no active-interlock entry is created.",
+          "test": "DualSmgConeRefusesBeforeCostOrPreservesTheAdmittedAim covers the selected, missing, stale, wrong weapon, line-of-sight and current-fight cases. Both native heads supply scoped refusals, and the retest saw the stock actions blocked in active interlock. https://github.com/kylebrussell/mxo-hd/pull/913#issuecomment-7092924331"
+        },
+        "choreography": {
+          "source": "GOB 248 stores a 4 s outside-combat cast with no success-interlock move.",
+          "runtime": "The ordinary timed cast presents a direct multi-recipient hit after release.",
+          "test": "Stock Suppression Fire showed the 4 s cast and direct hit, and its hotbar refused in an active fight; neither action opened an interlock. https://github.com/kylebrussell/mxo-hd/pull/913#issuecomment-7092924331"
+        },
+        "source-parity": {
+          "source": "The GOB supplies base 15, 35 IS, 4 s cast, 10/5 s own/group 690, 45 degrees and 8 m, plus its authored landed control.",
+          "runtime": "Player casts use the authored weapon, selected cone, fixed Ballistic base and control. The longer archived 248 root is preserved for its NPC caster context.",
+          "test": "Native verifies 35 IS, 4 s, 10/5 s, scope and 17 damage with all loaded bonuses. Both context timings and all typed calculations have focused tests. https://github.com/kylebrussell/mxo-hd/pull/913#issuecomment-7092924331"
+        },
+        "behavior-tests": {
+          "source": "Shipped ability fields and modifiers define the cast gates, typed hit, cone membership and landed control.",
+          "runtime": "Standard selection and the shared hostile effect, resistance and timed-control executors consume those values.",
+          "test": "The player recipient, boundary, no-target/debit, resistance and timed-control regressions supplement the observed stock casts, visible effects and matched removal data. https://github.com/kylebrussell/mxo-hd/pull/913#issuecomment-7092924331"
+        }
+      }
+    }
+  }
+}

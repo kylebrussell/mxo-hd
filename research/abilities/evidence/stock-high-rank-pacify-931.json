@@ -1,0 +1,49 @@
+{
+  "families": {
+    "selected-high-rank-freeze-pacify": {
+      "representative": 473,
+      "result": "pass",
+      "head": "579527ca",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/931#issuecomment-7093037499",
+      "scope": "The stock client used both rank-3 Freeze System and rank-2 Freeze Area against selected hostile players, covering early refusals, the exact hostile area boundaries, timers, and matched effect removal. The 479 sample verified the live archived-value baseline and leaves the authored player magnitude unresolved."
+    }
+  },
+  "abilities": {
+    "473": {
+      "family": "selected-high-rank-freeze-pacify",
+      "checks": {
+        "controls": {
+          "source": "GOB 473 gives Pacify for 4 s, Viral Resistance -80 for 8 s and AddControlImmunityTimer for the independent 8 s protection. Effective Code adds 15% Pacify duration in the fixture.",
+          "runtime": "The timed state and linked resistance terminate together on damage, while the independent 734/681 immunity remains until its own expiry. Natural state expiry leaves the resistance until its 8 s term.",
+          "test": "SelectedHighRankPacifyRetainsTheSeparateNaturalStateAndImmunityExpiry and FreezeSystem473PacifiesAndAppliesItsViralVulnerability cover expiry, action blocking and damage break. PR931 stock receives Pacify 4.60 s, resistance -80 for 8 s, and independent immunity for 8 s; a second cast breaks its state and resistance on a landed Logic Blast for 17 while immunity runs from 01:07:15 to 01:07:23. https://github.com/kylebrussell/mxo-hd/pull/931#issuecomment-7093037499"
+        },
+        "targeting": {
+          "source": "GOB 473 requires Hacker Style and a selected hostile within 12 m, with a viral contest and a target-centred 4 m radius.",
+          "runtime": "AbilityHandler guards the original selected hostile and spawn from admission through landing; the common sight and viral contest paths qualify each candidate.",
+          "test": "SelectedPacifyRefusesBeforeCostAndRetainsTheAdmittedSpawn exercises empty, out-of-range, blocked, unloaded and replaced selections. SelectedFieldUsesThePrimaryCentreAndEachRecipientOwnContest exercises independent defender contests. PR931 stock sends the selected request, gets refusal 24 for empty and ally and 34 at 12.01 m without cost or reuse, and affects only the selected hostile and the 4.00 m hostile edge. https://github.com/kylebrussell/mxo-hd/pull/931#issuecomment-7093037499"
+        }
+      }
+    },
+    "479": {
+      "family": "selected-high-rank-freeze-pacify",
+      "note": "The original 479 cast was NPC Radueriel against player RajkoHaxor. The retained MaraCThenTimeDOut archive names both actors at lines 60961–60962 and 61046–61050; 60996–60998 shows 85 for 10.02 s, 157 -100 for 12 s and 734/681 for 12 s. Lines 61459–61463 identify Radueriel's NPC_BASE creation as template 94030008. GOB 479 authors 6 s Pacify and resistance -80 for 12 s; PR931's ordinary player cast measured the existing NPC-derived duration 11.523001 s after +15%, and resistance -100. Keep controls, stats and behavior-tests open pending the player-value correction and stock retest. https://github.com/kylebrussell/mxo-hd/blob/552aa727/research/packet-dumps/community-intake/20260607T191353Z-hdneo-public-combat-pvp-rajko-state-selected/logs/mxopackets2_RajkoPacketsNearTheEnd_PacketsMaraCThenTimeDOut.log.txt#L60961-L61050",
+      "checks": {
+        "area": {
+          "source": "GOB 479 uses selected target-centred hostile recipients with a 6 m radius.",
+          "runtime": "The common hostile area selector uses the validated primary target's coordinates and filters the ally and recipients beyond the radius before their own viral contests.",
+          "test": "SelectedFieldUsesThePrimaryCentreAndEachRecipientOwnContest exercises per-recipient landing. PR931 stock confirms effects only on the selected QAEnemy and the hostile exactly 6.00 m from it, with QAFar at 6.01 m and QAFriend excluded. https://github.com/kylebrussell/mxo-hd/pull/931#issuecomment-7093037499"
+        },
+        "targeting": {
+          "source": "GOB 479 requires Hacker Style, a hostile selection within 14 m and an out-of-combat cast. The hostile landing path uses sight and a viral contest.",
+          "runtime": "AbilityHandler validates admission and keeps the admitted hostile view and spawn until completion. The common sight and viral intent checks qualify each recipient separately.",
+          "test": "SelectedPacifyRefusesBeforeCostAndRetainsTheAdmittedSpawn exercises ally, range, style, in-combat, and in-flight retreat branches. SelectedFieldUsesThePrimaryCentreAndEachRecipientOwnContest exercises independent defender contests. PR931 stock checks empty selection and an ally (24), 14.01 m range (34) without debit or timer, and the positive selected-hostile activation. https://github.com/kylebrussell/mxo-hd/pull/931#issuecomment-7093037499"
+        },
+        "script": {
+          "source": "GOB 479 uses AddControlImmunityTimer. The archived NPC cast pairs Pacify with the distinct 734/681 immunity record for 12 s.",
+          "runtime": "TimedEffects adds the independent 734/681 marker with its own duration and releases it independently of the Pacify state.",
+          "test": "SelectedHighRankPacifyRetainsTheSeparateNaturalStateAndImmunityExpiry exercises independent natural expiry. PR931 stock records paired 734/681 application and removal twelve seconds apart on the two eligible hostiles. https://github.com/kylebrussell/mxo-hd/pull/931#issuecomment-7093037499"
+        }
+      }
+    }
+  }
+}
