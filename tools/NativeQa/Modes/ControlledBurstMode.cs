@@ -35,11 +35,11 @@ public sealed class ControlledBurstMode : NativeQaMode
             ["MXO_PVP_MAX_SAFE_LEVEL"] = "15", ["MXO_SIMULACRUM_QA_HOLD_IS"] = "1",
             [CombatFixtureWeapons.DisengageMode] = "1"
         },
-        extraQaMetadata: new() { ["ScopedStockRows"] = "250", ["NativeCloseableRows"] = 0 },
+        extraQaMetadata: new() { ["ScopedStockRows"] = "250", ["NativeCloseableRows"] = 1 },
         readyMessages: new[]
         {
             $"Level {Level}. CSR {Loadout.Sum(AbilityMemory.Cost)}/{AbilityMemory.ForLevel(Level)} memory. QAEnemy {EnemyLoadout.Sum(AbilityMemory.Cost)}/{AbilityMemory.ForLevel(Level)}. Outdoor NAV CSR ({CasterX},{Y},{Z}) faces QAEnemy ({EnemyX},{Y},{Z}). The dual SMGs (2503) start in hand. Strafe once after login if needed. Use the target's radial Close Combat to avoid starting Free Fire, then select Submachine Guns again.",
-            "Neutral interlock: select Submachine Guns on page 2 slot 1, select QAEnemy and use Close Combat. Reselect 158, then press slot 2 once. Keep the first complete stock 80 b9 fa 00 request. Expect [ABILITY-COST] 250 paid=30 and a 4 s cast bar. Before the end there is no queued 250 or 250 damage. After completion expect 10 s own/5 s group 689 and the next resolved eligible round. On a hit expect 21082 and [PVP] ControlledBurstAbility lands on QAEnemy for 29. On a lost round check no 250 damage or Enraged. Record the observed deflection animation if any.",
+            "Neutral interlock: select Submachine Guns on page 2 slot 1, select QAEnemy and use Close Combat. Reselect 158, then press slot 2 once. Keep the first complete stock 80 b9 fa 00 request. Expect [ABILITY-COST] 250 paid=30 and a 4 s cast bar. Before the end there is no queued 250 or 250 damage. After completion expect 10 s own/5 s group 689 and the next resolved eligible round. On a hit expect 21082 and [PVP] ControlledBurstAbility lands on QAEnemy for 29. For a queued 250 that does not land, retain the [PVP] next-move and result lines, the [COMBAT-VIEW] round, and the missing 250 hit/Enraged records. Leave both fighters on Speed for the ordinary dual-SMG versus Self Defense palette. With both misses expect a dodged exchange 3793–3795 or 20491–20493, based on the winning side. If QAEnemy lands an ordinary counter, its hit exchange is 20494/20496/20498 and any damage belongs to that counter. This is the shipped style fallback for the unresolved named deflection move.",
             """With a clean HUD after ?cd stop, send {"actor":"QAEnemy","action":"burst-armor"}. Verify source1061 stat181 +20. Reopen Close Combat against the same QAEnemy, reselect Submachine Guns and repeat after reuse. On a hit expect [TYPED-RESISTANCE OURS] 250 type1 total20 raw29 final26 with 21082. The authored direct base is 26 before this profile's +13 Ballistic influence.""",
             """All casts keep the ordinary 40% Enraged roll. Repeat a landed opportunity after each reuse until one procs. Expect 250 -> 93 and linked 93 -> 0, eight seconds, with no new control-immunity timer. Send {"actor":"QAEnemy","action":"burst-withdraw"} during the eight seconds and again after expiry. [PVP] QAEnemy is withdrawing only after expiry. Send {"actor":"QAEnemy","action":"burst-records"} for the exact paired record IDs and one Enraged state-end. No RNG result is forced.""",
             "Route control after the measured interlock hits: finish with ?cd stop, keep QAEnemy selected and try slot 2 from rest after reuse. Record the stock gate or complete request. If admitted at rest, the existing selected-hit route casts for 4 s, debits 30 IS, and lands directly for 26 under the same armor. It must not queue 21082 in a fight that did not exist at cast start."
@@ -61,6 +61,7 @@ public sealed class ControlledBurstMode : NativeQaMode
         DisablingShotMode.CheckStand(enemy, EnemyX);
         DisablingShotMode.CheckProfile(enemy, EnemyLoadout, Level);
         NativeQaReadiness.RequireNoAmbientAggro(server, enemy);
+        enemy.SendRpc("42 00 00 00 00 00 00"); // Retained stock Speed from the recipient-control sweep.
         if (context.StockProbe is not { } caster) return Array.Empty<byte>();
 
         DisablingShotMode.CheckProfile(caster, Loadout, Level);
