@@ -327,6 +327,117 @@ public class FreeCastViralLandingTests : IDisposable
     }
 
     [Theory]
+    [InlineData(false, false, 999, 999)]
+    [InlineData(false, true, 999, 1000)]
+    [InlineData(true, false, 1000, 1000)]
+    public void DevastationFieldUsesItsShippedPointAndTheOriginalSelectedArea(
+        bool replaceSpawn, bool resistAtEdge, int primaryHealth, int edgeHealth)
+    {
+        const ushort field = 468;
+        const byte level = 50;
+        var caster = Client(110);
+        var primary = Client(111);
+        var edge = Client(112);
+        var outside = Client(113);
+        var ally = Client(114);
+        var actors = new[] { caster, primary, edge, outside, ally };
+        int[] positions = { 6400, 6700, 7300, 7301, 6600 };
+        for (int index = 0; index < actors.Length; index++)
+        {
+            var actor = actors[index];
+            actor.playerData.setEntityId((ulong)(85000400 + index));
+            actor.playerInstance.Level.setValue(level);
+            actor.playerData.pvpFlag = true;
+            actor.playerInstance.OrganizationID.setValue((byte)(index == 0 || actor == ally ? 1 : 2));
+            actor.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(17000, 495, positions[index]));
+            if (actor != caster) caster.viewMan.addView(actor.playerData.getEntityId(), 1).viewCreated = true;
+        }
+        var targetView = caster.viewMan.FindViewForEntity(primary.playerData.getEntityId());
+        var allyView = caster.viewMan.FindViewForEntity(ally.playerData.getEntityId());
+        caster.playerInstance.InnerStrengthMax.setValue((ushort)1000);
+        caster.playerInstance.InnerStrengthAvailable.setValue((ushort)500);
+        Store.currentClient = caster;
+        Environment.SetEnvironmentVariable("MXO_FREECAST_VIRAL_QA_ATTACK15", "32766");
+        Environment.SetEnvironmentVariable("MXO_FREECAST_VIRAL_QA_DEFENSE15", "0");
+        var world = Store.world;
+        var fight = CombatManager.GetHandler(caster);
+        var handler = new AbilityHandler();
+        try
+        {
+            Store.world = (WorldServer)RuntimeHelpers.GetUninitializedObject(typeof(WorldServer));
+            var profile = new NativeQa.Modes.HackerDevastationFieldMode().Plan.Abilities;
+            Assert.Equal(61, profile.Sum(AbilityMemory.Cost));
+            AbilityPassives.SetLoaded(caster, profile.Where(id => id != field).Select(id => (id, (ushort)level)));
+            // Constructed dispatch body. The headless client uses a retained stock Logic Blast request.
+            var request = new byte[41];
+            BitConverter.GetBytes(field).CopyTo(request, 0);
+            SetSelection(targetView);
+            Refuse(AbilityRefusals.NotLoaded);
+            AbilityPassives.SetLoaded(caster, profile.Select(id => (id, (ushort)level)));
+            CombatStyles.Select(caster, CombatStyles.HackerStyle);
+            Assert.Equal(56, AbilityCosts.Effective(caster, field));
+            Assert.Equal(6, AbilityRadius.TargetMetres(caster, field));
+            Assert.Equal(2, TypedAbilityResistance.StoredType(field));
+
+            SetSelection(allyView);
+            Refuse(AbilityRefusals.InvalidTarget);
+            SetSelection(targetView);
+            primary.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(17000, 495, 8001));
+            Refuse(AbilityRefusals.TargetOutOfRange);
+            primary.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(17000, 495, 6700));
+            fight.isCombatRunning = true;
+            Refuse(AbilityRefusals.MustBeOutsideCombat);
+            fight.isCombatRunning = false;
+            if (resistAtEdge) Assert.True(AbilityBuffs.Apply(edge, 8));
+
+            double start = TimeUtils.GetSimTimeSeconds();
+            handler.ProcessAbility(ref request);
+            double end = caster.playerData.castEndsAt;
+            Assert.InRange(end, start + 8, TimeUtils.GetSimTimeSeconds() + 8);
+            Assert.Equal(444, AbilityHandler.CurrentInnerStrength(caster));
+            Assert.All(actors, actor => Assert.Equal(1000, PvpCombat.HealthOf(actor)));
+            if (replaceSpawn) targetView.spawnId++;
+            AbilityCastInterrupts.FinishDue(caster, end);
+            Assert.Equal(primaryHealth, PvpCombat.HealthOf(primary));
+            Assert.Equal(edgeHealth, PvpCombat.HealthOf(edge));
+            Assert.All(new[] { outside, ally }, actor =>
+            {
+                Assert.Equal(1000, PvpCombat.HealthOf(actor));
+                Assert.Empty(TimedEffects.ForPlayer(actor).Effects.Snapshot());
+            });
+            Assert.True(AbilityCooldowns.TryGet(field, out var reuse));
+            Assert.Equal(30, reuse.Seconds);
+            Assert.True(AbilityCooldowns.IsCoolingDown(caster.playerData, field, TimeUtils.GetSimTimeSeconds()));
+
+            void SetSelection(ClientView view)
+            {
+                BitConverter.GetBytes(view.ViewID).CopyTo(request, 2);
+                BitConverter.GetBytes((ushort)view.spawnId).CopyTo(request, 4);
+            }
+
+            void Refuse(uint reason)
+            {
+                caster.messageQueue.RPCMessagesQueue.Clear();
+                caster.playerData.lastAbilityTime = double.NegativeInfinity;
+                handler.ProcessAbility(ref request);
+                byte[] expected = AbilityRefusals.Encode(new AbilityRefusals.Record(field, reason));
+                Assert.Contains(caster.messageQueue.RPCMessagesQueue.Cast<SequencedMessage>(),
+                    message => message.content.AsSpan(1).SequenceEqual(expected));
+                Assert.Equal(500, AbilityHandler.CurrentInnerStrength(caster));
+                Assert.False(AbilityCooldowns.IsCoolingDown(caster.playerData, field, TimeUtils.GetSimTimeSeconds()));
+                caster.playerData.lastAbilityTime = double.NegativeInfinity;
+            }
+        }
+        finally
+        {
+            fight.isCombatRunning = false;
+            foreach (var actor in actors) TimedEffects.Clear(TimedEffects.ForPlayer(actor));
+            AbilityBuffs.RemoveAll(edge);
+            Store.world = world;
+        }
+    }
+
+    [Theory]
     [InlineData(362, 25, 2, 58)]
     [InlineData(482, 48, 4, 60)]
     public void WhiteNoiseAndCodeShockUseTheOrdinarySelectedControlPath(ushort id, int cost, int cast, int reuse)

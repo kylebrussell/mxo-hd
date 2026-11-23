@@ -556,6 +556,56 @@ public class TimedEffectsTests
     }
 
     [Fact]
+    public void DevastationFieldSendsBothStunNoticesAndPreservesExistingImmunity()
+    {
+        const ushort ability = AbilityConditionalControls.DevastationField;
+        const string casterName = "QAActor", victimName = "QAEnemy";
+        var caster = NewClient();
+        caster.playerInstance = new PlayerCharacter();
+        caster.playerInstance.CharacterName.setValue(casterName);
+        caster.LivenessClock = () => 0;
+        caster.Alive = true;
+        caster.playerData.setOnWorld(true);
+        var victim = NewClient();
+        victim.playerInstance = new PlayerCharacter();
+        victim.playerInstance.CharacterName.setValue(victimName);
+        var subject = TimedEffects.ForPlayer(victim);
+        double now = TimeUtils.GetSimTimeSeconds();
+        try
+        {
+            Assert.True(TempMods.TryGet(ability, out var effect));
+            TimedEffects.Apply(subject, effect, now, caster, casterName, fixtureProc: true);
+            Assert.Empty(Rpcs(caster));
+            Rpcs(victim);
+
+            TimedEffects.RunDue(now + .11);
+            Assert.Equal(new[]
+            {
+                Hex(AbilityMessages.AboutAbility(AbilityMessages.StunCaster, true, ability, casterName, victimName, 0)),
+                Hex(AbilityMessages.AboutAbility(AbilityMessages.ImmunityCaster, true, ability, casterName, victimName, 6))
+            }, Rpcs(caster));
+            var received = Rpcs(victim);
+            Assert.Contains(Hex(AbilityMessages.AboutAbility(AbilityMessages.StunTarget, true, ability, casterName, victimName, 0)), received);
+            Assert.Contains(Hex(AbilityMessages.AboutAbility(AbilityMessages.ImmunityTarget, true, ability, casterName, victimName, 6)), received);
+            Assert.Equal(-20, subject.Effects.Total(TempMods.CombatTacticsAbility));
+            var immunity = Assert.Single(subject.Effects.Snapshot(), mod => mod.Parent == TempMods.ControlImmunityTimerAbility);
+
+            TimedEffects.Apply(subject, effect, now + 1, caster, casterName, fixtureProc: true);
+            TimedEffects.RunDue(now + 1.11);
+            Assert.Equal(Hex(ServerPackets.BuildSystemChatMessage(
+                "QAEnemy is immune to Devastation Field's Stun.", "BROADCAST")), Assert.Single(Rpcs(caster)));
+            Assert.Same(immunity, Assert.Single(subject.Effects.Snapshot(), mod => mod.Parent == TempMods.ControlImmunityTimerAbility));
+            Assert.True(ControlActions.Incapacitated(subject.Effects));
+
+            TimedEffects.RunDue(now + 6.12);
+            Assert.False(ControlActions.Incapacitated(subject.Effects));
+            Assert.False(subject.Effects.HasControlImmunity(now + 6.12));
+            Assert.Equal(0, subject.Effects.Total(TempMods.CombatTacticsAbility));
+        }
+        finally { TimedEffects.Clear(subject); }
+    }
+
+    [Fact]
     public void PistolAerialSendsTheArchivedLinkedStunAndMessageOrder()
     {
         const ushort ability = AbilityConditionalControls.PistolAerial;
