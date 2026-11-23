@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using hds;
 
 namespace hds.Tests;
@@ -47,6 +48,29 @@ public class StarterGunmanShotDamageTests
             Assert.Equal(-5, modifier.Value);
             Assert.Equal(10, modifier.Seconds);
         });
+    }
+
+    [Theory]
+    [InlineData(247, 25, 27, 25)]
+    [InlineData(248, 15, 16, 14)]
+    public void DualSmgConesUseTheMatchingBallisticInfluenceAndResistance(ushort ability, int basis, ushort raw, ushort resisted)
+    {
+        var caster = PlayerWithStat(158, 171, 9);
+        var target = PlayerWithStat(1061, 181, 20);
+        Assert.Equal(raw, AbilityStats.ScaleAbilityDamage(caster, ability, basis));
+        Assert.Equal(resisted, TypedAbilityResistance.Player(caster, target, ability, raw));
+
+        static WorldClient PlayerWithStat(ushort source, ushort stat, int value)
+        {
+            var player = (WorldClient)RuntimeHelpers.GetUninitializedObject(typeof(WorldClient));
+            player.playerData = new ClientData();
+            player.playerInstance = new PlayerCharacter();
+            player.playerInstance.Level.setValue((byte)33);
+            TimedEffects.ForPlayer(player).Effects.Apply(source,
+                new[] { new TimedEffects.Active { Proc = TempMods.Proc.Stat, Target = stat, Value = value, Seconds = 10 } },
+                TimeUtils.GetSimTimeSeconds());
+            return player;
+        }
     }
 
     [Fact]
