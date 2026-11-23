@@ -13,8 +13,11 @@ namespace hds
         internal static bool IsPistolAerialMarker(TimedEffects.Active mod) =>
             mod.Parent == PistolAerial && mod.Proc == TempMods.Proc.Terminal;
 
-        internal static bool IsPistolAerialStunTactics(TimedEffects.Active mod) =>
-            mod.Parent == PistolAerial && mod.Proc == TempMods.Proc.Stat && mod.Target == TempMods.CombatTacticsAbility;
+        private static bool UsesStunCombatTactics(ushort source) =>
+            source == PistolAerial || source == CombatSpecials.ThreeRoundBurst;
+
+        internal static bool IsLinkedStunTactics(TimedEffects.Active mod) =>
+            UsesStunCombatTactics(mod.Parent) && mod.Proc == TempMods.Proc.Stat && mod.Target == TempMods.CombatTacticsAbility;
         // tempmods2362: callback is initialization-only and has no explicit immunity timer.
         public static bool HandlesInitial(ushort ability) => ability == 340 && AbilityCatalog.Find(ability)?.Modifiers.Any(
             m => m.Text("StatModInitFunc") == "ApplyPowerlessIfStaggered") == true;
@@ -72,9 +75,9 @@ namespace hds
                 CasterName = marker.CasterName, TargetView = marker.TargetView };
             // addStateMod appends the stun. It must not replace this throw's root/debuff siblings.
             var added = new List<TimedEffects.Active> { stun };
-            if (marker.Parent == PistolAerial)
+            if (UsesStunCombatTactics(marker.Parent))
             {
-                // The target capture links the Stun template's CombatTactics modifier to this proc.
+                // ApplyStunWithTimer adds StunAbility, whose CombatTactics modifier lasts with the state.
                 var tactics = AbilityCatalog.Find(TempMods.StunAbility).Modifiers.Single(m =>
                     m.Component == "CombatTacticsMod" && m.Target == TempMods.CombatTacticsAbility &&
                     m.Number("WhenEnabled") == 2 && m.Number("DurationType") == 2);

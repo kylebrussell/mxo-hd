@@ -100,15 +100,65 @@ public class ConditionalControlTests
             TimedEffects.Apply(subject, effect, now, rng: new FixedProcRoll(0));
             TimedEffects.RunDue(now + .02);
             var stun = Assert.Single(subject.Effects.Snapshot(), mod => mod.Target == TempMods.StunAbility);
-            var penalty = Assert.Single(subject.Effects.Snapshot(), AbilityConditionalControls.IsPistolAerialStunTactics);
+            var penalty = Assert.Single(subject.Effects.Snapshot(), AbilityConditionalControls.IsLinkedStunTactics);
             Assert.Equal(stun.Expires, penalty.Expires);
             TimedEffects.Apply(subject, effect, now + 1, rng: new FixedProcRoll(0));
             TimedEffects.RunDue(now + 1.02);
             Assert.Same(stun, Assert.Single(subject.Effects.Snapshot(), mod => mod.Target == TempMods.StunAbility));
-            Assert.Same(penalty, Assert.Single(subject.Effects.Snapshot(), AbilityConditionalControls.IsPistolAerialStunTactics));
+            Assert.Same(penalty, Assert.Single(subject.Effects.Snapshot(), AbilityConditionalControls.IsLinkedStunTactics));
             Assert.Equal(-20, subject.Effects.Total(TempMods.CombatTacticsAbility));
             TimedEffects.RunDue(now + 4.03);
             Assert.True(subject.Effects.IsEmpty);
+        }
+        finally { TimedEffects.Clear(subject); }
+    }
+
+    [Fact]
+    public void ThreeRoundBurstStunLowersBothAttackInputsAndRemovesTheSameLinkedRecord()
+    {
+        const ushort ability = CombatSpecials.ThreeRoundBurst;
+        var client = (WorldClient)System.Runtime.CompilerServices.RuntimeHelpers.GetUninitializedObject(typeof(WorldClient));
+        client.playerData = new ClientData();
+        client.playerInstance = new PlayerCharacter();
+        client.messageQueue = new MessageQueue();
+        typeof(WorldClient).GetField("lastFlushTick", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!
+            .SetValue(client, long.MaxValue);
+        var subject = TimedEffects.ForPlayer(client);
+        double now = TimeUtils.GetSimTimeSeconds();
+        int melee = AbilityStats.Attack(client, ranged: false);
+        int ballistic = AbilityStats.Attack(client, ranged: true);
+        try
+        {
+            Assert.True(TempMods.TryGet(ability, out var effect));
+            var marker = Assert.Single(TimedEffects.Apply(subject, effect, now, rng: new FixedProcRoll(0)));
+            Assert.Equal(ability, marker.Target);
+            Assert.True(MxoHd.PacketResearch.ManageBonusRecord.TryDecode(PlayerEffects.Record(marker, false), out var markerRecord));
+            Assert.Equal(ability, markerRecord!.TargetId);
+
+            TimedEffects.RunDue(now + .02);
+            var stun = Assert.Single(subject.Effects.Snapshot(), mod => mod.Target == TempMods.StunAbility);
+            var penalty = Assert.Single(subject.Effects.Snapshot(), AbilityConditionalControls.IsLinkedStunTactics);
+            var immunity = Assert.Single(subject.Effects.Snapshot(), mod => mod.Parent == TempMods.ControlImmunityTimerAbility);
+            Assert.Equal(stun.Expires, penalty.Expires);
+            Assert.Equal(4, immunity.Seconds);
+            var add = PlayerEffects.Record(penalty, false);
+            Assert.True(MxoHd.PacketResearch.ManageBonusRecord.TryDecode(add, out var record));
+            Assert.Equal((uint)TempMods.StunAbility, record!.SourceId);
+            Assert.Equal(TempMods.CombatTacticsAbility, record.TargetId);
+            Assert.Equal(-20, record.SignedValue);
+            Assert.Equal(0, record.Duration);
+            Assert.Contains(client.messageQueue.RPCMessagesQueue.Cast<SequencedMessage>(),
+                message => message.content.AsSpan(1).SequenceEqual(add));
+            Assert.Equal(melee - 20, AbilityStats.Attack(client, ranged: false));
+            Assert.Equal(ballistic - 20, AbilityStats.Attack(client, ranged: true));
+
+            TimedEffects.RunDue(now + 4.03);
+            var remove = PlayerEffects.Record(penalty, true);
+            Assert.Contains(client.messageQueue.RPCMessagesQueue.Cast<SequencedMessage>(),
+                message => message.content.AsSpan(1).SequenceEqual(remove));
+            Assert.True(subject.Effects.IsEmpty);
+            Assert.Equal(melee, AbilityStats.Attack(client, ranged: false));
+            Assert.Equal(ballistic, AbilityStats.Attack(client, ranged: true));
         }
         finally { TimedEffects.Clear(subject); }
     }
