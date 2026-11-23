@@ -99,8 +99,8 @@ public sealed class MissionCatalogSampleMode : NativeQaMode
                         .Append("Each accepted phase prints measured street/lobby/floor positions. Other receipts are fixture setup; use ordinary mission interactions and rides. Movement/weaken are assistance.").ToArray());
     }
 
-    private static async Task CheckDirectSamplesAsync(NativeQaBootstrapContext context,
-        (int Mission, int Area)[] samples)
+    internal static async Task CheckDirectSamplesAsync(NativeQaBootstrapContext context,
+        (int Mission, int Area)[] samples, ushort? requiredStandObject = null)
     {
         var server = context.ActualServer ?? throw new InvalidOperationException("Missing catalog fixture server.");
         var database = context.OwnedDatabase ?? throw new InvalidOperationException("Missing catalog fixture database.");
@@ -135,7 +135,11 @@ public sealed class MissionCatalogSampleMode : NativeQaMode
                     $"SELECT COUNT(*) FROM char_missions WHERE charId=110 AND missionId={mission}"),
                     "Probe has no completion receipt for the selected mission");
                 NativeQaReadiness.RequireNoAmbientAggro(server, player);
-                string[] approaches = MissionCatalogObjectApproaches.Find(staged!, root).Select(obj => obj.Describe()).ToArray();
+                var objectApproaches = MissionCatalogObjectApproaches.Find(staged!, root).ToArray();
+                if (requiredStandObject.HasValue)
+                    Check.That(objectApproaches.Any(obj => obj.ObjectId == requiredStandObject && obj.Stand != null && obj.Yaw.HasValue),
+                        "The selected mission object has a verified NAV stand and facing");
+                string[] approaches = objectApproaches.Select(obj => obj.Describe()).ToArray();
                 string[] escortExit = PigeonEscortExitFixture.Describe(staged!);
                 foreach (string approach in approaches.Concat(escortExit))
                     Console.WriteLine($"READY {mission}:{area} bootstrap {approach}");

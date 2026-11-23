@@ -174,7 +174,8 @@ try
         : $"Native ability QA ready on {endpoint.Address}: {account} / placeholder password / CSR_Tester110.");
     int seen = 0;
     (string Identity, int Phase)? announcedEntrance = null;
-    bool printMissionStands = fixtureMode.Name == "mission-catalog-sample" || missionFixturePath != null;
+    bool printMissionStands = fixtureMode is NativeQa.Modes.MissionCatalogSampleMode or NativeQa.Modes.MissionComputerHackerMode ||
+        missionFixturePath != null;
     if (printMissionStands) NavMesh.UseDirectory(Path.Combine(root, "data", "navmesh"));
     var handled = new HashSet<string>();
     DateTime deadline = DateTime.UtcNow.AddHours(4);

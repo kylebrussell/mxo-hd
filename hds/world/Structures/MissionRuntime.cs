@@ -448,13 +448,22 @@ namespace hds
         }
 
         /// <summary>A mission object was used (80 c7 on its view). Returns true if it's one of the mission's.</summary>
-        public static bool OnViewUse(WorldClient client, UInt64 entity)
+        public static bool OnViewUse(WorldClient client, ClientView view, ushort spawn, byte use)
         {
-            return MissionPersistence.Mutate(client,()=>OnViewUseCore(client, entity));
+            bool hacked = false;
+            bool handled = MissionPersistence.Mutate(client,()=>OnViewUseCore(client, view, spawn, use, out hacked));
+            if (handled && hacked)
+            {
+                // ComputerHack calls BreakExclusiveAbility on success, after the mission mutation.
+                Stealth.BreakForAction(client, "hacked a mission computer");
+                UtilityAbilities.StopFindDataNode(client);
+            }
+            return handled;
         }
 
-        private static bool OnViewUseCore(WorldClient client, UInt64 entity)
+        private static bool OnViewUseCore(WorldClient client, ClientView view, ushort spawn, byte use, out bool hacked)
         {
+            hacked = false;
             MissionProgress progress = client.playerData.missionProgress;
             if (progress == null)
             {
@@ -464,7 +473,7 @@ namespace hds
             MissionObjectState state = null;
             foreach (MissionObjectState candidate in progress.objects.Values)
             {
-                if (candidate.entity == entity)
+                if (candidate.entity == view.entityId)
                 {
                     state = candidate;
                 }
@@ -537,7 +546,22 @@ namespace hds
 
                 if (objective.type == MissionGoalType.Use)
                 {
+                    if (objective.computerHack)
+                    {
+                        const uint computerHackRule = 1002;
+                        const ushort hackerAbility = 52;
+                        if (view.spawnId != spawn || view.GoID != state.PresentationGoid ||
+                            ObjectStates.FindUsable(state.PresentationGoid, use)?.executeRule != computerHackRule)
+                            return true;
+                        if (AbilityPassives.Level(client, hackerAbility) < 1)
+                        {
+                            client.messageQueue.addRpcMessage(ServerPackets.BuildSystemChatMessage(
+                                "Load Hacker before attempting to hack this computer.", "BROADCAST"));
+                            return true;
+                        }
+                    }
                     Complete(client, progress, objective);
+                    hacked = objective.computerHack;
                     break;
                 }
             }
@@ -1568,7 +1592,7 @@ namespace hds
 
                 foreach (MissionObjective objective in new List<MissionObjective>(progress.OpenObjectives()))
                 {
-                    if (objective.objectId != state.def.id)
+                    if (objective.objectId != state.def.id || objective.computerHack)
                     {
                         continue;
                     }

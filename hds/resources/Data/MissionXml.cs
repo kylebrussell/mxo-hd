@@ -195,6 +195,7 @@ namespace hds
                 objectId = (ushort)Int(node, "object", 0),
                 escortTo = Attr(node, "to") ?? "exit",
                 optional = Int(node, "optional", 0) != 0,
+                computerHack = Int(node, "computerHack", 0) != 0,
                 waves = Numbers(Attr(node, "wave")),
                 seconds = Dbl(node, "seconds"),
                 limit = Dbl(node, "limit")

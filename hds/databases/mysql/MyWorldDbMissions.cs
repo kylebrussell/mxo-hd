@@ -104,11 +104,13 @@ namespace hds.databases
                     xp+=Math.Max(0,(long)actor.RewardExperience-(old?.RewardExperience??0));
                     if(actor.Loot!=null&&old?.Loot!=null)info+=Math.Max(0,(long)old.Loot.Info-actor.Loot.Info);
                 }
+                int computerHacks = MissionPersistence.NewComputerHacks(previous, updated);
                 MissionAccountUpdate account=null;
-                if(xp>0||info>0)
+                if(xp>0||info>0||computerHacks>0)
                 {
                     c.CommandText="SELECT exp,cash FROM characters WHERE charId=@char FOR UPDATE";
                     long oldXp,oldInfo;using(var r=c.ExecuteReader()){if(!r.Read())throw new MissionCheckpointException("Mission owner missing");oldXp=Convert.ToInt64(r[0]);oldInfo=Convert.ToInt64(r[1]);}
+                    xp += (long)computerHacks * MissionPersistence.ComputerHackExperience(PlayerProgression.LevelForExperience(1, oldXp));
                     Param("@xp",xp);Param("@info",info);
                     c.CommandText="UPDATE characters SET exp=LEAST(CAST(exp AS SIGNED)+@xp,2147483647),cash=LEAST(CAST(cash AS SIGNED)+@info,2147483647) WHERE charId=@char";c.ExecuteNonQuery();
                     account=new MissionAccountUpdate();

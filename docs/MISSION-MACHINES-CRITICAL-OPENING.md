@@ -1,5 +1,15 @@
 # Machines critical chapter 1.1 diagnostic
 
+## Camillo's optional Hack
+
+The Computer at goal 1 of Scheduled for Deletion (201103) uses the shipped ComputerHack rule. The Operator identifies this optional action in the archived mission transcript. The Computer and MainFrame templates bind Hack to use 4, and the active computer templates bind it to use 5. The server checks the actual object's usable, its current spawn, and the actor's loaded Hacker level. The shipped server rule requires level 1 or above, succeeds at that point, and returns before the old Computer Hacking stat contest. Unmarked mission computer interactions and the tutorial keep their existing objective rules.
+
+Successful Hack commits the goal and its XP together. The rule uses the weakling multiplier (67), XP multiplier (5), and XP knob (1) with the level basis 1 at level 1 and otherwise the actor's level minus one. That gives 6030 XP at level 19. These are the same constants corroborated in retail kill rewards, without the kill formula's NPC level difference. XP uses the server's existing mission-side notification. The original progress bar, Hack-specific notification, and Camillo's movement remain open.
+
+The short `mission-computer-hacker` fixture loads the full Hacker prerequisite profile in 8 memory plus Self Defense. Start with `?missionphase 201103 1`. Follow the printed street entrance, elevator and NAV stand for Computer object 1. Unload 52 with `?qaunload 52` and use the stock Hack action. Expect a Load Hacker notice, goal 1 still open, the computer still offering Hack, and no XP. Use `?qaload 52` and verify the +8 Computer Hacking modifier. Hack again for one goal completion, one 6030 XP gain at level 19, and an idle terminal. Talk and defeat can still complete the mission if the optional Hack is skipped. Record any stock progress bar and feedback.
+
+[Archived operator line](../research/missions/transcripts/Mach1-1-3.md#L18), [shipped object uses](../data/object_usables.csv#L2), [client mission-key rule](../research/client-scripts/clientrules.py#L169), [server loaded-ability rule](../research/client-scripts/serverrules.py#L503), [experience constants](../research/client-scripts/README.md#L142).
+
 This package prepares normal-wire validation of the three existing Agent Gray missions:201101 Interference,201102 Redpill Redux,201103 Scheduled for Deletion. Five phases and14 goals. No mission XML, production runtime, objective policy, reward formula or placement is changed.
 
 ## Existing authored boundaries
