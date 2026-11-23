@@ -86,7 +86,8 @@ namespace hds
         /// <summary>Moves used on an enemy target (they go through the round queue or land on the target when cast).</summary>
         public static bool TargetsEnemy(ushort id) => Handles(id) && AbilityCatalog.Canonical(id) != Taunt;
 
-        internal static bool IsDualSmgConeOpener(ushort id) => id == 247 || id == 248;
+        internal const ushort SuppressionFire = 248;
+        internal static bool IsDualSmgConeOpener(ushort id) => id == 247 || id == SuppressionFire;
 
         internal static uint? DualSmgConeRefusal(WorldClient caster, ushort id, ushort view, ushort? spawn)
         {

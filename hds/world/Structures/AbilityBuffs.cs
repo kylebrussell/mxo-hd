@@ -394,13 +394,15 @@ namespace hds
             modifier.Proc == TempMods.Proc.Stat && modifier.Value < 0;
 
         private static bool OverridesMovementScale(TimedEffects.Active modifier) =>
-            (modifier.Parent == 176 || modifier.Parent == 254) && modifier.Proc == TempMods.Proc.State &&
-            modifier.Target == TempMods.RootedAbility && modifier.Break == TempMods.BreakRule.Chance;
+            modifier.Proc == TempMods.Proc.State && modifier.Target == TempMods.RootedAbility &&
+            (modifier.Parent == CombatSpecials.SuppressionFire ||
+             (modifier.Parent == 176 || modifier.Parent == 254) && modifier.Break == TempMods.BreakRule.Chance);
 
         internal static float WithTimedMovementDebuffs(WorldClient client, float movementScale)
         {
             var active = TimedEffects.ForPlayer(client).Effects.Snapshot();
-            // Vector26 observes -1 on Immobilizing Shot's EnableRootWithChance state and the remaining scale on removal.
+            // Vector26 shows the root override and restore for Immobilizing Shot.
+            // Warboy ProxyM2_m2_packets_5 28162 and 30146 show it before and during a Suppression Fire renewal.
             if (active.Any(OverridesMovementScale)) return -1f;
             ushort movementStat = MovementStatFor(Stealth.Current(client));
             // Crash and Bottleneck each specify three movement channels. Apply only the current one.

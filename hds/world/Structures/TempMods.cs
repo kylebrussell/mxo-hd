@@ -300,7 +300,9 @@ namespace hds
             { 502, E(502, Stat(522, -34, 8)) },
             // Deadly Shot, Vector 31513: captured four-second stun.
             { 454, E(454, State(StunAbility, 4)) },
-            // Suppression Fire, ProxyM2_m2_packets_5 28162: rooted 21.12 s; Pinning Fire, Rajko MaraCCyphs 51874: 14.08 s
+            // Warboy ProxyM2_m2_packets_5 28162 records 21.12 s from a Cypherite SMG Specialist.
+            // This is the captured effective NPC duration. The player template stores 12 s.
+            // Pinning Fire, Rajko MaraCCyphs 51874: 14.08 s.
             { 248, E(248, State(RootedAbility, 21.12f)) },
             { 492, E(492, State(RootedAbility, 14.08f)) },
             // Pistol Dash, Rajko AgentsAndIntPorting 40215: enraged 8 s
