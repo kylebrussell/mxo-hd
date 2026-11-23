@@ -105,7 +105,8 @@ namespace hds
         // Publish source-qualified zero grants from the GOB through the loaded registry.
         private static readonly (ushort Source, ushort Target)[] GunmanPassivePairs =
             { (128, 1070), (240, 1075), (245, 1071), (251, 1073), (440, 1074), (508, 1136) };
-        private static readonly (ushort Source, ushort Target)[] UtilityMasterPairs = { (620, 1108) };
+        private static readonly (ushort Source, ushort Target)[] SimulacraDisciplinePairs =
+            { (CoderPets.ProxyMasterDiscipline, CoderPets.ProxyMasterGrant), (620, 1108) };
         private static readonly (ushort Source, ushort Target)[] SpyClassPairs =
             { (155, 1113), (131, 1115), (118, 1119), (283, 1120), (338, 1121), (285, 1122), (389, 1123) };
         private static readonly (ushort Source, ushort Target)[] MasterShadowPairs = { (367, 1118) };
@@ -114,7 +115,7 @@ namespace hds
         private static readonly (ushort Source, ushort Target)[] RavagerAndUpgradeMasterPairs = { (470, 1081), (425, 1096) };
         private static readonly (ushort Source, ushort Target)[] NetworkAttackerPairs = { (483, 1080) };
         internal static IEnumerable<(ushort Source,ushort Target)> RegisteredPairs =>
-            ObservedPairs.Concat(NativeToolPairs).Concat(GunmanPassivePairs).Concat(UtilityMasterPairs).Concat(SpyClassPairs)
+            ObservedPairs.Concat(NativeToolPairs).Concat(GunmanPassivePairs).Concat(SimulacraDisciplinePairs).Concat(SpyClassPairs)
                 .Concat(MasterShadowPairs).Concat(PhysicianPairs).Concat(UpgradeArtistPairs).Concat(RavagerAndUpgradeMasterPairs)
                 .Concat(NetworkAttackerPairs);
         // Separate late live-base candidate; Type45 bookkeeping alone is not native Actions visibility proof.

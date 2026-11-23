@@ -364,6 +364,48 @@ public class CoderPetTests
     }
 
     [Fact]
+    public void ProxyMasterUsesThePetBudgetAndSettlesExactExpiryWithoutTouchingHealth()
+    {
+        var pet = ResourcePet();
+        var other = ResourcePet();
+        pet.InnerStrength = other.InnerStrength = 7.5;
+        pet.LastResourceTick = other.LastResourceTick = 10;
+
+        CoderPets.ApplyProxyMasterResources(pet, 10);
+        Assert.True(CoderPets.SpendAction(pet, 10));
+        Assert.Equal(0, pet.InnerStrength);
+        Assert.False(CoderPets.SpendAction(other, 10));
+        CoderPets.Regenerate(pet, 11);
+        CoderPets.Regenerate(other, 11);
+        Assert.Equal(3, pet.InnerStrength);
+        Assert.Equal(9.5, other.InnerStrength);
+        Assert.Equal(337, pet.Mob.getHealthC());
+
+        Assert.Equal(610, pet.ProxyMasterUntil);
+        pet.InnerStrength = 7.5;
+        pet.LastResourceTick = 610;
+        Assert.False(CoderPets.SpendAction(pet, 610));
+        Assert.Equal(7.5, pet.InnerStrength);
+        pet.InnerStrength = 10;
+        Assert.True(CoderPets.SpendAction(pet, 610));
+        Assert.Equal(0, pet.InnerStrength);
+
+        pet.LastResourceTick = 609;
+        CoderPets.Regenerate(pet, 611);
+        Assert.Equal(5, pet.InnerStrength);
+        Assert.False(CoderPets.SpendAction(pet, 611));
+
+        CoderPets.ApplyProxyMasterResources(pet, 612);
+        Assert.Equal(7, pet.InnerStrength);
+        Assert.Equal(1212, pet.ProxyMasterUntil);
+        pet.ChargeUntil = 614;
+        Assert.True(CoderPets.SpendAction(pet, 612));
+        Assert.Equal(1.5, pet.InnerStrength);
+        CoderPets.Regenerate(pet, 615);
+        Assert.Equal(12.5, pet.InnerStrength); // Two seconds at 4/s before Charge expires, then one at 3/s.
+    }
+
+    [Fact]
     public void FortifyAndBoostChangeGameplayOnlyDuringTheirLifetime()
     {
         var pet = ResourcePet(); pet.FortifyResistance = 100; pet.FortifyUntil = 20;

@@ -91,6 +91,7 @@ public class LoadedGrantMembershipTests
     [InlineData(128, 1070, "80bc45032e0400800000002e04000000000000000000")]
     [InlineData(440, 1074, "80bc4503320400b80100003204000000000000000000")]
     [InlineData(508, 1136, "80bc4503700400fc0100007004000000000000000000")]
+    [InlineData(599, 1107, "80bc4503530400570200005304000000000000000000")]
     public void ClassGrantsPublishZeroRankSourceRecordsOnLoadUnloadAndReload(
         ushort parent, ushort child, string addHex)
     {
