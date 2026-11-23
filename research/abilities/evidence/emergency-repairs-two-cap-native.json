@@ -1,0 +1,28 @@
+{
+  "families": {
+    "ballista-emergency-repairs-two-cap": {
+      "representative": 332,
+      "result": "pass",
+      "head": "14d2e04a2542eef50de9829d7390183c29a4cac2",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/901#issuecomment-7089467703",
+      "scope": "Legal level-50 Ballista profile, selected QAFriend at 499/500 HP. Stock request casts for 4 s, pays 24 IS with Efficiency and shows 300 s own and 4 s family reuse. The 50 s HOT snapshots +96, has no immediate heal, raises 499 to 500 on the first pulse, stays active silently at full, resumes 450 to 455 and further healing after a later wound, and removes at 50 s. CSR HP and both maxima stay unchanged."
+    }
+  },
+  "abilities": {
+    "332": {
+      "family": "ballista-emergency-repairs-two-cap",
+      "checks": {
+        "script": {
+          "source": "tempmods.py HOT rounds Value / Duration × interval and skips an already full target. The shipped overflow branch uses a negative overshoot. The server implements a positive heal capped by remaining HP, with no full-health view update.",
+          "runtime": "TimedEffects.PlayerEffects.Ticked uses TempMods.HotAmount and the ordinary HealSelf update. The active modifier keeps its original schedule when a full-health tick produces zero.",
+          "test": "EmergencyRepairsTwoCapsThePulseAndWaitsThroughFullHealthWithoutEnding verifies the source-332 pulse, cap, lack of an update while full, later resumption and expiry. Stock PR901 verifies 499→500, silence while full and 450→455 after the wound. https://github.com/kylebrussell/mxo-hd/pull/901#issuecomment-7089467703"
+        },
+        "behavior-tests": {
+          "source": "GOB 332 stores a selected friendly HOT with base total 76, a 2.5 s period over 50 s and a 4 s cast. The ordinary healing and cost influences apply to this typed cast.",
+          "runtime": "AbilitySupport.Land snapshots the typed HOT without applying an instant heal. TimedEffects schedules nineteen pulses before expiry. The normal cast, recipient view updates and source removal carry the same identity.",
+          "test": "EmergencyRepairsTwoUsesTheSelectedTargetStoredTotalAndExpiresBeforeTwentiethTick establishes base 76 and nineteen +4 pulses. EmergencyRepairsTwoCapsThePulseAndWaitsThroughFullHealthWithoutEnding establishes the ranked +96/+5, capped and resumed cases. Stock PR901 verifies the actual selected recipient, cast and reuse, no instant HP change and 50 s removal. https://github.com/kylebrussell/mxo-hd/pull/901#issuecomment-7089467703"
+        }
+      }
+    }
+  }
+}
