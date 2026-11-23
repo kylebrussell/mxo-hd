@@ -57,6 +57,8 @@ public class StarterGunmanShotDamageTests
     [Theory]
     [InlineData(247, 25, 28, 26)]
     [InlineData(248, 15, 17, 15)]
+    [InlineData(492, 21, 24, 22)]
+    [InlineData(493, 35, 40, 37)]
     public void DualSmgConesUseTheMatchingBallisticInfluenceAndResistance(ushort ability, int basis, ushort raw, ushort resisted)
     {
         var caster = PlayerWithStats((158, 171, 9), (125, 1139, 3), (246, 1139, 4));
@@ -77,6 +79,30 @@ public class StarterGunmanShotDamageTests
                     TimeUtils.GetSimTimeSeconds());
             return player;
         }
+    }
+
+    [Theory]
+    [InlineData(492, 21)]
+    [InlineData(493, 35)]
+    public void AdvancedConeTiersUseTheCurrentPlayerDamageComponent(ushort id, int expected)
+    {
+        var item = new AbilityItem();
+        item.setAbilityID(id);
+        Assert.Equal(expected, AbilityHandler.AbilityDamage(item, new Random(1)));
+        item.setValueFrom(50);
+        item.setValueTo(80);
+        Assert.Equal(expected, AbilityHandler.AbilityDamage(item, new Random(2)));
+    }
+
+    [Theory]
+    [InlineData(false, 8f)]
+    [InlineData(true, 14.08f)]
+    public void PinningFireDistinguishesPlayerAndRetainedNpcRoot(bool npcCaster, float expected)
+    {
+        Assert.True(TempMods.TryGet(492, out var effect, npcCaster));
+        var root = Assert.Single(TimedEffects.Instantiate(effect, new Random(1)));
+        Assert.Equal(TempMods.RootedAbility, root.Target);
+        Assert.Equal(expected, root.Seconds);
     }
 
     [Fact]

@@ -730,6 +730,8 @@ public class AbilityRefusalFeedbackTests:IDisposable
     [Theory]
     [InlineData(247, 20, 25, 30, 2)]
     [InlineData(248, 25, 15, 35, 4)]
+    [InlineData(492, 36, 21, 45, 2)]
+    [InlineData(493, 42, 35, 50, 2)]
     public void DualSmgConeLandsItsFixedBallisticComponentOnlyOnEligibleRecipients(
         ushort id, byte level, ushort storedDamage, int cost, float castSeconds)
     {
@@ -763,9 +765,14 @@ public class AbilityRefusalFeedbackTests:IDisposable
             Assert.All(admitted, actor => Assert.Equal(1000 - damage, PvpCombat.HealthOf(actor)));
             Assert.All(excluded, actor => Assert.Equal(1000, PvpCombat.HealthOf(actor)));
             Assert.False(CombatManager.GetHandler(caster).HasActiveInterlock);
-            if (id == 248)
+            if (id == CombatSpecials.SuppressionFire || id == CombatSpecials.PinningFire)
             {
-                Assert.All(admitted, actor => Assert.True(TimedEffects.ForPlayer(actor).Effects.Has(TempMods.RootedAbility)));
+                Assert.All(admitted, actor =>
+                {
+                    var root = Assert.Single(TimedEffects.ForPlayer(actor).Effects.Snapshot(), effect => effect.Target == TempMods.RootedAbility);
+                    Assert.Equal(id == CombatSpecials.PinningFire ? 8f : 12f, root.Seconds);
+                    Assert.Equal(-1f, AbilityBuffs.WithTimedMovementDebuffs(actor, .45f));
+                });
                 Assert.All(excluded, actor => Assert.False(TimedEffects.ForPlayer(actor).Effects.Has(TempMods.RootedAbility)));
             }
         }
@@ -786,14 +793,26 @@ public class AbilityRefusalFeedbackTests:IDisposable
     [InlineData(248, "far", AbilityRefusals.TargetOutOfRange)]
     [InlineData(247, "blocked", AbilityRefusals.TargetNotInSight)]
     [InlineData(248, "retreat", 0u)]
+    [InlineData(492, "single SMG", AbilityRefusals.RequiredItemCategory)]
+    [InlineData(492, "blocked", AbilityRefusals.TargetNotInSight)]
+    [InlineData(493, "unloaded", AbilityRefusals.NotLoaded)]
+    [InlineData(493, "combat", AbilityRefusals.MustBeOutsideCombat)]
+    [InlineData(493, "style", AbilityRefusals.WrongStyle)]
+    [InlineData(493, "ally", AbilityRefusals.InvalidTarget)]
+    [InlineData(493, "stale", AbilityRefusals.InvalidTarget)]
+    [InlineData(493, "far", AbilityRefusals.TargetOutOfRange)]
+    [InlineData(493, "retreat", 0u)]
+    [InlineData(493, "changed target", 0u)]
     public void DualSmgConeRefusesBeforeCostOrPreservesTheAdmittedAim(ushort id, string scenario, uint refusal)
     {
         LoadDualSmgConeNav();
-        var caster = DualSmgTestCaster(id, 25, loaded: scenario != "unloaded", dual: scenario != "single SMG");
+        byte level = CombatSpecials.IsAdvancedDualSmgConeOpener(id) ? (byte)42 : (byte)25;
+        var caster = DualSmgTestCaster(id, level, loaded: scenario != "unloaded", dual: scenario != "single SMG");
+        if (scenario == "style") caster.playerData.combatStyle = CombatStyles.SelfDefense;
         caster.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(21750, 1095, 16150));
-        var victim = NewConePlayer(caster, 111, 25, scenario == "far" ? 20949 : scenario == "blocked" ? 22350 : 21550, 1095, 16150,
+        var victim = NewConePlayer(caster, 111, level, scenario == "far" ? 20949 : scenario == "blocked" ? 22350 : 21550, 1095, 16150,
             friendly: scenario == "ally");
-        var bystander = NewConePlayer(caster, 112, 25, 21500, 1095, 16150);
+        var bystander = NewConePlayer(caster, 112, level, 21500, 1095, 16150);
         var view = caster.viewMan.FindViewForEntity(victim.playerData.getEntityId());
         var request = DualSmgRequest(id, view, scenario == "stale");
         var handler = CombatManager.GetHandler(caster);
@@ -809,8 +828,9 @@ public class AbilityRefusalFeedbackTests:IDisposable
             }
             else
             {
-                Assert.Equal(465, AbilityHandler.CurrentInnerStrength(caster));
-                victim.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(20949, 1095, 16150));
+                Assert.Equal(500 - AbilityCosts.Cost(id), AbilityHandler.CurrentInnerStrength(caster));
+                if (scenario == "changed target") view.spawnId++;
+                else victim.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(20949, 1095, 16150));
                 AbilityCastInterrupts.FinishDue(caster, caster.playerData.castEndsAt + .01);
             }
             Assert.Equal(1000, PvpCombat.HealthOf(victim));

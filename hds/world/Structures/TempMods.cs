@@ -302,7 +302,7 @@ namespace hds
             { 454, E(454, State(StunAbility, 4)) },
             // Warboy ProxyM2_m2_packets_5 28162 records 21.12 s from a Cypherite SMG Specialist.
             // This is the captured effective NPC duration. The player template stores 12 s.
-            // Pinning Fire, Rajko MaraCCyphs 51874: 14.08 s.
+            // Rajko MaraCCyphs 51874-51892 records 14.08 s from the same NPC class. Player Pinning Fire is 8 s.
             { 248, E(248, State(RootedAbility, 21.12f)) },
             { 492, E(492, State(RootedAbility, 14.08f)) },
             // Pistol Dash, Rajko AgentsAndIntPorting 40215: enraged 8 s
@@ -340,8 +340,9 @@ namespace hds
             // AbilityHostile's catalog debuffs also give the thrown specials (Poison Knife, Wounding Throw, Sever Artery,
             // CombatSpecials) their stored ThrownDOT and timed debuffs
             Effect source = AbilityHostile.Merge(AbilityCatalog.Controls(id), AbilityHostile.Catalog(id));
-            // These retained Disarming Shot, Suppression Fire and Freeze Area 2.0 values are from NPC casters.
-            if ((!npcCaster && (id == 126 || id == 248 || id == AbilityHostile.FreezeArea2)) || !Retail.TryGetValue(id, out var captured))
+            // These retained Disarming Shot, SMG roots and Freeze Area 2.0 values are from NPC casters.
+            if ((!npcCaster && (id == 126 || id == 248 || id == CombatSpecials.PinningFire || id == AbilityHostile.FreezeArea2)) ||
+                !Retail.TryGetValue(id, out var captured))
             {
                 effect = source;
                 return effect != null;

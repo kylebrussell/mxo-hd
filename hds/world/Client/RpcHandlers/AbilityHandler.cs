@@ -1359,11 +1359,13 @@ namespace hds
                     hit.Number("MinValue") == hit.Number("MaxValue") && AbilityValues.TryValue(hit, 0, 0, out int damage) &&
                     damage > 0 && damage <= UInt16.MaxValue) return (ushort)damage;
             }
-            if (from > 0 && to >= from)
+            // Current player Pinning Fire and Direct Fire store one authoritative fixed hit.
+            bool storedConeHit = source != null && CombatSpecials.IsAdvancedDualSmgConeOpener(source.Id);
+            if (!storedConeHit && from > 0 && to >= from)
             {
                 return (UInt16)random.Next(from, to + 1);
             }
-            // These reviewed legacy rows omit a usable range and have one fixed, instant health modifier.
+            // These reviewed rows use one fixed, instant health modifier.
             int? fixedType = source?.Id switch
             {
                 CombatSpecials.ConcealedShot => 1,
@@ -1393,6 +1395,8 @@ namespace hds
                 415 => 2,  // Harmful Code 3.0
                 247 => 1,  // Bullet Spray
                 248 => 1,  // Suppression Fire
+                CombatSpecials.PinningFire => 1,
+                CombatSpecials.DirectFire => 1,
                 514 => 2,  // Advanced Tinkering
                 605 => 0,  // Low Blow
                 618 => 0,  // Bash
