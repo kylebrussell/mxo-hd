@@ -1,0 +1,42 @@
+{
+  "families": {
+    "shadow-parent-stock-lifecycle": {
+      "representative": 290,
+      "result": "pass",
+      "head": "dd8b81585b30b6fbd9a478876213c101b13dda60",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/1008#issuecomment-7109726458",
+      "scope": "Stock first entry with ordinary 46-point loadout lists one Shadow Upgrade from parent 290. The visible grant activates for 20 IS. Stock Archive unload removes the action at 43 memory, reload restores it once at 46, and ordinary relog restores one action before further loadout changes. Only grant ownership and presentation are credited."
+    }
+  },
+  "abilities": {
+    "290": {
+      "family": "shadow-parent-stock-lifecycle",
+      "note": "Stock unloading removed grant access while the already active 1117 buff persisted. Its active lifetime and stat consumers are separate from the grant-only parent row. https://github.com/kylebrussell/mxo-hd/pull/1008#issuecomment-7109726458",
+      "checks": {
+        "behavior-tests": {
+          "source": "Shadow 290 has a single zero-valued grant of 1117 while loaded. The grant does not confer a separate owned Archive row.",
+          "runtime": "The ordinary ranked Archive supplies the parent. World-ready publishes the derived child and Type45 relation once. Ordinary parent unload/reload removes and restores the derived entry without changing ownership; a new world session presents it again.",
+          "test": "ShadowReadyPresentationTests and the exact ShadowReadyPresentationMode bootstrap verify ordinary 80ae slot use, no child ownership, idempotence, matched grant records, and normal relog. PR1008 exercises the same lifecycle in the stock UI, including activation of the actually visible grant. https://github.com/kylebrussell/mxo-hd/pull/1008#issuecomment-7109726458"
+        }
+      }
+    },
+    "1122": {
+      "checks": {
+        "stealth-detection": {
+          "source": "Shipped GOB 1122 adds +5 to Stealth (209). The recovered Sneak test consumes effective Stealth and observer Awareness with the shipped range, facing and roll rules.",
+          "runtime": "The stock self-upgrade feeds StealthLevelOf for the real Sneak observer. Its replacement and dismissal maintain one active contribution. Reveal clears Sneak state and restores the hostile observer view.",
+          "test": "AssassinUpgradesReplaceTheLiveSneakInputAndRevealAcrossBothBoundaries verifies the real comparison and remove order. PR1009 fixes only the disposable pair’s roll at 35; while SA 13 and noise 0 stay fixed, SL 15 reveals at 8 m and SL 20 misses at 8 m, then reveals at 2.5 m; the +5 record clears when 1123 replaces it. https://github.com/kylebrussell/mxo-hd/pull/1009#issuecomment-7109551719"
+        }
+      }
+    },
+    "1123": {
+      "checks": {
+        "stealth-detection": {
+          "source": "Shipped GOB 1123 adds +8 to Stealth (209). The recovered Sneak test consumes effective Stealth and observer Awareness with the shipped range, facing and roll rules.",
+          "runtime": "The stock self-upgrade feeds StealthLevelOf for the real Sneak observer. Its replacement and dismissal maintain one active contribution. Reveal clears Sneak state and restores the hostile observer view.",
+          "test": "AssassinUpgradesReplaceTheLiveSneakInputAndRevealAcrossBothBoundaries verifies the real comparison and remove order. PR1009 fixes only the disposable pair’s roll at 35; while SA 13 and noise 0 stay fixed, Replacing +5 with +8 gives SL 23, which misses at 2.5 m. Raising the same observer from SA 13 to 93 reveals without removing the upgrade. The stock toggle then removes +8. https://github.com/kylebrussell/mxo-hd/pull/1009#issuecomment-7109551719"
+        }
+      }
+    }
+  }
+}
