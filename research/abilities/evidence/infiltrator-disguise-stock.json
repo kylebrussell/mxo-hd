@@ -1,0 +1,42 @@
+{
+  "abilities": {
+    "1115": {
+      "checks": {
+        "stats": {
+          "source": "GOB 1115 stores melee defence and thrown accuracy +3, Disguise Duration +3 and direct Sneak Movement +10.",
+          "runtime": "Infiltrator Upgrade applies the direct movement points only in the Sneak gait, and removing it leaves the Sneak state intact. Current melee defence, typed throw accuracy and a new Disguise lease each consume their own value.",
+          "test": "SpyClassUpgradeToggleTests covers both combat consumers, gait scope, Disguise lease, and removal. Stock measured throw 66 to 69, Disguise 56 to 59 s and Sneak 300.2 to 329.9 to 300.3 u/s. Prior PR462 captures 30-second reuse; PR1018 confirmed 20 IS and removal with no further debit. https://github.com/kylebrussell/mxo-hd/pull/1018#issuecomment-7111934256"
+        },
+        "consumer": {
+          "source": "GOB 1115 stores melee defence and thrown accuracy +3, Disguise Duration +3 and direct Sneak Movement +10.",
+          "runtime": "Infiltrator Upgrade applies the direct movement points only in the Sneak gait, and removing it leaves the Sneak state intact. Current melee defence, typed throw accuracy and a new Disguise lease each consume their own value.",
+          "test": "SpyClassUpgradeToggleTests covers both combat consumers, gait scope, Disguise lease, and removal. Stock measured throw 66 to 69, Disguise 56 to 59 s and Sneak 300.2 to 329.9 to 300.3 u/s. Prior PR462 captures 30-second reuse; PR1018 confirmed 20 IS and removal with no further debit. https://github.com/kylebrussell/mxo-hd/pull/1018#issuecomment-7111934256"
+        },
+        "behavior-tests": {
+          "source": "GOB 1115 stores melee defence and thrown accuracy +3, Disguise Duration +3 and direct Sneak Movement +10.",
+          "runtime": "Infiltrator Upgrade applies the direct movement points only in the Sneak gait, and removing it leaves the Sneak state intact. Current melee defence, typed throw accuracy and a new Disguise lease each consume their own value.",
+          "test": "SpyClassUpgradeToggleTests covers both combat consumers, gait scope, Disguise lease, and removal. Stock measured throw 66 to 69, Disguise 56 to 59 s and Sneak 300.2 to 329.9 to 300.3 u/s. Prior PR462 captures 30-second reuse; PR1018 confirmed 20 IS and removal with no further debit. https://github.com/kylebrussell/mxo-hd/pull/1018#issuecomment-7111934256"
+        }
+      }
+    },
+    "1114": {
+      "checks": {
+        "stealth-detection": {
+          "source": "DisguiseGrant_Test computes 31 + half rank + duration bonus and checks opposing witnesses within 8 m facing with clear sight. DisguiseGrant_DirectObject applies the tool model, masks the title, and ends the script-listed auras.",
+          "runtime": "The ordinary stock action rechecks watchers at land, uses the tool model, publishes 881 and restores the prior appearance on termination. Detection may separately remove the resulting learned Disguise.",
+          "test": "The exact retained-stock bootstrap validates roles, radius, facing, NPC admission, sight and observer presentation. PR1019 confirms stock casts and the 56.35-second natural teardown and Miasma removal; the sight witness was a thin lamp-post occluder. PR668 separately confirms stock Detection reveal on an opposing disguise. https://github.com/kylebrussell/mxo-hd/pull/1019#issuecomment-7112286000"
+        },
+        "script": {
+          "source": "DisguiseGrant_Test computes 31 + half rank + duration bonus and checks opposing witnesses within 8 m facing with clear sight. DisguiseGrant_DirectObject applies the tool model, masks the title, and ends the script-listed auras.",
+          "runtime": "The ordinary stock action rechecks watchers at land, uses the tool model, publishes 881 and restores the prior appearance on termination. Detection may separately remove the resulting learned Disguise.",
+          "test": "The exact retained-stock bootstrap validates roles, radius, facing, NPC admission, sight and observer presentation. PR1019 confirms stock casts and the 56.35-second natural teardown and Miasma removal; the sight witness was a thin lamp-post occluder. PR668 separately confirms stock Detection reveal on an opposing disguise. https://github.com/kylebrussell/mxo-hd/pull/1019#issuecomment-7112286000"
+        },
+        "behavior-tests": {
+          "source": "DisguiseGrant_Test computes 31 + half rank + duration bonus and checks opposing witnesses within 8 m facing with clear sight. DisguiseGrant_DirectObject applies the tool model, masks the title, and ends the script-listed auras.",
+          "runtime": "The ordinary stock action rechecks watchers at land, uses the tool model, publishes 881 and restores the prior appearance on termination. Detection may separately remove the resulting learned Disguise.",
+          "test": "The exact retained-stock bootstrap validates roles, radius, facing, NPC admission, sight and observer presentation. PR1019 confirms stock casts and the 56.35-second natural teardown and Miasma removal; the sight witness was a thin lamp-post occluder. PR668 separately confirms stock Detection reveal on an opposing disguise. https://github.com/kylebrussell/mxo-hd/pull/1019#issuecomment-7112286000"
+        }
+      }
+    }
+  }
+}
