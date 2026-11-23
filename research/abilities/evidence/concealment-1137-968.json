@@ -1,0 +1,35 @@
+{
+  "abilities": {
+    "1137": {
+      "family": "concealment-actions-grant",
+      "checks": {
+        "controls": {
+          "source": "Catalog 1137 holds authored Concealed 623 and Stealthed 881 for its exclusive toggle. ConcealTerm and ConcealmentGrant_Deactivate remove the state and restore Standing. OnHealthReduceDeactivateAbility ends the toggle only after positive damage taken below maximum HP.",
+          "runtime": "Stealth.BeginCore publishes both state records and the related owner and observer bits. It owns stance 1a until generation-specific EndCore retires the matching terms and restores 00. The same normal release handles damage and active grant removal; pending archive removal follows the independent cancellation fence.",
+          "test": "PR968 stock verified the onset, matched 623/881 and 209 removals, pose 1a to 00 and actual reveal. PR768 stock verified that healing preserves and HP loss breaks the state. PR778 stock verified the active grant unload and independent Sneak. PR780 stock verified pending cancellation and a clean new cast. https://github.com/kylebrussell/mxo-hd/pull/768#issuecomment-7082973621 https://github.com/kylebrussell/mxo-hd/pull/778#issuecomment-7083503883 https://github.com/kylebrussell/mxo-hd/pull/780#issuecomment-7084050308"
+        },
+        "stats": {
+          "source": "Catalog 1137 has Stealth 209 as ValueFunction 2 and scale 1.0. The loaded 503 parent supplies the learned grant rank, and Utility.SneakTest reads live CharMvt.StealthLevel.",
+          "runtime": "Stealth.ModifiersFor emits the learned grant rank and StealthLevelOf reads it with other live Stealth bonuses when evaluating the periodic contest.",
+          "test": "SniperParityTests.ConcealmentUsesItsLearnedGrantRankInsteadOfCharacterLevel uses distinct learned and character ranks. Stock PR968 confirmed rank 19 on a level-37 CSR and an actual SA93 versus SL19 contest. Both server and stock receive paired 209 +19 add/remove."
+        },
+        "stealth-detection": {
+          "source": "utility.py InitialSneakTest and SneakTest use the ordinary Sneak grant for the 300-to-2300-unit range, the 60-degree facing test, LOS, then the native awareness/stealth contest at periodic checks.",
+          "runtime": "Stealth.Refusal and periodic detection share the ordinary Sneak rank for 1137's range and read the actual active 1137 Stealth. The existing sight/PvP policy filters observers and EndCore releases the hidden view on a passed hostile contest. Exact original collision and localized text are shared qualifications.",
+          "test": "The unit tests verify loaded and absent Sneak ranks and the strict contest; PR968 stock bracketed 25 m outside and 16 m inside with a rank-zero range of 23 m. Stock Countermeasures turned SA93 against SL19 and caused one reveal. The disposable replay verified the fresh helper view, while the native run independently recorded the outgoing recreation and CSR becoming visible."
+        },
+        "script": {
+          "source": "sneaks.py binds ConcealmentGrant_Test, ConcealmentGrant_DirectObject and ConcealmentGrant_Deactivate; tempmods.py binds ConcealInit, ConcealTerm and OnHealthReduceDeactivateAbility with ConcealUpdate for periodic stance and detection.",
+          "runtime": "The normal admission path applies the rifle/rest/watching checks; BeginCore adds kSneak, publishes pose 1a and calls shared aura shutdown. Controlled update reapplies 1a if displaced. EndCore restores the owned pose and paired state records on own, damage, reveal and archive paths. The runtime has one serialized exclusive holder, while the shipped panic branch repairs a mismatched exclusive owner. Generic interaction dispatch and original localized IDs remain shared open items.",
+          "test": "PR968 stock saw both pre-cost refusal paths, active aura 42 end without a later pulse and pose 1a followed by 00 on revealed. SniperParityTests and StealthOwnsItsMovementStanceUntilTheSameStateEnds exercise the same generation and retained independent state. PR768/778/780 cover normal damage and grant lifecycle."
+        },
+        "behavior-tests": {
+          "source": "Catalog 1137 plus Concealment callbacks define an out-of-combat Rifle toggle with learned Stealth, two held states, aura handoff, periodic facing/LOS and paired release.",
+          "runtime": "The live command, timer, observer and archive paths interact through the existing generation-owned 1137 state. A cast lands only while its grant remains loaded, with reuse and modifier publication after the normal completion. The existing 20 IS is the documented fallback.",
+          "test": "The retained stock ability-parity-concealment-grant replay validates wrong style, in-combat and watching refusals without cost, positive two-second activation, aura off, owner and allied pose, all paired modifiers, hostile score at 16 m and view recreation. The prior exact stock-frame ability-parity-starter-concealed-shot-lifecycle replay covers health and interrupt scopes. PR968 confirms the actual native route and retained PR768/778/780 native comments cover the separate release cases."
+        }
+      },
+      "note": "PR968 stock at 986b9b00. Rank-19 1137 on a legal level-37 profile required rest and a clear watching check. The 16 m face-on enemy gave reason 10 and active ordinary rifle fire gave reason 21 before cost or reuse. At 25 m, the retained rifle and aura controls preceded the positive stock two-second use, 20 IS, 15-second own timer, 209 +19 and states 623/881. The own pose changed to 1a and the active 42 switched off at activation. Its last previously published child expired without refresh. Stock 293 added 204 +80. SA93 then beat the actual SL19 at 16 m, ended 1137 exactly once, removed all three original records, sent pose 00 and restored the visible CSR. Native recorded a fresh server creation frame; the disposable replay separately confirmed that the hostile helper actually received its view. Older PR768/778/780 native evidence covers the health break, independent Sneak, active archive loss, and pending cancellation. https://github.com/kylebrussell/mxo-hd/pull/968#issuecomment-7100016648"
+    }
+  }
+}

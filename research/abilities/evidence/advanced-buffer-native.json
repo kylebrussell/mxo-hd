@@ -1,0 +1,63 @@
+{
+  "families": {
+    "hacker-advanced-buffer-native": {
+      "representative": 481,
+      "result": "pass",
+      "head": "367538a6",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/966#issuecomment-7099903638",
+      "scope": "Stock level-50 casts refused an ally and a 17 m opponent without payment, then landed on the eligible level-one opponent at 2 m. Both 150-point reservations blocked the same Firewall and restored its admission on term. Buffer Overflow retained Combat Enhancement. Cancel Upgrade removed it without adding HP damage or an IS debit on the target."
+    }
+  },
+  "abilities": {
+    "481": {
+      "family": "hacker-advanced-buffer-native",
+      "checks": {
+        "targeting": {
+          "source": "GOB 481 stores a 14 m selected hostile, TestFunction 2, Hacker Style and the cast-at-rest gate.",
+          "runtime": "AbilityHandler validates the loaded entry, original live opposing view, range, sight and style before payment, then revalidates identity, range and loaded membership at landing.",
+          "test": "OwnedBufferInterferenceRequiresItsBoundEnemyAndRunsAuthoredCallbacks tests refused stale ownership, style, range and replacement spawn. Stock confirmed reason 24 for an ally, reason 34 at 17 m, no expense on refusal and a positive at 2 m. https://github.com/kylebrussell/mxo-hd/pull/966#issuecomment-7099903638"
+        },
+        "source-parity": {
+          "source": "GOB 481 supplies a 150-point 60 s record. The BufferOverflowInit/Update/Term scripts reserve min(Value, free capacity) and release their own reservation on term.",
+          "runtime": "The active 173 consumes 10 points. The documented local level-one maximum is 104, leaving 94 available for the reservation. Raw record value is still 150.",
+          "test": "The ordinary low-level test asserts the 94-point cap. Stock received +150/60 s, retained 173 and refused Firewall without helper expense until term removed the record. The same Firewall then charged 45 with only its four expected records. https://github.com/kylebrussell/mxo-hd/pull/966#issuecomment-7099903638"
+        },
+        "behavior-tests": {
+          "source": "GOB 481 stores 47 IS, a 2 s cast and 30 s own reuse, with no direct damage.",
+          "runtime": "Normal AbilityHandler and free-cast landing use the authored cost, timer, viral eligibility and scheduled expiration.",
+          "test": "The focused bound-target and reservation tests cover payment, landed activation, retained enhancement, no HP damage or IS drain, scheduler removal and successful admission afterward. Stock 500→453, 2 s cast, 30 s own reuse, 0 damage and the 60 s boundary matched. https://github.com/kylebrussell/mxo-hd/pull/966#issuecomment-7099903638"
+        }
+      }
+    },
+    "488": {
+      "family": "hacker-advanced-buffer-native",
+      "checks": {
+        "targeting": {
+          "source": "GOB 488 stores a 16 m selected hostile, TestFunction 2, Hacker Style and the cast-at-rest gate.",
+          "runtime": "The same scoped selected-hostile path enforces loaded membership, identity, range, sight and style at admission, and retains the original opposing spawn at landing.",
+          "test": "The focused handler regression confirms the original spawn fence. Stock denied the ally with reason 24 and the 17 m opponent with reason 34 without cast, reuse or IS, and admitted the same opponent at 2 m. https://github.com/kylebrussell/mxo-hd/pull/966#issuecomment-7099903638"
+        },
+        "stats": {
+          "source": "GOB 488's instantaneous 710 modifier is an input to RemoveRandomBuff. It has a separate 150-point, 50 s BufferOverflow record.",
+          "runtime": "AbilityHostile applies the eligibility-filtered removal. Stat 710 contributes no active modifier, damage or IS loss. AbilityBuffBuffer tracks the timed reservation independently.",
+          "test": "The live landing test checks the target's IS and HP are unchanged. Stock showed 0 damage, the three 173 removals, one 488 +150/50 s addition, and no target IS drain line. https://github.com/kylebrussell/mxo-hd/pull/966#issuecomment-7099903638"
+        },
+        "script": {
+          "source": "tempmods.py implements BufferOverflowInit, BufferOverflowUpdate and BufferOverflowTerm plus the instant RemoveRandomBuff selection of dispellable ability buffs.",
+          "runtime": "The shared capped reservation updates against actual occupancy, releases on term and separately runs the eligible single-buff dispel.",
+          "test": "OwnedBufferInterferenceRequiresItsBoundEnemyAndRunsAuthoredCallbacks exercises the actual callback path and scheduler expiry. Stock 488 removed the one ordinary 173, refused the Firewall while reserved, and accepted the same probe after term. https://github.com/kylebrussell/mxo-hd/pull/966#issuecomment-7099903638"
+        },
+        "source-parity": {
+          "source": "GOB gives 488 the independent 50 s reservation and instant RemoveRandomBuff. Free space is capped by the script. The server retains the documented local maximum policy.",
+          "runtime": "Removing the only 10-point occupied upgrade leaves all 104 capacity available to the 150-point reservation. The reservation clears at its own term and never consumes the target's IS.",
+          "test": "The focused level-one test proves 104 effective points and returns to an admissible Firewall after expiry. Stock saw the exact removal, later refusal and post-term Firewall recovery. https://github.com/kylebrussell/mxo-hd/pull/966#issuecomment-7099903638"
+        },
+        "behavior-tests": {
+          "source": "GOB 488 stores 50 IS, a 4 s cast and 10 s reuse.",
+          "runtime": "The ordinary cast path charges, lands, schedules expiry and publishes separate remove and reservation records.",
+          "test": "The focused ownership, target and callback tests match stock 453→403 IS, the 4 s cast and 10 s own reuse, the single dispel, temporary buffer block and ordinary recovery. https://github.com/kylebrussell/mxo-hd/pull/966#issuecomment-7099903638"
+        }
+      }
+    }
+  }
+}
