@@ -38,6 +38,7 @@ namespace hds
             internal Action<Subject, Active> OnExpired;
             internal Action<Subject, Active,double> OnExpiredAt;
             internal Func<bool> CallbackCurrent,CallbackStateCurrent;
+            internal bool UpdatesNpcEnrage;
             public UInt16 Kind;
             public UInt16 Target;
             public Int32 Value;
@@ -69,7 +70,9 @@ namespace hds
                 get
                 {
                     double at = (Ticks + 1) * Interval;
-                    return (Proc == TempMods.Proc.Dot || Proc == TempMods.Proc.Hot || Proc == TempMods.Proc.Pulse || Proc == TempMods.Proc.SeverState) && Interval > 0 && at < Seconds - 1e-6 ? Start + at : double.PositiveInfinity;
+                    return (UpdatesNpcEnrage || Proc == TempMods.Proc.Dot || Proc == TempMods.Proc.Hot ||
+                        Proc == TempMods.Proc.Pulse || Proc == TempMods.Proc.SeverState) &&
+                        Interval > 0 && at < Seconds - 1e-6 ? Start + at : double.PositiveInfinity;
                 }
             }
         }
@@ -90,6 +93,12 @@ namespace hds
                 {
                     return new List<Active>(active);
                 }
+            }
+
+            internal bool IsCurrent(Active state, double now)
+            {
+                lock (active)
+                    return now < state.Expires && active.Contains(state);
             }
 
             /// <summary>
@@ -511,6 +520,13 @@ namespace hds
                 m.CasterName = casterName;
                 m.TargetView = targetView;
                 configure?.Invoke(m);
+                if (effect.Ability == MobAggro.EnrageAbility && subject is MobEffects &&
+                    m.Proc == TempMods.Proc.State && m.Target == TempMods.EnrageAbility)
+                {
+                    // State 93 binds GenericEnrageUpdate to a three-second cadence.
+                    m.UpdatesNpcEnrage = true;
+                    m.Interval = 3;
+                }
                 if(m.Proc==TempMods.Proc.SeverState)AbilitySeverArteryStates.Bind(subject,m);
             }
 
@@ -1025,6 +1041,11 @@ namespace hds
         internal override bool Ticked(TimedEffects.Active mod, int damage)
         {
             WorldClient caster = mod.Caster;
+            if (mod.UpdatesNpcEnrage)
+            {
+                MobAggro.EnragePulse(mob, mod);
+                return !mob.getIsDead();
+            }
             if (mod.Proc == TempMods.Proc.Pulse) return !mob.getIsDead() && AbilityHostile.Pulse(this, mod);
             if (caster == null || mob.getIsDead())
             {
@@ -1059,8 +1080,11 @@ namespace hds
         internal override void Ended(List<TimedEffects.Active> ended)
         {
             LogModifiers(ended, added: false);
-            // Damage may have broken a hold; expired controls no longer keep a damaged passive NPC idle.
-            if (mob.getHealthC() > 0 && mob.getHealthC() < mob.getHealthM()) MobAggro.Retaliate(lastCaster, mob);
+            // Enrage expiry only ends its pursuit. Other expirations may resume ordinary retaliation
+            // once nothing else is fighting the NPC.
+            if (mob.CombatantCount == 0 && mob.getHealthC() > 0 && mob.getHealthC() < mob.getHealthM() &&
+                ended.Exists(mod => !mod.UpdatesNpcEnrage))
+                MobAggro.Retaliate(lastCaster, mob);
         }
     }
 }

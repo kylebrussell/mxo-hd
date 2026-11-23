@@ -96,7 +96,9 @@ namespace hds
             LandOne(client, ability, targetViewId, sneakOpener, origin, engageFoes, reverseBulldog, ghostStrike);
             LandAround(client, ability, center, origin, engageFoes,
                 skipMob: primary);
-            if (!primary.getIsDead() && primary.getHealthC() < primary.getHealthM()) MobAggro.Retaliate(client, primary);
+            // Enrage's zero-damage cast starts pursuit through its timed callback, even on a previously wounded NPC.
+            if (ability.getAbilityID() != MobAggro.EnrageAbility && !primary.getIsDead() && primary.getHealthC() < primary.getHealthM())
+                MobAggro.Retaliate(client, primary);
             return true;
         }
 
