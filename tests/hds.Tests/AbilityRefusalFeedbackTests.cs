@@ -145,6 +145,53 @@ public class AbilityRefusalFeedbackTests:IDisposable
         Assert.Equal(readyAt, caster.playerData.cooldownEndsAt[id]);
     }
 
+    [Theory]
+    [InlineData(1180, false)]
+    [InlineData(1180, true)]
+    [InlineData(1181, false)]
+    [InlineData(1181, true)]
+    [InlineData(1182, false)]
+    [InlineData(1182, true)]
+    public void OrganizationHealthEffectsCannotBeCastDirectly(ushort id, bool loaded)
+    {
+        var caster = Client();
+        var target = Client(400);
+        target.playerData.setCharID(111);
+        target.playerData.setEntityId(111);
+        target.playerInstance.Health.setValue((ushort)700);
+        var view = caster.viewMan.addView(111, 12);
+        view.viewCreated = true;
+        view.spawnId = 9;
+        WorldServer.Clients.Add("target", target);
+        Store.currentClient = caster;
+        if (loaded) caster.playerData.passives.Loaded[id] = 20;
+
+        var ability = new AbilityItem();
+        ability.setAbilityID(id);
+        ability.setAbilityName(AbilityCatalog.Find(id)!.Name);
+        ability.setCastAnimStart(new byte[4]);
+        DataLoader.getInstance().AbilityDB.Add(ability);
+
+        var body = new byte[41];
+        BitConverter.GetBytes(id).CopyTo(body, 0);
+        BitConverter.GetBytes(view.ViewID).CopyTo(body, 2);
+        BitConverter.GetBytes((ushort)view.spawnId).CopyTo(body, 4);
+        double castBefore = caster.playerData.castEndsAt;
+
+        new AbilityHandler().ProcessAbility(ref body);
+
+        Assert.Contains(Rpcs(caster), rpc => rpc.SequenceEqual(
+            AbilityRefusals.Encode(new(id, AbilityRefusals.LegacyAmbiguous))));
+        Assert.Equal(500, AbilityHandler.CurrentInnerStrength(caster));
+        Assert.Equal(1000, PvpCombat.HealthOf(caster));
+        Assert.Equal(castBefore, caster.playerData.castEndsAt);
+        Assert.Empty(caster.playerData.cooldownEndsAt);
+        Assert.Equal(700, PvpCombat.HealthOf(target));
+        Assert.Equal(400, AbilityHandler.CurrentInnerStrength(target));
+        Assert.False(TimedEffects.ForPlayer(target).Effects.HasParent(id));
+        Assert.Empty(Rpcs(target));
+    }
+
     static byte[] Hex(string s)=>Convert.FromHexString(s);
     static WorldClient Client(ushort inner=500)
     {

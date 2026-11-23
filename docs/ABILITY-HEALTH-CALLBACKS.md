@@ -18,6 +18,16 @@ This follow-up began on PR105 `bc6cb4a5efb49e318fed2bdff5593fe8c0ff5069` in its 
 
 The original buffer policy remains explicitly ours:100+4×characterLevel+stat162 bonuses. A parent consumes BufferSize once. Line Up's two timed components share one parent cost; concealment has its separate16-unit parent cost; replacing a family gets its held-buffer credit across numeric and timed executors. The inherited nonzero StackingType family replacement policy remains; full native priority semantics are not reconstructed.
 
+## Organization health effects
+
+The authored E toggles for Machines (1169), Zion (1177), and Merovingian (1173) each cost 25 IS and drain another 25 every five seconds. Their term callback starts the 240-second reuse. The damage callbacks reapply the corresponding effect on a 5% roll when health is below maximum. Those effects are internal, and the server now refuses direct requests before charging IS or starting a timer. [Shipped toggle and roll callbacks](../research/client-scripts/tempmods.py#L2621-L2657)
+
+- **System Control (1180)** stores a caster-centred hostile radius of 5 m and a five-second Stun. Its separate 0.01-second modifier invokes the ten-second control-immunity callback, which only adds immunity if none exists. [Immunity callback](../research/client-scripts/tempmods.py#L1639-L1644)
+- **Champion of Zion (1181)** stores selector 7 for nearby friendlies in a 5 m radius, neutral healing of 250 and a separate 25 IS restoration on the recipient. The catalog now classifies it as healing. [Restoration callback](../research/client-scripts/tempmods.py#L2654-L2658)
+- **Retribution (1182)** stores a caster-centred hostile radius of 5 m and fixed neutral damage of 150. [Shipped ability records](../data/ability_catalog.json#L1132-L1134)
+
+The E granters 1195, 1192, and 1198 require Awakened rank 50, character level 99, matching organization, and 127 reputation. The player cap is 50, and the current vendor stock lists do not contain the organization abilities or granters. The verified slice here is direct-request refusal and catalog classification. Ordinary acquisition, the parent toggles, and execution of their health callbacks remain open. [Load prerequisites](../research/abilities/ability-load-prerequisites.json#L1456-L1486) · [Organization and reputation callback](../research/client-scripts/tempmods.py#L2538-L2575)
+
 ## Exact random mapping
 
 Read-only inspection of the7.6005 client.dll (SHA256 `cb5ffcc6bb046fc01e9b10cd8e0c5aa86a82ce8a6a50549c0af6b5c55f79cf3a`) identifies ValueFunction0's branch at6251802e..6251804e. Import slot628682ec is `MSVCR71.dll!rand`. It multiplies the15-bit roll by signed16(max-min), shifts logically by15, adds min, narrows to signed16, then follows the existing scale/truncate path. Thus the positive callback ranges here exclude their upper endpoint:10..19,50..99,50..149,60..109. Ignore Pain samples once per modifier application; effect children sample when their new modifier is applied, separately for each recipient.

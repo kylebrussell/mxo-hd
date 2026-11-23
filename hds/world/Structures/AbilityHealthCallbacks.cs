@@ -10,6 +10,7 @@ namespace hds
     {
         public const ushort LineUpAbility = 506;
         internal const ushort ReactiveCode = 941, ReactiveCodeEffect = 942;
+        internal const ushort SystemControl = 1180, ChampionOfZion = 1181, Retribution = 1182;
         private static readonly Random random = new Random();
         public static Func<int> Random15 = () => { lock(random) return random.Next(32768); };
         public static Func<int> Random100 = () => { lock(random) return random.Next(100); };
@@ -54,7 +55,9 @@ namespace hds
             return true;
         }
 
-        public static bool InternalEffect(ushort id) => id==692 || id==693 || id==862 || id==872 || id==ReactiveCodeEffect || id==944;
+        public static bool InternalEffect(ushort id) =>
+            id == 692 || id == 693 || id == 862 || id == 872 || id == ReactiveCodeEffect || id == 944 ||
+            id == SystemControl || id == ChampionOfZion || id == Retribution;
         public static string Describe(ushort id) => id switch
         {
             196 => "health callback: one native function0 sample10..19 per application; external damage/healing triggers stored self heal; nested-parent/HP0 guards are ours",

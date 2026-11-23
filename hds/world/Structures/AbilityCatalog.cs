@@ -22,8 +22,15 @@ namespace hds
             public IEnumerable<Modifier> Modifiers => Fields.EnumerateObject()
                 .Where(p => p.Name.EndsWith("/WhenEnabled", StringComparison.Ordinal))
                 .Select(p => new Modifier(this, p.Name.Substring(0, p.Name.IndexOf('/'))));
-            public bool Healing => Modifiers.Any(m => m.Target == 108 && m.Number("DamageType", -1) == 3 || m.Text("StatModUpdateFunc") == "HOT") || Id == 967;
-            public bool DirectDamage => Modifiers.Any(m => m.Target == 108 && m.Number("DamageType", -1) != 3);
+            // Champion of Zion uses the NeutralHeal type in its internal proc.
+            private bool IsHealingType(Modifier modifier)
+            {
+                double damageType = modifier.Number("DamageType", -1);
+                return damageType == 3 || (Id == AbilityHealthCallbacks.ChampionOfZion && damageType == 6);
+            }
+
+            public bool Healing => Modifiers.Any(m => m.Target == 108 && IsHealingType(m) || m.Text("StatModUpdateFunc") == "HOT") || Id == 967;
+            public bool DirectDamage => Modifiers.Any(m => m.Target == 108 && !IsHealingType(m));
             public bool DamageOverTime => Modifiers.Any(m => m.Text("StatModUpdateFunc").EndsWith("DOT", StringComparison.Ordinal));
             public bool FriendlyTarget => Number("Ability/CastValidTarget", -1) == 2;
             public float CastSeconds => (float)Number("Ability/CastingTime");

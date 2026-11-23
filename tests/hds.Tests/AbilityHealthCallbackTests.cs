@@ -103,6 +103,19 @@ public class AbilityHealthCallbackTests
         finally {AbilityHealthCallbacks.Random100=original;AbilityBuffs.RemoveAll(c);}
     }
 
+    [Theory]
+    [InlineData(1180, false, false)]
+    [InlineData(1181, true, false)]
+    [InlineData(1182, false, true)]
+    public void OrganizationProcCatalogDistinguishesStunNeutralHealAndNeutralDamage(
+        ushort id, bool healing, bool directDamage)
+    {
+        var entry = AbilityCatalog.Find(id)!;
+
+        Assert.Equal(healing, entry.Healing);
+        Assert.Equal(directDamage, entry.DirectDamage);
+    }
+
     [Fact]
     public void HealthWritersPresentAndReturnTheCompletedCallbackResult()
     {
