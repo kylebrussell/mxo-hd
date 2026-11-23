@@ -878,7 +878,16 @@ namespace hds
                 lock (caster.playerData.craftingSync)
                 {
                     if (!summonUnloaded && AbilityPassives.IsLoaded(caster, id))
-                        SpawnFor(caster, id);
+                    {
+                        Pet summoned = SpawnForLocked(caster, id);
+                        if (summoned != null && (id == 594 || id == 616 || id == 617))
+                        {
+                            // These shipped callbacks notify their owner. The localized string ID
+                            // is unavailable, so use the stock-visible private system channel.
+                            new ServerPackets().sendSystemChatMessage(caster,
+                                $"You summoned a level {summoned.Mob.getLevel()} {summoned.Mob.getName()}.", "BROADCAST");
+                        }
+                    }
                     else if (StarterSummonRequiresLoaded(id))
                         Output.WriteDebugLog($"[PET] {id} fizzles: the summon was unloaded during the cast");
                 }
