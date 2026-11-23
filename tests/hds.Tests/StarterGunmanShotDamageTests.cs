@@ -6,6 +6,7 @@ namespace hds.Tests;
 public class StarterGunmanShotDamageTests
 {
     [Theory]
+    [InlineData(242, 20, 0, 5)]
     [InlineData(105, -5, 0, 8)]
     [InlineData(253, 6, 0, 6)]
     [InlineData(176, 50, 0, 17)]

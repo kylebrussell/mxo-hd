@@ -1846,6 +1846,216 @@ public class AbilityRefusalFeedbackTests:IDisposable
         return request;
     }
 
+    [Theory]
+    [InlineData("unloaded", AbilityRefusals.NotLoaded)]
+    [InlineData("wrong weapon", AbilityRefusals.RequiredItemCategory)]
+    [InlineData("ally", AbilityRefusals.InvalidTarget)]
+    [InlineData("stale request", AbilityRefusals.InvalidTarget)]
+    [InlineData("far", AbilityRefusals.TargetOutOfRange)]
+    [InlineData("blocked", AbilityRefusals.TargetNotInSight)]
+    [InlineData("moved", 0u)]
+    [InlineData("occluded", 0u)]
+    [InlineData("new spawn", 0u)]
+    [InlineData("unloaded during cast", 0u)]
+    [InlineData("swapped during cast", 0u)]
+    [InlineData("rest", 0u)]
+    public void PistolEvasiveAtRestBindsAnEligibleSelectionAndAppliesItsDefensesOnLanding(string scenario, uint refusal)
+    {
+        const ushort id = CombatSpecials.PistolEvasive;
+        LoadPistolEvasiveNav();
+        var caster = PistolEvasiveCaster(scenario);
+        var target = Client();
+        target.playerData.setCharID(111);
+        target.playerData.setEntityId(111);
+        target.playerInstance.Level.setValue((byte)22);
+        caster.playerInstance.OrganizationID.setValue((byte)1);
+        target.playerInstance.OrganizationID.setValue((byte)(scenario == "ally" ? 1 : 2));
+        caster.playerData.pvpFlag = target.playerData.pvpFlag = true;
+        SetPosition(scenario == "far" ? 19849 : scenario == "blocked" ? 22350 : 21550);
+        WorldServer.Clients.Add("caster", caster);
+        WorldServer.Clients.Add("target", target);
+
+        var view = caster.viewMan.addView(111, 12);
+        view.viewCreated = true;
+        view.spawnId = 9;
+        var request = PistolEvasiveRequest(DuelPackets.Handle(view.ViewID, scenario == "stale request" ? (ushort)8 : view.spawnId));
+        var throwAttack = new AbilityItem();
+        throwAttack.setAbilityID(347);
+        int[] baseline = Defenses(caster), enemyBefore = Defenses(target);
+        new AbilityHandler().ProcessAbility(ref request);
+
+        if (refusal != 0)
+        {
+            Assert.Equal(AbilityRefusals.Encode(new(id, refusal)), Assert.Single(Rpcs(caster)));
+            Assert.Equal(500, AbilityHandler.CurrentInnerStrength(caster));
+            Assert.Empty(caster.playerData.cooldownEndsAt);
+            return;
+        }
+
+        double castEnd = caster.playerData.castEndsAt;
+        Assert.True(castEnd > TimeUtils.GetSimTimeSeconds());
+        Assert.Equal(470, AbilityHandler.CurrentInnerStrength(caster));
+        Assert.Equal(baseline, Defenses(caster));
+        switch (scenario)
+        {
+            case "moved": SetPosition(19849); break;
+            case "occluded": SetPosition(22350); break;
+            case "new spawn": view.spawnId++; break;
+            case "unloaded during cast": caster.playerData.passives.Loaded.Remove(id); break;
+            case "swapped during cast": caster.playerInstance.EquippedItemID.setValue(692u); break;
+        }
+        try
+        {
+            AbilityCastInterrupts.FinishDue(caster, castEnd + .01);
+            Assert.True(AbilityCooldowns.IsCoolingDown(caster.playerData, id, TimeUtils.GetSimTimeSeconds()));
+            Assert.Equal(enemyBefore, Defenses(target));
+            if (scenario != "rest")
+            {
+                Assert.Equal(1000, PvpCombat.HealthOf(target));
+                Assert.Equal(baseline, Defenses(caster));
+                return;
+            }
+
+            Assert.Equal(995, PvpCombat.HealthOf(target));
+            Assert.Equal(baseline.Select(points => points + 20), Defenses(caster));
+            var protection = caster.playerData.activeBuffs[id];
+            Assert.Equal(12f, protection.Definition.Seconds);
+            Assert.Equal(new ushort[] { 1009, 1010, 1011 }, protection.Definition.Modifiers.Select(mod => mod.Stat).Order());
+            TimedEffects.RunDue(protection.Started + 12.01);
+            Assert.Equal(baseline, Defenses(caster));
+        }
+        finally { AbilityBuffs.RemoveAll(caster); }
+
+        void SetPosition(double x) => target.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(x, 1095, 16150));
+        int[] Defenses(WorldClient actor) =>
+            new[] { AbilityStats.Defense(actor, false), AbilityStats.Defense(actor, true), AbilityStats.SpecialDefense(actor, throwAttack) };
+    }
+
+    [Theory]
+    [InlineData("same fight")]
+    [InlineData("another opponent")]
+    [InlineData("fight ends")]
+    [InlineData("fight replaced")]
+    public void PistolEvasiveQueuesOnlyInTheAdmittedFightAfterItsCast(string scenario)
+    {
+        const ushort id = CombatSpecials.PistolEvasive;
+        LoadPistolEvasiveNav();
+        var caster = PistolEvasiveCaster(scenario);
+        var target = new Mob();
+        target.setEntityId(242000);
+        target.setDistrict(1);
+        target.setHealthC(1000);
+        target.setHealthM(1000);
+        target.setLevel(22);
+        target.setIsSpawned(true);
+        target.setXPos(21550);
+        target.setYPos(1095);
+        target.setZPos(16150);
+        var view = caster.viewMan.addView(target.getEntityId(), 1);
+        view.viewCreated = true;
+        view.spawnId = 9;
+        uint handle = DuelPackets.Handle(view.ViewID, view.spawnId);
+        var session = Session(scenario == "another opponent" ? handle ^ 0x10000u : handle);
+        var handler = CombatManager.GetHandler(caster);
+        var sessionField = typeof(CombatHandler).GetField("currentSession", BindingFlags.Instance | BindingFlags.NonPublic)!;
+        sessionField.SetValue(handler, session);
+        var previousMobs = WorldServer.mobs;
+        WorldServer.mobs = new System.Collections.ArrayList { target };
+        try
+        {
+            var request = PistolEvasiveRequest(handle);
+            new AbilityHandler().ProcessAbility(ref request);
+            Assert.Null(session.QueuedAbility);
+            if (scenario == "another opponent")
+            {
+                Assert.Equal(AbilityRefusals.Encode(new(id, AbilityRefusals.InvalidTarget)), Assert.Single(Rpcs(caster)));
+                Assert.Equal(500, AbilityHandler.CurrentInnerStrength(caster));
+                return;
+            }
+
+            CombatSession? replacement = scenario == "fight replaced" ? Session(handle) : null;
+            if (scenario != "same fight") sessionField.SetValue(handler, replacement);
+            Assert.Equal(470, AbilityHandler.CurrentInnerStrength(caster));
+            AbilityCastInterrupts.FinishDue(caster, caster.playerData.castEndsAt + .01);
+            Assert.Equal(1000, target.getHealthC());
+            Assert.False(AbilityBuffs.IsActive(caster, id));
+
+            if (scenario == "same fight")
+            {
+                var queued = Assert.IsType<AbilityItem>(session.QueuedAbility);
+                Assert.Equal(id, queued.getAbilityID());
+                Assert.Equal(view.ViewID, session.QueuedAbilityTarget);
+                Assert.True(CombatAnimations.CanResolveQueuedAbility(caster, queued));
+                caster.playerData.passives.Loaded.Remove(id);
+                Assert.False(CombatAnimations.CanResolveQueuedAbility(caster, queued));
+            }
+            else
+            {
+                Assert.Null(session.QueuedAbility);
+                Assert.Null(replacement?.QueuedAbility);
+            }
+        }
+        finally
+        {
+            sessionField.SetValue(handler, null);
+            CombatManager.RemoveClient(caster);
+            WorldServer.mobs = previousMobs;
+        }
+
+        CombatSession Session(uint opponent)
+        {
+            var fight = new CombatSession(caster, target, opponent, CombatSession.CombatType.Melee)
+            {
+                CurrentMove = new CombatInterlock.Move()
+            };
+            typeof(CombatSession).GetField("<IsActive>k__BackingField", BindingFlags.Instance | BindingFlags.NonPublic)!
+                .SetValue(fight, true);
+            return fight;
+        }
+    }
+
+    private static WorldClient PistolEvasiveCaster(string scenario)
+    {
+        var caster = Client();
+        caster.playerInstance.Level.setValue((byte)22);
+        caster.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(21750, 1095, 16150));
+        caster.playerInstance.EquippedItemID.setValue(scenario == "wrong weapon" ? 692u : 2565u);
+        var profile = new ushort[] { 2, 17, CombatStyles.Handguns, CombatSpecials.PistolEvasive }
+            .SelectMany(id => AbilityPrerequisites.Current.Closure(id).Keys.Append(id)).Distinct().ToArray();
+        Assert.True(profile.Sum(AbilityMemory.Cost) <= AbilityMemory.ForLevel(22));
+        if (scenario == "unloaded") profile = profile.Where(id => id != CombatSpecials.PistolEvasive).ToArray();
+        AbilityPassives.SetLoaded(caster, profile.Select(id => (id, (ushort)22)));
+        CombatStyles.Select(caster, CombatStyles.Handguns);
+        caster.messageQueue.RPCMessagesQueue.Clear();
+        caster.messageQueue.ObjectMessagesQueue.Clear();
+        Store.currentClient = caster;
+        var ability = new AbilityItem();
+        ability.setAbilityID(CombatSpecials.PistolEvasive);
+        ability.setAbilityName("Pistol Evasive");
+        ability.setIsBuff(true); // Legacy CSV flag; the effect still requires a landed enemy hit.
+        ability.setValueFrom(20);
+        ability.setCastAnimStart(new byte[4]);
+        DataLoader.getInstance().AbilityDB.Add(ability);
+        return caster;
+    }
+
+    private static byte[] PistolEvasiveRequest(uint handle)
+    {
+        // Internal handler payload. NativeQa continues to send only retained stock requests.
+        var request = new byte[41];
+        BitConverter.GetBytes(CombatSpecials.PistolEvasive).CopyTo(request, 0);
+        BitConverter.GetBytes(handle).CopyTo(request, 2);
+        return request;
+    }
+
+    private static void LoadPistolEvasiveNav()
+    {
+        string root = AppContext.BaseDirectory;
+        while (!File.Exists(Path.Combine(root, "data", "sector_properties.csv"))) root = Path.GetDirectoryName(root)!;
+        SectorProperties.Load(Path.Combine(root, "data", "sector_properties.csv"));
+        NavMesh.UseDirectory(Path.Combine(root, "data", "navmesh"));
+    }
+
     [Fact] public void ModeUsesProvenClosedLoadoutWithoutGmOrRandomControls()
     {
         var plan=new NativeQa.Modes.AbilityRefusalFeedbackMode().Plan;Assert.Equal(new ushort[]{2,17,45,1006,77},plan.Abilities);Assert.True(plan.DevCommands);Assert.False(plan.GmCharacter110);Assert.False(plan.FixedCallbackRolls);

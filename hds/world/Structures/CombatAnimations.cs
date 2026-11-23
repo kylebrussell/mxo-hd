@@ -38,18 +38,21 @@ namespace hds
         public static bool HasAbilityRule(ushort ability) => boundSpecials.Value.Contains(AbilityCatalog.Canonical(ability));
 
         /// <summary>Reviewed timed specials with a stock choreography and an explicit GOB weapon category.</summary>
-        public static bool CanQueueGunCast(WorldClient caster, ushort ability)
+        public static bool CanQueueGunCast(WorldClient caster, ushort ability) =>
+            HasRequiredGunWeapon(caster, ability) && CombatStyles.CanUse(caster, ability);
+
+        internal static bool HasRequiredGunWeapon(WorldClient caster, ushort ability)
         {
             byte requiredWeapon = AbilityCatalog.Canonical(ability) switch
             {
                 126 => RangedWeapons.ClassPistol,
+                CombatSpecials.PistolEvasive => RangedWeapons.ClassPistol,
                 176 => RangedWeapons.ClassSubmachinegun,
                 CombatSpecials.ControlledBurst => RangedWeapons.ClassDualSubmachinegun,
                 CombatSpecials.ThreeRoundBurst => RangedWeapons.ClassRifle,
                 _ => 0
             };
-            return requiredWeapon != 0 && CombatStyles.CanUse(caster, ability) &&
-                RangedWeapons.AttackClass(SharpshooterFreeFire.EquippedWeapon(caster)) == requiredWeapon;
+            return requiredWeapon != 0 && RangedWeapons.AttackClass(SharpshooterFreeFire.EquippedWeapon(caster)) == requiredWeapon;
         }
 
         internal static bool CanResolveQueuedAbility(WorldClient caster, AbilityItem ability) =>
@@ -57,6 +60,7 @@ namespace hds
                 ControlActions.CanPerformSpecialMove(caster, ability.getAbilityID()) &&
                 (ability.getAbilityID() != CombatSpecials.ControlledBurst && ability.getAbilityID() != CombatSpecials.ThreeRoundBurst ||
                  AbilityPassives.IsLoaded(caster, ability.getAbilityID())) &&
+                (ability.getAbilityID() != CombatSpecials.PistolEvasive || AbilityPassives.IsLoaded(caster, CombatSpecials.PistolEvasive)) &&
                 (ability.getAbilityID() == CombatSpecials.SlidingVolley
                     ? AbilityPassives.IsLoaded(caster, CombatSpecials.SlidingVolley) &&
                       CombatSpecials.HasEquippedDualSubmachineGuns(caster) && CombatStyles.CanUse(caster, CombatSpecials.SlidingVolley)
