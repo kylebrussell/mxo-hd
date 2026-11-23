@@ -113,6 +113,90 @@ public class AbilityParityTests
         Assert.False(AbilityPassives.IsLoaded(caster, upgrade));
     }
 
+    [Fact]
+    public void TraumaSurgeonChangesTheSharedHealAndRadiusAndAddsSevenConcentration()
+    {
+        var caster = Client();
+        var near = Client();
+        var edge = Client();
+        var outside = Client();
+        var roster = new[] { caster, near, edge, outside };
+        for (int i = 0; i < roster.Length; i++)
+        {
+            uint character = (uint)(77620 + i);
+            roster[i].playerData.setCharID(character);
+            roster[i].playerData.setEntityId(character);
+            roster[i].playerData.setOnWorld(true);
+            roster[i].viewMan = new();
+        }
+        near.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(200, 495, 0));
+        edge.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(0, 495, 900));
+        outside.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(0, 495, 950));
+        var selected = caster.viewMan.addView(outside.playerData.getEntityId(), 1);
+        selected.viewCreated = true;
+        caster.playerInstance.Level.setValue((byte)50);
+        caster.playerData.combatStyle = CombatStyles.HackerStyle;
+        var profile = new NativeQa.Modes.TraumaSurgeonSupportMode().Plan.Abilities.Select(id => (id, (ushort)50));
+        AbilityPassives.SetLoaded(caster, profile);
+        Assert.True(AbilityPassives.IsLoaded(caster, 1093));
+        var groups = hds.world.Structures.SocialGroups.Instance;
+        var team = groups.CreateTeam(77620, "Trauma");
+        var original = WorldServer.Clients;
+        var previousWorld = Store.world;
+        try
+        {
+            Store.world = (WorldServer)RuntimeHelpers.GetUninitializedObject(typeof(WorldServer));
+            foreach (var member in roster.Skip(1))
+                groups.AddTeamMember(team.Id, member.playerData.getCharID(), "Support");
+            WorldServer.Clients = roster.ToDictionary(client => client.playerData.getCharID().ToString());
+
+            Assert.Equal(20, AbilityStats.Influence(caster, 564));
+            Assert.Equal(8.68, AbilityRadius.Metres(caster, 371), 5);
+            AbilitySupport.Land(caster, 371, selected.ViewID);
+            Assert.Equal(new[] { 128, 128, 100, 100 }, roster.Select(client => (int)PvpCombat.HealthOf(client)));
+
+            // Invoke the production support executor directly. The fixture collects the actual 1093 stock request.
+            AbilitySupport.Land(caster, 1093, selected.ViewID);
+            Assert.Equal(27, AbilityStats.Influence(caster, 564));
+            Assert.Equal(9.38, AbilityRadius.Metres(caster, 371), 5);
+            Assert.All(roster.Skip(1), member => Assert.False(member.playerData.activeBuffs.ContainsKey(1093)));
+            AbilitySupport.Land(caster, 371, selected.ViewID);
+            Assert.Equal(new[] { 158, 158, 130, 100 }, roster.Select(client => (int)PvpCombat.HealthOf(client)));
+
+            Assert.True(AbilityBuffs.Remove(caster, 1093));
+            Assert.Equal(20, AbilityStats.Influence(caster, 564));
+            Assert.Equal(8.68, AbilityRadius.Metres(caster, 371), 5);
+            AbilitySupport.Land(caster, 371, selected.ViewID);
+            Assert.Equal(new[] { 186, 186, 130, 100 }, roster.Select(client => (int)PvpCombat.HealthOf(client)));
+        }
+        finally
+        {
+            Store.world = previousWorld;
+            WorldServer.Clients = original;
+            foreach (var member in roster)
+                groups.RemoveTeamMember(team.Id, member.playerData.getCharID());
+        }
+    }
+
+    [Fact]
+    public void UpgradeMasterChangesTheLinkedConcentrationInputInTheLegalSupportProfile()
+    {
+        var caster = Client();
+        caster.playerInstance.Level.setValue((byte)50);
+        var profile = new NativeQa.Modes.TraumaSurgeonSupportMode().Plan.Abilities;
+        CheckInput(profile, 20, 85, grant: true);
+        CheckInput(profile.Where(id => id != 425), 15, 82, grant: false);
+        CheckInput(profile, 20, 85, grant: true);
+
+        void CheckInput(IEnumerable<ushort> loaded, short effectiveConcentration, int through, bool grant)
+        {
+            AbilityPassives.SetLoaded(caster, loaded.Select(id => (id, (ushort)50)));
+            Assert.Equal(grant, AbilityPassives.IsLoaded(caster, 1096));
+            Assert.Equal(effectiveConcentration, AbilityStats.Influence(caster, 564));
+            Assert.Equal(through, AbilityCastInterrupts.CastThroughPercent(100, 500, effectiveConcentration));
+        }
+    }
+
     [Theory]
     [InlineData(76, new[] { 1049, 1045, 1030 }, new[] { 7, 11, 11 })]
     [InlineData(83, new[] { 1045, 1049, 1030 }, new[] { 1, 1, 1 })]
