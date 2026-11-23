@@ -24,7 +24,7 @@ namespace hds
     {
         public const ushort PoisonKnife = 146, WoundingThrow = 281, SeverArtery = 341, BerserkerAttack = 535, Taunt = 647,
             SideRollEscape = 121, BackRollEscape = 122, CartwheelEscape = 292, WoodenStake = 207, SilverBullet = 208, HolyWater = 547, ConcealedShot = 504, WoodenStakePlus = 1022,
-            HolyWaterPlus = 1023, SilverBulletPlus = 1024, PistolEvasive = 242, WoundingShot = 253, SniperShot = 505;
+            HolyWaterPlus = 1023, SilverBulletPlus = 1024, PistolEvasive = 242, WoundingShot = 253, DeadlyShot = 454, SniperShot = 505;
         public const ushort KilledOnlyByHolyWater = 432, KilledOnlyBySilver = 463, KilledOnlyByWood = 464;
 
         internal const ushort PistolBarrage = 244, SlidingVolley = 249, ControlledBurst = 250, ThreeRoundBurst = 256,
@@ -97,7 +97,7 @@ namespace hds
         public static bool IsRifleOpener(ushort id)
         {
             id = AbilityCatalog.Canonical(id);
-            return id == WoundingShot || id == 254 || id == 255 || id == CripplingShot;
+            return id == WoundingShot || id == 254 || id == 255 || id == CripplingShot || id == DeadlyShot;
         }
 
         internal static bool HasEquippedRifle(WorldClient caster) =>

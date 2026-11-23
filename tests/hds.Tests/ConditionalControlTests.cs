@@ -64,12 +64,42 @@ public class ConditionalControlTests
     [Theory]
     [InlineData(253, .30f, true)]
     [InlineData(256, .40f, false)]
+    [InlineData(CombatSpecials.DeadlyShot, .10f, false)]
     public void RifleTermStunsRollOnceAndHonorIndependentImmunity(ushort id, float chance, bool dot) =>
         AssertTermStun(id, chance, dot);
 
     [Fact]
     public void PistolAerialUsesItsOwnStoredStunRollAndFourSecondImmunity() =>
         AssertTermStun(AbilityConditionalControls.PistolAerial, .40f, false);
+
+    [Fact]
+    public void DeadlyShotPreservesTheNpcStunAndThePlayersIndependentStunStack()
+    {
+        Assert.True(TempMods.TryGet(CombatSpecials.DeadlyShot, out var npc, npcCaster: true));
+        var captured = Assert.Single(npc.Mods);
+        Assert.Equal((TempMods.StunAbility, TempMods.Proc.State, 4f), (captured.Target, captured.Proc, captured.Seconds));
+        AssertRepeatedMarkerPreservesStun(CombatSpecials.DeadlyShot, .01f);
+        AssertRifleTermStunLowersAttack(CombatSpecials.DeadlyShot, .01f);
+    }
+
+    [Fact]
+    public void DeadlyShotTerminalMarkerPreservesTheCapturedTargetlessWirePair()
+    {
+        Assert.True(TempMods.TryGet(CombatSpecials.DeadlyShot, out var effect));
+        var subject = new Subject();
+        var marker = Assert.Single(TimedEffects.Apply(subject, effect, TimeUtils.GetSimTimeSeconds() + 100,
+            rng: new FixedProcRoll(0)));
+        try
+        {
+            marker.RecordId = 0x020c;
+            Assert.Equal(Convert.FromHexString("80BC1D000C0200C6010000000004000000000AD7233C"), PlayerEffects.Record(marker, false));
+            Assert.Equal(Convert.FromHexString("80BC1D000C0200C6010000000004000000010AD7233C"), PlayerEffects.Record(marker, true));
+        }
+        finally
+        {
+            TimedEffects.Clear(subject);
+        }
+    }
 
     [Fact]
     public void ConcealedShotKeepsItsAuthoredChanceAndFourSecondImmunity() =>
@@ -151,7 +181,7 @@ public class ConditionalControlTests
             var marker = Assert.Single(TimedEffects.Apply(subject, effect, now, rng: new FixedProcRoll(0)));
             Assert.Equal(ability, marker.Target);
             Assert.True(MxoHd.PacketResearch.ManageBonusRecord.TryDecode(PlayerEffects.Record(marker, false), out var markerRecord));
-            Assert.Equal(ability, markerRecord!.TargetId);
+            Assert.Equal(AbilityConditionalControls.HasCapturedStunStack(ability) ? (ushort)0 : ability, markerRecord!.TargetId);
             Assert.Equal(delay, marker.Seconds);
 
             TimedEffects.RunDue(marker.Expires - .001);

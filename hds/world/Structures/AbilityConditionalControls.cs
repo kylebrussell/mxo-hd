@@ -17,7 +17,7 @@ namespace hds
             modifier.Proc == TempMods.Proc.Terminal && modifier.Target == 0;
 
         internal static bool HasCapturedStunStack(ushort ability) =>
-            ability == PistolAerial || ability == CombatSpecials.SniperShot;
+            ability == PistolAerial || ability == CombatSpecials.SniperShot || ability == CombatSpecials.DeadlyShot;
 
         internal static bool IsCapturedStunMarker(TimedEffects.Active modifier) =>
             HasCapturedStunStack(modifier.Parent) && modifier.Proc == TempMods.Proc.Terminal;
@@ -53,7 +53,7 @@ namespace hds
 
         internal static bool TerminalStun(ushort ability, AbilityCatalog.Modifier modifier) =>
             modifier.Text("StatModTermFunc") == "ApplyStunEffectIfDazed" ||
-            ((ability == PistolAerial || ability == 253 || ability == 256 || ability == 265 || ability == 429 || ability == DevastationField || ability == 504 || ability == 505 || ability == 532 || ability == 534) &&
+            ((ability == PistolAerial || ability == 253 || ability == 256 || ability == 265 || ability == 429 || ability == DevastationField || ability == CombatSpecials.DeadlyShot || ability == 504 || ability == 505 || ability == 532 || ability == 534) &&
                 modifier.Text("StatModTermFunc") == "ApplyStunWithTimer");
 
         internal static void Term(TimedEffects.Subject subject, TimedEffects.Active marker, double now)
