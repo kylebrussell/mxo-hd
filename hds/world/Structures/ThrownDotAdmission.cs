@@ -21,12 +21,19 @@ namespace hds
                 reason = PoisonKnifeRefusal(caster, targetViewId, spawn);
                 return reason != 0;
             }
-            if (!AbilityTargets.HasLiveAttackSelection(caster, targetViewId, spawn))
-            {
-                reason = AbilityRefusals.InvalidTarget;
-                return true;
-            }
-            return false;
+            reason = WoundingThrowRefusal(caster, targetViewId, spawn);
+            return reason != 0;
+        }
+
+        private static uint WoundingThrowRefusal(WorldClient caster, ushort view, ushort? spawn)
+        {
+            if (!AbilityTargets.HasLiveAttackSelection(caster, view, spawn, requireOpponent: true))
+                return AbilityRefusals.InvalidTarget;
+            if (!AbilityTargets.WithinSelectionRange(caster, CombatSpecials.WoundingThrow, view))
+                return AbilityRefusals.TargetOutOfRange;
+            if (!AbilityTargets.HasSelectionSight(caster, AbilityCatalog.Find(CombatSpecials.WoundingThrow), view))
+                return AbilityRefusals.TargetNotInSight;
+            return 0;
         }
 
         private static uint PoisonKnifeRefusal(WorldClient caster, ushort view, ushort? spawn)

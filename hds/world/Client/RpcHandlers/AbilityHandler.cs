@@ -27,7 +27,8 @@ namespace hds
             if (PrisonDevices.Handles(AbilityID)) { PrisonDevices.Activate(Store.currentClient, AbilityID, packet); return; }
             UInt16 currentTargetViewId = reader.ReadUInt16(1);
             bool poisonKnife = AbilityID == CombatSpecials.PoisonKnife;
-            ushort? poisonTargetSpawn = null;
+            bool woundingThrow = AbilityID == CombatSpecials.WoundingThrow;
+            ushort? thrownTargetSpawn = null;
             bool dualSmgCone = CombatSpecials.IsDualSmgConeOpener(AbilityID);
             ushort? coneSpawn = null;
             if (dualSmgCone)
@@ -533,9 +534,9 @@ namespace hds
 
             {
                 ushort? spawn = packet.Length == 41 ? (ushort?)BitConverter.ToUInt16(packet, 4) : null;
-                if (poisonKnife)
-                    poisonTargetSpawn = spawn ?? (ushort?)Store.currentClient.viewMan.getViewById(currentTargetViewId)?.spawnId;
-                if (SpyAbilityRegistry.TryRefuse(Store.currentClient, AbilityID, currentTargetViewId, poisonKnife ? poisonTargetSpawn : spawn, out uint refusalReason))
+                if (poisonKnife || woundingThrow)
+                    thrownTargetSpawn = spawn ?? (ushort?)Store.currentClient.viewMan.getViewById(currentTargetViewId)?.spawnId;
+                if (SpyAbilityRegistry.TryRefuse(Store.currentClient, AbilityID, currentTargetViewId, poisonKnife || woundingThrow ? thrownTargetSpawn : spawn, out uint refusalReason))
                 {
                     Store.currentClient.messageQueue.addRpcMessage(AbilityRefusals.Encode(new AbilityRefusals.Record(AbilityID, refusalReason)));
                     Store.currentClient.FlushQueue();
@@ -1297,13 +1298,19 @@ namespace hds
             ushort hostileView=engageFoes?.PrimaryView??currentTargetViewId;
             if (poisonKnife)
             {
-                if (!poisonTargetSpawn.HasValue ||
-                    ThrownDotAdmission.TryRefuse(client, AbilityID, hostileView, poisonTargetSpawn, out _))
+                if (!thrownTargetSpawn.HasValue ||
+                    ThrownDotAdmission.TryRefuse(client, AbilityID, hostileView, thrownTargetSpawn, out _))
                 {
                     Output.WriteDebugLog("[ABILITY] 146 fizzles: the selected target, style, loadout or combat state changed");
                     return;
                 }
                 AbilityTargets.Land(client, ability, hostileView, sneakOpener, AbilityCastOrigin.NormalFreeCast);
+                return;
+            }
+            if (woundingThrow && (!thrownTargetSpawn.HasValue ||
+                ThrownDotAdmission.TryRefuse(client, AbilityID, currentTargetViewId, thrownTargetSpawn, out _)))
+            {
+                Output.WriteDebugLog("[ABILITY] 281 fizzles: the selected opponent changed, left range or left sight");
                 return;
             }
             if (sniperShot)
