@@ -1,0 +1,80 @@
+{
+  "families": {
+    "stock-proxy-master-selected-viral": {
+      "representative": 598,
+      "result": "pass",
+      "head": "3e73b469c52e2f8b25522de949f7f15aade7f8b8",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/885#issuecomment-7088896662",
+      "scope": "Stock casts for the three Coder hostile slots with empty and friendly refusals. 597 and 595 honor the respective 5 m and 7 m edges and paired state removals. The separate 53 02 Stun Pulse cast starts and completes six seconds apart. 598 hits the selected hostile alone at 87 neutral and 71 with +75 viral resistance, paying 26 IS in this loadout."
+    }
+  },
+  "abilities": {
+    "595": {
+      "family": "stock-proxy-master-selected-viral",
+      "note": "PR885 witnesses the selected hostile edge and 6 s Stun with 12 s immunity. The PacketLog follow-up identifies Stun Pulse with 53 02. Native CSEQ96 and SSEQ286 at 20:06:21 show the cast and `80 ac 53 02` float `00 00 c0 40` (6 s). SSEQ314 at 20:06:27 starts the 30 s reuse, which clears at 20:06:57. The reported 4 s trace uses 55 02, Enrage 2.0 (597). https://github.com/kylebrussell/mxo-hd/pull/885#issuecomment-7088992093",
+      "checks": {
+        "controls": {
+          "source": "GOB 595 specifies six-second Stun and separate 12-second AddControlImmunityTimer.",
+          "runtime": "The common hostile landing honors deflection and publishes the two independent TimedEffects lifetimes.",
+          "test": "PR885 observes both state records and paired removals with no HP change. StunPulseReachesTheSelectedAreaWithIndependentDeflectionAndImmunity verifies the independent deflection, immunity and expiry paths. https://github.com/kylebrussell/mxo-hd/pull/885#issuecomment-7088896662"
+        },
+        "area": {
+          "source": "GOB 595 uses a selected hostile direct object with seven-metre radius.",
+          "runtime": "AbilityTargets centres the eligible hostile area on the actual selected entity and rolls each valid recipient separately.",
+          "test": "Stock PR885 receives the pair on the primary and 7.00 m edge only. The 7.01 m hostile and allied control receive nothing. The live selected-area test exercises independent deflection and boundary inclusion. https://github.com/kylebrussell/mxo-hd/pull/885#issuecomment-7088896662"
+        },
+        "targeting": {
+          "source": "GOB 595 requires Coder Style, a selected enemy and TestFunction 2.",
+          "runtime": "The loaded selected Coder cast checks Coder Style, range, sight and current hostile spawn, retaining identity through completion.",
+          "test": "PR885 stock checks empty/friendly refusal and the positive spot. SelectedFieldUsesTheAdmittedLiveSpawnAndCannotSplashAfterInvalidation verifies range, sight, outside-combat, replacement and sight-loss cases. The independent deflection tests cover the selected target and splash. https://github.com/kylebrussell/mxo-hd/pull/885#issuecomment-7088896662"
+        },
+        "behavior-tests": {
+          "source": "GOB 595 supplies a six-second cast, 30 nominal IS and 30-second reuse, a selected seven-metre area, six-second Stun and independent 12-second immunity.",
+          "runtime": "Ordinary Coder admission starts the shipped cast and cost. Each admitted hostile rolls the viral contest before the common state and immunity handlers schedule their independent removals.",
+          "test": "Stock PR885 pays 29 after the loaded reduction and sees only two eligible recipients with both states and their removals. Correct native `53 02` frames confirm the six-second cast and thirty-second reuse. The disposable selected-area tests cover deflection and the active and expired immunity. https://github.com/kylebrussell/mxo-hd/pull/885#issuecomment-7088896662 https://github.com/kylebrussell/mxo-hd/pull/885#issuecomment-7088992093"
+        }
+      }
+    },
+    "597": {
+      "family": "stock-proxy-master-selected-viral",
+      "note": "PR885 confirms a four-second cast, 43 IS at the loaded discount, 30-second reuse, two ten-second Enrage records and removals on eligible selected-area recipients. The shared player Enrage controls remain open. https://github.com/kylebrussell/mxo-hd/pull/885#issuecomment-7088896662",
+      "checks": {
+        "area": {
+          "source": "GOB 597 uses a selected hostile with five-metre radius and ten-second Enraged.",
+          "runtime": "The Coder selected-area path applies the non-damaging state to each independently eligible hostile.",
+          "test": "PR885 observes the primary and exact 5.00 m edge only, with paired removal. The disposable coder-upper-viral-server scenario also puts the excluded hostile at 5.01 m. https://github.com/kylebrussell/mxo-hd/pull/885#issuecomment-7088896662"
+        },
+        "targeting": {
+          "source": "GOB 597 requires an outside-combat selected enemy in Coder Style, within 16 m.",
+          "runtime": "The current view and spawn, style, visibility and hostile range bind before cost and are rechecked on the selected cast path.",
+          "test": "PR885 verifies empty and allied refusal and an accepted actual enemy. The coder-upper-viral-server scenario checks invalid, style and stale-spawn controls, actual recipients and expiry. https://github.com/kylebrussell/mxo-hd/pull/885#issuecomment-7088896662"
+        }
+      }
+    },
+    "598": {
+      "family": "stock-proxy-master-selected-viral",
+      "checks": {
+        "damage": {
+          "source": "GOB 598 defines fixed viral base 64 and an instant health effect.",
+          "runtime": "The fixed base reaches the shared viral hit, typed influence and resistance path.",
+          "test": "StaticBarrageUsesItsFixedViralBaseWithMatchingResistance and PR885 agree on 87 neutral and 71 under +75 Viral Resistance. https://github.com/kylebrussell/mxo-hd/pull/885#issuecomment-7088896662"
+        },
+        "targeting": {
+          "source": "GOB 598 is a Coder selected hostile cast with TestFunction 2 and 16 m range.",
+          "runtime": "The cast checks the original hostile, membership, Coder Style, sight and range. The viral test applies to that single recipient.",
+          "test": "PR885 verifies empty and allied refusal with no debit, then two accepted selected recipient hits with no splash. The disposable upper-viral scenario covers wrong style and stale-spawn rejection. https://github.com/kylebrussell/mxo-hd/pull/885#issuecomment-7088896662"
+        },
+        "source-parity": {
+          "source": "GOB 598 specifies the fixed 64 viral modifier. The legacy buff flag had prevented the required hostile landing.",
+          "runtime": "The ordinary selected cast bypasses that legacy buff classification for 598 and uses the shipped base with the existing typed result.",
+          "test": "PR885 sees the selected hostile take 87 then 71 on the resisted control. StaticBarrageUsesItsFixedViralBaseWithMatchingResistance independently pins raw 64, combined loaded influence +36 and both applied values. https://github.com/kylebrussell/mxo-hd/pull/885#issuecomment-7088896662"
+        },
+        "behavior-tests": {
+          "source": "The authored single-target cast costs 27 IS before the loaded reduction, takes two seconds, and starts six-second own and four-second family reuse.",
+          "runtime": "The ordinary cost, cast, timer, hostile selection and typed health handlers execute the stored cast. Loaded 599 reduces the 27 IS cost to 26 in the verified profile.",
+          "test": "Stock PR885 observes both exact 26-point debits, cast/timers, exact neutral/resisted results, no splash and no max-vital or interlock side effect. The upper-viral replay and fixed damage test exercise the same production consumers. https://github.com/kylebrussell/mxo-hd/pull/885#issuecomment-7088896662"
+        }
+      }
+    }
+  }
+}
