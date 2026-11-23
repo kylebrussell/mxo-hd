@@ -1,0 +1,24 @@
+{
+  "abilities": {
+    "254": {
+      "note": "PR907 stock verifies recipient root movement and typed damage at level 25. The stock check observes the actual owner's modifier records and movement. The generic term-message dispatch and the original Force Combat admission formula remain open. https://github.com/kylebrussell/mxo-hd/pull/907#issuecomment-7089882125",
+      "checks": {
+        "damage": {
+          "source": "GOB 254 uses a fixed instant ballistic health modifier of 18 before caster influence and target resistance.",
+          "runtime": "The selected player landing applies loaded Ballistic influence to the shipped base, then matching stat 181 resistance.",
+          "test": "The exact disposable Immobilizing Shot actor and recipient case and stock PR907 compare the same legal level-25 profile and same victim. Neutral damage is 20, and +20 Ballistic Resistance from 1061 gives raw 20 and final 18. https://github.com/kylebrussell/mxo-hd/pull/907#issuecomment-7089882125"
+        },
+        "targeting": {
+          "source": "GOB 254 stores a 20 m hostile selection, line of sight and use outside combat. PR326 verifies the stock out-of-combat route.",
+          "runtime": "The rifle opener binds the live target identity and verifies sight and range before charging, then rechecks the admitted view and spawn before landing.",
+          "test": "The retained rifle-opener scope bootstrap exercises empty, ally, stale, blocked sight and 20.01 m refusals, and the adjacent 20.00 m positive. DelayedHostileCastCannotLandOnANewerSpawnInTheOriginalView checks replacement after admission. PR907 confirms a living selected opponent at rest receives the effects without interlock. https://github.com/kylebrussell/mxo-hd/pull/907#issuecomment-7089882125"
+        },
+        "stats": {
+          "source": "GOB 254 applies Force Combat 519 -15 for eight seconds alongside Rooted 99 and the value-50 break callback.",
+          "runtime": "CombatInsightEngagement uses the affected character's signed 519 total in its modeled Evade entry contest. Rooted publishes zero movement until the original state ends.",
+          "test": "TimedDebuffReducesTheAffectedPlayersForceScoreUntilItsOwnExpiry exercises the live consumer at 110→93→110. Stock PR907 sees all three recipient records, MovementScale -1→0, no movement under the one-second forward hold while rooted, and about 600 units after removal. https://github.com/kylebrussell/mxo-hd/pull/907#issuecomment-7089882125"
+        }
+      }
+    }
+  }
+}

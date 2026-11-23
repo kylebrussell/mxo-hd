@@ -3,9 +3,9 @@
     "mission-team-recall": {
       "representative": 486,
       "result": "pass",
-      "head": "c91a8dd03662ca3e1f70ba08466710ca9a9e44cb",
-      "native": "https://github.com/kylebrussell/mxo-hd/pull/486",
-      "scope": "The 04:37 ET stock run formed a mission team through the radial and helper acceptance. Selected-member Recall 382 moved QAFriend beside CSR, and unselected team Recall 486 moved QAFriend and QAFar beside CSR while QAOther remained at its stand. The stock caster rendered both relocations immediately. PR483 merged this tested tree into master. Cross-construct, fighting and dead-recipient client messages were outside this run."
+      "head": "681416025927f1d540c9202a289d756af84ae0c0",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/902#issuecomment-7089799532",
+      "scope": "Stock 486 refuses Self Defense before debit and accepts the targetless Hacker Style cast with an active mission and two recruited teammates. It takes 2 s, pays 75 IS and starts 180 s own reuse. The stock log shows phase-out 0x280006d1 and both members appear beside the caster at the printed Safe 1 stand. The exact headless replay verifies phase-out before arrival on each eligible member. QAOther stays outside the recall and ping roster. Unloading 44 clears the three pings, and reload is quiet. Prior stock selected-member Recall 382 remains evidenced by the earlier mission-team run and the PR824 retest. https://github.com/kylebrussell/mxo-hd/pull/486 https://github.com/kylebrussell/mxo-hd/pull/824"
     }
   },
   "abilities": {

@@ -1,0 +1,14 @@
+{
+  "families": {
+    "doctor-upgrade-ranked": {
+      "representative": 1097,
+      "result": "pass",
+      "head": "cda87d2951cfa4f422af2c1331529f0e0cebfc40",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/906#issuecomment-7089689995",
+      "scope": "Stock level-30, 47/60 profile. With QAFriend selected, 1097 spends 20 IS, publishes 30 s own reuse before exclusive-on and adds the three indefinite Healing +5, Concentration +7 and Combat Evasion +20 records to CSR alone. Patcher heals CSR for 26/27/26 across baseline, upgrade and reload. Toggle-off removes all three. Unloading Doctor 236 blocks the shortcut locally with no cast or debit. Reload remains inactive. Headless tests separately cover grant registration and the Concentration and Evasion consumers."
+    }
+  },
+  "abilities": {
+    "1097": { "family": "doctor-upgrade-ranked" }
+  }
+}
