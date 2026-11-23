@@ -184,6 +184,37 @@ public class FreeCastViralLandingTests : IDisposable
         }
     }
 
+    [Theory]
+    [InlineData(181, 0, 16)]
+    [InlineData(180, 75, 16)]
+    [InlineData(181, 75, 13)]
+    public void PistolAerialLandsItsFixedBaseAgainstBallisticResistance(ushort stat, int resistance, ushort damage)
+    {
+        var caster = Client(110);
+        var target = Client(111);
+        Store.currentClient = caster;
+        caster.playerData.pvpFlag = target.playerData.pvpFlag = true;
+        caster.playerInstance.OrganizationID.setValue((byte)1);
+        target.playerInstance.OrganizationID.setValue((byte)2);
+        caster.viewMan.addView(111, 1).viewCreated = true;
+        var shot = new AbilityItem();
+        shot.setAbilityID(AbilityConditionalControls.PistolAerial);
+        var effects = TimedEffects.ForPlayer(target);
+        try
+        {
+            effects.Effects.Apply(271, new[]
+            {
+                new TimedEffects.Active { Kind = TempMods.KindStat, Target = stat, Value = resistance,
+                    Seconds = 10, Proc = TempMods.Proc.Stat }
+            }, TimeUtils.GetSimTimeSeconds());
+
+            PvpCombat.LandAbilityOn(caster, shot, target);
+
+            Assert.Equal(1000 - damage, PvpCombat.HealthOf(target));
+        }
+        finally { TimedEffects.Clear(effects); }
+    }
+
     [Fact]
     public void TrojanHorseDrainsOnlyNearbyHostilePlayersEveryFourthSecond()
     {

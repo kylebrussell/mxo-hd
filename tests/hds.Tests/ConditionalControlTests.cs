@@ -88,6 +88,31 @@ public class ConditionalControlTests
         finally { TimedEffects.Clear(subject); }
     }
 
+    [Fact]
+    public void PistolAerialRepeatDuringImmunityKeepsTheExistingStackUntilExpiry()
+    {
+        const ushort ability = AbilityConditionalControls.PistolAerial;
+        double now = TimeUtils.GetSimTimeSeconds();
+        var subject = new Subject();
+        Assert.True(TempMods.TryGet(ability, out var effect));
+        try
+        {
+            TimedEffects.Apply(subject, effect, now, rng: new FixedProcRoll(0));
+            TimedEffects.RunDue(now + .02);
+            var stun = Assert.Single(subject.Effects.Snapshot(), mod => mod.Target == TempMods.StunAbility);
+            var penalty = Assert.Single(subject.Effects.Snapshot(), AbilityConditionalControls.IsPistolAerialStunTactics);
+            Assert.Equal(stun.Expires, penalty.Expires);
+            TimedEffects.Apply(subject, effect, now + 1, rng: new FixedProcRoll(0));
+            TimedEffects.RunDue(now + 1.02);
+            Assert.Same(stun, Assert.Single(subject.Effects.Snapshot(), mod => mod.Target == TempMods.StunAbility));
+            Assert.Same(penalty, Assert.Single(subject.Effects.Snapshot(), AbilityConditionalControls.IsPistolAerialStunTactics));
+            Assert.Equal(-20, subject.Effects.Total(TempMods.CombatTacticsAbility));
+            TimedEffects.RunDue(now + 4.03);
+            Assert.True(subject.Effects.IsEmpty);
+        }
+        finally { TimedEffects.Clear(subject); }
+    }
+
     private static void AssertTermStun(ushort id, float chance, bool dot)
     {
         Assert.True(TempMods.TryGet(id, out var effect));

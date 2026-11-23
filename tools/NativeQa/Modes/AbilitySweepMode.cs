@@ -351,7 +351,7 @@ public sealed class AbilitySweepGunmanMode : AbilitySweepMode
         new(158, "Submachine Guns", "self with SMG", "0", "Submachine Guns style; ballistic accuracy +64 at level 50", "while active style", 0),
         new(176, "Covering Fire", "Melee Dummy in SMG interlock", "17 stored ballistic base",
             "choreography 21083; Rooted with break chance", "8 s input", 25),
-        new(243, "Pistol Aerial", "Melee Dummy in Handguns interlock", "16 stored ballistic base", "choreography 9518; Stun on the stored 40% proc", "4 s Stun and immunity", 20),
+        new(243, "Pistol Aerial", "Melee Dummy in Handguns interlock", "16 stored ballistic base", "choreography 9518; 40% Stun proc and linked Combat Tactics -20", "4 s Stun and immunity", 20),
         new(255, "Disabling Shot", "Melee Dummy out of combat with Rifles", "16 stored ballistic base",
             "2 s opening shot; Powerless on proc (stored 50%)", "4 s effect input", 20)
     }, new ushort[] { 2, 17, 105, 113, 116, 124, 125, 128, 130, 135, 143, 145, 154, 185, 239, 252, 253 }, firearms: true, isolatedMelee: true) { }

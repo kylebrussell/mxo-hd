@@ -485,6 +485,69 @@ public class TimedEffectsTests
     }
 
     [Fact]
+    public void PistolAerialSendsTheArchivedLinkedStunAndMessageOrder()
+    {
+        const ushort ability = AbilityConditionalControls.PistolAerial;
+        const string casterName = "Jord92";
+        const string victimName = "AfterWhoruNeo";
+        var caster = NewClient();
+        caster.playerInstance = new PlayerCharacter();
+        caster.playerInstance.CharacterName.setValue(casterName);
+        var victim = NewClient();
+        victim.playerInstance = new PlayerCharacter();
+        victim.playerInstance.CharacterName.setValue(victimName);
+        victim.playerData.nextBuffRecordId = 0x0502;
+        var effects = TimedEffects.ForPlayer(victim);
+        double now = TimeUtils.GetSimTimeSeconds();
+        try
+        {
+            int attackBefore = AbilityStats.Attack(victim, true);
+            Assert.True(TempMods.TryGet(ability, out var effect));
+            TimedEffects.Apply(effects, effect, now, caster, casterName, fixtureProc: true);
+            Assert.Equal(new[] { "80bc1d00020500f3000000000004000000000ad7233c" }, Rpcs(victim));
+            Assert.Empty(Rpcs(caster));
+            Assert.Equal(0, effects.Effects.Total(TempMods.CombatTacticsAbility));
+
+            TimedEffects.RunDue(now + .02);
+            var on = Rpcs(victim);
+            Assert.Equal(new[]
+            {
+                "80bc1d00020500f3000000000004000000010ad7233c",
+                "80bc1100030500f30000006600000000000000008040",
+                "80bc1d00040500660000000000000000000000000000",
+                "80bc150005050066000000a300ecffffff0000000000",
+                "80bc0100060500de020000a902000000000000008040",
+                "8167170020001b0000c401f3000000000000003000000807004a6f72643932000e00416674657257686f72754e656f00010000000000",
+                "816717002000c82000c601f3000000000000003000000807004a6f72643932000e00416674657257686f72754e656f00010004000000",
+            }, on);
+            Assert.Equal(new[]
+            {
+                Hex(AbilityMessages.AboutAbility(AbilityMessages.StunCaster, true, ability, casterName, victimName, 0)),
+                Hex(AbilityMessages.AboutAbility(AbilityMessages.ImmunityCaster, true, ability, casterName, victimName, 4))
+            }, Rpcs(caster));
+            Assert.Equal(-20, effects.Effects.Total(TempMods.CombatTacticsAbility));
+            Assert.Equal(attackBefore - 20, AbilityStats.Attack(victim, true));
+            Assert.True(ControlActions.Incapacitated(effects.Effects));
+
+            TimedEffects.RunDue(now + 4.03);
+            Assert.Equal(new[]
+            {
+                "80bc1100030500f30000006600000000000100008040",
+                "80bc1d00040500660000000000000000000100000000",
+                "80bc150005050066000000a300ecffffff0100000000",
+                "80bc0100060500de020000a902000000000100008040",
+            }, Rpcs(victim).Where(rpc => rpc.StartsWith("80bc", StringComparison.Ordinal)));
+            Assert.False(ControlActions.Incapacitated(effects.Effects));
+            Assert.Equal(0, effects.Effects.Total(TempMods.CombatTacticsAbility));
+            Assert.Equal(attackBefore, AbilityStats.Attack(victim, true));
+        }
+        finally
+        {
+            TimedEffects.Clear(effects);
+        }
+    }
+
+    [Fact]
     public void PlayerTakesDamageOverTime()
     {
         WorldClient client = NewClient();

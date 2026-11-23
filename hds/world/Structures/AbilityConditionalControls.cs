@@ -9,6 +9,12 @@ namespace hds
     {
         // Proxy_003 PvP 8690–8699 shows Pistol Aerial's terminal marker, stun and immunity on a successful roll.
         internal const ushort PistolAerial = 243;
+
+        internal static bool IsPistolAerialMarker(TimedEffects.Active mod) =>
+            mod.Parent == PistolAerial && mod.Proc == TempMods.Proc.Terminal;
+
+        internal static bool IsPistolAerialStunTactics(TimedEffects.Active mod) =>
+            mod.Parent == PistolAerial && mod.Proc == TempMods.Proc.Stat && mod.Target == TempMods.CombatTacticsAbility;
         // tempmods2362: callback is initialization-only and has no explicit immunity timer.
         public static bool HandlesInitial(ushort ability) => ability == 340 && AbilityCatalog.Find(ability)?.Modifiers.Any(
             m => m.Text("StatModInitFunc") == "ApplyPowerlessIfStaggered") == true;
@@ -54,6 +60,17 @@ namespace hds
                 CasterName = marker.CasterName, TargetView = marker.TargetView };
             // addStateMod appends the stun. It must not replace this throw's root/debuff siblings.
             var added = new List<TimedEffects.Active> { stun };
+            if (marker.Parent == PistolAerial)
+            {
+                // The target capture links the Stun template's CombatTactics modifier to this proc.
+                var tactics = AbilityCatalog.Find(TempMods.StunAbility).Modifiers.Single(m =>
+                    m.Component == "CombatTacticsMod" && m.Target == TempMods.CombatTacticsAbility &&
+                    m.Number("WhenEnabled") == 2 && m.Number("DurationType") == 2);
+                if (AbilityValues.TryValue(tactics, 0, 0, out int penalty))
+                    added.Add(new TimedEffects.Active { Kind = TempMods.KindStat, Target = tactics.Target,
+                        Value = penalty, Seconds = stun.Seconds, Proc = TempMods.Proc.Stat, Caster = marker.Caster,
+                        CasterName = marker.CasterName, TargetView = marker.TargetView });
+            }
             var replaced = subject.Effects.Apply(marker.Parent, added, now, preserveOtherTargets: true);
             // An expired timer may still be in the holder until the next server sweep.
             // Its old record must go off before the new timer is presented.
