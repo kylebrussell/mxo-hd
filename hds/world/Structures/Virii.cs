@@ -151,6 +151,7 @@ namespace hds
         /// </summary>
         public const float DeflectEffectSeconds = 0.2f;
         public const UInt16 DeflectBullets1Ability = 380, DeflectVirus1Ability = 378;
+        internal const UInt16 DeflectVirus1Child = 693;
         public const UInt32 DeflectBullets1Fx = 0x28000824;  // FX_VIRUSCAST_SPLIT_DEFLECT_BULLETS_DEFLECTBULLETS1
         public const UInt32 DeflectVirus1Fx = 0x28000820;    // FX_VIRUSCAST_SPLIT_DEFLECT_VIRUS_DEFLECTVIRUS1
 

@@ -555,10 +555,20 @@ namespace hds
         {
             // Capture before ANY activation/upgrade lock: reset owns the transport gate first.
             var drain=new DrainLifetime(client);
-            lock (drain.Data.upgradeSync)
+            var transport = client.TransportFence;
+            if (abilityId != Virii.DeflectVirus1Child || transport == null) return ApplyCaptured();
+
+            // The child publishes a world-bound reuse record. Take transport admission before the upgrade lock.
+            bool applied = false;
+            return transport.TryRun(drain.Transport, () => applied = ApplyCaptured()) && applied;
+
+            bool ApplyCaptured()
             {
-                if(!ReferenceEquals(client.playerData,drain.Data))return false;
-                return ApplyCore(client,abilityId,caster,drain);
+                lock (drain.Data.upgradeSync)
+                {
+                    if (!ReferenceEquals(client.playerData, drain.Data)) return false;
+                    return ApplyCore(client, abilityId, caster, drain);
+                }
             }
         }
 
@@ -569,6 +579,11 @@ namespace hds
             {
                 return false;
             }
+
+            // The retained self-pulse shows an exclusive child record, separate from its five-second stats.
+            bool ownDeflectChild = abilityId == Virii.DeflectVirus1Child && ReferenceEquals(caster, client) &&
+                AbilityAuras.IsOn(client, Virii.DeflectVirus1Ability);
+            if (ownDeflectChild) buff.Exclusive = true;
 
             if (!AbilityBuffBuffer.CanApply(client, abilityId, buff))
             {
@@ -614,6 +629,13 @@ namespace hds
             if (buff.Exclusive)
             {
                 client.messageQueue.addRpcMessage(BuildExclusive(abilityId, true));
+            }
+            if (ownDeflectChild && drain.Current)
+            {
+                double now = TimeUtils.GetSimTimeSeconds();
+                if (!AbilityCooldowns.IsTimerRunning(drain.Data, abilityId, now))
+                    AbilityCooldowns.StartCaptured(client, abilityId, now, drain.Data, drain.Player,
+                        drain.World, drain.Life, drain.Transport);
             }
             if (buff.EvadeShield)
             {
@@ -821,6 +843,7 @@ namespace hds
 
             ClientData data = client.playerData;
             Active active;
+            bool publishUnderLock = abilityId == Virii.DeflectVirus1Child;
             lock (data.activeBuffs)
             {
                 if (!data.activeBuffs.TryGetValue(abilityId, out active) ||
@@ -831,11 +854,14 @@ namespace hds
                 buff = active.Definition ?? buff;
                 if(active.Drain!=null)active.Drain.Cancelled=true;
                 data.activeBuffs.Remove(abilityId);
+                // A five-second expiry and aura refresh can run on different scheduler threads.
+                // Queue the old child's removal before a replacement can claim the now-empty slot.
+                if (publishUnderLock) QueueRemovalRecords(client, active, buff);
             }
             if (HasClassSweep(abilityId))
                 TimedEffects.RemoveParent(TimedEffects.ForPlayer(client), abilityId);
             if (abilityId == 9 || abilityId == 15) client.playerData.combatTacticType = CombatTacticType.Normal;
-            TimedEffects.ForPlayer(client).UntrackBuff(abilityId);
+            TimedEffects.ForPlayer(client).UntrackBuff(abilityId, active.Generation);
             PrisonDevices.Terminated(client, active);
             if (buff.DissemblingType != 0 && !(abilityId == HyperSprint && !keepMovement)) PresentDissembling(client);
             if (!keepVitals) RefreshVitals(client);
@@ -850,14 +876,7 @@ namespace hds
             if(buff.TermSweepChance>0 && !data.isDead && !data.duelDeath)
                 AbilityHostile.Pulse(TimedEffects.ForPlayer(client),new TimedEffects.Active {Parent=abilityId,Value=buff.TermSweepChance},AbilityHealthCallbacks.TermRandom());
 
-            foreach (byte[] record in BuildRecords(abilityId, buff, active.RecordIds, true))
-            {
-                client.messageQueue.addRpcMessage(record);
-            }
-            if (buff.Exclusive)
-            {
-                client.messageQueue.addRpcMessage(BuildExclusive(abilityId, false));
-            }
+            if (!publishUnderLock) QueueRemovalRecords(client, active, buff);
             if (buff.MovementScale > 0 && !keepMovement)
             {
                 if (abilityId == HyperSprint)
@@ -884,6 +903,14 @@ namespace hds
                 Output.WriteDebugLog("[BUFF] " + abilityId + " off");
             }
             return true;
+        }
+
+        private static void QueueRemovalRecords(WorldClient client, Active active, Buff buff)
+        {
+            foreach (byte[] record in BuildRecords(active.AbilityId, buff, active.RecordIds, true))
+                client.messageQueue.addRpcMessage(record);
+            if (buff.Exclusive)
+                client.messageQueue.addRpcMessage(BuildExclusive(active.AbilityId, false));
         }
 
         /// <summary>
