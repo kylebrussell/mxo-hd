@@ -416,7 +416,8 @@ namespace hds
 
 
             bool coderInterlock = AbilityID == 605 || AbilityID == 618;
-            if (coderInterlock && !AbilityPassives.IsLoaded(Store.currentClient, AbilityID))
+            bool pistolSlide = AbilityID == 241;
+            if ((coderInterlock || pistolSlide) && !AbilityPassives.IsLoaded(Store.currentClient, AbilityID))
             {
                 Deny(AbilityID, "Load this ability before using it.", AbilityRefusals.NotLoaded, sendServerText: false);
                 return;
@@ -434,7 +435,7 @@ namespace hds
                     _ => false
                 });
             uint stateMask = AbilityID == 197 ? 2u :
-                martialInterlock || coderInterlock ? (uint)definition.Number("Ability/CastRequiredStates") : 0u;
+                martialInterlock || coderInterlock || pistolSlide ? (uint)definition.Number("Ability/CastRequiredStates") : 0u;
             ushort requiredState = stateMask switch
             {
                 2 => TempMods.DazeAbility,
@@ -454,12 +455,12 @@ namespace hds
                     DenyMissingInterlock(AbilityID);
                     return;
                 }
-                if (coderInterlock && !AbilityTargets.WithinSelectionRange(Store.currentClient, AbilityID, currentTargetViewId))
+                if ((coderInterlock || pistolSlide) && !AbilityTargets.WithinSelectionRange(Store.currentClient, AbilityID, currentTargetViewId))
                 {
                     Deny(AbilityID, "The target is out of range.", AbilityRefusals.TargetOutOfRange, sendServerText: false);
                     return;
                 }
-                if (coderInterlock && !AbilityTargets.HasSelectionSight(Store.currentClient, definition, currentTargetViewId))
+                if ((coderInterlock || pistolSlide) && !AbilityTargets.HasSelectionSight(Store.currentClient, definition, currentTargetViewId))
                 {
                     Deny(AbilityID, "The target is not in sight.", AbilityRefusals.TargetNotInSight, sendServerText: false);
                     return;
@@ -1127,6 +1128,7 @@ namespace hds
                 134 => 7,  // Leg Sweep
                 152 => 7,  // Spinning Backsweep
                 176 => 1,  // Covering Fire
+                241 => 1,  // Pistol Slide
                 197 => 0,  // Head Butt
                 198 => 0,  // Cheap Shot
                 238 => 2,  // Harmful Code 2.0
