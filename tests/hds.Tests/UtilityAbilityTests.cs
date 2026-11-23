@@ -207,6 +207,42 @@ public class UtilityAbilityTests
     }
 
     [Fact]
+    public void RecallMissionTeamRequiresLoadedHackerAtRestAndNeedsNoSelection()
+    {
+        const ushort team = UtilityAbilities.RecallMissionTeam, member = UtilityAbilities.RecallTeamMember;
+        var client = (WorldClient)System.Runtime.CompilerServices.RuntimeHelpers.GetUninitializedObject(typeof(WorldClient));
+        client.playerData = new ClientData();
+        client.playerData.setCharID(14948);
+        client.playerInstance = new PlayerCharacter();
+        client.playerInstance.Level.setValue((byte)50);
+        client.messageQueue = new MessageQueue();
+        client.viewMan = new ViewManager();
+        var previousClients = WorldServer.Clients;
+        var combat = CombatManager.GetHandler(client);
+
+        try
+        {
+            WorldServer.Clients = new();
+            Assert.Equal(AbilityRefusals.NotLoaded, UtilityAbilities.RecallRefusal(client, team, 0, null, out _));
+            AbilityPassives.SetLoaded(client, new (ushort, ushort)[] { (17, 50), (CombatStyles.HackerStyle, 50), (team, 50), (member, 50) });
+            Assert.Equal(AbilityRefusals.WrongStyle, UtilityAbilities.RecallRefusal(client, team, 0, null, out _));
+            CombatStyles.Select(client, CombatStyles.HackerStyle);
+            combat.isCombatRunning = true;
+            Assert.Equal(AbilityRefusals.MustBeOutsideCombat, UtilityAbilities.RecallRefusal(client, team, 0, null, out _));
+            combat.isCombatRunning = false;
+            Assert.Null(UtilityAbilities.RecallRefusal(client, team, 0, null, out var target));
+            Assert.Null(target);
+            Assert.Equal(AbilityRefusals.InvalidTarget, UtilityAbilities.RecallRefusal(client, member, 0, null, out _));
+        }
+        finally
+        {
+            combat.isCombatRunning = false;
+            CombatManager.RemoveClient(client);
+            WorldServer.Clients = previousClients;
+        }
+    }
+
+    [Fact]
     public void RecallCannotInterruptARecipientWorldTransition()
     {
         var recipient = new ClientData();

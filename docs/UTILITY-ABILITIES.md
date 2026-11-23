@@ -66,13 +66,13 @@ Not done:
 
 `ability/hacker/misc.py`:
 
-- The stored Recall Team Member action requires Hacker Style and an out-of-combat cast. The server checks loaded membership and those conditions before charging.
+- Both stored recall actions require Hacker Style and an out-of-combat cast. The server checks loaded membership and those conditions before charging.
 - **Recall Team Member** works on a selected player in the caster's team, other than the caster. The current view and spawn identify the recipient at cast start. Team membership is checked again at landing. The caster gets `0x7a00015b` "You begin to teleport a team member to your location."
 - **Recall Mission Team** recalls every eligible online team member except the caster. The caster gets `0x7a000164` "You begin to teleport your team to your location." The script has no `_Subject` for it, so this caster line is **ours**, from the string table.
 - Each target (`RecallTeamMember_DirectObject`):
   - **in another district**: the caster gets `0x7a0002a1` "You cannot recall that player. He is in a different construct."
-  - **fighting or dead**: skipped. For Recall Team Member, the caster gets a matching refusal in system chat. The emulator supplies the text because the script's `ID_CLIENT_TELEPORTING_INCOMBAT` and `ID_CLIENT_TELEPORTING_DEAD` IDs are unverified in the 7.6005 client's table.
-  - **otherwise**: the target gets `0x7a00015a` "Your team member %2s is attempting to teleport you to their location." It gets the phase-out FX and is teleported to the caster's position (`MissionStaging.Teleport`). The current mission-team presentation uses 0x280006d2. The shipped wrapper calls the member callback, which uses 0x280006d1.
+  - **fighting or dead**: skipped. The caster gets the matching refusal in system chat. The emulator supplies the text because the script's `ID_CLIENT_TELEPORTING_INCOMBAT` and `ID_CLIENT_TELEPORTING_DEAD` IDs are unverified in the 7.6005 client's table.
+  - **otherwise**: the target gets `0x7a00015a` "Your team member %2s is attempting to teleport you to their location." The shipped mission-team wrapper calls the member callback for each teammate. Both actions therefore play `0x280006d1` on the recipient before teleporting them to the caster's position (`MissionStaging.Teleport`).
 - Costs and cooldowns are the template's: 30 IS and 30 s for 382, 75 IS and 180 s for 486.
 
 ## Download Mission Map (44)
