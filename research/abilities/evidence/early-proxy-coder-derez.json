@@ -16,6 +16,16 @@
           "source": "GOB 26 stores fixed 13000 damage to health with DamageType 5. Client text ID_ABILITY_PROXY_CODER_MORE_INFO (0x7c0000c7) specifies an enemy simulacrum, and activation text 0xc6000038 names the derezzed target.",
           "runtime": "Caster admission resolves the exact live view and spawn of a legal opponent's current pet, rechecks it at cast completion, and applies the stored health damage through the existing pet lifecycle. Generic NPC/player damage no longer handles this template.",
           "test": "ability-parity-proxy-coder-derez replays the captured 43-byte native empty and selected forms. It observes target-only pet death, window removal and the 13000 damage consumer. The same replay checks NPC, player, friendly-pet, out-of-range enemy-pet and stale selectors. The stock run confirmed valid enemy-pet selection and the derez."
+        },
+        "source-parity": {
+          "source": "GOB 26 identifies an enemy simulacrum as target class 12, a 16 m selection range, fixed 13000 neutral health damage, and impact FX 0x280009cd. It uses the ordinary sight rule. The stock description names an enemy simulacrum.",
+          "runtime": "The caster's live opponent policy is evaluated against the selected pet's owner. CoderPets checks the original view and spawn, range and mapped sight before cost and again on landing. It consumes the fixed damage template and publishes its impact ahead of the normal pet death effect.",
+          "test": "PR700 covers a friendly/non-pet/range control and real opponent success. PR753 witnesses green impact 0x280009cd before 0x2800060d in the same view list. PR887 sees stock reason 9 and its sight message at the blocked stand, then the same pet accepts the clear cast and disappears. https://github.com/kylebrussell/mxo-hd/pull/700#issuecomment-7070089764 https://github.com/kylebrussell/mxo-hd/pull/753#issuecomment-7081587017 https://github.com/kylebrussell/mxo-hd/pull/887#issuecomment-7088758990"
+        },
+        "behavior-tests": {
+          "source": "The stored Proxy Coder cast is loaded, outside combat, and targets a live visible enemy simulacrum. It requires 40 IS, a two-second cast and 13.5-second reuse, then applies a fixed instant health modifier.",
+          "runtime": "The ordinary cast route validates membership and the live selected enemy pet, and Derez revalidates its original owner and spawn before applying the hit and normal removal.",
+          "test": "The disposable Proxy Coder sight and derez modes use the retained stock request. They exercise ownership, stale selection, range, sight, cost, cast and the selected removal. PR700 confirms the in-combat gate and invalid-target controls. PR753 and PR887 jointly confirm the ordered FX, private line, exact cost/reuse and removal in stock. https://github.com/kylebrussell/mxo-hd/pull/700#issuecomment-7070089764 https://github.com/kylebrussell/mxo-hd/pull/753#issuecomment-7081587017 https://github.com/kylebrussell/mxo-hd/pull/887#issuecomment-7088758990"
         }
       }
     }
