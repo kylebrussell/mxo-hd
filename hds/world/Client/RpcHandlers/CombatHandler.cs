@@ -352,7 +352,7 @@ namespace hds
             CombatTactic npcTactic;
             bool npcTurn = !stunned && !CombatSpecials.TurnedAway(mob, player) && mob.TryRetaliate(now, CombatInterlock.RoundMs / 1000.0);
             var gunAdjustment = !opening && !withdrawing && ability == null && npcTurn && !playerStunned
-                ? SingleNpcInterlockGunAdjustment(session) : null;
+                ? NpcInterlockGunAdjustment(session) : null;
             lock (roundRng)
             {
                 npcTactic = CombatInterlock.NpcTactic(roundRng);
@@ -361,7 +361,7 @@ namespace hds
                 int adjustment = gunAdjustment?.Adjustment ?? 0;
                 if (gunAdjustment is { } gun)
                     Output.WriteDebugLog($"[SHARPSHOOTER NPC INTERLOCK] {PvpFlag.Name(player)} class={gun.WeaponClass} loaded148={gun.Loaded} " +
-                        $"modifier={adjustment} attack={attackInput}->{attackInput + adjustment} defence={defenceInput}->{defenceInput + adjustment} opponents=1");
+                        $"modifier={adjustment} attack={attackInput}->{attackInput + adjustment} defence={defenceInput}->{defenceInput + adjustment} opponents={gun.Opponents}");
                 playerHit = CombatInterlock.RollHit(roundRng, playerTactic, playerLevel, npcTactic, mobLevel, out playerAttack, out playerDefense, playerType,
                     attackInput + adjustment, AbilityStats.SpecialDefense(mob, ability), ordinaryWithdrawal) && !playerStunned;
                 npcHit = CombatInterlock.RollHit(roundRng, npcTactic, mobLevel, playerTactic, playerLevel, out npcAttack, out npcDefense,
@@ -1345,18 +1345,31 @@ namespace hds
                 mob.getXPos(), mob.getYPos(), mob.getZPos()));
         }
 
-        private static (byte WeaponClass, bool Loaded, int Adjustment)? SingleNpcInterlockGunAdjustment(CombatSession session)
+        internal static (byte WeaponClass, bool Loaded, int Adjustment, int Opponents)? NpcInterlockGunAdjustment(CombatSession session)
         {
             var mob = session.DefenderMob;
             var player = session.Attacker;
-            if (mob.CombatantCount != 1 || !ReferenceEquals(mob.getCombatTarget(), player) ||
+            if (!SharpshooterFreeFire.Live(player) || !SharpshooterFreeFire.Live(mob) ||
+                !ReferenceEquals(mob.getCombatTarget(), player) || !ReferenceEquals(session.CurrentNpcOpponent(player), mob) ||
                 !NpcInMeleeReach(session) || RangedWeapons.IsGun(mob.getWeapon())) return null;
             byte weaponClass = RangedWeapons.AttackClass(SharpshooterFreeFire.EquippedWeapon(player));
             if (weaponClass == 0) return null;
+
+            // Count players with an active link to this NPC, including free fire. Mob membership alone can outlive a session.
+            int opponents = 1;
+            foreach (var other in mob.CombatantsSnapshot())
+            {
+                if (!ReferenceEquals(other, player) && SharpshooterFreeFire.Live(other) &&
+                    ReferenceEquals(CombatManager.FindHandler(other)?.CurrentNpcOpponentFor(other), mob))
+                    opponents++;
+            }
+            if (!ReferenceEquals(mob.getCombatTarget(), player) || !ReferenceEquals(session.CurrentNpcOpponent(player), mob))
+                return null;
+
             bool loaded = AbilityPassives.IsLoaded(player, 148);
-            int adjustment = CombatRules.GunAgainstFistsModifier(weaponClass, false, shortRange: true, defenderOpponents: 1,
+            int adjustment = CombatRules.GunAgainstFistsModifier(weaponClass, false, shortRange: true, defenderOpponents: opponents,
                 intoMeleePenaltyNegated: loaded, shortRangePenaltyNegated: loaded);
-            return (weaponClass, loaded, adjustment);
+            return (weaponClass, loaded, adjustment, opponents);
         }
 
         /// <summary>The NPC runs up to arm's length and faces the player, as an aggroing NPC does.</summary>

@@ -12,6 +12,12 @@ namespace hds
             lock(Handlers)return new List<KeyValuePair<WorldClient,CombatHandler>>(Handlers).ToArray();
         }
 
+        internal static CombatHandler FindHandler(WorldClient client)
+        {
+            lock (Handlers)
+                return Handlers.TryGetValue(client, out var handler) ? handler : null;
+        }
+
         public static CombatHandler GetHandler(WorldClient client)
         {
             if (client == null)
