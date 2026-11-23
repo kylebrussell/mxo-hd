@@ -2357,13 +2357,129 @@ public class AbilityRefusalFeedbackTests:IDisposable
         }
     }
 
+    [Theory]
+    [InlineData("unloaded", AbilityRefusals.NotLoaded)]
+    [InlineData("single handgun", AbilityRefusals.RequiredItemCategory)]
+    [InlineData("wrong style", AbilityRefusals.WrongStyle)]
+    [InlineData("combat", AbilityRefusals.MustBeOutsideCombat)]
+    [InlineData("ally", AbilityRefusals.InvalidTarget)]
+    [InlineData("stale", AbilityRefusals.InvalidTarget)]
+    [InlineData("far", AbilityRefusals.TargetOutOfRange)]
+    [InlineData("blocked", AbilityRefusals.TargetNotInSight)]
+    [InlineData("neutral", 0u)]
+    [InlineData("armored", 0u)]
+    public void DashUsesTheSelectedAtRestOpponentAndPublishesTheRecipientEnrageLifecycle(string scenario, uint refusal)
+    {
+        const ushort id = CombatSpecials.DualPistolDash;
+        var caster = TimedGunSpecialCaster(id, scenario == "unloaded", scenario == "single handgun");
+        var target = Client();
+        target.playerData.setCharID(111);
+        target.playerData.setEntityId(111);
+        target.playerInstance.Level.setValue((byte)36);
+        target.playerInstance.OrganizationID.setValue((byte)(scenario == "ally" ? 1 : 2));
+        caster.playerInstance.OrganizationID.setValue((byte)1);
+        caster.playerData.pvpFlag = target.playerData.pvpFlag = true;
+        double x = scenario == "far" ? 21149 : scenario == "blocked" ? 22350 : 21550;
+        target.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(x, 1095, 16150));
+        WorldServer.Clients.Add("caster", caster);
+        WorldServer.Clients.Add("target", target);
+        if (scenario == "wrong style") CombatStyles.Select(caster, CombatStyles.SelfDefense);
+        var handler = CombatManager.GetHandler(caster);
+        handler.isCombatRunning = scenario == "combat";
+        var view = caster.viewMan.addView(111, 12);
+        view.viewCreated = true;
+        view.spawnId = 9;
+        var subject = TimedEffects.ForPlayer(target);
+        if (scenario == "armored")
+            subject.Effects.Apply(1061,
+                new[] { new TimedEffects.Active { Target = 181, Value = 20, Seconds = 60, Proc = TempMods.Proc.Stat } },
+                TimeUtils.GetSimTimeSeconds());
+        caster.messageQueue.RPCMessagesQueue.Clear();
+        target.messageQueue.RPCMessagesQueue.Clear();
+        var request = TimedGunSpecialRequest(id, DuelPackets.Handle(view.ViewID, scenario == "stale" ? (ushort)8 : view.spawnId));
+        try
+        {
+            new AbilityHandler().ProcessAbility(ref request);
+            if (refusal != 0)
+            {
+                Assert.Equal(AbilityRefusals.Encode(new(id, refusal)), Assert.Single(Rpcs(caster)));
+                Assert.Equal(1000, PvpCombat.HealthOf(target));
+                Assert.Equal(500, AbilityHandler.CurrentInnerStrength(caster));
+                Assert.Empty(caster.playerData.cooldownEndsAt);
+                Assert.Empty(DashMasks(target));
+                return;
+            }
+
+            Assert.False(handler.HasActiveInterlock);
+            Assert.Equal(13, AbilityHandler.AbilityDamage(DataLoader.getInstance().AbilityDB.Single(a => a.getAbilityID() == id), new Random(1)));
+            Assert.Equal(scenario == "armored" ? 987 : 986, PvpCombat.HealthOf(target));
+            Assert.Equal(465, AbilityHandler.CurrentInnerStrength(caster));
+            Assert.True(AbilityCooldowns.TryGet(id, out var reuse));
+            Assert.Equal((20f, 690, 5f), (reuse.Seconds, (int)reuse.Group, reuse.GroupSeconds));
+            var enrage = Assert.Single(subject.Effects.Snapshot(), mod => mod.Parent == id && mod.Target == 93);
+            Assert.Equal(8f, enrage.Seconds);
+            Assert.False(ControlActions.CanWithdraw(subject.Effects));
+            Assert.False(ControlActions.CanChangeInterlockTarget(subject.Effects));
+            Assert.False(ControlActions.CanGainBlockInnerStrength(subject.Effects));
+            Assert.Equal(new uint[] { 1, 0x21, 0x2021 }, DashMasks(target));
+            Assert.Empty(DashMasks(caster));
+            Assert.Contains(AbilityMessages.AboutAbility(AbilityMessages.EnrageCaster, true, id,
+                TimedEffects.PlayerName(caster), TimedEffects.PlayerName(target), 0, 0), Rpcs(caster));
+            Assert.Contains(AbilityMessages.AboutAbility(AbilityMessages.EnrageTarget, false, id,
+                TimedEffects.PlayerName(caster), TimedEffects.PlayerName(target), 0, 0), Rpcs(target));
+
+            TimedEffects.RunDue(enrage.Expires + .01);
+            Assert.True(ControlActions.CanWithdraw(subject.Effects));
+            Assert.True(ControlActions.CanChangeInterlockTarget(subject.Effects));
+            Assert.True(ControlActions.CanGainBlockInnerStrength(subject.Effects));
+            Assert.Equal(new uint[] { 1, 0x21, 0x2021, 0x2020, 0x2000, 0 }, DashMasks(target));
+        }
+        finally
+        {
+            handler.isCombatRunning = false;
+            CombatManager.RemoveClient(caster);
+            TimedEffects.Clear(subject);
+        }
+    }
+
+    [Fact]
+    public void DashRestrictionsRemainUntilAnotherLiveEnrageExpires()
+    {
+        var victim = Client();
+        victim.playerData.setEntityId(111);
+        var subject = TimedEffects.ForPlayer(victim);
+        try
+        {
+            Assert.True(TimedEffects.ApplyToPlayer(victim, CombatSpecials.DualPistolDash, "Attacker"));
+            var first = Assert.Single(subject.Effects.Snapshot(), mod => mod.Target == 93);
+            var other = new TimedEffects.Active { Kind = TempMods.KindState, Proc = TempMods.Proc.State, Target = 93, Seconds = 12 };
+            subject.Effects.Apply(145, new[] { other }, first.Expires - 7);
+            byte[] end = AbilityMessages.StateEnd(93, TimedEffects.PlayerName(victim));
+            TimedEffects.RunDue(first.Expires + .01);
+            Assert.Equal(new uint[] { 1, 0x21, 0x2021 }, DashMasks(victim));
+            Assert.DoesNotContain(end, Rpcs(victim));
+            TimedEffects.RunDue(other.Expires + .01);
+            Assert.Equal(new uint[] { 1, 0x21, 0x2021, 0x2020, 0x2000, 0 }, DashMasks(victim));
+            Assert.Contains(end, Rpcs(victim));
+        }
+        finally
+        {
+            TimedEffects.Clear(subject);
+        }
+    }
+
+    private static uint[] DashMasks(WorldClient recipient) => Rpcs(recipient)
+        .Where(packet => packet is [0x81, 0x6e, ..] && packet.Length == 11)
+        .Select(packet => BitConverter.ToUInt32(packet, 2)).ToArray();
+
     private static WorldClient TimedGunSpecialCaster(ushort id, bool unloaded = false, bool wrongWeapon = false)
     {
         bool rifle = id == CombatSpecials.ThreeRoundBurst;
         bool pointBlank = id == CombatSpecials.DualPistolPointBlank;
         bool barrage = id == CombatSpecials.PistolBarrage;
-        ushort style = rifle ? CombatStyles.Rifles : barrage || pointBlank || id == 126 ? CombatStyles.Handguns : CombatStyles.SubmachineGuns;
-        byte level = id is 126 or 176 ? (byte)19 : CombatSpecials.IsFullAuto(id) ? (byte)46 : pointBlank ? (byte)42 : (byte)27;
+        bool dash = id == CombatSpecials.DualPistolDash;
+        ushort style = rifle ? CombatStyles.Rifles : barrage || pointBlank || dash || id == 126 ? CombatStyles.Handguns : CombatStyles.SubmachineGuns;
+        byte level = id is 126 or 176 ? (byte)19 : CombatSpecials.IsFullAuto(id) ? (byte)46 : pointBlank ? (byte)42 : dash ? (byte)36 : (byte)27;
         string root = AppContext.BaseDirectory;
         while (!File.Exists(Path.Combine(root, "data", "sector_properties.csv"))) root = Path.GetDirectoryName(root)!;
         SectorProperties.Load(Path.Combine(root, "data", "sector_properties.csv"));
@@ -2372,8 +2488,8 @@ public class AbilityRefusalFeedbackTests:IDisposable
         var caster = Client();
         caster.playerInstance.Level.setValue(level);
         caster.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(21750, 1095, 16150));
-        uint weapon = id switch { 126 => 2565, 176 => 698, CombatSpecials.ThreeRoundBurst => 692, CombatSpecials.PistolBarrage or CombatSpecials.DualPistolPointBlank => 2496, _ => 2503 };
-        caster.playerInstance.EquippedItemID.setValue(wrongWeapon ? (barrage || pointBlank ? 2565u : id == 176 ? 2503u : 698u) : weapon);
+        uint weapon = id switch { 126 => 2565, 176 => 698, CombatSpecials.ThreeRoundBurst => 692, CombatSpecials.PistolBarrage or CombatSpecials.DualPistolPointBlank or CombatSpecials.DualPistolDash => 2496, _ => 2503 };
+        caster.playerInstance.EquippedItemID.setValue(wrongWeapon ? (barrage || pointBlank || dash ? 2565u : id == 176 ? 2503u : 698u) : weapon);
         var profile = new ushort[] { 2, 17, style, id }
             .SelectMany(entry => AbilityPrerequisites.Current.Closure(entry).Keys.Append(entry)).Distinct().ToArray();
         Assert.True(profile.Sum(AbilityMemory.Cost) <= AbilityMemory.ForLevel(level));
@@ -2387,7 +2503,7 @@ public class AbilityRefusalFeedbackTests:IDisposable
         ability.setAbilityID(id);
         ability.setAbilityName(AbilityCatalog.Find(id).Name);
         ability.setIsCastable(true);
-        ability.setCastingTime(pointBlank ? (ushort)0 : barrage ? (ushort)2 : (ushort)4);
+        ability.setCastingTime(pointBlank || dash ? (ushort)0 : barrage ? (ushort)2 : (ushort)4);
         ability.setCastAnimStart(new byte[4]);
         DataLoader.getInstance().AbilityDB.Add(ability);
         return caster;

@@ -29,7 +29,7 @@ namespace hds
 
         internal const ushort PistolBarrage = 244, SlidingVolley = 249, ControlledBurst = 250, ThreeRoundBurst = 256,
             FullAuto = 494, FullAutoRedux = 496;
-        public const ushort DualPistolPointBlank = 499;
+        public const ushort DualPistolPointBlank = 499, DualPistolDash = 500;
 
         internal static bool IsFullAuto(ushort? ability) => ability == FullAuto || ability == FullAutoRedux;
 
