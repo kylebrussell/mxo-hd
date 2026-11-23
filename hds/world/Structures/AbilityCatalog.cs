@@ -69,7 +69,14 @@ namespace hds
             foreach (Modifier m in entry.Modifiers)
             {
                 if (m.Number("WhenEnabled", -1) != 2) continue;
-                if (m.Text("StatModTermFunc") == "AddControlImmunityTimerVal") immunity = (float)m.Number("MinValue");
+                if (m.Text("StatModTermFunc") == "AddControlImmunityTimerVal")
+                {
+                    if (entry.Id != AbilityConditionalControls.CodeShock) immunity = (float)m.Number("MinValue");
+                    else if (m.Number("DurationType", -1) == 0 && m.Number("Duration") > 0 &&
+                        AbilityValues.TryValue(m, 0, 0, out int immunityDuration) && immunityDuration > 0)
+                        mods.Add(new TempMods.Mod { Proc = TempMods.Proc.Terminal, Seconds = (float)m.Number("Duration"),
+                            MinValue = immunityDuration, MaxValue = immunityDuration });
+                }
                 else if (m.Text("StatModInitFunc") == "AddControlImmunityTimer") immunity = (float)m.Number("Duration");
                 if (AbilityConditionalControls.TerminalStun(id, m) &&
                     m.Number("DurationType", -1) == 0 && m.Number("Duration") > 0 &&

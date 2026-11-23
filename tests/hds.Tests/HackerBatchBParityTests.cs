@@ -507,10 +507,32 @@ public class HackerBatchBParityTests
             Assert.Equal(5, Assert.Single(effects.Effects.Snapshot(), m => m.Target == state).Seconds);
         Assert.False(ControlActions.CanMove(target));
         Assert.False(ControlActions.CanUseAbilities(target));
+        Assert.False(effects.Effects.HasControlImmunity(stun.Start));
+        var marker = Assert.Single(effects.Effects.Snapshot(), AbilityConditionalControls.IsCodeShockTimer);
+        Assert.Equal(0.01f, marker.Seconds);
+        Assert.Equal(12, marker.Value);
+        TimedEffects.RunDue(stun.Start + 0.005);
+        Assert.False(effects.Effects.HasControlImmunity(stun.Start + 0.005));
+        double terminal = stun.Start + 0.011;
+        TimedEffects.RunDue(terminal);
+        var immunity = Assert.Single(effects.Effects.Snapshot(), mod => mod.Parent == TempMods.ControlImmunityTimerAbility);
+        Assert.Equal(terminal, immunity.Start);
+        Assert.Equal(12, immunity.Seconds);
+        Assert.NotEqual(0, immunity.RecordId);
+        Assert.DoesNotContain(effects.Effects.Snapshot(), AbilityConditionalControls.IsCodeShockTimer);
         TimedEffects.RunDue(stun.Start + 6.01);
         Assert.True(ControlActions.CanUseAbilities(target));
-        Assert.True(effects.Effects.HasControlImmunity(stun.Start + 11.99));
-        Assert.False(effects.Effects.HasControlImmunity(stun.Start + 12.01));
+        Assert.True(effects.Effects.HasControlImmunity(terminal + 11.99));
+        Assert.False(effects.Effects.HasControlImmunity(terminal + 12.01));
+
+        // A second terminal marker cannot extend a currently active immunity record.
+        Assert.NotEmpty(TimedEffects.Apply(effects, AbilityCatalog.Controls(482), terminal + 7));
+        TimedEffects.RunDue(terminal + 7.02);
+        Assert.Same(immunity, Assert.Single(effects.Effects.Snapshot(), mod => mod.Parent == TempMods.ControlImmunityTimerAbility));
+        TimedEffects.RunDue(terminal + 12.01);
+        Assert.False(effects.Effects.HasControlImmunity(terminal + 12.01));
+        TimedEffects.RunDue(terminal + 13.01);
+        Assert.Empty(effects.Effects.Snapshot());
     }
 
     [Theory]
