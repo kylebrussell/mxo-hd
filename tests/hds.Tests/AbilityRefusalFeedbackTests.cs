@@ -1759,24 +1759,29 @@ public class AbilityRefusalFeedbackTests:IDisposable
                 AbilityPassives.SetLoaded(caster, new[] { (style, (ushort)50), ((ushort)469, (ushort)50) });
                 caster.messageQueue.RPCMessagesQueue.Clear();
             }
-            new AbilityHandler().ProcessAbility(ref request);
-            if (refusal == 0)
+            lock (caster.playerData.craftingSync)
             {
-                double end = caster.playerData.castEndsAt;
-                Assert.True(end > TimeUtils.GetSimTimeSeconds());
-                Assert.Equal(500 - AbilityCosts.Cost(id), AbilityHandler.CurrentInnerStrength(caster));
-                if (action == "replacement") primary.spawnId++;
-                if (action == "retreat" || action == "combat-retreat" || action == "sight-loss")
-                    target.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(action == "sight-loss" ? 22350 : farX, 1095, 16150));
-                DelayedActions.RunDue(end + 1);
-                Assert.True(AbilityCooldowns.IsCoolingDown(caster.playerData, id, TimeUtils.GetSimTimeSeconds()));
-            }
-            else
-            {
-                Assert.Equal(AbilityRefusals.Encode(new(id, refusal)), Assert.Single(Rpcs(caster)));
-                Assert.Equal(before, caster.playerData.castEndsAt);
-                Assert.Equal(500, AbilityHandler.CurrentInnerStrength(caster));
-                Assert.Empty(caster.playerData.cooldownEndsAt);
+                double requestedAt = TimeUtils.GetSimTimeSeconds();
+                new AbilityHandler().ProcessAbility(ref request);
+                if (refusal == 0)
+                {
+                    double end = caster.playerData.castEndsAt;
+                    Assert.True(end > requestedAt);
+                    Assert.Equal(500 - AbilityCosts.Cost(id), AbilityHandler.CurrentInnerStrength(caster));
+                    if (action == "replacement") primary.spawnId++;
+                    if (action == "retreat" || action == "combat-retreat" || action == "sight-loss")
+                        target.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(action == "sight-loss" ? 22350 : farX, 1095, 16150));
+                    // Settle just this reservation after mutating its target. The timer may have dequeued its callback already.
+                    AbilityCastInterrupts.FinishDue(caster, end);
+                    Assert.True(AbilityCooldowns.IsCoolingDown(caster.playerData, id, TimeUtils.GetSimTimeSeconds()));
+                }
+                else
+                {
+                    Assert.Equal(AbilityRefusals.Encode(new(id, refusal)), Assert.Single(Rpcs(caster)));
+                    Assert.Equal(before, caster.playerData.castEndsAt);
+                    Assert.Equal(500, AbilityHandler.CurrentInnerStrength(caster));
+                    Assert.Empty(caster.playerData.cooldownEndsAt);
+                }
             }
             Assert.Empty(Rpcs(target));
             Assert.Empty(Rpcs(nearby));
