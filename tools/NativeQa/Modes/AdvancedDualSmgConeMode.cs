@@ -27,6 +27,7 @@ public sealed class AdvancedDualSmgConeMode : NativeQaMode
             PvpOpponentsFixture.NativeSql,
             $"UPDATE characters SET level={Level},exp={PlayerProgression.ExperienceForLevel(Level)},y={Y},rotation=0," +
                 "healthC=5000,healthM=5000,innerStrC=900,innerStrM=900 WHERE charId IN (110,6111,6112,6113,6114)",
+            $"UPDATE characters SET x={X},z={Z},rotation={MobAggro.YawTowards(X, Z, X, Z + 300)} WHERE charId=110",
             $"UPDATE char_abilities SET level={Level} WHERE char_id=110",
             "DELETE FROM char_abilities WHERE char_id IN (6111,6112,6113,6114)",
             "INSERT INTO char_abilities(char_id,slot,ability_id,level,is_loaded) VALUES " +
@@ -65,6 +66,9 @@ public sealed class AdvancedDualSmgConeMode : NativeQaMode
         if (context.StockProbe is not { } actor) return Array.Empty<byte>();
         DisablingShotMode.CheckProfile(actor, Loadout, Level);
         await PvpOpponentsFixture.EnterAsync(actor);
+        var self = actor.World.CreationSnapshot().Last(view => view.ViewId == 2);
+        Check.That(EngageFoesFixture.Position(self).SequenceEqual(new double[] { X, Y, Z }),
+            $"CSR enters at the exact outdoor stand ({X},{Y},{Z}) before any movement");
         await CombatFixtureLoadout.VerifyWeaponAtLoginAsync(actor, Weapon);
         NativeQaReadiness.RequireNoAmbientAggro(server, actor);
         foreach (var stand in Stands)
