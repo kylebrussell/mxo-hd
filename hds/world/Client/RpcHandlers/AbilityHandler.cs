@@ -80,7 +80,8 @@ namespace hds
                 return;
             }
 
-            bool selectedHackerCast = AbilityID == 238 || AbilityID == 311 || AbilityID == 312 || AbilityID == 313 || AbilityID == 333;
+            bool selectedBufferInterference = AbilityID == 481 || AbilityID == 488;
+            bool selectedHackerCast = AbilityID == 238 || AbilityID == 311 || AbilityID == 312 || AbilityID == 313 || AbilityID == 333 || selectedBufferInterference;
             // These selected abilities bind a live enemy before the cast, including the centre of any splash.
             bool selectedViralField = AbilityID == 343 || AbilityID == 361 || AbilityID == 401 || AbilityID == 402 ||
                 AbilityID == 403 || AbilityID == 465 || AbilityID == 360 || AbilityID == 1081 || AbilityID == 473 || AbilityID == 479;
@@ -367,12 +368,13 @@ namespace hds
                     Deny(AbilityID, "This ability requires Hacker Style.", AbilityRefusals.WrongStyle, sendServerText: false);
                     return;
                 }
-                if (AbilityID == 313)
+                if (AbilityID == 313 || selectedBufferInterference)
                 {
                     var fight = CombatManager.GetHandler(caster);
                     if (fight.isCombatRunning || fight.HasActiveInterlock)
                     {
-                        Deny(AbilityID, "Logic Cannon cannot be used during combat.", AbilityRefusals.MustBeOutsideCombat, sendServerText: false);
+                        Deny(AbilityID, $"{(selectedBufferInterference ? "This ability" : "Logic Cannon")} cannot be used during combat.",
+                            AbilityRefusals.MustBeOutsideCombat, sendServerText: false);
                         return;
                     }
                 }
