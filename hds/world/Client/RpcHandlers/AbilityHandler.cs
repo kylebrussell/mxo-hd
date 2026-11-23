@@ -264,6 +264,7 @@ namespace hds
 
             bool starterGunCast = AbilityID == 126 || AbilityID == 176 || controlledBurst;
             bool rifleOpener = CombatSpecials.IsRifleOpener(AbilityID);
+            bool woundingShot = AbilityID == CombatSpecials.WoundingShot;
             ushort? gunTargetSpawn = null;
             if (starterGunCast)
             {
@@ -554,22 +555,34 @@ namespace hds
                 }
             }
 
-            if (CombatSpecials.IsRifleOpener(AbilityID) || AbilityID == CombatSpecials.ConcealedShot)
+            if (rifleOpener || AbilityID == CombatSpecials.ConcealedShot)
             {
                 var shooter = Store.currentClient;
                 var fight = CombatManager.GetHandler(shooter);
-                if (fight.isCombatRunning || fight.HasActiveInterlock)
+                if (woundingShot && !AbilityPassives.IsLoaded(shooter, AbilityID))
                 {
-                    Deny(AbilityID, "This rifle shot cannot be used during combat.", AbilityRefusals.MustBeOutsideCombat);
+                    Deny(AbilityID, "Load this ability before using it.", AbilityRefusals.NotLoaded, sendServerText: false);
                     return;
                 }
-                ushort? spawn = packet.Length == 41 ? (ushort?)BitConverter.ToUInt16(packet, 4) : null;
-                if (!AbilityTargets.HasLiveAttackSelection(shooter, currentTargetViewId, spawn, requireOpponent: true))
+                if (fight.isCombatRunning || fight.HasActiveInterlock)
+                {
+                    Deny(AbilityID, "This rifle shot cannot be used during combat.", AbilityRefusals.MustBeOutsideCombat, sendServerText: !woundingShot);
+                    return;
+                }
+                if (woundingShot && !CombatSpecials.HasWoundingShotWeapon(shooter))
+                {
+                    Deny(AbilityID, "Equip a rifle-category weapon before using Wounding Shot.", AbilityRefusals.RequiredItemCategory, sendServerText: false);
+                    return;
+                }
+                ushort? spawn = packet.Length == 41 ? BitConverter.ToUInt16(packet, 4) :
+                    (ushort?)shooter.viewMan.getViewById(currentTargetViewId)?.spawnId;
+                if (!spawn.HasValue || !AbilityTargets.HasLiveAttackSelection(shooter, currentTargetViewId, spawn, requireOpponent: true))
                 {
                     shooter.messageQueue.addRpcMessage(AbilityRefusals.Encode(new AbilityRefusals.Record(AbilityID, AbilityRefusals.InvalidTarget)));
                     shooter.FlushQueue();
                     return;
                 }
+                if (rifleOpener) gunTargetSpawn = spawn;
                 if (AbilityID == CombatSpecials.ConcealedShot)
                 {
                     if (!Stealth.IsOn(shooter, Stealth.ConcealmentGrantAbility))
@@ -600,7 +613,6 @@ namespace hds
             if (rifleOpener)
             {
                 var shooter = Store.currentClient;
-                gunTargetSpawn = (ushort)shooter.viewMan.getViewById(currentTargetViewId).spawnId;
                 if (!AbilityTargets.WithinSelectionRange(shooter, AbilityID, currentTargetViewId))
                 {
                     Deny(AbilityID, $"Out-of-range selected target {currentTargetViewId}.",
@@ -1117,6 +1129,19 @@ namespace hds
                 (definition == null || definition.DirectDamage || definition.DamageOverTime || TempMods.Has(AbilityID) ||
                  AbilityHostile.Lands(AbilityID) || CombatSpecials.TargetsEnemy(AbilityID)))
             {
+                if (woundingShot)
+                {
+                    var fight = CombatManager.GetHandler(client);
+                    if (!AbilityPassives.IsLoaded(client, AbilityID) || !CombatSpecials.HasWoundingShotWeapon(client) ||
+                        !CombatStyles.CanUse(client, AbilityID) || fight.isCombatRunning || fight.HasActiveInterlock)
+                    {
+                        Output.WriteDebugLog("[ABILITY] 253 fizzles: the loaded shot, rifle category, style or combat state changed");
+                        return;
+                    }
+                    // Preserve the selected free-cast route through the entire opener.
+                    AbilityTargets.Land(client, ability, hostileView, sneakOpener, AbilityCastOrigin.NormalFreeCast);
+                    return;
+                }
                 if (movementDebuffTargetSpawn.HasValue &&
                     (!AbilityTargets.HasLiveAttackSelection(client, hostileView, movementDebuffTargetSpawn, requireOpponent: true) ||
                      !AbilityTargets.WithinSelectionRange(client, AbilityID, hostileView)))
@@ -1249,6 +1274,7 @@ namespace hds
                 238 => 2,  // Harmful Code 2.0
                 254 => 1,  // Immobilizing Shot
                 255 => 1,  // Disabling Shot
+                253 => 1,  // Wounding Shot
                 311 => 2,  // Logic Blast 2.0
                 312 => 2,  // Logic Barrage 3.0
                 313 => 2,  // Logic Cannon 1.0

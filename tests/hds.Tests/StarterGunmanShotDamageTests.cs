@@ -7,6 +7,7 @@ public class StarterGunmanShotDamageTests
 {
     [Theory]
     [InlineData(105, -5, 0, 8)]
+    [InlineData(253, 6, 0, 6)]
     [InlineData(176, 50, 0, 17)]
     [InlineData(243, 0, 0, 16)]
     [InlineData(CombatSpecials.ControlledBurst, 0, 0, 26)]

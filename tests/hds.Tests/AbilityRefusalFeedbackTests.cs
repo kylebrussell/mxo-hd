@@ -708,6 +708,110 @@ public class AbilityRefusalFeedbackTests:IDisposable
     }
 
     [Theory]
+    [InlineData("unloaded", AbilityRefusals.NotLoaded)]
+    [InlineData("weapon", AbilityRefusals.RequiredItemCategory)]
+    [InlineData("active combat", AbilityRefusals.MustBeOutsideCombat)]
+    [InlineData("empty", AbilityRefusals.InvalidTarget)]
+    [InlineData("ally", AbilityRefusals.InvalidTarget)]
+    [InlineData("far", AbilityRefusals.TargetOutOfRange)]
+    [InlineData("blocked", AbilityRefusals.TargetNotInSight)]
+    [InlineData("combat during cast", 0u)]
+    [InlineData("out of range during cast", 0u)]
+    [InlineData("rifle", 0u)]
+    [InlineData("shotgun", 0u)]
+    public void WoundingShotUsesAnOutsideCombatRifleCategoryAndItsOriginalLiveTarget(string scenario, uint reason)
+    {
+        const ushort id = CombatSpecials.WoundingShot;
+        string root = AppContext.BaseDirectory;
+        while (!File.Exists(Path.Combine(root, "data", "sector_properties.csv"))) root = Path.GetDirectoryName(root)!;
+        SectorProperties.Load(Path.Combine(root, "data", "sector_properties.csv"));
+        NavMesh.UseDirectory(Path.Combine(root, "data", "navmesh"));
+
+        var caster = Client();
+        var victim = Client();
+        victim.playerData.setCharID(111);
+        victim.playerData.setEntityId(111);
+        caster.playerInstance.Level.setValue((byte)20);
+        victim.playerInstance.Level.setValue((byte)20);
+        caster.playerInstance.OrganizationID.setValue((byte)1);
+        victim.playerInstance.OrganizationID.setValue((byte)(scenario == "ally" ? 1 : 2));
+        caster.playerData.pvpFlag = victim.playerData.pvpFlag = true;
+        caster.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(21750, 1095, 16150));
+        MoveTarget(scenario == "far" ? 19749 : scenario == "blocked" ? 22350 : 21550);
+        caster.playerInstance.EquippedItemID.setValue(scenario == "weapon" ? 2565u : scenario == "shotgun" ? 696u : 692u);
+        WorldServer.Clients.Add("caster", caster);
+        WorldServer.Clients.Add("victim", victim);
+
+        var fullProfile = new ushort[] { 2, 17, CombatStyles.Rifles, id }
+            .SelectMany(ability => AbilityPrerequisites.Current.Closure(ability).Keys.Append(ability)).Distinct().ToArray();
+        Assert.True(fullProfile.Sum(AbilityMemory.Cost) <= AbilityMemory.ForLevel(20));
+        AbilityPassives.SetLoaded(caster, fullProfile.Where(ability => scenario != "unloaded" || ability != id)
+            .Select(ability => (ability, (ushort)20)));
+        CombatStyles.Select(caster, CombatStyles.Rifles);
+        caster.messageQueue.RPCMessagesQueue.Clear();
+        caster.messageQueue.ObjectMessagesQueue.Clear();
+
+        var view = caster.viewMan.addView(111, 12);
+        view.viewCreated = true;
+        view.spawnId = 9;
+        var item = new AbilityItem();
+        item.setAbilityID(id);
+        item.setAbilityName("Wounding Shot");
+        item.setValueFrom(6);
+        item.setCastAnimStart(new byte[4]);
+        DataLoader.getInstance().AbilityDB.Add(item);
+        Store.currentClient = caster;
+        var combat = CombatManager.GetHandler(caster);
+        combat.isCombatRunning = scenario == "active combat";
+        // In-process handler input. The stock replays keep the original 254/255 frames.
+        var request = new byte[41];
+        BitConverter.GetBytes(id).CopyTo(request, 0);
+        BitConverter.GetBytes(scenario == "empty" ? 0u : DuelPackets.Handle(view.ViewID, view.spawnId)).CopyTo(request, 2);
+        var effects = TimedEffects.ForPlayer(victim);
+        try
+        {
+            new AbilityHandler().ProcessAbility(ref request);
+            if (reason != 0)
+            {
+                Assert.Equal(AbilityRefusals.Encode(new(id, reason)), Assert.Single(Rpcs(caster)));
+                Assert.Equal(500, AbilityHandler.CurrentInnerStrength(caster));
+                Assert.Empty(caster.playerData.cooldownEndsAt);
+                Assert.Equal(1000, PvpCombat.HealthOf(victim));
+                return;
+            }
+
+            double castEnd = caster.playerData.castEndsAt;
+            Assert.True(castEnd > TimeUtils.GetSimTimeSeconds());
+            Assert.Equal(480, AbilityHandler.CurrentInnerStrength(caster));
+            Assert.Equal(1000, PvpCombat.HealthOf(victim));
+            if (scenario == "combat during cast") combat.isCombatRunning = true;
+            if (scenario == "out of range during cast") MoveTarget(19749);
+            AbilityCastInterrupts.FinishDue(caster, castEnd + .01);
+            Assert.True(AbilityCooldowns.IsCoolingDown(caster.playerData, id, TimeUtils.GetSimTimeSeconds()));
+            if (scenario is "rifle" or "shotgun")
+            {
+                Assert.Equal(994, PvpCombat.HealthOf(victim));
+                var dot = Assert.Single(effects.Effects.Snapshot(), mod => mod.Parent == id && mod.Proc == TempMods.Proc.Dot);
+                Assert.Equal((14, 10f, 2.5), (dot.Value, dot.Seconds, dot.Interval));
+                Assert.False(combat.HasActiveInterlock);
+            }
+            else
+            {
+                Assert.Equal(1000, PvpCombat.HealthOf(victim));
+                Assert.False(effects.Effects.HasParent(id));
+            }
+        }
+        finally
+        {
+            combat.isCombatRunning = false;
+            CombatManager.RemoveClient(caster);
+            TimedEffects.Clear(effects);
+        }
+
+        void MoveTarget(double x) => victim.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(x, 1095, 16150));
+    }
+
+    [Theory]
     [InlineData(21, 41)]
     [InlineData(33, 41)]
     [InlineData(36, 41)]
@@ -723,6 +827,8 @@ public class AbilityRefusalFeedbackTests:IDisposable
     [InlineData(60, 4)]
     [InlineData(588, 41)]
     [InlineData(588, 4)]
+    [InlineData(253, 41)]
+    [InlineData(253, 4)]
     [InlineData(254, 41)]
     [InlineData(254, 4)]
     [InlineData(255, 41)]
@@ -742,10 +848,11 @@ public class AbilityRefusalFeedbackTests:IDisposable
         caster.playerData.combatStyle = abilityId is 53 or 404 or (>= 57 and <= 60)
             ? CombatStyles.HackerStyle : CombatStyles.CoderStyle;
         if (abilityId == 404) caster.playerData.passives.Loaded[CombatStyles.HackerStyle] = 30;
-        if (abilityId is 254 or 255)
+        if (CombatSpecials.IsRifleOpener(abilityId))
         {
             caster.playerData.combatStyle = CombatStyles.Rifles;
             caster.playerData.passives.Loaded[CombatStyles.Rifles] = 50;
+            caster.playerInstance.EquippedItemID.setValue(692u);
         }
         caster.playerData.passives.Loaded[abilityId] = 50;
         WorldServer.Clients.Add("target", target);

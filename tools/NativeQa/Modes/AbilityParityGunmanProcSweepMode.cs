@@ -10,8 +10,8 @@ public sealed class AbilityParityGunmanProcSweepMode : AbilitySweepMode
     public AbilityParityGunmanProcSweepMode() : base(new Sample[]
     {
         new(147, "Rifles", "self with rifle", "0", "Rifles style", "while selected", 0),
-        new(253, "Wounding Shot", "Melee Dummy in Rifles interlock", "record hit and each DOT tick",
-            "30% stun roll on landing; record stun and immunity independently", "4 s stun / 4 s immunity on proc", 20),
+        new(253, "Wounding Shot", "Melee Dummy outside combat in Rifles with an IWRf weapon", "record opener hit and each DOT tick",
+            "2 s cast and 30% stun roll on landing; record stun and immunity independently", "4 s stun / 4 s immunity on proc", 20),
         new(256, "Three Round Burst", "Staggered Melee Dummy in Rifles interlock", "record landed hit",
             "40% stun roll on landing; observe move 11367 and immunity", "4 s stun / 4 s immunity on proc", 20),
         new(158, "Submachine Guns", "self with SMG", "0", "Submachine Guns style", "while selected", 0),

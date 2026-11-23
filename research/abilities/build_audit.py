@@ -276,6 +276,8 @@ def server(i):
         parts.append(f'stored fixed physical base {base} before ordinary influence and resistance')
         if i == 197:
             parts.append('requires Dazed on the live interlock opponent before charging')
+    elif i == 253:
+        parts.append('stored fixed ballistic base 6 before influence and resistance; IWRf weapon and live hostile selection at rest; original spawn, sight and range checked after the cast; captured 14-point NeutralDOT retained; ranked retail direct hit and DOT scaling unresolved')
     elif i in (254, 255):
         base = {254: 18, 255: 16}[i]
         parts.append(f'stored fixed ballistic base {base} before influence and resistance; requires a live hostile selection at rest; retail scaling unresolved')
