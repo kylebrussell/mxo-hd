@@ -120,6 +120,7 @@ public class AbilityRefusalFeedbackTests:IDisposable
     [InlineData("weapon swapped", 0u)]
     [InlineData("unloaded in cast", 0u)]
     [InlineData("style changed", 0u)]
+    [InlineData("combat started", 0u)]
     [InlineData("neutral hit", 0u)]
     [InlineData("resisted hit", 0u)]
     public void SniperShotBindsItsConcealedRifleCastToTheOriginalLiveTarget(string state, uint denial)
@@ -205,6 +206,7 @@ public class AbilityRefusalFeedbackTests:IDisposable
             else if (state == "weapon swapped") caster.playerInstance.EquippedItemID.setValue(CombatFixtureWeapons.Handgun);
             else if (state == "unloaded in cast") caster.playerData.passives.Loaded.Remove(shot);
             else if (state == "style changed") caster.playerData.combatStyle = CombatStyles.SelfDefense;
+            else if (state == "combat started") fight.isCombatRunning = true;
             DelayedActions.RunDue(caster.playerData.castEndsAt + 1);
             Assert.True(AbilityCooldowns.IsCoolingDown(caster.playerData, shot, TimeUtils.GetSimTimeSeconds()));
 

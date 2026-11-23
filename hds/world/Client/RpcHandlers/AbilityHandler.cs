@@ -1121,11 +1121,15 @@ namespace hds
             }
             // Attack abilities on the current close-combat target hit it (buffs used with a target selected don't).
             ushort hostileView=engageFoes?.PrimaryView??currentTargetViewId;
-            if (sniperShot && (!CombatSpecials.HasEquippedRifle(client) ||
-                !AbilityPassives.IsLoaded(client, AbilityID) || CombatStyles.Active(client) != CombatStyles.Rifles))
+            if (sniperShot)
             {
-                Output.WriteDebugLog("[ABILITY] 505 fizzles: the rifle or its loaded selection changed");
-                return;
+                var fight = CombatManager.GetHandler(client);
+                if (!CombatSpecials.HasEquippedRifle(client) || !AbilityPassives.IsLoaded(client, AbilityID) ||
+                    CombatStyles.Active(client) != CombatStyles.Rifles || fight.isCombatRunning || fight.HasActiveInterlock)
+                {
+                    Output.WriteDebugLog("[ABILITY] 505 fizzles: the rifle, loaded selection or combat state changed");
+                    return;
+                }
             }
             if ((selectedGunShot || sniperShot) && (!AbilityTargets.HasLiveAttackSelection(client, hostileView, gunTargetSpawn, requireOpponent: true) ||
                 !AbilityTargets.WithinSelectionRange(client, AbilityID, hostileView) ||
