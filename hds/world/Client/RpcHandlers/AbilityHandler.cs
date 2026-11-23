@@ -82,7 +82,9 @@ namespace hds
             }
 
             bool selectedBufferInterference = AbilityID == 481 || AbilityID == 488;
-            bool selectedHackerCast = AbilityID == 238 || AbilityID == 311 || AbilityID == 312 || AbilityID == 313 || AbilityID == 333 || selectedBufferInterference;
+            bool selectedAdvancedViral = AbilityID == 331 || AbilityID == 415;
+            bool selectedHackerCast = AbilityID == 238 || AbilityID == 311 || AbilityID == 312 || AbilityID == 313 || AbilityID == 333 ||
+                selectedBufferInterference || selectedAdvancedViral;
             // These selected abilities bind a live enemy before the cast, including the centre of any splash.
             bool selectedViralField = AbilityID == 343 || AbilityID == 361 || AbilityID == 401 || AbilityID == 402 ||
                 AbilityID == 403 || AbilityID == 465 || AbilityID == 360 || AbilityID == 1081 || AbilityID == 473 || AbilityID == 479;
@@ -369,12 +371,12 @@ namespace hds
                     Deny(AbilityID, "This ability requires Hacker Style.", AbilityRefusals.WrongStyle, sendServerText: false);
                     return;
                 }
-                if (AbilityID == 313 || selectedBufferInterference)
+                if (AbilityID == 313 || selectedBufferInterference || selectedAdvancedViral)
                 {
                     var fight = CombatManager.GetHandler(caster);
                     if (fight.isCombatRunning || fight.HasActiveInterlock)
                     {
-                        Deny(AbilityID, $"{(selectedBufferInterference ? "This ability" : "Logic Cannon")} cannot be used during combat.",
+                        Deny(AbilityID, $"{(AbilityID == 313 ? "Logic Cannon" : "This ability")} cannot be used during combat.",
                             AbilityRefusals.MustBeOutsideCombat, sendServerText: false);
                         return;
                     }
@@ -1388,6 +1390,7 @@ namespace hds
                 311 => 2,  // Logic Blast 2.0
                 312 => 2,  // Logic Barrage 3.0
                 313 => 2,  // Logic Cannon 1.0
+                415 => 2,  // Harmful Code 3.0
                 247 => 1,  // Bullet Spray
                 248 => 1,  // Suppression Fire
                 514 => 2,  // Advanced Tinkering

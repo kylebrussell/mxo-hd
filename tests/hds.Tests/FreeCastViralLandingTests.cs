@@ -157,6 +157,82 @@ public class FreeCastViralLandingTests : IDisposable
     }
 
     [Theory]
+    [InlineData(false, 75)]
+    [InlineData(true, 61)]
+    public void HarmfulCodeThreeUsesTheShippedHealthValueOnTheSelectedOrdinaryCast(bool resisted, int amount)
+    {
+        const ushort id = 415;
+        var caster = Client(110);
+        var target = Client(111);
+        caster.playerData.setEntityId(85000210);
+        target.playerData.setEntityId(85000211);
+        caster.playerData.pvpFlag = target.playerData.pvpFlag = true;
+        caster.playerInstance.OrganizationID.setValue((byte)1);
+        target.playerInstance.OrganizationID.setValue((byte)2);
+        caster.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(17000, 495, 6400));
+        target.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(17000, 495, 6700));
+        caster.playerInstance.InnerStrengthMax.setValue((ushort)1000);
+        caster.playerInstance.InnerStrengthAvailable.setValue((ushort)700);
+        var view = caster.viewMan.addView(target.playerData.getEntityId(), 1);
+        view.viewCreated = true;
+        Store.currentClient = caster;
+        Environment.SetEnvironmentVariable("MXO_FREECAST_VIRAL_QA_ATTACK15", "32766");
+        Environment.SetEnvironmentVariable("MXO_FREECAST_VIRAL_QA_DEFENSE15", "0");
+        var world = Store.world;
+        try
+        {
+            Store.world = (WorldServer)RuntimeHelpers.GetUninitializedObject(typeof(WorldServer));
+            var profile = new NativeQa.Modes.HackerHarmfulCodeTiersMode().Plan.Abilities;
+            Assert.Equal(97, profile.Sum(AbilityMemory.Cost));
+            AbilityPassives.SetLoaded(caster, profile.Select(ability => (ability, (ushort)50)));
+            CombatStyles.Select(caster, CombatStyles.HackerStyle);
+            if (resisted) Assert.True(AbilityBuffs.Apply(target, 8));
+            Assert.Equal(resisted ? 75 : 0, AbilityStats.Player(target, 157));
+            Assert.Equal(46, AbilityStats.Influence(caster, 172));
+            Assert.Equal(5, AbilityStats.Influence(caster, 117));
+            Assert.Equal(22, AbilityCosts.Effective(caster, id));
+            Assert.Equal(26, AbilityCosts.Effective(caster, 331));
+            Assert.Equal(2, TypedAbilityResistance.StoredType(id));
+
+            // Construct the body for server dispatch. The bootstrap reuses captured stock requests for 53 and 331.
+            var request = new byte[41];
+            BitConverter.GetBytes(id).CopyTo(request, 0);
+            BitConverter.GetBytes(view.ViewID).CopyTo(request, 2);
+            BitConverter.GetBytes((ushort)view.spawnId).CopyTo(request, 4);
+            var handler = new AbilityHandler();
+            var fight = CombatManager.GetHandler(caster);
+            fight.isCombatRunning = true;
+            handler.ProcessAbility(ref request);
+            byte[] refusal = AbilityRefusals.Encode(new AbilityRefusals.Record(id, AbilityRefusals.MustBeOutsideCombat));
+            Assert.Contains(caster.messageQueue.RPCMessagesQueue.Cast<SequencedMessage>(), message => message.content.AsSpan(1).SequenceEqual(refusal));
+            Assert.Equal(700, AbilityHandler.CurrentInnerStrength(caster));
+            Assert.False(AbilityCooldowns.IsCoolingDown(caster.playerData, id, TimeUtils.GetSimTimeSeconds()));
+            fight.isCombatRunning = false;
+            caster.playerData.lastAbilityTime = double.NegativeInfinity;
+
+            double before = TimeUtils.GetSimTimeSeconds();
+            handler.ProcessAbility(ref request);
+            double end = caster.playerData.castEndsAt;
+            Assert.InRange(end, before + 4, TimeUtils.GetSimTimeSeconds() + 4);
+            Assert.Equal(678, AbilityHandler.CurrentInnerStrength(caster));
+            Assert.Equal(1000, PvpCombat.HealthOf(target));
+            AbilityCastInterrupts.FinishDue(caster, end);
+            Assert.Equal(1000 - amount, PvpCombat.HealthOf(target));
+            Assert.True(AbilityCooldowns.TryGet(id, out var timer));
+            Assert.Equal(8, timer.Seconds);
+            Assert.Equal(AbilityCooldowns.VirusDamage1, timer.Group);
+            Assert.Equal(4, timer.GroupSeconds);
+            Assert.True(AbilityCooldowns.IsCoolingDown(caster.playerData, id, TimeUtils.GetSimTimeSeconds()));
+        }
+        finally
+        {
+            CombatManager.GetHandler(caster).isCombatRunning = false;
+            AbilityBuffs.RemoveAll(target);
+            Store.world = world;
+        }
+    }
+
+    [Theory]
     [InlineData(238, 0, true, 46)]
     [InlineData(311, 0, true, 43)]
     [InlineData(312, 0, true, 55)]
