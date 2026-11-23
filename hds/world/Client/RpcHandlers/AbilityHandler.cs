@@ -217,6 +217,7 @@ namespace hds
 
             // Timed gun specials may resolve in interlock or as a selected attack. Both use the same live target.
             bool starterGunCast = AbilityID == 126 || AbilityID == 176;
+            bool rifleOpener = CombatSpecials.IsRifleOpener(AbilityID);
             ushort? gunTargetSpawn = null;
             if (starterGunCast)
             {
@@ -318,8 +319,9 @@ namespace hds
                     return;
                 }
             }
-            bool selectedGunShot = starterGunCast || AbilityID == 130;
-            if ((selectedGunShot || enrage) && !AbilityTargets.HasSelectionSight(Store.currentClient, definition, currentTargetViewId))
+            bool selectedGunShot = starterGunCast || AbilityID == 130 || rifleOpener;
+            if ((selectedGunShot && !rifleOpener || enrage) &&
+                !AbilityTargets.HasSelectionSight(Store.currentClient, definition, currentTargetViewId))
             {
                 Deny(AbilityID, $"Sight blocked for selected target {currentTargetViewId}.",
                     AbilityRefusals.TargetNotInSight, sendServerText: false);
@@ -534,6 +536,26 @@ namespace hds
                             AbilityRefusals.TargetNotInSight, sendServerText: false);
                         return;
                     }
+                }
+            }
+
+            // Opener admission resolved a live opponent. Keep that spawn through the cast
+            // and apply the authored geometry before spending IS.
+            if (rifleOpener)
+            {
+                var shooter = Store.currentClient;
+                gunTargetSpawn = (ushort)shooter.viewMan.getViewById(currentTargetViewId).spawnId;
+                if (!AbilityTargets.WithinSelectionRange(shooter, AbilityID, currentTargetViewId))
+                {
+                    Deny(AbilityID, $"Out-of-range selected target {currentTargetViewId}.",
+                        AbilityRefusals.TargetOutOfRange, sendServerText: false);
+                    return;
+                }
+                if (!AbilityTargets.HasSelectionSight(shooter, definition, currentTargetViewId))
+                {
+                    Deny(AbilityID, $"Sight blocked for selected target {currentTargetViewId}.",
+                        AbilityRefusals.TargetNotInSight, sendServerText: false);
+                    return;
                 }
             }
 
