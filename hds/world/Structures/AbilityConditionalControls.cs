@@ -9,6 +9,7 @@ namespace hds
     {
         // Proxy_003 login, 20131-20178 and 20689-20694, records the Sniper Shot victim's linked Stun stack.
         internal const ushort PistolAerial = 243;
+        internal const ushort DevastationField = 468;
         internal const ushort CodeShock = 482;
 
         // This authored callback has no target attribute or state. Only its resulting 734 record is published.
@@ -21,8 +22,11 @@ namespace hds
         internal static bool IsCapturedStunMarker(TimedEffects.Active modifier) =>
             HasCapturedStunStack(modifier.Parent) && modifier.Proc == TempMods.Proc.Terminal;
 
+        internal static bool UsesStunCallbackPresentation(ushort source) =>
+            HasCapturedStunStack(source) || source == DevastationField;
+
         private static bool UsesStunCombatTactics(ushort source) =>
-            HasCapturedStunStack(source) || source == CombatSpecials.ThreeRoundBurst;
+            UsesStunCallbackPresentation(source) || source == CombatSpecials.ThreeRoundBurst;
 
         internal static bool IsLinkedStunTactics(TimedEffects.Active mod) =>
             UsesStunCombatTactics(mod.Parent) && mod.Proc == TempMods.Proc.Stat && mod.Target == TempMods.CombatTacticsAbility;
@@ -49,7 +53,7 @@ namespace hds
 
         internal static bool TerminalStun(ushort ability, AbilityCatalog.Modifier modifier) =>
             modifier.Text("StatModTermFunc") == "ApplyStunEffectIfDazed" ||
-            ((ability == PistolAerial || ability == 253 || ability == 256 || ability == 265 || ability == 429 || ability == 468 || ability == 504 || ability == 505 || ability == 532 || ability == 534) &&
+            ((ability == PistolAerial || ability == 253 || ability == 256 || ability == 265 || ability == 429 || ability == DevastationField || ability == 504 || ability == 505 || ability == 532 || ability == 534) &&
                 modifier.Text("StatModTermFunc") == "ApplyStunWithTimer");
 
         internal static void Term(TimedEffects.Subject subject, TimedEffects.Active marker, double now)
@@ -74,14 +78,15 @@ namespace hds
                 (subject.ConditionFlags & CombatInterlock.ConditionBit(CombatTactic.Speed)) == 0) return;
             if (subject.Effects.HasControlImmunity(now))
             {
-                if (marker.Parent == PistolAerial && subject is PlayerEffects player)
+                if ((marker.Parent == PistolAerial || marker.Parent == DevastationField) && subject is PlayerEffects player)
                 {
                     string targetName = TimedEffects.PlayerName(player.Context);
-                    Output.WriteDebugLog($"[EFFECTS] 243 on {targetName}: Stun suppressed by active control immunity");
+                    string abilityName = marker.Parent == PistolAerial ? "Pistol Aerial" : "Devastation Field";
+                    Output.WriteDebugLog($"[EFFECTS] {marker.Parent} on {targetName}: Stun suppressed by active control immunity");
                     // ApplyStunWithTimer reports lower-buff stacking to the caster. Its localized ID is unresolved.
                     if (marker.Caster is WorldClient source && source != player.Context && source.Alive &&
                         source.playerData.getOnWorld() && !source.playerData.worldChangePending)
-                        new ServerPackets().sendSystemChatMessage(source, $"{targetName} is immune to Pistol Aerial's Stun.", "BROADCAST");
+                        new ServerPackets().sendSystemChatMessage(source, $"{targetName} is immune to {abilityName}'s Stun.", "BROADCAST");
                 }
                 return;
             }

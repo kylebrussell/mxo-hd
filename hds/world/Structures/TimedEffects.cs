@@ -575,7 +575,7 @@ namespace hds
             }
 
             bool preserveOtherTargets = effect.Ability == StealthShieldAbilities.DisableEvasion ||
-                effect.Ability == AbilityReverseBulldog.Ability || AbilityConditionalControls.HasCapturedStunStack(effect.Ability);
+                effect.Ability == AbilityReverseBulldog.Ability || AbilityConditionalControls.UsesStunCallbackPresentation(effect.Ability);
             List<Active> replaced = subject.Effects.Apply(effect.Ability, mods, now, preserveOtherTargets);
             if (immunity != null)
             {
@@ -822,7 +822,7 @@ namespace hds
         internal override void Applied(TempMods.Effect effect, List<TimedEffects.Active> added, TimedEffects.Active immunity,
             List<TimedEffects.Active> replaced)
         {
-            bool linkedStun = immunity != null && AbilityConditionalControls.HasCapturedStunStack(effect.Ability);
+            bool linkedStun = immunity != null && AbilityConditionalControls.UsesStunCallbackPresentation(effect.Ability);
             // Record ids in retail's order (morpheuzzz_001 1829, Vector: Powerless 0x14, ControlImmunityTimer 0x15,
             // Powerless's own record 0x16, ViralDeflection 0x17)
             foreach (TimedEffects.Active m in added)
@@ -842,7 +842,7 @@ namespace hds
             if (immunity != null && immunity.RecordId == 0)
                 immunity.RecordId = AbilityBuffs.NextRecordId(client.playerData);
             SendOff(replaced);
-            // Vector sent immunity first. Proxy_003 login sent the linked Stun stack before immunity.
+            // Vector sent immunity first; ApplyStunWithTimer adds the Stun before immunity.
             if (immunity != null && !linkedStun)
             {
                 client.messageQueue.addRpcMessage(Record(immunity, false));

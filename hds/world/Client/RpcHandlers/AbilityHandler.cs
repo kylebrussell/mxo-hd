@@ -91,7 +91,7 @@ namespace hds
                 AbilityID == 473 || AbilityID == 479 || AbilityID == AbilityConditionalControls.CodeShock;
             bool enrage = AbilityID == 588;
             bool selectedCoderViral = AbilityID == 595 || AbilityID == 597 || AbilityID == 598;
-            bool selectedDestroyerField = AbilityID == 462 || AbilityID == 467 || AbilityID == 1088;
+            bool selectedDestroyerField = AbilityID == 462 || AbilityID == 467 || AbilityID == 468 || AbilityID == 1088;
             bool selectedViralAttack = enrage || AbilityID == 53 || (AbilityID >= 57 && AbilityID <= 60) ||
                 AbilityID == 350 || AbilityID == 351 || AbilityID == 353 ||
                 AbilityID == 392 || AbilityID == 394 || AbilityID == 395 || AbilityID == 396 ||
@@ -1416,6 +1416,7 @@ namespace hds
                 312 => 2,  // Logic Barrage 3.0
                 313 => 2,  // Logic Cannon 1.0
                 415 => 2,  // Harmful Code 3.0
+                468 => 2,  // Devastation Field
                 247 => 1,  // Bullet Spray
                 248 => 1,  // Suppression Fire
                 CombatSpecials.PinningFire => 1,
