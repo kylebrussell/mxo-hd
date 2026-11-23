@@ -16,7 +16,7 @@ public sealed class CoderOneCheckBatchMode : NativeQaMode
         (UtilityMaster, MasterUpgrade, new (ushort, int)[] { (997, 5) })
     };
     // PR312 stock 88a1d93e477a:4666–4667.
-    private const string TechnicianRequest = "80b94d02000000000000000000000000000000000000000000000000ffff7f7f00000000086b0000000000";
+    internal const string TechnicianRequest = "80b94d02000000000000000000000000000000000000000000000000ffff7f7f00000000086b0000000000";
 
     // PR447 stock 321078e1ed92:4132–4133 and 4261–4262.
     private const string MasterOn = "80b95404000000000000000000000000000000000000000000000000d557377c20000000086b0000000000";

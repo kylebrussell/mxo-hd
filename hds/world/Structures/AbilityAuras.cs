@@ -184,7 +184,8 @@ namespace hds
                     }
                     return false;
                 }
-                if (id == ProxyTechnician.Ability) Output.WriteDebugLog("[PROXYTECH] drain source="+TimedEffects.PlayerName(client)+" amount="+drain);
+                if (id == ProxyTechnician.Ability) Output.WriteDebugLog(
+                    $"[PROXYTECH] drain source={TimedEffects.PlayerName(client)} amount={drain} IS={available}->{available - drain}");
                 if (id == DaemonBoost.Ability) Output.WriteDebugLog($"[DAEMON BOOST] 609 upkeep source={client.playerData.getCharID()} paid={drain} IS={available}->{available - drain}");
             }
             return true;
