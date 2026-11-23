@@ -1,0 +1,18 @@
+{
+  "abilities": {
+    "594": {
+      "checks": {
+        "script": {
+          "source": "simulacra.py RemoteProxy5_Subject takes the shared configured RemoteProxySheet or selects from the shipped random pool, chooses gender, clamps owner level to 35–50 and sends the owner output. RemoteProxy5_Deactivate destroys the owned summon.",
+          "runtime": "CoderPets picks from the shipped six sheets by default and accepts a configured one from the same set. It creates the owned pet at the clamped level, sends a single private notice after registration and routes the stock Deactivate order to destruction of the current pet.",
+          "test": "PR855 stock saw the default Aikido with the expected notice. PR954 stock saw two configured Rifle summons at level 44, a new ID each time, a single owner notice per summon and disappearance of the matching body and window after both ordinary Deactivate orders. https://github.com/kylebrussell/mxo-hd/pull/855#issuecomment-7091725774 https://github.com/kylebrussell/mxo-hd/pull/954#issuecomment-7097247100"
+        },
+        "behavior-tests": {
+          "source": "GOB 594 stores 120 IS, eight-second cast and eight-second own reuse. The shipped RemoteProxy5 callbacks define sheet selection, owner level, private output and cleanup.",
+          "runtime": "The ordinary summon path spends the stored cost, finishes the cast into one owned body and window, sends the private notice and retires exactly that summon on the stock command. Fixed-sheet summons and daemons keep their authored roles.",
+          "test": "AdvancedSimulacraOwnerNoticeMode replays the exact stock 594 and Deactivate frames and checks the cast, owner and observer views, matching 81 76 and 81 77, and fresh ID for the next summon. CoderPetTests covers the shared six-sheet parser as well as the unconfigured fallback. PR954 confirms two 120 IS spends, eight-second reuse and the owner lifecycle in stock. The observer view was verified in the headless replay. https://github.com/kylebrussell/mxo-hd/pull/954#issuecomment-7097247100"
+        }
+      }
+    }
+  }
+}
