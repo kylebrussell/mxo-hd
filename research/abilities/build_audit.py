@@ -198,9 +198,9 @@ PETS = {
     34: 'own simulacrum only; pet-centred 8m blast on NPCs and eligible hostile players; DetonateProxyProc internal viral child 1109 uses pet-level typed resistance; owner receives normal credit; pet takes 13000 after 0.5s',
     19: 'own simulacrum only; stored 8000 type-5 hit and +50 caster IS verified on a surviving fortified Proxy; DecoyDuration 60s unresolved',
     609: 'toggle; 5 IS/5s drain with deactivation; 699 typed Viral Damage172/Healing174 influence +level x0.5 within20m; Nuker hit/Healer heal percentage scaling; no Proxy damage',
-    619: 'toggle; 5 IS/5s drain with deactivation; 700 accuracy +level x1.3 consumed by pet attack roll (OURS hit curve)',
+    619: 'toggle; initial 700 pulse within10m to live friendly simulacra; 5 IS/5s refresh with no debit on shortfall; unload and source termination stop further pulses; last child expires independently',
     699: 'Daemon Boost 1.0 pulse: Viral Damage172/Healing174 influence +level x0.5 for5s; percentage Nuker damage/Healer heal only',
-    700: 'Daemon Boost 2.0 pulse: sourced +level x1.3 accuracy, actual attack roll consumer (OURS base/curve)',
+    700: 'Daemon Boost 2.0 pulse: five-second caster-level x1.3 melee, ballistic and viral accuracy; friendly simulacra within10m; actual Proxy melee/ballistic and Nuker viral combat inputs',
 }
 PET_REPAIRS = {30, 31, 587, 596, 615}
 
@@ -240,6 +240,8 @@ def server(i):
         return 'stored level 99 selected-load prerequisite with no parent or grant path in the shipped ability catalog; seeded damage, periodic FX and IS drain verified; [evidence](ABILITY-AWAKENED-COMBAT-ACTIVES.md#hyper-strength-access)'
     if i in DATA_MINING:
         return DATA_MINING[i][0]
+    if i == 1092:
+        return '20 base IS and 30s reuse; caster-only captured Concentration +7, Heal and Upgrade Area Radius +10 and Healing +6; the live interruption, recipient range and heal totals consume them; Team Patcher replacement removes all three; [evidence](https://github.com/kylebrussell/mxo-hd/pull/960#issuecomment-7098249561)'
     r, f = coverage[i], fields(i)
     parts = []
     if i == 1124:
@@ -427,7 +429,7 @@ def server(i):
         parts.append(r['proxy_technician'])
     if mobius := r.get('mobius'):
         parts.append(f"script {mobius['chance']}% / {mobius['seconds']:g}s: incoming weapon free fire and new forced interlock gates; branch healing FX; susceptibility and positive native proof unresolved; [evidence](ABILITY-MOBIUS-FREE-ATTACK.md)")
-    if r.get('aura') and not r.get('proxy_technician'):
+    if r.get('aura') and not r.get('proxy_technician') and i not in (609, 619):
         a = r['aura']
         recipients = 'friendly team players' if a.get('friendly') else 'hostile NPC/PvP targets'
         if i == 945:

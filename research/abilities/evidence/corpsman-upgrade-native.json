@@ -1,0 +1,34 @@
+{
+  "families": {
+    "hacker-corpsman-upgrade-native": {
+      "representative": 1092,
+      "result": "pass",
+      "head": "2884a856",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/960#issuecomment-7098249561",
+      "scope": "Stock activation is caster-only with an opposing player selected. It costs 17 IS after Dedicated Code and starts 30 seconds of reuse. Each of the three captured modifiers has a live downstream effect and is removed once when stock Team Patcher replaces Corpsman."
+    }
+  },
+  "abilities": {
+    "1092": {
+      "family": "hacker-corpsman-upgrade-native",
+      "note": "The retained AfterWhoruNeo proxy_024 lines 12604–12617 record the selected stock request and applied +7 Concentration, +10 Heal and Upgrade Area Radius, and +6 Healing. These observed source values are retained. GOB's different +7/+7/+5 values are documented without a guessed conversion.",
+      "checks": {
+        "targeting": {
+          "source": "GOB 1092 uses self selector 1 and DoesNOTRequireLOS 1. The retail 80 b9 request has a selected view/spawn but the server's modifiers are on the caster.",
+          "runtime": "AbilitySupport.Targets resolves this selector to the caster, so the selected opponent does not receive the upgrade.",
+          "test": "The exact 1092 bootstrap binds QAEnemy as the selected handle and checks for only caster-owned records. Native QA confirmed that neither the selected opponent nor any helper received the three modifiers. https://github.com/kylebrussell/mxo-hd/pull/960#issuecomment-7098249561"
+        },
+        "stats": {
+          "source": "Retained applied source-1092 stat records are 564 +7, 127 +10 and 174 +6. Typed healing and support radius have independent consumers. The shipped Concentration calculation reads the caster's effective 564 at an authored interruptible cast.",
+          "runtime": "AbilityHealing scales the 371 heal with typed healing influence. AbilityRadius expands its UBF0 caster-centred teammate range. AbilityCastInterrupts reads the +7 during actual damage on 360.",
+          "test": "Stock 371 yields 27→28→27 and reaches the 9.00 m teammate only under Corpsman, excluding 9.50 m. The same damage and roll 79 cancel stock 360 at Concentration 5 / threshold 77 and let it land at Concentration 12 / threshold 81. https://github.com/kylebrussell/mxo-hd/pull/960#issuecomment-7098249561"
+        },
+        "behavior-tests": {
+          "source": "Retained 1092 charges a base 20 IS and starts 30 s reuse. The retained later 1089 packet removes the three 1092 records once.",
+          "runtime": "The normal class-buff path charges 17 IS after the existing Dedicated Code consumer and starts 30 s reuse. Team Patcher replaces the exclusive class buff and its records.",
+          "test": "The exact retained-frame disposable bootstrap verifies the modifier triples, full support heal and range transitions, interruption A/B, 17 IS and 30 s reuse, and one replacement transition. Native QA confirmed one removal per modifier before the ordinary 1089 adds. Dismissing that successor restores the baseline. https://github.com/kylebrussell/mxo-hd/pull/960#issuecomment-7098249561"
+        }
+      }
+    }
+  }
+}
