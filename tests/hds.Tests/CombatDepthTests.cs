@@ -102,4 +102,32 @@ public class CombatDepthTests
         Assert.True(mob.TryRetaliate(14.5,4.5)); Assert.True(mob.TryClaimDeath()); Assert.False(mob.TryClaimDeath());
         Assert.False(mob.TryRetaliate(20,4.5));
     }
+
+    [Fact]
+    public void PetRetaliationSharesTheNpcClockAndYieldsToPlayerCombatants()
+    {
+        var npc = new Mob();
+        npc.setHealthM(100);
+        npc.ResetForRespawn();
+        var player = Client();
+
+        Assert.True(npc.TryRetaliate(10, 3, againstPet: true));
+        Assert.False(npc.TryRetaliate(11, 3, againstPet: true));
+        npc.setCombatTarget(player);
+        Assert.False(npc.TryRetaliate(11, 4.5));
+        npc.RemoveCombatant(player);
+        Assert.False(npc.TryRetaliate(12, 3, againstPet: true));
+
+        npc.setCombatTarget(player);
+        Assert.False(npc.TryRetaliate(13, 3, againstPet: true));
+        Assert.True(npc.TryRetaliate(13, 4.5));
+        npc.RemoveCombatant(player);
+        Assert.True(npc.TryRetaliate(14, 3, againstPet: true));
+        Assert.False(npc.TryRetaliate(15, 3, againstPet: true));
+
+        Assert.True(npc.TryClaimDeath());
+        Assert.False(npc.TryRetaliate(18, 3, againstPet: true));
+        npc.ResetForRespawn();
+        Assert.True(npc.TryRetaliate(18, 3, againstPet: true));
+    }
 }
