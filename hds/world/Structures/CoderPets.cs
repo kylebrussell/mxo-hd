@@ -758,6 +758,8 @@ namespace hds
             NumericalUtils.LtVector3dToDoubles(caster.playerInstance.Position.getValue(), ref x, ref y, ref z);
             if (!(Distance(mob, x, y, z) <= definition.Number("Ability/SelectionRange") * CombatCalculator.WorldUnitsPerMetre))
                 return AbilityRefusals.TargetOutOfRange;
+            if (definition.Number("Ability/DoesNOTRequireLOS") == 0 && !CombatSight.Between(caster, mob))
+                return AbilityRefusals.TargetNotInSight;
             target = pet;
             return 0;
         }
