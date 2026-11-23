@@ -1904,19 +1904,33 @@ public class AbilityRefusalFeedbackTests:IDisposable
     [InlineData("unloaded while casting", 0u, 176)]
     [InlineData("swapped while casting", 0u, 176)]
     [InlineData("neutral", 0u, 176)]
+    [InlineData("neutral", 0u, 494)]
+    [InlineData("resisted", 0u, 494)]
+    [InlineData("missing state", AbilityRefusals.TargetStateRequired, 494)]
+    [InlineData("wrong style", AbilityRefusals.WrongStyle, 494)]
+    [InlineData("far", AbilityRefusals.TargetOutOfRange, 494)]
+    [InlineData("swapped while casting", 0u, 494)]
+    [InlineData("neutral", 0u, 496)]
+    [InlineData("resisted", 0u, 496)]
+    [InlineData("missing state", AbilityRefusals.TargetStateRequired, 496)]
+    [InlineData("wrong weapon", AbilityRefusals.RequiredItemCategory, 496)]
+    [InlineData("new spawn", 0u, 496)]
+    [InlineData("unloaded while casting", 0u, 496)]
     public void TimedGunSpecialBindsItsEligibleTargetAndConsumesTypedResistance(string scenario, uint refusal, int idValue)
     {
         ushort id = (ushort)idValue;
         bool rifle = id == CombatSpecials.ThreeRoundBurst;
         bool barrage = id == CombatSpecials.PistolBarrage;
         bool starter = id is 126 or 176;
-        int outside = rifle ? 19749 : barrage ? 19849 : 20349;
+        bool fullAuto = CombatSpecials.IsFullAuto(id);
+        int outside = rifle ? 19749 : barrage ? 19849 : fullAuto ? 20149 : 20349;
         var caster = TimedGunSpecialCaster(id, unloaded: scenario == "unloaded",
             wrongWeapon: scenario is "single SMG" or "single handgun" or "wrong weapon");
+        if (scenario == "wrong style") caster.playerData.combatStyle = CombatStyles.SelfDefense;
         var target = Client();
         target.playerData.setCharID(111);
         target.playerData.setEntityId(111);
-        target.playerInstance.Level.setValue(starter ? (byte)19 : (byte)27);
+        target.playerInstance.Level.setValue(caster.playerInstance.Level.getValue()[0]);
         caster.playerInstance.OrganizationID.setValue((byte)1);
         target.playerInstance.OrganizationID.setValue((byte)(scenario == "ally" ? 1 : 2));
         caster.playerData.pvpFlag = target.playerData.pvpFlag = true;
@@ -1930,7 +1944,8 @@ public class AbilityRefusalFeedbackTests:IDisposable
             DuelPackets.Handle(view.ViewID, scenario == "stale request" ? 8 : view.spawnId);
         byte[] request = TimedGunSpecialRequest(id, selected);
         double start = TimeUtils.GetSimTimeSeconds();
-        if (rifle && scenario != "missing stagger") SeedStagger(TimedEffects.ForPlayer(target));
+        if ((rifle || fullAuto) && scenario is not ("missing stagger" or "missing state"))
+            SeedTimedGunState(id, TimedEffects.ForPlayer(target));
         if (scenario == "resisted")
         {
             TimedEffects.ForPlayer(target).Effects.Apply(181,
@@ -1942,8 +1957,9 @@ public class AbilityRefusalFeedbackTests:IDisposable
             new AbilityHandler().ProcessAbility(ref request);
             if (refusal != 0)
             {
-                Assert.Equal(AbilityRefusals.Encode(new(id, refusal, states: scenario == "missing stagger" ? 8u : 0u)),
-                    Assert.Single(Rpcs(caster)));
+                uint states = refusal == AbilityRefusals.TargetStateRequired
+                    ? (uint)AbilityCatalog.Find(id).Number("Ability/CastRequiredStates") : 0;
+                Assert.Equal(AbilityRefusals.Encode(new(id, refusal, states: states)), Assert.Single(Rpcs(caster)));
                 Assert.Equal(500, AbilityHandler.CurrentInnerStrength(caster));
                 Assert.Empty(caster.playerData.cooldownEndsAt);
                 return;
@@ -1960,6 +1976,8 @@ public class AbilityRefusalFeedbackTests:IDisposable
                 CombatSpecials.PistolBarrage => "80acf4000000000000000000000000000040",
                 126 => "80ac7e000000000000000000000000008040",
                 176 => "80acb0000000000000000000000000008040",
+                CombatSpecials.FullAuto => "80acee010000000000000000000000008040",
+                CombatSpecials.FullAutoRedux => "80acf0010000000000000000000000008040",
                 _ => "80acfa000000000000000000000000008040"
             };
             Assert.Contains(Rpcs(caster), wire => wire.SequenceEqual(Hex(castStart)));
@@ -1978,13 +1996,21 @@ public class AbilityRefusalFeedbackTests:IDisposable
                 case "swapped while casting": caster.playerInstance.EquippedItemID.setValue(id == 176 ? 2503u : 698u); break;
             }
 
-            if (!starter) Assert.Equal(barrage ? 11 : 13, AbilityStats.Influence(caster, 171));
+            if (!starter) Assert.Equal(barrage ? 11 : fullAuto ? 25 : 13, AbilityStats.Influence(caster, 171));
             AbilityCastInterrupts.FinishDue(caster, castEnd + .01);
             Assert.True(AbilityCooldowns.IsCoolingDown(caster.playerData, id, TimeUtils.GetSimTimeSeconds()));
             var expectedHealth = scenario switch
             {
-                "neutral" => id switch { 126 => 989, 176 => 982, CombatSpecials.ThreeRoundBurst => 910, CombatSpecials.PistolBarrage => 981, _ => 971 },
-                "resisted" => rifle ? 918 : barrage ? 983 : 974,
+                "neutral" => id switch
+                {
+                    126 => 989, 176 => 982, CombatSpecials.ThreeRoundBurst => 910, CombatSpecials.PistolBarrage => 981,
+                    CombatSpecials.FullAuto => 847, CombatSpecials.FullAutoRedux => 813, _ => 971
+                },
+                "resisted" => id switch
+                {
+                    CombatSpecials.ThreeRoundBurst => 918, CombatSpecials.PistolBarrage => 983,
+                    CombatSpecials.FullAuto => 855, CombatSpecials.FullAutoRedux => 823, _ => 974
+                },
                 _ => 1000
             };
             Assert.Equal(expectedHealth, PvpCombat.HealthOf(target));
@@ -2017,19 +2043,28 @@ public class AbilityRefusalFeedbackTests:IDisposable
     [InlineData("different opponent", 176)]
     [InlineData("fight replaced", 176)]
     [InlineData("weapon changes", 176)]
+    [InlineData("same fight", 494)]
+    [InlineData("wrong state", 494)]
+    [InlineData("fight replaced", 494)]
+    [InlineData("same fight", 496)]
+    [InlineData("wrong state", 496)]
+    [InlineData("different opponent", 496)]
+    [InlineData("fight ends", 496)]
+    [InlineData("weapon changes", 496)]
     public void TimedGunSpecialQueuesAgainstTheOriginalInterlock(string scenario, int idValue)
     {
         ushort id = (ushort)idValue;
         bool rifle = id == CombatSpecials.ThreeRoundBurst;
         bool barrage = id == CombatSpecials.PistolBarrage;
         bool starter = id is 126 or 176;
+        bool fullAuto = CombatSpecials.IsFullAuto(id);
         var caster = TimedGunSpecialCaster(id);
         var target = new Mob();
         target.setEntityId(250000);
         target.setDistrict(1);
         target.setHealthC(1000);
         target.setHealthM(1000);
-        target.setLevel(starter ? (byte)19 : (byte)27);
+        target.setLevel(caster.playerInstance.Level.getValue()[0]);
         target.setIsSpawned(true);
         target.setXPos(21550);
         target.setYPos(1095);
@@ -2046,7 +2081,8 @@ public class AbilityRefusalFeedbackTests:IDisposable
         WorldServer.mobs = new System.Collections.ArrayList { target };
 
         var targetEffects = TimedEffects.ForMob(target);
-        if (rifle && scenario != "wrong state") SeedStagger(targetEffects);
+        if ((rifle || fullAuto) && scenario != "wrong state") SeedTimedGunState(id, targetEffects);
+        else if (fullAuto) SeedTimedGunState(id == CombatSpecials.FullAuto ? CombatSpecials.FullAutoRedux : CombatSpecials.FullAuto, targetEffects);
         try
         {
             byte[] request = TimedGunSpecialRequest(id, handle);
@@ -2057,7 +2093,7 @@ public class AbilityRefusalFeedbackTests:IDisposable
                 bool wrongState = scenario == "wrong state";
                 Assert.Equal(AbilityRefusals.Encode(new(id,
                     wrongState ? AbilityRefusals.TargetStateRequired : AbilityRefusals.InvalidTarget,
-                    states: wrongState ? 8u : 0u)), Assert.Single(Rpcs(caster)));
+                    states: wrongState ? (uint)AbilityCatalog.Find(id).Number("Ability/CastRequiredStates") : 0u)), Assert.Single(Rpcs(caster)));
                 Assert.Equal(500, AbilityHandler.CurrentInnerStrength(caster));
                 return;
             }
@@ -2073,12 +2109,16 @@ public class AbilityRefusalFeedbackTests:IDisposable
                 var queued = Assert.IsType<AbilityItem>(original.QueuedAbility);
                 Assert.Equal(id, queued.getAbilityID());
                 Assert.Equal(view.ViewID, original.QueuedAbilityTarget);
-                uint move = id switch { 126 => 9522, 176 => 21083, CombatSpecials.ThreeRoundBurst => 11367, CombatSpecials.PistolBarrage => 9519, _ => 21082 };
+                uint move = id switch
+                {
+                    126 => 9522, 176 => 21083, CombatSpecials.ThreeRoundBurst => 11367, CombatSpecials.PistolBarrage => 9519,
+                    CombatSpecials.FullAuto => 21084, CombatSpecials.FullAutoRedux => 21085, _ => 21082
+                };
                 Assert.Equal(move, CombatAnimations.Special(id, true, CombatTactic.Speed)?.Id);
                 Assert.Null(CombatAnimations.Special(id, false, CombatTactic.Speed));
-                if (rifle || barrage)
-                    Assert.Equal(AbilityStats.Attack(caster, true) + (rifle ? 21 : 15), AbilityStats.SpecialAttack(caster, queued));
-                if (barrage || starter)
+                if (rifle || barrage || fullAuto)
+                    Assert.Equal(AbilityStats.Attack(caster, true) + (rifle ? 21 : fullAuto ? 24 : 15), AbilityStats.SpecialAttack(caster, queued));
+                if (barrage || starter || fullAuto)
                 {
                     Assert.True(handler.CanResolveNpcQueuedAbility(original, queued));
                     view.spawnId++;
@@ -2124,7 +2164,7 @@ public class AbilityRefusalFeedbackTests:IDisposable
         bool rifle = id == CombatSpecials.ThreeRoundBurst;
         bool barrage = id == CombatSpecials.PistolBarrage;
         ushort style = rifle ? CombatStyles.Rifles : barrage || id == 126 ? CombatStyles.Handguns : CombatStyles.SubmachineGuns;
-        byte level = id is 126 or 176 ? (byte)19 : (byte)27;
+        byte level = id is 126 or 176 ? (byte)19 : CombatSpecials.IsFullAuto(id) ? (byte)46 : (byte)27;
         string root = AppContext.BaseDirectory;
         while (!File.Exists(Path.Combine(root, "data", "sector_properties.csv"))) root = Path.GetDirectoryName(root)!;
         SectorProperties.Load(Path.Combine(root, "data", "sector_properties.csv"));
@@ -2154,10 +2194,10 @@ public class AbilityRefusalFeedbackTests:IDisposable
         return caster;
     }
 
-    private static void SeedStagger(TimedEffects.Subject subject)
+    private static void SeedTimedGunState(ushort id, TimedEffects.Subject subject)
     {
-        var stagger = CombatDepthStagger.Effect(30);
-        subject.Effects.Apply(stagger.Ability, TimedEffects.Instantiate(stagger, new Random(1)), TimeUtils.GetSimTimeSeconds());
+        var effect = id == CombatSpecials.FullAutoRedux ? CombatDepthDaze.Effect(30) : CombatDepthStagger.Effect(30);
+        subject.Effects.Apply(effect.Ability, TimedEffects.Instantiate(effect, new Random(1)), TimeUtils.GetSimTimeSeconds());
     }
 
     private static byte[] TimedGunSpecialRequest(ushort id, uint handle)

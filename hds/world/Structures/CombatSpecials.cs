@@ -27,13 +27,18 @@ namespace hds
             HolyWaterPlus = 1023, SilverBulletPlus = 1024, PistolEvasive = 242, WoundingShot = 253, SniperShot = 505;
         public const ushort KilledOnlyByHolyWater = 432, KilledOnlyBySilver = 463, KilledOnlyByWood = 464;
 
-        internal const ushort PistolBarrage = 244, SlidingVolley = 249, ControlledBurst = 250, ThreeRoundBurst = 256;
+        internal const ushort PistolBarrage = 244, SlidingVolley = 249, ControlledBurst = 250, ThreeRoundBurst = 256,
+            FullAuto = 494, FullAutoRedux = 496;
+
+        internal static bool IsFullAuto(ushort? ability) => ability == FullAuto || ability == FullAutoRedux;
 
         internal static bool ProtectsTimedGunCast(ushort ability) =>
-            ability == 126 || ability == 176 || ability == PistolBarrage || ability == ControlledBurst || ability == ThreeRoundBurst;
+            ability == 126 || ability == 176 || ability == PistolBarrage || ability == ControlledBurst ||
+            ability == ThreeRoundBurst || IsFullAuto(ability);
 
         internal static bool KeepsQueuedOpponent(ushort? ability) =>
-            ability == 126 || ability == 176 || ability == SlidingVolley || ability == PistolEvasive || ability == PistolBarrage;
+            ability == 126 || ability == 176 || ability == SlidingVolley || ability == PistolEvasive ||
+            ability == PistolBarrage || IsFullAuto(ability);
 
         internal static bool HasEquippedDualSubmachineGuns(WorldClient caster) =>
             RangedWeapons.GetStats(SharpshooterFreeFire.EquippedWeapon(caster))?.Category == "IWDS";
