@@ -11,7 +11,7 @@
   "abilities": {
     "595": {
       "family": "stock-proxy-master-selected-viral",
-      "note": "PR885 witnesses the selected hostile edge and 6 s Stun with 12 s immunity. The stock elapsed-time report was 4 s from request to landing while the retained GOB and runtime plan use 6 s for the cast. Behavior remains partial for this timing check. https://github.com/kylebrussell/mxo-hd/pull/885#issuecomment-7088896662",
+      "note": "PR885 witnesses the selected hostile edge and 6 s Stun with 12 s immunity. The reported 4 s cast frame uses 55 02, which is Enrage 2.0 (597). Native timing for the 53 02 Stun Pulse cast is pending. The shipped GOB and disposable live cast bar specify 6 s. https://github.com/kylebrussell/mxo-hd/pull/885#issuecomment-7088896662",
       "checks": {
         "controls": {
           "source": "GOB 595 specifies six-second Stun and separate 12-second AddControlImmunityTimer.",
