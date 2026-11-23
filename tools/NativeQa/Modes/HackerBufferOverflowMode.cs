@@ -70,7 +70,7 @@ public sealed class HackerBufferOverflowMode : NativeQaMode
         await recipient.WaitForViewUpdateAsync(2, PvpOpponentsFixture.SelfFlag);
         support.SendRpc(StarterHackerViralSightMode.StockStyle);
         await support.WaitForViewUpdateAsync(2, "02 80 80 80 80 80 10 ee 03 00 00");
-        await SendSupportAsync(support, recipient, StockEnhancement);
+        await SendEnhancementAsync(support, recipient);
         await StockAbilityProfile.ObserveAsync(recipient, 0, frame => StockAbilityProfile.Bonus(frame, Enhancement, 522, 26, 300, false),
             "QAEnemy has the normal 10-point buffer use from Combat Enhancement");
         if (context.StockProbe is not { } actor) return Array.Empty<byte>();
@@ -95,6 +95,9 @@ public sealed class HackerBufferOverflowMode : NativeQaMode
         Check.That(support.Handle == "QAFar" && recipient.Handle == "QAEnemy", "The firewall control is QAFar → QAEnemy only");
         return SendSupportAsync(support, recipient, StockFirewall);
     }
+
+    internal static Task SendEnhancementAsync(HeadlessPlayer support, HeadlessPlayer recipient) =>
+        SendSupportAsync(support, recipient, StockEnhancement);
 
     private static async Task SendSupportAsync(HeadlessPlayer support, HeadlessPlayer recipient, string request)
     {

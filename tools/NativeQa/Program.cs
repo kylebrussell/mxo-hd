@@ -386,7 +386,7 @@ try
                     result = await NativeQa.Modes.DisablingShotMode.ProbeAsync(actor);
                 else if (fixtureMode is NativeQa.Modes.ImmobilizingShotMode && (action is "immobilizing-fire" or "immobilizing-break"))
                     await NativeQa.Modes.ImmobilizingShotMode.FireAsync(actor, "CSR_Tester", followWithDamage: action == "immobilizing-break");
-                else if (fixtureMode is NativeQa.Modes.HackerBufferOverflowMode && action == "buffer-firewall")
+                else if (fixtureMode is NativeQa.Modes.HackerBufferOverflowMode or NativeQa.Modes.HackerAdvancedBufferMode && action == "buffer-firewall")
                     await NativeQa.Modes.HackerBufferOverflowMode.SendFirewallAsync(actor, helpers["QAEnemy"]);
                 else if (action == "stop") actor.SendRpc("44 00");
                 else if (fixtureMode is NativeQa.Modes.DualSmgConeOpenersMode && action == "cone-move")

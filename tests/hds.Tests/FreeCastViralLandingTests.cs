@@ -40,6 +40,123 @@ public class FreeCastViralLandingTests : IDisposable
     }
 
     [Theory]
+    [InlineData(481, 2, 14, 47, 30, 60, false)]
+    [InlineData(488, 4, 16, 50, 10, 50, true)]
+    public void OwnedBufferInterferenceRequiresItsBoundEnemyAndRunsAuthoredCallbacks(ushort id, int castSeconds,
+        int range, int cost, int reuse, int duration, bool removesUpgrade)
+    {
+        var caster = Client(110);
+        var enemy = Client(111);
+        caster.playerData.setEntityId(85000110);
+        enemy.playerData.setEntityId(85000111);
+        enemy.playerInstance.Level.setValue((byte)1);
+        caster.playerData.pvpFlag = enemy.playerData.pvpFlag = true;
+        caster.playerInstance.OrganizationID.setValue((byte)1);
+        enemy.playerInstance.OrganizationID.setValue((byte)2);
+        caster.playerInstance.InnerStrengthMax.setValue((ushort)1000);
+        caster.playerInstance.InnerStrengthAvailable.setValue((ushort)400);
+        enemy.playerInstance.InnerStrengthMax.setValue((ushort)1000);
+        enemy.playerInstance.InnerStrengthAvailable.setValue((ushort)200);
+        caster.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(17000, 495, 8100));
+        enemy.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(17000, 495, 7900));
+        var view = caster.viewMan.addView(enemy.playerData.getEntityId(), 1);
+        view.viewCreated = true;
+        Environment.SetEnvironmentVariable("MXO_FREECAST_VIRAL_QA_ATTACK15", "32766");
+        Environment.SetEnvironmentVariable("MXO_FREECAST_VIRAL_QA_DEFENSE15", "0");
+        Store.currentClient = caster;
+        var world = Store.world;
+        try
+        {
+            Store.world = (WorldServer)RuntimeHelpers.GetUninitializedObject(typeof(WorldServer));
+            Assert.True(AbilityBuffs.Apply(enemy, 173));
+            Assert.Equal(104, AbilityBuffBuffer.Maximum(enemy));
+            Assert.Equal(10, AbilityBuffBuffer.Used(enemy));
+            Assert.True(AbilityBuffBuffer.CanApply(enemy, 319));
+            // Constructed handler input. The NativeQa replay uses only retained exact 173 and 319 controls.
+            var request = new byte[41];
+            BitConverter.GetBytes(id).CopyTo(request, 0);
+            BitConverter.GetBytes(view.ViewID).CopyTo(request, 2);
+            BitConverter.GetBytes((ushort)view.spawnId).CopyTo(request, 4);
+            var handler = new AbilityHandler();
+            AssertRefusal(AbilityRefusals.NotLoaded);
+
+            ushort[] roots = { 2, 17, CombatStyles.HackerStyle, 481, 488 };
+            var loadout = roots.Concat(roots.SelectMany(root => AbilityPrerequisites.Current.Closure(root).Keys)).Distinct()
+                .Select(ability => (ability, (ushort)50)).ToArray();
+            Assert.Equal(98, loadout.Sum(row => AbilityMemory.Cost(row.ability)));
+            AbilityPassives.SetLoaded(caster, loadout);
+            AssertRefusal(AbilityRefusals.WrongStyle);
+            CombatStyles.Select(caster, CombatStyles.HackerStyle);
+            enemy.playerInstance.OrganizationID.setValue((byte)1);
+            AssertRefusal(AbilityRefusals.InvalidTarget);
+            enemy.playerInstance.OrganizationID.setValue((byte)2);
+            enemy.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(17000, 495, 8100 - range * 100 - 1));
+            AssertRefusal(AbilityRefusals.TargetOutOfRange);
+            enemy.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(17000, 495, 7900));
+
+            double end = StartCast(400 - cost);
+            view.spawnId++;
+            AbilityCastInterrupts.FinishDue(caster, end);
+            Assert.Empty(TimedEffects.ForPlayer(enemy).Effects.Snapshot());
+            Assert.True(AbilityBuffs.IsActive(enemy, 173));
+
+            // A fresh request may bind to the new spawn once the first attempt's reuse has elapsed.
+            caster.playerData.cooldownEndsAt.Clear();
+            caster.playerData.castEndsAt = -1;
+            caster.playerData.lastAbilityTime = double.NegativeInfinity;
+            BitConverter.GetBytes((ushort)view.spawnId).CopyTo(request, 4);
+            end = StartCast(400 - 2 * cost);
+            double beforeLanding = TimeUtils.GetSimTimeSeconds();
+            AbilityCastInterrupts.FinishDue(caster, end);
+            Assert.True(AbilityCooldowns.TryGet(id, out var timer));
+            Assert.Equal(reuse, timer.Seconds);
+            Assert.True(AbilityCooldowns.IsCoolingDown(caster.playerData, id, TimeUtils.GetSimTimeSeconds()));
+            var debuff = Assert.Single(TimedEffects.ForPlayer(enemy).Effects.Snapshot());
+            Assert.Equal(id, debuff.Parent);
+            Assert.Equal(150, debuff.Value);
+            Assert.Equal(duration, debuff.Seconds);
+            Assert.Equal(removesUpgrade ? 104 : 94, AbilityBuffBuffer.Reserved(enemy));
+            Assert.False(AbilityBuffBuffer.CanApply(enemy, 319));
+            Assert.Equal(!removesUpgrade, AbilityBuffs.IsActive(enemy, 173));
+            Assert.Equal(200, AbilityHandler.CurrentInnerStrength(enemy));
+            Assert.Equal(1000, PvpCombat.HealthOf(enemy));
+            TimedEffects.RunDue(beforeLanding + duration + 1);
+            Assert.Equal(0, AbilityBuffBuffer.Reserved(enemy));
+            Assert.True(AbilityBuffBuffer.CanApply(enemy, 319));
+            Assert.Empty(TimedEffects.ForPlayer(enemy).Effects.Snapshot());
+
+            void AssertRefusal(uint reason)
+            {
+                caster.messageQueue.RPCMessagesQueue.Clear();
+                handler.ProcessAbility(ref request);
+                byte[] refusal = AbilityRefusals.Encode(new AbilityRefusals.Record(id, reason));
+                Assert.Contains(caster.messageQueue.RPCMessagesQueue.Cast<SequencedMessage>(), message => message.content.AsSpan(1).SequenceEqual(refusal));
+                Assert.Equal(400, AbilityHandler.CurrentInnerStrength(caster));
+                Assert.False(AbilityCooldowns.IsCoolingDown(caster.playerData, id, TimeUtils.GetSimTimeSeconds()));
+            }
+
+            double StartCast(int innerStrength)
+            {
+                caster.messageQueue.RPCMessagesQueue.Clear();
+                double start = TimeUtils.GetSimTimeSeconds();
+                handler.ProcessAbility(ref request);
+                double ends = caster.playerData.castEndsAt;
+                Assert.True(ends > start, string.Join(" ", caster.messageQueue.RPCMessagesQueue.Cast<SequencedMessage>()
+                    .Select(message => Convert.ToHexString(message.content))));
+                Assert.InRange(ends, start + castSeconds, TimeUtils.GetSimTimeSeconds() + castSeconds);
+                Assert.Equal(innerStrength, AbilityHandler.CurrentInnerStrength(caster));
+                return ends;
+            }
+        }
+        finally
+        {
+            TimedEffects.Clear(TimedEffects.ForPlayer(enemy));
+            AbilityBuffs.RemoveAll(enemy);
+            Store.world = world;
+        }
+    }
+
+    [Theory]
     [InlineData(238, 0, true, 46)]
     [InlineData(311, 0, true, 43)]
     [InlineData(312, 0, true, 55)]
