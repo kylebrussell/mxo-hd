@@ -255,7 +255,7 @@ public class AbilityHostileTests
 
     [Theory]
     [InlineData(473, 4f, 8f, -80)]
-    [InlineData(479, 10.02f, 12f, -100)]
+    [InlineData(479, 6f, 12f, -80)]
     public void SelectedHighRankPacifyRetainsTheSeparateNaturalStateAndImmunityExpiry(ushort id, float stateSeconds,
         float immunitySeconds, int resistance)
     {

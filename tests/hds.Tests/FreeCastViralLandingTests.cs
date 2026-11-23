@@ -1185,7 +1185,7 @@ public class FreeCastViralLandingTests : IDisposable
     [InlineData(462, 6, TempMods.EnrageAbility, 0)]
     [InlineData(467, 7, 117, -30)]
     [InlineData(473, 4, 157, -80)]
-    [InlineData(479, 6, 157, -100)]
+    [InlineData(479, 6, 157, -80)]
     [InlineData(1088, 5, 157, -120)]
     [InlineData(333, 4, TempMods.StunAbility, 0)]
     [InlineData(343, 5, 1009, -21)]
