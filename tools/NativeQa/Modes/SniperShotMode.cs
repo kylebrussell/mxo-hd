@@ -42,7 +42,7 @@ public sealed class SniperShotMode : NativeQaMode
             "Select Rifles and QAEnemy at PICK. Try slot 3 while exposed. Expect a local Concealment refusal or reason 23 if it sends. Then activate slot 2. " +
                 "Keep the selection without Escape. Try 505 from the printed BLOCK then the printed FAR. Expect sight/range refusal or reason 9/34, with no shot debit, cast or timer.",
             "Return to PICK. Keep 1137 active and press slot 3. Capture the complete direct stock 505 request. Expect 1137 off at cast start, 60 IS (480 to 420), " +
-                "6 s bar, 51 neutral Ballistic damage (base 47 with Rifle +8 and Concealment +2 influence), and 45 s own reuse. A natural proc gives 4 s of Stun and its own 4 s immunity. Do not require the 50% roll.",
+                "6 s bar, 51 neutral Ballistic damage (base 47 with Rifle +8 and Concealment +2 influence), and 45 s own reuse. A completed roll may apply Stun for 4 s. The helper PacketLog should show the 505 marker retiring before Stun 102, linked Combat Tactics 163 -20, and the separate 4 s immunity 734/681.",
             "If only a different request is sent, record that result and leave 505 partial. Slot 4 is the already-captured 504 control. No interlock choreography or retail numeric damage contest is claimed."
         });
 

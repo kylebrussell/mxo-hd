@@ -7,14 +7,17 @@ namespace hds
     /// The fixed value is passed directly to addStateMod/addTempMod by the script.</summary>
     public static class AbilityConditionalControls
     {
-        // Proxy_003 PvP 8690–8699 shows Pistol Aerial's terminal marker, stun and immunity on a successful roll.
+        // Proxy_003 login, 20131-20178 and 20689-20694, records the Sniper Shot victim's linked Stun stack.
         internal const ushort PistolAerial = 243;
 
-        internal static bool IsPistolAerialMarker(TimedEffects.Active mod) =>
-            mod.Parent == PistolAerial && mod.Proc == TempMods.Proc.Terminal;
+        internal static bool HasCapturedStunStack(ushort ability) =>
+            ability is PistolAerial or CombatSpecials.SniperShot;
+
+        internal static bool IsCapturedStunMarker(TimedEffects.Active modifier) =>
+            HasCapturedStunStack(modifier.Parent) && modifier.Proc == TempMods.Proc.Terminal;
 
         private static bool UsesStunCombatTactics(ushort source) =>
-            source == PistolAerial || source == CombatSpecials.ThreeRoundBurst;
+            HasCapturedStunStack(source) || source == CombatSpecials.ThreeRoundBurst;
 
         internal static bool IsLinkedStunTactics(TimedEffects.Active mod) =>
             UsesStunCombatTactics(mod.Parent) && mod.Proc == TempMods.Proc.Stat && mod.Target == TempMods.CombatTacticsAbility;
@@ -82,9 +85,11 @@ namespace hds
                     m.Component == "CombatTacticsMod" && m.Target == TempMods.CombatTacticsAbility &&
                     m.Number("WhenEnabled") == 2 && m.Number("DurationType") == 2);
                 if (AbilityValues.TryValue(tactics, 0, 0, out int penalty))
+                {
                     added.Add(new TimedEffects.Active { Kind = TempMods.KindStat, Target = tactics.Target,
                         Value = penalty, Seconds = stun.Seconds, Proc = TempMods.Proc.Stat, Caster = marker.Caster,
                         CasterName = marker.CasterName, TargetView = marker.TargetView });
+                }
             }
             var replaced = subject.Effects.Apply(marker.Parent, added, now, preserveOtherTargets: true);
             // An expired timer may still be in the holder until the next server sweep.
