@@ -1,0 +1,50 @@
+{
+  "notes": {
+    "scope": "These are the 969/970 tool-session grants from 277 and 37. Their zero-value CraftingPlaceHolder 968 link controls the tool window. The separate 60 and 81 2e recipe and economy paths retain their coverage limits. Damage and other casts retain their separately documented interruption policy.",
+    "PR584": "Stock Writer and Compiler opened through the bag tool and closed with the matching exclusive off record. The native result is in the PR body. https://github.com/kylebrussell/mxo-hd/pull/584",
+    "PR690": "Stock unload and reload close both matching 968 records and reset stance. An interrupted compile leaves both currency and the charge unchanged after its pending deadline. A separately authorized fresh attempt succeeds with a single charge and debit. https://github.com/kylebrussell/mxo-hd/pull/690#issuecomment-7067980687",
+    "PR751": "Stock users activated each bag tool. The distinct timed Compiler contest fails for Health Boost with the charge retained. The separately authorized Writer creates the Health Pill code, which the Compiler subsequently materializes with the recorded Info and charge debit. https://github.com/kylebrussell/mxo-hd/pull/751#issuecomment-7080474443",
+    "retail movement": "research/packet-dumps/community-intake/20260607T003822Z-hdneo-mxopackets1-combat-ability-selected/logs/actions_combat_marketplace_abilitychangecoder.log.txt:65987–66052 records the original Writer reply order: changed-position 03, stance 00, 970/968 linked and exclusive off, then the client 81 1a. The stock PR986 comment confirms the visible movement close without a manual click; it does not independently decode the request/reply order.",
+    "PR986": "Exact stock pass at fd0e1e25. Analyser was in bag slot 3 and Compiler in slot 2 in this run. The Writer remained open when turning in place and ended on a short step. Compiler movement canceled a pending 37.5 s compile, with a single 61 01 and no materialization, charge or Info debit. https://github.com/kylebrussell/mxo-hd/pull/986#issuecomment-7102716620"
+  },
+  "abilities": {
+    "969": {
+      "checks": {
+        "stats": {
+          "source": "Shipped GOB 969 has a while-enabled modifier targeting 968 with no stored MinValue, MaxValue, or value function. GOB 968 and data/abilityIDs.csv name the class-2 resource CraftingPlaceHolder. The tracked 621e123c–621e1276 dispatcher opens the Compiler from linked target 968 and source 969. Its close handler at 620806f0–62080738 reads that same pair. See docs/COMPILE-ITEMS.md.",
+          "runtime": "CraftingSession.Record emits kind 0x1d with source 969, target 968 and zero duration and value. The on record is bound to the selected owned Compiler slot and the same record is removed on session end.",
+          "test": "CompileSessionTests.NativeToolStartAndWindowCloseUseTheSameSlotWithDistinctFlags and SessionAuthorityCannotSurviveToolLoadoutWorldOrEligibilityChanges verify the flag decoder and exact numeric linked record. StarterCoderInventoryLifecycleMode verifies linked and exclusive on/off and posture, alongside the stock result in PR584. Stock PR690 sees 969/968 add and remove across live Compiler activation and parent unload. https://github.com/kylebrussell/mxo-hd/pull/690#issuecomment-7067980687"
+        },
+        "behavior-tests": {
+          "source": "GOB 969 is noncombat, tool-required, UI, exclusive and toggle-enabled. Tool 1271 and the 620806f0 client close path bind flag1 and flag0 to one bag slot. crafting.py CompileActivate_Subject and CompileActivate_Deactivate pair the typing and standing idle transitions.",
+          "runtime": "CraftingSession binds the Compiler to the exact tool slot, available grant, player/world state and active session. It handles duplicate start without duplicate records, denies wrong tool or wrong slot, revokes on invalidation and never spends supplies simply to open or close.",
+          "test": "CompileSessionAuthority and StarterCoderInventoryLifecycleMode exercise wrong tool, duplicate start, slot-bound close, zone/control/inventory eligibility and free activation. Native PR584 observes both open/close transitions. PR690 observes active-parent unload, no stale result, reload and the next authorized compile. https://github.com/kylebrussell/mxo-hd/pull/690#issuecomment-7067980687 PR986 observes a live pending Compile moving to one 61 01, stance 00 and matching modifier removal; the original deadline passes without materialization and reopening shows one charge and 17000 Info. https://github.com/kylebrussell/mxo-hd/pull/986#issuecomment-7102716620"
+        },
+        "source-parity": {
+          "source": "Shipped 969 starts the Compiler through tool 1271, an exclusive linked 968 record and typing idle. Compiler and Writer use corresponding tool open and close handlers, the zero-value linked record shape and the same typing lifetime. The retained Writer movement sequence at research/packet-dumps/community-intake/20260607T003822Z-hdneo-mxopackets1-combat-ability-selected/logs/actions_combat_marketplace_abilitychangecoder.log.txt:65987–66052 pins acceptance, standing and linked/exclusive cleanup before the later Writer close message.",
+          "runtime": "Ordinary accepted movement ends the shared CraftingSession only when coordinates change. The Compiler emits one linked 969/968 removal, standing and exclusive off. An in-flight ordinary compile ends with failure 61 01 without committing its Info, code or materialization.",
+          "test": "CompileSessionAuthority proves yaw and same-position negative controls and the accepted displacement path without a close RPC, then verifies one failure and unchanged Info, charge and inventory after the original timer. PR986 exact native verifies a short step closes the Compiler and cancels a pending Health Boost 3.0 while retaining its charge and 17000 Info. https://github.com/kylebrussell/mxo-hd/pull/986#issuecomment-7102716620"
+        }
+      }
+    },
+    "970": {
+      "checks": {
+        "stats": {
+          "source": "Shipped GOB 970 has a while-enabled modifier targeting the same class-2 CraftingPlaceHolder 968 with no stored value. At 621d0ad0–621d0b58 the tracked client dispatches source 970 plus linked target 968 to the Writer. Its close handler at 62087e20–62087e68 reads (970,968). See docs/WRITE-CODE.md.",
+          "runtime": "CraftingSession.Record publishes one zero-value linked record from 970 to 968 for the active Analyser and removes the same record on close or invalidation.",
+          "test": "CompileSessionTests verifies the shared zero-duration and zero-value layout. WriterSessionAuthority and StarterCoderInventoryLifecycleMode check the exact Writer source and linked pair at activation/removal; PR690 verifies its record and typing stance change with the stock window. https://github.com/kylebrussell/mxo-hd/pull/690#issuecomment-7067980687"
+        },
+        "behavior-tests": {
+          "source": "GOB 970 is an exclusive UI grant of 37 bound to the Code Analyser tool 531. The client uses bag Activate Item, flag1, exact tool slot and matching flag0 plus its 81 1a close path. It stores CastValidTarget0, distinct from the 81 31 inventory-target route. The subject, deactivate and termination scripts control typing idle.",
+          "runtime": "CraftingSession validates the owned tool and loaded 970 grant, excludes the Compiler while active and preserves standing state when no longer typing. It ends the Writer for an invalidated tool, loadout or world. An ordinary ability cast or inventory-target request cannot open the Writer.",
+          "test": "WriterSessionAuthority exercises both close paths, exclusivity, invalid slots, duplicate activation, damage, ability/stance changes, tool loss and grant unload; WriterSessionDevDisabled checks the fixture helper's permissions. PR584 observes ordinary Writer open/close. PR690 observes unload teardown, reload and bag reactivation. https://github.com/kylebrussell/mxo-hd/pull/690#issuecomment-7067980687 PR986 exact native sees a turn without closing, a normal step closing with stance 00, and a matching explicit close after reopening. https://github.com/kylebrussell/mxo-hd/pull/986#issuecomment-7102716620"
+        },
+        "source-parity": {
+          "source": "research/packet-dumps/community-intake/20260607T003822Z-hdneo-mxopackets1-combat-ability-selected/logs/actions_combat_marketplace_abilitychangecoder.log.txt:65987–66052 contains the exact retail Writer movement sequence: accepted changed-position 03, standing 00, linked 970/968 and exclusive off, then client 81 1a. GOB 970 and the shipped WriteCodeActivateTerm use the same typing lifetime.",
+          "runtime": "The ordinary self-position handler ends the active Writer on real accepted displacement rather than waiting for the client window-close RPC. CraftingSession restores standing once, removes the same identifying linked record, and makes the subsequent close idempotent.",
+          "test": "WriterSessionAuthority observes a new stance 00 and one linked and exclusive off before it sends 81 1a, with only one removal after it. PR986 exact native observes that turning in place leaves the window intact, a short step clears record 280 and returns to stance 00, and explicit close clears distinct reopened record 281. https://github.com/kylebrussell/mxo-hd/pull/986#issuecomment-7102716620"
+        }
+      }
+    }
+  }
+}
