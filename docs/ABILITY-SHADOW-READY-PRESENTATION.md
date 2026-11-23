@@ -1,6 +1,6 @@
-# Shadow290 to1117: ready-gated presentation candidate
+# Shadow 290 to 1117: ready-gated presentation
 
-This candidate presents the exact stored290→1117 grant after the existing normal world-ready event. It is **not a claimed native UI fix**. It changes no archive ownership, memory admission, source level, effect formula, timer, combat or detection rule. Historical25 capture-qualified zero relations, native-tool175→1116 and scaled151→1111 retain separate qualifications and packet sequences.
+Shadow presents the stored 290→1117 grant after the normal world-ready event. PR247 native QA on `fa0a382f` confirmed Shadow Upgrade under Actions > Abilities > Shadow on first entry, normal hotbar activation and listing after relog. The grant keeps the original archive ownership, memory rules and source level. The game tests for tool 175→1116 and scaled Sneak 151→1111 keep their separate scopes. [PR247](https://github.com/kylebrussell/mxo-hd/pull/247).
 
 ## Primary contract and open boundary
 
@@ -18,16 +18,15 @@ The late base projection is explicit owned+loaded1117 at its actual level/slot w
 
 Exact ready, world/transport fencing, current owner and loaded generation control publication. Early ordinary rows do not suppress the required late owned-base replay on ready; repeated ready is idempotent. A new world/transport/owner must receive its own ready signal. This is presentation state only: it is not an archive, memory or active-buff policy change.
 
-## Native one-pass gate — Claude only
+## Stock grant lifecycle
 
-Use discovered mode `shadow-ready-presentation`, disposable CSR110 only. The normal175/290 prerequisite closure is46/100 memory; neither1116 nor1117 is archived. No dev/GM/RNG control is enabled. Read-only fixture-plan/build-info do not reset or prove native behavior.
+Use `shadow-ready-presentation` with disposable CSR110 at Mara Northwest hardline (7800, 95, 13795). The normal 175/290 prerequisites use 46/100 memory. Neither 1116 nor 1117 is archived. The fixture prints a verified `PICK` teleport for returning to the booth, and all grant and Archive checks use the stock UI. No NPC selection is needed.
 
-1. On first normal entry, before any load/unload workaround, inspect Actions > Abilities for the actual granted Shadow1117. Record whether the row is present and usable. Do not guess a deeper folder. If absent or unusable, **STOP/HOLD** and retain evidence; do not invoke hidden1117 or seed an archive row.
-2. Only if visible, put that actual visible action on the hotbar and activate normally. Retain the outgoing request, live before/after IS and actual20IS debit, and sourced1117 Type15 target644/value+3. A packet or helper value alone is not an Actions listing pass.
-3. Retain original Margin owned/loaded rows, early and late1117 base level/slot/containing sequence and ACK, own2 creation, and qualified exact0c01 decode. If the parser cannot decode a boundary, preserve that limitation. Type45 add alone is not visibility proof.
-4. Only after listing and ordinary activation succeed, normal parent unload/reload and world reentry may check current visibility/cleanup. Preserve the native files before teardown. The separately owned belt460 is for its existing Actions > Tools route; bag Activate is not authored for it. This package does not import the unmerged644 duration consumer or claim130/133-second duration parity.
+1. On first normal entry, check Actions > Abilities > Shadow for exactly one Shadow Upgrade. Stop if it is absent. Drag the visible action to a free hotbar slot and press it once to confirm an ordinary 1117 activation and a 20 IS debit.
+2. Right-click the hardline, choose Abilities and unload the loaded Shadow (290) in the stock manager. Expect memory 46 to 43 and Shadow Upgrade gone from Actions. Reload the owned Shadow from Archive. Expect memory 43 to 46 and one Shadow Upgrade back in Actions.
+3. With Shadow loaded, relog normally. Confirm one Shadow Upgrade on the first Actions open. Keep the native grant and Archive packets, screenshots or equivalent observations.
 
-Native visibility is still unproved. Existing native239 absence remains a failure, not a successful activation. The separately qualified protocol/state results below do not replace the first-entry Actions listing STOP gate.
+PR247's stock run did not include parent unload and reload. The current bootstrap checks that transition on the actual ranked CSR fixture and verifies exact late publication, duplicate-ready idempotence, original owned rows, and real relog. It sends no 1117 cast. The native check covers only the parent grant (290). Child 1117 tuning and duration remain separate.
 # Normal-wire qualification candidate
 
 The `shadow-ready-presentation` headless case enters with automatic loading-complete disabled. It uses a current-session own03 and feature-response barrier, then checks code-only `0c` and `0c00` publish no1117 base/relation. Exact `0c01` must emit late zero/520 base before Type45 ADD; duplicate complete is idempotent. Normal290 unload/reload uses the actual Margin07 slot and existing80ae loadout request, observes committed loaded flags, and checks the defined Shadow OFF-before-unload order. Other175/151 records remain byte-identical. A normal logout,33-second reservation wait and cold replacement repeat the ready sequence under an exact source pin. SQL ownership/levels/slots remain unchanged and1117 is never archived or invoked. This is protocol/state evidence only and does not prove native listing.
