@@ -343,8 +343,12 @@ namespace hds
 
                 return "You cannot sneak while an enemy is watching."; // InitialSneakTest
             }
-            if (def.Kind == Kind.Disguise && EnemyWatching(client, InvisibilityProximityUnits))
+            if (def.Kind == Kind.Disguise && DisguiseWatcher(client) is string watcher)
+            {
+                reason = AbilityRefusals.NoClientMessage;
+                Output.WriteDebugLog($"[STEALTH] Disguise watcher {watcher} refuses {TimedEffects.PlayerName(client)}");
                 return "You cannot disguise while an enemy is watching.";
+            }
             if (def.Kind == Kind.Invisibility && EnemyWatching(client, InvisibilityProximityUnits, ignoreBlinded: true))
             {
                 // InvisibilityGrant_Test supplies the proximity message itself. Keep the 80 ba response silent.
@@ -364,8 +368,8 @@ namespace hds
                 uint model = AbilityDisguise.ModelFor(client, toolSlot);
                 if (model != 0 && Refusal(client,id,targetView,out _) == null)
                 {
-                    foreach (ushort aura in AbilityAuras.Active(client)) AbilityAuras.Stop(client,aura);
-                    Begin(client, Defs[id], AbilityLevel(client,id), model);
+                    if (Begin(client, Defs[id], AbilityLevel(client, id), model) != null)
+                        StopStealthAuras(client);
                 }
                 return;
             }
@@ -728,6 +732,41 @@ namespace hds
 
         /// <summary>InitialSneakTest / InvisibilityGrant_Test: an enemy in range, facing the player (floor-mesh sight approximation; see NavMesh.HasSightPath).</summary>
         public static bool EnemyWatching(WorldClient client, double range, bool ignoreBlinded = false) => EnemiesFacing(client, range, ignoreBlinded).Any();
+
+        private static string DisguiseWatcher(WorldClient client)
+        {
+            foreach (var (other, _) in EnemiesFacing(client, InvisibilityProximityUnits, ignoreBlinded: false))
+                return TimedEffects.PlayerName(other);
+
+            Position(client, out double x, out double y, out double z);
+            ushort district = (ushort)client.playerData.getDistrictId();
+            int level = client.playerInstance.Level.getValue()[0];
+            Mob[] candidates;
+            lock (WorldServer.mobs.SyncRoot)
+                candidates = WorldServer.mobs.Cast<Mob>().Where(mob => mob.getDistrict() == district &&
+                    !mob.isFriendly && !mob.PassiveTarget && !mob.getIsDead() && mob.getIsSpawned() &&
+                    MobBehaviour.WillingAtLevels(mob.aggroKind, mob.getLevel(), level)).ToArray();
+
+            foreach (var mob in candidates)
+            {
+                if (mob.missionInstance != 0 &&
+                    !ReferenceEquals(MissionRuntime.FindMissionMob(client.playerData, mob.getEntityId()), mob))
+                    continue;
+                if (DisguiseWatchGeometry(district, mob.getXPos(), mob.getYPos(), mob.getZPos(),
+                    (byte)mob.getRotation(), x, y, z))
+                    return mob.getName();
+            }
+            return null;
+        }
+
+        internal static bool DisguiseWatchGeometry(ushort district, double ox, double oy, double oz, byte yaw,
+            double x, double y, double z)
+        {
+            double dx = ox - x, dz = oz - z;
+            return dx * dx + dz * dz <= InvisibilityProximityUnits * InvisibilityProximityUnits &&
+                MobAggro.SameFloor(oy, y) && InFrustum(ox, oz, yaw, x, z) &&
+                NavMesh.HasSightPath(district, ox, oy, oz, x, y, z);
+        }
 
         /// <summary>Degrees between the observer's facing (its yaw byte) and the direction to the target, 0..180.</summary>
         public static double DegreesOff(double ox, double oz, byte yaw, double tx, double tz)
