@@ -43,6 +43,71 @@ public class SharpshooterFreeFireTests
         a.playerData.worldChangePending=true;Assert.Equal(0,SharpshooterFreeFire.NpcOpponents(m,a));m.setIsDead(true);Assert.Equal(0,SharpshooterFreeFire.NpcOpponents(m,b));
     }
     private static void Set(object value,string field,object data)=>value.GetType().GetField(field,BindingFlags.NonPublic|BindingFlags.Instance)!.SetValue(value,data);
+    [Fact]
+    public void OrdinaryNpcGunPairReadsLiveCrowdAndIgnoresStaleMembership()
+    {
+        var player = Client();
+        var helper = Client();
+        var bystander = Client();
+        var mob = Npc();
+        mob.setXPos(300);
+        mob.setYPos(495);
+        mob.setZPos(100);
+        player.playerInstance.EquippedItemID.setValue(692u);
+        var previousClients = WorldServer.Clients;
+        WorldServer.Clients = new Dictionary<string, WorldClient>();
+        var playerHandler = CombatManager.GetHandler(player);
+        var helperHandler = CombatManager.GetHandler(helper);
+        var playerFight = new CombatSession(player, mob, 1, CombatSession.CombatType.Melee);
+        var helperFight = new CombatSession(helper, mob, 2, CombatSession.CombatType.Ranged);
+        Set(playerFight, "<IsActive>k__BackingField", true);
+        Set(helperFight, "<IsActive>k__BackingField", true);
+        Set(playerHandler, "currentSession", playerFight);
+        Set(helperHandler, "currentSession", helperFight);
+
+        try
+        {
+            mob.setCombatTarget(player);
+            AssertInput(-15, 1, loaded: false);
+            mob.setCombatTarget(helper);
+            mob.setCombatTarget(bystander);
+            mob.setCombatTarget(player);
+            AssertInput(-30, 2, loaded: false);
+            player.playerData.passives.Loaded[148] = 19;
+            AssertInput(0, 2, loaded: true);
+            player.playerData.passives.Loaded.Remove(148);
+            AssertInput(-30, 2, loaded: false);
+
+            Set(helperFight, "<IsActive>k__BackingField", false);
+            AssertInput(-15, 1, loaded: false);
+            Set(helperFight, "<IsActive>k__BackingField", true);
+            helper.playerData.worldGeneration++;
+            AssertInput(-15, 1, loaded: false);
+            mob.setCombatTarget(helper);
+            Assert.Null(CombatHandler.NpcInterlockGunAdjustment(playerFight));
+            mob.setCombatTarget(player);
+            mob.setXPos(401);
+            Assert.Null(CombatHandler.NpcInterlockGunAdjustment(playerFight));
+        }
+        finally
+        {
+            Set(playerHandler, "currentSession", null);
+            Set(helperHandler, "currentSession", null);
+            try
+            {
+                CombatManager.RemoveClient(player);
+                CombatManager.RemoveClient(helper);
+            }
+            finally { WorldServer.Clients = previousClients; }
+        }
+
+        void AssertInput(int modifier, int opponents, bool loaded)
+        {
+            Assert.Equal((RangedWeapons.ClassRifle, loaded, modifier, opponents),
+                CombatHandler.NpcInterlockGunAdjustment(playerFight));
+        }
+    }
+
     [Fact]public void PlayerCountsDeduplicateLiveGunfireAndRejectEndedDeadOffworldOrOtherTargets()
     {
         var target=Client();var other=Client();var a=Client();var b=Client();var unrelated=Client();var handlers=new List<CombatHandler>();
