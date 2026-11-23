@@ -6,7 +6,8 @@ namespace NativeQa.Modes;
 
 public sealed class HackerArtilleristAreaMode : NativeQaMode
 {
-    private const int Level = 30, X = 17000, Y = 495, Z = 6400, Centre = 6900, Refusal = 8001, StartingIs = 600, Resistance = 45;
+    private const int Level = 30, X = 17000, Y = 495, Z = 6400, Centre = 6900, Refusal = 8001, StartingIs = 600;
+    internal const int Resistance = 45;
     private const ushort Style = CombatStyles.HackerStyle, EmptyMind = 8, ViralResistance = 157;
     // Stock 42 payloads from actions_combat_marketplace_abilitychangecoder.log lines 11161 and 12676.
     private const string StockSpeed = "42000000000000", StockPower = "42010000000000";
@@ -50,7 +51,8 @@ public sealed class HackerArtilleristAreaMode : NativeQaMode
             "Select Hacker Style in page 2 slot 1. Try slots 2 and 3 with no target, then on /target QAFriend and /target QAOther. If sent, the stock request is refused with 24 or 34 before cast, debit or reuse. Return to /target QAEnemy.",
             $$"""Move helpers using {"actor":"QAFar","action":"move","x":{{X}},"y":{{Y}},"z":7200} and {"actor":"QAOther","action":"move","x":{{X}},"y":{{Y}},"z":7201}. Press slot 2 (336). Expect 4 s cast, 13 IS (600→587) and 2 s own/shared 682. [PVP] damages only QAEnemy and the 3.00 m edge QAFar. QAOther at 3.01 m and the nearby ally take no damage.""",
             "Move QAFar/QAOther the same way to z7400/z7401. Keep QAEnemy selected and press slot 3 (337). Expect 4 s cast, 17 IS (587→570) and 2 s own/shared 683. [PVP] damages QAEnemy and QAFar at 5.00 m only. Neither cast changes maximum vitals or starts an interlock.",
-            "Dedicated Code cuts the 14/18 base costs by 9 percent. With +30 Viral Damage from Style and the loaded profile, the current capture-calibrated model gives 345–419 for 336 and 367–449 for 337. Record area separately from the open damage source check. The historical level-50 capture reported pre-resistance damage 260/280 and 300/360."
+            "Dedicated Code cuts the 14/18 base costs by 9 percent. With +30 Viral Damage from Style and the loaded profile, the current capture-calibrated model gives 345–419 for 336 and 367–449 for 337 on Speed. The historical level-50 capture reported pre-resistance damage 260/280 and 300/360.",
+            """For the typed resistance check, leave QAEnemy selected with the 5 m stands. Send {"actor":"QAFar","action":"aura-resist"} and confirm source 8 stat 157 +45 for 20 s. Start 337, then click the stock Power tactic during the four-second cast. The selected target receives 440–538 before resistance. Only QAFar has [TYPED-RESISTANCE OURS] 337 type2 total45 and reduced damage. After the matching source 8 removal, switch to Speed and cast again; both targets receive an unmitigated Speed roll. Record this control separately from the historical base-damage calculation."""
         });
 
     public override async Task<byte[]> AfterStartAsync(NativeQaBootstrapContext context)
