@@ -1,0 +1,38 @@
+{
+  "families": {
+    "back-roll-player-enrage-stock": {
+      "representative": 122,
+      "result": "pass",
+      "head": "948550a1d7d0ec2e366fa95361fc8bc9b48e0d0b",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/1033#issuecomment-7116423644",
+      "scope": "SpyBackRollAndStarterOpenersTests verifies admission and exact timers, including absence of an own timer. Stock PR1033 held the move at rest during Sneak, then captured the ordinary accepted 122 frame, 25 IS, 0x100 for zero, 93 add/remove at 10 s on QAEnemy alone, and 0x200 withdrawal without a stealth transition. https://github.com/kylebrussell/mxo-hd/pull/1033#issuecomment-7116423644"
+    }
+  },
+  "abilities": {
+    "122": {
+      "family": "back-roll-player-enrage-stock",
+      "checks": {
+        "controls": {
+          "source": "GOB 122 is a Spy current-opponent interlock escape with 25 IS, 12 s family reuse, and a 10 s target Enrage. It authors no invisibility grant. The standalone meaning of its stored -128 detection field remains qualified.",
+          "runtime": "The approved current interlock opponent receives the linked Enrage and no direct damage. The escape requests ordinary departure. Stock at-rest admission leaves active Sneak alone. The caster and opponent stay visible after withdrawal and the ally receives no effect.",
+          "test": "SpyBackRollAndStarterOpenersTests verifies admission and exact timers, including absence of an own timer. Stock PR1033 held the move at rest during Sneak, then captured the ordinary accepted 122 frame, 25 IS, 0x100 for zero, 93 add/remove at 10 s on QAEnemy alone, and 0x200 withdrawal without a stealth transition. https://github.com/kylebrussell/mxo-hd/pull/1033#issuecomment-7116423644"
+        },
+        "targeting": {
+          "source": "GOB 122 is a Spy current-opponent interlock escape with 25 IS, 12 s family reuse, and a 10 s target Enrage. It authors no invisibility grant. The standalone meaning of its stored -128 detection field remains qualified.",
+          "runtime": "The approved current interlock opponent receives the linked Enrage and no direct damage. The escape requests ordinary departure. Stock at-rest admission leaves active Sneak alone. The caster and opponent stay visible after withdrawal and the ally receives no effect.",
+          "test": "SpyBackRollAndStarterOpenersTests verifies admission and exact timers, including absence of an own timer. Stock PR1033 held the move at rest during Sneak, then captured the ordinary accepted 122 frame, 25 IS, 0x100 for zero, 93 add/remove at 10 s on QAEnemy alone, and 0x200 withdrawal without a stealth transition. https://github.com/kylebrussell/mxo-hd/pull/1033#issuecomment-7116423644"
+        },
+        "stealth-detection": {
+          "source": "GOB 122 is a Spy current-opponent interlock escape with 25 IS, 12 s family reuse, and a 10 s target Enrage. It authors no invisibility grant. The standalone meaning of its stored -128 detection field remains qualified.",
+          "runtime": "The approved current interlock opponent receives the linked Enrage and no direct damage. The escape requests ordinary departure. Stock at-rest admission leaves active Sneak alone. The caster and opponent stay visible after withdrawal and the ally receives no effect.",
+          "test": "SpyBackRollAndStarterOpenersTests verifies admission and exact timers, including absence of an own timer. Stock PR1033 held the move at rest during Sneak, then captured the ordinary accepted 122 frame, 25 IS, 0x100 for zero, 93 add/remove at 10 s on QAEnemy alone, and 0x200 withdrawal without a stealth transition. https://github.com/kylebrussell/mxo-hd/pull/1033#issuecomment-7116423644"
+        },
+        "behavior-tests": {
+          "source": "GOB 122 is a Spy current-opponent interlock escape with 25 IS, 12 s family reuse, and a 10 s target Enrage. It authors no invisibility grant. The standalone meaning of its stored -128 detection field remains qualified.",
+          "runtime": "The approved current interlock opponent receives the linked Enrage and no direct damage. The escape requests ordinary departure. Stock at-rest admission leaves active Sneak alone. The caster and opponent stay visible after withdrawal and the ally receives no effect.",
+          "test": "SpyBackRollAndStarterOpenersTests verifies admission and exact timers, including absence of an own timer. Stock PR1033 held the move at rest during Sneak, then captured the ordinary accepted 122 frame, 25 IS, 0x100 for zero, 93 add/remove at 10 s on QAEnemy alone, and 0x200 withdrawal without a stealth transition. https://github.com/kylebrussell/mxo-hd/pull/1033#issuecomment-7116423644"
+        }
+      }
+    }
+  }
+}
