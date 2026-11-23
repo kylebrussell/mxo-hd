@@ -336,6 +336,9 @@ public class CombatStyleTests
     [InlineData(244, 2496u, 1105, true, 9519u)]
     [InlineData(242, 2565u, 1095, false, 0u)]
     [InlineData(244, 2496u, 1095, false, 0u)]
+    [InlineData(499, 2496u, 1095, true, 9533u)]
+    [InlineData(499, 2496u, 1105, true, 9526u)]
+    [InlineData(499, 2496u, 1095, false, 0u)]
     public void PistolSpecialRoundUsesTheMoveForItsEmittedPairPose(ushort ability, uint weapon, int opponentY, bool landed, uint variant)
     {
         const ulong combatEntity = 8031;

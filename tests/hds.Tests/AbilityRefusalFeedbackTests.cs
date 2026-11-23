@@ -2217,12 +2217,153 @@ public class AbilityRefusalFeedbackTests:IDisposable
         }
     }
 
+    [Theory]
+    [InlineData("queued", 0u)]
+    [InlineData("at rest", AbilityRefusals.InvalidTarget)]
+    [InlineData("other spawn", AbilityRefusals.InvalidTarget)]
+    [InlineData("single handgun", AbilityRefusals.RequiredItemCategory)]
+    [InlineData("wrong style", AbilityRefusals.WrongStyle)]
+    [InlineData("unloaded", AbilityRefusals.NotLoaded)]
+    [InlineData("expired Off Balance", AbilityRefusals.TargetStateRequired)]
+    public void PointBlankBindsTheOffBalanceOpponentAndDualHandguns(string scenario, uint reason)
+    {
+        const ushort id = CombatSpecials.DualPistolPointBlank;
+        var caster = TimedGunSpecialCaster(id, scenario == "unloaded", scenario == "single handgun");
+        if (scenario == "wrong style")
+            CombatStyles.Select(caster, CombatStyles.SelfDefense);
+        caster.messageQueue.RPCMessagesQueue.Clear();
+
+        var target = new Mob();
+        target.setEntityId(250000);
+        target.setDistrict(1);
+        target.setHealthC(1000);
+        target.setHealthM(1000);
+        target.setLevel(42);
+        target.setIsSpawned(true);
+        target.setXPos(21550);
+        target.setYPos(1095);
+        target.setZPos(16150);
+        var view = caster.viewMan.addView(target.getEntityId(), 1);
+        view.viewCreated = true;
+        view.spawnId = 9;
+        uint handle = DuelPackets.Handle(view.ViewID, view.spawnId);
+        var fight = new CombatSession(caster, target, handle, CombatSession.CombatType.Melee)
+        {
+            CurrentMove = new CombatInterlock.Move()
+        };
+        typeof(CombatSession).GetField("<IsActive>k__BackingField", BindingFlags.Instance | BindingFlags.NonPublic)!
+            .SetValue(fight, true);
+        var handler = CombatManager.GetHandler(caster);
+        var sessionField = typeof(CombatHandler).GetField("currentSession", BindingFlags.Instance | BindingFlags.NonPublic)!;
+        sessionField.SetValue(handler, scenario == "at rest" ? null : fight);
+        var previousMobs = WorldServer.mobs;
+        WorldServer.mobs = new System.Collections.ArrayList { target };
+        var holder = TimedEffects.ForMob(target);
+        double now = TimeUtils.GetSimTimeSeconds();
+        var offBalance = CombatDepthOffBalance.Effect(30);
+        holder.Effects.Apply(offBalance.Ability, TimedEffects.Instantiate(offBalance, new Random(1)),
+            scenario == "expired Off Balance" ? now - 31 : now);
+        try
+        {
+            var request = TimedGunSpecialRequest(id, scenario == "other spawn" ? handle ^ 0x10000 : handle);
+            new AbilityHandler().ProcessAbility(ref request);
+            Assert.Equal(1000, target.getHealthC());
+            if (reason != 0)
+            {
+                uint states = reason == AbilityRefusals.TargetStateRequired ? 4u : 0u;
+                Assert.Equal(AbilityRefusals.Encode(new(id, reason, states: states)), Assert.Single(Rpcs(caster)));
+                Assert.Null(fight.QueuedAbility);
+                Assert.Equal(500, AbilityHandler.CurrentInnerStrength(caster));
+                Assert.False(AbilityCooldowns.IsCoolingDown(caster.playerData, id, TimeUtils.GetSimTimeSeconds()));
+                return;
+            }
+
+            var ability = Assert.IsType<AbilityItem>(fight.QueuedAbility);
+            Assert.Equal(id, ability.getAbilityID());
+            Assert.Equal(470, AbilityHandler.CurrentInnerStrength(caster));
+            Assert.Equal(view.ViewID, fight.QueuedAbilityTarget);
+            Assert.True(AbilityCooldowns.IsCoolingDown(caster.playerData, id, TimeUtils.GetSimTimeSeconds()));
+            Assert.Equal(AbilityStats.Attack(caster, true) + 29, AbilityStats.SpecialAttack(caster, ability));
+            Assert.True(handler.CanResolveNpcQueuedAbility(fight, ability));
+            view.spawnId++;
+            Assert.False(handler.CanResolveNpcQueuedAbility(fight, ability));
+            view.spawnId--;
+            caster.playerInstance.EquippedItemID.setValue(2565u);
+            Assert.False(handler.CanResolveNpcQueuedAbility(fight, ability));
+            caster.playerInstance.EquippedItemID.setValue(2496u);
+            caster.playerData.passives.Loaded.Remove(id);
+            Assert.False(handler.CanResolveNpcQueuedAbility(fight, ability));
+        }
+        finally
+        {
+            TimedEffects.Clear(holder);
+            sessionField.SetValue(handler, null);
+            CombatManager.RemoveClient(caster);
+            WorldServer.mobs = previousMobs;
+        }
+    }
+
+    [Theory]
+    [InlineData(false, 115)]
+    [InlineData(true, 108)]
+    public void PointBlankLandsTypedDamageAndLeavesAnIndependentPowerlessLifetime(bool armored, int expected)
+    {
+        const ushort id = CombatSpecials.DualPistolPointBlank;
+        var caster = TimedGunSpecialCaster(id);
+        var victim = Client();
+        victim.playerData.setCharID(111);
+        victim.playerData.setEntityId(111);
+        victim.playerInstance.Level.setValue((byte)42);
+        victim.playerInstance.OrganizationID.setValue((byte)2);
+        victim.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(21550, 1095, 16150));
+        caster.playerData.setEntityId(110);
+        caster.playerInstance.OrganizationID.setValue((byte)1);
+        WorldServer.Clients.Add("caster", caster);
+        WorldServer.Clients.Add("victim", victim);
+        Assert.Equal(18, AbilityStats.Influence(caster, 171));
+        Assert.Equal(8, AbilityStats.Player(caster, 1042));
+
+        var ability = DataLoader.getInstance().AbilityDB.Single(entry => entry.getAbilityID() == id);
+        Assert.Equal(98, AbilityHandler.AbilityDamage(ability, new Random(1)));
+        var subject = TimedEffects.ForPlayer(victim);
+        double now = TimeUtils.GetSimTimeSeconds();
+        if (armored)
+            subject.Effects.Apply(1061, new List<TimedEffects.Active>
+            {
+                new() { Kind = TempMods.KindStat, Proc = TempMods.Proc.Stat, Target = 181, Value = 20, Seconds = 20 }
+            }, now);
+        try
+        {
+            PvpCombat.LandAbilityOn(caster, ability, victim);
+            Assert.Equal(1000 - expected, PvpCombat.HealthOf(victim));
+            var powerless = Assert.Single(subject.Effects.Snapshot().Where(m => m.Parent == id && m.Target == 96));
+            Assert.Equal(6.48f, powerless.Seconds, 3);
+            Assert.Equal(6, Assert.Single(subject.Effects.Snapshot().Where(m => m.Parent == 734 && m.Target == 681)).Seconds);
+            Assert.False(ControlActions.CanUseAbilities(victim));
+            Assert.Contains(AbilityMessages.AboutAbility(AbilityMessages.PowerlessCaster, true, id,
+                PvpFlag.Name(caster), PvpFlag.Name(victim), 0, 0), Rpcs(caster));
+            Assert.Contains(AbilityMessages.AboutAbility(AbilityMessages.PowerlessTarget, false, id,
+                PvpFlag.Name(caster), PvpFlag.Name(victim), 0, 0), Rpcs(victim));
+
+            PvpCombat.Damage(victim, 10);
+            Assert.False(ControlActions.CanUseAbilities(victim));
+            TimedEffects.RunDue(powerless.Expires + .01);
+            Assert.True(ControlActions.CanUseAbilities(victim));
+            Assert.False(subject.Effects.HasControlImmunity(powerless.Expires + .01));
+        }
+        finally
+        {
+            TimedEffects.Clear(subject);
+        }
+    }
+
     private static WorldClient TimedGunSpecialCaster(ushort id, bool unloaded = false, bool wrongWeapon = false)
     {
         bool rifle = id == CombatSpecials.ThreeRoundBurst;
+        bool pointBlank = id == CombatSpecials.DualPistolPointBlank;
         bool barrage = id == CombatSpecials.PistolBarrage;
-        ushort style = rifle ? CombatStyles.Rifles : barrage || id == 126 ? CombatStyles.Handguns : CombatStyles.SubmachineGuns;
-        byte level = id is 126 or 176 ? (byte)19 : CombatSpecials.IsFullAuto(id) ? (byte)46 : (byte)27;
+        ushort style = rifle ? CombatStyles.Rifles : barrage || pointBlank || id == 126 ? CombatStyles.Handguns : CombatStyles.SubmachineGuns;
+        byte level = id is 126 or 176 ? (byte)19 : CombatSpecials.IsFullAuto(id) ? (byte)46 : pointBlank ? (byte)42 : (byte)27;
         string root = AppContext.BaseDirectory;
         while (!File.Exists(Path.Combine(root, "data", "sector_properties.csv"))) root = Path.GetDirectoryName(root)!;
         SectorProperties.Load(Path.Combine(root, "data", "sector_properties.csv"));
@@ -2231,8 +2372,8 @@ public class AbilityRefusalFeedbackTests:IDisposable
         var caster = Client();
         caster.playerInstance.Level.setValue(level);
         caster.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(21750, 1095, 16150));
-        uint weapon = id switch { 126 => 2565, 176 => 698, CombatSpecials.ThreeRoundBurst => 692, CombatSpecials.PistolBarrage => 2496, _ => 2503 };
-        caster.playerInstance.EquippedItemID.setValue(wrongWeapon ? (barrage ? 2565u : id == 176 ? 2503u : 698u) : weapon);
+        uint weapon = id switch { 126 => 2565, 176 => 698, CombatSpecials.ThreeRoundBurst => 692, CombatSpecials.PistolBarrage or CombatSpecials.DualPistolPointBlank => 2496, _ => 2503 };
+        caster.playerInstance.EquippedItemID.setValue(wrongWeapon ? (barrage || pointBlank ? 2565u : id == 176 ? 2503u : 698u) : weapon);
         var profile = new ushort[] { 2, 17, style, id }
             .SelectMany(entry => AbilityPrerequisites.Current.Closure(entry).Keys.Append(entry)).Distinct().ToArray();
         Assert.True(profile.Sum(AbilityMemory.Cost) <= AbilityMemory.ForLevel(level));
@@ -2246,7 +2387,7 @@ public class AbilityRefusalFeedbackTests:IDisposable
         ability.setAbilityID(id);
         ability.setAbilityName(AbilityCatalog.Find(id).Name);
         ability.setIsCastable(true);
-        ability.setCastingTime(barrage ? (ushort)2 : (ushort)4);
+        ability.setCastingTime(pointBlank ? (ushort)0 : barrage ? (ushort)2 : (ushort)4);
         ability.setCastAnimStart(new byte[4]);
         DataLoader.getInstance().AbilityDB.Add(ability);
         return caster;

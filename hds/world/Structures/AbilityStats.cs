@@ -81,7 +81,8 @@ namespace hds
                 (CombatSpecials.IsFullAuto(definition.Id) ||
                  definition.Number("Ability/HasSuccessInterlockMove") == 1 &&
                  (definition.Number("Ability/CastWhenUsed") == 3 || definition.Id == CombatSpecials.ThreeRoundBurst ||
-                  definition.Id == CombatSpecials.PistolEvasive || definition.Id == CombatSpecials.PistolBarrage)))
+                  definition.Id == CombatSpecials.PistolEvasive || definition.Id == CombatSpecials.PistolBarrage ||
+                  definition.Id == CombatSpecials.DualPistolPointBlank)))
             {
                 int bonus = (int)definition.Number("Ability/TacticBonus");
                 if (bonus != 0)

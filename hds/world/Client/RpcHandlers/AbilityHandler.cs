@@ -519,7 +519,8 @@ namespace hds
             bool pistolSlide = AbilityID == 241;
             bool pistolAerial = AbilityID == AbilityConditionalControls.PistolAerial;
             bool slidingVolley = AbilityID == CombatSpecials.SlidingVolley;
-            bool checkedInterlockSelection = coderInterlock || pistolSlide || pistolAerial || slidingVolley;
+            bool pointBlank = AbilityID == CombatSpecials.DualPistolPointBlank;
+            bool checkedInterlockSelection = coderInterlock || pistolSlide || pistolAerial || slidingVolley || pointBlank;
             if (checkedInterlockSelection && !AbilityPassives.IsLoaded(Store.currentClient, AbilityID))
             {
                 Deny(AbilityID, "Load this ability before using it.", AbilityRefusals.NotLoaded, sendServerText: false);
@@ -530,6 +531,21 @@ namespace hds
             {
                 Deny(AbilityID, "Sliding Volley requires dual submachine guns.", AbilityRefusals.RequiredItemCategory, sendServerText: false);
                 return;
+            }
+
+            if (pointBlank)
+            {
+                var shooter = Store.currentClient;
+                if (!CombatSpecials.HasEquippedDualHandguns(shooter))
+                {
+                    Deny(AbilityID, "Dual Pistol Point Blank requires dual handguns.", AbilityRefusals.RequiredItemCategory, sendServerText: false);
+                    return;
+                }
+                if (!CombatStyles.CanUse(shooter, AbilityID))
+                {
+                    Deny(AbilityID, "Select Handguns before using Dual Pistol Point Blank.", AbilityRefusals.WrongStyle, sendServerText: false);
+                    return;
+                }
             }
 
             bool existingInterlockPath = AbilityID == AwakenedPowerShot.Id || AbilityID == 197 || AbilityID == 198 || AbilityID == 105 ||
@@ -544,7 +560,7 @@ namespace hds
                     _ => false
                 });
             uint stateMask = AbilityID == 197 ? 2u :
-                martialInterlock || coderInterlock || pistolSlide || slidingVolley ? (uint)definition.Number("Ability/CastRequiredStates") : 0u;
+                martialInterlock || coderInterlock || pistolSlide || slidingVolley || pointBlank ? (uint)definition.Number("Ability/CastRequiredStates") : 0u;
             ushort requiredState = stateMask switch
             {
                 2 => TempMods.DazeAbility,
@@ -1392,6 +1408,7 @@ namespace hds
                 CombatSpecials.SniperShot => 1,
                 CombatSpecials.CripplingShot => 1,
                 CombatSpecials.PistolBarrage => 1,
+                CombatSpecials.DualPistolPointBlank => 1,
                 CombatSpecials.FullAuto => 1,
                 CombatSpecials.FullAutoRedux => 1,
                 CombatSpecials.ControlledBurst => 1,
