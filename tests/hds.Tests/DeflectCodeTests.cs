@@ -41,6 +41,63 @@ public class DeflectCodeTests
         Assert.Equal(7,Assert.Single(TimedEffects.Apply(subject,effect,now+15,caster),m=>m.Target==102).Seconds);
         TimedEffects.Clear(subject);
     }
+
+    [Fact]
+    public void Rank19ClearHeadChangesNewHostileStunsAndHealingAcrossArchiveStates()
+    {
+        const ushort clearHead = 233, advancedDamageResistance = 376, rank = 19;
+        var caster = Client();
+        var target = Client();
+        caster.playerInstance.Level.setValue((byte)rank);
+        target.playerInstance.Level.setValue((byte)rank);
+        var loaded = new NativeQa.Modes.StarterHackerDefensivePassivesMode().Plan.Abilities
+            .Where(id => id != advancedDamageResistance).Select(id => (Ability: id, Level: rank)).ToArray();
+        var archived = loaded.Where(entry => entry.Ability != clearHead).ToArray();
+        Assert.Contains((clearHead, rank), loaded);
+        Assert.True(TempMods.TryGet(315, out var effect));
+        var subject = TimedEffects.ForPlayer(target);
+        double now = TimeUtils.GetSimTimeSeconds();
+
+        try
+        {
+            var initial = Sample(loaded, 3, 24, 6.79f);
+            AbilityPassives.SetLoaded(target, archived);
+            Assert.Equal(0, AbilityStats.Player(target, 1047));
+            Assert.Equal(6.79f, initial.Seconds, 4);
+            Assert.True(subject.Effects.HasAt(TempMods.StunAbility, now + 6.78));
+            Assert.False(subject.Effects.HasAt(TempMods.StunAbility, now + 6.80));
+            Assert.True(subject.Effects.HasControlImmunity(now + 6.80));
+            Assert.Empty(TimedEffects.Apply(subject, effect, now + 8, caster));
+
+            TimedEffects.Clear(subject);
+            Sample(archived, 0, 23, 7);
+            TimedEffects.Clear(subject);
+            Sample(loaded, 3, 24, 6.79f);
+        }
+        finally
+        {
+            TimedEffects.Clear(subject);
+            AbilityPassives.SetLoaded(target, Array.Empty<(ushort, ushort)>());
+        }
+
+        TimedEffects.Active Sample((ushort Ability, ushort Level)[] entries, int determination, ushort heal, float duration)
+        {
+            AbilityPassives.SetLoaded(target, entries);
+            CombatStyles.Select(target, CombatStyles.HackerStyle);
+            Assert.Equal(0, AbilityControlDurations.Determination(target));
+            Assert.Equal(determination, AbilityStats.Player(target, 1047));
+            Assert.Equal(heal, AbilityHealing.Amount(target, target, 55));
+            var result = TimedEffects.Apply(subject, effect, now, caster);
+            var stun = Assert.Single(result, mod => mod.Target == TempMods.StunAbility);
+            Assert.Equal(duration, stun.Seconds, 4);
+            var immunity = Assert.Single(subject.Effects.Snapshot(), mod => mod.Parent == TempMods.ControlImmunityTimerAbility);
+            Assert.Equal(14, immunity.Seconds);
+            Assert.True(subject.Effects.HasControlImmunity(now + 13.99));
+            Assert.False(subject.Effects.HasControlImmunity(now + 14.01));
+            return stun;
+        }
+    }
+
     [Fact]public void FriendlySelfStatAndDotDurationsDoNotConsume1047()
     {
         var caster=Client();var target=Client();AbilityPassives.SetLoaded(target,new(ushort,ushort)[]{(23,50)});

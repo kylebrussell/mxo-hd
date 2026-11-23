@@ -1,0 +1,42 @@
+{
+  "abilities": {
+    "233": {
+      "checks": {
+        "stats": {
+          "source": "Clear Head GOB 233 uses loaded, indefinite learned-rank function 2 with scale 0.2 to Determination Bonus 1047 and 0.1 to Healing Bonus 1141. The shipped 575 and 174 records link to those separate percentage stats. data/ability_catalog.json:235,176,569,1003,1097.",
+          "runtime": "At rank 19 the published values are +3 and +1. The former affects a newly landed hostile control through DeflectCode and the latter enters AbilityHealing through linked influence 174.",
+          "test": "PR755 stock reads both records on entry, observes both removals on Archive unload, and verifies restoration. Self-target Patcher heals 24 with Clear Head and 23 without it while selected QAFriend stays wounded. Rank19ClearHeadChangesNewHostileStunsAndHealingAcrossArchiveStates isolates the two live consumers. https://github.com/kylebrussell/mxo-hd/pull/755#issuecomment-7081754805"
+        },
+        "source-parity": {
+          "source": "GetAbilityMitigationDuration in research/client-scripts/combat_calculations.py:316 uses raw Determination 575 divided by five against caster level, with a 33% duration floor. GOB 575 links percent stat 1047 and both Clear Head and Deflect Code give rank-scaled modifiers to that same destination. PR518 independently exercises regular hostile Blind, Pacify and Stun add/removals with the shared stat under the stock client. https://github.com/kylebrussell/mxo-hd/pull/518",
+          "runtime": "The chosen stock-compatible policy applies 1047 as a percentage of the duration left after raw 575 mitigation and preserves the 33% total floor. An unmitigated 7 s Stun becomes 6.79 s with Clear Head +3. Its independent 14 s immunity stays fixed and loading changes do not rewrite the active state snapshot. The exact original native stacking formula for 575 plus 1047 remains unarchived.",
+          "test": "Rank19ClearHeadChangesNewHostileStunsAndHealingAcrossArchiveStates runs the actual hostile Stun term and immunity against the lawful rank-19 passive profile, holding raw 575 at zero and toggling only 233. Durations are 6.79→7→6.79 s with immunity fixed at 14 s. PR755 is the independent stock witness for the 233 records and healing path. https://github.com/kylebrussell/mxo-hd/pull/755#issuecomment-7081754805"
+        },
+        "behavior-tests": {
+          "source": "The two authored modifiers are lifetime-while-enabled passives without a separate activation cast.",
+          "runtime": "Ordinary Archive unload and reload remove or restore the two contributions and preserve the other loaded heal sources. New hostile control and healing calculations use the updated loadout. Existing control snapshots keep their original end times.",
+          "test": "Rank19ClearHeadChangesNewHostileStunsAndHealingAcrossArchiveStates isolates loaded/archived/reloaded healing 24→23→24 and new Stun 6.79→7→6.79 s. The existing ability-parity-starter-hacker-defensive-passives bootstrap exercises stock-format Archive and the captured Patcher request, with PR755 confirming both record transitions and actual vitals on the stock client. https://github.com/kylebrussell/mxo-hd/pull/755#issuecomment-7081754805"
+        }
+      }
+    },
+    "349": {
+      "checks": {
+        "stats": {
+          "source": "Hostile Programming GOB 349 stores loaded learned-rank function 2 at scale 0.3 and range 0..30 to Max Inner Strength Bonus 1056, plus scale 0.1 to Viral Accuracy Bonus 1147. GOB 342 explicitly links 1147. data/ability_catalog.json:351,344,1012,1103.",
+          "runtime": "At rank 19 the two sources publish +5% for the maximum-IS calculation and +1 for the linked accuracy input. Only the two source records change when archiving 349.",
+          "test": "The stock PR755 run verifies those exact modifier records, current max IS 1080→1030→1080 and normal Logic Blast contest inputs 35/0→34/0→35/0. The existing ability-parity-starter-hacker-hostile-programming bootstrap checks the same full loadout and packets. https://github.com/kylebrussell/mxo-hd/pull/755#issuecomment-7081754805"
+        },
+        "source-parity": {
+          "source": "The percentage-valued 1147 record (ValueType 1) is the authored link from direct Viral Transmission 342. The native Speed combat multiplier is 1.15 in research/client-scripts/combat_calculations.py:18. The documented level-19 PR755 profile fixes Network Hacker 64 at +1 to 1147 and Resist Contagion 73 at rank 17 for +4, so removing the +1 from 349 changes aggregate viral accuracy bonus from +6% to +5%.",
+          "runtime": "The chosen linked accuracy policy retains capped direct 342 and adds trunc(character level × total 1147 / 100) once, before the ordinary Speed tactic multiplier. At level 19 the two aggregate values yield exactly +1 and +0 at this breakpoint. The 1000 base IS keeps Execute Program's +3% fixed and 349 independently contributes 50 IS. This evidence covers the observed rank-19 live breakpoint. The original retail attack-input coefficients at other ranks remain unarchived.",
+          "test": "PR755 stock native retained the exact 38/49 profile and recorded inputs 35/0→34/0→35/0 across only 349; all three attempts reached Logic Blast for the same 6 IS and 4 s reuse. The standard exact replay asserts that same input and max-IS sequence across ordinary Archive. The forced fixture roll leaves attack inputs unchanged. https://github.com/kylebrussell/mxo-hd/pull/755#issuecomment-7081754805"
+        },
+        "behavior-tests": {
+          "source": "Both GOB 349 modifiers last while loaded and have no separate activation cast.",
+          "runtime": "The two passive records feed independent max-vital and viral contest consumers. Ordinary unload removes both contributions and reload restores them without removing prerequisite passives or the selected Hacker Style.",
+          "test": "The existing StarterHackerHostileProgrammingMode performs three captured Logic Blast attempts, compares real contest inputs and paired [VITALS] changes, and verifies exact source records after ordinary 80 ae unload/reload. PR755 stock checks the matching Archive path at the same ranks. https://github.com/kylebrussell/mxo-hd/pull/755#issuecomment-7081754805"
+        }
+      }
+    }
+  }
+}
