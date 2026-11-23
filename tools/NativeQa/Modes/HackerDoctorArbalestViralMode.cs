@@ -46,9 +46,9 @@ public sealed class HackerDoctorArbalestViralMode : NativeQaMode
         {
             $"Level {Level}, fully ranked {Memory}/{AbilityMemory.ForLevel(Level)} memory. CSR ({X},{Y},{Z}) faces QAEnemy ({X},{Y},{Z+300}) at 3 m. QAFar ({X+125},{Y},{Z+300}) is the resistance control. QAOther ({X},{Y},{Z+2001}) is 20.01 m away, and QAFriend ({X+150},{Y},{Z}) is friendly. Outdoor NAV with no ambient NPCs.",
             "Select Hacker Style in page 2 slot 1. Without a target, on /target QAFriend, and on /target QAOther, try slots 2–5. Client-side suppression is acceptable, with reason 24 for no hostile/ally or 34 for range if sent. Expect no cast, IS, timer or damage on any refusal.",
-            "Select /target QAEnemy. Cast slot 2 Harmful Code 2.0, then slot 3 Logic Blast 2.0 after the 682 shared timer ends. Slots 4 and 5 are Logic Barrage 3.0 and Logic Cannon 1.0. Retain the first full stock request for each slot. IS 700→670→662→652→634. Cast / own reuse / shared reuse: 238 = 4/8/4 (682), 311 = 2/4/4 (682), 312 = 2/4/4 (683), 313 = 8/15/15 (684). The 313 slot requires no active combat.",
-            "The base damage is 33/31/40/18. With the seeded Hacker Style and loaded profile expect [PVP] hits 44/42/54/24 on the selected QAEnemy only, with no splash or interlock.",
-            "After the timers clear select /target QAFar. Request QAFar action aura-resist and confirm source=8 stat=157 add +64 for 20 s. Immediately cast slots 3, 5, 4, then 2. Expect typed raw/final 42/34, 24/19, 54/44, 44/36, with the same costs/timers. Casting 311 before 313 lets 682 clear inside the Empty Mind window. Repeat any missed resisted sample on a fresh 20-second window after the helper's 60-second reuse.",
+            "Select /target QAEnemy. Cast slot 2 Harmful Code 2.0, then slot 3 Logic Blast 2.0 after the 682 shared timer ends. Slots 4 and 5 are Logic Barrage 3.0 and Logic Cannon 1.0. Retain the first full stock request for each slot. Stand Off gives +4% cost reduction. IS 700→671→663→653→635, paid 29/8/10/18. Cast / own reuse / shared reuse: 238 = 4/8/4 (682), 311 = 2/4/4 (682), 312 = 2/4/4 (683), 313 = 8/15/15 (684). The 313 slot requires no active combat.",
+            "The base damage is 33/31/40/18. Hacker Style +24 and the three linked contributors (Transmit Virus +12, Stand Off +3, Arbalest +1) give +40%. Expect [PVP] hits 46/43/55/25 on the selected QAEnemy only, with no splash or interlock.",
+            "After the timers clear select /target QAFar. Request QAFar action aura-resist and confirm source=8 stat=157 add +64 for 20 s. Use slots 2 then 4 in that window for raw/final 46/37 and 55/45. If doing a full run, use slots 3 then 5 in a fresh window after the helper's 60 s reuse for 43/35 and 25/20. The costs and timers are unchanged by target resistance.",
             "Finally enter an ordinary PvP interlock with QAEnemy using its right-click Close Combat, and press 313. Expect local outside-combat refusal or reason 21, with no cast/cost. The earlier outside-combat result carries the positive. [VITALS] maxima should stay fixed."
         });
 
@@ -94,6 +94,12 @@ public sealed class HackerDoctorArbalestViralMode : NativeQaMode
             frame => StockAbilityProfile.Bonus(frame, Style, 172, 24, 0, false), "Hacker Style contributes +24 Viral Damage");
         await StockAbilityProfile.ObserveAsync(actor, 0,
             frame => StockAbilityProfile.Bonus(frame, 95, 1031, 12, 0, false), "Loaded Transmit Virus contributes +12 linked Viral Damage");
+        await StockAbilityProfile.ObserveAsync(actor, 0,
+            frame => StockAbilityProfile.Bonus(frame, 309, 1031, 3, 0, false), "Loaded Stand Off contributes +3 linked Viral Damage");
+        await StockAbilityProfile.ObserveAsync(actor, 0,
+            frame => StockAbilityProfile.Bonus(frame, 310, 1031, 1, 0, false), "Loaded Arbalest contributes +1 linked Viral Damage");
+        await StockAbilityProfile.ObserveAsync(actor, 0,
+            frame => StockAbilityProfile.Bonus(frame, 309, 1053, 4, 0, false), "Loaded Stand Off contributes +4% cost reduction");
         string stockControl = StarterHackerViralSightMode.Samples[2].Capture;
         await StarterHackerViralDamageMode.VerifyInvalidTargets(actor, Control, stockControl,
             views["QAEnemy"], views["QAFriend"]);

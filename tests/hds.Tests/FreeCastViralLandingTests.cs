@@ -39,14 +39,14 @@ public class FreeCastViralLandingTests : IDisposable
     }
 
     [Theory]
-    [InlineData(238, 0, true, 44)]
-    [InlineData(311, 0, true, 42)]
-    [InlineData(312, 0, true, 54)]
-    [InlineData(313, 0, true, 24)]
-    [InlineData(238, 64, true, 36)]
-    [InlineData(311, 64, true, 34)]
-    [InlineData(312, 64, true, 44)]
-    [InlineData(313, 64, true, 19)]
+    [InlineData(238, 0, true, 46)]
+    [InlineData(311, 0, true, 43)]
+    [InlineData(312, 0, true, 55)]
+    [InlineData(313, 0, true, 25)]
+    [InlineData(238, 64, true, 37)]
+    [InlineData(311, 64, true, 35)]
+    [InlineData(312, 64, true, 45)]
+    [InlineData(313, 64, true, 20)]
     [InlineData(313, 0, false, 0)]
     public void DoctorAndArbalestFixedDamageUsesTheLiveViralContestAndTypedHealthPath(ushort id, int resistance,
         bool hits, int expected)
@@ -63,10 +63,14 @@ public class FreeCastViralLandingTests : IDisposable
         var view = caster.viewMan.addView(111, 12);
         view.viewCreated = true;
         view.spawnId = 9;
-        AbilityPassives.SetLoaded(caster, new[] { (id, (ushort)43) });
-        caster.playerData.passives.Totals[172] = 24;
-        caster.playerData.passives.Totals[1031] = 12;
+        var profile = new NativeQa.Modes.HackerDoctorArbalestViralMode().Plan.Abilities;
+        AbilityPassives.SetLoaded(caster, profile.Select(loaded => (loaded, (ushort)43)));
+        CombatStyles.Select(caster, CombatStyles.HackerStyle);
+        Assert.Equal(40, AbilityStats.Influence(caster, 172));
+        Assert.Equal(4, AbilityStats.Influence(caster, 117));
+        Assert.Equal(id == 238 ? 29 : AbilityCosts.Cost(id), AbilityCosts.Effective(caster, id));
         target.playerData.passives.Totals[157] = resistance;
+        if (!hits) target.playerData.passives.Totals[183] = 100;
         Environment.SetEnvironmentVariable("MXO_FREECAST_VIRAL_QA_ATTACK15", hits ? "32766" : "0");
         Environment.SetEnvironmentVariable("MXO_FREECAST_VIRAL_QA_DEFENSE15", hits ? "0" : "32766");
         Assert.True(FreeCastViralContest.TryQaDraw(caster, id, out _, out _));
