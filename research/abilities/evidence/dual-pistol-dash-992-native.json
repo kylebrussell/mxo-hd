@@ -1,0 +1,49 @@
+{
+  "families": {
+    "dual-pistol-dash-at-rest": {
+      "representative": 500,
+      "result": "pass",
+      "head": "8a47afd497aac7f07e774f31442b57b577225099",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/992#issuecomment-7105117666",
+      "scope": "Actual L36 stock client with loaded Handguns and held dual handguns 2496. Ally and 19.5 m selection refused as reasons 24/34 with no spend or timer. The ordinary at-rest request landed instantly twice on QAEnemy for 14 and 13 through Ballistic Resistance +20. Each spent 35 IS with 20 s own and 5 s family 690 reuse. The Enrage icon and caster notices were visible. No PvP round occurred. Recipient helper confirmed two matching eight-second 500/93 and 93/0 lifecycles, with exact restriction masks 1/21/2021 and 2020/2000/0 hex."
+    }
+  },
+  "abilities": {
+    "500": {
+      "family": "dual-pistol-dash-at-rest",
+      "checks": {
+        "damage": {
+          "source": "data/ability_catalog.json line 498 fixes Ballistic damage 13 with CastWhenUsed 1 and CastDirectObjects 0. Original NPC Special Agent hits 48 and 52 use a distinct role. Retired old_sm_pistol.py direct-object 325 does not apply to this template.",
+          "runtime": "The selected player cast uses fixed authored Ballistic damage plus ordinary player influence and the target's typed mitigation. The NPC source follows its existing path.",
+          "test": "DashUsesTheSelectedAtRestOpponentAndPublishesTheRecipientEnrageLifecycle asserts base 13 and same-target 14 and 13, with typed resistance +20. Native additionally saw type1 total20 raw14 final13 and the same unarmored 14. https://github.com/kylebrussell/mxo-hd/pull/992#issuecomment-7105117666"
+        },
+        "controls": {
+          "source": "Current GOB uses Enrage state 93 for eight seconds. EnrageInit and EnrageTerm in tempmods.py 699–728 change Withdraw, Change Targets and IS-from-Block. Retained Special Agent recipient packets independently establish the six restriction snapshots and the linked 93 record.",
+          "runtime": "PlayerEffects emits target-only source and linked add/remove records with ordered masks. The real combat guards honor the underlying active state. An overlap keeps the relevant gate and suppresses a premature Enrage-end notice.",
+          "test": "DashUsesTheSelectedAtRestOpponentAndPublishesTheRecipientEnrageLifecycle verifies the live restrictions, caster and recipient notice tokens, all masks and full recovery. DashRestrictionsRemainUntilAnotherLiveEnrageExpires proves overlap and one final state's release. The real client saw the target icon and caster notice, and the recipient helper confirmed both matching eight-second 500/93 and 93/0 lifecycles with exact masks. https://github.com/kylebrussell/mxo-hd/pull/992#issuecomment-7105117666"
+        },
+        "targeting": {
+          "source": "Stored current target selector 3, Handguns stance, dual-handgun item category and selection range 6 with outside-combat use.",
+          "runtime": "Before payment AbilityHandler checks the loaded ability, active Handguns, held dual handguns, live original hostile selection, range and sight. The direct route cannot queue or redirect to an ally, a stale view or a distant selection.",
+          "test": "DashUsesTheSelectedAtRestOpponentAndPublishesTheRecipientEnrageLifecycle exercises unloaded ability, weapon, style, combat, ally, stale spawn, range and sight. Stock refused ally and clear but distant QA with reasons 24 and 34 without IS or reuse, and landed only on the selected enemy. https://github.com/kylebrussell/mxo-hd/pull/992#issuecomment-7105117666"
+        },
+        "source-parity": {
+          "source": "The current GOB and the actual stock player request establish an instant outside-combat path, 35 IS, 20 s own and 5 s family 690 reuse, fixed Ballistic 13, Enrage 93/8 s and paired localized notices. Retained 500 Enrage records witness the recipient wire shape under the NPC role. The named ILDB 9524/9531 and authored +19 are interlock metadata with no demonstrated ordinary Dash route that invokes them.",
+          "runtime": "The ordinary Dash player path uses current template inputs, typed damage and the sourced state lifecycle. Legacy callback, NPC damage and unforced historical ancillary mask value are distinct provenance, with no fabricated animation selector.",
+          "test": "Stock accepted ordinary at-rest Dash twice, both without a PvP round or any demonstrated named-move requirement. It confirmed both timers, actual debits, neutral and armored damage, both Enrage lifecycles, visible icon and native messages. https://github.com/kylebrussell/mxo-hd/pull/992#issuecomment-7105117666"
+        },
+        "behavior-tests": {
+          "source": "Current GOB inputs and shipped Enrage callbacks define the ordinary Dash path and state lifecycle.",
+          "runtime": "Ordinary selected cast checks live authorization and applies typed damage, cooldowns, notices and linked restriction records through existing production systems.",
+          "test": "The dedicated Dash tests cover the refusal matrix, neutral/resisted destinations, fixed base, IS, authored cooldown definitions, live recipient gates, matching mask teardown and overlap. The retained-stock support replay validates legal loadout, weapon and all outdoor NAV before the native Dash request. https://github.com/kylebrussell/mxo-hd/pull/992#issuecomment-7105117666"
+        },
+        "native-family": {
+          "source": "Stock PR992 direct player 500 with the ordinary L36 profile.",
+          "runtime": "The retained support bootstrap uses stock Handguns and Soldier Upgrade frames. Claude's run supplies the first observed outgoing Dash, not a reconstructed replay.",
+          "test": "Exact 8a47afd4 passed all stock steps, including both accepted 500 attempts at rest, the ally/range refusals, 14/13 damage, 35 IS, 20/5 s reuse, visible Enrage and two paired teardown witnesses. https://github.com/kylebrussell/mxo-hd/pull/992#issuecomment-7105117666"
+        }
+      },
+      "note": "Credit is for the observed ordinary outside-combat Dash. Named 9524/9531, historical NPC magnitudes and the ancillary unforced tactic value remain qualified."
+    }
+  }
+}
