@@ -27,9 +27,9 @@ namespace hds
             HolyWaterPlus = 1023, SilverBulletPlus = 1024, PistolEvasive = 242;
         public const ushort KilledOnlyByHolyWater = 432, KilledOnlyBySilver = 463, KilledOnlyByWood = 464;
 
-        internal const ushort ControlledBurst = 250;
+        internal const ushort SlidingVolley = 249, ControlledBurst = 250;
 
-        internal static bool HasControlledBurstWeapon(WorldClient caster) =>
+        internal static bool HasEquippedDualSubmachineGuns(WorldClient caster) =>
             RangedWeapons.GetStats(SharpshooterFreeFire.EquippedWeapon(caster))?.Category == "IWDS";
 
         // ability/general.py 9-17

@@ -319,6 +319,12 @@ try
                     NativeQa.Modes.ControlledBurstMode.SendWithdraw(actor);
                 else if (fixtureMode is NativeQa.Modes.ControlledBurstMode && action == "burst-records")
                     result = NativeQa.Modes.ControlledBurstMode.Records(actor);
+                else if (fixtureMode is NativeQa.Modes.SlidingVolleyMode && action == "volley-armor")
+                    await NativeQa.Modes.PistolSlideMode.ApplyArmorAsync(actor);
+                else if (fixtureMode is NativeQa.Modes.SlidingVolleyMode && action == "volley-withdraw")
+                    NativeQa.Modes.SlidingVolleyMode.SendWithdraw(actor);
+                else if (fixtureMode is NativeQa.Modes.SlidingVolleyMode && action == "volley-records")
+                    result = NativeQa.Modes.SlidingVolleyMode.Records(actor);
                 else if (fixtureMode is NativeQa.Modes.StarterMovementObserverMode && action == "movement-observer-arrive")
                     result = await NativeQa.Modes.StarterMovementObserverMode.ArriveAsync(actor);
                 else if (fixtureMode is NativeQa.Modes.StarterStealthObserverMode && action == "stealth-observer-pass")

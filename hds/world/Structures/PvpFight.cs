@@ -43,6 +43,7 @@ namespace hds
             /// <summary>The move the next round decides.</summary>
             public CombatInterlock.Move Move;
             public AbilityItem QueuedAbility;
+            internal uint QueuedSlidingVolleyOpponent;
             public bool SneakOpener;
             public bool Withdrawing;
             internal bool OrdinaryWithdrawalRequested;
@@ -137,10 +138,10 @@ namespace hds
                 }
                 client.messageQueue.addRpcMessage(ServerPackets.BuildCombatTargetFlag(side.OpponentHandle, 0));
                 membershipVersion++;
-                side.Other = opponent;
-                side.OpponentHandle = PvpCombat.HandleOf(client, target);
+                bool discarded = AssignOpponent(side, opponent);
                 client.messageQueue.addRpcMessage(CombatHandler.BuildCloseCombatEcho(request));
                 client.messageQueue.addRpcMessage(ServerPackets.BuildCombatTargetFlag(side.OpponentHandle, 1));
+                if (discarded) SendMoveChanged(side);
                 client.FlushQueue();
                 return true;
             }
@@ -457,17 +458,43 @@ namespace hds
             lock (sync)
             {
                 Side side = SideOf(client);
+                bool slidingVolley = ability.getAbilityID() == CombatSpecials.SlidingVolley;
                 if (!IsActive || side?.Move == null || (UInt16)side.OpponentHandle != targetViewId ||
+                    (slidingVolley && !requiredOpponent.HasValue) ||
                     (requiredOpponent.HasValue && !MatchesQueuedOpponent(client, requiredOpponent.Value)))
                 {
                     return false;
                 }
                 side.QueuedAbility = ability;
+                side.QueuedSlidingVolleyOpponent = slidingVolley ? requiredOpponent.Value : 0;
                 side.SneakOpener = sneakOpener;
                 SendMoveChanged(side);
                 Output.WriteDebugLog("[PVP] " + ability.getAbilityName() + " is " + PvpFlag.Name(client) + "'s next move");
                 return true;
             }
+        }
+
+        private static bool AssignOpponent(Side side, Side opponent)
+        {
+            side.Other = opponent;
+            side.OpponentHandle = PvpCombat.HandleOf(side.Client, opponent.Client);
+            if (side.QueuedAbility?.getAbilityID() != CombatSpecials.SlidingVolley) return false;
+            side.QueuedAbility = null;
+            side.QueuedSlidingVolleyOpponent = 0;
+            return true;
+        }
+
+        internal static AbilityItem QueuedAbilityForRound(Side side, Side opponent)
+        {
+            var ability = side.QueuedAbility;
+            if (ability?.getAbilityID() != CombatSpecials.SlidingVolley) return ability;
+            uint handle = side.QueuedSlidingVolleyOpponent;
+            if (!ReferenceEquals(side.Other, opponent) || !opponent.Present || side.OpponentHandle != handle)
+                return null;
+            var view = side.Client.viewMan.getViewById((ushort)handle);
+            return view != null && view.viewCreated && !view.viewNeedsToBeDeleted &&
+                view.spawnId == (handle >> 16) && view.entityId == opponent.Client.playerData.getEntityId()
+                ? ability : null;
         }
 
         /// <summary>RPC 44: the player wants out. It is tried at each round until their roll beats the opponent's.</summary>
@@ -625,7 +652,8 @@ namespace hds
                 int pLevel = PvpFlag.LevelOf(p.Client), nLevel = PvpFlag.LevelOf(n.Client);
                 CombatTactic pTactic = p.Client.playerData.combatTactic, nTactic = n.Client.playerData.combatTactic;
                 CombatTacticType pType = CombatTactics.Type(p.Client), nType = CombatTactics.Type(n.Client);
-                AbilityItem pAbility = opening ? null : p.QueuedAbility, nAbility = opening ? null : n.QueuedAbility;
+                AbilityItem pAbility = opening ? null : QueuedAbilityForRound(p, n),
+                    nAbility = opening ? null : QueuedAbilityForRound(n, p);
                 if (!counter) nAbility = null;
                 if (!CombatAnimations.CanResolveQueuedAbility(p.Client, pAbility)) pAbility = null;
                 if (!CombatAnimations.CanResolveQueuedAbility(n.Client, nAbility)) nAbility = null;
@@ -640,7 +668,12 @@ namespace hds
                 if (!opening)
                 {
                     p.QueuedAbility = null;
-                    if (counter) n.QueuedAbility = null;
+                    p.QueuedSlidingVolleyOpponent = 0;
+                    if (counter)
+                    {
+                        n.QueuedAbility = null;
+                        n.QueuedSlidingVolleyOpponent = 0;
+                    }
                 }
 
                 bool pHit, nHit, pCondition, nCondition, pFirst;
@@ -869,10 +902,10 @@ namespace hds
                     break;
                 }
                 side.Client.messageQueue.addRpcMessage(ServerPackets.BuildCombatTargetFlag(side.OpponentHandle, 0));
-                side.Other = replacement;
-                side.OpponentHandle = PvpCombat.HandleOf(side.Client, replacement.Client);
+                bool discarded = AssignOpponent(side, replacement);
                 side.Client.messageQueue.addRpcMessage(BuildAttackedBy(side.OpponentHandle));
                 side.Client.messageQueue.addRpcMessage(ServerPackets.BuildCombatTargetFlag(side.OpponentHandle, 1));
+                if (discarded) SendMoveChanged(side);
                 side.Client.FlushQueue();
             }
             if (reason == EndReason.Left)
