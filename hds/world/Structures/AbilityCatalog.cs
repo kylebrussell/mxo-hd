@@ -110,7 +110,12 @@ namespace hds
                 }
                 mods.Add(mod);
             }
-            return mods.Count == 0 ? null : new TempMods.Effect { Ability = id, Mods = mods.ToArray(), ImmunitySeconds = immunity };
+            return mods.Count == 0 ? null : new TempMods.Effect
+            {
+                Ability = id, Mods = mods.ToArray(), ImmunitySeconds = immunity,
+                Virus = entry.Id == 399 && entry.Modifiers.Any(m =>
+                    (uint)m.Number("ActivationStringTarget") == AbilityMessages.InfectsTarget)
+            };
         }
     }
 }

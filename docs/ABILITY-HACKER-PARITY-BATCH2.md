@@ -26,7 +26,7 @@ The disposable `hacker-a2-group-heal` scenario sends an ordinary full-length act
 | --- | --- |
 | 375, 326 | Existing resurrection approval covers normal offers, refusal and full recipient vitals for these IDs. Stock consent/motion and the flagged 1208 callback remain open for the individual rows. |
 | 1092 | Current capture uses +7 Concentration, +10 radius and +6 Healing. The raw GOB radius and healing values are 7 and 5. Preserve the capture and recheck ordinary class-upgrade admission and printed values. |
-| 399, 462 | Powerless and Enraged reach different real action gates. 399 still uses the retained 10.14-second capture against the raw six-second field. 462 applies six seconds and expires. Stock presentation and full area/admission checks remain. |
+| 399, 462 | Powerless and Enraged reach different action gates. Zone of Powerlessness uses the authored six-second base, with the normal duration influence applied on landing. The archived effective 9.9 s and 10.14 s records retain their unresolved profile inputs. Enrage 462 applies six seconds and expires. |
 | 400, 466 | Actual health takes five viral ticks. The clean 400 fixture sees 10 per tick. 466's lower captured total applies 71 per tick before source influence; the raw total is 97. Detailed final damage math and wider admission remain unresolved. |
 | 401, 403, 404, 465, 467, 1088 | The scoped consumers execute and restore baseline stats on expiry. A grouped hostile replay should still record target admission, range/deflect and exact area recipients. |
 | 402 | The actual Evade Combat entry check consumes the −25 Force Combat modifier. All three movement penalties are present and expire. Client movement behavior and complete target admission remain open. |

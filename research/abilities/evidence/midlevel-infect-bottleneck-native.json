@@ -11,7 +11,7 @@
   "abilities": {
     "353": {
       "family": "hacker-infect-bottleneck-selected-area",
-      "note": "Native PR873 confirms the current level-24 profile: 15 IS, two-second cast, twelve-second reuse, +549 stored live total and eleven 46-point ticks. The older morpheuZZZ session is a level-50 witness for a 450-point total. Neither establishes the relationship to the raw GOB 94 or its wider source scaling. https://github.com/kylebrussell/mxo-hd/pull/873#issuecomment-7088259016",
+      "note": "Native PR873 confirms the earlier level-24 implementation: 15 IS, two-second cast, twelve-second reuse, and eleven ticks on each eligible recipient. The earlier implementation treated the 450-point level-50 live record in morpheuZZZ as a base and applied this profile's +22%, producing 549. The server now projects directly from the shipped fixed 94. The historical 450-point generation remains unresolved and this note does not credit the changed magnitude as stock verified. https://github.com/kylebrussell/mxo-hd/pull/873#issuecomment-7088259016",
       "checks": {
         "area": {
           "source": "GOB 353 specifies a five-metre radius around the selected direct object and a 30-second ViralDOT.",

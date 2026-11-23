@@ -107,13 +107,13 @@
       "checks": {
         "periodic": {
           "source": "GOB 353 stores ViralDOT total 94 and a 2.5 s update interval over 30 s. The script rounds each tick and stops updating at expiry.",
-          "runtime": "TempMods and TimedEffects.RunDue retain the catalog cadence and PlayerEffects.Ticked applies each typed update. The runtime total is 450.",
-          "test": "AbilityHostileTests.VectorVirusDealsElevenRoundedViralTicksBeforeExpiry verifies initial delay, first tick, 11 ticks and 418 HP total before expiry."
+          "runtime": "The catalog supplies the fixed base of 94 and the cadence. The ordinary typed ViralDOT path applies the caster's influence once on landing and resolves victim resistance on each tick.",
+          "test": "AbilityHostileTests.VectorVirusDealsElevenRoundedViralTicksBeforeExpiry checks eleven 8-point ticks from the unmodified base and no tick at expiry."
         },
         "script": {
           "source": "GOB 353 stores ViralDOT total 94 and a 2.5 s update interval over 30 s. The script rounds each tick and stops updating at expiry.",
-          "runtime": "TempMods and TimedEffects.RunDue retain the catalog cadence and PlayerEffects.Ticked applies each typed update. The runtime total is 450.",
-          "test": "AbilityHostileTests.VectorVirusDealsElevenRoundedViralTicksBeforeExpiry verifies initial delay, first tick, 11 ticks and 418 HP total before expiry."
+          "runtime": "TimedEffects.RunDue advances the displayed modifier's 2.5 s schedule and PlayerEffects.Ticked applies each rounded damage update.",
+          "test": "DespoilerFieldsLandOnTheSelectedEnemyAndExactRadiusEdge checks the level-24 selected cast, total 114 after +22% influence, eleven nominal 10-point ticks, expiry and excluded recipients. The same edge target takes 7 from the first two pulses under +43 Viral Resistance, then 10 after the resistance expires."
         }
       }
     },

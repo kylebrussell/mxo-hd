@@ -261,8 +261,6 @@ namespace hds
             { 472, Virus(472, Dot(716, 716, 30)) },
             // Code Infection 4, morpheuzzz_001 2394 (866) and crashover2k_008 40520 (880), 30 s
             { 474, Virus(474, Dot(866, 880, 30)) },
-            // Infect Area 1, morpheuzzz_001 2590: 450 over 30 s
-            { 353, Virus(353, Dot(450, 450, 30)) },
             // Infect Area 2, morpheuzzz_001 2808: 624 over 30 s
             { 475, Virus(475, Dot(624, 624, 30)) },
             // Vector, crashover2k_008 40322: Powerless 8.94 s (7.44 s on Morpheuzzz, 1829), ViralDeflection -60 for 30 s;
@@ -271,8 +269,6 @@ namespace hds
             // Freeze Area 2.0, Rajko MaraCThenTimeDOut 60983: ViralResistance -100 for 12 s, pacified 10.02 s, immunity 12 s
             { 479, new Effect { Ability = 479, Virus = true, ImmunitySeconds = 12,
                 Mods = new[] { Stat(157, -100, 12), State(MezAbility, 10.02f) } } },
-            // Zone of Powerlessness, crashover2k proxy_unsorted_Packets1 20393 (9.9 s) and entilsar lastday2 74159 (10.14 s)
-            { 399, Virus(399, State(PowerlessAbility, 10.14f)) },
 
             // ---- Spy ----
             // Neuro Dart, old_world Vector 33458: 15 s of slows and defence debuffs and 264 damage over time

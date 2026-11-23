@@ -450,11 +450,11 @@ public class FreeCastViralLandingTests : IDisposable
     }
 
     [Theory]
-    [InlineData(399, 800, TempMods.PowerlessAbility, 0, 11.0526, 0, false)]
+    [InlineData(399, 800, TempMods.PowerlessAbility, 0, 6.54, 0, false)]
     [InlineData(400, 500, TempMods.DOTPlaceHolderAbility, 74, 15, 12, false)]
-    [InlineData(399, 800, TempMods.PowerlessAbility, 0, 11.0526, 0, true)]
+    [InlineData(399, 800, TempMods.PowerlessAbility, 0, 6.54, 0, true)]
     [InlineData(400, 500, TempMods.DOTPlaceHolderAbility, 74, 15, 12, true)]
-    [InlineData(353, 500, TempMods.DOTPlaceHolderAbility, 549, 30, 46, false)]
+    [InlineData(353, 500, TempMods.DOTPlaceHolderAbility, 114, 30, 10, false)]
     [InlineData(402, 600, 115, -125, 18, 0, false)]
     public void DespoilerFieldsLandOnTheSelectedEnemyAndExactRadiusEdge(
         ushort id, int edgeRadius, ushort stat, int amount, double duration, int damagePerTick, bool deflectPrimary)
@@ -520,18 +520,19 @@ public class FreeCastViralLandingTests : IDisposable
             }).ToArray();
             Assert.All(excluded, target => Assert.False(TimedEffects.ForPlayer(target).Effects.HasParent(id)));
 
-            if (id == 400)
+            int resistedDamage = id switch { 353 => 3, 400 => 2, _ => 0 };
+            if (resistedDamage != 0)
                 TimedEffects.ForPlayer(edge).Effects.Apply(8,
                     new[] { new TimedEffects.Active { Target = 157, Value = 43, Seconds = 5.1f, Proc = TempMods.Proc.Stat } },
                     effects[0].Start);
             TimedEffects.RunDue(effects.Max(effect => effect.Start) + 2.51);
-            Assert.All(affected, target => Assert.Equal(1000 - damagePerTick + (id == 400 && target == edge ? 2 : 0), PvpCombat.HealthOf(target)));
+            Assert.All(affected, target => Assert.Equal(1000 - damagePerTick + (target == edge ? resistedDamage : 0), PvpCombat.HealthOf(target)));
             TimedEffects.RunDue(effects.Max(effect => effect.Start) + 5.01);
-            Assert.All(affected, target => Assert.Equal(1000 - 2 * damagePerTick + (id == 400 && target == edge ? 4 : 0), PvpCombat.HealthOf(target)));
+            Assert.All(affected, target => Assert.Equal(1000 - 2 * damagePerTick + (target == edge ? 2 * resistedDamage : 0), PvpCombat.HealthOf(target)));
             TimedEffects.RunDue(effects.Max(effect => effect.Expires) + 0.01);
             TimedEffects.RunDue(effects.Max(effect => effect.Expires) + 3);
             int ticks = id == 353 ? 11 : 5;
-            Assert.All(affected, target => Assert.Equal(1000 - ticks * damagePerTick + (id == 400 && target == edge ? 4 : 0), PvpCombat.HealthOf(target)));
+            Assert.All(affected, target => Assert.Equal(1000 - ticks * damagePerTick + (target == edge ? 2 * resistedDamage : 0), PvpCombat.HealthOf(target)));
             if (id == 402) Assert.All(affected, target => Assert.Equal(0f, BitConverter.ToSingle(target.playerInstance.MovementScale.getValue())));
             Assert.All(excluded, target => Assert.Equal(1000, PvpCombat.HealthOf(target)));
             Assert.All(subjects, subject =>
