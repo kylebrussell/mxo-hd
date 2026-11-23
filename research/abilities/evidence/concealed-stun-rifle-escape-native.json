@@ -1,0 +1,44 @@
+{
+  "families": {
+    "rifle-butt-smash-escape": {
+      "representative": 453,
+      "result": "pass",
+      "head": "93267c902cc095a9a5222d77ab670d4794ffb854",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/982#issuecomment-7107445297",
+      "scope": "Stock native win and armor retest. The first win needed no roll adjustment; the second used the one-shot fixture aid. The earlier stock run verified at-rest refusal and natural losses and a tie. https://github.com/kylebrussell/mxo-hd/pull/982#issuecomment-7106298381"
+    }
+  },
+  "abilities": {
+    "504": {
+      "note": "PR974 stock verifies the delayed Stun and both independent four-second lifetimes with a fixture-controlled marker roll. Armor piercing, historical damage and the full direct attack contest remain open. https://github.com/kylebrussell/mxo-hd/pull/974#issuecomment-7107539672",
+      "checks": {
+        "controls": {
+          "source": "GOB 504 supplies a 30% 0.1-second marker with value four. ApplyStunWithTimer installs Stun 102, whose initializer links Combat Tactics 163 −20, and separate immunity.",
+          "runtime": "The landed marker expires and installs the four-second state without extending immunity or replacing a protected active Stun. The linked modifier is removed with the state.",
+          "test": "ConcealedShotStunLowersBothAttackInputsAndRemovesTheSameLinkedRecord and ConcealedAndSniperShotsUseTheirOwnDelayedStunProbabilities verify attack inputs, chance, immunity and expiry. Stock verifies 504/504, 504/102, 102/0, 102/163 and 734/681 with matched removals and both localized notices. https://github.com/kylebrussell/mxo-hd/pull/974#issuecomment-7107539672"
+        }
+      }
+    },
+    "453": {
+      "family": "rifle-butt-smash-escape",
+      "note": "The original tactical-value producer for the stored +11 remains unresolved. https://github.com/kylebrussell/mxo-hd/pull/982#issuecomment-7107445297",
+      "checks": {
+        "damage": {
+          "source": "Current GOB 453 stores fixed Ballistic base 6. The old inactive direct-object hook has a different amount and does not define the current route.",
+          "runtime": "Only a winning withdrawal deals the ordinary typed ballistic ability hit before the fight ends.",
+          "test": "The stock unadjusted win hit for 7 and the armored retest observed raw 7, final 6 with +20 Ballistic Resistance. Unassisted losses and a tie dealt no 453 damage. https://github.com/kylebrussell/mxo-hd/pull/982#issuecomment-7107445297 https://github.com/kylebrussell/mxo-hd/pull/982#issuecomment-7106298381"
+        },
+        "targeting": {
+          "source": "GOB 453 is a selected enemy rifle escape with TestFunction 6 and a 16 m selector.",
+          "runtime": "The loaded ability binds the current rifle interlock opponent and rechecks spawn, weapon and style. The withdrawal path resolves against the opponent roll.",
+          "test": "RifleButtSmashQueuesOnlyAgainstItsCurrentOpponent verifies at rest, wrong weapon/style, unloaded and stale opponent refusal. RifleEscapeUsesTheTacticalComparisonInsteadOfOrdinaryHits verifies win/loss/tie. Both stock runs verify original opponent, refusals and no redirection. https://github.com/kylebrussell/mxo-hd/pull/982#issuecomment-7106298381 https://github.com/kylebrussell/mxo-hd/pull/982#issuecomment-7107445297"
+        },
+        "choreography": {
+          "source": "The shipped Rifle RifleButt move is 11356. GOB TestFunction 6 identifies an escape.",
+          "runtime": "The ordinary withdrawal outcome emits 0x100 and the special move on success. Lost and tied attempts continue the normal exchange.",
+          "test": "Both native wins played 11356, withdrew, removed both sides’ interlock locks and restored movement. Natural losses and a tie played ordinary exchanges and stayed in combat. https://github.com/kylebrussell/mxo-hd/pull/982#issuecomment-7107445297 https://github.com/kylebrussell/mxo-hd/pull/982#issuecomment-7106298381"
+        }
+      }
+    }
+  }
+}
