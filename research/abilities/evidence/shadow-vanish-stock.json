@@ -1,0 +1,70 @@
+{
+  "families": {
+    "vanish-interlock-stock": {
+      "representative": 368,
+      "result": "pass",
+      "head": "c7764608aa95b8c237b70141056fef32d30b1ddf",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/1025#issuecomment-7113811885",
+      "scope": "The tests cover shipped cost/reuse, non-ordinary withdrawal input, and the callback life/world fence. Native verified at-rest suppression, 30 IS, the gated one-shot win, 0x100, zero damage, clip 4272 and withdrawal, then the 2.04 s callback, 115/881 for 130 s, ally view and no second debit. Stock also verified the ordinary Belt watcher refusal and explicit movement recovery. The native run used the documented QA roll aid and did not time the full 1800 s reuse."
+    },
+    "master-shadow-stock-lifecycle": {
+      "representative": 1118,
+      "result": "pass",
+      "head": "c8ec4c041b82b3cbf4c4df65cd389a42a5312e56",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/1024#issuecomment-7113709613",
+      "scope": "MasterShadowBatchTests checks the Evading condition, shortfall teardown and exact 30-second timer. Native verified 1.54 s and 12 IS, 681 +25/180 s, ally and enemy visibility, 61 off, three 25 IS drains and shortfall with 5 IS retained, removal and owner/observer term FX. Bag Activate Item refused while active and consumed the same item after term. The hotbar shortcut sent no request and healing magnitude was not observable at cap."
+    }
+  },
+  "abilities": {
+    "368": {
+      "family": "vanish-interlock-stock",
+      "checks": {
+        "targeting": {
+          "source": "Shipped Vanish stores TestFunction 6, +30 tactical input, 30 IS, and 1800 s reuse. The shipped strict withdrawal branch leads to VanishInit, which checks the Invisibility Belt and invokes the timed vanish. ILDB provides nine NinjaVanish escape clips.",
+          "runtime": "The ordinary learned move queues against a live interlock opponent and uses the withdrawal resolver. A win plays the matching clip and ends combat without ability damage. The delayed Belt callback is fenced to live world state and can vanish with a watcher still nearby.",
+          "test": "The tests cover shipped cost/reuse, non-ordinary withdrawal input, and the callback life/world fence. Native verified at-rest suppression, 30 IS, the gated one-shot win, 0x100, zero damage, clip 4272 and withdrawal, then the 2.04 s callback, 115/881 for 130 s, ally view and no second debit. Stock also verified the ordinary Belt watcher refusal and explicit movement recovery. The native run used the documented QA roll aid and did not time the full 1800 s reuse. https://github.com/kylebrussell/mxo-hd/pull/1025#issuecomment-7113811885"
+        },
+        "stealth-detection": {
+          "source": "Shipped Vanish stores TestFunction 6, +30 tactical input, 30 IS, and 1800 s reuse. The shipped strict withdrawal branch leads to VanishInit, which checks the Invisibility Belt and invokes the timed vanish. ILDB provides nine NinjaVanish escape clips.",
+          "runtime": "The ordinary learned move queues against a live interlock opponent and uses the withdrawal resolver. A win plays the matching clip and ends combat without ability damage. The delayed Belt callback is fenced to live world state and can vanish with a watcher still nearby.",
+          "test": "The tests cover shipped cost/reuse, non-ordinary withdrawal input, and the callback life/world fence. Native verified at-rest suppression, 30 IS, the gated one-shot win, 0x100, zero damage, clip 4272 and withdrawal, then the 2.04 s callback, 115/881 for 130 s, ally view and no second debit. Stock also verified the ordinary Belt watcher refusal and explicit movement recovery. The native run used the documented QA roll aid and did not time the full 1800 s reuse. https://github.com/kylebrussell/mxo-hd/pull/1025#issuecomment-7113811885"
+        },
+        "script": {
+          "source": "Shipped Vanish stores TestFunction 6, +30 tactical input, 30 IS, and 1800 s reuse. The shipped strict withdrawal branch leads to VanishInit, which checks the Invisibility Belt and invokes the timed vanish. ILDB provides nine NinjaVanish escape clips.",
+          "runtime": "The ordinary learned move queues against a live interlock opponent and uses the withdrawal resolver. A win plays the matching clip and ends combat without ability damage. The delayed Belt callback is fenced to live world state and can vanish with a watcher still nearby.",
+          "test": "The tests cover shipped cost/reuse, non-ordinary withdrawal input, and the callback life/world fence. Native verified at-rest suppression, 30 IS, the gated one-shot win, 0x100, zero damage, clip 4272 and withdrawal, then the 2.04 s callback, 115/881 for 130 s, ally view and no second debit. Stock also verified the ordinary Belt watcher refusal and explicit movement recovery. The native run used the documented QA roll aid and did not time the full 1800 s reuse. https://github.com/kylebrussell/mxo-hd/pull/1025#issuecomment-7113811885"
+        },
+        "behavior-tests": {
+          "source": "Shipped Vanish stores TestFunction 6, +30 tactical input, 30 IS, and 1800 s reuse. The shipped strict withdrawal branch leads to VanishInit, which checks the Invisibility Belt and invokes the timed vanish. ILDB provides nine NinjaVanish escape clips.",
+          "runtime": "The ordinary learned move queues against a live interlock opponent and uses the withdrawal resolver. A win plays the matching clip and ends combat without ability damage. The delayed Belt callback is fenced to live world state and can vanish with a watcher still nearby.",
+          "test": "The tests cover shipped cost/reuse, non-ordinary withdrawal input, and the callback life/world fence. Native verified at-rest suppression, 30 IS, the gated one-shot win, 0x100, zero damage, clip 4272 and withdrawal, then the 2.04 s callback, 115/881 for 130 s, ally view and no second debit. Stock also verified the ordinary Belt watcher refusal and explicit movement recovery. The native run used the documented QA roll aid and did not time the full 1800 s reuse. https://github.com/kylebrussell/mxo-hd/pull/1025#issuecomment-7113811885"
+        },
+        "choreography": {
+          "source": "The shipped ILDB Escapes:NinjaVanish family supplies nine clips, including 4272 for the Self Defense Speed pairing.",
+          "runtime": "On a qualifying queued win, the move selects the authored opponent-style/tactic clip and sends it with the no-damage withdrawal exchange before finishing the fight.",
+          "test": "Stock PR1025 saw the exact 0x100 round and animation 4272 (NinjaVanish v SS SR), with zero ability damage before the explicit withdrawal. https://github.com/kylebrussell/mxo-hd/pull/1025#issuecomment-7113811885"
+        }
+      }
+    },
+    "1118": {
+      "family": "master-shadow-stock-lifecycle",
+      "checks": {
+        "stealth-detection": {
+          "source": "ShadowObjectInit and ShadowObjectTerm grant and remove Shadow and Evading. ISDrainWithAbilityDeactivation charges 25 at five-second intervals and AddRecastTimer starts the 30-second reuse at termination. The shipped timed-item admission checks the Shadow state.",
+          "runtime": "The normal grant requires loaded parent 367, publishes its 681 bonus and Shadow presentation, stops listed auras, rejects timed item use during the state, and retains independent shield state on termination.",
+          "test": "MasterShadowBatchTests checks the Evading condition, shortfall teardown and exact 30-second timer. Native verified 1.54 s and 12 IS, 681 +25/180 s, ally and enemy visibility, 61 off, three 25 IS drains and shortfall with 5 IS retained, removal and owner/observer term FX. Bag Activate Item refused while active and consumed the same item after term. The hotbar shortcut sent no request and healing magnitude was not observable at cap. https://github.com/kylebrussell/mxo-hd/pull/1024#issuecomment-7113709613"
+        },
+        "script": {
+          "source": "ShadowObjectInit and ShadowObjectTerm grant and remove Shadow and Evading. ISDrainWithAbilityDeactivation charges 25 at five-second intervals and AddRecastTimer starts the 30-second reuse at termination. The shipped timed-item admission checks the Shadow state.",
+          "runtime": "The normal grant requires loaded parent 367, publishes its 681 bonus and Shadow presentation, stops listed auras, rejects timed item use during the state, and retains independent shield state on termination.",
+          "test": "MasterShadowBatchTests checks the Evading condition, shortfall teardown and exact 30-second timer. Native verified 1.54 s and 12 IS, 681 +25/180 s, ally and enemy visibility, 61 off, three 25 IS drains and shortfall with 5 IS retained, removal and owner/observer term FX. Bag Activate Item refused while active and consumed the same item after term. The hotbar shortcut sent no request and healing magnitude was not observable at cap. https://github.com/kylebrussell/mxo-hd/pull/1024#issuecomment-7113709613"
+        },
+        "behavior-tests": {
+          "source": "ShadowObjectInit and ShadowObjectTerm grant and remove Shadow and Evading. ISDrainWithAbilityDeactivation charges 25 at five-second intervals and AddRecastTimer starts the 30-second reuse at termination. The shipped timed-item admission checks the Shadow state.",
+          "runtime": "The normal grant requires loaded parent 367, publishes its 681 bonus and Shadow presentation, stops listed auras, rejects timed item use during the state, and retains independent shield state on termination.",
+          "test": "MasterShadowBatchTests checks the Evading condition, shortfall teardown and exact 30-second timer. Native verified 1.54 s and 12 IS, 681 +25/180 s, ally and enemy visibility, 61 off, three 25 IS drains and shortfall with 5 IS retained, removal and owner/observer term FX. Bag Activate Item refused while active and consumed the same item after term. The hotbar shortcut sent no request and healing magnitude was not observable at cap. https://github.com/kylebrussell/mxo-hd/pull/1024#issuecomment-7113709613"
+        }
+      }
+    }
+  }
+}
