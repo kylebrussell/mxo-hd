@@ -32,6 +32,9 @@ namespace hds
         public const ushort DualPistolPointBlank = 499, DualPistolDash = 500, PistolWhip = 501, DualPistolExecution = 502;
         public const ushort RifleButtSmash = 453;
 
+        internal static bool IsWithdrawalSpecial(ushort? ability) =>
+            ability == Stealth.VanishAbility || IsRifleEscape(ability);
+
         internal static bool IsRifleEscape(ushort? ability) => ability == RifleButtSmash &&
             AbilityCatalog.Find(RifleButtSmash)?.Number("Ability/TestFunction", -1) == 6;
 
@@ -43,7 +46,7 @@ namespace hds
 
         internal static bool KeepsQueuedOpponent(ushort? ability) =>
             ability == 126 || ability == 176 || ability == SlidingVolley || ability == PistolEvasive ||
-            ability == PistolBarrage || ability == DualPistolExecution || IsFullAuto(ability) || IsInstantDualPistolSpecial(ability) || IsRifleEscape(ability);
+            ability == PistolBarrage || ability == DualPistolExecution || IsFullAuto(ability) || IsInstantDualPistolSpecial(ability) || IsWithdrawalSpecial(ability);
 
         internal static bool IsInstantDualPistolSpecial(ushort? ability) =>
             ability == DualPistolPointBlank || ability == PistolWhip;

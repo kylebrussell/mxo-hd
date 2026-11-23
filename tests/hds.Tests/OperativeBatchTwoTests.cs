@@ -241,12 +241,12 @@ public class OperativeBatchTwoTests
     public void VanishAftermathDoesNotCrossWorldOrLifeAndNewCastCanRetry(bool newLife)
     {
         var actor = StealthActor();
-        Stealth.Land(actor, 368, 0);
+        Stealth.ScheduleVanish(actor, _ => true);
         if (newLife) actor.playerData.lifeGeneration++;
         else actor.playerData.worldGeneration++;
         DelayedActions.RunDue(TimeUtils.GetSimTimeSeconds() + 2.1);
         Assert.Null(Stealth.Current(actor));
-        Stealth.Land(actor, 368, 0);
+        Stealth.ScheduleVanish(actor, _ => true);
         Assert.Null(Stealth.Current(actor));
         DelayedActions.RunDue(TimeUtils.GetSimTimeSeconds() + 2.1);
         Assert.Equal((ushort?)1116, Stealth.Current(actor)?.Def.Ability);

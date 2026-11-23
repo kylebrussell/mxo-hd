@@ -12,6 +12,7 @@ namespace hds
         public const string DisengageMode = "MXO_COMBAT_FIXTURE_DISENGAGE";
         public const string ResetMode = "MXO_COMBAT_FIXTURE_RESET";
         public const string LiveResetMode = "MXO_COMBAT_FIXTURE_LIVE_RESET";
+        public const string VanishWinMode = "MXO_VANISH_WIN_QA";
         public const string RifleEscapeWinMode = "MXO_RIFLE_ESCAPE_WIN_QA";
         public const string PistolWhipLossMode = "MXO_PISTOL_WHIP_LOSS_QA";
         public const int DummyPhysicalResistance = 75;
@@ -71,6 +72,7 @@ namespace hds
         internal static bool RoundAidAllowed(WorldClient caller, ushort ability) => ability switch
         {
             CombatSpecials.RifleButtSmash => Allowed(caller, RifleEscapeWinMode),
+            Stealth.VanishAbility => Allowed(caller, VanishWinMode),
             CombatSpecials.PistolWhip => Allowed(caller, PistolWhipLossMode),
             _ => false
         };
@@ -83,6 +85,16 @@ namespace hds
                 fight.ArmRoundAid(caller, CombatSpecials.RifleButtSmash)
                 ? "Next Rifle Butt Smash against QAEnemy is armed for one winning withdrawal roll."
                 : "Rifle Butt Smash win aid requires the active interlock with QAEnemy.";
+        }
+
+        internal static string ArmVanishWin(WorldClient caller)
+        {
+            if (!RoundAidAllowed(caller, Stealth.VanishAbility))
+                return "Vanish win aid requires the disposable Vanish fixture.";
+            return CombatManager.GetHandler(caller).ActiveInterlockIdentity is PvpFight fight &&
+                fight.ArmRoundAid(caller, Stealth.VanishAbility)
+                ? "Next Vanish against QAEnemy is armed for one winning withdrawal roll."
+                : "Vanish win aid requires the active interlock with QAEnemy.";
         }
 
         internal static string ArmPistolWhipLoss(WorldClient caller)

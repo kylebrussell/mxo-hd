@@ -67,6 +67,9 @@ namespace hds
                 (!CombatSpecials.IsInstantDualPistolSpecial(ability.getAbilityID()) ||
                     AbilityPassives.IsLoaded(caster, ability.getAbilityID()) &&
                     CombatSpecials.HasEquippedDualHandguns(caster) && CombatStyles.CanUse(caster, ability.getAbilityID())) &&
+                (ability.getAbilityID() != Stealth.VanishAbility ||
+                    AbilityPassives.IsLoaded(caster, Stealth.VanishAbility) &&
+                    ControlActions.CanWithdraw(TimedEffects.ForPlayer(caster).Effects)) &&
                 (!CombatSpecials.IsRifleEscape(ability.getAbilityID()) ||
                     AbilityPassives.IsLoaded(caster, CombatSpecials.RifleButtSmash) &&
                     CombatSpecials.HasEquippedRifle(caster) && CombatStyles.CanUse(caster, CombatSpecials.RifleButtSmash) &&
@@ -104,6 +107,12 @@ namespace hds
         {
             ability = AbilityCatalog.Canonical(ability);
             string target = " vs " + targetStyle + Suffix(targetTactic);
+            if (ability == Stealth.VanishAbility && landed)
+            {
+                char style = targetStyle == 'K' || targetStyle == 'W' ? targetStyle : 'S';
+                char tactic = targetTactic == CombatTactic.Block ? 'D' : Suffix(targetTactic);
+                return All.FirstOrDefault(m => m.Group == "Escapes:NinjaVanish" && m.Name == $"NinjaVanish v {style}{tactic} SR");
+            }
             var bound = boundSpecials.Value[ability];
             if (landed && boundSpecials.Value.Contains(ability))
                 return bound.FirstOrDefault(m => m.Name.EndsWith(target, StringComparison.Ordinal)) ??

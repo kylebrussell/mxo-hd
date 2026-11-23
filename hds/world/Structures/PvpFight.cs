@@ -483,8 +483,8 @@ namespace hds
 
         internal void ApplyRifleEscapeWin(Side caster, Side opponent, AbilityItem ability, ref ushort attack, ref ushort opposingAttack)
         {
-            if (!CombatSpecials.IsRifleEscape(ability?.getAbilityID()) ||
-                !ConsumeRoundAid(caster, opponent, CombatSpecials.RifleButtSmash)) return;
+            ushort id = ability?.getAbilityID() ?? 0;
+            if (!CombatSpecials.IsWithdrawalSpecial(id) || !ConsumeRoundAid(caster, opponent, id)) return;
 
             ushort originalAttack = attack, originalOpposingAttack = opposingAttack;
             if (attack <= opposingAttack)
@@ -492,7 +492,8 @@ namespace hds
                 attack = Math.Max((ushort)1, attack);
                 opposingAttack = (ushort)(attack - 1);
             }
-            Output.WriteDebugLog($"[RIFLE ESCAPE QA] 453 win consumed for CSR_Tester against QAEnemy: {originalAttack}/{originalOpposingAttack} -> {attack}/{opposingAttack}");
+            string log = id == Stealth.VanishAbility ? "VANISH QA" : "RIFLE ESCAPE QA";
+            Output.WriteDebugLog($"[{log}] {id} win consumed for CSR_Tester against QAEnemy: {originalAttack}/{originalOpposingAttack} -> {attack}/{opposingAttack}");
         }
 
         // The fight calls this only for an ordinary exchange, after rolling both sides.
@@ -710,8 +711,8 @@ namespace hds
                 AbilityItem secondAbility = opening || !counter ? null : QueuedAbilityForRound(second, first);
                 if (!CombatAnimations.CanResolveQueuedAbility(first.Client, firstAbility)) firstAbility = null;
                 if (!CombatAnimations.CanResolveQueuedAbility(second.Client, secondAbility)) secondAbility = null;
-                bool firstEscape = CombatSpecials.IsRifleEscape(firstAbility?.getAbilityID());
-                bool secondEscape = CombatSpecials.IsRifleEscape(secondAbility?.getAbilityID());
+                bool firstEscape = CombatSpecials.IsWithdrawalSpecial(firstAbility?.getAbilityID());
+                bool secondEscape = CombatSpecials.IsWithdrawalSpecial(secondAbility?.getAbilityID());
                 bool firstWithdraws = first.Withdrawing || firstEscape;
                 bool secondWithdraws = second.Withdrawing || secondEscape;
                 bool bothWithdraw = firstWithdraws && secondWithdraws && counter && !opening;
@@ -872,7 +873,8 @@ namespace hds
             // Outside the fight's lock: these end the fight, and may end a duel
             if (withdrew != null)
             {
-                if (landed != null)
+                if (landed?.getAbilityID() == Stealth.VanishAbility) Stealth.ScheduleVanish(withdrew.Client);
+                else if (landed != null)
                     PvpCombat.LandAbilityOn(withdrew.Client, landed, (withdrew == first ? second : first).Client, sneakOpener);
                 Output.WriteDebugLog("[PVP] " + PvpFlag.Name(withdrew.Client) + " withdraws");
                 End(EndReason.Withdrew, withdrew.Client);

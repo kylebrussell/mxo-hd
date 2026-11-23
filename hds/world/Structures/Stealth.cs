@@ -414,25 +414,6 @@ namespace hds
                 Begin(target, Defs[InvisibilityImpartedAbility], AbilityLevel(client, id));
                 return;
             }
-            if (id == VanishAbility)
-            {
-                // VanishInit runs as the 2 s modifier's term function: reapplyAbility(InvisibilityGrant), no proximity test.
-                // Our choice: the fight the Spy vanishes from ends with it.
-                ClientData owner = client.playerData;
-                PlayerCharacter avatar = client.playerInstance;
-                int world = owner.worldGeneration, life = owner.lifeGeneration;
-                long transport = client.TransportFence.Capture();
-                DelayedActions.AfterFor(client, VanishDelaySeconds, () =>
-                {
-                    if (!client.TransportFence.IsCurrent(transport) || !client.Alive ||
-                        !ReferenceEquals(client.playerData, owner) || !ReferenceEquals(client.playerInstance, avatar) ||
-                        owner.worldGeneration != world || owner.lifeGeneration != life || !owner.getOnWorld() ||
-                        owner.worldChangePending || owner.isDead || owner.duelDeath) return;
-                    CombatManager.GetHandler(client).StopCombatIfActive(CombatSession.CombatEndReason.AttackerFled);
-                    Begin(client, Defs[InvisibilityGrantAbility], AbilityLevel(client, InvisibilityGrantAbility));
-                });
-                return;
-            }
             if (id == ImprovedSneakAbility)
             {
                 // The existing mastery borrows the Sneak grant's modifiers. ValueFunction 2
@@ -445,6 +426,33 @@ namespace hds
             if ((id == InvisibilityImpartedAbility || id == MasterShadowAbility) &&
                 Refusal(client, id, targetView, out _) != null) return;
             if (Defs.TryGetValue(id, out Def def)) Begin(client, def, AbilityLevel(client, id));
+        }
+
+        /// <summary>The authored two-second term callback of a successful withdrawal.</summary>
+        internal static void ScheduleVanish(WorldClient client, Func<WorldClient, bool> ownsBelt = null)
+        {
+            ClientData owner = client.playerData;
+            PlayerCharacter avatar = client.playerInstance;
+            int world = owner.worldGeneration, life = owner.lifeGeneration;
+            long transport = client.TransportFence.Capture();
+            Output.WriteDebugLog($"[VANISH] {TimedEffects.PlayerName(client)} won withdrawal, {VanishDelaySeconds:R} s to callback");
+            DelayedActions.AfterFor(client, VanishDelaySeconds, () =>
+            {
+                if (!client.TransportFence.IsCurrent(transport) || !client.Alive ||
+                    !ReferenceEquals(client.playerData, owner) || !ReferenceEquals(client.playerInstance, avatar) ||
+                    owner.worldGeneration != world || owner.lifeGeneration != life || !owner.getOnWorld() ||
+                    owner.worldChangePending || owner.isDead || owner.duelDeath ||
+                    CombatManager.GetHandler(client).HasActiveInterlock) return;
+                if (!(ownsBelt ?? SpyGroundBombs.HasInvisibilityBelt)(client))
+                {
+                    Output.WriteDebugLog($"[VANISH] {TimedEffects.PlayerName(client)} has no carried Invisibility Belt");
+                    new ServerPackets().sendSystemChatMessage(client, "Vanish requires an Invisibility Belt.", "BROADCAST");
+                    return;
+                }
+
+                // VanishInit reapplies the ordinary Belt state with the one-use proximity override.
+                Begin(client, Defs[InvisibilityGrantAbility], AbilityLevel(client, InvisibilityGrantAbility));
+            });
         }
 
         /// <summary>Puts a stealth state on the player (replacing any other: every one of them is AbilityIsExclusive).</summary>

@@ -557,8 +557,14 @@ namespace hds
             bool pistolAerial = AbilityID == AbilityConditionalControls.PistolAerial;
             bool slidingVolley = AbilityID == CombatSpecials.SlidingVolley;
             bool rifleEscape = CombatSpecials.IsRifleEscape(AbilityID);
+            bool vanish = AbilityID == Stealth.VanishAbility;
+            if (vanish && !ControlActions.CanWithdraw(TimedEffects.ForPlayer(Store.currentClient).Effects))
+            {
+                Deny(AbilityID, "Unable to withdraw in the current state.", AbilityRefusals.LegacyAmbiguous, sendServerText: false);
+                return;
+            }
             bool instantDualPistol = CombatSpecials.IsInstantDualPistolSpecial(AbilityID);
-            bool checkedInterlockSelection = coderInterlock || pistolSlide || pistolAerial || slidingVolley || instantDualPistol || rifleEscape;
+            bool checkedInterlockSelection = coderInterlock || pistolSlide || pistolAerial || slidingVolley || instantDualPistol || rifleEscape || vanish;
             if (checkedInterlockSelection && !AbilityPassives.IsLoaded(Store.currentClient, AbilityID))
             {
                 Deny(AbilityID, "Load this ability before using it.", AbilityRefusals.NotLoaded, sendServerText: false);
@@ -632,7 +638,13 @@ namespace hds
             if (strictInterlock)
             {
                 ushort? spawn = packet.Length == 41 ? (ushort?)BitConverter.ToUInt16(packet, 4) : null;
-                requiredOpponent = CombatManager.GetHandler(Store.currentClient).PowerShotOpponent(currentTargetViewId, spawn);
+                var combat = CombatManager.GetHandler(Store.currentClient);
+                if (vanish && currentTargetViewId <= 2 && combat.CurrentInterlockHandle() is uint live)
+                {
+                    currentTargetViewId = (ushort)live;
+                    spawn = (ushort)(live >> 16);
+                }
+                requiredOpponent = combat.PowerShotOpponent(currentTargetViewId, spawn);
                 if (!requiredOpponent.HasValue)
                 {
                     DenyMissingInterlock(AbilityID);

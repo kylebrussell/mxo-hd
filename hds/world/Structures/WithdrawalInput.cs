@@ -8,7 +8,13 @@ namespace hds
             (queued==null||AbilityCatalog.Find(queued.getAbilityID())?.Number("Ability/TestFunction",-1)!=6);
         public static int Attack(WorldClient actor,AbilityItem queued,bool ordinary)
         {
-            if(!ordinary)return InterlockInitiative.Attack(actor,queued);
+            if (!ordinary)
+            {
+                int attack = InterlockInitiative.Attack(actor, queued);
+                if (queued?.getAbilityID() == Stealth.VanishAbility)
+                    attack += (int)AbilityCatalog.Find(Stealth.VanishAbility).Number("Ability/TacticBonus");
+                return attack;
+            }
             int direct = AbilityStats.Player(actor, 1005);
             int percent = AbilityStats.Player(actor, 1045);
             // The catalog links 1045 to 1005 and stock Status displays 1045 as a percent.
