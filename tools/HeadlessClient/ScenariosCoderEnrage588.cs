@@ -37,7 +37,7 @@ public static partial class Scenarios
         };
 
         var caster = await context.AddPlayerAsync(Seed("EnrageRetargetCaster", casterX, 1) with { OwnedLoadedAbilities = profile });
-        var subject = await context.AddPlayerAsync(Seed("EnrageRetargetSubject", subjectX, 2));
+        var subject = await context.AddPlayerAsync(Seed("EnrageRetargetSubject", subjectX, 2) with { InnerStrength = 100 });
         var original = await context.AddPlayerAsync(Seed("EnrageRetargetOld", originalX, 1));
         var replacement = await context.AddPlayerAsync(Seed("EnrageRetargetNew", replacementX, 1));
         foreach (var player in new[] { caster, subject, original, replacement })
@@ -59,16 +59,35 @@ public static partial class Scenarios
 
         subject.SendRpc($"40 {oldHandle} 01 6b");
         await subject.WaitForRpcAsync($"46 {oldHandle} 01");
+        ushort neutralIs = RefusalOwnValue(subject, "InnerStrengthAvailable", "02 80 80 80 10");
+        int neutralViews = subject.World.ViewSnapshot().Count;
+        await SelectTacticAsync(3, "Block");
+        await subject.WaitUntilAsync(() => HasBlockAward(neutralViews, neutralIs),
+            "Ordinary Block awards ten IS before Enrage", TimeSpan.FromSeconds(8));
+        await SelectTacticAsync(0, "Speed");
+
         caster.SendRpc("3e 6b f0 03 00 00 00 00");
         await caster.WaitForViewUpdateAsync(2, "02 80 80 80 80 80 10 f0 03 00 00");
         // Separate server probe. Stock Close Combat and target selection retain their captured shapes.
+        int castLog = context.Server.DebugLog().Length;
         caster.SendRpc(new AbilityUseRecord(enrage, castHandle, 0, 0, 0, 0, 0x6b, 0x6b, 0, 0).Encode());
+        var cast = await caster.WaitForRpcAsync("80 ac 4c 02");
+        Check.Equal(2f, BitConverter.ToSingle(cast.Bytes.AsSpan(^4)), "Enrage 1.0 uses the ordinary two-second player cast");
+        await caster.WaitForRpcAsync("80 bd 01 4c 02 04 00 00 e0 41 01");
+        Check.That(context.Server.DebugLog()[castLog..].Contains(
+            $"[ABILITY-COST] char={caster.CharId} ability={enrage} paid=27 IS=250->223", StringComparison.Ordinal),
+            "The stock cost is paid before the affected player's control");
         string modifier = $"[MODIFIER] char={subject.CharId} source={enrage} stat=93";
-        await subject.WaitUntilAsync(() => context.Server.DebugLog().Contains(modifier + " add"),
-            "The ordinary selected cast Enrages a player already in interlock", TimeSpan.FromSeconds(8));
+        var add = await subject.WaitForRpcAsync(
+            frame => DeflectCodeFixture.State(frame.Bytes, enrage, TempMods.EnrageAbility, false, out float seconds) && seconds == 12,
+            "The already-interlocked player receives the ordinary twelve-second Enraged record");
 
         replacement.SendRpc($"40 {replacementSubject} 01 6b");
         await replacement.WaitForRpcAsync($"46 {replacementSubject} 01");
+        ushort enragedIs = RefusalOwnValue(subject, "InnerStrengthAvailable", "02 80 80 80 10");
+        int enragedViews = subject.World.ViewSnapshot().Count;
+        int blockRoundLog = context.Server.DebugLog().Length;
+        await SelectTacticAsync(3, "Block");
         subject.SendRpc($"81 51 {newHandle}");
         subject.SendChat("?combatdepth shieldstatus");
         await subject.WaitForTextAsync($"target={replacement.Handle}");
@@ -81,6 +100,23 @@ public static partial class Scenarios
         subject.SendRpc($"40 {newHandle} 01 6b");
         await subject.WaitUntilAsync(() => context.Server.DebugLog().Contains(refused),
             "Enrage refuses only the actual interlock retarget", TimeSpan.FromSeconds(5));
+        await subject.WaitUntilAsync(() => context.Server.DebugLog()[blockRoundLog..].Split('\n').Any(line =>
+            line.StartsWith("[PVP] Round ", StringComparison.Ordinal) && !line.Contains("(opening)", StringComparison.Ordinal) &&
+            line.Contains($"{subject.Handle} Block (", StringComparison.Ordinal)),
+            "The player can select and play a real Block round under Enrage 1.0", TimeSpan.FromSeconds(6));
+        subject.SendChat("?combatdepth shieldstatus");
+        await subject.WaitForTextAsync($"target={replacement.Handle}");
+        Check.That(!HasBlockAward(enragedViews, enragedIs), "Enrage 1.0 suppresses the ordinary ten-point award during the Block round");
+
+        ushort resumedIs = RefusalOwnValue(subject, "InnerStrengthAvailable", "02 80 80 80 10");
+        int resumedViews = subject.World.ViewSnapshot().Count;
+        byte[] removed = add.Bytes.ToArray();
+        removed[17] = 1;
+        await subject.WaitForRpcAsync(frame => frame.Bytes.AsSpan().SequenceEqual(removed),
+            "Enrage 1.0 expires and removes the same twelve-second player record", TimeSpan.FromSeconds(16));
+        await subject.WaitForRpcAsync(frame =>
+            frame.Bytes.AsSpan().SequenceEqual(AbilityMessages.StateEnd(TempMods.EnrageAbility, subject.Handle)),
+            "The player receives the same Enraged end notification");
         await subject.WaitUntilAsync(() => context.Server.DebugLog().Contains(modifier + " remove"),
             "The original Enrage naturally expires", TimeSpan.FromSeconds(16));
         Check.That(!subject.World.RpcSnapshot().Skip(before).Any(frame => frame.Bytes.AsSpan().SequenceEqual(clearOld) ||
@@ -92,9 +128,32 @@ public static partial class Scenarios
         await subject.WaitForRpcAsync($"46 {oldHandle} 00");
         await subject.WaitForRpcAsync($"40 {newHandle} 00 6b");
         await subject.WaitForRpcAsync($"46 {newHandle} 01");
+        await subject.WaitUntilAsync(() => HasBlockAward(resumedViews, resumedIs),
+            "The ten-point Block award resumes in the live fight after expiry", TimeSpan.FromSeconds(8));
         Check.Equal(0, caster.World.Problems.Count + subject.World.Problems.Count +
             original.World.Problems.Count + replacement.World.Problems.Count, "Retarget and join packets parse cleanly");
-        Console.WriteLine("ENRAGE RETARGET PASS: normal selection and join stay open, interlock retarget resumes after expiry.");
+        Console.WriteLine("ENRAGE 588 PASS: normal Block selection, +10/0/+10 Block award, retarget lock and release, and matched state removal.");
+
+        async Task SelectTacticAsync(byte tactic, string name)
+        {
+            int cursor = context.Server.DebugLog().Length;
+            subject.SendRpc($"42 {tactic:x2} 00 00 00 00 00");
+            await subject.WaitUntilAsync(() => context.Server.DebugLog()[cursor..]
+                .Contains($"[COMBAT] Tactic changed to {name} (Normal) for {subject.Handle}", StringComparison.Ordinal),
+                $"The ordinary {name} input reaches the live fight", HeadlessPlayer.DefaultTimeout);
+        }
+
+        bool HasBlockAward(int cursor, ushort previous)
+        {
+            foreach (ushort current in ViewUpdateValues(subject, 2, "02 80 80 80 10", cursor))
+            {
+                // Background PvP regeneration stays enabled. The Block round produces
+                // its own ten-point update, distinct from the smaller regeneration ticks.
+                if (current - previous == 10) return true;
+                previous = current;
+            }
+            return false;
+        }
     }
 
     private static async Task CoderEnrage588(ScenarioContext context)
