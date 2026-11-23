@@ -717,15 +717,18 @@ namespace hds
         internal static void SetStance(Pet pet, Stance stance)
         {
             pet.Stance = stance;
-            if (stance == Stance.Passive && pet.Order != Command.Attack) pet.Target = null;
+            if (stance == Stance.Passive && pet.Order != Command.Attack)
+            {
+                ReleaseClosePair(pet);
+                pet.Target = null;
+            }
         }
 
         private static bool CanPursue(Pet pet, Mob target) =>
             target != null && !target.isFriendly && target.pet == null && !target.getIsDead() && target.getIsSpawned() &&
             target.getDistrict() == pet.Mob.getDistrict() && OwnerDistanceTo(pet, target) <= LeashMetres;
 
-        private static NpcEvasion CloseEntryShield(Pet pet) => pet.Order == Command.Attack && !Ranged(pet)
-            ? pet.Target?.CapturedEvasion : null;
+        private static NpcEvasion CloseEntryShield(Pet pet) => Ranged(pet) ? null : pet.Target?.CapturedEvasion;
 
         private static void ReleaseClosePair(Pet pet) => pet.Target?.CapturedEvasion?.ReleasePet(pet);
 
@@ -1273,6 +1276,7 @@ namespace hds
                 if (assist != null)
                 {
                     pet.Target = assist;
+                    pet.TargetDeathGeneration = assist.DeathGeneration;
                     Output.WriteDebugLog("[PET] " + pet.Mob.getName() + " assists against " + assist.getName());
                 }
             }
