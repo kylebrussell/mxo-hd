@@ -138,6 +138,7 @@ namespace hds
         public const double AttackPeriodSeconds = 3.0;
         public const string FortifyExpiryQa = "MXO_PET_FORTIFY_EXPIRY_QA";
         public const string ChargeRangeQa = "MXO_PET_CHARGE_RANGE_QA";
+        public const string ProxyMasterMeterQa = "MXO_PROXY_MASTER_METER_QA";
         public const string DrainDamageQa = "MXO_SIMULACRUM_QA_DRAIN_DAMAGE";
         public const string RifleProxyQa = "MXO_SIMULACRUM_QA_RIFLE";
         public const string KarateProxyQa = "MXO_SIMULACRUM_QA_KARATE";
@@ -1430,6 +1431,22 @@ namespace hds
                     if (exhausted == null) return "No simulacrum.";
                     lock (exhausted) { exhausted.InnerStrength = 0; exhausted.LastResourceTick = TimeUtils.GetSimTimeSeconds(); }
                     return "Simulacrum IS exhausted (dev fixture).";
+                case "meter":
+                    if (Environment.GetEnvironmentVariable(ProxyMasterMeterQa) != "1" ||
+                        !QaLoadout.Allowed(Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS"),
+                            Store.config?.dbParams?.DatabaseName, client.playerData.getCharID(),
+                            client.playerData.getOnWorld() && !client.playerData.worldChangePending,
+                            client.playerData.isDead || client.playerData.duelDeath))
+                        return "The pet resource meter is available only in its disposable fixture.";
+                    Pet measured = Of(client);
+                    if (measured == null) return "No simulacrum.";
+                    lock (measured)
+                    {
+                        if (measured.Gone || measured.Mob.getIsDead()) return "No simulacrum.";
+                        string sample = FormattableString.Invariant($"[PET METER] owner={client.playerData.getCharID()} pet={measured.SimulacraId} tick={measured.LastResourceTick:F3} IS={measured.InnerStrength:F3} cost={ActionCost(measured, measured.LastResourceTick):F2}");
+                        Output.WriteDebugLog(sample);
+                        return sample;
+                    }
                 case "fixture-range":
                     if (Environment.GetEnvironmentVariable(ChargeRangeQa) != "1" ||
                         client.playerData.getCharID() != 110 ||
