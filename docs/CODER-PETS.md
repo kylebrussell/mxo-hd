@@ -6,7 +6,7 @@ Code: `hds/world/Structures/CoderPets.cs`. Tests: `tests/hds.Tests/CoderPetTests
 
 | Ability | Server behaviour |
 |---|---|
-| Remote Proxy 1.0-5.0 (27, 28, 29, 586, 594) | 8 s cast, out of combat only. Summons a proxy simulacrum at `sim_clamp` level 1-4 / 4-7 / 8-17 / 18-34 / 35-50. Sheet is picked at random from Aikido, Karate, KungFu, Pistol, Rifle and SMG. |
+| Remote Proxy 1.0-5.0 (27, 28, 29, 586, 594) | 8 s cast, out of combat only. Summons a proxy simulacrum at `sim_clamp` level 1-4 / 4-7 / 8-17 / 18-34 / 35-50. The default pool picks uniformly from Aikido, Karate, KungFu, Pistol, Rifle and SMG. |
 | Logic Daemon 1.0-4.0 (22, 601, 611, 616) | Summons a Nuker simulacrum at level 4-7 / 8-17 / 18-34 / 35-50. |
 | Patch Daemon 1.0-3.0 (602, 612, 617) | Summons a Healer simulacrum at level 12-22 / 23-43 / 44-50. It heals its owner when the owner is hurt and within 20 m. |
 | Repair Simulacra 1.0-4.0 (30, 31, 587, 596), Fix Simulacra (615) | Heals the caster's own simulacrum by the stored fixed amount (20, 34, 117, 174, 83) times the caster's healing influence. A player target is still refused. |
@@ -40,6 +40,8 @@ The simulacrum is ticked every second.
 - An NPC it fights, if that NPC isn't fighting a player, hits back every 3 s.
 - Its kills go through the owner's fight, so death claims, experience, missions and loot follow the normal path.
 - Players can't open close combat on a simulacrum.
+
+The shipped Remote Proxy callbacks share a `consolevar.RemoteProxySheet` override. Set `MXO_REMOTE_PROXY_SHEET` before server launch to one of the six supported authored names, such as `Simulacra.Rifle`. The setting applies to every Remote Proxy tier and retains its normal level, gender, notice and lifetime rules. Empty or unrecognized values use the default pool. [Shipped callback](../research/client-scripts/ability/hacker/simulacra.py#L253)
 
 ## Orders: `81 7a` / `81 7b` / `81 7c`
 

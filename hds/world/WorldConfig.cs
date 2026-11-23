@@ -8,6 +8,7 @@ namespace hds
 {
     public class WorldConfig
     {
+        public const string RemoteProxySheetVariable = "MXO_REMOTE_PROXY_SHEET";
         private string filename;
         
         public string serverName;
@@ -15,6 +16,7 @@ namespace hds
         public bool IsPvpServer = false;
         public UInt16 PvpMaxSafeLevel = 16;
         public UInt16 FixedBinkIDOverride = 0;
+        public string RemoteProxySheet { get; }
         // Retail showed a character only the hardlines it had uploaded (6d lists of 1 to 52 per district). Off by
         // default: char_hardlines starts empty, so turning it on leaves existing characters with no hardlines
         // until they upload some.
@@ -43,6 +45,7 @@ namespace hds
             {
                 PvpMaxSafeLevel = safeLevel;
             }
+            RemoteProxySheet = CoderPets.NormalizeProxySheetOverride(Environment.GetEnvironmentVariable(RemoteProxySheetVariable));
             XmlNodeList uploadRequired = xDoc.GetElementsByTagName("HardlineUploadRequired");
             if (uploadRequired.Count > 0)
             {
