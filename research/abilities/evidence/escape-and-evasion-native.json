@@ -1,0 +1,43 @@
+{
+  "families": {
+    "stock-escape-and-evasion": {
+      "representative": 507,
+      "result": "pass",
+      "head": "b59d4affc87df8116732ab739926df519286a839",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/886#issuecomment-7088827093",
+      "scope": "Level-25 CSR, Escape and Evasion rank 23, ordinary Sneak rank 19, legal 53/55 memory. Actions > Abilities > Sniper sends direct 507 with 80 b9 fb 01. Two-second cast and current server default 20 IS, no own reuse. Source 507 gives 877 +25, 209 +25 and 881 and projects MovementScale +.25. Same nominal two-second run gives 754 units versus 595 under ordinary Sneak. Repress and reveal each remove the three records and restore zero scale. Server unit coverage exercises Status Dismiss, which was not tried in the stock run."
+    }
+  },
+  "abilities": {
+    "507": {
+      "family": "stock-escape-and-evasion",
+      "checks": {
+        "controls": {
+          "source": "GOB 507 has a conditional Stealthed record and the OnHealthReduceDeactivateAbility callback. ability.spy.sneaks calls activateSneak and its term function restores the standing pose.",
+          "runtime": "Stealth enters Sneaking with the source 507 state and releases that state on action toggle, matching Status Dismiss, detection or damage below max health.",
+          "test": "Stock PR886 sees the source-507 adds and paired off/reveal removals. EscapeAndEvasionTests.LandingShutsDownTheAuraAndDamageReleasesItsOwnSneakState asserts Sneaking, standing, retained state on zero damage and release on health loss. StatusDismissalRestoresTheSurvivingSpeedBuffAndLeavesOrdinarySneakAlone covers the server's Status Dismiss. https://github.com/kylebrussell/mxo-hd/pull/886#issuecomment-7088827093"
+        },
+        "stats": {
+          "source": "GOB 507 stores fixed Sneak Movement 877 +25. Its shipped script activates Stealth 209 from the character level. Earlier native movement observations establish signed stat/100 publication for this channel.",
+          "runtime": "AbilityBuffs projects +0.25 only for the current 507 state in Sneaking and composes the surviving speed buff from the same stance channel. Stealth builds the character-level 209 record.",
+          "test": "At character level 25 and ability rank 23, PR886 witnesses +25 on both 877 and 209, MovementScale +0.25 and a 754-unit run in the same nominal two seconds versus 595 in ordinary Sneak, with scale reset on release and reveal. EscapeAndEvasionTests.StatusDismissalRestoresTheSurvivingSpeedBuffAndLeavesOrdinarySneakAlone asserts overlap and recovery. https://github.com/kylebrussell/mxo-hd/pull/886#issuecomment-7088827093"
+        },
+        "stealth-detection": {
+          "source": "The shipped EscapeandEvasion_Test and activateSneak paths use the ordinary Sneak awareness test and periodic SneakUpdate from the startup-loaded module.",
+          "runtime": "Stealth uses the loaded ordinary Sneak range and effective character-level 507 Stealth in the existing sight, facing, range and awareness check. A successful reveal releases 507 and refreshes observer visibility.",
+          "test": "PR886 starts QAEnemy 16 m away, outside the logged 15 m range, then adds Countermeasures 293 awareness and approaches. The logged periodic check is SA 93 vs SL 25 at 2.5 m; removal names revealed and own MovementScale returns to zero. The disposable bootstrap independently observes a fresh observer view for the same ordinary Sneak check. https://github.com/kylebrussell/mxo-hd/pull/886#issuecomment-7088827093"
+        },
+        "script": {
+          "source": "ability/spy/sneaks.py:58-79 specifies EscapeandEvasion_DirectObject, EscapeandEvasion_Test, EscapeandEvasion_Deactivate and turnOffAuras. tempmods.py:1045 and :2302 specify health-loss deactivation and the term resets.",
+          "runtime": "Stealth.Refusal admits the legal out-of-combat state, Stealth.Land activates Sneaking and stops the listed auras, and Stealth.End releases its records and pose on the supported exits. A genuine health debit while below max invokes its break.",
+          "test": "EscapeAndEvasionTests.TheShippedCastWindowAndOwnedAbilityAreCheckedAtLanding and LandingShutsDownTheAuraAndDamageReleasesItsOwnSneakState exercise the activation/admission, aura callback and health break. PR886's actual stock toggle and reveal exercise deactivation and release. https://github.com/kylebrussell/mxo-hd/pull/886#issuecomment-7088827093"
+        },
+        "behavior-tests": {
+          "source": "Catalog rank-23 Escape and Evasion uses character-level Stealth, a fixed Sneak Movement channel, Stealthed, and the startup-loaded Sneak callbacks.",
+          "runtime": "An owned, eligible direct request starts the unified 507 state, emits distinct modifiers and stance, uses the shared detection contest, and cleans up its own records on toggle, reveal, qualifying damage or accepted dismissal.",
+          "test": "EscapeAndEvasionTests covers the exact movement record, stance, aura stop, damage break, alternative exit, independent 1111 state, speed-overlap recovery and held cast admission. Stock PR886 verifies the direct action, elapsed cast, records, measured movement, same-slot release and reveal. https://github.com/kylebrussell/mxo-hd/pull/886#issuecomment-7088827093"
+        }
+      }
+    }
+  }
+}
