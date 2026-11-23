@@ -99,6 +99,51 @@ public class HackerBatchB3ParityTests
     }
 
     [Theory]
+    [InlineData(true, 30, 38, 52)]
+    [InlineData(false, 15, 40, 46)]
+    public void AttackProgrammingChangesRestingRegenAndEvadeCostInItsRankedProfile(
+        bool programmingLoaded, int regen, ushort evadeCost, int fiveTickIncrease)
+    {
+        var caster = Client();
+        var profile = new NativeQa.Modes.HackerAttackProgrammingEfficientCodeMode().Plan.Abilities;
+        AbilityPassives.SetLoaded(caster, profile.Where(id => programmingLoaded || id != 471).Select(id => (id, (ushort)50)));
+
+        Assert.Equal(regen, AbilityStats.Influence(caster, 114));
+        Assert.Equal(evadeCost, AbilityCosts.Effective(caster, 217));
+        Assert.Equal(14, AbilityCosts.Effective(caster, 38));
+        for (int tick = 0; tick < 5; tick++) AbilityHandler.RegenerateInnerStrength(caster);
+        Assert.Equal(100 + fiveTickIncrease, AbilityHandler.CurrentInnerStrength(caster));
+    }
+
+    [Fact]
+    public void EfficientCodeRoundTripsItsIndependentAccuracyDamageAndStunConsumers()
+    {
+        var caster = Client();
+        var profile = new NativeQa.Modes.HackerAttackProgrammingEfficientCodeMode().Plan.Abilities
+            .Select(id => (id, (ushort)50)).ToArray();
+        var archived = profile.Where(row => row.id != 477).ToArray();
+        AbilityPassives.SetLoaded(caster, archived);
+        int meleeAccuracy = AbilityStats.Attack(caster, false), rangedAccuracy = AbilityStats.Attack(caster, true);
+        int meleeDamage = AbilityStats.ScaleTypedAbilityDamage(caster, 0, 100);
+        int rangedDamage = AbilityStats.ScaleTypedAbilityDamage(caster, 1, 100);
+        Assert.Equal(3.15f, AbilityControlDurations.Scale(caster, TempMods.StunAbility, 3), 3);
+
+        AbilityPassives.SetLoaded(caster, profile);
+        Assert.Equal(meleeAccuracy + 5, AbilityStats.Attack(caster, false));
+        Assert.Equal(rangedAccuracy + 5, AbilityStats.Attack(caster, true));
+        Assert.Equal(meleeDamage + 10, AbilityStats.ScaleTypedAbilityDamage(caster, 0, 100));
+        Assert.Equal(rangedDamage + 10, AbilityStats.ScaleTypedAbilityDamage(caster, 1, 100));
+        Assert.Equal(3.30f, AbilityControlDurations.Scale(caster, TempMods.StunAbility, 3), 3);
+
+        AbilityPassives.SetLoaded(caster, archived);
+        Assert.Equal(meleeAccuracy, AbilityStats.Attack(caster, false));
+        Assert.Equal(rangedAccuracy, AbilityStats.Attack(caster, true));
+        Assert.Equal(meleeDamage, AbilityStats.ScaleTypedAbilityDamage(caster, 0, 100));
+        Assert.Equal(rangedDamage, AbilityStats.ScaleTypedAbilityDamage(caster, 1, 100));
+        Assert.Equal(3.15f, AbilityControlDurations.Scale(caster, TempMods.StunAbility, 3), 3);
+    }
+
+    [Theory]
     [InlineData(472, false, 60, 49)]
     [InlineData(474, false, 72, 59)]
     [InlineData(474, true, 73, 60)]

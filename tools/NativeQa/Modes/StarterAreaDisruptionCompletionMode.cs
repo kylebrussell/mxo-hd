@@ -8,7 +8,7 @@ public sealed class StarterAreaDisruptionCompletionMode : NativeQaMode
     private const int Level = 19, StartX = 17000, ShiftX = 17200, Y = 495, Z = 2300;
     private const int EdgeX = 17800, OutsideX = 17801, AllyX = 17100;
     private const ushort Disruption = 38;
-    private const string StockCast = "80b92600060004000000000000000000000000000000000000000000585cc60001000000086b0000000000";
+    internal const string StockCast = "80b92600060004000000000000000000000000000000000000000000585cc60001000000086b0000000000";
     private static readonly ushort[] Loadout = StarterHackerPassiveFixture.Loadout(Disruption);
 
     public override string Name => "ability-parity-starter-area-disruption-completion";
