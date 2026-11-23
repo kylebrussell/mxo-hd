@@ -1,0 +1,19 @@
+{
+  "abilities": {
+    "618": {
+      "note": "PR881 established Bash on an NPC, including typed resistance. PR921 verifies the same special in ordinary PvP, both authored controls on the player recipient, and the server's shared four-second immunity record. PR883 verifies the inherited Enrage interlock gates with a separate source. https://github.com/kylebrussell/mxo-hd/pull/881#issuecomment-7088359315 https://github.com/kylebrussell/mxo-hd/pull/921#issuecomment-7092064206",
+      "checks": {
+        "controls": {
+          "source": "GOB 618 authors Stun 102 for four seconds and Enrage 93 for eight seconds. tempmods.py StunInit and StunMezCommonInit disable combat actions, and EnrageInit/Term gate Withdraw, target changes and IS Block. GOB 618 defines no separate immunity initializer.",
+          "runtime": "The ordinary PvP landing route applies the two timed states independently. The common Stun path adds the server's four-second 734/681 fallback. Stun stops abilities and weapon use, neither state breaks on damage, and the shared Enrage path continues to restrict Withdraw, retarget and the Block round award through eight seconds.",
+          "test": "PR921 stock on 3f7b7b80 recorded 618/102 and 734/681 add/remove IDs 276/277 at four seconds and 618/93 ID 279 at eight seconds. Stock-shaped Cheap Shot was refused without cost during Stun and queued, spent 20 IS and landed for 8 immediately after release. CoderSpecialsUseFixedPhysicalDamageAndOnlyBashAppliesControl verifies the separate expiry, damage retention and shared interlock gates. PR883 separately witnessed +10/0/+10 Block IS and stock retarget lock/release on ordinary Enrage. https://github.com/kylebrussell/mxo-hd/pull/921#issuecomment-7092064206 https://github.com/kylebrussell/mxo-hd/pull/883#issuecomment-7090902540 https://github.com/kylebrussell/mxo-hd/pull/883#issuecomment-7091177642"
+        },
+        "behavior-tests": {
+          "source": "GOB 618 requires the selected Staggered interlock opponent and Coder Style, costs 40 IS, stores ten-second own and five-second group 687 reuse, and applies fixed base 66 physical damage and the two timed states. ILDB identifies Bash as move 289.",
+          "runtime": "AbilityHandler admits the loaded move against the live interlock opponent, the ordinary contest runs the queued move, and the landing route applies typed physical mitigation and the sourced states. The compiled checks exercise the gates, complete landed behavior and independent control expiry.",
+          "test": "PR881 stock covers the at-rest and missing-Stagger gates, NPC 77/63 damage, cost/reuse, choreography and controls. PR921 stock independently observes 800→760 IS, 10/5 s reuse, move 289 and 77 damage to QAEnemy, with Stun/Enrage presentation and Cheap Shot refusal and recovery. The exact disposable BashPlayerControlMode bootstrap replays retained Coder/Low Blow controls and verifies legal PvP preparation; 618 itself is the witnessed native cast. https://github.com/kylebrussell/mxo-hd/pull/881#issuecomment-7088359315 https://github.com/kylebrussell/mxo-hd/pull/921#issuecomment-7092064206"
+        }
+      }
+    }
+  }
+}
