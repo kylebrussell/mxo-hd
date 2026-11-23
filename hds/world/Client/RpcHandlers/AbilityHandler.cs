@@ -218,7 +218,38 @@ namespace hds
             }
 
             // Timed gun specials may resolve in interlock or as a selected attack. Both use the same live target.
-            bool starterGunCast = AbilityID == 126 || AbilityID == 176;
+            bool controlledBurst = AbilityID == CombatSpecials.ControlledBurst;
+            object controlledBurstFight = null;
+            uint? controlledBurstOpponent = null;
+            if (controlledBurst)
+            {
+                var shooter = Store.currentClient;
+                if (!AbilityPassives.IsLoaded(shooter, AbilityID))
+                {
+                    Deny(AbilityID, "Load Controlled Burst before using it.", AbilityRefusals.NotLoaded, sendServerText: false);
+                    return;
+                }
+                if (!CombatSpecials.HasControlledBurstWeapon(shooter))
+                {
+                    Deny(AbilityID, "Controlled Burst requires dual submachine guns.", AbilityRefusals.RequiredItemCategory, sendServerText: false);
+                    return;
+                }
+
+                var combat = CombatManager.GetHandler(shooter);
+                controlledBurstFight = combat.ActiveInterlockIdentity;
+                if (controlledBurstFight != null)
+                {
+                    ushort? requestSpawn = packet.Length == 41 ? (ushort?)BitConverter.ToUInt16(packet, 4) : null;
+                    controlledBurstOpponent = combat.PowerShotOpponent(currentTargetViewId, requestSpawn);
+                    if (!controlledBurstOpponent.HasValue)
+                    {
+                        DenyMissingInterlock(AbilityID);
+                        return;
+                    }
+                }
+            }
+
+            bool starterGunCast = AbilityID == 126 || AbilityID == 176 || controlledBurst;
             bool rifleOpener = CombatSpecials.IsRifleOpener(AbilityID);
             ushort? gunTargetSpawn = null;
             if (starterGunCast)
@@ -1031,6 +1062,24 @@ namespace hds
                 Output.WriteDebugLog($"[ABILITY] {AbilityID} fizzles: the selected gun target changed, left range or left sight");
                 return;
             }
+            if (controlledBurst)
+            {
+                var combat = CombatManager.GetHandler(client);
+                if (!AbilityPassives.IsLoaded(client, AbilityID) || !CombatSpecials.HasControlledBurstWeapon(client) ||
+                    !ReferenceEquals(combat.ActiveInterlockIdentity, controlledBurstFight))
+                {
+                    Output.WriteDebugLog("[ABILITY] 250 fizzles: the loadout, weapon or interlock changed");
+                    return;
+                }
+
+                if (controlledBurstFight != null)
+                {
+                    if (!CombatAnimations.CanQueueGunCast(client, AbilityID) ||
+                        !combat.QueueRoundAbility(ability, hostileView, sneakOpener, controlledBurstOpponent))
+                        Output.WriteDebugLog("[ABILITY] 250 fizzles: the original interlock special could not queue");
+                    return;
+                }
+            }
             // Stun Pulse's legacy buff flag conflicts with its shipped hostile area selector.
             if (hostileView > 2 && !support && !pet && !derez && definition?.FriendlyTarget != true &&
                 (!ability.getIsBuff() || CombatSpecials.TargetsEnemy(AbilityID) || engageFoes!=null) &&
@@ -1154,6 +1203,7 @@ namespace hds
             int? fixedType = source?.Id switch
             {
                 504 => 1,  // Concealed Shot
+                CombatSpecials.ControlledBurst => 1,
                 36 => 2,   // Tinkering
                 105 => 1,  // Body Shot
                 243 => 1,  // Pistol Aerial

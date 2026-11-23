@@ -277,6 +277,72 @@ public class CombatStyleTests
     }
 
     [Theory]
+    [InlineData(false, true, 3794u)]
+    [InlineData(false, false, 20492u)]
+    [InlineData(true, true, 20496u)]
+    public void ControlledBurstMissPublishesTheOrdinaryStyleRound(bool opponentHits, bool shooterLeads, uint expectedAnimation)
+    {
+        const ulong combatEntity = 8030;
+        var shooter = ReadyFighter(21750);
+        var opponent = ReadyFighter(21550);
+        AbilityPassives.SetLoaded(shooter, new (ushort, ushort)[] { (2, 27), (CombatStyles.SubmachineGuns, 27) });
+        shooter.playerInstance.EquippedItemID.setValue(2503u);
+        CombatStyles.Select(shooter, CombatStyles.SubmachineGuns);
+        shooter.messageQueue.ObjectMessagesQueue.Clear();
+        opponent.messageQueue.ObjectMessagesQueue.Clear();
+        Assert.Equal('D', CombatStyles.Letter(shooter));
+        Assert.Equal('S', CombatStyles.Letter(opponent));
+
+        var handler = new AttributeClass3664("ILCombatHandler", 55);
+        handler.Position.setValue(NumericalUtils.doublesToLtVector3d(21650, 1095, 16150));
+        var previousClients = WorldServer.Clients;
+        WorldServer.Clients = new Dictionary<string, WorldClient>();
+        var presentation = new CombatPresentation(shooter, opponent, null, handler, combatEntity);
+        try
+        {
+            var outcome = CombatRules.Resolve(
+                new CombatRules.Fighter { Tactic = CombatTactic.Speed, Hits = false, SpecialMove = true, AttackRoll = 40, Damage = 29, Health = 100 },
+                new CombatRules.Fighter { Tactic = CombatTactic.Speed, Hits = opponentHits, AttackRoll = 50, Damage = 11, Health = 100 },
+                playerAttacksFirst: shooterLeads, opening: false);
+            Assert.False(outcome.SpecialMoveLands);
+            Assert.Equal(0u, outcome.Flags & CombatRules.SpecialMove);
+            Assert.Equal(0, outcome.DamageToNpc);
+            Assert.Equal(opponentHits ? 11 : 0, outcome.DamageToPlayer);
+            Assert.Equal(opponentHits ? CombatRules.AttackerHits : CombatRules.NoHits, outcome.Flags);
+
+            // Pass the same winning-ability selection and landed flag used by PvpFight.ResolvePair.
+            presentation.Round(outcome.PlayerWins, outcome.Flags, CombatTactic.Speed, CombatTactic.Speed,
+                attackerRoll: 40, defenderRoll: 50, opening: false,
+                specialAbility: outcome.PlayerWins ? CombatSpecials.ControlledBurst : (ushort)0,
+                specialLanded: (outcome.Flags & CombatRules.SpecialMove) != 0);
+
+            byte[] update = Assert.Single(shooter.messageQueue.ObjectMessagesQueue.Cast<SequencedMessage>()).content;
+            Assert.Equal(157, update.Length);
+            Assert.Equal(shooter.viewMan.FindViewForEntity(combatEntity).ViewID, BitConverter.ToUInt16(update));
+            Assert.Equal(CombatRoundEntry.Reference(expectedAnimation), BitConverter.ToUInt64(update, 36 + 61));
+            Assert.Equal(update, Assert.Single(opponent.messageQueue.ObjectMessagesQueue.Cast<SequencedMessage>()).content);
+        }
+        finally
+        {
+            presentation.End();
+            WorldServer.Clients = previousClients;
+        }
+
+        static WorldClient ReadyFighter(int x)
+        {
+            var client = Client();
+            client.playerInstance.Level.setValue((byte)27);
+            client.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(x, 1095, 16150));
+            client.playerData.setOnWorld(true);
+            client.LivenessClock = () => 0;
+            client.Alive = true;
+            client.viewMan = new ViewManager();
+            client.viewMan.addView(combatEntity, 55).viewCreated = true;
+            return client;
+        }
+    }
+
+    [Theory]
     [InlineData(126, 129, 2565u, 1732794185u, 4f, 9522u)]
     [InlineData(176, 158, 698u, 1834178377u, 4f, 21083u)]
     [InlineData(250, 158, 2503u, 1396987721u, 4f, 21082u)]

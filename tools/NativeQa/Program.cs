@@ -313,6 +313,12 @@ try
                     result = await NativeQa.Modes.PistolAerialMode.HoldImmunityAsync(actor);
                 else if (fixtureMode is NativeQa.Modes.PistolAerialMode && action == "aerial-records")
                     result = NativeQa.Modes.PistolAerialMode.Records(actor);
+                else if (fixtureMode is NativeQa.Modes.ControlledBurstMode && action == "burst-armor")
+                    await NativeQa.Modes.PistolSlideMode.ApplyArmorAsync(actor);
+                else if (fixtureMode is NativeQa.Modes.ControlledBurstMode && action == "burst-withdraw")
+                    NativeQa.Modes.ControlledBurstMode.SendWithdraw(actor);
+                else if (fixtureMode is NativeQa.Modes.ControlledBurstMode && action == "burst-records")
+                    result = NativeQa.Modes.ControlledBurstMode.Records(actor);
                 else if (fixtureMode is NativeQa.Modes.StarterMovementObserverMode && action == "movement-observer-arrive")
                     result = await NativeQa.Modes.StarterMovementObserverMode.ArriveAsync(actor);
                 else if (fixtureMode is NativeQa.Modes.StarterStealthObserverMode && action == "stealth-observer-pass")
