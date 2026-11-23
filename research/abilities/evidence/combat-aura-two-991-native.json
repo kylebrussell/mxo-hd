@@ -1,0 +1,38 @@
+{
+  "families": {
+    "combat-aura-two-parent-shortfall": {
+      "representative": 485,
+      "result": "pass",
+      "head": "7f76e5ce8462ff717e20b6463288bcf46ab5d572",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/991#issuecomment-7104995599",
+      "scope": "A stock level-50 caster with a legal 61-memory profile paid 15 IS to activate, produced one initial 696 pair and two upkeep refreshes, then showed the nine-IS shortfall message. The packet group contains the three parent removals in order around the 15-second own timer, exclusive off and the localized deficit. The last admitted child expired independently. A retry during own reuse was blocked locally. The exact three owner IS updates are independently verified by the retained-packet replay."
+    }
+  },
+  "abilities": {
+    "485": {
+      "family": "combat-aura-two-parent-shortfall",
+      "checks": {
+        "aura": {
+          "source": "GOB 485 applies the team aura child 696 initially and every five seconds, with a separate parent upkeep callback.",
+          "runtime": "Each live source schedules and pays its own upkeep and recomputes the eligible child recipients. When two sources reach a shared recipient the newest child replaces the existing child and a stopped source leaves that recipient's last accepted child on its own expiry.",
+          "test": "CombatAura696UsesTheChildRadiusOnEveryPulse establishes the 6.00 m edge, live team admission and per-pulse recomputation. CombatAuraTwoOverlappingSourcesReplaceOneChildAndKeepIndependentUpkeep verifies replacement, independent charges, explicit stop and unload, and final expiry. PR991 observes three stock pulses and independent last-child removal after shortfall."
+        },
+        "script": {
+          "source": "GOB 485 links ApplyAuraEffect to 696, retains a no-op term carrier and starts own reuse through AddRecastTimer. ISDrainWithAbilityDeactivation charges 15 every five seconds. Retained proxy_024 lines 14312–14322 place the term timer between the linked term marker and upkeep record removals.",
+          "runtime": "An affordable upkeep refreshes the child. On shortfall, 485 removes its aura carrier and term marker, starts its 15-second own reuse, removes its drain record and publishes exclusive off and the localized shortfall notice.",
+          "test": "CombatAuraTwoChargesFifteenEachTickAndStopsOnShortfall covers the charge boundary. CombatAuraTwoMode replays the retained stock request, asserts both paid updates, exactly three child applications and the six ordered stop records. PR991 observes the same group and the rendered shortage notice."
+        },
+        "source-parity": {
+          "source": "Proxy_024 SSEQ756 contains 485/710 and 485/0 removal, 80 bd 01 with 15 seconds, 485/681 removal, exclusive off and 81 67 c60020b4 with deficit 9.",
+          "runtime": "The normal parent scheduler publishes that termination order and owns the same recast. The 696 child row tracks the separate damage and child timer evidence.",
+          "test": "The exact retained bootstrap verifies the six records and deficit. PR991 reproduced them in one stock packet group, rendered the localized notice, and locally refused a repeat during own reuse."
+        },
+        "behavior-tests": {
+          "source": "GOB 485 is a loaded toggle whose carrier, upkeep and term callbacks belong to the parent. The child has its own team radius and five-second lifetime.",
+          "runtime": "The ordinary request spends 15 IS, starts the loaded parent, applies and refreshes the child independently for each eligible recipient, and enforces the parent term timer after shortfall, a manual toggle or unload.",
+          "test": "The charge-boundary, radius and overlapping-source tests cover stock-calibrated scheduling and source removal. The retained bootstrap verifies 51→36→21→6, no unpaid pulse, the parent stop sequence and one notice. Stock PR320 confirms ordinary manual toggle, and PR991 confirms shortfall and the local reuse gate."
+        }
+      }
+    }
+  }
+}

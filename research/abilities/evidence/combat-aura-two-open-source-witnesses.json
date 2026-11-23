@@ -1,8 +1,5 @@
 {
   "abilities": {
-    "485": {
-      "note": "The archived shortfall puts the 15-second own timer between parent record f1 and f2 removals. The current scheduler removes the parent records and sends exclusive-off before starting reuse. The boundary and admission tests do not compare this order. research/packet-dumps/community-intake/20260607T032533Z-hdneo-public-movement-spawn-hardline-sanitized-selected/logs/mxopackets1_crashover2k_afterwhoruneo_proxy_024_chatting_hyperjump_fight.log.txt lines 14314–14321."
-    },
     "696": {
       "note": "The archived five-second source-696 records carry target 171 +37 and target 159 +39. The same packet log seeds the local character level with 80 b2 11 00 32 00 08 02 at lines 11 and 299. Its aura cast message names AfterWhoruNeo as both caster and recipient. The level-50 GOB function 3 snapshot gives +25/+25 because both scales are 0.5. The verified six-metre area, typed damage consumer and expiry do not resolve the two distinct archived magnitudes. research/packet-dumps/community-intake/20260607T032533Z-hdneo-public-movement-spawn-hardline-sanitized-selected/logs/mxopackets1_crashover2k_afterwhoruneo_proxy_024_chatting_hyperjump_fight.log.txt lines 13904–13910."
     }
