@@ -115,6 +115,7 @@ namespace hds
             var pet = CoderPets.Of(client);
             bool deactivateSummon;
             bool lostConcealment;
+            bool lostShadowGrant;
             bool hadImprovedSneak;
             bool writeCodeAdded;
             lock (state)
@@ -126,6 +127,7 @@ namespace hds
                 bool hadWriteCode = state.Loaded.ContainsKey(CraftingSession.WriteCode);
                 bool hadSummon = pet != null && state.Loaded.ContainsKey(pet.Ability);
                 bool hadConcealment = state.Loaded.ContainsKey(Stealth.ConcealmentGrantAbility);
+                bool hadShadowGrant = state.Loaded.ContainsKey(AbilityShadowPresentation.Parent);
                 hadImprovedSneak = state.Loaded.ContainsKey(Stealth.ImprovedSneakAbility);
                 state.Loaded.Clear();
                 foreach (var row in rows)
@@ -160,11 +162,15 @@ namespace hds
                     UtilityAbilities.DisableMissionMap(client);
                 deactivateSummon = hadSummon && !state.Loaded.ContainsKey(pet.Ability);
                 lostConcealment = hadConcealment && !state.Loaded.ContainsKey(Stealth.ConcealmentGrantAbility);
+                lostShadowGrant = !newWorld && hadShadowGrant && !state.Loaded.ContainsKey(AbilityShadowPresentation.Child);
                 writeCodeAdded = !hadWriteCode && state.Loaded.ContainsKey(CraftingSession.WriteCode);
                 if (newWorld) state.Records.Clear(); // the client discarded the old world's records
             }
             if (deactivateSummon) CoderPets.DeactivateUnloadedSummon(client, pet);
             if (lostConcealment) Stealth.ConcealmentGrantRemoved(client);
+            // The retained Howitzer loadout change clears the active class upgrade when its last grant is lost.
+            if (lostShadowGrant && !IsLoaded(client, AbilityShadowPresentation.Child))
+                AbilityBuffs.Remove(client, AbilityShadowPresentation.Child);
             if (hadImprovedSneak) Stealth.ImprovedSneakLoadoutChanged(client);
             if (newWorld) CraftingSession.End(client, false);
             else
