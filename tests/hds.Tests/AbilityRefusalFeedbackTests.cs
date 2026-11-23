@@ -593,7 +593,6 @@ public class AbilityRefusalFeedbackTests:IDisposable
         var item = new AbilityItem();
         item.setAbilityID(id);
         item.setAbilityName(AbilityCatalog.Find(id).Name);
-        item.setIsBuff(true);
         item.setValueFrom(id == 247 ? (short)25 : (short)0);
         item.setCastAnimStart(new byte[4]);
         DataLoader.getInstance().AbilityDB.Add(item);
