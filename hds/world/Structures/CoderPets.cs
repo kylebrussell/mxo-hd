@@ -60,20 +60,30 @@ namespace hds
 
         public const UInt16 PowerBoost = 25;
         public const UInt16 AbsorbSimulacra = 607;
+        internal const UInt16 ProxyMasterDiscipline = 599, ProxyMasterGrant = 1107;
+        private static readonly Lazy<(int CostReduction, int RegenBonus, double Duration)> proxyMasterResources =
+            new Lazy<(int CostReduction, int RegenBonus, double Duration)>(() =>
+        {
+            var modifiers = AbilityCatalog.Find(ProxyMasterGrant).Modifiers.ToArray();
+            var cost = modifiers.Single(mod => mod.Target == 117);
+            var regen = modifiers.Single(mod => mod.Target == 114);
+            return ((int)cost.Number("MinValue"), (int)regen.Number("MinValue"), cost.Number("Duration"));
+        });
         public const UInt16 DrainCode = 19, FortifySimulacra = 20, DetonateProxy = 34, StopProxyEffect = 1109, ChargeSimulacra = 603,
             DaemonBoost1 = DaemonBoost.Ability, DaemonBoost2 = 619, DaemonBoostEffect2 = 700;
         public static readonly UInt16[] Repairs = { 30, 31, 587, 596, 615 };
-        internal static readonly UInt16[] ContinuousLoadAbilities = { FortifySimulacra, 30, ChargeSimulacra, AbsorbSimulacra };
+        internal static readonly UInt16[] ContinuousLoadAbilities = { FortifySimulacra, 30, ChargeSimulacra, AbsorbSimulacra, ProxyMasterGrant };
 
         /// <summary>Abilities whose target must be the caster's own simulacrum (CastValidTarget 11 and shipped owner tests).</summary>
         public static bool TargetsOwnPet(UInt16 id) => id == DrainCode || id == FortifySimulacra || id == DetonateProxy ||
-            id == ChargeSimulacra || id == PowerBoost || id == AbsorbSimulacra || Repairs.Contains(id);
+            id == ChargeSimulacra || id == PowerBoost || id == AbsorbSimulacra || id == ProxyMasterGrant || Repairs.Contains(id);
 
         internal static string DisplayName(UInt16 id) => id switch
         {
             ChargeSimulacra => "Charge Simulacra",
             DetonateProxy => "Detonate Proxy",
             AbsorbSimulacra => "Absorb Simulacra",
+            ProxyMasterGrant => "Proxy Master",
             _ => null
         };
 
@@ -104,6 +114,7 @@ namespace hds
             public double FortifyUntil;
             public UInt16 FortifyHealth;
             public double ChargeUntil;
+            internal double ProxyMasterUntil;
             // OURS: retail pet sheet IS/cost/regen values are not established. A real bounded pool makes 603 meaningful.
             public double InnerStrength = 100, MaxInnerStrength = 100, LastResourceTick;
             public int FortifyResistance, BoostAccuracy;
@@ -253,17 +264,35 @@ namespace hds
         {
             double elapsed = Math.Max(0, now - pet.LastResourceTick);
             double charged = Math.Max(0, Math.Min(now, pet.ChargeUntil) - pet.LastResourceTick);
-            pet.InnerStrength = Math.Min(pet.MaxInnerStrength, pet.InnerStrength + elapsed * 2 + charged);
+            double mastered = Math.Max(0, Math.Min(now, pet.ProxyMasterUntil) - pet.LastResourceTick);
+            double gained = elapsed * 2 + charged;
+            if (mastered > 0)
+                gained += mastered * 2 * proxyMasterResources.Value.RegenBonus / 100;
+            pet.InnerStrength = Math.Min(pet.MaxInnerStrength, pet.InnerStrength + gained);
             pet.LastResourceTick = Math.Max(now, pet.LastResourceTick);
         }
 
         public static bool SpendAction(Pet pet, double now)
         {
             Regenerate(pet, now);
-            double cost = now < pet.ChargeUntil ? 8 : 10;
+            double cost = ActionCost(pet, now);
             if (pet.InnerStrength < cost) return false;
             pet.InnerStrength -= cost;
             return true;
+        }
+
+        private static double ActionCost(Pet pet, double now)
+        {
+            int reduction = (now < pet.ChargeUntil ? 20 : 0) +
+                (now < pet.ProxyMasterUntil ? proxyMasterResources.Value.CostReduction : 0);
+            return 10 * (100 - reduction) / 100.0;
+        }
+
+        internal static void ApplyProxyMasterResources(Pet pet, double now)
+        {
+            // Settle all old intervals before starting or refreshing this pet's generation.
+            Regenerate(pet, now);
+            pet.ProxyMasterUntil = now + proxyMasterResources.Value.Duration;
         }
 
         // NPC retaliation already includes the level ratio. Normalize the shipped armor curve
@@ -817,7 +846,17 @@ namespace hds
         internal static bool IsCastLoaded(WorldClient caster, ushort id) =>
             (id != DrainCode && id != PowerBoost && !ContinuousLoadAbilities.Contains(id)) || AbilityPassives.IsLoaded(caster, id);
 
-        private static bool RequiresOutsideCombat(ushort id) => id == PowerBoost || id == DrainCode || id == AbsorbSimulacra;
+        private static bool RequiresOutsideCombat(ushort id) =>
+            id == PowerBoost || id == DrainCode || id == AbsorbSimulacra || id == ProxyMasterGrant;
+
+        private static bool HasVisibilityRequirement(ushort id) => id == AbsorbSimulacra || id == ProxyMasterGrant;
+
+        private static bool ViolatesOutsideCombat(WorldClient caster, ushort id)
+        {
+            if (!RequiresOutsideCombat(id)) return false;
+            var fight = CombatManager.GetHandler(caster);
+            return fight.isCombatRunning || id == ProxyMasterGrant && fight.HasActiveInterlock;
+        }
 
         /// <summary>The cast's refusal, or null when it may go ahead (checked before cost and cooldown).</summary>
         internal static string Prepare(WorldClient caster, UInt16 id, UInt16 targetView, UInt16? targetSpawn,
@@ -837,13 +876,13 @@ namespace hds
                     refusal = AbilityRefusals.NotLoaded;
                     return "Load this ability before using it.";
                 }
-                if (RequiresOutsideCombat(id) && CombatManager.GetHandler(caster).isCombatRunning)
+                if (ViolatesOutsideCombat(caster, id))
                 {
                     refusal = AbilityRefusals.MustBeOutsideCombat;
                     return "You may only use this ability outside combat.";
                 }
                 Pet pet = Of(caster);
-                if (id == AbsorbSimulacra && (targetView <= 2 || pet == null || pet.Mob.getIsDead()))
+                if (HasVisibilityRequirement(id) && (targetView <= 2 || pet == null || pet.Mob.getIsDead()))
                 {
                     refusal = AbilityRefusals.InvalidTarget;
                     return "Select your living simulacrum first.";
@@ -860,7 +899,7 @@ namespace hds
                     refusal = AbilityRefusals.TargetOutOfRange;
                     return "Your simulacrum is out of range.";
                 }
-                if (id == AbsorbSimulacra && !CombatSight.Between(caster, pet.Mob))
+                if (HasVisibilityRequirement(id) && !CombatSight.Between(caster, pet.Mob))
                 {
                     refusal = AbilityRefusals.TargetNotInSight;
                     return "Your simulacrum is out of sight.";
@@ -944,8 +983,8 @@ namespace hds
             lock (pet)
             {
                 if (!cast.Matches(caster, Of(caster)) || !OwnerPresent(pet) || !InAbilityRange(pet, id) ||
-                    (id == AbsorbSimulacra && !CombatSight.Between(caster, pet.Mob)) ||
-                    (RequiresOutsideCombat(id) && CombatManager.GetHandler(caster).isCombatRunning))
+                    (HasVisibilityRequirement(id) && !CombatSight.Between(caster, pet.Mob)) ||
+                    (ViolatesOutsideCombat(caster, id)))
                 {
                     Output.WriteDebugLog("[PET] " + id + " fizzles: original pet, owner, range or combat requirement changed");
                     return;
@@ -995,6 +1034,14 @@ namespace hds
                 Regenerate(pet, now);
                 pet.ChargeUntil = now + 600;
                 Output.WriteDebugLog("[PET] Charge Simulacra (603) pet=" + pet.SimulacraId + " costReduction=20% regenIncrease=50% duration=600");
+            }
+            else if (id == ProxyMasterGrant)
+            {
+                ApplyProxyMasterResources(pet, now);
+                SendHit(pet, FirstFx(entry));
+                var (reduction, regen, duration) = proxyMasterResources.Value;
+                Output.WriteDebugLog($"[PET] Proxy Master (1107) owner={caster.playerData.getCharID()} pet={pet.SimulacraId} " +
+                    $"costReduction={reduction}% regenIncrease={regen}% duration={duration}");
             }
             else if (id == DetonateProxy)
             {
@@ -1421,7 +1468,7 @@ namespace hds
         // ---- Dev command (MXO_DEV_COMMANDS=1) ------------------------------------------------------------------
 
         public static readonly UInt16[] DevAbilities = { 27, 28, 29, 586, 594, 22, 601, 611, 616, 602, 612, 617, 30, 31, 587, 596, 615,
-            20, 25, 603, 34, 19, AbsorbSimulacra, 609, 619 };
+            20, 25, 603, 34, 19, AbsorbSimulacra, 609, 619, ProxyMasterGrant };
 
         /// <summary>?pet: casts through the real ability path, summons directly, orders, and a hostile dummy to fight.</summary>
         public static string DevCommand(WorldClient client, string[] args)
@@ -1501,7 +1548,7 @@ namespace hds
                     var daemonBoost = DaemonBoost.Values(current, now);
                     return current.Mob.getName() + " L" + current.Mob.getLevel() + " " + current.Mob.getHealthC() + "/" + current.Mob.getHealthM() +
                         " HP, " + Math.Round(current.InnerStrength, 1) + "/" + current.MaxInnerStrength + " IS, " + current.Order +
-                        ", " + current.Stance + ", cost " + (now < current.ChargeUntil ? 8 : 10) +
+                        ", " + current.Stance + ", cost " + ActionCost(current, now) +
                         ", resistance " + (now < current.FortifyUntil ? current.FortifyResistance : 0) +
                         ", aura viral/heal " + daemonBoost.Viral + "/" + daemonBoost.Healing +
                         ", power melee/ballistic " + (now < current.PowerBoostUntil ? current.PowerMeleeDamage : 0) + "/" +

@@ -227,6 +227,7 @@ public static partial class Scenarios
         new Scenario("coder-pet-lifecycle", CoderPetLifecycle, StillNpcs),
         new Scenario("coder-pet-npc-retaliation", CoderPetNpcRetaliation, StillNpcs),
         new Scenario("coder-pet-resources", CoderPetResources, StillNpcs),
+        new Scenario("proxy-master-pet-grant", ProxyMasterPetGrant, StillNpcs),
         new Scenario("coder-pet-typed-power-boost", CoderPetPowerBoost, StillNpcs),
         new Scenario("absorb-simulacra-server", AbsorbSimulacraServer,
             new Dictionary<string, string>(StillNpcs) { ["MXO_DEV_COMMANDS"] = "1", ["MXO_DESPERATION_QA_HOLD_HEALTH"] = "1" }),
