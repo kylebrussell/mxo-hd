@@ -102,4 +102,71 @@ public class CombatDepthTests
         Assert.True(mob.TryRetaliate(14.5,4.5)); Assert.True(mob.TryClaimDeath()); Assert.False(mob.TryClaimDeath());
         Assert.False(mob.TryRetaliate(20,4.5));
     }
+
+    [Fact]
+    public void PetRetaliationSharesTheNpcClockAndYieldsToPlayerCombatants()
+    {
+        var npc = new Mob();
+        npc.setHealthM(100);
+        npc.ResetForRespawn();
+        var player = Client();
+        var pet = new CoderPets.Pet();
+
+        Assert.True(npc.TryRetaliate(10, 3, pet));
+        Assert.False(npc.TryRetaliate(11, 3, pet));
+        npc.setCombatTarget(player);
+        Assert.False(npc.TryRetaliate(11, 4.5));
+        npc.RemoveCombatant(player);
+        Assert.False(npc.TryRetaliate(12, 3, pet));
+
+        npc.setCombatTarget(player);
+        Assert.False(npc.TryRetaliate(13, 3, pet));
+        Assert.True(npc.TryRetaliate(13, 4.5));
+        npc.RemoveCombatant(player);
+        Assert.True(npc.TryRetaliate(14, 3, pet));
+        Assert.False(npc.TryRetaliate(15, 3, pet));
+
+        Assert.True(npc.TryClaimDeath());
+        Assert.False(npc.TryRetaliate(18, 3, pet));
+        npc.ResetForRespawn();
+        Assert.True(npc.TryRetaliate(18, 3, pet));
+    }
+
+    [Fact]
+    public void PlayerWithdrawalPreservesTheClockWhileTheAdmittedPetRemains()
+    {
+        var npc = new Mob { CapturedEvasion = new NpcEvasion() };
+        npc.setHealthM(100);
+        npc.ResetForRespawn();
+        var player = Client();
+        var pet = new CoderPets.Pet { Owner = player, Target = npc, TargetDeathGeneration = npc.DeathGeneration };
+        CoderPets.ApplyPowerBoost(pet, 18, 0);
+
+        var clientsBefore = WorldServer.Clients;
+        WorldServer.Clients = new();
+        try
+        {
+            Assert.True(npc.CapturedEvasion.TryOpenPet(pet, npc, 10));
+        }
+        finally
+        {
+            WorldServer.Clients = clientsBefore;
+        }
+
+        Assert.True(npc.TryRetaliate(10, 3, pet));
+        npc.setCombatTarget(player);
+        Assert.False(npc.TryRetaliate(13, 3, pet));
+        Assert.True(npc.TryRetaliate(13, 4.5));
+        npc.RemoveCombatant(player);
+        Assert.True(npc.CapturedEvasion.HasPet(pet));
+        Assert.False(npc.TryRetaliate(14, 3, pet));
+        Assert.False(npc.TryRetaliate(17.5, 3, new CoderPets.Pet()));
+        Assert.True(npc.TryRetaliate(17.5, 3, pet));
+
+        npc.setCombatTarget(player);
+        Assert.True(npc.TryRetaliate(20.5, 4.5));
+        npc.CapturedEvasion.ReleasePet(pet);
+        npc.RemoveCombatant(player);
+        Assert.True(npc.TryRetaliate(21, 3, pet));
+    }
 }

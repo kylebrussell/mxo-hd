@@ -410,7 +410,7 @@ public class CoderPetTests
     }
 
     [Fact]
-    public void PowerBoostCatalogGatesRemainSourcedAndForceCombatRemainsExplicitGap()
+    public void PowerBoostAppliesFixedForceCombatToTheActualPetUntilExpiry()
     {
         var entry = AbilityCatalog.Find(25);
         Assert.Equal(50, AbilityCosts.Cost(25));
@@ -420,6 +420,18 @@ public class CoderPetTests
         Assert.Equal(1, entry.Number("Ability/NonCombatOnlyAbility"));
         Assert.Contains(entry.Modifiers, m => m.Target == 519 && m.Number("MinValue") == 40);
         Assert.True(CoderPets.TargetsOwnPet(25));
+
+        var pet = ResourcePet();
+        Assert.False(Scores(10).Allows);
+        CoderPets.ApplyPowerBoost(pet, 18, 10);
+        Assert.Equal(140, Scores(309.99).Force);
+        Assert.Equal(110, Scores(309.99).Evade);
+        Assert.True(Scores(309.99).Allows);
+        Assert.False(Scores(310).Allows);
+        Assert.Equal(0, CoderPets.ActivePowerForce(ResourcePet(), 30));
+
+        CombatInsightEngagement.Scores Scores(double now) =>
+            CombatInsightEngagement.Calculate(0, CoderPets.ActivePowerForce(pet, now), 0, 0, 0);
     }
     [Fact]
     public void PowerCastSnapshotsLevelAndRejectsOwnerLifeWorldAndPetReplacement()
