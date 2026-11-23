@@ -761,6 +761,12 @@ namespace hds
                     return;
                 }
             }
+            if (AbilityID == AbilityBuffs.DoctorUpgrade && !AbilityPassives.IsLoaded(Store.currentClient, AbilityID) &&
+                !AbilityBuffs.IsToggledOn(Store.currentClient, AbilityID))
+            {
+                Deny(AbilityID, "Load Doctor before using Doctor Upgrade.", AbilityRefusals.NotLoaded, sendServerText: false);
+                return;
+            }
             bool support = !pet && !stealth && AbilitySupport.Handles(AbilityID);
             if (support)
             {

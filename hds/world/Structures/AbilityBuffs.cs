@@ -81,6 +81,7 @@ namespace hds
         public const int FamilyHyperDefence = 1, FamilyClassBuff = 2;
         internal const ushort ForceMultiplierUpgrade = 1091;
         internal const ushort UpgradeArtistUpgrade = 1095;
+        internal const ushort DoctorUpgrade = 1097;
 
         internal static bool HasClassSweep(ushort id) => id == ForceMultiplierUpgrade || id == UpgradeArtistUpgrade;
         private const int ClassUpgradeStackingType = 37;
