@@ -525,6 +525,10 @@ public class AbilityRefusalFeedbackTests:IDisposable
     [InlineData(60, 4)]
     [InlineData(588, 41)]
     [InlineData(588, 4)]
+    [InlineData(254, 41)]
+    [InlineData(254, 4)]
+    [InlineData(255, 41)]
+    [InlineData(255, 4)]
     public void DelayedHostileCastCannotLandOnANewerSpawnInTheOriginalView(ushort abilityId, int length)
     {
         var caster = Client();
@@ -538,6 +542,11 @@ public class AbilityRefusalFeedbackTests:IDisposable
         caster.playerData.pvpFlag = target.playerData.pvpFlag = true;
         caster.playerData.combatStyle = abilityId == 53 || abilityId is >= 57 and <= 60
             ? CombatStyles.HackerStyle : CombatStyles.CoderStyle;
+        if (abilityId is 254 or 255)
+        {
+            caster.playerData.combatStyle = CombatStyles.Rifles;
+            caster.playerData.passives.Loaded[CombatStyles.Rifles] = 50;
+        }
         caster.playerData.passives.Loaded[abilityId] = 50;
         WorldServer.Clients.Add("target", target);
         var view = caster.viewMan.addView(42, 12);

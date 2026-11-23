@@ -112,7 +112,7 @@ public sealed class StarterConcealedShotTargetingMode : NativeQaMode
         }
     }
 
-    private static Teleport Stand(int x, int z)
+    internal static Teleport Stand(int x, int z)
     {
         Check.That(NavMesh.Locate(1, x, Y, z, out var floor) && !floor.indoors && Math.Abs(floor.floorY + 95 - Y) <= 100,
             $"Verified outdoor NAV ({x},{Y},{z})");
@@ -134,5 +134,5 @@ public sealed class StarterConcealedShotTargetingMode : NativeQaMode
         throw new InvalidOperationException("Concealed Shot needs an outdoor clear-sight stand beyond its shipped 30 m limit.");
     }
 
-    private sealed record Teleport(string Command, string Confirmation);
+    internal sealed record Teleport(string Command, string Confirmation);
 }
