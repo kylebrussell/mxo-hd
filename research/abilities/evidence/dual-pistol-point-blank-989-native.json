@@ -1,0 +1,48 @@
+{
+  "families": {
+    "dual-pistol-point-blank-native": {
+      "representative": 499,
+      "result": "pass",
+      "head": "2a802d40a20077072b0d4837ddb632e5399a3775",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/989#issuecomment-7103611548",
+      "scope": "Stock L42 with dual handguns and Handguns. Local refusal at rest and before Off Balance, real queued +29 and 30 IS, 10 s own and 5 s family reuse, 9533 at the planned pair, 115 neutral and 108 with +20 armor, 6.48 s Powerless and independent 6 s immunity on both hits. Localized notice IDs and the miss path are covered by executable tests. The native report did not confirm the notice text or sample a miss."
+    }
+  },
+  "abilities": {
+    "499": {
+      "family": "dual-pistol-point-blank-native",
+      "checks": {
+        "damage": {
+          "source": "Current GOB 499 fixes Ballistic base 98. Its older 300-point direct-object callback is in an omitted legacy module and is not the current route.",
+          "runtime": "The admitted interlock special applies ordinary caster Ballistic influence and typed recipient resistance on landing only.",
+          "test": "PointBlankLandsTypedDamageAndLeavesAnIndependentPowerlessLifetime exercises both typed results. PR989 records 115 neutral and raw 115 to final 108 on the same recipient under +20 Ballistic Resistance."
+        },
+        "controls": {
+          "source": "GOB 499 requires Off Balance and applies six seconds of Powerless with its linked state and immunity.",
+          "runtime": "The cast requires a live state at admission and checks it again for the queued move. The landed Powerless consumes the normal linked duration bonus independently of the immunity deadline.",
+          "test": "The stock client refused before Off Balance and then measured 499/96 and linked 96/0 for 6.48 s, with separate 734/681 for 6 s and all removals. PointBlankLandsTypedDamageAndLeavesAnIndependentPowerlessLifetime verifies the localized 0x7a00004e caster and 0x7a00004d target tokens. The stock comment did not confirm their rendered text."
+        },
+        "targeting": {
+          "source": "The current GOB requires a live hostile interlock opponent with Off Balance, the Handguns stance and an IWDH weapon.",
+          "runtime": "The ability dispatcher binds the admitted view, spawn and fight. A changed opponent, weapon or state cannot carry the queued special to a replacement.",
+          "test": "PointBlankBindsTheOffBalanceOpponentAndDualHandguns covers stale views, wrong weapon or style, absent state and fight changes. Stock rejected the out-of-combat and pre-state actions locally and sent 499 on the current opponent after Off Balance."
+        },
+        "choreography": {
+          "source": "Three retained 499 wins tie ILDB 9533 to the 140-unit presentation pose. The ILDB separately identifies 9526, and a retained non-landing 499 uses the ordinary exchange.",
+          "runtime": "CombatPresentation pairs the landed ability with 9533 at the witnessed emitted pose, uses its named medium fallback outside that pose, and keeps the ordinary exchange on a miss.",
+          "test": "PistolSpecialRoundUsesTheMoveForItsEmittedPairPose checks the short pose, the named fallback and a miss. Both stock wins in PR989 played 9533."
+        },
+        "source-parity": {
+          "source": "GOB 499 supplies fixed Ballistic 98, +29 tactic, 30 IS, 10 s own and 5 s family 690 reuse. Three retained combat exchanges match 499 to 9533 at the 140-unit pose. The ILDB names 9526 for the medium move.",
+          "runtime": "The selected ordinary queue uses the authored current values and the observed short-pose animation. The named medium presentation is an executable fallback, and a losing queue uses the regular exchange.",
+          "test": "PR989 stock verifies 9533 on both observed wins, the costs and the control timing. PistolSpecialRoundUsesTheMoveForItsEmittedPairPose verifies serialization of the observed pose, the medium fallback and a miss. No stock medium render is claimed."
+        },
+        "behavior-tests": {
+          "source": "Shipped 499 is an instant selected interlock special with an Off Balance requirement, Ballistic hit and Powerless on landing.",
+          "runtime": "Admission, HP damage, recipient state, matching removal and named choreography use the production paths.",
+          "test": "The focused admission, lifetime and serialization tests exercise the normal route, refusal and missed exchange. PR989 verifies both stock hits, exact reuse, two removal sets and unchanged IS on local refusals."
+        }
+      }
+    }
+  }
+}
