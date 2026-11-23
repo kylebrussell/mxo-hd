@@ -1195,6 +1195,7 @@ public class AbilityRefusalFeedbackTests:IDisposable
     [Theory]
     [InlineData("unloaded", AbilityRefusals.NotLoaded)]
     [InlineData("single SMG", AbilityRefusals.RequiredItemCategory)]
+    [InlineData("missing", AbilityRefusals.InvalidTarget)]
     [InlineData("ally", AbilityRefusals.InvalidTarget)]
     [InlineData("stale request", AbilityRefusals.InvalidTarget)]
     [InlineData("far", AbilityRefusals.TargetOutOfRange)]
@@ -1223,7 +1224,9 @@ public class AbilityRefusalFeedbackTests:IDisposable
         var view = caster.viewMan.addView(111, 12);
         view.viewCreated = true;
         view.spawnId = 9;
-        byte[] request = ControlledBurstRequest(DuelPackets.Handle(view.ViewID, scenario == "stale request" ? 8 : view.spawnId));
+        uint selected = scenario == "missing" ? 0 :
+            DuelPackets.Handle(view.ViewID, scenario == "stale request" ? 8 : view.spawnId);
+        byte[] request = ControlledBurstRequest(selected);
         double start = TimeUtils.GetSimTimeSeconds();
         if (scenario == "resisted")
         {
@@ -1246,6 +1249,8 @@ public class AbilityRefusalFeedbackTests:IDisposable
             Assert.InRange(castEnd - start, 3.99, 4.25);
             Assert.Equal(470, AbilityHandler.CurrentInnerStrength(caster));
             Assert.Equal(1000, PvpCombat.HealthOf(target));
+            Assert.Contains(Rpcs(caster), wire => wire.SequenceEqual(Hex("80acfa000000000000000000000000008040")));
+            Assert.False(AbilityCooldowns.IsCoolingDown(caster.playerData, id, TimeUtils.GetSimTimeSeconds()));
             Assert.True(AbilityCooldowns.TryGet(id, out var cooldown));
             Assert.Equal(10f, cooldown.Seconds);
             Assert.Equal(689, cooldown.Group);
@@ -1260,12 +1265,11 @@ public class AbilityRefusalFeedbackTests:IDisposable
                 case "swapped while casting": caster.playerInstance.EquippedItemID.setValue(698u); break;
             }
 
-            ushort scaled = AbilityStats.ScaleAbilityDamage(caster, id, 26);
-            ushort damage = TypedAbilityResistance.Player(caster, target, id, scaled);
-            if (scenario == "resisted") Assert.InRange(damage, 1, scaled - 1);
+            Assert.Equal(13, AbilityStats.Influence(caster, 171));
             AbilityCastInterrupts.FinishDue(caster, castEnd + .01);
             Assert.True(AbilityCooldowns.IsCoolingDown(caster.playerData, id, TimeUtils.GetSimTimeSeconds()));
-            Assert.Equal(scenario is "neutral" or "resisted" ? 1000 - damage : 1000, PvpCombat.HealthOf(target));
+            var expectedHealth = scenario switch { "neutral" => 971, "resisted" => 974, _ => 1000 };
+            Assert.Equal(expectedHealth, PvpCombat.HealthOf(target));
         }
         finally { TimedEffects.Clear(TimedEffects.ForPlayer(target)); }
 
@@ -1327,6 +1331,9 @@ public class AbilityRefusalFeedbackTests:IDisposable
                 Assert.Equal(view.ViewID, original.QueuedAbilityTarget);
                 Assert.Equal(21082u, CombatAnimations.Special(id, true, CombatTactic.Speed)?.Id);
                 Assert.True(CombatAnimations.CanResolveQueuedAbility(caster, queued));
+                caster.playerInstance.EquippedItemID.setValue(698u);
+                Assert.False(CombatAnimations.CanResolveQueuedAbility(caster, queued));
+                caster.playerInstance.EquippedItemID.setValue(2503u);
                 caster.playerData.passives.Loaded.Remove(id);
                 Assert.False(CombatAnimations.CanResolveQueuedAbility(caster, queued));
             }
