@@ -74,7 +74,8 @@ namespace hds
             // Use the authored flat tactic adjustment for style-bound queued gun moves. Their original
             // tacticalValue producer is unknown; keep the free-cast, escape and item contest rules separate.
             if (test == 1 && (definition.Number("Ability/CastWhenUsed") == 3 ||
-                definition.Id == CombatSpecials.ThreeRoundBurst || definition.Id == CombatSpecials.PistolEvasive) &&
+                definition.Id == CombatSpecials.ThreeRoundBurst || definition.Id == CombatSpecials.PistolEvasive ||
+                definition.Id == CombatSpecials.PistolBarrage) &&
                 definition.Number("Ability/HasSuccessInterlockMove") == 1 &&
                 definition.Number("Ability/CastRequiredCombatStance") != 0)
             {

@@ -35,6 +35,7 @@ public class TypedSpecialAttackTests
     [InlineData(105, 0)]
     [InlineData(208, 0)]
     [InlineData(242, 10)]
+    [InlineData(244, 15)]
     [InlineData(1024, 0)]
     public void StyleBoundQueuedGunSpecialFeedsItsAuthoredBonusIntoTheRound(ushort id, int bonus)
     {
