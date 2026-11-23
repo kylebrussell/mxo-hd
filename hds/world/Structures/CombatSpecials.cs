@@ -27,10 +27,15 @@ namespace hds
             HolyWaterPlus = 1023, SilverBulletPlus = 1024, PistolEvasive = 242, WoundingShot = 253;
         public const ushort KilledOnlyByHolyWater = 432, KilledOnlyBySilver = 463, KilledOnlyByWood = 464;
 
-        internal const ushort SlidingVolley = 249, ControlledBurst = 250;
+        internal const ushort SlidingVolley = 249, ControlledBurst = 250, ThreeRoundBurst = 256;
 
         internal static bool HasEquippedDualSubmachineGuns(WorldClient caster) =>
             RangedWeapons.GetStats(SharpshooterFreeFire.EquippedWeapon(caster))?.Category == "IWDS";
+
+        internal static bool HasTimedSpecialWeapon(WorldClient caster, ushort ability) =>
+            ability == ThreeRoundBurst
+                ? RangedWeapons.GetStats(SharpshooterFreeFire.EquippedWeapon(caster))?.Category == "IWRf"
+                : HasEquippedDualSubmachineGuns(caster);
 
         // ability/general.py 9-17
         public const int WoodenStakeDamage = 10, SilverBulletDamage = 10, HolyWaterDamage = 10;

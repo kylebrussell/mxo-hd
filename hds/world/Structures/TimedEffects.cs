@@ -782,7 +782,7 @@ namespace hds
         {
             // The captured Pistol Aerial marker has no attribute target on the wire.
             ushort target = AbilityConditionalControls.IsPistolAerialMarker(m) ? (ushort)0 : m.Target;
-            bool linkedStunTactics = AbilityConditionalControls.IsPistolAerialStunTactics(m);
+            bool linkedStunTactics = AbilityConditionalControls.IsLinkedStunTactics(m);
             ushort parent = linkedStunTactics ? TempMods.StunAbility : m.Parent;
             float seconds = linkedStunTactics || float.IsPositiveInfinity(m.Seconds) ? 0 : m.Seconds;
             return AbilityBuffs.BuildModifier(m.Kind, m.RecordId, parent, target, m.Value, off, seconds);

@@ -1591,24 +1591,41 @@ public class AbilityRefusalFeedbackTests:IDisposable
     }
 
     [Theory]
-    [InlineData("unloaded", AbilityRefusals.NotLoaded)]
-    [InlineData("single SMG", AbilityRefusals.RequiredItemCategory)]
-    [InlineData("missing", AbilityRefusals.InvalidTarget)]
-    [InlineData("ally", AbilityRefusals.InvalidTarget)]
-    [InlineData("stale request", AbilityRefusals.InvalidTarget)]
-    [InlineData("far", AbilityRefusals.TargetOutOfRange)]
-    [InlineData("blocked", AbilityRefusals.TargetNotInSight)]
-    [InlineData("left range", 0u)]
-    [InlineData("lost sight", 0u)]
-    [InlineData("new spawn", 0u)]
-    [InlineData("unloaded while casting", 0u)]
-    [InlineData("swapped while casting", 0u)]
-    [InlineData("neutral", 0u)]
-    [InlineData("resisted", 0u)]
-    public void ControlledBurstBindsItsEligibleTargetAndConsumesTypedResistance(string scenario, uint refusal)
+    [InlineData("unloaded", AbilityRefusals.NotLoaded, 250)]
+    [InlineData("single SMG", AbilityRefusals.RequiredItemCategory, 250)]
+    [InlineData("missing", AbilityRefusals.InvalidTarget, 250)]
+    [InlineData("ally", AbilityRefusals.InvalidTarget, 250)]
+    [InlineData("stale request", AbilityRefusals.InvalidTarget, 250)]
+    [InlineData("far", AbilityRefusals.TargetOutOfRange, 250)]
+    [InlineData("blocked", AbilityRefusals.TargetNotInSight, 250)]
+    [InlineData("left range", 0u, 250)]
+    [InlineData("lost sight", 0u, 250)]
+    [InlineData("new spawn", 0u, 250)]
+    [InlineData("unloaded while casting", 0u, 250)]
+    [InlineData("swapped while casting", 0u, 250)]
+    [InlineData("neutral", 0u, 250)]
+    [InlineData("resisted", 0u, 250)]
+    [InlineData("missing stagger", AbilityRefusals.TargetStateRequired, 256)]
+    [InlineData("unloaded", AbilityRefusals.NotLoaded, 256)]
+    [InlineData("single SMG", AbilityRefusals.RequiredItemCategory, 256)]
+    [InlineData("missing", AbilityRefusals.InvalidTarget, 256)]
+    [InlineData("ally", AbilityRefusals.InvalidTarget, 256)]
+    [InlineData("stale request", AbilityRefusals.InvalidTarget, 256)]
+    [InlineData("far", AbilityRefusals.TargetOutOfRange, 256)]
+    [InlineData("blocked", AbilityRefusals.TargetNotInSight, 256)]
+    [InlineData("left range", 0u, 256)]
+    [InlineData("lost sight", 0u, 256)]
+    [InlineData("new spawn", 0u, 256)]
+    [InlineData("unloaded while casting", 0u, 256)]
+    [InlineData("swapped while casting", 0u, 256)]
+    [InlineData("neutral", 0u, 256)]
+    [InlineData("resisted", 0u, 256)]
+    public void TimedGunSpecialBindsItsEligibleTargetAndConsumesTypedResistance(string scenario, uint refusal, int idValue)
     {
-        const ushort id = CombatSpecials.ControlledBurst;
-        var caster = ControlledBurstCaster(unloaded: scenario == "unloaded", singleSmg: scenario == "single SMG");
+        ushort id = (ushort)idValue;
+        bool rifle = id == CombatSpecials.ThreeRoundBurst;
+        int outside = rifle ? 19749 : 20349;
+        var caster = TimedGunSpecialCaster(id, unloaded: scenario == "unloaded", wrongWeapon: scenario == "single SMG");
         var target = Client();
         target.playerData.setCharID(111);
         target.playerData.setEntityId(111);
@@ -1616,7 +1633,7 @@ public class AbilityRefusalFeedbackTests:IDisposable
         caster.playerInstance.OrganizationID.setValue((byte)1);
         target.playerInstance.OrganizationID.setValue((byte)(scenario == "ally" ? 1 : 2));
         caster.playerData.pvpFlag = target.playerData.pvpFlag = true;
-        SetTargetX(scenario == "far" ? 20349 : scenario == "blocked" ? 22350 : 21550);
+        SetTargetX(scenario == "far" ? outside : scenario == "blocked" ? 22350 : 21550);
         WorldServer.Clients.Add("caster", caster);
         WorldServer.Clients.Add("target", target);
         var view = caster.viewMan.addView(111, 12);
@@ -1624,8 +1641,9 @@ public class AbilityRefusalFeedbackTests:IDisposable
         view.spawnId = 9;
         uint selected = scenario == "missing" ? 0 :
             DuelPackets.Handle(view.ViewID, scenario == "stale request" ? 8 : view.spawnId);
-        byte[] request = ControlledBurstRequest(selected);
+        byte[] request = TimedGunSpecialRequest(id, selected);
         double start = TimeUtils.GetSimTimeSeconds();
+        if (rifle && scenario != "missing stagger") SeedStagger(TimedEffects.ForPlayer(target));
         if (scenario == "resisted")
         {
             TimedEffects.ForPlayer(target).Effects.Apply(181,
@@ -1637,7 +1655,8 @@ public class AbilityRefusalFeedbackTests:IDisposable
             new AbilityHandler().ProcessAbility(ref request);
             if (refusal != 0)
             {
-                Assert.Equal(AbilityRefusals.Encode(new(id, refusal)), Assert.Single(Rpcs(caster)));
+                Assert.Equal(AbilityRefusals.Encode(new(id, refusal, states: scenario == "missing stagger" ? 8u : 0u)),
+                    Assert.Single(Rpcs(caster)));
                 Assert.Equal(500, AbilityHandler.CurrentInnerStrength(caster));
                 Assert.Empty(caster.playerData.cooldownEndsAt);
                 return;
@@ -1645,9 +1664,10 @@ public class AbilityRefusalFeedbackTests:IDisposable
 
             double castEnd = caster.playerData.castEndsAt;
             Assert.InRange(castEnd - start, 3.99, 4.25);
-            Assert.Equal(470, AbilityHandler.CurrentInnerStrength(caster));
+            Assert.Equal(rifle ? 480 : 470, AbilityHandler.CurrentInnerStrength(caster));
             Assert.Equal(1000, PvpCombat.HealthOf(target));
-            Assert.Contains(Rpcs(caster), wire => wire.SequenceEqual(Hex("80acfa000000000000000000000000008040")));
+            Assert.Contains(Rpcs(caster), wire => wire.SequenceEqual(
+                Hex(rifle ? "80ac00010000000000000000000000008040" : "80acfa000000000000000000000000008040")));
             Assert.False(AbilityCooldowns.IsCoolingDown(caster.playerData, id, TimeUtils.GetSimTimeSeconds()));
             Assert.True(AbilityCooldowns.TryGet(id, out var cooldown));
             Assert.Equal(10f, cooldown.Seconds);
@@ -1656,7 +1676,7 @@ public class AbilityRefusalFeedbackTests:IDisposable
 
             switch (scenario)
             {
-                case "left range": SetTargetX(20349); break;
+                case "left range": SetTargetX(outside); break;
                 case "lost sight": SetTargetX(22350); break;
                 case "new spawn": view.spawnId++; break;
                 case "unloaded while casting": caster.playerData.passives.Loaded.Remove(id); break;
@@ -1666,7 +1686,12 @@ public class AbilityRefusalFeedbackTests:IDisposable
             Assert.Equal(13, AbilityStats.Influence(caster, 171));
             AbilityCastInterrupts.FinishDue(caster, castEnd + .01);
             Assert.True(AbilityCooldowns.IsCoolingDown(caster.playerData, id, TimeUtils.GetSimTimeSeconds()));
-            var expectedHealth = scenario switch { "neutral" => 971, "resisted" => 974, _ => 1000 };
+            var expectedHealth = scenario switch
+            {
+                "neutral" => rifle ? 910 : 971,
+                "resisted" => rifle ? 918 : 974,
+                _ => 1000
+            };
             Assert.Equal(expectedHealth, PvpCombat.HealthOf(target));
         }
         finally { TimedEffects.Clear(TimedEffects.ForPlayer(target)); }
@@ -1676,14 +1701,20 @@ public class AbilityRefusalFeedbackTests:IDisposable
     }
 
     [Theory]
-    [InlineData("same fight")]
-    [InlineData("different opponent")]
-    [InlineData("fight ends")]
-    [InlineData("fight replaced")]
-    public void ControlledBurstQueuesAgainstTheOriginalInterlock(string scenario)
+    [InlineData("same fight", 250)]
+    [InlineData("different opponent", 250)]
+    [InlineData("fight ends", 250)]
+    [InlineData("fight replaced", 250)]
+    [InlineData("same fight", 256)]
+    [InlineData("different opponent", 256)]
+    [InlineData("fight ends", 256)]
+    [InlineData("fight replaced", 256)]
+    [InlineData("wrong state", 256)]
+    public void TimedGunSpecialQueuesAgainstTheOriginalInterlock(string scenario, int idValue)
     {
-        const ushort id = CombatSpecials.ControlledBurst;
-        var caster = ControlledBurstCaster();
+        ushort id = (ushort)idValue;
+        bool rifle = id == CombatSpecials.ThreeRoundBurst;
+        var caster = TimedGunSpecialCaster(id);
         var target = new Mob();
         target.setEntityId(250000);
         target.setDistrict(1);
@@ -1705,19 +1736,24 @@ public class AbilityRefusalFeedbackTests:IDisposable
         var previousMobs = WorldServer.mobs;
         WorldServer.mobs = new System.Collections.ArrayList { target };
 
+        var targetEffects = TimedEffects.ForMob(target);
+        if (rifle && scenario != "wrong state") SeedStagger(targetEffects);
         try
         {
-            byte[] request = ControlledBurstRequest(handle);
+            byte[] request = TimedGunSpecialRequest(id, handle);
             new AbilityHandler().ProcessAbility(ref request);
             Assert.Null(original.QueuedAbility);
-            if (scenario == "different opponent")
+            if (scenario is "different opponent" or "wrong state")
             {
-                Assert.Equal(AbilityRefusals.Encode(new(id, AbilityRefusals.InvalidTarget)), Assert.Single(Rpcs(caster)));
+                bool wrongState = scenario == "wrong state";
+                Assert.Equal(AbilityRefusals.Encode(new(id,
+                    wrongState ? AbilityRefusals.TargetStateRequired : AbilityRefusals.InvalidTarget,
+                    states: wrongState ? 8u : 0u)), Assert.Single(Rpcs(caster)));
                 Assert.Equal(500, AbilityHandler.CurrentInnerStrength(caster));
                 return;
             }
 
-            Assert.Equal(470, AbilityHandler.CurrentInnerStrength(caster));
+            Assert.Equal(rifle ? 480 : 470, AbilityHandler.CurrentInnerStrength(caster));
             CombatSession? replacement = scenario == "fight replaced" ? NewFight(handle) : null;
             if (scenario != "same fight") sessionField.SetValue(handler, replacement);
             AbilityCastInterrupts.FinishDue(caster, caster.playerData.castEndsAt + .01);
@@ -1727,11 +1763,13 @@ public class AbilityRefusalFeedbackTests:IDisposable
                 var queued = Assert.IsType<AbilityItem>(original.QueuedAbility);
                 Assert.Equal(id, queued.getAbilityID());
                 Assert.Equal(view.ViewID, original.QueuedAbilityTarget);
-                Assert.Equal(21082u, CombatAnimations.Special(id, true, CombatTactic.Speed)?.Id);
+                Assert.Equal(rifle ? 11367u : 21082u, CombatAnimations.Special(id, true, CombatTactic.Speed)?.Id);
+                Assert.Null(CombatAnimations.Special(id, false, CombatTactic.Speed));
+                if (rifle) Assert.Equal(AbilityStats.Attack(caster, true) + 21, AbilityStats.SpecialAttack(caster, queued));
                 Assert.True(CombatAnimations.CanResolveQueuedAbility(caster, queued));
                 caster.playerInstance.EquippedItemID.setValue(698u);
                 Assert.False(CombatAnimations.CanResolveQueuedAbility(caster, queued));
-                caster.playerInstance.EquippedItemID.setValue(2503u);
+                caster.playerInstance.EquippedItemID.setValue(rifle ? 692u : 2503u);
                 caster.playerData.passives.Loaded.Remove(id);
                 Assert.False(CombatAnimations.CanResolveQueuedAbility(caster, queued));
             }
@@ -1743,6 +1781,7 @@ public class AbilityRefusalFeedbackTests:IDisposable
         }
         finally
         {
+            TimedEffects.Clear(targetEffects);
             sessionField.SetValue(handler, null);
             CombatManager.RemoveClient(caster);
             WorldServer.mobs = previousMobs;
@@ -1760,9 +1799,10 @@ public class AbilityRefusalFeedbackTests:IDisposable
         }
     }
 
-    private static WorldClient ControlledBurstCaster(bool unloaded = false, bool singleSmg = false)
+    private static WorldClient TimedGunSpecialCaster(ushort id, bool unloaded = false, bool wrongWeapon = false)
     {
-        const ushort id = CombatSpecials.ControlledBurst;
+        bool rifle = id == CombatSpecials.ThreeRoundBurst;
+        ushort style = rifle ? CombatStyles.Rifles : CombatStyles.SubmachineGuns;
         string root = AppContext.BaseDirectory;
         while (!File.Exists(Path.Combine(root, "data", "sector_properties.csv"))) root = Path.GetDirectoryName(root)!;
         SectorProperties.Load(Path.Combine(root, "data", "sector_properties.csv"));
@@ -1771,19 +1811,19 @@ public class AbilityRefusalFeedbackTests:IDisposable
         var caster = Client();
         caster.playerInstance.Level.setValue((byte)27);
         caster.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(21750, 1095, 16150));
-        caster.playerInstance.EquippedItemID.setValue(singleSmg ? 698u : 2503u);
-        var profile = new ushort[] { 2, 17, CombatStyles.SubmachineGuns, id }
+        caster.playerInstance.EquippedItemID.setValue(wrongWeapon ? 698u : rifle ? 692u : 2503u);
+        var profile = new ushort[] { 2, 17, style, id }
             .SelectMany(entry => AbilityPrerequisites.Current.Closure(entry).Keys.Append(entry)).Distinct().ToArray();
         Assert.True(profile.Sum(AbilityMemory.Cost) <= AbilityMemory.ForLevel(27));
         AbilityPassives.SetLoaded(caster, profile.Where(entry => !unloaded || entry != id).Select(entry => (entry, (ushort)27)));
-        CombatStyles.Select(caster, CombatStyles.SubmachineGuns);
+        CombatStyles.Select(caster, style);
         caster.messageQueue.RPCMessagesQueue.Clear();
         caster.messageQueue.ObjectMessagesQueue.Clear();
         Store.currentClient = caster;
 
         var ability = new AbilityItem();
         ability.setAbilityID(id);
-        ability.setAbilityName("Controlled Burst");
+        ability.setAbilityName(rifle ? "Three Round Burst" : "Controlled Burst");
         ability.setIsCastable(true);
         ability.setCastingTime(4);
         ability.setCastAnimStart(new byte[4]);
@@ -1791,11 +1831,17 @@ public class AbilityRefusalFeedbackTests:IDisposable
         return caster;
     }
 
-    private static byte[] ControlledBurstRequest(uint handle)
+    private static void SeedStagger(TimedEffects.Subject subject)
+    {
+        var stagger = CombatDepthStagger.Effect(30);
+        subject.Effects.Apply(stagger.Ability, TimedEffects.Instantiate(stagger, new Random(1)), TimeUtils.GetSimTimeSeconds());
+    }
+
+    private static byte[] TimedGunSpecialRequest(ushort id, uint handle)
     {
         // In-process handler frame. No external bootstrap treats it as a stock capture.
         var request = new byte[41];
-        BitConverter.GetBytes(CombatSpecials.ControlledBurst).CopyTo(request, 0);
+        BitConverter.GetBytes(id).CopyTo(request, 0);
         BitConverter.GetBytes(handle).CopyTo(request, 2);
         return request;
     }
