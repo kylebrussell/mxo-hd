@@ -5,6 +5,10 @@ namespace NativeQa.Modes;
 
 public sealed class HackerCallbacksMode : NativeQaMode
 {
+    // Complete stock requests from proxy_024, lines 12961–62 and 13475.
+    internal const string StockDeflectVirus = "80 b9 7a 01 0d 00 5a 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 15 00 00 e0 d1 2c 08 6b 00 00 00 00 00";
+    internal const string StockDismissDeflect = "80 bb 7a 01";
+
     private static readonly (ushort Id, string Name, string Effect)[] Cases =
     {
         (61, "Miasma 1.0", "WinterFrost: −14 melee and ballistic defense for 5 s"),
@@ -36,23 +40,21 @@ public sealed class HackerCallbacksMode : NativeQaMode
         // Stock proxy_024, lines 13876–13877 and 12961–12962. The casts are self-centered;
         // the recorded selection and unused ground/slot bytes can be replayed intact.
         const string combatAura = "80 b9 e5 01 0d 00 5a 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 20 00 00 00 78 f2 12 00 08 6b 00 00 00 00 00";
-        const string deflectVirus = "80 b9 7a 01 0d 00 5a 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 15 00 00 e0 d1 2c 08 6b 00 00 00 00 00";
         probe.SendRpc(combatAura);
         await probe.WaitForRpcAsync("80 bd 05 e5 01 00 00 00 00 00 01");
         await probe.WaitForRpcAsync("80 bc 15 00 ?? ?? 00 b8 02 00 00 9f 00 ?? ?? ?? ?? 00 00 00 a0 40");
         probe.SendRpc("80 bb e5 01"); // decoded cancel-ability producer, body is a single little-endian ability ID
         await probe.WaitForRpcAsync("80 bd 05 e5 01 00 00 00 00 00 00");
 
-        probe.SendRpc(deflectVirus);
+        probe.SendRpc(StockDeflectVirus);
         await probe.WaitForRpcAsync("80 bd 05 7a 01 00 00 00 00 00 01");
         byte[] activated = (await probe.WaitForRpcAsync("80 bc 09 00 ?? ?? 00 7a 01 00 00 7a 01 20 08 00 28 00 cd cc 4c 3e")).Bytes;
         string record = WireFormat.ToHex(activated.AsSpan(4, 2).ToArray());
         var expired = await probe.WaitForRpcAsync($"80 bc 09 00 {record} 00 7a 01 00 00 7a 01 20 08 00 28 01 cd cc 4c 3e");
-        const string dismissDeflect = "80 bb 7a 01"; // exact stock capture, proxy_024 line 13475
-        probe.SendRpc(dismissDeflect);
+        probe.SendRpc(StockDismissDeflect);
         await probe.WaitForRpcAsync("80 bd 05 7a 01 00 00 00 00 00 00");
         await File.WriteAllLinesAsync(Path.Combine(context.OutputDirectory, "hacker-callbacks-proof.txt"),
-            new[] { combatAura, deflectVirus, dismissDeflect, WireFormat.ToHex(activated), WireFormat.ToHex(expired.Bytes) });
+            new[] { combatAura, StockDeflectVirus, StockDismissDeflect, WireFormat.ToHex(activated), WireFormat.ToHex(expired.Bytes) });
         return Array.Empty<byte>();
     }
 }
