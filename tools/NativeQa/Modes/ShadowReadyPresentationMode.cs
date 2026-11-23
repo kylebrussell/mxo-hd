@@ -23,14 +23,14 @@ public sealed class ShadowReadyPresentationMode : NativeQaMode
         environmentOverrides: new() { ["MXO_PACKET_LOG"] = "1", ["MXO_MOB_WANDER"] = "0", ["MXO_AGGRO"] = "0" },
         extraQaMetadata: new()
         {
-            ["ScopedStockRows"] = "290", ["NativeCloseableRows"] = 1, ["NativeCloseableIds"] = "290",
+            ["ScopedStockRows"] = "1117", ["NativeCloseableRows"] = 0,
             ["Parent"] = Parent, ["Child"] = Child, ["NoOwnedShadowSeed"] = true, ["ExpectedMemory"] = Memory
         }, readyMessages: new[]
         {
             $"Level {Level}, {Memory}/100 memory, CSR at Mara Northwest hardline ({X},{Y},{Z}). If needed, use the printed PICK command to return there. No NPC selection is needed.",
             "On the first ordinary world entry, open Actions > Abilities > Shadow. Shadow Upgrade should be listed exactly once before touching the loadout. Stop if it is absent. Drag the visible action to a free slot and press it once normally. Expect [ABILITY] 1117, [BUFF] 1117 on and a 20 IS debit as a grant usability check.",
-            "Right-click the Mara Northwest hardline and choose Abilities. In the loaded abilities, unload Shadow (290) normally. Memory drops from 46 to 43. Reopen Actions and confirm Shadow Upgrade disappeared. Reload Shadow from the Archive through the same hardline. Memory returns to 46 and Actions shows one Shadow Upgrade again. Do not use a loadout chat command or upload any code.",
-            "Relog normally with Shadow loaded. Confirm one Shadow Upgrade on the first Actions open after relog. Save the Archive changes, grant removal/add and the first-entry and relog Actions views. Only parent 290 is in scope."
+            "While Shadow Upgrade is still active, right-click the Mara Northwest hardline and choose Abilities. Drag Shadow (290) out of Equipped. Expect memory 46 to 43, Shadow Upgrade gone from Actions, and one [BUFF] 1117 off. Save the matching [MODIFIER] removals for source 1117: stat 644 +3, 878 +10, 1032 +5 and 1005 +6. The Type45 290/1117 OFF is a separate record.",
+            "Reload Shadow from Archive through the same hardline. Memory returns to 46 and Actions shows one Shadow Upgrade. Check that the buff stays off and the original 30 s activation reuse is neither restarted nor cleared by the unload/reload. Leave other abilities loaded. No relog is needed for this retest."
         });
 
     public override async Task<byte[]> AfterStartAsync(NativeQaBootstrapContext context)

@@ -2,6 +2,7 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using hds;
+using MxoHd.PacketResearch;
 using NativeQa.Modes;
 namespace hds.Tests;
 
@@ -126,6 +127,57 @@ public class ShadowReadyPresentationTests
         c.messageQueue.RPCMessagesQueue.Clear();normal=ServerPackets.BuildAbilityUnload(1117);c.messageQueue.addRpcMessage(normal);
         AbilityPassives.SetLoadedFromRows(c,Array.Empty<AbilityMemory.Row>(),normal);Assert.Equal(new[]{normal},ShadowPackets(c));observed.Apply(ShadowPackets(c));Assert.Null(observed.Base);
     }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void LosingTheLastShadowGrantRemovesOnlyTheActiveUpgradeWithoutRenewingReuse(bool ownsLoadedChild)
+    {
+        const ushort shadow = 290, upgrade = 1117, independentBuff = 1;
+        var client = Client();
+        var parent = new AbilityMemory.Row(1, 404, AbilityMessages.AbilityGameObject(shadow), 50, true);
+        var child = new AbilityMemory.Row(2, 409, AbilityMessages.AbilityGameObject(upgrade), 50, true);
+        AbilityMemory.Row[] remaining = ownsLoadedChild ? new[] { child } : Array.Empty<AbilityMemory.Row>();
+        var initial = remaining.Append(parent).ToArray();
+        try
+        {
+            AbilityPassives.SetLoadedFromRows(client, initial);
+            AbilityGrantRegistration.LoadingComplete(client, new byte[] { 1 });
+            AbilityCooldowns.Start(client, upgrade, TimeUtils.GetSimTimeSeconds());
+            double initialReuse = client.playerData.cooldownEndsAt[upgrade];
+            Assert.True(AbilityBuffs.Apply(client, independentBuff));
+            Assert.True(AbilityBuffs.Apply(client, upgrade));
+            var added = UpgradeRecords();
+            Assert.Equal(4, added.Length);
+            Assert.All(added, record => Assert.Equal(0, record.AddRemoveType));
+            client.messageQueue.RPCMessagesQueue.Clear();
+
+            AbilityPassives.SetLoadedFromRows(client, remaining);
+
+            Assert.Equal(ownsLoadedChild, AbilityPassives.IsLoaded(client, upgrade));
+            Assert.Equal(ownsLoadedChild, AbilityBuffs.IsActive(client, upgrade));
+            Assert.True(AbilityBuffs.IsActive(client, independentBuff));
+            Assert.Equal(initialReuse, client.playerData.cooldownEndsAt[upgrade]);
+            Assert.DoesNotContain(Packets(client), packet => packet is [0x80, 0xbd, 0x01, 0x5d, 0x04, ..]);
+            Assert.Equal(ownsLoadedChild ? Array.Empty<ManageBonusRecord>() : added.Select(record => record with { AddRemoveType = 1 }),
+                UpgradeRecords());
+            Assert.Equal(ownsLoadedChild ? 0 : 1, Packets(client).Count(packet =>
+                packet.AsSpan().SequenceEqual(AbilityBuffs.BuildExclusive(upgrade, false))));
+
+            client.messageQueue.RPCMessagesQueue.Clear();
+            AbilityPassives.SetLoadedFromRows(client, initial);
+            Assert.True(AbilityPassives.IsLoaded(client, upgrade));
+            Assert.Equal(ownsLoadedChild, AbilityBuffs.IsActive(client, upgrade));
+            Assert.Empty(UpgradeRecords());
+            Assert.Equal(initialReuse, client.playerData.cooldownEndsAt[upgrade]);
+        }
+        finally { AbilityBuffs.RemoveAll(client); }
+
+        ManageBonusRecord[] UpgradeRecords() => Packets(client).Select(packet =>
+            ManageBonusRecord.TryDecode(packet, out var record) ? record : null)
+            .OfType<ManageBonusRecord>().Where(record => record.SourceId == upgrade && record.Type == 0x15).ToArray();
+    }
+
     [Fact] public void OldLoadedSnapshotAndSameCounterNewOwnerCannotPublish()
     {
         var d=new ClientData();var state=new AbilityShadowPresentation.Presentation();var old=Snap(d,true);d.passives.Generation++;
