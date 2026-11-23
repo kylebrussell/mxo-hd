@@ -143,7 +143,8 @@ public class CombatInsightEngagementTests
     [InlineData(40, -20, 25, 88)]
     [InlineData(86, -15, 28, 93)]
     [InlineData(130, -10, 8, 99)]
-    public void StarterDebuffReducesTheAffectedPlayersForceScoreUntilItsOwnExpiry(ushort ability, int forcePenalty,
+    [InlineData(254, -15, 8, 93)]
+    public void TimedDebuffReducesTheAffectedPlayersForceScoreUntilItsOwnExpiry(ushort ability, int forcePenalty,
         int seconds, long reducedScore)
     {
         using var fixture = new Fixture();

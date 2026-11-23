@@ -13,7 +13,7 @@ public sealed class GunmanRifleOpenerScopeMode : NativeQaMode
     private const string StockRifles = "80b993000400020000000000000000000000000000000000000000000000000000000000086b0000000000";
     private const string StockHandguns = "80b981000400020000000000000000000000000000000000000000000000000000000000086b0000000000";
     // PR328 stock 4242512d1e6c and PR389 d3b7112643d9.
-    private const string Immobilizing = "80b9fe00060004000000000000000000000000000000000000000000ffff7f7f00000000086b0000000000";
+    internal const string Immobilizing = "80b9fe00060004000000000000000000000000000000000000000000ffff7f7f00000000086b0000000000";
     private const string Disabling = "80b9ff00070005000000000000000000000000000000000000000000ffff7f7f00000000086b0000000000";
     private const string Hindering = "80b982000400020000000000000000000000000000000000000000000000000090767241086b0000000000";
 
@@ -88,8 +88,12 @@ public sealed class GunmanRifleOpenerScopeMode : NativeQaMode
         await RefusedAsync(actor, 254, WithHandle(Immobilizing, target), AbilityRefusals.TargetOutOfRange);
         await RefusedAsync(actor, 255, WithHandle(Disabling, target), AbilityRefusals.TargetOutOfRange);
         await MoveAsync(edge);
-        await LandAsync(actor, context.Helpers["QAEnemy"], hostile, 254, Immobilizing, 22, 10);
-        await LandAsync(actor, context.Helpers["QAEnemy"], hostile, 255, Disabling, 19, 10);
+        var enemy = context.Helpers["QAEnemy"];
+        int casterRootAt = actor.World.RpcSnapshot().Count;
+        int recipientRootAt = enemy.World.RpcSnapshot().Count;
+        await LandAsync(actor, enemy, hostile, 254, Immobilizing, 22, 10);
+        await VerifyImmobilizingRootAsync(actor, enemy, casterRootAt, recipientRootAt);
+        await LandAsync(actor, enemy, hostile, 255, Disabling, 19, 10);
         await MoveAsync(pick);
         await CombatFixtureLoadout.VerifyWeaponSwapAsync(actor, db, "handgun", CombatFixtureWeapons.Handgun);
         actor.SendRpc(StockHandguns);
@@ -128,6 +132,23 @@ public sealed class GunmanRifleOpenerScopeMode : NativeQaMode
         await StarterFixedDamageMode.Land(actor, enemy, target, id, damage, 2, reuse, request);
         if (AbilityCooldowns.TryGet(id, out var cooldown) && cooldown.Group != 0)
             await EvidenceRetestWire.TimerAsync(actor, cursor, cooldown.Group, AbilityCooldowns.GroupTimer, cooldown.GroupSeconds, ended: true);
+    }
+
+    private static async Task VerifyImmobilizingRootAsync(HeadlessPlayer caster, HeadlessPlayer enemy, int fromCaster, int fromEnemy)
+    {
+        const ushort shot = 254;
+        byte[] targetLine = AbilityMessages.AboutAbility(AbilityMessages.RootTarget, false, shot, caster.Handle, enemy.Handle, 50, 0);
+        byte[] casterLine = AbilityMessages.AboutAbility(AbilityMessages.RootCaster, true, shot, caster.Handle, enemy.Handle, 50, 0);
+        await ObserveAsync(enemy, fromEnemy, rpc => rpc.Bytes.AsSpan().SequenceEqual(targetLine), "Immobilizing Shot target message [50, 0]");
+        await ObserveAsync(caster, fromCaster, rpc => rpc.Bytes.AsSpan().SequenceEqual(casterLine), "Immobilizing Shot caster message [50, 0]");
+        foreach (var (target, value) in new (ushort, int)[] { (519, -15), (0, 50), (TempMods.RootedAbility, 0) })
+        {
+            await ObserveAsync(enemy, fromEnemy, rpc => Bonus(rpc, shot, target, value, 8, false), $"Immobilizing Shot add {target}");
+            await ObserveAsync(enemy, fromEnemy, rpc => Bonus(rpc, shot, target, value, 8, true), $"Immobilizing Shot remove {target}");
+        }
+        byte[] released = AbilityMessages.StateEnd(TempMods.RootedAbility, enemy.Handle);
+        await ObserveAsync(enemy, fromEnemy, rpc => rpc.Bytes.AsSpan().SequenceEqual(released), "Immobilizing Shot root release");
+        Console.WriteLine("IMMOBILIZING SHOT 254 root, 519=-15, break value 50 and both activation lines verified");
     }
 
     private static uint Handle(ViewCreation view) => DuelPackets.Handle(view.ViewId, view.SpawnId);

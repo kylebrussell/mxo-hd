@@ -14,9 +14,9 @@ public sealed class DisablingShotMode : NativeQaMode
     private static readonly ushort[] Loadout = Closure(2, 17, Rifles, Shot);
     private static readonly ushort[] EnemyLoadout = Closure(2, 17, Soldier);
     private const string StockShot = "80b9ff00070005000000000000000000000000000000000000000000ffff7f7f00000000086b0000000000";
-    private const string StockRifles = "80b993000400020000000000000000000000000000000000000000000000000000000000086b0000000000";
+    internal const string StockRifles = "80b993000400020000000000000000000000000000000000000000000000000000000000086b0000000000";
     // Full PR381 view-zero Soldier Upgrade request, PacketLog 0291e4b5eae0:1880–1881.
-    private const string StockUpgrade = "80b925040000000000000000000000000000000000000000000000d557377c20000000086b0000000000";
+    internal const string StockUpgrade = "80b925040000000000000000000000000000000000000000000000d557377c20000000086b0000000000";
 
     public override string Name => "ability-parity-disabling-shot";
     public override NativeQaModePlan Plan { get; } = new(Loadout, PickX, Z, Array.Empty<string>(),
@@ -150,22 +150,22 @@ public sealed class DisablingShotMode : NativeQaMode
         .LastOrDefault(record => record is { SourceId: Shot, TargetId: TempMods.PowerlessAbility }) is
             { AddRemoveType: 0 } active && active.Duration == 4;
 
-    private static ushort[] Closure(params ushort[] roots) =>
+    internal static ushort[] Closure(params ushort[] roots) =>
         roots.SelectMany(id => AbilityPrerequisites.Current.Closure(id).Keys.Append(id)).Distinct().Order().ToArray();
 
-    private static void CheckStand(HeadlessPlayer actor, int x)
+    internal static void CheckStand(HeadlessPlayer actor, int x)
     {
         var self = actor.World.CreationSnapshot().Last(view => view.ViewId == 2);
         Check.That(EngageFoesFixture.Position(self).SequenceEqual(new double[] { x, Y, Z }),
             $"{actor.Handle} entered on the intended verified stand");
     }
 
-    private static void CheckProfile(HeadlessPlayer actor, ushort[] expected)
+    internal static void CheckProfile(HeadlessPlayer actor, ushort[] expected, int level = Level)
     {
         var loaded = AbilityMemoryUiFixture.Decode(actor.CharacterData[6]).Where(row => AbilityMemory.IsAbility(row.Descriptor))
             .ToDictionary(row => AbilityCatalog.IdOf(row.Descriptor), row => row.Level);
-        Check.That(expected.Sum(AbilityMemory.Cost) <= AbilityMemory.ForLevel(Level) && loaded.Keys.ToHashSet().SetEquals(expected) &&
+        Check.That(expected.Sum(AbilityMemory.Cost) <= AbilityMemory.ForLevel(level) && loaded.Keys.ToHashSet().SetEquals(expected) &&
             expected.All(id => AbilityPrerequisites.Current.Closure(id).All(required =>
-                loaded.TryGetValue(required.Key, out ushort rank) && rank >= required.Value)), "Exact legal L22 rifle opener profile");
+                loaded.TryGetValue(required.Key, out ushort rank) && rank >= required.Value)), $"Exact legal level-{level} rifle opener profile");
     }
 }

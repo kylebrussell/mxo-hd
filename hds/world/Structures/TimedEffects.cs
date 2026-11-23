@@ -855,6 +855,16 @@ namespace hds
             {
                 if (m.Proc == TempMods.Proc.State && !effect.Virus)
                 {
+                    if (AbilityMessages.ImmobilizingShotRoot(m, false, caster, Name) is { } rootOutput)
+                    {
+                        client.messageQueue.addRpcMessage(rootOutput);
+                        if (m.Caster is WorldClient source && source != client)
+                        {
+                            source.messageQueue.addRpcMessage(AbilityMessages.ImmobilizingShotRoot(m, true, caster, Name));
+                            source.FlushQueue();
+                        }
+                        continue;
+                    }
                     UInt32 line = AbilityMessages.TargetStateLine(m.Target, out Int32[] values, out bool flag);
                     if (line != 0)
                     {
@@ -1018,8 +1028,14 @@ namespace hds
                 }
                 uint flag = CombatInterlock.TacticStateFlag(m.Target);
                 if (flag != 0) mob.ApplyCondition(flag, m.Seconds);
+                if (effect.Virus) continue;
+                if (AbilityMessages.ImmobilizingShotRoot(m, true, casterName, name) is { } rootOutput)
+                {
+                    Tell(caster, rootOutput);
+                    continue;
+                }
                 UInt32 line = AbilityMessages.CasterStateLine(m.Target, out Int32[] values);
-                if (line != 0 && !effect.Virus)
+                if (line != 0)
                 {
                     Tell(caster, AbilityMessages.AboutAbility(line, true, effect.Ability, casterName, name, values));
                 }

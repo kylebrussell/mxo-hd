@@ -110,12 +110,11 @@ public sealed class StarterFixedDamageMode : NativeQaMode
         byte[] damage = AbilityMessages.Damage(false, id, caster.Handle, enemy.Handle, expected, 0);
         await enemy.WaitUntilAsync(() => enemy.World.RpcSnapshot().Skip(targetCursor).Any(rpc => rpc.Bytes.AsSpan().SequenceEqual(damage)),
             $"ordinary selected-player hit {id} for {expected}", TimeSpan.FromSeconds(12));
-        byte[] timer = AbilityCooldowns.BuildTimer(id, AbilityCooldowns.OwnTimer, reuse, true);
+        await EvidenceRetestWire.TimerAsync(caster, cursor, id, AbilityCooldowns.OwnTimer, reuse);
         string idHex = WireFormat.ToHex(BitConverter.GetBytes(id));
         var bar = BytePattern.Parse($"80 ac {idHex}");
-        var records = caster.World.RpcSnapshot().Skip(cursor).ToArray();
-        Check.That(records.Any(rpc => rpc.Bytes.AsSpan().SequenceEqual(timer)), $"own reuse {id}: {reuse}s");
-        Check.That(records.Any(rpc => bar.IsMatch(rpc.Bytes) && BitConverter.ToSingle(rpc.Bytes, rpc.Bytes.Length - 4) == castSeconds),
+        await StockAbilityProfile.ObserveAsync(caster, cursor,
+            rpc => bar.IsMatch(rpc.Bytes) && BitConverter.ToSingle(rpc.Bytes, rpc.Bytes.Length - 4) == castSeconds,
             $"cast bar {id}: {castSeconds}s");
         return request;
     }
