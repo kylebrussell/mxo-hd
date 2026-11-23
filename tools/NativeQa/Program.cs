@@ -239,8 +239,8 @@ try
                     else if (action == "cast" && fixtureMode is NativeQa.Modes.AwakenedMovementLifecycleMode)
                         result = await NativeQa.Modes.AwakenedMovementLifecycleMode.SendLockdownAsync(
                             actor, q.GetProperty("target").GetString()!, q.GetProperty("ability").GetUInt16());
-                    else if (action == "cast" && (fixtureMode is NativeQa.Modes.StarterTransmitVirusMode ||
-                                                 fixtureMode is NativeQa.Modes.StarterSelectivePhageMode))
+                    else if (action == "cast" && (fixtureMode is NativeQa.Modes.StarterTransmitVirusMode or
+                                                 NativeQa.Modes.StarterSelectivePhageMode or NativeQa.Modes.TransmitCodeMode))
                         result = await NativeQa.Modes.StarterTransmitVirusMode.SendProbeAsync(
                             actor, q.GetProperty("target").GetString()!, q.GetProperty("ability").GetUInt16());
                     else if (action == "cast") actor.SendRpc($"80 b9 {Le(q.GetProperty("ability").GetUInt16())} {Le(target.ViewId)}");
