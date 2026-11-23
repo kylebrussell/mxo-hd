@@ -1,0 +1,33 @@
+{
+  "abilities": {
+    "126": {
+      "checks": {
+        "targeting": {
+          "source": "Disarming Shot has a four-second, Gunman-selected cast with at-rest and interlock eligibility. Its GOB requires the matching single handgun. A queued move keeps the original living opponent.",
+          "runtime": "The protected gun path validates weapon, view and spawn, selected hostile, range and sight before charging and rechecks the original fight before queueing. A lost target or replaced fight cannot convert to direct impact.",
+          "test": "TimedGunSpecialBindsItsEligibleTargetAndConsumesTypedResistance, TimedGunSpecialQueuesAgainstTheOriginalInterlock and SelectedSpecialCannotTransferToANewOpponentOrRespawn cover the local and stale-delivery cases. Native 7a722a16 confirmed direct 11 at rest, the weapon-swap fizzle without a queued or direct hit, and 9522 for 11 in the normal fight. https://github.com/kylebrussell/mxo-hd/pull/941#issuecomment-7094930174 Stock PR765 verified sight reason 9 before cost and the ordinary positive from the clear stand. https://github.com/kylebrussell/mxo-hd/pull/765#issuecomment-7082784229"
+        }
+      },
+      "note": "This pass verifies route and timing. Its variable modifier values describe the previous runtime, and the older unequip and magnitude account remain separate."
+    },
+    "176": {
+      "checks": {
+        "targeting": {
+          "source": "Covering Fire has a four-second selected cast and can land directly or queue for its original opponent. It requires the current single SMG.",
+          "runtime": "The protected gun path checks weapon, target visibility and range, and the same active fight through completion. The queued result is rejected if its target is replaced.",
+          "test": "TimedGunSpecialBindsItsEligibleTargetAndConsumesTypedResistance, TimedGunSpecialQueuesAgainstTheOriginalInterlock and SelectedSpecialCannotTransferToANewOpponentOrRespawn check original selection lifetime. Native 7a722a16 confirmed direct 18 with a natural 8 s Root, the spent-and-fizzled swap with no direct or queued hit, and normal 21083 for 18. https://github.com/kylebrussell/mxo-hd/pull/941#issuecomment-7094930174 Stock PR765 verified sight reason 9 before cost and the ordinary positive from the clear stand. https://github.com/kylebrussell/mxo-hd/pull/765#issuecomment-7082784229"
+        }
+      },
+      "note": "The timed Root application and natural expiry are observed. The original localized term and unverified presentation remain open."
+    },
+    "353": {
+      "checks": {
+        "damage": {
+          "source": "GOB 353 stores ViralDOT pool 94 for 30 seconds and a 2.5-second interval. The shipped ViralDOT callback rounds pool divided by duration times interval, then deals typed Viral damage. The old receiver-only +450 effective pool remains an archive discrepancy without a known source profile.",
+          "runtime": "TimedEffects applies AbilityStats.ScaleTypedAbilityDamage to the shipped pool once when it adds the effect. TempMods.DotTick uses that same pool and the 2.5-second interval for each rounded tick. TypedAbilityResistance reads the live recipient resistance each time.",
+          "test": "PR905 stock verifies the 94 +22 percent baseline (+114), eleven neutral 10-point ticks and the exact five-metre edge. PR944 stock on 09ff84d2 observes six 10 to 8 ticks with 36 Viral Resistance and five neutral 10 ticks after its removal on the same 353 record, with eleven neutral 10s throughout on QAEnemy. Both 353 records remove without a twelfth tick and the other two helpers are untouched. DespoilerFieldsLandOnTheSelectedEnemyAndExactRadiusEdge verifies the runtime expiry boundary and matching resistance control. https://github.com/kylebrussell/mxo-hd/pull/905#issuecomment-7090233496 https://github.com/kylebrussell/mxo-hd/pull/944#issuecomment-7094997870"
+        }
+      }
+    }
+  }
+}
