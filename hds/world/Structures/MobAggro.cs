@@ -16,7 +16,7 @@ namespace hds
     /// </summary>
     public static class MobAggro
     {
-        internal static bool UsesEnragePursuit(ushort ability) => ability == 588 || ability == 597;
+        internal static bool UsesEnragePursuit(ushort ability) => ability == 462 || ability == 588 || ability == 597;
         private const double EnrageRangeUnits = 1000;
         public static readonly bool Enabled = Environment.GetEnvironmentVariable("MXO_AGGRO") != "0";
         public static readonly double RangeUnits = ReadDouble("MXO_AGGRO_RANGE", 12) * 100; // 100 units per metre

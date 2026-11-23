@@ -926,6 +926,15 @@ public class AbilityRefusalFeedbackTests:IDisposable
     }
 
     [Theory]
+    [InlineData(462, "empty", AbilityRefusals.InvalidTarget)]
+    [InlineData(462, "far", AbilityRefusals.TargetOutOfRange)]
+    [InlineData(462, "replacement", 0u)]
+    [InlineData(467, "ally", AbilityRefusals.InvalidTarget)]
+    [InlineData(467, "blocked", AbilityRefusals.TargetNotInSight)]
+    [InlineData(467, "retreat", 0u)]
+    [InlineData(1088, "unloaded", AbilityRefusals.NotLoaded)]
+    [InlineData(1088, "combat", AbilityRefusals.MustBeOutsideCombat)]
+    [InlineData(1088, "sight-loss", 0u)]
     [InlineData(343, "empty", AbilityRefusals.InvalidTarget)]
     [InlineData(401, "ally", AbilityRefusals.InvalidTarget)]
     [InlineData(403, "stale", AbilityRefusals.InvalidTarget)]
@@ -1032,6 +1041,11 @@ public class AbilityRefusalFeedbackTests:IDisposable
         double before = caster.playerData.castEndsAt;
         try
         {
+            if (id == 1088 && action != "unloaded")
+            {
+                AbilityPassives.SetLoaded(caster, new[] { (style, (ushort)50), ((ushort)469, (ushort)50) });
+                caster.messageQueue.RPCMessagesQueue.Clear();
+            }
             new AbilityHandler().ProcessAbility(ref request);
             if (refusal == 0)
             {
