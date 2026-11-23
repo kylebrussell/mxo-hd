@@ -140,7 +140,7 @@ public sealed class InvisibilityBeltWatcherMode : NativeQaMode
         }
     }
 
-    private static async Task WarpAsync(HeadlessPlayer actor, int x, int y, int z, byte yaw, bool inside)
+    internal static async Task WarpAsync(HeadlessPlayer actor, int x, int y, int z, byte yaw, bool inside)
     {
         string command = Warp(x, y, z, yaw, inside);
         actor.SkipReceived();
@@ -149,7 +149,7 @@ public sealed class InvisibilityBeltWatcherMode : NativeQaMode
         await actor.WaitForTextAsync($"Teleported to {fields[4]}/{fields[5]}");
     }
 
-    private static string Warp(int x, int y, int z, byte yaw, bool inside)
+    internal static string Warp(int x, int y, int z, byte yaw, bool inside)
     {
         Check.That(NavMesh.Locate(1, x, y, z, out var stand) && stand.indoors == inside && stand.floorY + 95 == y,
             $"Verified Belt stand ({x},{y},{z})");

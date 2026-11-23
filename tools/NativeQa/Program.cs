@@ -397,6 +397,9 @@ try
                 else if (fixtureMode is NativeQa.Modes.HackerDoctorArbalestViralMode && action == "aura-resist")
                     await NativeQa.Modes.StarterPathogenistAuraResistanceMode.ApplyResistanceAsync(actor,
                         NativeQa.Modes.HackerDoctorArbalestViralMode.Resistance);
+                else if (fixtureMode is NativeQa.Modes.LogicBlastThreeTargetMode && action == "aura-resist")
+                    await NativeQa.Modes.StarterPathogenistAuraResistanceMode.ApplyResistanceAsync(actor,
+                        NativeQa.Modes.LogicBlastThreeTargetMode.Resistance);
                 else if (fixtureMode is NativeQa.Modes.HackerHarmfulCodeTiersMode && action == "aura-resist")
                     await NativeQa.Modes.StarterPathogenistAuraResistanceMode.ApplyResistanceAsync(actor,
                         NativeQa.Modes.HackerHarmfulCodeTiersMode.Resistance);
