@@ -1,0 +1,34 @@
+{
+  "abilities": {
+    "336": {
+      "note": "The shipped instant viral modifier is fixed 14 with ValueFunction 0. The level-50 archive reports applied plus resisted totals of 260 and 280. The disposable level-30 comparison independently verifies per-recipient resistance on the existing calibrated model: captured 336 hits the same QAFar edge before, during and after a normal Empty Mind +45 while the selected primary stays neutral. The relationship of the authored base to the archive totals and stock verification of this area remain open. https://github.com/kylebrussell/mxo-hd/pull/859",
+      "checks": {
+        "area": {
+          "source": "GOB 336 is CastDirectObjects 3 with radius 3 m. Its level-50 stock request at actions_combat.log lines 13247–13248 supplies a selected view/spawn, and the archived relationship of the hit recipients leaves their exact positions open.",
+          "runtime": "Eligible hostile recipients within 3 m of the selected target run their own viral contests. A missing or replaced primary cannot supply a centre. The existing capture-calibrated damage range is retained.",
+          "test": "HackerArtilleristAreaMode uses that exact request with only the live view/spawn rebound, then takes real damage on the selected enemy and the 3.00 m edge. The 3.01 m character and nearby ally are unchanged. The original radius does not damage its bystander after its primary leaves selection range during the cast."
+        },
+        "targeting": {
+          "source": "GOB 336 requires a selected hostile within 16 m and Hacker Style; CastWhenUsed 2 preserves in-combat admission. The archived 80 b9 explicitly carries the selected view and spawn.",
+          "runtime": "The normal cast checks loadout, hostile selection, sight, range and style before any debit. At completion the original hostile spawn must still be live and in range; a valid primary/secondary runs the usual viral contest.",
+          "test": "SelectedFieldUsesTheAdmittedLiveSpawnAndCannotSplashAfterInvalidation verifies the owned and blocked admission gates and stale in-flight target. The exact archival headless replay exercises ordinary Archive reload, no-target, ally, 16.01 m refusal and selected hits."
+        }
+      }
+    },
+    "337": {
+      "note": "The shipped instant viral modifier is fixed 17 with ValueFunction 0. Twelve archived level-50 caster records total 300 after the last visible Speed request. Four total 360 after Power, consistent with the shipped 1.2 multiplier on a shared pre-tactic subtotal. The chosen landing policy applies Power after viral influence and before victim mitigation. The disposable fixture sends the captured Power while the second 337 cast is in flight. Empty Mind protects the QAFar edge before natural expiry, while the unprotected selected target uses the powered subtotal. The relation of the authored 17 to the pre-tactic damage and native-family check remain open. https://github.com/kylebrussell/mxo-hd/pull/859",
+      "checks": {
+        "area": {
+          "source": "GOB 337 is CastDirectObjects 3 with radius 5 m. Its complete level-50 stock request at actions_combat.log lines 13499–13500 supplies a selected view/spawn, and area hits in the archive do not establish exact geometry.",
+          "runtime": "Eligible hostile recipients within 5 m of the originally selected target run independent viral contests. The existing capture-calibrated damage range is retained.",
+          "test": "HackerArtilleristAreaMode uses the exact archived request and checks the selected enemy and 5.00 m edge receive damage. The 5.01 m character and nearby ally do not."
+        },
+        "targeting": {
+          "source": "GOB 337 requires a selected hostile within 16 m and Hacker Style; CastWhenUsed 2 preserves in-combat admission. The archived 80 b9 explicitly carries the selected view and spawn.",
+          "runtime": "The ordinary cast checks loadout, hostile selection, sight, range and style before paying. The original spawn and range are rechecked before a contest can choose the splash centre.",
+          "test": "SelectedFieldUsesTheAdmittedLiveSpawnAndCannotSplashAfterInvalidation checks that an in-combat cast is still admitted and its original selected enemy remains required at landing. The exact archival headless replay exercises ordinary Archive reload, no-target, ally, 16.01 m refusal and selected hits."
+        }
+      }
+    }
+  }
+}

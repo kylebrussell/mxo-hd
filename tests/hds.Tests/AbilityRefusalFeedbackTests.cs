@@ -1472,6 +1472,16 @@ public class AbilityRefusalFeedbackTests:IDisposable
     [InlineData(402, "far", AbilityRefusals.TargetOutOfRange)]
     [InlineData(402, "blocked", AbilityRefusals.TargetNotInSight)]
     [InlineData(402, "combat", AbilityRefusals.MustBeOutsideCombat)]
+    [InlineData(336, "empty", AbilityRefusals.InvalidTarget)]
+    [InlineData(337, "ally", AbilityRefusals.InvalidTarget)]
+    [InlineData(336, "far", AbilityRefusals.TargetOutOfRange)]
+    [InlineData(337, "far", AbilityRefusals.TargetOutOfRange)]
+    [InlineData(336, "blocked", AbilityRefusals.TargetNotInSight)]
+    [InlineData(337, "style", AbilityRefusals.WrongStyle)]
+    [InlineData(336, "unloaded", AbilityRefusals.NotLoaded)]
+    [InlineData(336, "replacement", 0u)]
+    [InlineData(337, "retreat", 0u)]
+    [InlineData(337, "combat-retreat", 0u)]
     [InlineData(595, "empty", AbilityRefusals.InvalidTarget)]
     [InlineData(595, "ally", AbilityRefusals.InvalidTarget)]
     [InlineData(595, "stale", AbilityRefusals.InvalidTarget)]
@@ -1551,7 +1561,7 @@ public class AbilityRefusalFeedbackTests:IDisposable
         ability.setCastAnimStart(new byte[4]);
         DataLoader.getInstance().AbilityDB.Add(ability);
         var fight = CombatManager.GetHandler(caster);
-        fight.isCombatRunning = action == "combat";
+        fight.isCombatRunning = action == "combat" || action == "combat-retreat";
         var request = new byte[41];
         BitConverter.GetBytes(id).CopyTo(request, 0);
         BitConverter.GetBytes(action == "empty" ? (ushort)0 : primary.ViewID).CopyTo(request, 2);
@@ -1571,8 +1581,8 @@ public class AbilityRefusalFeedbackTests:IDisposable
                 Assert.True(end > TimeUtils.GetSimTimeSeconds());
                 Assert.Equal(500 - AbilityCosts.Cost(id), AbilityHandler.CurrentInnerStrength(caster));
                 if (action == "replacement") primary.spawnId++;
-                if (action == "retreat" || action == "sight-loss")
-                    target.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(action == "retreat" ? farX : 22350, 1095, 16150));
+                if (action == "retreat" || action == "combat-retreat" || action == "sight-loss")
+                    target.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(action == "sight-loss" ? 22350 : farX, 1095, 16150));
                 DelayedActions.RunDue(end + 1);
                 Assert.True(AbilityCooldowns.IsCoolingDown(caster.playerData, id, TimeUtils.GetSimTimeSeconds()));
             }

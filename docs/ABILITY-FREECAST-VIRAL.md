@@ -21,7 +21,11 @@ Each row below groups identical `81 67` damage-caster records (string `0x7c0000f
 | 337 | 288 | 12 | 300 | 12 | [Combat 13664][bomb-288]; combat 16853 (2), 17618, 19120 (2); marketplace 1472, 3493 (2), 18048, 22761 (2) |
 | 337 | 346 | 14 | 360 | 4 | [Marketplace 11916][bomb-346] (2); marketplace 27773, 40998 |
 
-The shipped GOB stores fixed viral damage modifiers of 14 and 17. The current server rolls 266–323 and 283–346 as base damage, then applies its usual influence and resistance handling. These captures support retaining the confirmed level-50 outcomes as regression evidence. A neutral unmitigated baseline, the cause of the distinct damage sums and their relation to 14/17, and any lower-level or PvP scaling remain open.
+The shipped GOB stores fixed viral damage modifiers of 14 and 17. The current server retains the capture-calibrated pre-influence roll bands 266–323 and 283–346 and applies the target's typed resistance after the offensive stages. The relation of the fixed modifiers to those historical damage totals, level and PvP scaling, and the reason for the two Speed-band 336 totals remain open.
+
+The captures expose an intermediate stage for 337. All twelve caster records totaling 300 follow a visible Speed request. All four totaling 360 follow Power, with the same latest tactic at request and landing for each paired sample. The marketplace Power requests at lines 11160, 27207 and 40679 precede the corresponding 360 groups. This supports a single 300 pre-tactic subtotal in those sessions because the shipped `GetFullAbilityDamage` multiplies by 1.2 under Power. The chosen server policy applies that Power factor for Code Nuke 2.0 at landing, after existing viral influence and before typed mitigation. [Power before the first 360 group][nuke-power] · [Shipped damage calculation](../research/client-scripts/combat_calculations.py#L301)
+
+The marketplace 336 request at 12203 precedes a switch from Power to Speed at 12675, and lands for a pre-resistance sum of 280 at 12747, matching other Speed 280 samples. That ordering is consistent with sampling the landing tactic. The other Speed total of 260 prevents a unique 336 subtotal. The implementation retains the existing 336 calibration. [336 request][bomb-switch-cast] · [Speed before its landing][bomb-switch-speed]
 
 [bomb-caster]: ../research/packet-dumps/community-intake/20260607T003822Z-hdneo-mxopackets1-combat-ability-selected/logs/actions_combat.log.txt#L10978
 [bomb-lurch]: ../research/packet-dumps/community-intake/20260607T003822Z-hdneo-mxopackets1-combat-ability-selected/logs/actions_combat.log.txt#L11960
@@ -32,6 +36,9 @@ The shipped GOB stores fixed viral damage modifiers of 14 and 17. The current se
 [bomb-269]: ../research/packet-dumps/community-intake/20260607T003822Z-hdneo-mxopackets1-combat-ability-selected/logs/actions_combat.log.txt#L13519
 [bomb-288]: ../research/packet-dumps/community-intake/20260607T003822Z-hdneo-mxopackets1-combat-ability-selected/logs/actions_combat.log.txt#L13664
 [bomb-346]: ../research/packet-dumps/community-intake/20260607T003822Z-hdneo-mxopackets1-combat-ability-selected/logs/actions_combat_marketplace_abilitychangecoder.log.txt#L11916
+[nuke-power]: ../research/packet-dumps/community-intake/20260607T003822Z-hdneo-mxopackets1-combat-ability-selected/logs/actions_combat_marketplace_abilitychangecoder.log.txt#L11160
+[bomb-switch-cast]: ../research/packet-dumps/community-intake/20260607T003822Z-hdneo-mxopackets1-combat-ability-selected/logs/actions_combat_marketplace_abilitychangecoder.log.txt#L12203
+[bomb-switch-speed]: ../research/packet-dumps/community-intake/20260607T003822Z-hdneo-mxopackets1-combat-ability-selected/logs/actions_combat_marketplace_abilitychangecoder.log.txt#L12675
 
 ## Diagnostic profiles and one-pass native checklist
 
