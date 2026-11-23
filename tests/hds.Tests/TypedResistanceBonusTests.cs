@@ -36,6 +36,53 @@ public class TypedResistanceBonusTests
         Assert.Equal(100,TypedAbilityResistance.Player(source,target,330,100));Assert.Equal(100,TypedAbilityResistance.Player(source,target,1135,100));
     }
 
+    [Fact]
+    public void Rank19AdvancedDamageResistanceRoundTripsFourTypedConsumers()
+    {
+        const ushort resistance = 376, dedication = 370, rank = 19;
+        var opponent = Client();
+        var player = Client();
+        opponent.playerInstance.Level.setValue((byte)rank);
+        player.playerInstance.Level.setValue((byte)rank);
+        var loaded = new NativeQa.Modes.StarterHackerDefensivePassivesMode().Plan.Abilities
+            .Where(id => id != dedication).Select(id => (Ability: id, Level: rank)).ToArray();
+        var archived = loaded.Where(entry => entry.Ability != resistance).ToArray();
+        Assert.Contains((resistance, rank), loaded);
+        Assert.True(loaded.Sum(entry => AbilityMemory.Cost(entry.Ability)) <= AbilityMemory.ForLevel(rank));
+        Assert.Equal(0, TypedAbilityResistance.StoredType(198));
+        Assert.Equal(1, TypedAbilityResistance.StoredType(105));
+        Assert.Equal(2, TypedAbilityResistance.StoredType(58));
+        Assert.Equal(7, TypedAbilityResistance.StoredType(1135));
+
+        try
+        {
+            Verify(archived, 0, 0, 200, 1000);
+            Verify(loaded, 1, 4, 201, 982);
+            Verify(archived, 0, 0, 200, 1000);
+            Verify(loaded, 1, 4, 201, 982);
+        }
+        finally
+        {
+            AbilityPassives.SetLoaded(player, Array.Empty<(ushort, ushort)>());
+        }
+
+        void Verify((ushort Ability, ushort Level)[] profile, int damagePercent, int resistancePercent, ushort damage, ushort resisted)
+        {
+            AbilityPassives.SetLoaded(player, profile);
+            CombatStyles.Select(player, CombatStyles.HackerStyle);
+            Assert.Equal(damagePercent, AbilityStats.Player(player, 1142));
+            Assert.Equal(damagePercent, AbilityStats.Player(player, 1139));
+            Assert.Equal(resistancePercent, AbilityStats.Player(player, 1148));
+            Assert.Equal(resistancePercent, AbilityStats.Player(player, 1146));
+            Assert.Equal(damage, AbilityStats.ScaleAbilityDamage(player, 198, 200));
+            Assert.Equal(damage, AbilityStats.ScaleAbilityDamage(player, 105, 200));
+            Assert.Equal(resisted, TypedAbilityResistance.Player(opponent, player, 58, 1000));
+            Assert.Equal(resisted, TypedAbilityResistance.Player(opponent, player, 1135, 1000));
+            Assert.Equal(1000, TypedAbilityResistance.Player(opponent, player, 105, 1000));
+            Assert.Equal(1000, TypedAbilityResistance.Player(opponent, player, 198, 1000));
+        }
+    }
+
     [Fact]public void ExistingRawResistanceAndBothExistingCapsRemainAuthoritative()
     {
         var source=Client();var target=Client();AbilityPassives.SetLoaded(target,new (ushort,ushort)[]{(593,50)});
