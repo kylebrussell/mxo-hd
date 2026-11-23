@@ -1,0 +1,33 @@
+{
+  "families": {
+    "viral-shielding-defenses-and-term-refund": {
+      "representative": 436,
+      "result": "pass",
+      "head": "1724110e",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/965#issuecomment-7099768895",
+      "scope": "The stock team cast spends 100 IS, takes eight seconds and starts 15 s reuse. CSR and two admitted teammates receive the four 300 s defense records. The outside teammate and selected nonmember receive none. Unload leaves every landed copy active. Dismissal issues exactly one +25 refund per terminating recipient and leaves the other teammate's copy active."
+    }
+  },
+  "abilities": {
+    "436": {
+      "family": "viral-shielding-defenses-and-term-refund",
+      "checks": {
+        "area": {
+          "source": "GOB 436 has caster-centred friendly team selector 9 and a 10 m UBF0 radius, using the shared Heal and Upgrade radius channel.",
+          "runtime": "AbilitySupport enumerates eligible team recipients around the caster and applies the current support radius at landing. A selected world target cannot redirect the pulse.",
+          "test": "ViralShieldingLandsAroundTheCasterAndFeedsTypedDefenseUntilEachRecipientTerms measures base and expanded boundary admission. Stock PR965 with a selected opposing nonmember sees additions only on CSR, QAFriend and the eligible extended-range QAFar, excluding QAOther and QAEnemy. https://github.com/kylebrussell/mxo-hd/pull/965#issuecomment-7099768895"
+        },
+        "stats": {
+          "source": "The template stores 300 s modifiers with caster-level function 3 and scales 0.96 for Viral Defense and 0.24 for the other three defenses. Its RefundIS callback uses a fixed 25 on termination.",
+          "runtime": "The active records are actual typed defense inputs. The term callback removes that recipient's records and restores up to 25 IS within that recipient's cap.",
+          "test": "ViralShieldingLandsAroundTheCasterAndFeedsTypedDefenseUntilEachRecipientTerms verifies real typed inputs, including a changed live viral contest and returning to baseline. Stock PR965 measures +47 Viral and three +11 defenses, then CSR IS 300→325 and the helper's independent 928→953, with no repeat refund. https://github.com/kylebrussell/mxo-hd/pull/965#issuecomment-7099768895"
+        },
+        "behavior-tests": {
+          "source": "GOB 436 stores an 8 s cast, 100 IS, 15 s reuse, a team-centered support area and four 300 s typed defenses plus RefundIS.",
+          "runtime": "The ordinary handler tests owned Archive membership at admission and during the pending cast, then applies separately terminating copies. Their usual duration, replacement and dismissal paths each invoke the same refund once.",
+          "test": "UnloadedViralShieldingRefusesBeforeCostAndLosesAnUnloadedPendingCast covers the admission and landing fences. The paired typed-defense fixture tests expiry, replacement and dismissal. Stock PR965 verifies the cost, timers, three copies, survival across unload, two independent term refunds, duplicate dismissal silence and Archive reload. https://github.com/kylebrussell/mxo-hd/pull/965#issuecomment-7099768895"
+        }
+      }
+    }
+  }
+}
