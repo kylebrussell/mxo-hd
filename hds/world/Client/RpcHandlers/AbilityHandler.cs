@@ -357,16 +357,14 @@ namespace hds
             }
 
             // Hindering Shot is a selected hostile shot. An empty or obsolete handle must not start a cast.
-            if (AbilityID == 130)
+            bool hinderingShot = AbilityID == CombatSpecials.HinderingShot;
+            if (hinderingShot)
             {
                 var shooter = Store.currentClient;
-                var combat = CombatManager.GetHandler(shooter);
-                if (combat.isCombatRunning || combat.HasActiveInterlock)
+                if (CombatSpecials.HinderingShotRefusal(shooter) is uint shotRefusal)
                 {
-                    shooter.messageQueue.addRpcMessage(AbilityRefusals.Encode(
-                        new AbilityRefusals.Record(AbilityID, AbilityRefusals.MustBeOutsideCombat)));
-                    shooter.FlushQueue();
-                    Output.WriteDebugLog("[ABILITY] Denied 130: requires outside combat");
+                    Deny(AbilityID, "Hindering Shot requires a loaded ability, a handgun, Handguns Style and no active combat.",
+                        shotRefusal, sendServerText: false);
                     return;
                 }
                 gunTargetSpawn = (ushort?)shooter.viewMan.getViewById(currentTargetViewId)?.spawnId;
@@ -382,7 +380,7 @@ namespace hds
                 }
             }
 
-            bool starterRangedControl = AbilityID == 43 || AbilityID == 48 || AbilityID == 130 || selectedTimedGun;
+            bool starterRangedControl = AbilityID == 43 || AbilityID == 48 || hinderingShot || selectedTimedGun;
             if ((selectedHostileCast || starterMovementDebuff || selectedCoderCast || starterRangedControl || AbilityID == 69) &&
                 !AbilityTargets.WithinSelectionRange(Store.currentClient, AbilityID, currentTargetViewId))
             {
@@ -444,7 +442,7 @@ namespace hds
                     return;
                 }
             }
-            bool selectedGunShot = selectedTimedGun || AbilityID == 130 || rifleOpener;
+            bool selectedGunShot = selectedTimedGun || hinderingShot || rifleOpener;
             if ((selectedGunShot && !rifleOpener || enrage) &&
                 !AbilityTargets.HasSelectionSight(Store.currentClient, definition, currentTargetViewId))
             {
@@ -1250,6 +1248,16 @@ namespace hds
                 !AbilityTargets.HasSelectionSight(client, definition, hostileView)))
             {
                 Output.WriteDebugLog($"[ABILITY] {AbilityID} fizzles: the selected gun target changed, left range or left sight");
+                return;
+            }
+            if (hinderingShot)
+            {
+                if (CombatSpecials.HinderingShotRefusal(client).HasValue)
+                {
+                    Output.WriteDebugLog("[ABILITY] 130 fizzles: the loaded shot, handgun, style or combat state changed");
+                    return;
+                }
+                AbilityTargets.Land(client, ability, hostileView, sneakOpener, AbilityCastOrigin.NormalFreeCast);
                 return;
             }
             if (protectedGunSpecial)

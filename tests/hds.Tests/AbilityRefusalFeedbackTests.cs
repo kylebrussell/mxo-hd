@@ -980,6 +980,118 @@ public class AbilityRefusalFeedbackTests:IDisposable
     }
 
     [Theory]
+    [InlineData("unloaded", AbilityRefusals.NotLoaded)]
+    [InlineData("rifle", AbilityRefusals.RequiredItemCategory)]
+    [InlineData("dual handguns", AbilityRefusals.RequiredItemCategory)]
+    [InlineData("unarmed", AbilityRefusals.RequiredItemCategory)]
+    [InlineData("wrong style", AbilityRefusals.WrongStyle)]
+    [InlineData("combat", AbilityRefusals.MustBeOutsideCombat)]
+    [InlineData("swap mid-cast", 0u)]
+    [InlineData("style mid-cast", 0u)]
+    [InlineData("unload mid-cast", 0u)]
+    [InlineData("combat mid-cast", 0u)]
+    [InlineData("handgun", 0u)]
+    public void HinderingShotRequiresItsOwnHandgunAndOutsideCombatStateThroughoutTheCast(string scenario, uint refusal)
+    {
+        const ushort shot = CombatSpecials.HinderingShot, style = CombatStyles.Handguns;
+        const byte level = 11, rank = 10;
+        string root = AppContext.BaseDirectory;
+        while (!File.Exists(Path.Combine(root, "data", "sector_properties.csv"))) root = Path.GetDirectoryName(root)!;
+        SectorProperties.Load(Path.Combine(root, "data", "sector_properties.csv"));
+        NavMesh.UseDirectory(Path.Combine(root, "data", "navmesh"));
+        var caster = Client();
+        var target = Client();
+        target.playerData.setCharID(111);
+        target.playerData.setEntityId(111);
+        WorldServer.Clients.Add("caster", caster);
+        WorldServer.Clients.Add("target", target);
+        caster.playerInstance.Level.setValue(level);
+        target.playerInstance.Level.setValue(level);
+        caster.playerInstance.OrganizationID.setValue((byte)1);
+        target.playerInstance.OrganizationID.setValue((byte)2);
+        caster.playerData.pvpFlag = target.playerData.pvpFlag = true;
+        caster.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(17000, 495, 6400));
+        target.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(17000, 495, 6800));
+        caster.playerInstance.EquippedItemID.setValue(scenario switch
+        {
+            "rifle" => CombatFixtureWeapons.Rifle,
+            "dual handguns" => CombatFixtureWeapons.DualHandguns,
+            "unarmed" => 0u,
+            _ => CombatFixtureWeapons.Handgun
+        });
+        var view = caster.viewMan.addView(111, 12);
+        view.viewCreated = true;
+        view.spawnId = 9;
+
+        var loadout = new NativeQa.Modes.HinderingShotTargetMode().Plan.Abilities;
+        Assert.True(loadout.Sum(AbilityMemory.Cost) <= AbilityMemory.ForLevel(level));
+        AbilityPassives.SetLoaded(caster, loadout.Where(id => scenario != "unloaded" || id != shot).Select(id => (id, (ushort)rank)));
+        CombatStyles.Select(caster, scenario == "wrong style" ? CombatStyles.SelfDefense : style);
+        caster.messageQueue.RPCMessagesQueue.Clear();
+        Store.currentClient = caster;
+        var fight = CombatManager.GetHandler(caster);
+        fight.isCombatRunning = scenario == "combat";
+        var item = new AbilityItem();
+        item.setAbilityID(shot);
+        item.setAbilityName(AbilityCatalog.Find(shot).Name);
+        item.setCastAnimStart(new byte[4]);
+        DataLoader.getInstance().AbilityDB.Add(item);
+        var request = Convert.FromHexString("82000400020000000000000000000000000000000000000000000000000090767241086b0000000000");
+        BitConverter.GetBytes(DuelPackets.Handle(view.ViewID, view.spawnId)).CopyTo(request, 2);
+        var effects = TimedEffects.ForPlayer(target).Effects;
+        try
+        {
+            new AbilityHandler().ProcessAbility(ref request);
+            if (refusal != 0)
+            {
+                Assert.Equal(AbilityRefusals.Encode(new(shot, refusal)), Assert.Single(Rpcs(caster)));
+                Assert.Equal(500, AbilityHandler.CurrentInnerStrength(caster));
+                Assert.Empty(caster.playerData.cooldownEndsAt);
+                Assert.False(effects.HasParent(shot));
+                return;
+            }
+
+            double end = caster.playerData.castEndsAt;
+            Assert.True(end > 0);
+            Assert.Equal(480, AbilityHandler.CurrentInnerStrength(caster));
+            switch (scenario)
+            {
+                case "swap mid-cast": caster.playerInstance.EquippedItemID.setValue(CombatFixtureWeapons.Rifle); break;
+                case "style mid-cast": caster.playerData.combatStyle = CombatStyles.SelfDefense; break;
+                case "unload mid-cast":
+                    AbilityPassives.SetLoaded(caster, loadout.Where(id => id != shot).Select(id => (id, (ushort)rank)));
+                    break;
+                case "combat mid-cast": fight.isCombatRunning = true; break;
+            }
+            AbilityCastInterrupts.FinishDue(caster, end);
+            Assert.True(AbilityCooldowns.IsCoolingDown(caster.playerData, shot, TimeUtils.GetSimTimeSeconds()));
+            Assert.False(fight.HasActiveInterlock);
+            if (scenario == "handgun")
+            {
+                Assert.Equal(991, PvpCombat.HealthOf(target));
+                var mods = effects.Snapshot().Where(mod => mod.Parent == shot).OrderBy(mod => mod.Target).ToArray();
+                Assert.Equal(new (ushort, int, float)[] { (115, -50, 8), (519, -10, 8), (877, -50, 8), (878, -50, 8) },
+                    mods.Select(mod => (mod.Target, mod.Value, mod.Seconds)));
+                Assert.Equal(-.5f, BitConverter.ToSingle(target.playerInstance.MovementScale.getValue()));
+                TimedEffects.RunDue(mods[0].Expires + .01);
+                Assert.False(effects.HasParent(shot));
+                Assert.Equal(0f, BitConverter.ToSingle(target.playerInstance.MovementScale.getValue()));
+            }
+            else
+            {
+                Assert.Equal(1000, PvpCombat.HealthOf(target));
+                Assert.False(effects.HasParent(shot));
+            }
+        }
+        finally
+        {
+            fight.isCombatRunning = false;
+            CombatManager.RemoveClient(caster);
+            TimedEffects.Clear(TimedEffects.ForPlayer(target));
+        }
+    }
+
+    [Theory]
     [InlineData("unloaded", AbilityRefusals.NotLoaded, 253)]
     [InlineData("weapon", AbilityRefusals.RequiredItemCategory, 253)]
     [InlineData("active combat", AbilityRefusals.MustBeOutsideCombat, 253)]
