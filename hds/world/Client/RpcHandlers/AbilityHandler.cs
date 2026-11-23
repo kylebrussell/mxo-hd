@@ -302,7 +302,34 @@ namespace hds
                 }
                 pistolInterlock = CombatManager.GetHandler(shooter).ActiveInterlockIdentity;
             }
-            bool selectedTimedGun = protectedGunSpecial || pistolEvasive;
+            bool dualPistolDash = AbilityID == CombatSpecials.DualPistolDash;
+            if (dualPistolDash)
+            {
+                var shooter = Store.currentClient;
+                if (!AbilityPassives.IsLoaded(shooter, AbilityID))
+                {
+                    Deny(AbilityID, "Load Dual Pistol Dash before using it.", AbilityRefusals.NotLoaded, sendServerText: false);
+                    return;
+                }
+                if (!CombatSpecials.HasEquippedDualHandguns(shooter))
+                {
+                    Deny(AbilityID, "Dual Pistol Dash requires dual handguns.", AbilityRefusals.RequiredItemCategory, sendServerText: false);
+                    return;
+                }
+                if (CombatStyles.Active(shooter) != CombatStyles.Handguns)
+                {
+                    Deny(AbilityID, "Select Handguns before using Dual Pistol Dash.", AbilityRefusals.WrongStyle, sendServerText: false);
+                    return;
+                }
+                var fight = CombatManager.GetHandler(shooter);
+                if (fight.isCombatRunning || fight.HasActiveInterlock)
+                {
+                    Deny(AbilityID, "Dual Pistol Dash requires outside combat.", AbilityRefusals.MustBeOutsideCombat, sendServerText: false);
+                    return;
+                }
+            }
+
+            bool selectedTimedGun = protectedGunSpecial || pistolEvasive || dualPistolDash;
             bool rifleOpener = CombatSpecials.IsRifleOpener(AbilityID);
             bool cripplingShot = AbilityID == CombatSpecials.CripplingShot;
             bool protectedRifleOpener = AbilityID == CombatSpecials.WoundingShot || cripplingShot;
@@ -1266,6 +1293,18 @@ namespace hds
                 }
                 return;
             }
+            if (dualPistolDash)
+            {
+                var fight = CombatManager.GetHandler(client);
+                if (!AbilityPassives.IsLoaded(client, AbilityID) || !CombatSpecials.HasEquippedDualHandguns(client) ||
+                    CombatStyles.Active(client) != CombatStyles.Handguns || fight.isCombatRunning || fight.HasActiveInterlock)
+                {
+                    Output.WriteDebugLog("[ABILITY] 500 fizzles: the loaded selection, dual handguns, style or combat state changed");
+                    return;
+                }
+                AbilityTargets.Land(client, ability, hostileView, sneakOpener, AbilityCastOrigin.NormalFreeCast);
+                return;
+            }
             // Stun Pulse's legacy buff flag conflicts with its shipped hostile area selector.
             if (hostileView > 2 && !support && !pet && !derez && definition?.FriendlyTarget != true &&
                 (!ability.getIsBuff() || CombatSpecials.TargetsEnemy(AbilityID) || engageFoes!=null) &&
@@ -1409,6 +1448,7 @@ namespace hds
                 CombatSpecials.CripplingShot => 1,
                 CombatSpecials.PistolBarrage => 1,
                 CombatSpecials.DualPistolPointBlank => 1,
+                CombatSpecials.DualPistolDash => 1,
                 CombatSpecials.FullAuto => 1,
                 CombatSpecials.FullAutoRedux => 1,
                 CombatSpecials.ControlledBurst => 1,

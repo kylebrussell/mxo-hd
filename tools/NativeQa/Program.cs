@@ -317,6 +317,10 @@ try
                     await NativeQa.Modes.CripplingShotMode.SpeedAndArmorAsync(actor);
                 else if (fixtureMode is NativeQa.Modes.CripplingShotMode && action == "crippling-records")
                     result = NativeQa.Modes.CripplingShotMode.Records(actor);
+                else if (fixtureMode is NativeQa.Modes.DualPistolDashMode && action == "pistol-dash-armor")
+                    await NativeQa.Modes.PistolSlideMode.ApplyArmorAsync(actor);
+                else if (fixtureMode is NativeQa.Modes.DualPistolDashMode && action == "pistol-dash-records")
+                    result = NativeQa.Modes.DualPistolDashMode.Records(actor);
                 else if (fixtureMode is NativeQa.Modes.DualPistolPointBlankMode && action == "point-blank-armor")
                     await NativeQa.Modes.PistolSlideMode.ApplyArmorAsync(actor);
                 else if (fixtureMode is NativeQa.Modes.PistolSlideMode && action == "slide-armor")

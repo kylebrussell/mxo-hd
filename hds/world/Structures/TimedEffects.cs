@@ -714,6 +714,9 @@ namespace hds
         internal override int Determination => AbilityControlDurations.Determination(client);
         internal override int DeterminationBonus => DeflectCode.PlayerBonus(client);
         private readonly WorldClient client;
+        private const uint withdrawDisabled = 0x0001, changeTargetDisabled = 0x0020, blockInnerStrengthDisabled = 0x2000;
+        private const uint dashEnrageRestrictions = changeTargetDisabled | blockInnerStrengthDisabled;
+        private uint dashRestrictionMask;
         private readonly Dictionary<UInt16, KeyValuePair<int, double>> buffEnds = new Dictionary<UInt16, KeyValuePair<int, double>>();
 
         public PlayerEffects(WorldClient client)
@@ -811,6 +814,30 @@ namespace hds
             }
         }
 
+        private void PresentDashRestrictions(IEnumerable<TimedEffects.Active> changed)
+        {
+            if (dashRestrictionMask == 0 && !changed.Any(m => m.Parent == CombatSpecials.DualPistolDash &&
+                m.Target == TempMods.EnrageAbility)) return;
+
+            bool enraged = Effects.HasAt(TempMods.EnrageAbility, TimeUtils.GetSimTimeSeconds());
+            uint desired = ControlActions.CanWithdraw(Effects) ? 0 : withdrawDisabled;
+            if (enraged) desired |= dashEnrageRestrictions;
+            if (dashRestrictionMask == desired) return;
+            // The archived Dash recipient receives three separate changes in EnrageInit/EnrageTerm order.
+            foreach (uint bit in new[] { withdrawDisabled, changeTargetDisabled, blockInnerStrengthDisabled })
+            {
+                if (((dashRestrictionMask ^ desired) & bit) == 0) continue;
+                dashRestrictionMask ^= bit;
+                var record = new PacketContent();
+                record.AddHexBytes("816e");
+                record.AddUint32(dashRestrictionMask, 1);
+                record.AddByte(4); // No forced tactic. The observed 81 6e masks do not force the value.
+                record.AddUint16(CombatStyles.SelfDefense, 1);
+                record.AddUint16(0, 1);
+                client.messageQueue.addRpcMessage(record.ReturnFinalPacket());
+            }
+        }
+
         private void FlushStateUpdates(IEnumerable<TimedEffects.Active> changed)
         {
             if (changed.Any(mod => mod.Proc == TempMods.Proc.State && CombatInterlock.TacticStateFlag(mod.Target) != 0))
@@ -852,6 +879,8 @@ namespace hds
                 client.messageQueue.addRpcMessage(Record(m, false));
                 if (m.Kind == TempMods.KindState)
                 {
+                    if (m.Parent == CombatSpecials.DualPistolDash)
+                        PresentDashRestrictions(added);
                     client.messageQueue.addRpcMessage(LinkedRecord(m, false));
                 }
             }
@@ -872,6 +901,7 @@ namespace hds
                     source.FlushQueue();
                 }
             }
+            PresentDashRestrictions(added.Concat(replaced));
             // A virus says "infects you" only (Vector, Zone of Powerlessness); other abilities name the state
             // ("Madbent's Spinning Flower has rendered you powerless!", entilsar lastday2 143646)
             foreach (TimedEffects.Active m in added)
@@ -893,8 +923,9 @@ namespace hds
                     {
                         client.messageQueue.addRpcMessage(AbilityMessages.AboutAbility(line, flag, effect.Ability, caster, Name, values));
                     }
-                    if (effect.Ability == CombatSpecials.DualPistolPointBlank && m.Target == TempMods.PowerlessAbility &&
-                        m.Caster is WorldClient shooter && shooter != client)
+                    bool pairedStateNotice = (effect.Ability == CombatSpecials.DualPistolPointBlank && m.Target == TempMods.PowerlessAbility) ||
+                        (effect.Ability == CombatSpecials.DualPistolDash && m.Target == TempMods.EnrageAbility);
+                    if (pairedStateNotice && m.Caster is WorldClient shooter && shooter != client)
                     {
                         uint casterLine = AbilityMessages.CasterStateLine(m.Target, out int[] casterValues);
                         shooter.messageQueue.addRpcMessage(AbilityMessages.AboutAbility(casterLine, true, effect.Ability, caster, Name, casterValues));
@@ -1009,13 +1040,21 @@ namespace hds
 
         internal override void Ended(List<TimedEffects.Active> ended)
         {
+            bool dashEnrageWasActive = (dashRestrictionMask & dashEnrageRestrictions) != 0;
             SendOff(ended);
+            PresentDashRestrictions(ended);
+            bool announceDashEnrageEnd = dashEnrageWasActive && (dashRestrictionMask & dashEnrageRestrictions) == 0;
             if (ended.Exists(m => m.Parent == StealthShieldAbilities.DisableEvasion)) EvasionShield.Refresh(client);
             if (AbilityHostile.ChangesVitals(ended)) AbilityBuffs.RefreshVitals(client);
             foreach (TimedEffects.Active m in ended)
             {
                 if (m.Kind == TempMods.KindState && TempMods.StateNameId(m.Target) != 0)
                 {
+                    if (m.Target == TempMods.EnrageAbility && dashEnrageWasActive)
+                    {
+                        if (!announceDashEnrageEnd) continue;
+                        announceDashEnrageEnd = false;
+                    }
                     client.messageQueue.addRpcMessage(AbilityMessages.StateEnd(m.Target, Name));
                 }
             }
