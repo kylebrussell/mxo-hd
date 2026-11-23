@@ -1,0 +1,29 @@
+{
+  "families": {
+    "stock-pistol-evasive-two-routes": {
+      "representative": 242,
+      "result": "pass",
+      "head": "8ee30697",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/910#issuecomment-7093612297",
+      "scope": "Stock witnessed level-22 Pistol Evasive from rest, queued 9529 in interlock, typed resistance, and all three owner-only defense records through expiry."
+    }
+  },
+  "abilities": {
+    "242": {
+      "family": "stock-pistol-evasive-two-routes",
+      "checks": {
+        "damage": {
+          "source": "GOB 242 stores Ballistic base 5. The incomplete legacy damage range yields the fixed authored health modifier.",
+          "runtime": "Both routes consume the direct Ballistic value and the recipient's typed resistance.",
+          "test": "PistolEvasiveAtRestBindsAnEligibleSelectionAndAppliesItsDefensesOnLanding and PistolEvasiveKeepsTheHitAndAppliesThreeDefensesOnlyToItsCaster cover the fixed and typed cases. Stock saw 5 neutral through both routes and raw5/final4 after source1061 added stat181 +20. https://github.com/kylebrussell/mxo-hd/pull/910#issuecomment-7093612297"
+        },
+        "targeting": {
+          "source": "GOB 242 allows both the timed interlock and ordinary selected-at-rest modes. It requires the Handguns style and a live hostile in range and sight.",
+          "runtime": "The cast preserves the selected view and spawn. An interlock outcome requires the original fight and opponent through queue resolution.",
+          "test": "PistolEvasiveAtRestBindsAnEligibleSelectionAndAppliesItsDefensesOnLanding, PistolEvasiveQueuesOnlyInTheAdmittedFightAfterItsCast and the shared queue identity cases cover both admissions and target retention. Stock used the same eligible enemy in both routes and saw all 1009/1010/1011 records stay on the caster until expiry. https://github.com/kylebrussell/mxo-hd/pull/910#issuecomment-7093612297"
+        }
+      },
+      "note": "Native PR910 verified +10 tactic and 9529, plus both timed routes and nine owner-side stat removals. The archived 9530 selection remains open. The executable tests cover the three defense consumers. https://github.com/kylebrussell/mxo-hd/pull/910#issuecomment-7093612297"
+    }
+  }
+}

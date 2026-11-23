@@ -1,0 +1,39 @@
+{
+  "families": {
+    "stock-pistol-barrage-two-routes": {
+      "representative": 244,
+      "result": "pass",
+      "head": "6c5fb594",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/865#issuecomment-7093847549",
+      "scope": "Stock verified the two-second direct and queued dual-handgun paths, 19 and 17 typed damage, and naturally rolled Powerless with matched records."
+    }
+  },
+  "abilities": {
+    "244": {
+      "family": "stock-pistol-barrage-two-routes",
+      "checks": {
+        "damage": {
+          "source": "GOB 244 stores fixed Ballistic base 18. The legal level-27 dual-handgun profile applies its current Ballistic influence before typed recipient resistance.",
+          "runtime": "The free and interlocked routes use the same fixed health component and typed mitigation.",
+          "test": "TimedGunSpecialBindsItsEligibleTargetAndConsumesTypedResistance covers the 19 and 17 results. Stock landed 19 from rest and raw19/final17 through source1061 stat181 +20. https://github.com/kylebrussell/mxo-hd/pull/865#issuecomment-7093847549"
+        },
+        "targeting": {
+          "source": "GOB 244 needs dual handguns, the Handguns style and a live selected hostile. It supplies direct and timed interlock use.",
+          "runtime": "The normal handler binds the original view and spawn and carries the original interlock through queue resolution.",
+          "test": "TimedGunSpecialQueuesAgainstTheOriginalInterlock and the timed weapon and target suite cover either route and its lifetime. Stock used both routes on the same target, including a fresh close-combat round after the armor application. https://github.com/kylebrussell/mxo-hd/pull/865#issuecomment-7093847549"
+        },
+        "controls": {
+          "source": "The shipped effect gives eight seconds of Powerless at its authored probability and the distinct 734/681 control timer.",
+          "runtime": "The recipient state gates ability use and separately applies and retires its linked records and immunity.",
+          "test": "Stock witnessed 244/96, linked 96/0 and 734/681 with original-ID eight-second removals and one state-end. Soldier Upgrade was refused during Powerless and recovered after expiry. https://github.com/kylebrussell/mxo-hd/pull/865#issuecomment-7093847549"
+        },
+        "proc": {
+          "source": "The shipped landing effect stores a 40% chance to apply Powerless after a hit.",
+          "runtime": "TimedEffects runs the preserved landing probability for the actual selected recipient.",
+          "test": "The executable threshold regression covers the authored chance. Stock observed the natural 277–279 records and the full refusal/recovery lifecycle. https://github.com/kylebrussell/mxo-hd/pull/865#issuecomment-7093847549"
+        }
+      },
+      "note": "Stock verified the authored +15 tactic and interlock 9519. The separately archived 9534 selector stays open. https://github.com/kylebrussell/mxo-hd/pull/865#issuecomment-7093847549"
+    }
+  }
+}
