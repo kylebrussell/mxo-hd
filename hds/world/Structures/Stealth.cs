@@ -131,7 +131,7 @@ namespace hds
             // Imparted: kInvisible for 120 s, nothing else
             { InvisibilityImpartedAbility, new Def { Ability = InvisibilityImpartedAbility, Kind = Kind.Imparted, Bits = Invisible, Toggle = true } },
             // Master Shadow: kShadowObject, evade state, 180 s with the 25 IS drain every 5 s
-            { MasterShadowAbility, new Def { Ability = MasterShadowAbility, Kind = Kind.Shadow, Bits = ShadowObject, Toggle = true } },
+            { MasterShadowAbility, new Def { Ability = MasterShadowAbility, Kind = Kind.Shadow, Bits = ShadowObject, Flags = EvasionShield.StateFlag, Toggle = true } },
         };
 
         /// <summary>Abilities this module runs (the states above plus Impart Invisibility and Vanish, which put them on).</summary>
@@ -269,18 +269,19 @@ namespace hds
         public static string Refusal(WorldClient client, UInt16 id, UInt16 targetView, out uint reason)
         {
             reason = AbilityRefusals.LegacyAmbiguous;
-            if (id == InvisibilityGrantAbility)
+            bool masterShadow = id == MasterShadowAbility;
+            if (masterShadow || id == InvisibilityGrantAbility)
             {
                 if (!AbilityPassives.IsLoaded(client, id))
                 {
                     reason = AbilityRefusals.NotLoaded;
-                    return "Load Invisibility before using the Belt.";
+                    return masterShadow ? "Load Master Shadow before using it." : "Load Invisibility before using the Belt.";
                 }
                 var combat = CombatManager.GetHandler(client);
                 if (combat.isCombatRunning || combat.HasActiveInterlock)
                 {
                     reason = AbilityRefusals.MustBeOutsideCombat;
-                    return "You cannot become invisible in combat.";
+                    return masterShadow ? "You cannot use Master Shadow in combat." : "You cannot become invisible in combat.";
                 }
             }
             if (id == EscapeAndEvasionAbility)
@@ -441,7 +442,8 @@ namespace hds
                     Begin(client, Defs[id], rank);
                 return;
             }
-            if (id == InvisibilityImpartedAbility && Refusal(client, id, targetView, out _) != null) return;
+            if ((id == InvisibilityImpartedAbility || id == MasterShadowAbility) &&
+                Refusal(client, id, targetView, out _) != null) return;
             if (Defs.TryGetValue(id, out Def def)) Begin(client, def, AbilityLevel(client, id));
         }
 
@@ -492,7 +494,7 @@ namespace hds
                 EmoteHandler.SetStance(client, stance, respectStealth: true);
             // The two DirectObject callbacks turn off listed auras after applying the stealth state.
             if (def.Ability == EscapeAndEvasionAbility || def.Ability == ConcealmentGrantAbility ||
-                def.Ability == InvisibilityImpartedAbility)
+                def.Ability == InvisibilityImpartedAbility || def.Ability == MasterShadowAbility)
                 StopStealthAuras(client);
             Output.WriteDebugLog("[STEALTH] " + TimedEffects.PlayerName(client) + " " + def.Ability + " on (bits " + def.Bits +
                 ", SL " + state.StealthLevel + (state.Seconds > 0 ? ", " + state.Seconds + " s" : "") + ")" + HiddenFromList(client));
@@ -557,9 +559,19 @@ namespace hds
         /// <summary>ISDrainWithAbilityDeactivation: take the value; when there isn't enough Inner Strength the ability ends.</summary>
         private static void Drain(WorldClient client, State state)
         {
-            if (AbilityHandler.CurrentInnerStrength(client) < ShadowDrain) { End(client, "out of Inner Strength", true); return; }
-            UInt16 left = AbilityHandler.SpendInnerStrength(client, ShadowDrain);
-            new ServerPackets().sendISCurrent(client, left);
+            lock (client.playerData.upgradeSync)
+            {
+                if (Current(client)?.Generation != state.Generation) return;
+                ushort before = AbilityHandler.CurrentInnerStrength(client);
+                if (before < ShadowDrain)
+                {
+                    EndCore(client, "out of Inner Strength", true, state.Generation);
+                    return;
+                }
+                ushort left = AbilityHandler.SpendInnerStrength(client, ShadowDrain);
+                new ServerPackets().sendISCurrent(client, left);
+                Output.WriteDebugLog($"[SHADOW DRAIN] {TimedEffects.PlayerName(client)} {before}->{left}");
+            }
         }
 
         /// <summary>Takes the state off: records off, toggle off, DissemblingType and flags cleared for everyone.</summary>
@@ -629,7 +641,12 @@ namespace hds
                     data.stance = AnimationPackets.StanceStanding;
             }
             if (state.Def.Kind == Kind.Shadow)
+            {
                 AbilityCooldowns.Start(client, state.Def.Ability, TimeUtils.GetSimTimeSeconds()); // AddRecastTimer on term
+                if (client.Alive && client.playerData.getOnWorld() && !client.playerData.worldChangePending &&
+                    !client.playerData.isDead && !client.playerData.duelDeath)
+                    ServerPackets.SendPlayerAbilityEffect(client, (uint)FXList.FX_CHARACTER_SHADOW_OBJECT_RAMP_DOWN);
+            }
             Output.WriteDebugLog("[STEALTH] " + TimedEffects.PlayerName(client) + " " + state.Def.Ability + " off (" + why + ")");
             if (flush) client.FlushQueue();
             return true;
@@ -665,6 +682,8 @@ namespace hds
         {
             bits |= AbilityBuffs.DissemblingBits(client);
             client.playerInstance.DissemblingType.setValue(bits);
+            if (!on && (flags & EvasionShield.StateFlag) != 0 && EvasionShield.HasState(client))
+                flags &= ~EvasionShield.StateFlag;
             lock (client.playerData.conditionTokens)
             {
                 if (on) client.playerData.conditionStateFlags |= flags;

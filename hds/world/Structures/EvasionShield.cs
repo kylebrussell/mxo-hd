@@ -166,7 +166,7 @@ namespace hds
             target.playerInstance.EvadeShieldHealth.setValue(health);
             lock(target.playerData.conditionTokens)
             {
-                if(on)target.playerData.conditionStateFlags |= StateFlag;
+                if(on || Stealth.IsOn(target, Stealth.MasterShadowAbility))target.playerData.conditionStateFlags |= StateFlag;
                 else target.playerData.conditionStateFlags &= ~StateFlag;
             }
             uint flags=PvpFlag.FlagsOf(target);

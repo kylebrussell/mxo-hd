@@ -508,7 +508,8 @@ namespace hds
             }
 
             // Gaussian Blur requires the live Evading state, including when shield suppression is active.
-            if (AbilityID == 49 && !EvasionShield.HasState(Store.currentClient))
+            if (AbilityID == 49 && !EvasionShield.HasState(Store.currentClient) &&
+                !Stealth.IsOn(Store.currentClient, Stealth.MasterShadowAbility))
             {
                 Store.currentClient.messageQueue.addRpcMessage(AbilityRefusals.Encode(new AbilityRefusals.Record(
                     AbilityID, AbilityRefusals.CasterStateRequired, states: EvasionShield.StateFlag)));

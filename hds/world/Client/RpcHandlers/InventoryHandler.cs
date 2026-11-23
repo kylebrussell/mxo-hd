@@ -159,6 +159,11 @@ namespace hds
                 UInt32 goid = Store.dbManager.WorldDbHandler.GetItemGOIDAtInventorySlot(slot);
                 if (!ConsumableItems.TryGet(goid, out ConsumableItems.Consumable consumable) || consumable.AbilityId != abilityId)
                     return false;
+                if (Stealth.IsOn(client, Stealth.MasterShadowAbility) && AbilityCatalog.Find(abilityId)?.CastSeconds > 0)
+                {
+                    pak.sendSystemChatMessage(client, "You cannot use a timed item while Master Shadow is active.", "SYSTEM");
+                    return true;
+                }
                 if (AntiStunPills.Use(client, slot, abilityId, goid)) return true;
                 if (HealthBoostPills.Handles(abilityId)) return HealthBoostPills.Use(client, slot, abilityId, goid);
                 if (!ConsumableItems.IsUsable(consumable))
