@@ -1,0 +1,42 @@
+{
+  "abilities": {
+    "242": {
+      "checks": {
+        "choreography": {
+          "source": "The 7.6005 ILDB names Pistol Evasive MR 9529 and SR 9530. Retained Hel lines 4101–4108 and ProxyM2 lines 276143–276150 tie them to the emitted 140-unit and medium poses respectively. The shipped combat_resolution.py only selects the special presentation when the special lands, with retained unused-242 normal exchange at ProxyM2 lines 285535–285547.",
+          "runtime": "CombatPresentation uses 9530 for the emitted same-floor 140-unit pair and retains 9529 outside the matched pose. An unsuccessful special uses the ordinary style exchange.",
+          "test": "PistolSpecialRoundUsesTheMoveForItsEmittedPairPose serializes the exact short, medium fallback and miss cases. PR910 stock played 9529. PR958 stock played 9530 on a hit and ordinary animation 20737 on a queued miss. https://github.com/kylebrussell/mxo-hd/pull/910#issuecomment-7093612297 https://github.com/kylebrussell/mxo-hd/pull/958#issuecomment-7097919316"
+        },
+        "source-parity": {
+          "source": "GOB 242 supplies fixed 5 Ballistic, +10 tactic, 30 IS, 2 s cast and the three caster defenses. The ILDB and matched retained outcomes establish both ordinary success poses and the observed non-landing family. The exact original range classifier outside the retained poses is still undocumented.",
+          "runtime": "The ordinary timed path preserves the selected eligible target, fixed base and owner-only modifier slot, and uses the matched pose for the landed animation. The normal combat resolver supplies the non-landing exchange.",
+          "test": "PR910 stock established both cast routes, medium animation and damage/resistance. PR958 reproduced the short hit for 5 and a normal miss with neither special damage nor its defense records. https://github.com/kylebrussell/mxo-hd/pull/910#issuecomment-7093612297 https://github.com/kylebrussell/mxo-hd/pull/958#issuecomment-7097919316"
+        },
+        "behavior-tests": {
+          "source": "GOB 242 selects enemy Handguns use at rest or timed interlock, and stores 5 Ballistic, three +20 defenses for 12 s, +10 tactic and 10 s own / 5 s shared 689 reuse.",
+          "runtime": "The direct and queued routes require the live selected opponent and preserve the original fight for queued resolution. Only a successful hit applies typed damage and the three owner-side modifiers. Their independent expiry removes the records.",
+          "test": "PistolEvasiveAtRestBindsAnEligibleSelectionAndAppliesItsDefensesOnLanding, PistolEvasiveQueuesOnlyInTheAdmittedFightAfterItsCast and PistolSpecialRoundUsesTheMoveForItsEmittedPairPose cover the admission, result, cleanup and presentation. PR910 and PR958 stock confirm the 30 IS debit, timers, typed outcomes, 9529/9530, three owner-side adds and removals, and empty special effect on a miss. https://github.com/kylebrussell/mxo-hd/pull/958#issuecomment-7097919316"
+        }
+      }
+    },
+    "244": {
+      "checks": {
+        "choreography": {
+          "source": "The 7.6005 ILDB names Pistol Barrage MR 9519 and SR 9534. Hel lines 4811–4819 and 9554–9562 show the same weapons at distinct emitted poses. Unused-244 ProxyM2 lines 278801–278812 and the no-special control at 270608–270618 produce the identical ordinary animation 3414 with the same weapon pair.",
+          "runtime": "CombatPresentation selects 9534 for the emitted same-floor 140-unit pair, 9519 outside the matched pose, and the ordinary style exchange for a miss.",
+          "test": "PistolSpecialRoundUsesTheMoveForItsEmittedPairPose serializes short, fallback and ordinary miss. PR865 stock played 9519. PR958 stock played 9534 with dual handguns. https://github.com/kylebrussell/mxo-hd/pull/865#issuecomment-7093847549 https://github.com/kylebrussell/mxo-hd/pull/958#issuecomment-7097919316"
+        },
+        "source-parity": {
+          "source": "GOB 244 supplies fixed 18 Ballistic, +15 tactic and an authored 40% Powerless application. The ILDB and retained paired samples establish the observed presentation rule. The original range classifier outside the retained poses is still undocumented.",
+          "runtime": "The timed dual-handgun cast follows ordinary typed influence and mitigation, exact target retention and the stored landing probability. Its landed poses use the matched authored assets.",
+          "test": "PR865 witnessed neutral 19, armor 17 and real landed Powerless with refusal and recovery. PR958 reproduced 9534 with raw19/final17 under +20 armor. The focused serialization distinguishes unsuccessful outcomes. https://github.com/kylebrussell/mxo-hd/pull/865#issuecomment-7093847549 https://github.com/kylebrussell/mxo-hd/pull/958#issuecomment-7097919316"
+        },
+        "behavior-tests": {
+          "source": "GOB 244 requires owned dual handguns and Handguns style, 30 IS, 2 s cast, 10 s own/5 s family 689 reuse, +15 tactic, direct Ballistic and the eight-second Powerless proc and independent timer.",
+          "runtime": "The ordinary direct and queued routes validate the same hostile rebind, weapon and sight, and the timed interlock checks the original fight again at landing. A successful hit consumes typed resistance and may publish the authored linked control records.",
+          "test": "TimedGunSpecialBindsItsEligibleTargetAndConsumesTypedResistance, TimedGunSpecialQueuesAgainstTheOriginalInterlock and PistolSpecialRoundUsesTheMoveForItsEmittedPairPose cover both routes, invalidation and presentation. PR865 stock observed the natural proc and release. PR958 stock confirms 30 IS, 2 s cast, 10 s own reuse and 9534 at the short pose with the expected typed mitigation. https://github.com/kylebrussell/mxo-hd/pull/865#issuecomment-7093847549 https://github.com/kylebrussell/mxo-hd/pull/958#issuecomment-7097919316"
+        }
+      }
+    }
+  }
+}
