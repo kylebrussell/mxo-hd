@@ -1,0 +1,39 @@
+{
+  "abilities": {
+    "253": {
+      "note": "PR863 native established player Wounding Shot as a two-second outside-combat rifle cast. The revised plan and focused integration test account for 6→3 typed damage at L20 against L25 with +20, alongside the earlier 6→5 equal-level test. The 14-point, ten-second NeutralDOT is the preserved effective archive value. The original coefficient from stored 7 and NPC hit scaling are outside the server policy. https://github.com/kylebrussell/mxo-hd/pull/863#issuecomment-7092836362",
+      "checks": {
+        "damage": {
+          "source": "GOB 253 stores fixed Ballistic base 6 and a separate NeutralDOT value 7 before scaling.",
+          "runtime": "The normal landing path uses the fixed authored fallback for incomplete legacy endpoints, reads current Ballistic Resistance for the direct hit and leaves the separate NeutralDOT outside that channel.",
+          "test": "Stock PR863 measured 6 neutral and 3 with +20 Ballistic Resistance from Soldier Upgrade on the same L25 recipient, with the same caster level, stands and selected target. WoundingShotOnlyAppliesBallisticResistanceToTheFixedHit reproduces both exact results with the full Archive and ordinary 1061. https://github.com/kylebrussell/mxo-hd/pull/863#issuecomment-7092836362"
+        },
+        "controls": {
+          "source": "GOB 253 stores a 30% 0.01 s terminal ApplyStunWithTimer callback with value 4, separate from the NeutralDOT. tempmods.py:1659 adds Stun and the separate ControlImmunityTimer.",
+          "runtime": "The timed marker runs the chance, applies the separate four-second state and timer, and preserves the already-running DOT. Each record expires independently.",
+          "test": "PR863 observed ordinary Stun, linked presentation and four-second immunity with matched removal IDs. QAEnemy's 1061 was refused during Stun and worked after release. ConditionalControlTests verifies the 30% threshold, immunity fence, and independent DOT. https://github.com/kylebrussell/mxo-hd/pull/863#issuecomment-7092836362"
+        },
+        "targeting": {
+          "source": "GOB 253 has CastWhenUsed 1, hostile target 3, 20 m range, Rifles style and IWRf weapon category.",
+          "runtime": "Admission requires a loaded move, rifle-category weapon, valid selected hostile spawn, range, sight and an idle caster. The same selection, sight, range, weapon and combat state are checked through landing.",
+          "test": "The ordinary handler test checks unloaded, weapon, combat, empty, allied, far, blocked and original-target refusals. PR863 stock selected the same QAEnemy from at rest and refused locally in active interlock with no cast or IS. https://github.com/kylebrussell/mxo-hd/pull/863#issuecomment-7092836362"
+        },
+        "choreography": {
+          "source": "GOB 253 specifies an outside-combat two-second Rifles cast using CastingScript 89. The named ILDB interlock move remains separate from this opener's path.",
+          "runtime": "The normal Rifles cast and its impact go through the free-cast path outside interlock.",
+          "test": "PR863 native observed the two-second cast, the client damage presentation and no interlock before the direct hit. It then verified the stock at-rest-only gate during Close Combat. This credit is for the actual opener route. https://github.com/kylebrussell/mxo-hd/pull/863#issuecomment-7092836362"
+        },
+        "source-parity": {
+          "source": "GOB 253 authors the fixed base 6, NeutralDOT callback, 2.5 s update, ten-second duration and independent Stun. Tracked retail Vector line 83351 records an effective value 14 for ten seconds; lines 83360–83363 identify a separate Zero One Soldier NPC opening of 8 done plus 62 mitigated.",
+          "runtime": "The player route combines the authored 6 direct fallback with the preserved archive-compatible 14-point NeutralDOT and the shipped cadence. The original coefficient remains open. The preserved NPC trace and PR357's old emulator hit of 70 have separate contexts.",
+          "test": "PR863 stock verified 6→3 with typed armor and retained the 14/10 s DOT in both comparisons, including three four-point ticks and the matched removal, and the separate four-second Stun and immunity. https://github.com/kylebrussell/mxo-hd/pull/863#issuecomment-7092836362"
+        },
+        "behavior-tests": {
+          "source": "GOB 253 specifies the at-rest rifle route, 20 IS, two-second cast, ten-second own and five-second group reuse, fixed Ballistic 6 and distinct periodic and conditional control effects.",
+          "runtime": "The ordinary ability handler preserves the selected target across the cast and the existing typed mitigation and timed effects handle the hit, DOT, Stun and expiry.",
+          "test": "PR863 stock verifies 20 IS, two seconds, 10/5 s reuse, same-opponent 6→3, three four-point DOT ticks, matched state and timer release and no in-combat request. The in-process handler and landing tests cover rifle and shotgun admission, no-cost refusal and mixed-level Ballistic armor. The disposable bootstrap replays only the retained 147/254/255 controls. https://github.com/kylebrussell/mxo-hd/pull/863#issuecomment-7092836362"
+        }
+      }
+    }
+  }
+}

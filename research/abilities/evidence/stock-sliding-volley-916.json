@@ -1,0 +1,53 @@
+{
+  "families": {
+    "stock-dazed-sliding-volley": {
+      "representative": 249,
+      "result": "pass",
+      "head": "ff271e8f",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/916#issuecomment-7093182632",
+      "scope": "The stock level-22 route used the Dazed interlock opponent, played 21081 and observed 85 and 76 after armor. It demonstrated the natural ten-second Enraged and Withdraw recovery. Executable miss cases cover the ordinary style fallback, with the shared stock presentation from PR914."
+    }
+  },
+  "abilities": {
+    "249": {
+      "family": "stock-dazed-sliding-volley",
+      "checks": {
+        "damage": {
+          "source": "GOB 249 stores fixed Ballistic base 77 for the successful Dual SMG attack.",
+          "runtime": "The normal selected opponent receives the Ballistic hit with current style and linked influence and their own typed resistance.",
+          "test": "SlidingVolleyLandsItsFixedBaseThroughTheLevel22BallisticPath tests the exact level-22 profile. Stock observed 85 neutral and raw85/final76 through source1061 stat181 +20. https://github.com/kylebrussell/mxo-hd/pull/916#issuecomment-7093182632"
+        },
+        "controls": {
+          "source": "GOB 249 gives Enraged for 10 s after a landed 20% roll. The Enraged condition blocks Withdraw.",
+          "runtime": "The ordinary conditional state adds paired source249/93 and 93 records, applies its action gate, and retires both records with one state-end.",
+          "test": "The stock eighth landed attempt produced records 292/293 for ten seconds. The same 0x44 action was refused during Enraged and accepted after both records ended. No unrelated immunity was applied. https://github.com/kylebrussell/mxo-hd/pull/916#issuecomment-7093182632"
+        },
+        "targeting": {
+          "source": "The shipped move is restricted to its Dazed interlock opponent with a compatible dual-SMG weapon.",
+          "runtime": "The ordinary request binds the selected live spawn and fight, and the queued side preserves that identity when a round resolves.",
+          "test": "SlidingVolleyQueuesOnlyOnTheDazedCurrentOpponent and SlidingVolleyCannotTransferToANewOpponentOrRespawn cover style, weapon, load, stale opponent and replacement. The stock client stopped both its rest and undazed requests before transmit, then admitted the Dazed opponent. https://github.com/kylebrussell/mxo-hd/pull/916#issuecomment-7093182632"
+        },
+        "proc": {
+          "source": "GOB 249 stores the separate landed Enraged probability 20% and a fixed ten-second duration.",
+          "runtime": "TimedEffects evaluates the stored roll for the bound recipient and uses shared state retirement.",
+          "test": "GunControlsRespectTheirStoredProbabilityAtLanding tests both sides of the cutoff. Stock witnessed a natural activation after repeated eligible hits and retained the paired expiry. https://github.com/kylebrussell/mxo-hd/pull/916#issuecomment-7093182632"
+        },
+        "choreography": {
+          "source": "The shipped landed move is 21081. An unsuccessful queue result follows the ordinary style exchange.",
+          "runtime": "The ordinary round selects 21081 on a successful 249 and resolves a miss or counter with its matching style exchange.",
+          "test": "Stock saw the 21081 hit. SlidingVolleyNormalMissKeepsTheOrdinaryRoundWithoutSpecialDamage checks both no-hit and opponent-hit variants. PR914 stock verified the shared ordinary dual-SMG fallback. https://github.com/kylebrussell/mxo-hd/pull/914#issuecomment-7092713226 https://github.com/kylebrussell/mxo-hd/pull/916#issuecomment-7093182632"
+        },
+        "source-parity": {
+          "source": "GOB 249 supplies 15 IS, 10/5 s own/group 689 reuse, +24 tactic, fixed 77 Ballistic, Dazed admission, 21081 and the landed Enraged roll.",
+          "runtime": "The selected interlock route applies the GOB +24 once as a flat adjustment and consumes the typed damage and effect. The original tacticalValue producer remains qualified in the common gun-special policy.",
+          "test": "Native saw base28→52, 15 IS, the two timers, 21081 and both typed results, condition gates and natural Enraged/Withdraw lifecycle. https://github.com/kylebrussell/mxo-hd/pull/916#issuecomment-7093182632"
+        },
+        "behavior-tests": {
+          "source": "The authored input includes the selected Daze state, equipment, timed reuse, normal interlock exchange and state proc.",
+          "runtime": "Ordinary cast admission and same-fight queueing lead to a typed landed hit or ordinary fallback, followed by conditional state and action gating.",
+          "test": "The request, fight-replacement, direct typed hit, ordinary miss and fixed-probability regressions complement the actual native runs for interlock, cost/reuse, armor and Enraged. https://github.com/kylebrussell/mxo-hd/pull/916#issuecomment-7093182632"
+        }
+      }
+    }
+  }
+}
