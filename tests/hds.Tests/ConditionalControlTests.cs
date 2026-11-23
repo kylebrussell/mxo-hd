@@ -141,6 +141,7 @@ public class ConditionalControlTests
     }
 
     [Theory]
+    [InlineData(241, 96, 8, .30f)]
     [InlineData(247, 93, 8, .15f)]
     [InlineData(249, 93, 10, .20f)]
     [InlineData(250, 93, 8, .40f)]
