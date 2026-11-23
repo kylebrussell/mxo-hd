@@ -1,12 +1,15 @@
+using System.Reflection;
 using System.Runtime.CompilerServices;
+using HeadlessClient;
 using hds;
+using hds.shared;
 
 namespace hds.Tests;
 
 [Collection("DelayedActions")]
 public class AbilityResurrectionTests
 {
-    private static WorldClient Client(uint id, bool dead = false)
+    private static WorldClient Client(uint id, bool dead = false, bool capturePackets = false)
     {
         var c = (WorldClient)RuntimeHelpers.GetUninitializedObject(typeof(WorldClient));
         c.playerData = new ClientData(); c.playerData.setCharID(id); c.playerData.setDistrictId(1);
@@ -15,8 +18,19 @@ public class AbilityResurrectionTests
         c.playerInstance.MaxHealth.setValue((ushort)777); c.playerInstance.Health.setValue((ushort)(dead ? 0 : 500));
         c.playerInstance.InnerStrengthMax.setValue((ushort)333); c.playerInstance.InnerStrengthAvailable.setValue((ushort)10);
         c.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(17020,495,2693));
-        // Bot Alive has no socket timeout, but this test never registers a bot or sends packets.
-        typeof(WorldClient).GetField("<IsBot>k__BackingField", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!.SetValue(c,true);
+        if (capturePackets)
+        {
+            c.messageQueue = new();
+            c.viewMan = new();
+            c.playerData.isBot = true; // This in-memory client has no persisted PvP flag.
+            typeof(WorldClient).GetField("lastUsedTime", BindingFlags.NonPublic | BindingFlags.Instance)!.SetValue(c, TimeUtils.getUnixTimeUint32());
+            typeof(WorldClient).GetField("lastFlushTick", BindingFlags.NonPublic | BindingFlags.Instance)!.SetValue(c, long.MaxValue);
+        }
+        else
+        {
+            // The other tests need no wire queue and Bot Alive has no socket timeout.
+            typeof(WorldClient).GetField("<IsBot>k__BackingField", BindingFlags.NonPublic | BindingFlags.Instance)!.SetValue(c, true);
+        }
         c.Alive = true;
         return c;
     }
@@ -107,6 +121,76 @@ public class AbilityResurrectionTests
         AbilityResurrection.RestoreVitals(recipient, 416);
         Assert.Equal(health, PvpCombat.HealthOf(recipient));
         Assert.Equal(innerStrength, AbilityHandler.CurrentInnerStrength(recipient));
+    }
+
+    [Theory]
+    [InlineData(false, true)]
+    [InlineData(true, true)]
+    [InlineData(true, false)]
+    public void RejuvenateNativeReplyRunsTheScriptCallbackOnlyAfterConsent(bool recipientFlagged, bool accepted)
+    {
+        const ushort rejuvenate = 416;
+        var caster = Client(110, capturePackets: true);
+        var recipient = Client(6111, dead: true, capturePackets: true);
+        caster.playerInstance.OrganizationID.setValue((byte)1);
+        recipient.playerInstance.OrganizationID.setValue((byte)1);
+        recipient.playerData.pvpFlag = recipientFlagged;
+        recipient.playerData.deathPenalty = .9f;
+        recipient.playerInstance.IsDead.setValue(true);
+        int life = recipient.playerData.lifeGeneration;
+        var priorClient = Store.currentClient;
+        var priorClients = WorldServer.Clients;
+        WorldServer.Clients = new() { ["Caster"] = caster, ["Recipient"] = recipient };
+        try
+        {
+            Assert.True(AbilityResurrection.Request(caster, recipient, rejuvenate,
+                caster.playerData.worldGeneration, caster.playerData.lifeGeneration,
+                recipient.playerData.worldGeneration, life));
+            var offer = Assert.Single(recipient.messageQueue.RPCMessagesQueue.Cast<SequencedMessage>()).content.AsSpan(1);
+            Assert.True(offer.StartsWith(new byte[] { 0x81, 0x88, 0xa0, 0x01, 0x00, 0x00 }));
+            Assert.True(recipient.playerData.isDead);
+            Assert.False(caster.playerData.pvpFlag);
+
+            Store.currentClient = recipient;
+            var reply = NativeBody(rejuvenate);
+            if (!accepted) reply[5] = 1;
+            var rpc = new RpcManager();
+            rpc.HandleRpc((int)RPCRequestHeader.CLIENT_ABILITY_APPROVAL, ref reply);
+            rpc.HandleRpc((int)RPCRequestHeader.CLIENT_ABILITY_APPROVAL, ref reply);
+
+            Assert.Equal(recipientFlagged, recipient.playerData.pvpFlag);
+            Assert.Equal(accepted && recipientFlagged, caster.playerData.pvpFlag);
+            Assert.Equal(.9f, recipient.playerData.deathPenalty);
+            if (!accepted)
+            {
+                Assert.True(recipient.playerData.isDead);
+                Assert.Equal(life, recipient.playerData.lifeGeneration);
+                Assert.Equal(0, PvpCombat.HealthOf(recipient));
+                Assert.Empty(recipient.messageQueue.ObjectMessagesQueue);
+                Assert.Empty(caster.messageQueue.RPCMessagesQueue);
+                return;
+            }
+
+            Assert.False(recipient.playerData.isDead);
+            Assert.Equal(life + 1, recipient.playerData.lifeGeneration);
+            Assert.Equal(777, PvpCombat.HealthOf(recipient));
+            Assert.Equal(333, AbilityHandler.CurrentInnerStrength(recipient));
+            var objectPackets = recipient.messageQueue.ObjectMessagesQueue.Cast<SequencedMessage>();
+            var stand = BytePattern.Parse("02 00 01 28 ?? 40 00 3f a0 01");
+            var aliveAndStand = Assert.Single(objectPackets, message => stand.Occurs(message.content)).content;
+            Assert.True(BytePattern.Parse("02 00 02 80 80 80 d1 00 4d 01 09 03").Occurs(aliveAndStand));
+            Assert.Equal(AbilityResurrection.RestoreEffect, NumericalUtils.ByteArrayToUint32(recipient.playerInstance.EffectID.getValue(), 1));
+            Assert.Single(caster.messageQueue.RPCMessagesQueue.Cast<SequencedMessage>(), message =>
+                BytePattern.Parse("81 67 ?? ?? ?? ?? 40 28 00 c6 01 a0 01 00 00").Occurs(message.content));
+            Assert.Single(recipient.messageQueue.RPCMessagesQueue.Cast<SequencedMessage>(), message =>
+                BytePattern.Parse("81 67 ?? ?? ?? ?? 3e 28 00 c6 00 a0 01 00 00").Occurs(message.content));
+        }
+        finally
+        {
+            CombatManager.RemoveClient(recipient);
+            WorldServer.Clients = priorClients;
+            Store.currentClient = priorClient;
+        }
     }
 
     [Fact]
