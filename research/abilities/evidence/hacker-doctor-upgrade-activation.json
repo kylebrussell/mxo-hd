@@ -1,0 +1,23 @@
+{
+  "abilities": {
+    "1097": {
+      "checks": {
+        "targeting": {
+          "source": "GOB 1097 uses CastDirectObjects=1, a self-only upgrade, and is granted by loaded Doctor 236. An arbitrary current target does not choose the recipient. The stock registration is recorded in research/protocol/loaded-grant-membership.json.",
+          "runtime": "Ordinary activation requires the live Doctor grant before cost or reuse. AbilitySupport resolves the caster regardless of another selection and consumes no target sight path for that self cast. An already active toggle can still be cleared if its grant was subsequently removed.",
+          "test": "ArchivedDoctorGrantIsRefusedBeforeCostAndCannotBeUsedThroughAStaleShortcut checks reason 7, no resource charge and no reuse through the decoded handler. DoctorUpgradeIsSelfOnlyAndFeedsThreeIndependentConsumers checks that a distinct valid selection cannot redirect the buff. The stock mode will capture the first complete 1097 cast request."
+        },
+        "stats": {
+          "source": "GOB 1097 defines three separate fixed while-active records: Healing 174 +5, Concentration 564 +7 and Combat Evasion 520 +20. It stores 20 IS and 30 seconds of activation reuse.",
+          "runtime": "Typed healing uses linked influence 174. The existing damage-interrupt check reads Concentration 564. Active Evade Combat interlock admission reads the direct Evasion 520 input independently of percent Evasion Bonus 1049.",
+          "test": "DoctorUpgradeIsSelfOnlyAndFeedsThreeIndependentConsumers verifies the three authored values on the caster, level-30 Patcher healing 26→27→26, linked interruption chance 76→80→76 at fixed loss and health, and the modeled Evade score 113→133→113 with fixed +3% passive Evasion. The native plan will check the exact modifier records and live heal delta."
+        },
+        "behavior-tests": {
+          "source": "GOB 1097 is an indefinite self toggle in the class-upgrade family. Loaded Doctor supplies the action by a normal zero-valued grant registration rather than a separate Archive item.",
+          "runtime": "A loaded grant supplies the active cast. The activation starts its own reuse and toggle-off removes all three records. Ordinary unload and reload remove and restore the live action membership.",
+          "test": "The scoped unit tests check self use, stale-grant refusal, all three on-path inputs and removal with activation cooldown retained. The disposable level-30 mode uses exact retained Hacker Style and Patcher frames plus ordinary Archive operations, verifying the baseline heal and live 236→1097 membership round trip. Positive native 1097 activation remains pending."
+        }
+      }
+    }
+  }
+}

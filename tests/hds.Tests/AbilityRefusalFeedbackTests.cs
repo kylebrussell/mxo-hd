@@ -104,6 +104,47 @@ public class AbilityRefusalFeedbackTests:IDisposable
         void SetTarget(double x) => target.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(x, 1095, 16150));
     }
     public void Dispose(){Store.currentClient=oldClient;Store.config=oldConfig;WorldServer.Clients=oldClients!;loaderField.SetValue(null,oldLoader);for(int i=0;i<keys.Length;i++)Environment.SetEnvironmentVariable(keys[i],oldEnv[i]);}
+
+    [Fact]
+    public void ArchivedDoctorGrantIsRefusedBeforeCostAndCannotBeUsedThroughAStaleShortcut()
+    {
+        const ushort id = AbilityBuffs.DoctorUpgrade;
+        var caster = Client();
+        Store.currentClient = caster;
+        var ability = new AbilityItem();
+        ability.setAbilityID(id);
+        ability.setAbilityName("Doctor Upgrade");
+        ability.setCastAnimStart(new byte[4]);
+        DataLoader.getInstance().AbilityDB.Add(ability);
+        // The native mode captures the actual complete 1097 request. This is the internal handler input.
+        var request = new byte[41];
+        BitConverter.GetBytes(id).CopyTo(request, 0);
+        double before = caster.playerData.castEndsAt;
+
+        new AbilityHandler().ProcessAbility(ref request);
+
+        Assert.Equal(AbilityRefusals.Encode(new(id, AbilityRefusals.NotLoaded)), Assert.Single(Rpcs(caster)));
+        Assert.Equal(500, AbilityHandler.CurrentInnerStrength(caster));
+        Assert.Equal(before, caster.playerData.castEndsAt);
+        Assert.Empty(caster.playerData.cooldownEndsAt);
+        Assert.False(AbilityBuffs.IsActive(caster, id));
+
+        AbilityPassives.SetLoaded(caster, new (ushort, ushort)[] { (236, 30) });
+        caster.playerData.lastAbilityTime = TimeUtils.GetSimTimeSeconds() - AbilityHandler.DuplicateAbilityWindowSeconds - 1;
+        new AbilityHandler().ProcessAbility(ref request);
+        Assert.True(AbilityBuffs.IsActive(caster, id));
+        Assert.Equal(480, AbilityHandler.CurrentInnerStrength(caster));
+        Assert.True(caster.playerData.cooldownEndsAt.TryGetValue(id, out double readyAt));
+        Assert.InRange(readyAt - TimeUtils.GetSimTimeSeconds(), 29, 30);
+
+        AbilityPassives.SetLoaded(caster, Array.Empty<(ushort, ushort)>());
+        caster.playerData.lastAbilityTime = TimeUtils.GetSimTimeSeconds() - AbilityHandler.DuplicateAbilityWindowSeconds - 1;
+        new AbilityHandler().ProcessAbility(ref request);
+        Assert.False(AbilityBuffs.IsActive(caster, id));
+        Assert.Equal(480, AbilityHandler.CurrentInnerStrength(caster));
+        Assert.Equal(readyAt, caster.playerData.cooldownEndsAt[id]);
+    }
+
     static byte[] Hex(string s)=>Convert.FromHexString(s);
     static WorldClient Client(ushort inner=500)
     {

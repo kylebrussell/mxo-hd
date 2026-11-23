@@ -142,6 +142,7 @@ public class AbilityScaledBuffTests
     [InlineData(1078)]
     [InlineData(1089)]
     [InlineData(1091)]
+    [InlineData(1097)]
     [InlineData(1108)]
     public void StartingClassUpgradeIsAToggleWhoseRemovalLeavesItsActivationCooldown(ushort upgrade)
     {
@@ -157,6 +158,48 @@ public class AbilityScaledBuffTests
         Assert.Equal(40, actor.playerData.cooldownEndsAt[upgrade]);
         Assert.True(AbilityCooldowns.IsCoolingDown(actor.playerData, upgrade, 39));
         Assert.False(AbilityCooldowns.IsCoolingDown(actor.playerData, upgrade, 40));
+    }
+
+    [Fact]
+    public void DoctorUpgradeIsSelfOnlyAndFeedsThreeIndependentConsumers()
+    {
+        const ushort doctor = 236, id = AbilityBuffs.DoctorUpgrade;
+        var actor = Client(30);
+        var selected = Client(30);
+        AbilityPassives.SetLoaded(actor, new (ushort, ushort)[] { (doctor, 30), (CombatStyles.HackerStyle, 30), (71, 30), (233, 30), (45, 30), (55, 30) });
+        CombatStyles.Select(actor, CombatStyles.HackerStyle);
+        Assert.True(AbilityPassives.IsLoaded(actor, id));
+        Assert.Equal((ushort)20, AbilityCosts.Effective(actor, id));
+        Assert.Same(actor, Assert.Single(AbilitySupport.Targets(actor, id, 6, 21)));
+        Assert.Equal(26, AbilityHealing.Amount(actor, actor, 55));
+        Assert.Equal(76, CastThrough());
+        Assert.Equal(113, EvadeScore());
+
+        AbilitySupport.Land(actor, id, 6, spawn: 21);
+
+        try
+        {
+            Assert.True(AbilityBuffs.IsActive(actor, id));
+            Assert.False(AbilityBuffs.IsActive(selected, id));
+            Assert.Equal(5, AbilityBuffs.Total(actor, 174) - AbilityBuffs.Total(selected, 174));
+            Assert.Equal(7, AbilityBuffs.Total(actor, 564));
+            Assert.Equal(20, AbilityBuffs.Total(actor, 520));
+            Assert.Equal(27, AbilityHealing.Amount(actor, actor, 55));
+            Assert.Equal(80, CastThrough());
+            Assert.Equal(133, EvadeScore());
+        }
+        finally
+        {
+            AbilityBuffs.Remove(actor, id);
+        }
+
+        Assert.Equal(26, AbilityHealing.Amount(actor, actor, 55));
+        Assert.Equal(76, CastThrough());
+        Assert.Equal(113, EvadeScore());
+
+        int CastThrough() => AbilityCastInterrupts.CastThroughPercent(100, 500, (short)AbilityStats.Influence(actor, 564));
+        long EvadeScore() => CombatInsightEngagement.Calculate(0, 0, 0, 0, AbilityStats.Player(actor, 520),
+            AbilityStats.Player(actor, 1049)).Evade;
     }
 
     [Fact]
