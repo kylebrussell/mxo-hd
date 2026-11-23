@@ -303,6 +303,8 @@ try
                 else if ((fixtureMode is NativeQa.Modes.HackerParitySweepMode or NativeQa.Modes.HackerSecondPassMode) && action == "hacker-group-arrive")
                     result = await NativeQa.Modes.HackerParitySweepMode.ArriveAsync(helpers,
                         fixtureMode is NativeQa.Modes.HackerSecondPassMode ? NativeQa.Modes.HackerSecondPassMode.Stands : null);
+                else if (fixtureMode is NativeQa.Modes.EscapeAndEvasionMode && action == "escape-and-evasion-reveal")
+                    await NativeQa.Modes.EscapeAndEvasionMode.RevealAsync(actor);
                 else if (fixtureMode is NativeQa.Modes.StarterMovementObserverMode && action == "movement-observer-arrive")
                     result = await NativeQa.Modes.StarterMovementObserverMode.ArriveAsync(actor);
                 else if (fixtureMode is NativeQa.Modes.StarterStealthObserverMode && action == "stealth-observer-pass")

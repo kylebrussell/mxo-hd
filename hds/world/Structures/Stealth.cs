@@ -137,9 +137,10 @@ namespace hds
         /// <summary>Abilities this module runs (the states above plus Impart Invisibility and Vanish, which put them on).</summary>
         public static bool Handles(UInt16 id) => Defs.ContainsKey(id) || id == ImpartInvisibilityAbility || id == VanishAbility;
 
-        // tempmods.SneakInit/SneakTerm and InvisibilityInit/InvisibilityTerm.
+        // SneakInit, InvisibilityInit and EscapeandEvasion_DirectObject select these stances.
         internal static byte MovementStance(ushort ability) => ability switch
         {
+            EscapeAndEvasionAbility => AnimationPackets.StanceSneaking,
             SneakGrantAbility => AnimationPackets.StanceSneaking,
             ImprovedSneakAbility => AnimationPackets.StanceSneaking,
             InvisibilityGrantAbility => AnimationPackets.StanceInvisible,
@@ -267,6 +268,21 @@ namespace hds
         public static string Refusal(WorldClient client, UInt16 id, UInt16 targetView, out uint reason)
         {
             reason = AbilityRefusals.LegacyAmbiguous;
+            if (id == EscapeAndEvasionAbility)
+            {
+                if (!AbilityPassives.IsLoaded(client, id))
+                {
+                    reason = AbilityRefusals.NotLoaded;
+                    return "Load Escape and Evasion before using it.";
+                }
+
+                var combat = CombatManager.GetHandler(client);
+                if (combat.isCombatRunning || combat.HasActiveInterlock)
+                {
+                    reason = AbilityRefusals.MustBeOutsideCombat;
+                    return "You cannot use Escape and Evasion while in combat.";
+                }
+            }
             if(id==SneakGrantAbility && StealthShieldAbilities.PendingRestealth(client))return "Sneak is waiting for Disable Evasion's restealth callback.";
             if (id == ImpartInvisibilityAbility)
             {
@@ -296,7 +312,15 @@ namespace hds
             if (id == VanishAbility) return null; // "Vanish Prox Override": no enemy test
             if (!Defs.TryGetValue(id, out Def def)) return null;
             if (def.Kind == Kind.Sneak && EnemyWatching(client, DetectionRangeUnits(AbilityLevel(client, SneakGrantAbility))))
+            {
+                if (id == EscapeAndEvasionAbility)
+                {
+                    reason = AbilityRefusals.NoClientMessage;
+                    return "You cannot use Escape and Evasion while an enemy is watching.";
+                }
+
                 return "You cannot sneak while an enemy is watching."; // InitialSneakTest
+            }
             if (def.Kind == Kind.Disguise && EnemyWatching(client, InvisibilityProximityUnits))
                 return "You cannot disguise while an enemy is watching.";
             if (def.Kind == Kind.Invisibility && EnemyWatching(client, InvisibilityProximityUnits, ignoreBlinded: true))
@@ -312,6 +336,7 @@ namespace hds
         /// <summary>The cast finished: the state goes on (or, for Impart and Vanish, the state they give).</summary>
         public static void Land(WorldClient client, UInt16 id, UInt16 targetView, ushort? toolSlot = null)
         {
+            if (id == EscapeAndEvasionAbility && Refusal(client, id, targetView, out _) != null) return;
             if (id == AbilityDisguise.Ability)
             {
                 uint model = AbilityDisguise.ModelFor(client, toolSlot);
@@ -405,6 +430,8 @@ namespace hds
             byte stance = MovementStance(def.Ability);
             if (stance != AnimationPackets.StanceStanding)
                 EmoteHandler.SetStance(client, stance, respectStealth: true);
+            // EscapeandEvasion_DirectObject turns off the listed auras when the cast lands.
+            if (def.Ability == EscapeAndEvasionAbility) StopStealthAuras(client);
             Output.WriteDebugLog("[STEALTH] " + TimedEffects.PlayerName(client) + " " + def.Ability + " on (bits " + def.Bits +
                 ", SL " + state.StealthLevel + (state.Seconds > 0 ? ", " + state.Seconds + " s" : "") + ")" + HiddenFromList(client));
 

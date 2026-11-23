@@ -351,14 +351,18 @@ namespace hds
 
         internal static float MovementScaleFor(WorldClient client, Buff buff)
         {
-            if (buff == null) return 0f;
-            ushort stat = MovementStatFor(client);
+            var stealth = Stealth.Current(client);
+            float stanceScale = stealth?.Def.Ability == Stealth.EscapeAndEvasionAbility
+                ? stealth.Mods.Where(modifier => modifier.Stat == SneakMovementStat).Sum(modifier => modifier.Value) / 100f
+                : 0f;
+            if (buff == null) return stanceScale;
+            ushort stat = MovementStatFor(stealth);
             if (stat == RunMovementStat) return buff.MovementScale;
             Modifier modifier = Array.Find(buff.Modifiers, entry => entry.Stat == stat);
-            return modifier.Stat == stat ? modifier.Value / 100f : buff.MovementScale;
+            return stanceScale + (modifier.Stat == stat ? modifier.Value / 100f : buff.MovementScale);
         }
 
-        private static ushort MovementStatFor(WorldClient client) => Stealth.Current(client)?.Def.Kind switch
+        private static ushort MovementStatFor(Stealth.State stealth) => stealth?.Def.Kind switch
         {
             Stealth.Kind.Sneak => SneakMovementStat,
             Stealth.Kind.Invisibility => InvisibleMovementStat,
@@ -397,7 +401,7 @@ namespace hds
             var active = TimedEffects.ForPlayer(client).Effects.Snapshot();
             // Vector26 observes -1 on Immobilizing Shot's EnableRootWithChance state and the remaining scale on removal.
             if (active.Any(OverridesMovementScale)) return -1f;
-            ushort movementStat = MovementStatFor(client);
+            ushort movementStat = MovementStatFor(Stealth.Current(client));
             // Crash and Bottleneck each specify three movement channels. Apply only the current one.
             int points = active.Where(modifier => ProjectsSignedMovementDebuff(modifier) &&
                 (!UsesStanceMovementChannel(modifier.Parent) || modifier.Target == movementStat)).Sum(modifier => modifier.Value);

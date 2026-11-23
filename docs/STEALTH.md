@@ -42,6 +42,14 @@ Fixture `ability-parity-improved-sneak` seeds the real owned prerequisites at le
 
 SA is the player's StealthAwareness: the creation value of 1, plus Stealth Detection (204) totals, which come from Awakened's passive and Stealth Awareness. SL is the state's Stealth record plus loaded and active Stealth totals. Player and NPC awareness is bounded to the byte input range so negative debuffs cannot wrap into high awareness.
 
+## Escape and Evasion (507)
+
+The shipped startup loads `ability.spy.sneaks`. Its 507 implementation calls `activateSneak`, installs `SneakUpdate` and `EscapeAndEvasionTerm`, and turns off the auras named by `utility.turnOffAuras`. The deactivation function removes 507 and deactivates Sneak. The term function explicitly restores Standing, deactivates Sneak and turns off its parent. The catalog's health callback uses the existing damage break. [Activation, test and deactivation](../research/client-scripts/ability/spy/sneaks.py#L58) · [Term callback](../research/client-scripts/tempmods.py#L2302)
+
+The authored 507 records are +25 Sneak Movement 877, character-level Stealth 209 and StealthState 881. The server projects the 877 movement contribution while this 507 state is active and restores the remaining scale on exit. The status category permits the existing ordinary dismiss request. The same 507 holder ends on a matching dismissal, a second activation, a reveal or damage below maximum HP. The initial and periodic detection rules use the loaded ordinary Sneak grant's range, with no additional difficulty adjustment from 507.
+
+`ability-parity-escape-and-evasion` prepares the rank-23 ability and its legal prerequisites at character level 25. Normal Sneak rank 19 is the distinct movement and reveal control. The fixture's first 507 action and its Status dismissal are stock capture steps. The headless replay uses only the prior Spy Style, ordinary Sneak and Countermeasures stock requests. The current IS debit is the server's fallback because GOB omits the player cost field.
+
 ## What breaks it
 
 - **Evidence:**
