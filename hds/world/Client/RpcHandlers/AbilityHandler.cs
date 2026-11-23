@@ -241,7 +241,13 @@ namespace hds
             }
 
             // Timed gun specials may resolve in interlock or as a selected attack. Both use the same live target.
-            bool threeRoundBurst = AbilityID == CombatSpecials.ThreeRoundBurst;
+            ushort timedGunRequiredState = AbilityID switch
+            {
+                CombatSpecials.ThreeRoundBurst => TempMods.StaggeredAbility,
+                CombatSpecials.FullAuto => TempMods.StaggeredAbility,
+                CombatSpecials.FullAutoRedux => TempMods.DazeAbility,
+                _ => 0
+            };
             bool protectedGunSpecial = CombatSpecials.ProtectsTimedGunCast(AbilityID);
             object gunSpecialFight = null;
             uint? gunSpecialOpponent = null;
@@ -256,6 +262,11 @@ namespace hds
                 if (!CombatSpecials.HasTimedSpecialWeapon(shooter, AbilityID))
                 {
                     Deny(AbilityID, "Equip the required weapon for this special.", AbilityRefusals.RequiredItemCategory, sendServerText: false);
+                    return;
+                }
+                if (CombatSpecials.IsFullAuto(AbilityID) && !CombatStyles.CanUse(shooter, AbilityID))
+                {
+                    Deny(AbilityID, "Select Submachine Guns before using this special.", AbilityRefusals.WrongStyle, sendServerText: false);
                     return;
                 }
 
@@ -306,10 +317,11 @@ namespace hds
                     Deny(AbilityID, "Select a living enemy before using this ability.", AbilityRefusals.InvalidTarget, sendServerText: false);
                     return;
                 }
-                if (threeRoundBurst && !AbilityTargets.HasSelectionState(shooter, currentTargetViewId, TempMods.StaggeredAbility))
+                if (timedGunRequiredState != 0 && !AbilityTargets.HasSelectionState(shooter, currentTargetViewId, timedGunRequiredState))
                 {
                     shooter.messageQueue.addRpcMessage(AbilityRefusals.Encode(
-                        new AbilityRefusals.Record(AbilityID, AbilityRefusals.TargetStateRequired, states: 8)));
+                        new AbilityRefusals.Record(AbilityID, AbilityRefusals.TargetStateRequired,
+                            states: (uint)AbilityCatalog.Find(AbilityID).Number("Ability/CastRequiredStates"))));
                     shooter.FlushQueue();
                     return;
                 }
@@ -1369,6 +1381,8 @@ namespace hds
                 CombatSpecials.ConcealedShot => 1,
                 CombatSpecials.SniperShot => 1,
                 CombatSpecials.PistolBarrage => 1,
+                CombatSpecials.FullAuto => 1,
+                CombatSpecials.FullAutoRedux => 1,
                 CombatSpecials.ControlledBurst => 1,
                 CombatSpecials.SlidingVolley => 1,
                 CombatSpecials.ThreeRoundBurst => 1,

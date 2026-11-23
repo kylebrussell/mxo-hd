@@ -50,6 +50,8 @@ namespace hds
                 CombatSpecials.PistolBarrage => RangedWeapons.ClassDualPistol,
                 176 => RangedWeapons.ClassSubmachinegun,
                 CombatSpecials.ControlledBurst => RangedWeapons.ClassDualSubmachinegun,
+                CombatSpecials.FullAuto => RangedWeapons.ClassDualSubmachinegun,
+                CombatSpecials.FullAutoRedux => RangedWeapons.ClassDualSubmachinegun,
                 CombatSpecials.ThreeRoundBurst => RangedWeapons.ClassRifle,
                 _ => 0
             };
