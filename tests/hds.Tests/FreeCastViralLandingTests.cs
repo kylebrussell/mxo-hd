@@ -233,6 +233,96 @@ public class FreeCastViralLandingTests : IDisposable
     }
 
     [Theory]
+    [InlineData(362, 25, 2, 58)]
+    [InlineData(482, 48, 4, 60)]
+    public void WhiteNoiseAndCodeShockUseTheOrdinarySelectedControlPath(ushort id, int cost, int cast, int reuse)
+    {
+        var caster = Client(110);
+        var target = Client(111);
+        var edge = Client(112);
+        var outside = Client(113);
+        var ally = Client(114);
+        var clients = new[] { caster, target, edge, outside, ally };
+        int[] positions = { 8100, 7900, 7200, 7199, 8000 };
+        for (int i = 0; i < clients.Length; i++)
+        {
+            clients[i].playerData.setEntityId((ulong)(85000310 + i));
+            clients[i].playerInstance.OrganizationID.setValue((byte)(i == 0 || i == 4 ? 1 : 2));
+            clients[i].playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(17000, 495, positions[i]));
+            clients[i].playerData.pvpFlag = true;
+            if (i > 0) caster.viewMan.addView(clients[i].playerData.getEntityId(), 1).viewCreated = true;
+        }
+        var view = caster.viewMan.FindViewForEntity(target.playerData.getEntityId());
+        caster.playerInstance.InnerStrengthMax.setValue((ushort)1000);
+        caster.playerInstance.InnerStrengthAvailable.setValue((ushort)500);
+        Store.currentClient = caster;
+        Environment.SetEnvironmentVariable("MXO_FREECAST_VIRAL_QA_ATTACK15", "32766");
+        Environment.SetEnvironmentVariable("MXO_FREECAST_VIRAL_QA_DEFENSE15", "0");
+        var world = Store.world;
+        try
+        {
+            Store.world = (WorldServer)RuntimeHelpers.GetUninitializedObject(typeof(WorldServer));
+            var profile = new NativeQa.Modes.HackerWhiteNoiseCodeShockMode().Plan.Abilities;
+            Assert.Equal(80, profile.Sum(AbilityMemory.Cost));
+            AbilityPassives.SetLoaded(caster, profile.Select(ability => (ability, (ushort)50)));
+            CombatStyles.Select(caster, CombatStyles.HackerStyle);
+            Assert.Equal(cost, AbilityCosts.Effective(caster, id));
+            Assert.Equal(7, AbilityRadius.TargetMetres(caster, 362));
+            // Constructed handler input. The fixture's headless client sends the exact retained 57 control.
+            var request = new byte[41];
+            BitConverter.GetBytes(id).CopyTo(request, 0);
+            BitConverter.GetBytes(view.ViewID).CopyTo(request, 2);
+            BitConverter.GetBytes((ushort)view.spawnId).CopyTo(request, 4);
+            double before = TimeUtils.GetSimTimeSeconds();
+            new AbilityHandler().ProcessAbility(ref request);
+            double end = caster.playerData.castEndsAt;
+            Assert.InRange(end, before + cast, TimeUtils.GetSimTimeSeconds() + cast);
+            Assert.Equal(500 - cost, AbilityHandler.CurrentInnerStrength(caster));
+            Assert.All(clients, player => Assert.Empty(TimedEffects.ForPlayer(player).Effects.Snapshot()));
+            AbilityCastInterrupts.FinishDue(caster, end);
+
+            var effects = TimedEffects.ForPlayer(target).Effects;
+            var blind = Assert.Single(effects.Snapshot(), mod => mod.Target == TempMods.BlindAbility);
+            Assert.Equal(id, blind.Parent);
+            Assert.All(clients, player => Assert.Equal(1000, PvpCombat.HealthOf(player)));
+            Assert.Equal(-30, AbilityStats.Attack(target, true));
+            Assert.Empty(TimedEffects.ForPlayer(outside).Effects.Snapshot());
+            Assert.Empty(TimedEffects.ForPlayer(ally).Effects.Snapshot());
+            Assert.True(AbilityCooldowns.TryGet(id, out var timer));
+            Assert.Equal(reuse, timer.Seconds);
+            if (id == 362)
+            {
+                Assert.Equal(12, blind.Seconds);
+                Assert.Equal(12, Assert.Single(TimedEffects.ForPlayer(edge).Effects.Snapshot()).Seconds);
+                Assert.False(effects.HasControlImmunity(blind.Start));
+                TimedEffects.RunDue(blind.Start + 12.01);
+                Assert.Equal(0, AbilityStats.Attack(target, true));
+                Assert.Equal(0, AbilityStats.Attack(edge, true));
+            }
+            else
+            {
+                Assert.Equal(6, blind.Seconds);
+                Assert.Empty(TimedEffects.ForPlayer(edge).Effects.Snapshot());
+                Assert.Equal(6.6f, Assert.Single(effects.Snapshot(), mod => mod.Target == TempMods.StunAbility).Seconds, 3);
+                foreach (ushort state in new[] { TempMods.DazeAbility, TempMods.OffBalanceAbility, TempMods.StaggeredAbility })
+                    Assert.Equal(5, Assert.Single(effects.Snapshot(), mod => mod.Target == state).Seconds);
+                Assert.False(effects.HasControlImmunity(blind.Start));
+                TimedEffects.RunDue(blind.Start + 0.011);
+                Assert.Equal(12, Assert.Single(effects.Snapshot(), mod => mod.Parent == TempMods.ControlImmunityTimerAbility).Seconds);
+                byte[] notification = AbilityMessages.AboutAbility(AbilityMessages.ImmunityCaster, true, id,
+                    TimedEffects.PlayerName(caster), TimedEffects.PlayerName(target), 12);
+                Assert.Contains(caster.messageQueue.RPCMessagesQueue.Cast<SequencedMessage>(),
+                    message => message.content.AsSpan(1).SequenceEqual(notification));
+            }
+        }
+        finally
+        {
+            foreach (var player in clients) TimedEffects.Clear(TimedEffects.ForPlayer(player));
+            Store.world = world;
+        }
+    }
+
+    [Theory]
     [InlineData(238, 0, true, 46)]
     [InlineData(311, 0, true, 43)]
     [InlineData(312, 0, true, 55)]
@@ -1542,6 +1632,8 @@ public class FreeCastViralLandingTests : IDisposable
     [InlineData(350)]
     [InlineData(351)]
     [InlineData(361)]
+    [InlineData(362)]
+    [InlineData(415)]
     [InlineData(465)]
     [InlineData(468)]
     [InlineData(59)]
@@ -1554,6 +1646,7 @@ public class FreeCastViralLandingTests : IDisposable
     [InlineData(394)]
     [InlineData(395)]
     [InlineData(396)]
+    [InlineData(482)]
     [InlineData(588)]
     public void ActualNpcLandingDeflectsBeforeDamageDebuffAndProcAndOnlyRoutesToVisibleSameWorld(ushort abilityId)
     {

@@ -433,13 +433,14 @@ namespace hds
             {
                 mod.OnExpired?.Invoke(subject, mod);
                 mod.OnExpiredAt?.Invoke(subject,mod,now);
-                if (!AbilityConditionalControls.IsCapturedStunMarker(mod))
+                if (!AbilityConditionalControls.IsCapturedStunMarker(mod) && !AbilityConditionalControls.IsCodeShockTimer(mod))
                     AbilityConditionalControls.Term(subject, mod, now);
             }
             if (expired.Count > 0)
             {
                 subject.Ended(expired);
-                foreach (Active marker in expired.Where(AbilityConditionalControls.IsCapturedStunMarker))
+                foreach (Active marker in expired.Where(mod => AbilityConditionalControls.IsCapturedStunMarker(mod) ||
+                    AbilityConditionalControls.IsCodeShockTimer(mod)))
                     AbilityConditionalControls.Term(subject, marker, now);
             }
         }
@@ -538,7 +539,8 @@ namespace hds
             Active originalControl = mods.Find(m => m.Proc == TempMods.Proc.State && TempMods.IsControlState(m.Target) &&
                 !AbilityConditionalControls.InitialPowerless(effect.Ability,m.Target));
             // Zone of Powerlessness has no immunity initializer. Both retained recipient captures add 399/96 alone.
-            Active unmitigatedImmunity = originalControl == null || effect.Ability == 399 ? null : ImmunityFor(effect, originalControl);
+            Active unmitigatedImmunity = originalControl == null || effect.Ability == 399 ||
+                effect.Ability == AbilityConditionalControls.CodeShock ? null : ImmunityFor(effect, originalControl);
             if (caster != null && !(subject is PlayerEffects playerTarget && playerTarget.Context == caster) && AbilityHostile.IsDebuff(effect.Ability))
                 foreach (Active m in mods)
                     if(effect.Ability!=AbilityReverseBulldog.Ability || m.Proc!=TempMods.Proc.Terminal)
@@ -581,7 +583,9 @@ namespace hds
             }
             Register(subject);
             foreach (Active old in replaced) AbilityConditionalControls.Term(subject, old, now);
-            subject.Applied(effect, mods, immunity, replaced);
+            var visible = effect.Ability == AbilityConditionalControls.CodeShock
+                ? mods.Where(mod => !AbilityConditionalControls.IsCodeShockTimer(mod)).ToList() : mods;
+            subject.Applied(effect, visible, immunity, replaced);
             foreach(var marker in mods.Where(m=>m.Proc==TempMods.Proc.SeverState))AbilitySeverArteryStates.Execute(subject,marker,now);
             if (subject is PlayerEffects shieldTarget && effect.Ability == StealthShieldAbilities.DisableEvasion)
                 EvasionShield.Refresh(shieldTarget.Context);
@@ -798,6 +802,7 @@ namespace hds
         {
             foreach (TimedEffects.Active m in mods)
             {
+                if (AbilityConditionalControls.IsCodeShockTimer(m)) continue;
                 client.messageQueue.addRpcMessage(Record(m, true));
                 if (m.Kind == TempMods.KindState)
                 {
@@ -834,7 +839,7 @@ namespace hds
                 }
             }
 
-            if (linkedStun)
+            if (immunity != null && immunity.RecordId == 0)
                 immunity.RecordId = AbilityBuffs.NextRecordId(client.playerData);
             SendOff(replaced);
             // Vector sent immunity first. Proxy_003 login sent the linked Stun stack before immunity.
@@ -854,12 +859,12 @@ namespace hds
             if (linkedStun)
                 client.messageQueue.addRpcMessage(Record(immunity, false));
 
-            string caster = added.Count > 0 ? added[0].CasterName ?? "" : "";
+            string caster = (added.Count > 0 ? added[0].CasterName : immunity?.CasterName) ?? "";
             if (immunity != null && !linkedStun)
             {
                 client.messageQueue.addRpcMessage(AbilityMessages.AboutAbility(AbilityMessages.ImmunityTarget, true,
                     effect.Ability, caster, Name, (Int32)immunity.Seconds));
-                if (effect.Ability == AbilityHostile.FreezeSystem3 &&
+                if ((effect.Ability == AbilityHostile.FreezeSystem3 || effect.Ability == AbilityConditionalControls.CodeShock) &&
                     immunity.Caster is WorldClient source && source != client)
                 {
                     source.messageQueue.addRpcMessage(AbilityMessages.AboutAbility(AbilityMessages.ImmunityCaster, true,
@@ -1043,9 +1048,9 @@ namespace hds
         internal override void Applied(TempMods.Effect effect, List<TimedEffects.Active> added, TimedEffects.Active immunity,
             List<TimedEffects.Active> replaced)
         {
-            WorldClient caster = added.Count > 0 ? added[0].Caster : null;
+            WorldClient caster = added.Count > 0 ? added[0].Caster : immunity?.Caster;
             lastCaster = caster ?? lastCaster;
-            string casterName = added.Count > 0 ? added[0].CasterName ?? "" : "";
+            string casterName = (added.Count > 0 ? added[0].CasterName : immunity?.CasterName) ?? "";
             string name = mob.getName() ?? "";
             LogModifiers(replaced, added: false);
             LogModifiers(added, added: true);
@@ -1124,7 +1129,7 @@ namespace hds
         private void LogModifiers(List<TimedEffects.Active> mods, bool added)
         {
             string operation = added ? "add" : "remove";
-            foreach (var mod in mods) LogModifier(mod, operation);
+            foreach (var mod in mods.Where(mod => !AbilityConditionalControls.IsCodeShockTimer(mod))) LogModifier(mod, operation);
         }
 
         private void LogModifier(TimedEffects.Active mod, string operation) =>
@@ -1137,7 +1142,7 @@ namespace hds
             // Enrage expiry only ends its pursuit. Other expirations may resume ordinary retaliation
             // once nothing else is fighting the NPC.
             if (mob.CombatantCount == 0 && mob.getHealthC() > 0 && mob.getHealthC() < mob.getHealthM() &&
-                ended.Exists(mod => !mod.UpdatesNpcEnrage))
+                ended.Exists(mod => !mod.UpdatesNpcEnrage && !AbilityConditionalControls.IsCodeShockTimer(mod)))
                 MobAggro.Retaliate(lastCaster, mob);
         }
     }

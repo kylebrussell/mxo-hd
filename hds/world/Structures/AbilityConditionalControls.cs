@@ -9,6 +9,11 @@ namespace hds
     {
         // Proxy_003 login, 20131-20178 and 20689-20694, records the Sniper Shot victim's linked Stun stack.
         internal const ushort PistolAerial = 243;
+        internal const ushort CodeShock = 482;
+
+        // This authored callback has no target attribute or state. Only its resulting 734 record is published.
+        internal static bool IsCodeShockTimer(TimedEffects.Active modifier) => modifier.Parent == CodeShock &&
+            modifier.Proc == TempMods.Proc.Terminal && modifier.Target == 0;
 
         internal static bool HasCapturedStunStack(ushort ability) =>
             ability == PistolAerial || ability == CombatSpecials.SniperShot;
@@ -49,6 +54,17 @@ namespace hds
 
         internal static void Term(TimedEffects.Subject subject, TimedEffects.Active marker, double now)
         {
+            if (IsCodeShockTimer(marker))
+            {
+                var timer = new TimedEffects.Active { Kind = TempMods.KindPlain, Target = TempMods.ISDrainTargetAbility,
+                    Seconds = marker.Value, Proc = TempMods.Proc.State, Caster = marker.Caster,
+                    CasterName = marker.CasterName, TargetView = marker.TargetView };
+                if (!subject.Effects.AppendCallback(TempMods.ControlImmunityTimerAbility, timer, now,
+                    () => subject.Alive && !subject.Effects.HasControlImmunity(now, timer), out var retired)) return;
+                TimedEffects.Track(subject);
+                subject.Applied(new TempMods.Effect { Ability = CodeShock }, new List<TimedEffects.Active>(), timer, retired);
+                return;
+            }
             if (marker.Proc != TempMods.Proc.Terminal || marker.Target != marker.Parent ||
                 !subject.Alive || marker.Value <= 0) return;
             var callback = AbilityCatalog.Find(marker.Parent)?.Modifiers.FirstOrDefault(m => TerminalStun(marker.Parent, m));
