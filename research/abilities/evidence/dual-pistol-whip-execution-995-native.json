@@ -1,0 +1,40 @@
+{
+  "families": {
+    "dual-pistol-whip-execution-queues": {
+      "representative": 502,
+      "result": "pass",
+      "head": "f808b8496e4af4a85b7bcb4a6d6de162ab4b6709",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/995#issuecomment-7105522085",
+      "scope": "Real stock L46 CSR 61/92, held dual handguns 2496. 501 stayed local at rest and until Daze; first eligible stock request queued immediately, paid 30 IS and landed move 287. 502 paid 35 IS, never queued during the cast, queued after four seconds, and landed 9532 in the same fight. A separate at-rest 502 paid 35 IS, cast for four seconds and landed without a queued round. Both used 10 s own and 5 s group689 reuse. Damage and control records were observed but their exact original magnitude and proc source remain open."
+    }
+  },
+  "abilities": {
+    "501": {
+      "family": "dual-pistol-whip-execution-queues",
+      "checks": {
+        "native-family": {
+          "source": "Current GOB 501 requires an interlock target in Daze, active Handguns and dual handguns. Independent retained 140-unit source501 success uses move 287 (AfterWhoruNeo two-person log 142709).",
+          "runtime": "The strict ordinary path binds the loaded state-gated Pistol Whip to the original opponent and weapon. The allocated mode exercises the actual stock restrictions and a successful named round.",
+          "test": "Stock f808b849 reported local refusal at rest and before Daze (no request or debit), first eligible 80 b9 f5 01, instantaneous queue, 30 IS, 10/5 s timers and a successful stock 287. https://github.com/kylebrussell/mxo-hd/pull/995#issuecomment-7105522085"
+        }
+      },
+      "note": "Native observed damage 95 and Blind 90 for 9.576 s with linked 90/163 −30 and matching removals. Original player DrSmith capture reports 1422 dealt and −46 resistance adjustment, and the same paired hit has 10.08 s Blind (AfterWhoruNeo two-person log lines 143166–143173 and 144641–144644). The GOB stores damage base 109 and Blind8 before any sourced influence. Exact damage/duration source and full selection/deflection checks remain open. The positive 287 is proved; 501 lost once to 261's named move in retained ChillingInMara line 24523, but no independent ordinary 501-deflection render was identified."
+    },
+    "502": {
+      "family": "dual-pistol-whip-execution-queues",
+      "checks": {
+        "choreography": {
+          "source": "Retained 502 moves select 9532 with 140-unit pair spacing. 9525 appears at 390 units (AgentsAndIntPortingSyncHardline line 20736), and in independent ProxyM2 rounds at 270/310/390. Existing ordinary 502 non-landing view renders DS versus DS 3418 (ProxyM2 line 280884) or DS versus WS 3864 (ChillingInMara line 45079).",
+          "runtime": "The ordinary timed interlock route chooses 9532 at the emitted 140-unit pose and retains the existing 9525 selection elsewhere. The non-landing path uses the ordinary style exchange. At-rest casting produces no queued round.",
+          "test": "PistolSpecialRoundUsesTheMoveForItsEmittedPairPose checks the actual serialized 9532, the 9525 fallback and the ordinary exchange. Stock f808b849 showed an ordinary round during the four-second cast, then a queued 9532 after completion, and separately confirmed no queued round at rest. The native run did not sample a queued miss. https://github.com/kylebrussell/mxo-hd/pull/995#issuecomment-7105522085"
+        },
+        "native-family": {
+          "source": "Current player GOB 502 specifies a four-second Handguns/dual-handgun cast, with CastWhenUsed 2. The two retained poses independently identify its interlock success moves.",
+          "runtime": "The selected original opponent and fight survive the timed cast; a separately admitted at-rest cast keeps the direct route. The fixture replays retained Close Combat and Handguns only in its bootstrap.",
+          "test": "Stock f808b849 gave its first 80 b9 f6 01, debited 35 IS in both stages, started the interlock queue only after 4 s, landed 9532 and later a direct at-rest cast. Verified own 10 s and family689 5 s. https://github.com/kylebrussell/mxo-hd/pull/995#issuecomment-7105522085"
+        }
+      },
+      "note": "Native damage was 91 in interlock and 66 at rest, with 522 −34 for eight seconds on both. Historical player DrSmith 502 gives 620 dealt and −20 resisted, and the same recipient gets paired 522 −34 records at lines 140405/141797 and 145163/145774 of the AfterWhoruNeo two-person log. TheBruceter gives 753 and +3 resisted in Proxy 008 line 40599. Special Agent casts supply a different 1010 −44 for eight seconds (ZombiesPortingEtc lines 5622/6500 and 9946/10733), independently tied to damage chat at 5647/9984. Current GOB has two separate 40% input modifiers, 522 −27 and 1010 −31. This evidence does not resolve the original proc branches, either stat magnitude, or any at-rest deflection contest. The original damage, distinct stat/proc behavior, source parity, targeting and complete behavior tests stay open."
+    }
+  }
+}
