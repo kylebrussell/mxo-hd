@@ -1,0 +1,39 @@
+{
+  "abilities": {
+    "250": {
+      "checks": {
+        "damage": {
+          "source": "GOB 250 stores fixed Ballistic 26.",
+          "runtime": "Both timed routes consume the fixed base, active Submachine Guns and linked Ballistic influence, then typed target resistance.",
+          "test": "StarterGunmanShotDamageTests tests the stored base; ControlledBurstBindsItsEligibleTargetAndConsumesTypedResistance tests the typed result. Stock landed 29 and raw29/final26 through stat181 +20. https://github.com/kylebrussell/mxo-hd/pull/914#issuecomment-7092713226"
+        },
+        "controls": {
+          "source": "GOB 250 gives a landed 40% chance to Enrage for eight seconds. Enraged prevents Withdraw.",
+          "runtime": "The landed branch applies linked 250/93 and 93 records. The shared status blocks Withdraw and clears both records with one end message.",
+          "test": "ConditionalControlTests exercises both sides of the 40% roll. Stock saw two natural paired eight-second stacks and an active-versus-expired 0x44 Withdraw comparison, without an unrelated 734 immunity timer. https://github.com/kylebrussell/mxo-hd/pull/914#issuecomment-7092713226"
+        },
+        "choreography": {
+          "source": "The named stock Controlled Burst success is 21082. The shipped standard style exchange supplies the ordinary miss or counter when the queued attack loses.",
+          "runtime": "An interlock win sends 21082. A loss sends the ordinary round without damage or a modifier from 250. The free-cast route stays outside interlock.",
+          "test": "ControlledBurstMissPublishesTheOrdinaryStyleRound verifies the miss dispositions. Stock witnessed a loss and 20496 counter, matched 21082 hits and the separate direct hit with no round. https://github.com/kylebrussell/mxo-hd/pull/914#issuecomment-7092713226"
+        },
+        "targeting": {
+          "source": "GOB 250 requires an eligible dual-SMG opponent and supports an out-of-combat cast as well as an interlock cast.",
+          "runtime": "Cast completion validates the original hostile view and spawn, weapon, range and sight, and the same active fight for a queued attack.",
+          "test": "ControlledBurstBindsItsEligibleTargetAndConsumesTypedResistance and ControlledBurstQueuesAgainstTheOriginalInterlock cover original-target, stale, range, weapon, sight and fight lifecycle cases. Stock used the same hostile for rejected, landed and at-rest routes. https://github.com/kylebrussell/mxo-hd/pull/914#issuecomment-7092713226"
+        },
+        "source-parity": {
+          "source": "GOB 250 gives four seconds of cast, 30 IS, 10/5 seconds of reuse in group689, a Ballistic base of 26 and a conditional eight-second Enrage.",
+          "runtime": "The timed cast queues against the original fight or resolves directly from rest. The stock-compatible miss uses an ordinary style round.",
+          "test": "The stock run observed the 4 s, 30 IS, 10/5 s timers, no early queue, animation 21082 and ordinary miss, both typed outcomes and a direct hit from rest. https://github.com/kylebrussell/mxo-hd/pull/914#issuecomment-7092713226"
+        },
+        "behavior-tests": {
+          "source": "GOB 250 stores hit, weapon and target rules, timed cost/reuse, both cast routes and a conditional Enraged term.",
+          "runtime": "The normal handler validates and binds the cast, applies typed influence and resistance once, chooses landed versus ordinary interlock presentation and uses the shared Enraged gate.",
+          "test": "The named admission, damage, ordinary miss and probability tests complement the stock two-route cast, record pairs, reachability, cost/reuse and Withdraw lifecycle. https://github.com/kylebrussell/mxo-hd/pull/914#issuecomment-7092713226"
+        }
+      },
+      "note": "The documented miss policy uses the ordinary stock style exchange; the original dedicated miss resource was not recovered."
+    }
+  }
+}
