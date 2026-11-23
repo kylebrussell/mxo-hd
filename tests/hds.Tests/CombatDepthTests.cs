@@ -165,7 +165,9 @@ public class CombatDepthTests
 
         npc.setCombatTarget(player);
         Assert.True(npc.TryRetaliate(20.5, 4.5));
-        npc.CapturedEvasion.ReleasePet(pet);
+        CoderPets.SetStance(pet, CoderPets.Stance.Passive);
+        Assert.Null(pet.Target);
+        Assert.False(npc.CapturedEvasion.HasEngagedPet);
         npc.RemoveCombatant(player);
         Assert.True(npc.TryRetaliate(21, 3, pet));
     }

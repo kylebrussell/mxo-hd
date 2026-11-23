@@ -5,7 +5,7 @@ using MxoHd.PacketResearch;
 
 namespace NativeQa.Modes;
 
-public sealed class PowerBoostPetEntryMode : NativeQaMode
+public class PowerBoostPetEntryMode : NativeQaMode
 {
     private const int X = 97619, Y = 695, Z = 10761, CasterX = 97769, WatcherZ = 10911, Level = 18;
     private const ushort Coder = 1008, Proxy = 28, Power = 25;
@@ -13,11 +13,25 @@ public sealed class PowerBoostPetEntryMode : NativeQaMode
     // Complete PR603 Remote Proxy 2.0 and PR619 Power Boost self-use frames.
     private const string StockProxy = "80b91c00000000000000000000000000000000000000000000000000585ca80001000000086b0000000000";
     private const string StockBoost = "80b91900000000000000000000000000000000000000000000000000ffff7f7f00000000086b0000000000";
+    private const string StockAggressive = "81 7c fe 05 01", StockPassive = "81 7c fe 05 02";
     private static readonly ushort[] Abilities = StockAbilityProfile.Profile(2, 17, Coder, Proxy, Power).Order().ToArray();
     private static readonly int Memory = Abilities.Sum(AbilityMemory.Cost);
+    private readonly bool useAggressiveStance;
 
-    public override string Name => "ability-parity-power-boost-pet-entry";
-    public override NativeQaModePlan Plan { get; } = new(Abilities, CasterX, Z,
+    public PowerBoostPetEntryMode() : this(useAggressiveStance: false) { }
+
+    protected PowerBoostPetEntryMode(bool useAggressiveStance)
+    {
+        this.useAggressiveStance = useAggressiveStance;
+        Plan = BuildPlan(useAggressiveStance);
+    }
+
+    public override string Name => useAggressiveStance
+        ? "ability-parity-power-boost-aggressive-entry"
+        : "ability-parity-power-boost-pet-entry";
+    public override NativeQaModePlan Plan { get; }
+
+    private static NativeQaModePlan BuildPlan(bool aggressive) => new(Abilities, CasterX, Z,
         Array.Empty<string>(), new[] { $"UPDATE char_abilities SET level=LEAST(level,{Level}) WHERE char_id=110" },
         new[]
         {
@@ -30,13 +44,19 @@ public sealed class PowerBoostPetEntryMode : NativeQaMode
             ["MXO_SIMULACRUM_QA_HOLD_IS"] = "1",
             ["MXO_MOB_CORPSE_SECONDS"] = "3", ["MXO_MOB_RESPAWN_SECONDS"] = "8"
         }, extraQaMetadata: new() { ["ScopedStockRows"] = "25", ["NativeCloseableRows"] = 1, ["MemoryUsed"] = Memory },
-        readyMessages: new[]
+        readyMessages: new[] { Setup }.Concat(aggressive ? new[]
         {
-            $"L{Level}, {Memory}/{AbilityMemory.ForLevel(Level)} with all prerequisites. CSR ({CasterX},{Y},{Z}) faces the shielded Crossbones Tar ({X},{Y},{Z}); QAFriend observes from ({X},{Y},{WatcherZ}). All stands and the Proxy spawn are on clear outdoor NAV. Page 2 slots 1 Coder, 2 Remote Proxy 2.0, 3 Power Boost. Use 1 then 2 with selection clear. The fixture selects a L7 Karate Simulacrum with 337 HP.",
+            "Select Crossbones Tar and click Aggressive in the Simulacra window. Save the full stock 81 7c. Expect 'Karate Simulacrum assists against Crossbones Tar' and one [PET ENTRY] force519=0, 100 vs 110, resisted shield 255->166. Press Passive within 3 s. Require one fresh meter update, no HP loss on either actor, and no repeat while Passive.",
+            "Clear selection and use slot 3 (50 IS, 4 s cast, 8 s reuse). Select the same Tar and click Aggressive again. Expect force519=40, 140 vs 110, admitted with shield still 166 and reciprocal HP loss on the same NPC and pet. Click Passive. Wait at least 4 s: no later hits, meter updates or retaliation. Do not use Attack in either stage."
+        } : new[]
+        {
             "Select Crossbones Tar and click Attack in the Simulacra window. Retain the full stock 81 7b. At contact, [PET ENTRY] force519=0 force=100 evade=110 resisted shield=255->166. Press stock Stay within 3 s of that first line, before Attack retries. Require exactly one refusal and one meter update. Crossbones and the same pet keep their HP, and 46 is absent.",
             "Clear selection and press slot 3. Expect 50 IS, 4 s cast, 8 s reuse, +9 melee/ballistic for 300 s. Select the same Crossbones Tar and press pet Attack, then Stay once both hit directions appear. [PET ENTRY] force519=40 force=140 evade=110 admitted shield=166. No shield debit. Target HP falls and [PET RETALIATION] reduces the same pet's HP. QAFriend gets both actual view HP changes.",
             "With the buff still present, use ?weaken 1 and stock pet Attack to kill the Tar. Wait for a fresh view after eight seconds. The old order ceases and the fresh shield starts at ff. Remain in world until 300 seconds have passed from the Power Boost landing. With the same Karate pet, select the fresh Tar and click stock Attack once more. Expect one new force519=0 refusal and one 255->166 meter update, no HP damage. Press Stay within 3 s."
-        });
+        }).ToArray());
+
+    private static string Setup =>
+        $"L{Level}, {Memory}/{AbilityMemory.ForLevel(Level)} with all prerequisites. CSR ({CasterX},{Y},{Z}) faces the shielded Crossbones Tar ({X},{Y},{Z}); QAFriend observes from ({X},{Y},{WatcherZ}). All stands and the Proxy spawn are on clear outdoor NAV. Page 2 slots 1 Coder, 2 Remote Proxy 2.0, 3 Power Boost. Use 1 then 2 with selection clear. The fixture selects a L7 Karate Simulacrum with 337 HP.";
 
     public override async Task<byte[]> AfterStartAsync(NativeQaBootstrapContext context)
     {
@@ -80,19 +100,33 @@ public sealed class PowerBoostPetEntryMode : NativeQaMode
         var boostedFor = Stopwatch.StartNew();
         int hitsAt = observer.World.ViewSnapshot().Count;
         int pairAt = server.DebugLog().Length;
-        Attack(target);
+        Engage(target);
         await WaitLogAsync(pairAt, "force519=40 force=140 evade=110 admitted shield=166", "Power Boost admits the same pair");
         await observer.WaitUntilAsync(() => Health(observer, watchedNpc, hitsAt).Any(hp => hp < 337) &&
             Health(observer, watchedPet, hitsAt).Any(hp => hp < 337), "The observer sees reciprocal HP loss on this pair", TimeSpan.FromSeconds(24));
-        await StayAsync();
+        await StopAsync();
         Check.Equal(0, ShieldUpdateCount(observer, watchedNpc, hitsAt), "Successful forced entry leaves the shield meter untouched");
         Check.That(server.DebugLog()[pairAt..].Contains("[PET RETALIATION] attacker=Crossbones Tar", StringComparison.Ordinal),
             "The same NPC actually returns damage to its admitted pet");
+        if (useAggressiveStance)
+        {
+            Check.That(server.DebugLog()[pairAt..].Contains("Karate Simulacrum assists against Crossbones Tar", StringComparison.Ordinal),
+                "The boosted pair uses automatic target acquisition");
+            int passiveAt = server.DebugLog().Length;
+            await Task.Delay(TimeSpan.FromSeconds(CoderPets.AttackPeriodSeconds + 1));
+            string passiveLog = server.DebugLog()[passiveAt..];
+            Check.That(!passiveLog.Contains("Karate Simulacrum hits Crossbones Tar", StringComparison.Ordinal) &&
+                !passiveLog.Contains("[PET RETALIATION] attacker=Crossbones Tar", StringComparison.Ordinal),
+                "Passive ends the already-admitted automatic pair");
+            Check.Equal(0, actor.World.Problems.Count + observer.World.Problems.Count, "Aggressive and Passive view framing");
+            Console.WriteLine("AGGRESSIVE PET ENTRY PASS: the ordinary stance respects Evade, admits the boosted pair, and Passive stops both attacks.");
+            return Array.Empty<byte>();
+        }
 
         int weakenAt = server.DebugLog().Length;
         actor.SendChat("?weaken 1");
         await WaitLogAsync(weakenAt, "[DEV] Weakened 1 NPCs to 1 health", "Only the original Tar is wounded for respawn");
-        Attack(target);
+        Engage(target);
         var fresh = await FindNpcAsync(actor, target.SpawnId);
         var watchedFresh = await FindNpcAsync(observer, watchedNpc.SpawnId);
         CheckShield(fresh);
@@ -108,33 +142,39 @@ public sealed class PowerBoostPetEntryMode : NativeQaMode
         Console.WriteLine("POWER BOOST PET ENTRY PASS: rejected before damage, reciprocal stock attack, unchanged shield, and expired bonus rejected on the fresh NPC.");
         return Array.Empty<byte>();
 
-        void Attack(ViewCreation npc)
+        void Engage(ViewCreation npc)
         {
             string handle = WireFormat.ToHex(BitConverter.GetBytes(DuelPackets.Handle(npc.ViewId, npc.SpawnId)));
-            actor.World.SendRpcs(WireFormat.FromHex($"81 51 {handle}"), WireFormat.FromHex($"81 7b fe 02 {handle}"));
+            string order = useAggressiveStance ? StockAggressive : $"81 7b fe 02 {handle}";
+            actor.World.SendRpcs(WireFormat.FromHex($"81 51 {handle}"), WireFormat.FromHex(order));
         }
 
-        async Task StayAsync()
+        async Task StopAsync()
         {
             int after = server.DebugLog().Length;
-            actor.SendRpc("81 7a fe 00");
-            await WaitLogAsync(after, "command Stay", "Stock Stay reaches the ordinary owned pet");
+            actor.SendRpc(useAggressiveStance ? StockPassive : "81 7a fe 00");
+            string order = useAggressiveStance ? "command Mode target 00000000 value 2" : "command Stay";
+            await WaitLogAsync(after, order, "The stock stop order reaches the ordinary owned pet");
         }
 
         async Task RefusedAsync(ViewCreation npc, ViewCreation observerNpc, ViewCreation observerPet)
         {
             int before = server.DebugLog().Length;
             int views = observer.World.ViewSnapshot().Count;
-            Attack(npc);
+            Engage(npc);
             await WaitLogAsync(before, "force519=0 force=100 evade=110 resisted shield=255->166", "The unboosted pet entry is resisted");
-            await StayAsync();
+            await StopAsync();
             await EvidenceRetestWire.ViewSinceAsync(observer, views, observerNpc.ViewId, "04 80 80 80 80 10 a6");
+            if (useAggressiveStance) await Task.Delay(TimeSpan.FromSeconds(CoderPets.AttackPeriodSeconds + 1));
             Check.Equal(1, ShieldUpdateCount(observer, observerNpc, views), "Exactly one fresh meter update after the refusal");
             Check.That(!Health(observer, observerNpc, views).Any() && !Health(observer, observerPet, views).Any(),
                 "A refused attack sends no damage to either actor");
             string[] attempt = server.DebugLog()[before..].Split('\n');
+            if (useAggressiveStance)
+                Check.That(attempt.Any(line => line.Contains("Karate Simulacrum assists against Crossbones Tar", StringComparison.Ordinal)),
+                    "The resisted pair uses automatic target acquisition");
             Check.Equal(1, attempt.Count(line => line.Contains("[PET ENTRY]", StringComparison.Ordinal)),
-                "Exactly one entry refusal before Stay");
+                "Exactly one entry refusal before the stock stop order");
             Check.That(!attempt.Any(line => line.Contains("[PET RETALIATION] attacker=Crossbones Tar", StringComparison.Ordinal)),
                 "The target cannot retaliate against a pet whose entry was refused");
         }
@@ -191,4 +231,9 @@ public sealed class PowerBoostPetEntryMode : NativeQaMode
                 yield return BitConverter.ToUInt16(frame, group + 1);
         }
     }
+}
+
+public sealed class PowerBoostAggressivePetEntryMode : PowerBoostPetEntryMode
+{
+    public PowerBoostAggressivePetEntryMode() : base(useAggressiveStance: true) { }
 }

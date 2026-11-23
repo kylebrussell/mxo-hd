@@ -93,7 +93,7 @@ namespace hds
             }
         }
 
-        // Reached only after a melee simulacrum's ordinary Attack order moves it into reach.
+        // Reached only after an ordered or automatically acquired melee simulacrum target is within reach.
         internal bool TryOpenPet(CoderPets.Pet pet, Mob target, double now)
         {
             lock (WorldServer.Clients)
