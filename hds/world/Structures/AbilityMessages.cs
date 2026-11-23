@@ -92,10 +92,11 @@ namespace hds
             return Build(stringId, toCaster, ability, 0, TypeAbility, caster, target, values);
         }
 
-        // Vector26 SSEQ42 sends the active root's break chance as the first argument.
-        internal static byte[] ImmobilizingShotRoot(TimedEffects.Active state, bool toCaster, string caster, string target)
+        // Vector26 SSEQ42 sends the break chance as the first argument. Both shots use
+        // EnableRootWithChance and the same authored activation strings.
+        internal static byte[] RootWithBreakChance(TimedEffects.Active state, bool toCaster, string caster, string target)
         {
-            if (state.Parent != 254 || state.Target != TempMods.RootedAbility || state.Break != TempMods.BreakRule.Chance)
+            if ((state.Parent != 176 && state.Parent != 254) || state.Target != TempMods.RootedAbility || state.Break != TempMods.BreakRule.Chance)
                 return null;
             return AboutAbility(toCaster ? RootCaster : RootTarget, toCaster, state.Parent, caster, target, state.BreakChance, 0);
         }

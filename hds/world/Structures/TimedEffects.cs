@@ -873,12 +873,12 @@ namespace hds
             {
                 if (m.Proc == TempMods.Proc.State && !effect.Virus)
                 {
-                    if (AbilityMessages.ImmobilizingShotRoot(m, false, caster, Name) is { } rootOutput)
+                    if (AbilityMessages.RootWithBreakChance(m, false, caster, Name) is { } rootOutput)
                     {
                         client.messageQueue.addRpcMessage(rootOutput);
                         if (m.Caster is WorldClient source && source != client)
                         {
-                            source.messageQueue.addRpcMessage(AbilityMessages.ImmobilizingShotRoot(m, true, caster, Name));
+                            source.messageQueue.addRpcMessage(AbilityMessages.RootWithBreakChance(m, true, caster, Name));
                             source.FlushQueue();
                         }
                         continue;
@@ -1060,7 +1060,7 @@ namespace hds
                 uint flag = CombatInterlock.TacticStateFlag(m.Target);
                 if (flag != 0) mob.ApplyCondition(flag, m.Seconds);
                 if (effect.Virus) continue;
-                if (AbilityMessages.ImmobilizingShotRoot(m, true, casterName, name) is { } rootOutput)
+                if (AbilityMessages.RootWithBreakChance(m, true, casterName, name) is { } rootOutput)
                 {
                     Tell(caster, rootOutput);
                     continue;
