@@ -1,0 +1,18 @@
+{
+  "abilities": {
+    "25": {
+      "checks": {
+        "stats": {
+          "source": "Power Boost 25 stores character-level ×0.5 Melee 159 and Ballistic 171 and fixed Force Combat 519 +40, all for 300 seconds on the owned pet.",
+          "runtime": "CoderPets.ApplyPowerBoost snapshots all three from the catalog on the selected live pet. Melee and ranged Proxy damage consume their own modifier, and modeled live melee entry against the captured NPC Evade shield samples the active 519 bonus.",
+          "test": "PR649 verifies +9 and actual melee hits at L18. PR669 verifies stock Rifle 16→17 with the matching +9 Ballistic modifier. PR946 stock verifies one 100/110 refusal, admitted 140/110 during the owned +40 generation with the shield intact, and a fresh 100/110 refusal after 300 seconds. PR953 reproduces both results through stock Aggressive with no Attack order. CoderPetTests.PowerBoostAppliesFixedForceCombatToTheActualPetUntilExpiry verifies the snapshot and boundary. https://github.com/kylebrussell/mxo-hd/pull/649#issuecomment-7062104777 https://github.com/kylebrussell/mxo-hd/pull/669#issuecomment-7064848997 https://github.com/kylebrussell/mxo-hd/pull/946#issuecomment-7095975660 https://github.com/kylebrussell/mxo-hd/pull/953#issuecomment-7096532317"
+        },
+        "behavior-tests": {
+          "source": "GOB 25 admits an owned simulacrum out of combat, spends 50 IS, casts for four seconds, starts eight-second reuse and applies the 300-second Melee, Ballistic and Force Combat records.",
+          "runtime": "The normal cast checks loaded membership, same live owned summon, sight and reach before charge and completion. The boost affects that summon and expires with its original lifetime. Ordered and Aggressive entry share the captured shield's per-pair and NPC action-clock checks; ordinary Passive or Stay ends the applicable action.",
+          "test": "PR619 stock verifies foreign-target refusal and correct own-pet application. PR946 witnesses the normal debit, cast, own reuse, ordered reciprocal damage, reset/lifetime fencing and natural expiry. PR953 verifies both automatic entry outcomes through 81 7c only and stops the pair using Passive. CombatDepthTests.PlayerWithdrawalPreservesTheClockWhileTheAdmittedPetRemains covers priority and the shared return clock. https://github.com/kylebrussell/mxo-hd/pull/619 https://github.com/kylebrussell/mxo-hd/pull/946#issuecomment-7095975660 https://github.com/kylebrussell/mxo-hd/pull/953#issuecomment-7096532317"
+        }
+      }
+    }
+  }
+}

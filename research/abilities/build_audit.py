@@ -187,7 +187,7 @@ DATA_MINING = {
 # Coder simulacra executors (hds/world/Structures/CoderPets.cs; evidence and choices in docs/CODER-PETS.md)
 _summon = 'NPC_BASE_SIMULACRA spawn (retail creation layout), owned; native8176/77/78 window registration/removal/status; follow/assist/orders 81 7a-7c; dies; dismiss/resummon/logout/zone removal; level sim_clamp {}-{}; HP retail 337@7/1950@50, interpolated; damage = NPC round model (choice)'
 PETS = {
-    25: 'own live pet within10m, noncombat,50IS/4s;300s caster-level snapshot x0.5 melee159/ballistic171 percentage influence on Proxy hits only; ForceCombat519=40 has no consumer (partial)',
+    25: 'own live pet within 10 m out of combat; 50 IS/4 s/8 s; 300 s caster-level x0.5 Melee 159 and Ballistic 171 influence on Proxy damage, fixed Force Combat 519 +40 in modeled melee entry against the captured NPC Evade shield; stock Attack, Aggressive, Passive and expiry verified',
     26: 'loaded, outside combat; live opposing player pet in sight within 16m through its owner; fixed 13000 type5, ordered lethal impact and ordinary pet death',
     **{a: _summon.format(lo, hi) + '; random proxy sheet' for a, lo, hi in ((27, 1, 4), (29, 8, 17), (586, 18, 34), (594, 35, 50))},
     28: _summon.format(4, 7) + '; random proxy sheet; prepares the replacement before retiring the previous summon and publishes one replacement; stock Deactivate removes the current proxy',
