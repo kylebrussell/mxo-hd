@@ -355,6 +355,61 @@ public class TimedEffectsTests
     }
 
     [Fact]
+    public void ImmobilizingShotSendsTheCapturedRootMessageAndExistingReleaseMessage()
+    {
+        const ushort ability = 254;
+        const string casterName = "Korron";
+        const string victimName = "AfterWhoruNeo";
+        var caster = NewClient();
+        caster.playerInstance = new PlayerCharacter();
+        caster.playerInstance.CharacterName.setValue(casterName);
+        var victim = NewClient();
+        victim.playerInstance = new PlayerCharacter();
+        victim.playerInstance.CharacterName.setValue(victimName);
+        var subject = TimedEffects.ForPlayer(victim);
+        double now = TimeUtils.GetSimTimeSeconds();
+        var init = Assert.Single(AbilityCatalog.Find(ability).Modifiers,
+            modifier => modifier.Text("StatModInitFunc") == "EnableRootWithChance");
+        Assert.Equal(AbilityMessages.RootCaster, init.Number("ActivationStringSubject"));
+        Assert.Equal(AbilityMessages.RootTarget, init.Number("ActivationStringTarget"));
+        Assert.True(TempMods.TryGet(ability, out var immobilizing));
+        try
+        {
+            TimedEffects.Apply(subject, immobilizing, now, caster, casterName);
+            Assert.Equal("8167170020005201007c00fe000000000000003000000807004b6f72726f6e000e00416674657257686f72754e656f0002003200000000000000",
+                Assert.Single(Rpcs(victim), rpc => rpc.StartsWith("8167", StringComparison.Ordinal)));
+            Assert.Equal(Hex(AbilityMessages.AboutAbility(AbilityMessages.RootCaster, true, ability, casterName, victimName, 50, 0)),
+                Assert.Single(Rpcs(caster)));
+            Assert.False(ControlActions.CanMove(subject.Effects));
+
+            TimedEffects.RunDue(now + 8.01);
+            Assert.Equal("816717001a003c00007a0100000000000000002a0000080100000e00416674657257686f72754e656f0001005501007a",
+                Assert.Single(Rpcs(victim), rpc => rpc.StartsWith("8167", StringComparison.Ordinal)));
+            Assert.Empty(Rpcs(caster));
+            Assert.True(ControlActions.CanMove(subject.Effects));
+        }
+        finally { TimedEffects.Clear(subject); }
+    }
+
+    [Fact]
+    public void ImmobilizingShotUsesTheSameShippedCasterMessageAgainstAnNpc()
+    {
+        var caster = NewClient();
+        caster.playerInstance = new PlayerCharacter();
+        caster.playerInstance.CharacterName.setValue("Korron");
+        var mob = new Mob();
+        mob.setName("Target");
+        var subject = TimedEffects.ForMob(mob);
+        try
+        {
+            Assert.True(TimedEffects.ApplyToMob(caster, mob, 33, 254));
+            Assert.Equal(Hex(AbilityMessages.AboutAbility(AbilityMessages.RootCaster, true, 254, "Korron", "Target", 50, 0)),
+                Assert.Single(Rpcs(caster)));
+        }
+        finally { TimedEffects.Clear(subject); }
+    }
+
+    [Fact]
     public void PlayerGetsRecordsOnAndOff()
     {
         // Vector on Morpheuzzz (morpheuzzz_001 1829): Powerless 7.44 s (Determination had cut it), ViralDeflection -60 for 30 s

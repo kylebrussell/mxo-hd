@@ -36,6 +36,7 @@ namespace hds
         public const UInt32 ConfuseCaster = 0xc6000199;     // "Your %1z confuses %3s!"
         public const UInt32 EnrageCaster = 0xc60013cf;      // "Your %1z enrages %3s."
         public const UInt32 EnrageTarget = 0xc60013d0;      // "%2s's %1z enrages you!"
+        public const UInt32 RootCaster = 0x7c00014d;        // Immobilizing Shot StatModifier/ActivationStringSubject
         public const UInt32 RootTarget = 0x7c000152;        // ID_CLIENT_STATE_ENABLE_ROOT_TARGET "%2s's %1z has locked you in place!"
         public const UInt32 StateEnded = 0x7a00003c;        // ID_CLIENT_STATE_DISABLE_TARGET "You are no longer %4z."
 
@@ -89,6 +90,14 @@ namespace hds
             params Int32[] values)
         {
             return Build(stringId, toCaster, ability, 0, TypeAbility, caster, target, values);
+        }
+
+        // Vector26 SSEQ42 sends the active root's break chance as the first argument.
+        internal static byte[] ImmobilizingShotRoot(TimedEffects.Active state, bool toCaster, string caster, string target)
+        {
+            if (state.Parent != 254 || state.Target != TempMods.RootedAbility || state.Break != TempMods.BreakRule.Chance)
+                return null;
+            return AboutAbility(toCaster ? RootCaster : RootTarget, toCaster, state.Parent, caster, target, state.BreakChance, 0);
         }
 
         /// <summary>A damage line (type 07): "Your %1z does %4I damage to %3s." with [done, raw - done].</summary>
