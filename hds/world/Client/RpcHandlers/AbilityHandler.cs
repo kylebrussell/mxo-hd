@@ -42,7 +42,8 @@ namespace hds
             bool selectedArtilleristArea = AbilityID == 336 || AbilityID == 337;
             bool selectedDespoilerArea = AbilityID == 399 || AbilityID == 400 || AbilityID == 404;
 
-            bool needsLoadout = AbilityID == 43 || AbilityID == 48 || AbilityID == 69 || AbilityID == AbilityAuras.CombatAuraTwo;
+            bool starterTargetedControl = AbilityID == 43 || AbilityID == 48;
+            bool needsLoadout = starterTargetedControl || AbilityID == 69 || AbilityID == AbilityAuras.CombatAuraTwo;
             if (!CoderPets.IsCastLoaded(Store.currentClient, AbilityID) ||
                 ((needsLoadout || CoderPets.StarterSummonRequiresLoaded(AbilityID)) &&
                     !AbilityPassives.IsLoaded(Store.currentClient, AbilityID)))
@@ -180,7 +181,7 @@ namespace hds
             }
 
             // These Hacker controls and debuffs require a live selected enemy.
-            bool hostileControl = AbilityID == 43 || AbilityID == 48 || AbilityID == 315;
+            bool hostileControl = starterTargetedControl || AbilityID == 315;
             bool starterMovementDebuff = AbilityID == 40 || AbilityID == 41 || AbilityID == 86;
             ushort? movementDebuffTargetSpawn = null;
             if (hostileControl || starterMovementDebuff || AbilityID == 66 || AbilityID == 69 ||
@@ -381,7 +382,7 @@ namespace hds
                 }
             }
 
-            bool starterRangedControl = AbilityID == 43 || AbilityID == 48 || hinderingShot || selectedTimedGun;
+            bool starterRangedControl = starterTargetedControl || hinderingShot || selectedTimedGun;
             if ((selectedHostileCast || starterMovementDebuff || selectedCoderCast || starterRangedControl || AbilityID == 69) &&
                 !AbilityTargets.WithinSelectionRange(Store.currentClient, AbilityID, currentTargetViewId))
             {
@@ -392,12 +393,17 @@ namespace hds
                 return;
             }
 
-            bool starterSelectedViralControl = AbilityID == 43 || AbilityID == 48 || AbilityID == 69;
+            bool starterSelectedViralControl = starterTargetedControl || AbilityID == 69;
             ushort? viralControlTargetSpawn = starterSelectedViralControl
                 ? (packet.Length == 41 ? BitConverter.ToUInt16(packet, 4) :
                     (ushort?)Store.currentClient.viewMan.getViewById(currentTargetViewId)?.spawnId)
                 : null;
             var definition = AbilityCatalog.Find(AbilityID);
+            if (starterTargetedControl && !AbilityTargets.HasSelectionSight(Store.currentClient, definition, currentTargetViewId))
+            {
+                Deny(AbilityID, "The target is not in sight.", AbilityRefusals.TargetNotInSight, sendServerText: false);
+                return;
+            }
             if (selectedHackerCast)
             {
                 var caster = Store.currentClient;

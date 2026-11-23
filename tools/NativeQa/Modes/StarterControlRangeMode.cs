@@ -39,7 +39,8 @@ public sealed class StarterControlRangeMode : NativeQaMode
             $"Rank cap {Rank}, level {Level} for the combined {Loadout.Sum(AbilityMemory.Cost)}/{AbilityMemory.ForLevel(Level)} memory profile. Verified outdoor NAV: CSR ({X},{Y},{Z}) faces the QA Sight Target at ({TargetX},{Y},{Z}); same-org QAFriend ({AllyX},{Y},{Z}). Handgun in hand. Page 2 slots 1–5 Hacker Style, Handguns, Disrupt Inputs, Freeze System, Hindering Shot.",
             "Run ?cd foundations-sight-pick and select QA Sight Target 2 m east. Run ?cd foundations-sight-far while selected. Try 43 and 48 with Hacker Style and 130 with Handguns. At the printed NAV stand the target exceeds 16/20/20 m. Expect no IS, cast, reuse or effects. If sent, a stock request gets reason 34. Keep selection without pressing Escape.",
             "Return to the 2 m stand with ?cd foundations-sight-pick. With Handguns, /target QAFriend and try 130. If the request reaches the server expect the live enemy notice and no cost, cast or reuse. Reselect QA Sight Target and test 130 at rest first. Expect damage 9, [MODIFIER] 115/877/878 -50 and 519 -10 for 8 s, and 20 IS with 8 s reuse.",
-            "Keep selecting QA Sight Target on clear ground. With Hacker Style test 43 for Blind 16 s, then 48 for Pacify 6 s and viral resistance -20 for 12 s. Each has a 2 s cast and 43 s own reuse. The fixture fixes eligible viral draws. No PvP rounds or max [VITALS] changes."
+            "Keep QA Sight Target selected, switch back to Hacker Style and run ?cd sb. Try Disrupt Inputs and Freeze System across the mapped gap. Both should refuse locally or with reason 9 if sent, with no IS, cast, reuse or effects. Return with ?cd sp and keep the same target selected.",
+            "On clear ground, 43 costs 10 IS and applies Blind for 16 s. Then 48 costs 26 IS and applies Pacify for 6 s plus viral resistance -20 for 12 s. Each has a 2 s cast and 43 s own reuse. The fixture fixes eligible viral draws. No PvP rounds or max [VITALS] changes."
         });
 
     public override async Task<byte[]> AfterStartAsync(NativeQaBootstrapContext context)
@@ -50,6 +51,8 @@ public sealed class StarterControlRangeMode : NativeQaMode
         foreach (int x in new[] { X, TargetX, AllyX })
             Check.That(NavMesh.Locate(1, x, Y, Z, out var nav) && !nav.indoors && Math.Abs(nav.floorY + 95 - Y) < 1,
                 $"Outdoor range check stand ({x},{Y},{Z})");
+        Check.That(NavMesh.HasSightPath(1, X, Y, Z, TargetX, Y, Z) && !NavMesh.HasSightPath(1, AllyX, Y, Z, TargetX, Y, Z),
+            "The same hostile view has distinct clear and blocked stands within both cast ranges");
 
         var friend = await HeadlessPlayer.LoginAsync(context.Address, "QAFriend", "QAFriend", stockCharacterLoad: true);
         context.Helpers.Add(friend.Handle, friend);
@@ -83,6 +86,12 @@ public sealed class StarterControlRangeMode : NativeQaMode
         await LandAsync(Samples[2]);
         actor.SendRpc(StarterHackerViralSightMode.StockStyle);
         await actor.WaitForViewUpdateAsync(2, "02 80 80 80 80 80 10 ee 03 00 00");
+        actor.SendChat("?cd sb");
+        await actor.WaitForTextAsync("QA Sight Target is 6 m west across the mapped gap");
+        foreach (var sample in Samples.Where(sample => sample.Id != Hindering))
+            await RefusedAsync(actor, sample.Id, WithHandle(sample.Capture, handle), AbilityRefusals.TargetNotInSight);
+        actor.SendChat("?cd sp");
+        await actor.WaitForTextAsync("Select QA Sight Target 2 m ahead");
         await LandAsync(Samples[0]);
         await LandAsync(Samples[1]);
         Check.Equal(0, actor.World.Problems.Count + friend.World.Problems.Count, "Range and live recipient framing");
