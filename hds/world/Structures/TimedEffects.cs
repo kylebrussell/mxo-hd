@@ -735,11 +735,12 @@ namespace hds
             TimedEffects.Track(this);
         }
 
-        public void UntrackBuff(UInt16 abilityId)
+        public void UntrackBuff(UInt16 abilityId, int generation)
         {
             lock (buffEnds)
             {
-                buffEnds.Remove(abilityId);
+                if (buffEnds.TryGetValue(abilityId, out var end) && end.Key == generation)
+                    buffEnds.Remove(abilityId);
             }
         }
 
