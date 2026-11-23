@@ -1,0 +1,23 @@
+{
+  "abilities": {
+    "376": {
+      "checks": {
+        "stats": {
+          "source": "Advanced Damage Resistance GOB 376 gives four loaded, indefinite learned-rank function 2 modifiers. Scale 0.1 supplies Melee Damage Bonus 1142 and Ballistic Damage Bonus 1139. Scale 0.24 supplies Thrown Resistance Bonus 1146 and Viral Resistance Bonus 1148. The four authored links are 159→1142, 171→1139, 1033→1146 and 157→1148. data/ability_catalog.json:160,162,173,378,989,1095,1098,1102,1104.",
+          "runtime": "Rank 19 publishes +1 to each damage channel and +4 to each resistance channel. Outgoing melee and ballistic special damage read the corresponding influence. Incoming thrown and viral damage each read their matching resistance bonus once.",
+          "test": "PR755 stock swaps Dedication for 376 under the memory cap and verifies the four rank-19 adds, removals and restores. Rank19AdvancedDamageResistanceRoundTripsFourTypedConsumers repeats that rank-19 376 loadout and exercises all four receivers while holding the other loaded passives and Hacker Style fixed. https://github.com/kylebrussell/mxo-hd/pull/755#issuecomment-7081754805"
+        },
+        "source-parity": {
+          "source": "The shipped 625ec512–625ec58a health-modifier slice builds the typed damage influence multiplier in binary32. The original GetDamageReductionValue script uses 4 × defender level + 20 as the armor range. The shipped ability catalog separately links each typed resistance to its bonus. docs/ABILITY-MODIFIERS.md:20. research/client-scripts/combat_calculations.py:198.",
+          "runtime": "The chosen damage policy multiplies existing typed special damage by 1 + linked influence / 100 in binary32 and truncates. The resistance policy established for Transmit Virus uses the shipped range to add truncated (4 × defender level + 20) × matching bonus / 100 to the existing armor rating before zero-baseline-normalized damage reduction. At rank 19 +4 produces 3 rating points in both linked incoming channels. The original engine's exact percentage-to-rating conversion remains unarchived. https://github.com/kylebrussell/mxo-hd/pull/643#issuecomment-7061064281",
+          "test": "Rank19AdvancedDamageResistanceRoundTripsFourTypedConsumers uses catalog-typed Cheap Shot and Body Shot for outgoing melee and ballistic damage, and Logic Blast and Paralyzing Throw for incoming viral and thrown damage. On equal-level deterministic test inputs the outgoing 200 becomes 201 and the incoming 1000 becomes 982, with both values restoring when archived. Incoming melee and ballistic stay at 1000. PR755 separately verifies the four rank-19 source records in the stock client. https://github.com/kylebrussell/mxo-hd/pull/755#issuecomment-7081754805"
+        },
+        "behavior-tests": {
+          "source": "GOB 376 defines passive modifier records while loaded and no separate activation cast.",
+          "runtime": "Ordinary Archive admission adds the four ranked records when memory permits. Archive unload removes them independently and reload restores all four. Only their corresponding outgoing and incoming effects change.",
+          "test": "The existing ability-parity-starter-hacker-defensive-passives bootstrap uses ordinary stock-format Archive to swap Dedication and 376, then separately unload and reload 376 with matching record transitions. The rank-19 consumer test checks archived, loaded, archived and reloaded paths in all four channels. PR755 independently observes the same stock Archive transitions. https://github.com/kylebrussell/mxo-hd/pull/755#issuecomment-7081754805"
+        }
+      }
+    }
+  }
+}
