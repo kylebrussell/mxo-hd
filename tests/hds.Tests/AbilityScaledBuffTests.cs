@@ -485,13 +485,15 @@ public class AbilityScaledBuffTests
     {
         var target = Client(50);
         Assert.True(AbilityBuffs.Apply(target, id));
+        // The expiry is registered after the start timestamp, during Apply.
+        double expiryUpperBound = TimeUtils.GetSimTimeSeconds() + seconds;
         var buff = target.playerData.activeBuffs[id];
         Assert.Equal(seconds, buff.Definition.Seconds);
         Assert.Equal(speed / 100f, buff.Definition.MovementScale);
         Assert.Equal(speed, AbilityStats.Player(target, 115));
         Assert.Equal(stealth, AbilityStats.Player(target, 877));
         Assert.Equal(stealth, AbilityStats.Player(target, 878));
-        TimedEffects.RunDue(buff.Started + seconds + .01);
+        TimedEffects.RunDue(expiryUpperBound + .01);
         Assert.Equal(0, AbilityStats.Player(target, 115));
         Assert.Equal(0, AbilityStats.Player(target, 877));
         Assert.Equal(0, AbilityStats.Player(target, 878));
