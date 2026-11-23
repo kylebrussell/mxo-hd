@@ -78,6 +78,7 @@ namespace hds
         internal const ushort SittingEffect = 671;
         internal const ushort HyperSpeed = 12;
         internal const ushort HyperSprint = 184;
+        internal const ushort SteadyAim = 442;
         public const int FamilyHyperDefence = 1, FamilyClassBuff = 2;
         internal const ushort ForceMultiplierUpgrade = 1091;
         internal const ushort UpgradeArtistUpgrade = 1095;

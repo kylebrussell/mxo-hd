@@ -41,7 +41,7 @@ namespace hds
         public static bool TryToggle(ushort id, int learnedLevel, out AbilityBuffs.Buff buff)
         {
             buff = null;
-            if (id != 1101 && id != 1102 && id != 13 && id != 16 && id != 442) return false;
+            if (id != 1101 && id != 1102 && id != 13 && id != 16 && id != AbilityBuffs.SteadyAim) return false;
             var entry = AbilityCatalog.Find(id);
             var mod = entry.Modifiers.Single(m => m.Number("WhenEnabled", -1) == 2 && m.Target != 0 &&
                 m.Text("StatModUpdateFunc") != "ISDrainWithAbilityDeactivation");

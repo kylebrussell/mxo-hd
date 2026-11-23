@@ -283,8 +283,8 @@ namespace hds
         {
             id = AbilityCatalog.Canonical(id);
             // Supported toggle term callbacks AddRecastTimer use their stored Value15, not an absent RecastTime.
-            if (id == 42 || id == 442) { cooldown = new Cooldown(15); return true; }
-            if (id == Stealth.MasterShadowAbility)
+            if (id == 42) { cooldown = new Cooldown(15); return true; }
+            if (id == AbilityBuffs.SteadyAim || id == Stealth.MasterShadowAbility)
             {
                 var term = AbilityCatalog.Find(id)?.Modifiers.SingleOrDefault(m =>
                     m.Text("StatModTermFunc") == "AddRecastTimer");
