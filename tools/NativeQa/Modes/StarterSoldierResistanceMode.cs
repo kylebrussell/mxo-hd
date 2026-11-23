@@ -69,8 +69,14 @@ public sealed class StarterSoldierResistanceMode : NativeQaMode
                 .All(need => archive.TryGetValue(need.Key, out ushort rank) && rank >= need.Value)),
             "The full ranked weapon and move profile fits in memory");
         var server = context.ActualServer!;
-        if (weaponAtLogin.HasValue) await CombatFixtureLoadout.VerifyWeaponAtLoginAsync(caster, weaponAtLogin.Value);
+        if (weaponAtLogin is > 0) await CombatFixtureLoadout.VerifyWeaponAtLoginAsync(caster, weaponAtLogin.Value);
         else await caster.EnterWorldAsync();
+        if (weaponAtLogin == 0)
+        {
+            var self = caster.World.CreationSnapshot().Last(view => view.ViewId == 2);
+            Check.That(!self.Attributes.TryGetValue("EquippedItemID", out var hand) || BitConverter.ToUInt32(hand) == 0,
+                "The stock own view starts unarmed");
+        }
         NativeQaReadiness.RequireNoAmbientAggro(server, caster);
         var dummy = await caster.WaitForViewNamedAsync(CombatFixtureLoadout.DummyName);
         CombatFixtureLoadout.AssertDummy(caster, dummy);
