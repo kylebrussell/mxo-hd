@@ -761,6 +761,12 @@ public class AbilityRefusalFeedbackTests:IDisposable
     [InlineData(343, "replacement", 0u)]
     [InlineData(401, "retreat", 0u)]
     [InlineData(403, "sight-loss", 0u)]
+    [InlineData(353, "empty", AbilityRefusals.InvalidTarget)]
+    [InlineData(353, "far", AbilityRefusals.TargetOutOfRange)]
+    [InlineData(353, "replacement", 0u)]
+    [InlineData(402, "far", AbilityRefusals.TargetOutOfRange)]
+    [InlineData(402, "blocked", AbilityRefusals.TargetNotInSight)]
+    [InlineData(402, "combat", AbilityRefusals.MustBeOutsideCombat)]
     public void SelectedFieldUsesTheAdmittedLiveSpawnAndCannotSplashAfterInvalidation(ushort id, string action, uint refusal)
     {
         string root = AppContext.BaseDirectory;
@@ -775,7 +781,7 @@ public class AbilityRefusalFeedbackTests:IDisposable
         if (action != "unloaded") caster.playerData.passives.Loaded[id] = 30;
         if (action != "style") caster.playerData.combatStyle = CombatStyles.HackerStyle;
         caster.playerInstance.OrganizationID.setValue((byte)1);
-        double farX = 21750 - 100 * (id == 343 ? 16 : id == 401 ? 13 : 15) - 1;
+        double farX = 21750 - 100 * AbilityCatalog.Find(id).Number("Ability/SelectionRange") - 1;
         caster.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(21750, 1095, 16150));
         var primary = Enter(target, 111, (byte)(action == "ally" ? 1 : 2), action == "far" ? farX : action == "blocked" ? 22350 : 21550);
         Enter(nearby, 112, 2, 21450);

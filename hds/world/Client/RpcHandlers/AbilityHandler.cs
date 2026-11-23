@@ -67,10 +67,11 @@ namespace hds
             }
 
             // These selected abilities bind a live enemy before the cast, including the centre of any splash.
-            bool selectedViralField = AbilityID == 343 || AbilityID == 401 || AbilityID == 403;
+            bool selectedViralField = AbilityID == 343 || AbilityID == 401 || AbilityID == 402 || AbilityID == 403;
             bool enrage = AbilityID == 588;
             bool selectedViralAttack = enrage || AbilityID == 53 || (AbilityID >= 57 && AbilityID <= 60) ||
-                AbilityID == 350 || AbilityID == 351 || AbilityID == 392 || AbilityID == 394 || AbilityID == 395 || AbilityID == 396 || selectedViralField;
+                AbilityID == 350 || AbilityID == 351 || AbilityID == 353 ||
+                AbilityID == 392 || AbilityID == 394 || AbilityID == 395 || AbilityID == 396 || selectedViralField;
             ushort? lockedDamageTargetSpawn = null;
             if (selectedViralAttack || selectedDespoilerArea)
             {

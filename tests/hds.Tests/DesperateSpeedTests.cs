@@ -169,6 +169,28 @@ public class DesperateSpeedTests
         }
     }
 
+    [Theory]
+    [InlineData(0, -1f)]
+    [InlineData(HyperSpeed, -.8f)]
+    public void BottleneckDebuffStopsBaseMovementWithoutDiscardingASeparateSpeedBuff(ushort speed, float scale)
+    {
+        var player = Client();
+        try
+        {
+            if (speed != 0) Assert.True(AbilityBuffs.Apply(player, speed));
+            Assert.True(TempMods.TryGet(402, out var effect));
+            var subject = TimedEffects.ForPlayer(player);
+            double start = TimeUtils.GetSimTimeSeconds();
+            TimedEffects.Apply(subject, effect, start);
+            Assert.Equal(scale, BitConverter.ToSingle(player.playerInstance.MovementScale.getValue()));
+            foreach (ushort stat in new ushort[] { 115, 877, 878 })
+                Assert.Equal(-125, Assert.Single(subject.Effects.Snapshot(), effect => effect.Parent == 402 && effect.Target == stat).Value);
+            TimedEffects.RunDue(start + 18.01);
+            Assert.Equal(speed == 0 ? 0f : .45f, BitConverter.ToSingle(player.playerInstance.MovementScale.getValue()));
+        }
+        finally { AbilityBuffs.RemoveAll(player); }
+    }
+
     [Fact]
     public void SprintStartAndRemovalPreserveTheActiveSlowContribution()
     {
