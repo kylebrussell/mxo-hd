@@ -1,0 +1,52 @@
+{
+  "families": {
+    "direct-impart-invisibility-stock": {
+      "representative": 629,
+      "result": "pass",
+      "head": "befe1bb192ef68faf46a86c25b04440dd543c4eb",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/1021#issuecomment-7112726183",
+      "scope": "InvisibilityDurationTests verifies loaded admission, overlap, modifiers, 120-second termination and Stand. Stock PR1021 measured 3.07 s and 0 IS, 120.27 s to natural term, aura shutdown, enemy concealment, ally view, early Detection release and explicit off with no further charge."
+    }
+  },
+  "abilities": {
+    "629": {
+      "family": "direct-impart-invisibility-stock",
+      "checks": {
+        "stealth-detection": {
+          "source": "GOB direct 629 stores a 3-second cast, zero IS, and 30-second reuse. InvisibilityImparted_Test excludes active Belt or imparted state; DirectObject grants the invisible bit for 120 seconds and shuts down listed auras, while InvisibilityTerm clears the bit and restores Standing.",
+          "runtime": "The direct action validates the learned membership at start and landing and cannot replace an active Belt. It produces a bit-only state, preserves allied views, hides from opponents and can end through a real Detection cast, expiry or explicit deactivation.",
+          "test": "InvisibilityDurationTests verifies loaded admission, overlap, modifiers, 120-second termination and Stand. Stock PR1021 measured 3.07 s and 0 IS, 120.27 s to natural term, aura shutdown, enemy concealment, ally view, early Detection release and explicit off with no further charge. https://github.com/kylebrussell/mxo-hd/pull/1021#issuecomment-7112726183"
+        },
+        "script": {
+          "source": "GOB direct 629 stores a 3-second cast, zero IS, and 30-second reuse. InvisibilityImparted_Test excludes active Belt or imparted state; DirectObject grants the invisible bit for 120 seconds and shuts down listed auras, while InvisibilityTerm clears the bit and restores Standing.",
+          "runtime": "The direct action validates the learned membership at start and landing and cannot replace an active Belt. It produces a bit-only state, preserves allied views, hides from opponents and can end through a real Detection cast, expiry or explicit deactivation.",
+          "test": "InvisibilityDurationTests verifies loaded admission, overlap, modifiers, 120-second termination and Stand. Stock PR1021 measured 3.07 s and 0 IS, 120.27 s to natural term, aura shutdown, enemy concealment, ally view, early Detection release and explicit off with no further charge. https://github.com/kylebrussell/mxo-hd/pull/1021#issuecomment-7112726183"
+        },
+        "behavior-tests": {
+          "source": "GOB direct 629 stores a 3-second cast, zero IS, and 30-second reuse. InvisibilityImparted_Test excludes active Belt or imparted state; DirectObject grants the invisible bit for 120 seconds and shuts down listed auras, while InvisibilityTerm clears the bit and restores Standing.",
+          "runtime": "The direct action validates the learned membership at start and landing and cannot replace an active Belt. It produces a bit-only state, preserves allied views, hides from opponents and can end through a real Detection cast, expiry or explicit deactivation.",
+          "test": "InvisibilityDurationTests verifies loaded admission, overlap, modifiers, 120-second termination and Stand. Stock PR1021 measured 3.07 s and 0 IS, 120.27 s to natural term, aura shutdown, enemy concealment, ally view, early Detection release and explicit off with no further charge. https://github.com/kylebrussell/mxo-hd/pull/1021#issuecomment-7112726183"
+        }
+      }
+    },
+    "1116": {
+      "checks": {
+        "stealth-detection": {
+          "source": "InvisibilityGrant_Test uses an 8-metre, facing and clear-sight watcher check that excludes Blind. DirectObject grants invisible bit 4, stat 115 -300, state 881 and an aura cancel; InvisibilityTerm clears the bit and restores Standing.",
+          "runtime": "The ordinary learned Belt checks current ownership, combat and watchers. Its scripted Ghost Strike and Vanish callers remain separate. It publishes both temporary records and its owned stance, and toggle, expiry or Detection remove them.",
+          "test": "PR1022 verified a player edge and NPC rejection without cost, success with the blinded watcher, 3.05 s/50 IS, bits 4 and stance 1a, a 130 s lease, 115/881 removal with Standing restored, and ordinary stock acceptance across a visually confirmed solid office wall. Earlier PR1016 verified the duration bonus, PR732 the aura transition, and the retained native Detection matrix evidenced hostile reveal. https://github.com/kylebrussell/mxo-hd/pull/1022#issuecomment-7113216486"
+        },
+        "script": {
+          "source": "InvisibilityGrant_Test uses an 8-metre, facing and clear-sight watcher check that excludes Blind. DirectObject grants invisible bit 4, stat 115 -300, state 881 and an aura cancel; InvisibilityTerm clears the bit and restores Standing.",
+          "runtime": "The ordinary learned Belt checks current ownership, combat and watchers. Its scripted Ghost Strike and Vanish callers remain separate. It publishes both temporary records and its owned stance, and toggle, expiry or Detection remove them.",
+          "test": "PR1022 verified a player edge and NPC rejection without cost, success with the blinded watcher, 3.05 s/50 IS, bits 4 and stance 1a, a 130 s lease, 115/881 removal with Standing restored, and ordinary stock acceptance across a visually confirmed solid office wall. Earlier PR1016 verified the duration bonus, PR732 the aura transition, and the retained native Detection matrix evidenced hostile reveal. https://github.com/kylebrussell/mxo-hd/pull/1022#issuecomment-7113216486"
+        },
+        "behavior-tests": {
+          "source": "InvisibilityGrant_Test uses an 8-metre, facing and clear-sight watcher check that excludes Blind. DirectObject grants invisible bit 4, stat 115 -300, state 881 and an aura cancel; InvisibilityTerm clears the bit and restores Standing.",
+          "runtime": "The ordinary learned Belt checks current ownership, combat and watchers. Its scripted Ghost Strike and Vanish callers remain separate. It publishes both temporary records and its owned stance, and toggle, expiry or Detection remove them.",
+          "test": "PR1022 verified a player edge and NPC rejection without cost, success with the blinded watcher, 3.05 s/50 IS, bits 4 and stance 1a, a 130 s lease, 115/881 removal with Standing restored, and ordinary stock acceptance across a visually confirmed solid office wall. Earlier PR1016 verified the duration bonus, PR732 the aura transition, and the retained native Detection matrix evidenced hostile reveal. https://github.com/kylebrussell/mxo-hd/pull/1022#issuecomment-7113216486"
+        }
+      }
+    }
+  }
+}
