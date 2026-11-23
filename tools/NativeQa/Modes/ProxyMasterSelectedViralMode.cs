@@ -10,9 +10,12 @@ public sealed class ProxyMasterSelectedViralMode : NativeQaMode
     private const int EnrageEdgeZ = 7100, PulseEdgeZ = 7300, OutsideZ = 7301;
     private const ushort Pulse = 595, Enrage = 597, Barrage = 598, StaticBlast = 33;
     private const ushort RunAdvancedProgram = 585, ProxyMaster = 599;
+    // PR885 pr885-PacketLog.txt lines 4152-4153. Only the live selection handle is replaced.
+    private const string EnrageStock = "80b955020700050000000000000000000000000000000000000000001060c50001000000086b0000000000";
     private static readonly ushort[] Abilities = StockAbilityProfile.Profile(2, 17, CombatStyles.CoderStyle, Pulse, Enrage, Barrage, StaticBlast, ProxyMaster)
         .Order().ToArray();
-    private static readonly ushort[] Resister = StockAbilityProfile.Profile(2, 17, 8).Order().ToArray();
+    private static readonly ushort[] Resister = StockAbilityProfile.Profile(2, 17, 8, CombatStyles.CoderStyle, Enrage, ProxyMaster)
+        .Order().ToArray();
     private static readonly (ushort Ability, ushort Rank)[] Samples = { (Pulse, 38), (Enrage, 41), (Barrage, 44) };
     private static readonly int Memory = Abilities.Sum(AbilityMemory.Cost);
     private static readonly (string Name, int Character, int X, int Z, int Organization)[] Stands =
@@ -30,10 +33,10 @@ public sealed class ProxyMasterSelectedViralMode : NativeQaMode
         new[]
         {
             $"UPDATE characters SET level={Level},exp={PlayerProgression.ExperienceForLevel(Level)},x={X},y={Y},z={CasterZ}," +
-                $"rotation={MobAggro.YawTowards(X, CasterZ, X, CentreZ)},innerStrC=700,innerStrM=900,alignment=1,pvpflag=0 WHERE charId=110",
+                $"rotation={MobAggro.YawTowards(X, CasterZ, X, CentreZ)},healthC=5000,healthM=5000,innerStrC=700,innerStrM=900,alignment=1,pvpflag=0 WHERE charId=110",
             "DELETE FROM char_abilities WHERE char_id IN (6111,6112,6113,6114)",
             "INSERT INTO char_abilities(char_id,slot,ability_id,level,is_loaded) VALUES " + string.Join(",", Resister.Select((id, slot) =>
-                $"(6112,{slot},{AbilityMessages.AbilityGameObject(id)},{Level},1)"))
+                $"(6112,{slot},{AbilityMessages.AbilityGameObject(id)},{(id == Enrage ? 41 : Level)},1)"))
         }.Concat(Stands.Select(stand =>
             $"UPDATE characters SET level={Level},exp={PlayerProgression.ExperienceForLevel(Level)},x={stand.X},y={Y},z={stand.Z}," +
             $"alignment={stand.Organization},pvpflag=0,healthC=1000,healthM=1000,innerStrC=500,innerStrM=500 WHERE charId={stand.Character}"))
@@ -45,7 +48,7 @@ public sealed class ProxyMasterSelectedViralMode : NativeQaMode
             ["MXO_FREECAST_VIRAL_QA_ATTACK15"] = "32766", ["MXO_FREECAST_VIRAL_QA_DEFENSE15"] = "0",
             [AreaTargetDiagnostics.Variable] = "1"
         },
-        extraQaMetadata: new() { ["ScopedStockRows"] = "595,597,598", ["NativeCloseableRows"] = 2, ["MemoryUsed"] = Memory },
+        extraQaMetadata: new() { ["ScopedStockRows"] = "595,597,598", ["NativeCloseableRows"] = 0, ["MemoryUsed"] = Memory },
         readyMessages: new[]
         {
             $"Level {Level}, ranks 38/41/44 and {Memory}/{AbilityMemory.ForLevel(Level)} memory. CSR ({X},{Y},{CasterZ}) faces QAEnemy ({X},{Y},{CentreZ}) at 2 m. QAOther starts at ({X},{Y},{EnrageEdgeZ}), 5.00 m from QAEnemy. QAFar ({X},{Y},{OutsideZ}) is 7.01 m from QAEnemy. In-radius QAFriend is allied at ({X + 100},{Y},{CentreZ}). All stands are clear of WinterFrost and Trainman.",
@@ -53,7 +56,10 @@ public sealed class ProxyMasterSelectedViralMode : NativeQaMode
             "Enrage 2.0, slot 3. Expect 4 s, 43 IS (700->657), 30 s own reuse, and [MODIFIER] source=597 stat=93 add value=0 duration=10s for char=6114 and 6113. QAFar and QAFriend are excluded. Wait for both removals. No HP change.",
             $$"""Move QAOther to the verified 7.00 m edge with {"actor":"QAOther","action":"move","x":{{X}},"y":{{Y}},"z":{{PulseEdgeZ}}}. Press Stun Pulse slot 2. Expect 6 s, 29 IS (657->628), 30 s own reuse, and [FREECAST-VIRAL] ability=595 hit=True on 6114 and 6113 only. Both receive [MODIFIER] source=595 stat=102 add value=0 duration=6s and source=734 stat=681 add value=0 duration=12s, then paired removals. No HP change. QAFar is 7.01 m away and QAFriend is an ally.""",
             """Static Barrage 2.0, slot 4. Expect 2 s, 26 IS (628->602), 6 s own and 4 s group 683 reuse. Only QAEnemy loses 87 HP (1000->913). Once the own timer clears, /target QAFar and send {"actor":"QAFar","action":"aura-resist"}. After OK and [MODIFIER] char=6112 source=8 stat=157 +75 duration=20s, press slot 4. Expect 26 IS (602->576), identical timers and [TYPED-RESISTANCE OURS] 598 type2 total75 raw87 final71, only QAFar HP 1000->929. No [PVP] interlock or max [VITALS] change. Slot 5 is the Static Blast bootstrap control.""",
-            "Projected DONE +2 (595, 598). 597 still needs the shared Enrage target-switch and ISBlock checks."
+            "Optional interlock retarget stage. You can skip the original three rows already passed by PR885. Use /target QAEnemy and its radial Close Combat to open ordinary PvP. Wait until the first exchange. QAEnemy is the original opponent, and QAOther starts 7 m from CSR on the same clear outdoor line. Keep CSR still, then use /target QAOther to select your alternate before arming the stage.",
+            """Send {"actor":"QAFar","action":"enrage-retarget"} once. QAFar casts the captured Enrage 2.0 request while outside the fight (4 s, 43 IS, 30 s own reuse). Expect [MODIFIER] char=110 source=597 stat=93 add value=0 duration=9s. QAOther joins your existing fight immediately after that add. The helper prints ENRAGE RETARGET ARMED when QAOther is in the fight.""",
+            "While Enraged, try radial Close Combat on the selected QAOther. Save the stock 40 or the local refusal if the client sends none. Selection may change but the fight must keep QAEnemy. There should be no old 46 flag 00, new 40 echo or new 46 flag 01 on CSR. If the request reaches the server, expect [PVP] Target change refused for CSR_Tester: Enraged.",
+            "After [MODIFIER] char=110 source=597 stat=93 remove, repeat the same radial Close Combat on QAOther. Expect the old 46 flag 00, new 40 echo, and new 46 flag 01 for QAOther. Save the full native 40 attempts and matching server replies. This stage covers the shared PvP interlock retarget gate. The ISBlock mapping remains open."
         });
 
     public override async Task<byte[]> AfterStartAsync(NativeQaBootstrapContext context)
@@ -78,6 +84,14 @@ public sealed class ProxyMasterSelectedViralMode : NativeQaMode
             NativeQaReadiness.RequireNoAmbientAggro(server, helper);
         }
 
+        var resister = context.Helpers["QAFar"];
+        var casterProfile = AbilityMemoryUiFixture.Decode(resister.CharacterData[6])
+            .Where(row => AbilityMemory.IsAbility(row.Descriptor)).ToDictionary(row => AbilityCatalog.IdOf(row.Descriptor));
+        Check.That(casterProfile.Keys.ToHashSet().SetEquals(Resister) && casterProfile[Enrage].Level == 41 &&
+            Resister.Sum(AbilityMemory.Cost) <= AbilityMemory.ForLevel(Level) && Resister.All(id =>
+                AbilityPrerequisites.Current.Closure(id).All(need => casterProfile.TryGetValue(need.Key, out var row) && row.Level >= need.Value)),
+            "The helper's legal ranked Enrage and resistance profile fits memory");
+
         if (context.StockProbe is not { } caster) return Array.Empty<byte>();
         var loaded = AbilityMemoryUiFixture.Decode(caster.CharacterData[6]).Where(row => AbilityMemory.IsAbility(row.Descriptor))
             .ToDictionary(row => AbilityCatalog.IdOf(row.Descriptor), row => row.Level);
@@ -90,6 +104,8 @@ public sealed class ProxyMasterSelectedViralMode : NativeQaMode
 
         await PvpOpponentsFixture.EnterAsync(caster);
         NativeQaReadiness.RequireNoAmbientAggro(server, caster);
+        Check.Equal((ushort)5000, BitConverter.ToUInt16(caster.World.CreationSnapshot().Last(view => view.ViewId == 2).Attributes["Health"]),
+            "CSR starts with enough HP to hold the live retarget check through expiry");
         foreach (var stand in Stands)
         {
             var view = await caster.WaitForViewNamedAsync(stand.Name);
@@ -123,9 +139,77 @@ public sealed class ProxyMasterSelectedViralMode : NativeQaMode
         await caster.WaitUntilAsync(() => caster.World.ViewSnapshot().Skip(vitals)
             .SelectMany(AbilityParityCoderSweepMode.InnerStrengthUpdates).Contains((ushort)685),
             "Captured Static Blast leaves 685 IS", HeadlessPlayer.DefaultTimeout);
+        await VerifyRetargetAsync(caster, context.Helpers, server);
         Check.Equal(0, caster.World.Problems.Count + context.Helpers.Values.Sum(helper => helper.World.Problems.Count),
             "Static Blast control framing");
-        Console.WriteLine("PROXY MASTER BOOTSTRAP PASS. Exact stock Coder Style and Static Blast; stock 595/597/598 requests pending.");
+        Console.WriteLine("PROXY MASTER BOOTSTRAP PASS. Exact stock Coder Style, Static Blast, Enrage 2.0 and Close Combat. Interlock target stays unchanged during Enrage, then changes after expiry.");
         return Array.Empty<byte>();
     }
+
+    public static async Task<object> ArmRetargetAsync(HeadlessPlayer caster, IReadOnlyDictionary<string, HeadlessPlayer> helpers,
+        ServerInstance server)
+    {
+        if (caster.Handle != "QAFar") throw new InvalidOperationException("Use QAFar to arm the Enrage retarget stage.");
+        const string recipient = "CSR_Tester";
+        var original = helpers["QAEnemy"];
+        var alternate = helpers["QAOther"];
+        string originalSubject = HandleHex(await original.WaitForViewNamedAsync(recipient));
+        await original.WaitForRpcAsync($"46 {originalSubject} 01", TimeSpan.FromSeconds(3));
+        var target = await caster.WaitForViewNamedAsync(recipient);
+        caster.SendRpc(StarterCoderPetBuffsAndDetonateMode.CoderStock);
+        await caster.WaitForViewUpdateAsync(2, "02 80 80 80 80 80 10 f0 03 00 00");
+        uint selected = DuelPackets.Handle(target.ViewId, target.SpawnId);
+        caster.SendRpc($"81 51 {HandleHex(target)}");
+        var request = StarterHackerControlTargetMode.WithHandle(EnrageStock, selected);
+        int start = server.DebugLog().Length;
+        int rpcCursor = caster.World.RpcSnapshot().Count;
+        caster.SendRpc(request);
+        await EvidenceRetestWire.CastBarAsync(caster, Enrage, 4);
+        await EvidenceRetestWire.TimerAsync(caster, rpcCursor, Enrage, AbilityCooldowns.OwnTimer, 30);
+        Check.That(server.DebugLog()[start..].Contains(
+            $"[ABILITY-COST] char={caster.CharId} ability={Enrage} paid=43 IS=", StringComparison.Ordinal),
+            "The captured helper cast pays the same 43 IS after the Proxy Master discount");
+        await caster.WaitUntilAsync(() => server.DebugLog()[start..]
+            .Contains("[MODIFIER] char=110 source=597 stat=93 add value=0 duration=9s", StringComparison.Ordinal),
+            "Enrage 2.0 lands on the stock recipient in the original interlock", TimeSpan.FromSeconds(7));
+
+        string alternateSubject = HandleHex(await alternate.WaitForViewNamedAsync(recipient));
+        alternate.SkipReceived();
+        alternate.SendRpc($"40 {alternateSubject} 01 6b");
+        await alternate.WaitForRpcAsync($"46 {alternateSubject} 01");
+        Console.WriteLine("ENRAGE RETARGET ARMED. Try Close Combat on QAOther before stat 93 expires.");
+        return new { Ability = Enrage, Target = recipient, Request = Convert.ToHexString(request), Alternate = alternate.Handle };
+    }
+
+    private static async Task VerifyRetargetAsync(HeadlessPlayer recipient, IReadOnlyDictionary<string, HeadlessPlayer> helpers,
+        ServerInstance server)
+    {
+        string original = HandleHex(await recipient.WaitForViewNamedAsync("QAEnemy"));
+        string alternate = HandleHex(await recipient.WaitForViewNamedAsync("QAOther"));
+        recipient.SendRpc($"40 {original} 01 6b");
+        await recipient.WaitForRpcAsync($"46 {original} 01");
+        int logCursor = server.DebugLog().Length;
+        await ArmRetargetAsync(helpers["QAFar"], helpers, server);
+        recipient.SendRpc($"81 51 {alternate}");
+        recipient.SendChat("?combatdepth shieldstatus");
+        await recipient.WaitForTextAsync("target=QAOther");
+
+        int rpcCursor = recipient.World.RpcSnapshot().Count;
+        recipient.SendRpc($"40 {alternate} 01 6b");
+        await recipient.WaitUntilAsync(() => server.DebugLog()[logCursor..]
+            .Contains("[PVP] Target change refused for CSR_Tester: Enraged", StringComparison.Ordinal),
+            "The Enraged recipient retains the original combat target", TimeSpan.FromSeconds(4));
+        await recipient.WaitUntilAsync(() => server.DebugLog()[logCursor..]
+            .Contains("[MODIFIER] char=110 source=597 stat=93 remove", StringComparison.Ordinal),
+            "Enrage 2.0 expires naturally", TimeSpan.FromSeconds(13));
+        string[] swap = { $"46 {original} 00", $"40 {alternate} 00 6b", $"46 {alternate} 01" };
+        var swaps = swap.Select(BytePattern.Parse).ToArray();
+        Check.That(!recipient.World.RpcSnapshot().Skip(rpcCursor).Any(frame => swaps.Any(pattern => pattern.IsMatch(frame.Bytes))),
+            "There is no old-target removal, retarget echo or alternate-target opening while Enraged");
+        recipient.SkipReceived();
+        recipient.SendRpc($"40 {alternate} 01 6b");
+        foreach (string packet in swap) await recipient.WaitForRpcAsync(packet);
+    }
+
+    private static string HandleHex(ViewCreation view) => WireFormat.ToHex(BitConverter.GetBytes(DuelPackets.Handle(view.ViewId, view.SpawnId)));
 }
