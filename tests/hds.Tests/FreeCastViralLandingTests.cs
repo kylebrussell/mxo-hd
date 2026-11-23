@@ -140,6 +140,78 @@ public class FreeCastViralLandingTests : IDisposable
     }
 
     [Fact]
+    public void TrojanHorseDrainsOnlyNearbyHostilePlayersEveryFourthSecond()
+    {
+        var caster = Client(110);
+        var target = Client(111);
+        var distant = Client(112);
+        var ally = Client(113);
+        var unseen = Client(114);
+        typeof(WorldClient).GetField("<TransportFence>k__BackingField", BindingFlags.Instance | BindingFlags.NonPublic)!
+            .SetValue(caster, new WorldSendFence());
+        caster.playerData.passives.Loaded[945] = 30;
+        foreach (var player in new[] { caster, target, distant, ally, unseen })
+        {
+            player.playerData.pvpFlag = true;
+            player.playerInstance.OrganizationID.setValue((byte)(player == caster || player == ally ? 1 : 2));
+            player.playerInstance.InnerStrengthMax.setValue((ushort)200);
+            player.playerInstance.InnerStrengthAvailable.setValue((ushort)200);
+            double x = player == caster ? 0 : player == distant ? 301 : 299;
+            player.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(x, 0, 0));
+            if (player != caster && player != unseen)
+                caster.viewMan.addView(player.playerData.getEntityId(), 1).viewCreated = true;
+        }
+
+        try
+        {
+            Assert.True(AbilityAuras.Handles(945));
+            Assert.Equal(4, AbilityAuras.IntervalOf(945));
+            Assert.Equal(946, AbilityAuras.EffectOf(945));
+            Assert.Equal(PvpRules.Verdict.Allowed, PvpCombat.Check(caster, target));
+            AbilityAuras.Start(caster, 945);
+            Assert.True(AbilityAuras.IsOn(caster, 945));
+            Assert.Equal(200, AbilityHandler.CurrentInnerStrength(target)); // no initial pulse
+            Assert.True(FreeCastViralContest.TryQaDraw(caster, 946, out int attack, out int defense));
+            Assert.Equal(0, attack);
+            Assert.Equal(32766, defense);
+
+            AbilityAuras.Tick(caster, 945, 1);
+            Assert.Equal(180, AbilityHandler.CurrentInnerStrength(caster));
+            Assert.Equal(200, AbilityHandler.CurrentInnerStrength(target));
+            Assert.Equal(FreeCastViralContest.DeflectFx, NumericalUtils.ByteArrayToUint32(target.playerInstance.EffectID.getValue(), 1));
+            Assert.Equal(1000, PvpCombat.HealthOf(target));
+            foreach (var excluded in new[] { distant, ally, unseen })
+            {
+                Assert.Equal(200, AbilityHandler.CurrentInnerStrength(excluded));
+                Assert.Equal(0u, NumericalUtils.ByteArrayToUint32(excluded.playerInstance.EffectID.getValue(), 1));
+            }
+
+            Environment.SetEnvironmentVariable(FreeCastViralContest.AttackQa, "32766");
+            Environment.SetEnvironmentVariable(FreeCastViralContest.DefenseQa, "0");
+            AbilityAuras.Tick(caster, 945, 1);
+            Assert.Equal(160, AbilityHandler.CurrentInnerStrength(caster));
+            Assert.Equal(180, AbilityHandler.CurrentInnerStrength(target));
+            target.playerInstance.InnerStrengthAvailable.setValue((ushort)8);
+            AbilityAuras.Tick(caster, 945, 1);
+            Assert.Equal(140, AbilityHandler.CurrentInnerStrength(caster));
+            Assert.Equal(0, AbilityHandler.CurrentInnerStrength(target));
+            Assert.Equal(1000, PvpCombat.HealthOf(target));
+
+            caster.playerInstance.InnerStrengthAvailable.setValue((ushort)19);
+            target.playerInstance.InnerStrengthAvailable.setValue((ushort)100);
+            AbilityAuras.Tick(caster, 945, 1);
+            Assert.False(AbilityAuras.IsOn(caster, 945));
+            AbilityAuras.Tick(caster, 945, 1);
+            Assert.Equal(19, AbilityHandler.CurrentInnerStrength(caster));
+            Assert.Equal(100, AbilityHandler.CurrentInnerStrength(target));
+        }
+        finally
+        {
+            AbilityAuras.Clear(caster, announce: false);
+        }
+    }
+
+    [Fact]
     public void FastHealingUsesTheSelectedLivingFriendlyPlayerWithinTenMetres()
     {
         var caster = Client(110);

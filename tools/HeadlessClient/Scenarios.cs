@@ -283,7 +283,11 @@ public static partial class Scenarios
         new Scenario("ability-parity-area", AbilityParityArea, FreeCastViralLandingEnvironment(StillNpcs)),
         new Scenario("ability-emp-blast", EmpBlast, StillNpcs.Concat(new Dictionary<string,string> { ["MXO_DEV_COMMANDS"]="1" }).ToDictionary(p=>p.Key,p=>p.Value)),
         new Scenario("ability-parity-costs", AbilityParityCosts, StillNpcs),
-        new Scenario("ability-trojan-horse", AbilityTrojanHorse, StillNpcs),
+        new Scenario("ability-trojan-horse", AbilityTrojanHorse, new Dictionary<string, string>(StillNpcs)
+        {
+            ["MXO_DEV_COMMANDS"] = "1", ["MXO_FREECAST_VIRAL_QA"] = "1",
+            ["MXO_FREECAST_VIRAL_QA_ATTACK15"] = "32766", ["MXO_FREECAST_VIRAL_QA_DEFENSE15"] = "0"
+        }),
         new Scenario("ambient-npc-scope", AmbientNpcScope, new Dictionary<string, string>
         {
             ["MXO_MOBS"] = "world", ["MXO_MOB_WANDER"] = "0", ["MXO_AGGRO"] = "0"

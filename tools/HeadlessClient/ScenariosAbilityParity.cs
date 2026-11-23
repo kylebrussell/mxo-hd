@@ -94,11 +94,15 @@ public static partial class Scenarios
             await player.WaitForViewUpdateAsync(2, OwnPvpFlagOn);
         }
 
-        Cast(caster, 945);
+        // First complete unselected Trojan Horse request from native PR545.
+        caster.SendRpc("80b9b103000000000000000000000000000000000000000000000000585cbc0001000000086b0000000000");
         await caster.WaitForRpcAsync("80 ac b1 03");
         await players[0].WaitForViewUpdateAsync(2, "02 80 80 80 10 bc 07", TimeSpan.FromSeconds(10));
         string log = context.Server.DebugLog();
         Check.That(log.Contains("[HOSTILE] 946 IS 2000 -> 1980 on TrojanInside"), "Trojan Horse drains the hostile in radius");
+        Check.That(log.Split('\n').Any(line => line.StartsWith(
+            "[FREECAST-VIRAL] ability=946 source=TrojanCaster target=TrojanInside ", StringComparison.Ordinal) &&
+            line.Contains("hit=True qa=True", StringComparison.Ordinal)), "The eligible Trojan Horse recipient passes the child's contest");
         Check.That(!log.Contains("on TrojanOutside") && !log.Contains("on TrojanFriendly"),
             "No Trojan damage for friendly or out-of-radius actors");
     }

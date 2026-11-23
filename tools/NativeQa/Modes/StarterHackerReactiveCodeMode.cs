@@ -24,14 +24,15 @@ public sealed class StarterHackerReactiveCodeMode : NativeQaMode
         environmentOverrides: new()
         {
             ["MXO_AGGRO"] = "0", ["MXO_MOB_WANDER"] = "0", ["MXO_PVP_SERVER"] = "1", ["MXO_PVP_MAX_SAFE_LEVEL"] = "15",
-            ["MXO_DESPERATION_QA_HOLD_HEALTH"] = "1"
+            ["MXO_DESPERATION_QA_HOLD_HEALTH"] = "1",
+            ["MXO_FREECAST_VIRAL_QA"] = "1", ["MXO_FREECAST_VIRAL_QA_ATTACK15"] = "32766", ["MXO_FREECAST_VIRAL_QA_DEFENSE15"] = "0"
         }, extraQaMetadata: new() { ["ScopedStockRows"] = "941,943,945", ["NativeCloseableRows"] = 2 },
         readyMessages: new[]
         {
             "Page 2 slots 1–3 are Code Conversion, Reactive Code and Trojan Horse. Clear selection and stay at spawn. QAFriend is 1.2 m west at 250/500 HP. QAEnemy is 2.2 m east at 1500/2000 HP. This disposable fixture holds natural HP regen and fixes callback draws to zero.",
             "Stage A. Press slot 1 and wait for a 6-IS drain tick. Enter ?health 350 on CSR. Expect one 944 pulse. CSR goes to 410 and QAFriend to 310. QAEnemy stays at 1500. Press slot 1 again and check that the 15 s reuse starts on deactivation. Then enter ?health 300. No new 944 pulse. Wait 3 s before slot 2.",
             "Stage B. Press slot 2 and wait for a 7-IS drain tick. Use ?health 250, then ?health 450. QAEnemy takes exactly 50 from each change and stays alive at 1400. QAFriend stays at 310. Press slot 2 again for the 15 s reuse, then enter ?health 300 and confirm 942 stops. Wait 3 s before slot 3.",
-            "Stage C. Press slot 3. Wait for one 946 pulse at 4 s, one hostile recipient and 20 IS debited from both QAEnemy and CSR. Turn it off after the pulse. Enter submits fixture commands."
+            "Stage C. Press slot 3. The fixture fixes the 946 draw to a hit. Wait for one pulse at 4 s, one hostile recipient and 20 IS debited from both QAEnemy and CSR. Turn it off after the pulse. Enter submits fixture commands."
         });
 
     public override async Task<byte[]> AfterStartAsync(NativeQaBootstrapContext context)

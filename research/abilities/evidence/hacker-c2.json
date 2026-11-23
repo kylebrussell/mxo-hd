@@ -197,22 +197,22 @@
         "aura": {
           "source": "GOB 945 schedules ApplyAuraEffect for 946 and ISDrainWithAbilityDeactivation every 4 s, costing 20 IS.",
           "runtime": "AbilityAuras.Start/Tick/Stop only applies the periodic child after paying the drain, and removes the activation on insufficient IS.",
-          "test": "AbilityHostileTests.TrojanHorseDrainsOnlyNearbyHostilePlayersEveryFourthSecond tests no immediate pulse, repeated exact charges and shortfall cleanup. ability-trojan-horse replays the ordinary cast and receives the victim IS update."
+          "test": "FreeCastViralLandingTests.TrojanHorseDrainsOnlyNearbyHostilePlayersEveryFourthSecond tests no immediate pulse, repeated exact charges and shortfall cleanup. ability-trojan-horse replays the ordinary cast and receives the victim IS update."
         },
         "stats": {
           "source": "GOB 945 schedules ApplyAuraEffect for 946 and ISDrainWithAbilityDeactivation every 4 s, costing 20 IS.",
           "runtime": "AbilityAuras.Start/Tick/Stop only applies the periodic child after paying the drain, and removes the activation on insufficient IS.",
-          "test": "AbilityHostileTests.TrojanHorseDrainsOnlyNearbyHostilePlayersEveryFourthSecond tests no immediate pulse, repeated exact charges and shortfall cleanup. ability-trojan-horse replays the ordinary cast and receives the victim IS update."
+          "test": "FreeCastViralLandingTests.TrojanHorseDrainsOnlyNearbyHostilePlayersEveryFourthSecond tests no immediate pulse, repeated exact charges and shortfall cleanup. ability-trojan-horse replays the ordinary cast and receives the victim IS update."
         },
         "script": {
           "source": "GOB 945 schedules ApplyAuraEffect for 946 and ISDrainWithAbilityDeactivation every 4 s, costing 20 IS.",
           "runtime": "AbilityAuras.Start/Tick/Stop only applies the periodic child after paying the drain, and removes the activation on insufficient IS.",
-          "test": "AbilityHostileTests.TrojanHorseDrainsOnlyNearbyHostilePlayersEveryFourthSecond tests no immediate pulse, repeated exact charges and shortfall cleanup. ability-trojan-horse replays the ordinary cast and receives the victim IS update."
+          "test": "FreeCastViralLandingTests.TrojanHorseDrainsOnlyNearbyHostilePlayersEveryFourthSecond tests no immediate pulse, repeated exact charges and shortfall cleanup. ability-trojan-horse replays the ordinary cast and receives the victim IS update."
         },
         "behavior-tests": {
           "source": "GOB 945 schedules ApplyAuraEffect for 946 and ISDrainWithAbilityDeactivation every 4 s, costing 20 IS.",
           "runtime": "AbilityAuras.Start/Tick/Stop only applies the periodic child after paying the drain, and removes the activation on insufficient IS.",
-          "test": "AbilityHostileTests.TrojanHorseDrainsOnlyNearbyHostilePlayersEveryFourthSecond tests no immediate pulse, repeated exact charges and shortfall cleanup. ability-trojan-horse replays the ordinary cast and receives the victim IS update."
+          "test": "FreeCastViralLandingTests.TrojanHorseDrainsOnlyNearbyHostilePlayersEveryFourthSecond tests no immediate pulse, repeated exact charges and shortfall cleanup. ability-trojan-horse replays the ordinary cast and receives the victim IS update."
         }
       }
     },
@@ -221,17 +221,17 @@
         "area": {
           "source": "GOB 946 uses caster-area selector 4, radius 3 m and instant stat111 Current Inner Strength -20.",
           "runtime": "AbilityAuras.Pulse passes visible PvP-eligible players in range to AbilityHostile.LandedOnPlayer, which clamps and sends the new IS.",
-          "test": "AbilityHostileTests.TrojanHorseDrainsOnlyNearbyHostilePlayersEveryFourthSecond checks 2.99/3.01 m admission, friendly and unseen exclusions, exact operand, HP unchanged and zero clamp. ability-trojan-horse checks the own-view IS update."
+          "test": "FreeCastViralLandingTests.TrojanHorseDrainsOnlyNearbyHostilePlayersEveryFourthSecond checks 2.99/3.01 m admission, friendly and unseen exclusions, exact operand, HP unchanged and zero clamp. ability-trojan-horse checks the own-view IS update."
         },
         "stats": {
           "source": "GOB 946 uses caster-area selector 4, radius 3 m and instant stat111 Current Inner Strength -20.",
           "runtime": "AbilityAuras.Pulse passes visible PvP-eligible players in range to AbilityHostile.LandedOnPlayer, which clamps and sends the new IS.",
-          "test": "AbilityHostileTests.TrojanHorseDrainsOnlyNearbyHostilePlayersEveryFourthSecond checks 2.99/3.01 m admission, friendly and unseen exclusions, exact operand, HP unchanged and zero clamp. ability-trojan-horse checks the own-view IS update."
+          "test": "FreeCastViralLandingTests.TrojanHorseDrainsOnlyNearbyHostilePlayersEveryFourthSecond checks 2.99/3.01 m admission, friendly and unseen exclusions, exact operand, HP unchanged and zero clamp. ability-trojan-horse checks the own-view IS update."
         },
         "behavior-tests": {
           "source": "GOB 946 uses caster-area selector 4, radius 3 m and instant stat111 Current Inner Strength -20.",
           "runtime": "AbilityAuras.Pulse passes visible PvP-eligible players in range to AbilityHostile.LandedOnPlayer, which clamps and sends the new IS.",
-          "test": "AbilityHostileTests.TrojanHorseDrainsOnlyNearbyHostilePlayersEveryFourthSecond checks 2.99/3.01 m admission, friendly and unseen exclusions, exact operand, HP unchanged and zero clamp. ability-trojan-horse checks the own-view IS update."
+          "test": "FreeCastViralLandingTests.TrojanHorseDrainsOnlyNearbyHostilePlayersEveryFourthSecond checks 2.99/3.01 m admission, friendly and unseen exclusions, exact operand, HP unchanged and zero clamp. ability-trojan-horse checks the own-view IS update."
         }
       }
     },
