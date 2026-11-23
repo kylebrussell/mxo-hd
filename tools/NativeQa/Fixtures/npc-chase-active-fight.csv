@@ -1,0 +1,4 @@
+district_id;district;handle;level;hpM;hpC;rsi;x_pos;y_pos;z_pos;rotation;is_defeated;is_lootable
+1;slums;QA Chase Goof;2;5000;5000;B3010058;21000;495;6400;192;false;false
+1;slums;QA Sparring Partner;1;5000;5000;B5010058;17200;495;6260;217;false;false
+1;slums;QA Idle Goof;2;5000;5000;B4010058;97769;695;11661;128;false;false

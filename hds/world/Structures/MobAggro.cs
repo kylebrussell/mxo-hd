@@ -262,6 +262,9 @@ namespace hds
         internal static void Attack(WorldClient client, Mob mob, ClientView view, double px, double py, double pz,
             TimedEffects.Active enrage = null)
         {
+            CombatHandler handler = CombatManager.GetHandler(client);
+            if (!handler.CanStartNpcAggro) return;
+
             var effects = TimedEffects.ForMob(mob).Effects;
             if (ControlActions.Incapacitated(effects) || enrage != null &&
                 (!effects.IsCurrent(enrage, TimeUtils.GetSimTimeSeconds()) || mob.CombatantCount != 0 ||
@@ -271,7 +274,7 @@ namespace hds
             {
                 Output.WriteDebugLog("[AGGRO] " + mob.getName() + " opens fire on " + client.playerData.getCharID() +
                                      " (view " + view.ViewID + ")");
-                CombatManager.GetHandler(client).StartNpcGunfight(mob, view);
+                handler.StartNpcGunfight(mob, view);
                 client.FlushQueue();
                 return;
             }
@@ -301,7 +304,7 @@ namespace hds
             };
             Output.WriteDebugLog("[AGGRO] " + mob.getName() + " attacks " + client.playerData.getCharID() +
                                  " (view " + view.ViewID + ")");
-            CombatManager.GetHandler(client).ProcessRequestCloseCombat(ref request, npcStarted: true);
+            handler.ProcessRequestCloseCombat(ref request, npcStarted: true);
             client.FlushQueue();
         }
 

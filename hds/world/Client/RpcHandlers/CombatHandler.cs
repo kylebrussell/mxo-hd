@@ -61,6 +61,9 @@ namespace hds
         public PvpFight pvpFight;
         public PvpGunfire pvpGunfire;
 
+        internal bool CanStartNpcAggro => !isCombatRunning && currentSession?.IsActive != true &&
+            pvpFight?.IsActive != true && pvpGunfire?.IsActive != true;
+
         internal bool HasActiveInterlock => ActiveInterlockIdentity != null;
         internal object ActiveInterlockIdentity => pvpFight?.IsActive == true ? (object)pvpFight :
             currentSession is { IsActive: true, Type: CombatSession.CombatType.Melee } ? currentSession : null;
@@ -521,7 +524,7 @@ namespace hds
         /// </summary>
         public void StartNpcGunfight(Mob mob, ClientView view)
         {
-            if (isCombatRunning || (currentSession != null && currentSession.IsActive))
+            if (!CanStartNpcAggro)
             {
                 return;
             }
@@ -681,6 +684,8 @@ namespace hds
                 return;
             }
 
+            // Pursuit may have started while the player was idle. Its arrival cannot replace their current fight.
+            if (npcStarted && !CanStartNpcAggro) return;
             if (!npcStarted && NpcEvasion.InterceptEntry(client, targetMob, targetViewWithSpawnId)) return;
 
             LeaveOtherFights();
