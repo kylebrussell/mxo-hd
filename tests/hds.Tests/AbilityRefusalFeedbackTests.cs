@@ -106,6 +106,7 @@ public class AbilityRefusalFeedbackTests:IDisposable
 
     [Theory]
     [InlineData("unloaded", AbilityRefusals.NotLoaded)]
+    [InlineData("wrong weapon", AbilityRefusals.RequiredItemCategory)]
     [InlineData("exposed", AbilityRefusals.CasterStateRequired)]
     [InlineData("sneak", AbilityRefusals.CasterStateRequired)]
     [InlineData("combat", AbilityRefusals.MustBeOutsideCombat)]
@@ -116,6 +117,9 @@ public class AbilityRefusalFeedbackTests:IDisposable
     [InlineData("changed", 0u)]
     [InlineData("left sight", 0u)]
     [InlineData("left range", 0u)]
+    [InlineData("weapon swapped", 0u)]
+    [InlineData("unloaded in cast", 0u)]
+    [InlineData("style changed", 0u)]
     [InlineData("neutral hit", 0u)]
     [InlineData("resisted hit", 0u)]
     public void SniperShotBindsItsConcealedRifleCastToTheOriginalLiveTarget(string state, uint denial)
@@ -143,6 +147,7 @@ public class AbilityRefusalFeedbackTests:IDisposable
         view.spawnId = 9;
         caster.playerData.passives.Loaded[CombatStyles.Rifles] = 26;
         caster.playerData.combatStyle = CombatStyles.Rifles;
+        caster.playerInstance.EquippedItemID.setValue(state == "wrong weapon" ? CombatFixtureWeapons.Handgun : CombatFixtureWeapons.Rifle);
         if (state != "unloaded") caster.playerData.passives.Loaded[shot] = 26;
         ushort stealth = state == "sneak" ? Stealth.SneakGrantAbility : Stealth.ConcealmentGrantAbility;
         if (state != "exposed") Assert.NotNull(Stealth.Begin(caster, Stealth.Defs[stealth], 26));
@@ -191,6 +196,9 @@ public class AbilityRefusalFeedbackTests:IDisposable
             if (state == "changed") view.spawnId++;
             else if (state == "left sight") PlaceEnemy(blocked);
             else if (state == "left range") PlaceEnemy(far);
+            else if (state == "weapon swapped") caster.playerInstance.EquippedItemID.setValue(CombatFixtureWeapons.Handgun);
+            else if (state == "unloaded in cast") caster.playerData.passives.Loaded.Remove(shot);
+            else if (state == "style changed") caster.playerData.combatStyle = CombatStyles.SelfDefense;
             DelayedActions.RunDue(caster.playerData.castEndsAt + 1);
             Assert.True(AbilityCooldowns.IsCoolingDown(caster.playerData, shot, TimeUtils.GetSimTimeSeconds()));
 

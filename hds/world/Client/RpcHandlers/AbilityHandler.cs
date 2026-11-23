@@ -565,10 +565,18 @@ namespace hds
 
             bool sniperShot = AbilityID == CombatSpecials.SniperShot;
             bool concealmentShot = sniperShot || AbilityID == CombatSpecials.ConcealedShot;
-            if (sniperShot && !AbilityPassives.IsLoaded(Store.currentClient, AbilityID))
+            if (sniperShot)
             {
-                Deny(AbilityID, "Load Sniper Shot before using it.", AbilityRefusals.NotLoaded, sendServerText: false);
-                return;
+                if (!AbilityPassives.IsLoaded(Store.currentClient, AbilityID))
+                {
+                    Deny(AbilityID, "Load Sniper Shot before using it.", AbilityRefusals.NotLoaded, sendServerText: false);
+                    return;
+                }
+                if (!CombatSpecials.HasEquippedRifle(Store.currentClient))
+                {
+                    Deny(AbilityID, "Sniper Shot requires a rifle.", AbilityRefusals.RequiredItemCategory, sendServerText: false);
+                    return;
+                }
             }
             if (rifleOpener || concealmentShot)
             {
@@ -584,7 +592,7 @@ namespace hds
                     Deny(AbilityID, "This rifle shot cannot be used during combat.", AbilityRefusals.MustBeOutsideCombat, sendServerText: !woundingShot);
                     return;
                 }
-                if (woundingShot && !CombatSpecials.HasWoundingShotWeapon(shooter))
+                if (woundingShot && !CombatSpecials.HasEquippedRifle(shooter))
                 {
                     Deny(AbilityID, "Equip a rifle-category weapon before using Wounding Shot.", AbilityRefusals.RequiredItemCategory, sendServerText: false);
                     return;
@@ -1113,6 +1121,12 @@ namespace hds
             }
             // Attack abilities on the current close-combat target hit it (buffs used with a target selected don't).
             ushort hostileView=engageFoes?.PrimaryView??currentTargetViewId;
+            if (sniperShot && (!CombatSpecials.HasEquippedRifle(client) ||
+                !AbilityPassives.IsLoaded(client, AbilityID) || CombatStyles.Active(client) != CombatStyles.Rifles))
+            {
+                Output.WriteDebugLog("[ABILITY] 505 fizzles: the rifle or its loaded selection changed");
+                return;
+            }
             if ((selectedGunShot || sniperShot) && (!AbilityTargets.HasLiveAttackSelection(client, hostileView, gunTargetSpawn, requireOpponent: true) ||
                 !AbilityTargets.WithinSelectionRange(client, AbilityID, hostileView) ||
                 !AbilityTargets.HasSelectionSight(client, definition, hostileView)))
@@ -1148,7 +1162,7 @@ namespace hds
                 if (woundingShot)
                 {
                     var fight = CombatManager.GetHandler(client);
-                    if (!AbilityPassives.IsLoaded(client, AbilityID) || !CombatSpecials.HasWoundingShotWeapon(client) ||
+                    if (!AbilityPassives.IsLoaded(client, AbilityID) || !CombatSpecials.HasEquippedRifle(client) ||
                         !CombatStyles.CanUse(client, AbilityID) || fight.isCombatRunning || fight.HasActiveInterlock)
                     {
                         Output.WriteDebugLog("[ABILITY] 253 fizzles: the loaded shot, rifle category, style or combat state changed");

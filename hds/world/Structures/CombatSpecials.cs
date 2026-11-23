@@ -34,7 +34,7 @@ namespace hds
 
         internal static bool HasTimedSpecialWeapon(WorldClient caster, ushort ability) =>
             ability == ThreeRoundBurst
-                ? RangedWeapons.GetStats(SharpshooterFreeFire.EquippedWeapon(caster))?.Category == "IWRf"
+                ? HasEquippedRifle(caster)
                 : HasEquippedDualSubmachineGuns(caster);
 
         // ability/general.py 9-17
@@ -59,7 +59,7 @@ namespace hds
             return id == WoundingShot || id == 254 || id == 255;
         }
 
-        internal static bool HasWoundingShotWeapon(WorldClient caster) =>
+        internal static bool HasEquippedRifle(WorldClient caster) =>
             RangedWeapons.GetStats(SharpshooterFreeFire.EquippedWeapon(caster))?.Category == "IWRf";
 
         public static bool Handles(ushort id)

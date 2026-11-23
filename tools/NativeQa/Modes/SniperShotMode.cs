@@ -16,6 +16,7 @@ public sealed class SniperShotMode : NativeQaMode
     private const string RiflesFrame = "80b99300040002000000000000000000000000000000000000000000d557377c20000000086b0000000000";
     private static readonly ushort[] Loadout = new ushort[] { 2, 17, Rifles, 503, Baseline, Shot }
         .SelectMany(id => AbilityPrerequisites.Current.Closure(id).Keys.Append(id)).Distinct().Order().ToArray();
+    private static readonly ushort[] EnemyLoadout = DisablingShotMode.Closure(2, 17, 154);
     private static readonly int Memory = Loadout.Sum(AbilityMemory.Cost);
 
     public override string Name => "ability-parity-sniper-shot";
@@ -28,7 +29,9 @@ public sealed class SniperShotMode : NativeQaMode
             $"UPDATE char_abilities SET level={Level} WHERE char_id=110",
             $"UPDATE characters SET x={TargetX},y={Y},z={Z},rotation=64,alignment=2,level={Level}," +
                 $"exp={PlayerProgression.ExperienceForLevel(Level)},pvpflag=0,healthC=1000,healthM=1000 WHERE charId=6114",
-            "DELETE FROM char_abilities WHERE char_id=6114 AND ability_id NOT IN (2147485696,2147501056)"
+            "DELETE FROM char_abilities WHERE char_id=6114",
+            "INSERT INTO char_abilities(char_id,slot,ability_id,level,is_loaded) VALUES " +
+                string.Join(",", EnemyLoadout.Select((id, index) => $"(6114,{400 + index},{AbilityMessages.AbilityGameObject(id)},{Level},1)"))
         }, DevCommands: true, hotbarAbilities: new[] { Rifles, Conceal, Shot, Baseline },
         environmentOverrides: new()
         {
@@ -42,8 +45,9 @@ public sealed class SniperShotMode : NativeQaMode
             "Select Rifles and QAEnemy at PICK. Try slot 3 while exposed. Expect a local Concealment refusal or reason 23 if it sends. Then activate slot 2. " +
                 "Keep the selection without Escape. Try 505 from the printed BLOCK then the printed FAR. Expect sight/range refusal or reason 9/34, with no shot debit, cast or timer.",
             "Return to PICK. Keep 1137 active and press slot 3. Capture the complete direct stock 505 request. Expect 1137 off at cast start, 60 IS (480 to 420), " +
-                "6 s bar, 51 neutral Ballistic damage (base 47 with Rifle +8 and Concealment +2 influence), and 45 s own reuse. A completed roll may apply Stun for 4 s. The helper PacketLog should show the 505 marker retiring before Stun 102, linked Combat Tactics 163 -20, and the separate 4 s immunity 734/681.",
-            "If only a different request is sent, record that result and leave 505 partial. Slot 4 is the already-captured 504 control. No interlock choreography or retail numeric damage contest is claimed."
+                "6 s bar, 51 neutral Ballistic damage (base 47 with Rifles +8 and Firearms Expert +2 influence), and 45 s own reuse. A completed roll may apply Stun for 4 s. The helper PacketLog should show the 505 marker retiring before Stun 102, linked Combat Tactics 163 -20, and the separate 4 s immunity 734/681.",
+            """After reuse, send {"actor":"QAEnemy","action":"sniper-armor"} and confirm source1061 stat181 +20. While still outside combat, activate Concealment and repeat at PICK. Expect [TYPED-RESISTANCE OURS] 505 type1 total20 raw51 final46. Retry after reuse if neither cast rolled Stun; its ordinary chance is 50%. Record the normal cast/release presentation and verify no interlock round is opened.""",
+            "Slot 4 is the retained Concealed Shot control. Capture stock frames and visible presentation on 505 itself."
         });
 
     public override async Task<byte[]> AfterStartAsync(NativeQaBootstrapContext context)
@@ -64,6 +68,7 @@ public sealed class SniperShotMode : NativeQaMode
         var enemy = await HeadlessPlayer.LoginAsync(context.Address, "QAEnemy", "QAEnemy", stockCharacterLoad: true);
         context.Helpers.Add(enemy.Handle, enemy);
         await PvpOpponentsFixture.EnterAsync(enemy);
+        DisablingShotMode.CheckProfile(enemy, EnemyLoadout, Level);
         NativeQaReadiness.RequireNoAmbientAggro(context.ActualServer!, enemy);
         if (context.StockProbe is not { } actor) return Array.Empty<byte>();
 
@@ -80,8 +85,8 @@ public sealed class SniperShotMode : NativeQaMode
         uint handle = DuelPackets.Handle(target.ViewId, target.SpawnId);
         int styleAt = actor.World.RpcSnapshot().Count;
         actor.SendRpc(RiflesFrame);
-        await ObserveAsync(actor, styleAt, rpc => ManageBonusRecord.TryDecode(rpc.Bytes, out var modifier) &&
-            modifier!.SourceId == Rifles && modifier.TargetId == 171 && modifier.AddRemoveType == 0, "Captured Rifles style");
+        await ObserveAsync(actor, styleAt, rpc => Bonus(rpc, Rifles, 171, 8, 0, false), "Captured Rifles gives +8 Ballistic Damage");
+        await ObserveAsync(actor, 0, rpc => Bonus(rpc, 125, 1139, 2, 0, false), "Loaded Firearms Expert gives +2 linked Ballistic Damage");
         actor.SendRpc($"81 51 {WireFormat.ToHex(BitConverter.GetBytes(handle))}");
         int concealAt = actor.World.RpcSnapshot().Count;
         actor.SendRpc(ConcealFrame);
@@ -97,6 +102,7 @@ public sealed class SniperShotMode : NativeQaMode
         byte[] damage = AbilityMessages.Damage(false, Baseline, actor.Handle, enemy.Handle, 24, 0);
         await ObserveAsync(enemy, targetAt, rpc => rpc.Bytes.AsSpan().SequenceEqual(damage), "Captured 504 baseline lands for 24");
         await EvidenceRetestWire.TimerAsync(actor, castAt, Baseline, AbilityCooldowns.OwnTimer, 45);
+        await PistolSlideMode.ApplyArmorAsync(enemy);
         Check.Equal(0, actor.World.Problems.Count + enemy.World.Problems.Count, "Sniper stock control framing");
         return Array.Empty<byte>();
     }

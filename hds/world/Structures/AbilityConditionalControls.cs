@@ -11,7 +11,7 @@ namespace hds
         internal const ushort PistolAerial = 243;
 
         internal static bool HasCapturedStunStack(ushort ability) =>
-            ability is PistolAerial or CombatSpecials.SniperShot;
+            ability == PistolAerial || ability == CombatSpecials.SniperShot;
 
         internal static bool IsCapturedStunMarker(TimedEffects.Active modifier) =>
             HasCapturedStunStack(modifier.Parent) && modifier.Proc == TempMods.Proc.Terminal;
