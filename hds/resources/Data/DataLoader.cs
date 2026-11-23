@@ -298,6 +298,7 @@ namespace hds
                         }
                         if (data.Length > 21 && byte.TryParse(data[21], out byte awareness))
                             theMob.CapturedStealthAwareness = awareness;
+                        theMob.CapturedEvasion = NpcEvasion.FromSpawnRow(data, theMob);
                         if (skipRepeats)
                         {
                             // The full world, not the test list: who attacks on sight

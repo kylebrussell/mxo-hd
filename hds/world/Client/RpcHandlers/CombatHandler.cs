@@ -677,6 +677,8 @@ namespace hds
                 return;
             }
 
+            if (!npcStarted && NpcEvasion.InterceptEntry(client, targetMob, targetViewWithSpawnId)) return;
+
             LeaveOtherFights();
             PvpFlag.OnFightStarts(client, false);
 

@@ -86,7 +86,15 @@ namespace hds
 
         // ConditionStateFlags on this NPC's view: in combat, plus the tactic conditions it suffers
         private UInt32 conditionFlags = 0;
-        internal uint ConditionFlags { get { lock (conditionTokens) return conditionFlags; } }
+        internal NpcEvasion CapturedEvasion { get; set; }
+        internal uint ConditionFlags
+        {
+            get
+            {
+                lock (conditionTokens)
+                    return conditionFlags | (CapturedEvasion != null && CapturedEvasion.Health > 0 ? EvasionShield.StateFlag : 0);
+            }
+        }
         private readonly System.Collections.Generic.Dictionary<UInt32, int> conditionTokens =
             new System.Collections.Generic.Dictionary<UInt32, int>();
 
@@ -114,7 +122,7 @@ namespace hds
                 return;
             }
             var pak = new PacketContent();
-            pak.AddByteArray(BuildConditionUpdate(conditionFlags));
+            pak.AddByteArray(BuildConditionUpdate(ConditionFlags));
             Store.world.SendViewUpdateToClientsWhoHasMobSpawned(pak, this);
         }
 
@@ -360,6 +368,15 @@ namespace hds
             yPos = yBase;
             zPos = zBase;
             currentState = (int)statusList.STANDING;
+            if (CapturedEvasion != null)
+            {
+                lock (conditionTokens)
+                {
+                    conditionFlags = 0;
+                    conditionTokens.Clear();
+                    CapturedEvasion.Reset();
+                }
+            }
         }
 
         public ulong getEntityId()
@@ -546,6 +563,7 @@ namespace hds
             themob.TitleAbility.setValue(titleAbility);
             themob.ConditionStateFlags.setValue(StringUtils.hexStringToBytes("00001000"));
             themob.CurrentState.setValue(StringUtils.hexStringToBytes(getIsDead() ? "fd070000" : "06080000"));
+            if (!getIsDead()) CapturedEvasion?.ApplyCreation(themob, ConditionFlags);
 
             if (RangedWeapons.IsGun(getWeapon()))
             {
