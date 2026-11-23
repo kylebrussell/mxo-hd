@@ -337,17 +337,23 @@ public class FreeCastViralLandingTests : IDisposable
     }
 
     [Theory]
-    [InlineData(20, 5)]
-    [InlineData(75, 4)]
-    public void WoundingShotOnlyAppliesBallisticResistanceToTheFixedHit(int resistance, int resisted)
+    [InlineData(20, 25, 20, 3)]
+    [InlineData(50, 50, 20, 5)]
+    [InlineData(50, 50, 75, 4)]
+    public void WoundingShotOnlyAppliesBallisticResistanceToTheFixedHit(byte attackerLevel, byte defenderLevel, int resistance, int resisted)
     {
         var caster = Client(110);
         var target = Client(111);
         Store.currentClient = caster;
+        caster.playerInstance.Level.setValue(attackerLevel);
+        target.playerInstance.Level.setValue(defenderLevel);
         caster.playerData.pvpFlag = target.playerData.pvpFlag = true;
         caster.playerInstance.OrganizationID.setValue((byte)1);
         target.playerInstance.OrganizationID.setValue((byte)2);
         caster.viewMan.addView(111, 1).viewCreated = true;
+        LoadProfile(caster, attackerLevel, 2, 17, CombatStyles.Rifles, CombatSpecials.WoundingShot);
+        LoadProfile(target, defenderLevel, 2, 17, CombatStyles.Rifles, 254, 255, 154);
+        CombatStyles.Select(caster, CombatStyles.Rifles);
         var ability = new AbilityItem();
         ability.setAbilityID(CombatSpecials.WoundingShot);
         ability.setValueFrom(6);
@@ -355,20 +361,39 @@ public class FreeCastViralLandingTests : IDisposable
         var effects = TimedEffects.ForPlayer(target);
         try
         {
+            Assert.Equal(0, AbilityStats.Player(target, 181));
             PvpCombat.LandAbilityOn(caster, ability, target);
             Assert.Equal(994, PvpCombat.HealthOf(target));
             CheckNeutralDot();
-            effects.Effects.Apply(271, new[]
+            if (resistance == 20)
             {
-                new TimedEffects.Active { Target = 181, Value = resistance, Proc = TempMods.Proc.Stat, Seconds = 10 }
-            }, TimeUtils.GetSimTimeSeconds());
+                Assert.True(AbilityPassives.IsLoaded(target, 1061));
+                AbilitySupport.Land(target, 1061, 2);
+            }
+            else
+            {
+                effects.Effects.Apply(271, new[]
+                {
+                    new TimedEffects.Active { Target = 181, Value = resistance, Proc = TempMods.Proc.Stat, Seconds = 10 }
+                }, TimeUtils.GetSimTimeSeconds());
+            }
+            Assert.Equal(resistance, AbilityStats.Player(target, 181));
+            ushort beforeResisted = PvpCombat.HealthOf(target);
             PvpCombat.LandAbilityOn(caster, ability, target);
-            Assert.Equal(994 - resisted, PvpCombat.HealthOf(target));
+            Assert.Equal(beforeResisted - resisted, PvpCombat.HealthOf(target));
             CheckNeutralDot();
         }
         finally
         {
+            AbilityBuffs.RemoveAll(target);
             TimedEffects.Clear(effects);
+        }
+
+        static void LoadProfile(WorldClient actor, ushort rank, params ushort[] roots)
+        {
+            var profile = roots.SelectMany(id => AbilityPrerequisites.Current.Closure(id).Keys.Append(id)).Distinct().ToArray();
+            Assert.True(profile.Sum(AbilityMemory.Cost) <= AbilityMemory.ForLevel(rank));
+            AbilityPassives.SetLoaded(actor, profile.Select(id => (id, rank)));
         }
 
         void CheckNeutralDot()
