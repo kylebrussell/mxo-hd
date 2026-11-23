@@ -1754,18 +1754,27 @@ public class AbilityRefusalFeedbackTests:IDisposable
     [InlineData("swapped while casting", 0u, 244)]
     [InlineData("neutral", 0u, 244)]
     [InlineData("resisted", 0u, 244)]
+    [InlineData("wrong weapon", AbilityRefusals.RequiredItemCategory, 126)]
+    [InlineData("unloaded while casting", 0u, 126)]
+    [InlineData("swapped while casting", 0u, 126)]
+    [InlineData("neutral", 0u, 126)]
+    [InlineData("wrong weapon", AbilityRefusals.RequiredItemCategory, 176)]
+    [InlineData("unloaded while casting", 0u, 176)]
+    [InlineData("swapped while casting", 0u, 176)]
+    [InlineData("neutral", 0u, 176)]
     public void TimedGunSpecialBindsItsEligibleTargetAndConsumesTypedResistance(string scenario, uint refusal, int idValue)
     {
         ushort id = (ushort)idValue;
         bool rifle = id == CombatSpecials.ThreeRoundBurst;
         bool barrage = id == CombatSpecials.PistolBarrage;
+        bool starter = id is 126 or 176;
         int outside = rifle ? 19749 : barrage ? 19849 : 20349;
         var caster = TimedGunSpecialCaster(id, unloaded: scenario == "unloaded",
-            wrongWeapon: scenario is "single SMG" or "single handgun");
+            wrongWeapon: scenario is "single SMG" or "single handgun" or "wrong weapon");
         var target = Client();
         target.playerData.setCharID(111);
         target.playerData.setEntityId(111);
-        target.playerInstance.Level.setValue((byte)27);
+        target.playerInstance.Level.setValue(starter ? (byte)19 : (byte)27);
         caster.playerInstance.OrganizationID.setValue((byte)1);
         target.playerInstance.OrganizationID.setValue((byte)(scenario == "ally" ? 1 : 2));
         caster.playerData.pvpFlag = target.playerData.pvpFlag = true;
@@ -1801,19 +1810,21 @@ public class AbilityRefusalFeedbackTests:IDisposable
             double castEnd = caster.playerData.castEndsAt;
             double seconds = barrage ? 2 : 4;
             Assert.InRange(castEnd - start, seconds - .01, seconds + .25);
-            Assert.Equal(rifle ? 480 : 470, AbilityHandler.CurrentInnerStrength(caster));
+            Assert.Equal(500 - (int)AbilityCatalog.Find(id).Number("Ability/AbilityInnerStrengthCost"), AbilityHandler.CurrentInnerStrength(caster));
             Assert.Equal(1000, PvpCombat.HealthOf(target));
             string castStart = id switch
             {
                 CombatSpecials.ThreeRoundBurst => "80ac00010000000000000000000000008040",
                 CombatSpecials.PistolBarrage => "80acf4000000000000000000000000000040",
+                126 => "80ac7e000000000000000000000000008040",
+                176 => "80acb0000000000000000000000000008040",
                 _ => "80acfa000000000000000000000000008040"
             };
             Assert.Contains(Rpcs(caster), wire => wire.SequenceEqual(Hex(castStart)));
             Assert.False(AbilityCooldowns.IsCoolingDown(caster.playerData, id, TimeUtils.GetSimTimeSeconds()));
             Assert.True(AbilityCooldowns.TryGet(id, out var cooldown));
-            Assert.Equal(10f, cooldown.Seconds);
-            Assert.Equal(689, cooldown.Group);
+            Assert.Equal(starter ? 8f : 10f, cooldown.Seconds);
+            Assert.Equal(id == 126 ? 690 : 689, cooldown.Group);
             Assert.Equal(5f, cooldown.GroupSeconds);
 
             switch (scenario)
@@ -1822,15 +1833,15 @@ public class AbilityRefusalFeedbackTests:IDisposable
                 case "lost sight": SetTargetX(22350); break;
                 case "new spawn": view.spawnId++; break;
                 case "unloaded while casting": caster.playerData.passives.Loaded.Remove(id); break;
-                case "swapped while casting": caster.playerInstance.EquippedItemID.setValue(698u); break;
+                case "swapped while casting": caster.playerInstance.EquippedItemID.setValue(id == 176 ? 2503u : 698u); break;
             }
 
-            Assert.Equal(barrage ? 11 : 13, AbilityStats.Influence(caster, 171));
+            if (!starter) Assert.Equal(barrage ? 11 : 13, AbilityStats.Influence(caster, 171));
             AbilityCastInterrupts.FinishDue(caster, castEnd + .01);
             Assert.True(AbilityCooldowns.IsCoolingDown(caster.playerData, id, TimeUtils.GetSimTimeSeconds()));
             var expectedHealth = scenario switch
             {
-                "neutral" => rifle ? 910 : barrage ? 981 : 971,
+                "neutral" => id switch { 126 => 989, 176 => 982, CombatSpecials.ThreeRoundBurst => 910, CombatSpecials.PistolBarrage => 981, _ => 971 },
                 "resisted" => rifle ? 918 : barrage ? 983 : 974,
                 _ => 1000
             };
@@ -1856,18 +1867,27 @@ public class AbilityRefusalFeedbackTests:IDisposable
     [InlineData("different opponent", 244)]
     [InlineData("fight ends", 244)]
     [InlineData("fight replaced", 244)]
+    [InlineData("same fight", 126)]
+    [InlineData("different opponent", 126)]
+    [InlineData("fight ends", 126)]
+    [InlineData("weapon changes", 126)]
+    [InlineData("same fight", 176)]
+    [InlineData("different opponent", 176)]
+    [InlineData("fight replaced", 176)]
+    [InlineData("weapon changes", 176)]
     public void TimedGunSpecialQueuesAgainstTheOriginalInterlock(string scenario, int idValue)
     {
         ushort id = (ushort)idValue;
         bool rifle = id == CombatSpecials.ThreeRoundBurst;
         bool barrage = id == CombatSpecials.PistolBarrage;
+        bool starter = id is 126 or 176;
         var caster = TimedGunSpecialCaster(id);
         var target = new Mob();
         target.setEntityId(250000);
         target.setDistrict(1);
         target.setHealthC(1000);
         target.setHealthM(1000);
-        target.setLevel(27);
+        target.setLevel(starter ? (byte)19 : (byte)27);
         target.setIsSpawned(true);
         target.setXPos(21550);
         target.setYPos(1095);
@@ -1900,9 +1920,10 @@ public class AbilityRefusalFeedbackTests:IDisposable
                 return;
             }
 
-            Assert.Equal(rifle ? 480 : 470, AbilityHandler.CurrentInnerStrength(caster));
+            Assert.Equal(500 - (int)AbilityCatalog.Find(id).Number("Ability/AbilityInnerStrengthCost"), AbilityHandler.CurrentInnerStrength(caster));
             CombatSession? replacement = scenario == "fight replaced" ? NewFight(handle) : null;
-            if (scenario != "same fight") sessionField.SetValue(handler, replacement);
+            if (scenario == "weapon changes") caster.playerInstance.EquippedItemID.setValue(692u);
+            else if (scenario != "same fight") sessionField.SetValue(handler, replacement);
             AbilityCastInterrupts.FinishDue(caster, caster.playerData.castEndsAt + .01);
             Assert.Equal(1000, target.getHealthC());
             if (scenario == "same fight")
@@ -1910,11 +1931,12 @@ public class AbilityRefusalFeedbackTests:IDisposable
                 var queued = Assert.IsType<AbilityItem>(original.QueuedAbility);
                 Assert.Equal(id, queued.getAbilityID());
                 Assert.Equal(view.ViewID, original.QueuedAbilityTarget);
-                Assert.Equal(rifle ? 11367u : barrage ? 9519u : 21082u, CombatAnimations.Special(id, true, CombatTactic.Speed)?.Id);
+                uint move = id switch { 126 => 9522, 176 => 21083, CombatSpecials.ThreeRoundBurst => 11367, CombatSpecials.PistolBarrage => 9519, _ => 21082 };
+                Assert.Equal(move, CombatAnimations.Special(id, true, CombatTactic.Speed)?.Id);
                 Assert.Null(CombatAnimations.Special(id, false, CombatTactic.Speed));
                 if (rifle || barrage)
                     Assert.Equal(AbilityStats.Attack(caster, true) + (rifle ? 21 : 15), AbilityStats.SpecialAttack(caster, queued));
-                if (barrage)
+                if (barrage || starter)
                 {
                     Assert.True(handler.CanResolveNpcQueuedAbility(original, queued));
                     view.spawnId++;
@@ -1922,9 +1944,10 @@ public class AbilityRefusalFeedbackTests:IDisposable
                     view.spawnId--;
                 }
                 Assert.True(CombatAnimations.CanResolveQueuedAbility(caster, queued));
-                caster.playerInstance.EquippedItemID.setValue(698u);
+                byte[] previousWeapon = caster.playerInstance.EquippedItemID.getValue();
+                caster.playerInstance.EquippedItemID.setValue(0u);
                 Assert.False(CombatAnimations.CanResolveQueuedAbility(caster, queued));
-                caster.playerInstance.EquippedItemID.setValue(rifle ? 692u : barrage ? 2496u : 2503u);
+                caster.playerInstance.EquippedItemID.setValue(previousWeapon);
                 caster.playerData.passives.Loaded.Remove(id);
                 Assert.False(CombatAnimations.CanResolveQueuedAbility(caster, queued));
             }
@@ -1958,21 +1981,22 @@ public class AbilityRefusalFeedbackTests:IDisposable
     {
         bool rifle = id == CombatSpecials.ThreeRoundBurst;
         bool barrage = id == CombatSpecials.PistolBarrage;
-        ushort style = rifle ? CombatStyles.Rifles : barrage ? CombatStyles.Handguns : CombatStyles.SubmachineGuns;
+        ushort style = rifle ? CombatStyles.Rifles : barrage || id == 126 ? CombatStyles.Handguns : CombatStyles.SubmachineGuns;
+        byte level = id is 126 or 176 ? (byte)19 : (byte)27;
         string root = AppContext.BaseDirectory;
         while (!File.Exists(Path.Combine(root, "data", "sector_properties.csv"))) root = Path.GetDirectoryName(root)!;
         SectorProperties.Load(Path.Combine(root, "data", "sector_properties.csv"));
         NavMesh.UseDirectory(Path.Combine(root, "data", "navmesh"));
 
         var caster = Client();
-        caster.playerInstance.Level.setValue((byte)27);
+        caster.playerInstance.Level.setValue(level);
         caster.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(21750, 1095, 16150));
-        uint weapon = rifle ? 692u : barrage ? 2496u : 2503u;
-        caster.playerInstance.EquippedItemID.setValue(wrongWeapon ? (barrage ? 2565u : 698u) : weapon);
+        uint weapon = id switch { 126 => 2565, 176 => 698, CombatSpecials.ThreeRoundBurst => 692, CombatSpecials.PistolBarrage => 2496, _ => 2503 };
+        caster.playerInstance.EquippedItemID.setValue(wrongWeapon ? (barrage ? 2565u : id == 176 ? 2503u : 698u) : weapon);
         var profile = new ushort[] { 2, 17, style, id }
             .SelectMany(entry => AbilityPrerequisites.Current.Closure(entry).Keys.Append(entry)).Distinct().ToArray();
-        Assert.True(profile.Sum(AbilityMemory.Cost) <= AbilityMemory.ForLevel(27));
-        AbilityPassives.SetLoaded(caster, profile.Where(entry => !unloaded || entry != id).Select(entry => (entry, (ushort)27)));
+        Assert.True(profile.Sum(AbilityMemory.Cost) <= AbilityMemory.ForLevel(level));
+        AbilityPassives.SetLoaded(caster, profile.Where(entry => !unloaded || entry != id).Select(entry => (entry, (ushort)level)));
         CombatStyles.Select(caster, style);
         caster.messageQueue.RPCMessagesQueue.Clear();
         caster.messageQueue.ObjectMessagesQueue.Clear();
@@ -1980,7 +2004,7 @@ public class AbilityRefusalFeedbackTests:IDisposable
 
         var ability = new AbilityItem();
         ability.setAbilityID(id);
-        ability.setAbilityName(rifle ? "Three Round Burst" : barrage ? "Pistol Barrage" : "Controlled Burst");
+        ability.setAbilityName(AbilityCatalog.Find(id).Name);
         ability.setIsCastable(true);
         ability.setCastingTime(barrage ? (ushort)2 : (ushort)4);
         ability.setCastAnimStart(new byte[4]);

@@ -29,14 +29,19 @@ namespace hds
 
         internal const ushort PistolBarrage = 244, SlidingVolley = 249, ControlledBurst = 250, ThreeRoundBurst = 256;
 
+        internal static bool ProtectsTimedGunCast(ushort ability) =>
+            ability == 126 || ability == 176 || ability == PistolBarrage || ability == ControlledBurst || ability == ThreeRoundBurst;
+
         internal static bool KeepsQueuedOpponent(ushort? ability) =>
-            ability == SlidingVolley || ability == PistolEvasive || ability == PistolBarrage;
+            ability == 126 || ability == 176 || ability == SlidingVolley || ability == PistolEvasive || ability == PistolBarrage;
 
         internal static bool HasEquippedDualSubmachineGuns(WorldClient caster) =>
             RangedWeapons.GetStats(SharpshooterFreeFire.EquippedWeapon(caster))?.Category == "IWDS";
 
         internal static bool HasTimedSpecialWeapon(WorldClient caster, ushort ability) => ability switch
         {
+            126 => CombatAnimations.HasRequiredGunWeapon(caster, ability),
+            176 => CombatAnimations.HasRequiredGunWeapon(caster, ability),
             ThreeRoundBurst => HasEquippedRifle(caster),
             PistolBarrage => RangedWeapons.GetStats(SharpshooterFreeFire.EquippedWeapon(caster))?.Category == "IWDH",
             _ => HasEquippedDualSubmachineGuns(caster)

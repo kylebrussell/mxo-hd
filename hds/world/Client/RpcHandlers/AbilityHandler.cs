@@ -232,8 +232,7 @@ namespace hds
 
             // Timed gun specials may resolve in interlock or as a selected attack. Both use the same live target.
             bool threeRoundBurst = AbilityID == CombatSpecials.ThreeRoundBurst;
-            bool pistolBarrage = AbilityID == CombatSpecials.PistolBarrage;
-            bool protectedGunSpecial = AbilityID == CombatSpecials.ControlledBurst || threeRoundBurst || pistolBarrage;
+            bool protectedGunSpecial = CombatSpecials.ProtectsTimedGunCast(AbilityID);
             object gunSpecialFight = null;
             uint? gunSpecialOpponent = null;
             if (protectedGunSpecial)
@@ -281,7 +280,7 @@ namespace hds
                 }
                 pistolInterlock = CombatManager.GetHandler(shooter).ActiveInterlockIdentity;
             }
-            bool selectedTimedGun = AbilityID == 126 || AbilityID == 176 || protectedGunSpecial || pistolEvasive;
+            bool selectedTimedGun = protectedGunSpecial || pistolEvasive;
             bool rifleOpener = CombatSpecials.IsRifleOpener(AbilityID);
             bool woundingShot = AbilityID == CombatSpecials.WoundingShot;
             ushort? gunTargetSpawn = null;
@@ -1174,7 +1173,7 @@ namespace hds
                         Output.WriteDebugLog($"[ABILITY] {AbilityID} fizzles: the original interlock special could not queue");
                     return;
                 }
-                if ((threeRoundBurst || pistolBarrage) && !CombatStyles.CanUse(client, AbilityID)) return;
+                if (AbilityID != CombatSpecials.ControlledBurst && !CombatStyles.CanUse(client, AbilityID)) return;
             }
             if (pistolEvasive)
             {
