@@ -207,7 +207,6 @@ PET_REPAIRS = {30, 31, 587, 596, 615}
 PASSIVE_LIMITS = {
     18: 'discipline metadata; shipped CoderApplication documents seven temporary crafting bonuses; native caller and buff value open; [evidence](ABILITY-CODER-PARITY-1.md)',
     35: 'ApplyAuraEffect pulses 697 on friendly simulacra; incoming viral casts on player pets are unsupported',
-    52: 'shipped ComputerHack can check the loaded Hacker ability; the numeric Computer Hacking contest follows an unconditional return',
     75: 'the direct stat177 radius consumer has no recovered link to bonus1055; [evidence](ABILITY-DEBUFF-RADIUS.md)',
     161: 'shipped BaseSneakAttackTestFn returns success before any detection contest; the declared dependency alone does not read the stat',
     165: 'TapDataNode_Subject delegates to native activateTapDataNode; no recovered tapping executor; [evidence](DATA-MINING.md)',
@@ -501,6 +500,8 @@ def status(i):
     if i in DATA_MINING:
         return DATA_MINING[i][1]
     r = coverage[i]
+    if i == 52 and r.get('utility'):
+        return 'partial'
     if i in PETS or r.get('proxy_technician') or r.get('sharpshooter') or r.get('multifighting'):
         return 'partial'
     # Conservative: metadata, a raw constant or a packet helper alone is not retail gameplay parity.
@@ -586,6 +587,8 @@ def remaining_items(i, current_status, runtime_summary):
         open_items['script'] = 'Verify callback coverage for ' + ', '.join(hooks)
     if 'OURS' in runtime_summary or 'unresolved' in runtime_summary:
         open_items['source-parity'] = 'Resolve the inferred or unresolved behavior identified in the server column'
+    if i == 52 and r.get('utility'):
+        open_items['source-parity'] = 'Verify Hack-specific cast progress, localized feedback and Camillo’s movement'
     if i == 86:
         open_items['source-parity'] = 'Verify that the signed movement adjustment slows the stock recipient and restores its prior speed on expiry'
     if i == 485:

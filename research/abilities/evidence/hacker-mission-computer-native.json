@@ -1,0 +1,34 @@
+{
+  "families": {
+    "mission-computer-hack": {
+      "representative": 52,
+      "result": "pass",
+      "head": "5a9d8361",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/951#issuecomment-7096242749",
+      "scope": "After the stock mission-floor ride, the stock client uses Computer GO 3 action 4 on Scheduled for Deletion goal 1. Unloaded Hacker is refused without XP. Reload restores stat 643 +8. Hack completes the goal once, shows one 6030 XP gain, and puts the terminal in idle state 0x960."
+    }
+  },
+  "abilities": {
+    "52": {
+      "family": "mission-computer-hack",
+      "note": "PR951 implements the authored optional Camillo objective and verifies the reachable loaded-ability rule. The old numeric Computer Hacking contest follows an unconditional return in the shipped server rule. The native operation completes immediately and displays the current XP presentation as from fighting. Original Hack progress-bar behavior, Hack-specific localized feedback, and Camillo's movement remain open. The 5ed06b4f fixture and test follow-up is byte-identical to the native-passed head in hds and data.",
+      "checks": {
+        "stats": {
+          "source": "GOB 52 uses learned-level ValueFunction 2 with scale 4 for Computer Hacking stat 643. research/client-scripts/serverrules.py lines 503–525 tests the loaded Hacker level before returning. The separate numeric stat contest appears after that return.",
+          "runtime": "The normal Archive path publishes or removes the learned-rank modifier. The mission gate reads live loaded ability 52 and applies no numeric contest.",
+          "test": "The stock PR951 rank-2 loadout removes stat 643 +8 on unload and restores +8 on reload. The real terminal refuses without the loaded row and succeeds once it is restored. https://github.com/kylebrussell/mxo-hd/pull/951#issuecomment-7096242749"
+        },
+        "executor": {
+          "source": "Shipped ComputerHack rule 1002 binds action 4 on Computer GO 3. Its reachable branch requires loaded Hacker, succeeds, awards XP and breaks the exclusive action before returning. The original Scheduled for Deletion Operator dialogue identifies this terminal as an optional Hack.",
+          "runtime": "The ObjectInteractionHandler resolves the actual mission terminal, and MissionRuntime accepts its current spawn and shipped usable only when Hacker is loaded. Goal completion and XP commit in the same saved mission transaction.",
+          "test": "MissionComputerHackTests covers stale spawn, wrong usable, unloaded/loaded behavior and ordinary Search. The disposable mission-computer-hacker replay covers legal Archive unload/reload, wrong use, completion, one-time 6030 XP, repeat and relog. The stock client receives one goal update and one 6030 XP gain on the corresponding Hack and no gain on refusal or repeat. https://github.com/kylebrussell/mxo-hd/pull/951#issuecomment-7096242749"
+        },
+        "consumer": {
+          "source": "Shipped ComputerHack rule 1002 returns after the loaded-Hacker check and XP award. The later numeric Computer Hacking contest is unreachable.",
+          "runtime": "The Camillo Computer Hack interaction uses the live loaded rank. The displayed stat remains a learned-rank record without a separate numeric contest.",
+          "test": "MissionComputerHackTests contrasts an unloaded refusal with a loaded success, and the stock client completes the same optional objective once. https://github.com/kylebrussell/mxo-hd/pull/951#issuecomment-7096242749"
+        }
+      }
+    }
+  }
+}
