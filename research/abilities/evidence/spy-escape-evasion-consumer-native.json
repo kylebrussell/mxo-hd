@@ -1,0 +1,42 @@
+{
+  "abilities": {
+    "121": {
+      "checks": {
+        "targeting": {
+          "source": "GOB 121 requires current interlock, costs 15 IS, and grants caster 520 +20 for 30 s. Shared escape reuse is 12 s. Side Roll has no own reuse.",
+          "runtime": "Current-opponent admission rejects out-of-combat and stale handles. The landed move deals zero special damage, applies the caster buff and leaves interlock. A later live enemy entry into Evade reads the current 520 total and returns to its original score after expiry.",
+          "test": "PR1030 stock suppressed the at-rest move and verified accepted cast, 15 IS, 520 +20/30 s, zero ability damage and ordinary exit. At identical Power/+3 Insight force103, two resisted attempts scored evade130 while live and 110 after removal. SpyEscapeMovesTests covers base effect and timers. SpyEscapeMovesMode exercises current and stale target handles with captured stock requests. https://github.com/kylebrussell/mxo-hd/pull/1030#issuecomment-7115615104 https://github.com/kylebrussell/mxo-hd/pull/1030#issuecomment-7115241778"
+        },
+        "stats": {
+          "source": "GOB 121 requires current interlock, costs 15 IS, and grants caster 520 +20 for 30 s. Shared escape reuse is 12 s. Side Roll has no own reuse.",
+          "runtime": "Current-opponent admission rejects out-of-combat and stale handles. The landed move deals zero special damage, applies the caster buff and leaves interlock. A later live enemy entry into Evade reads the current 520 total and returns to its original score after expiry.",
+          "test": "PR1030 stock suppressed the at-rest move and verified accepted cast, 15 IS, 520 +20/30 s, zero ability damage and ordinary exit. At identical Power/+3 Insight force103, two resisted attempts scored evade130 while live and 110 after removal. SpyEscapeMovesTests covers base effect and timers. SpyEscapeMovesMode exercises current and stale target handles with captured stock requests. https://github.com/kylebrussell/mxo-hd/pull/1030#issuecomment-7115615104 https://github.com/kylebrussell/mxo-hd/pull/1030#issuecomment-7115241778"
+        },
+        "behavior-tests": {
+          "source": "GOB 121 requires current interlock, costs 15 IS, and grants caster 520 +20 for 30 s. Shared escape reuse is 12 s. Side Roll has no own reuse.",
+          "runtime": "Current-opponent admission rejects out-of-combat and stale handles. The landed move deals zero special damage, applies the caster buff and leaves interlock. A later live enemy entry into Evade reads the current 520 total and returns to its original score after expiry.",
+          "test": "PR1030 stock suppressed the at-rest move and verified accepted cast, 15 IS, 520 +20/30 s, zero ability damage and ordinary exit. At identical Power/+3 Insight force103, two resisted attempts scored evade130 while live and 110 after removal. SpyEscapeMovesTests covers base effect and timers. SpyEscapeMovesMode exercises current and stale target handles with captured stock requests. https://github.com/kylebrussell/mxo-hd/pull/1030#issuecomment-7115615104 https://github.com/kylebrussell/mxo-hd/pull/1030#issuecomment-7115241778"
+        }
+      }
+    },
+    "292": {
+      "checks": {
+        "controls": {
+          "source": "GOB 292 requires current interlock, costs 15 IS, and grants caster 520 +25 for 30 s. Shared escape reuse is 12 s. Cartwheel also authors 30 s own reuse and Confuse state 91 for four seconds.",
+          "runtime": "Current-opponent admission rejects out-of-combat and stale handles. The landed move deals zero special damage, applies the caster buff and leaves interlock. A later live enemy entry into Evade reads the current 520 total and returns to its original score after expiry. Cartwheel puts the timed Confuse state on the opponent; the existing holder removes it after four seconds.",
+          "test": "PR1030 stock suppressed the at-rest move and verified accepted cast, 15 IS, 520 +25/30 s, zero ability damage and ordinary exit. At identical Power/+3 Insight force103, two resisted attempts scored evade135 while live and 110 after removal. Stock logged the paired 91 adds/removals four seconds apart. SpyEscapeMovesTests covers base effect and timers. SpyEscapeMovesMode exercises current and stale target handles with captured stock requests. https://github.com/kylebrussell/mxo-hd/pull/1030#issuecomment-7115615104 https://github.com/kylebrussell/mxo-hd/pull/1030#issuecomment-7115241778"
+        },
+        "targeting": {
+          "source": "GOB 292 requires current interlock, costs 15 IS, and grants caster 520 +25 for 30 s. Shared escape reuse is 12 s. Cartwheel also authors 30 s own reuse and Confuse state 91 for four seconds.",
+          "runtime": "Current-opponent admission rejects out-of-combat and stale handles. The landed move deals zero special damage, applies the caster buff and leaves interlock. A later live enemy entry into Evade reads the current 520 total and returns to its original score after expiry. Cartwheel puts the timed Confuse state on the opponent; the existing holder removes it after four seconds.",
+          "test": "PR1030 stock suppressed the at-rest move and verified accepted cast, 15 IS, 520 +25/30 s, zero ability damage and ordinary exit. At identical Power/+3 Insight force103, two resisted attempts scored evade135 while live and 110 after removal. Stock logged the paired 91 adds/removals four seconds apart. SpyEscapeMovesTests covers base effect and timers. SpyEscapeMovesMode exercises current and stale target handles with captured stock requests. https://github.com/kylebrussell/mxo-hd/pull/1030#issuecomment-7115615104 https://github.com/kylebrussell/mxo-hd/pull/1030#issuecomment-7115241778"
+        },
+        "stats": {
+          "source": "GOB 292 requires current interlock, costs 15 IS, and grants caster 520 +25 for 30 s. Shared escape reuse is 12 s. Cartwheel also authors 30 s own reuse and Confuse state 91 for four seconds.",
+          "runtime": "Current-opponent admission rejects out-of-combat and stale handles. The landed move deals zero special damage, applies the caster buff and leaves interlock. A later live enemy entry into Evade reads the current 520 total and returns to its original score after expiry. Cartwheel puts the timed Confuse state on the opponent; the existing holder removes it after four seconds.",
+          "test": "PR1030 stock suppressed the at-rest move and verified accepted cast, 15 IS, 520 +25/30 s, zero ability damage and ordinary exit. At identical Power/+3 Insight force103, two resisted attempts scored evade135 while live and 110 after removal. Stock logged the paired 91 adds/removals four seconds apart. SpyEscapeMovesTests covers base effect and timers. SpyEscapeMovesMode exercises current and stale target handles with captured stock requests. https://github.com/kylebrussell/mxo-hd/pull/1030#issuecomment-7115615104 https://github.com/kylebrussell/mxo-hd/pull/1030#issuecomment-7115241778"
+        }
+      }
+    }
+  }
+}
