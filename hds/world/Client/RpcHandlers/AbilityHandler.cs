@@ -487,10 +487,10 @@ namespace hds
             }
 
             WorldClient recallRecipient = null;
-            if (AbilityID == UtilityAbilities.RecallTeamMember)
+            if (AbilityID == UtilityAbilities.RecallTeamMember || AbilityID == UtilityAbilities.RecallMissionTeam)
             {
                 ushort? spawn = packet.Length == 41 ? (ushort?)BitConverter.ToUInt16(packet, 4) : null;
-                uint? recallRefusal = UtilityAbilities.RecallRefusal(Store.currentClient, currentTargetViewId, spawn, out recallRecipient);
+                uint? recallRefusal = UtilityAbilities.RecallRefusal(Store.currentClient, AbilityID, currentTargetViewId, spawn, out recallRecipient);
                 if (recallRefusal.HasValue)
                 {
                     Deny(AbilityID, $"Recall admission refusal {recallRefusal.Value}.", recallRefusal.Value, sendServerText: false);

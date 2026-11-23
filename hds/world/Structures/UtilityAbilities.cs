@@ -44,7 +44,7 @@ namespace hds
         public const UInt32 LocateDataNodeOff = 0x7c000012;     // "You stop searching for Data Nodes."
 
         // ltfxmap.py
-        public const UInt32 FxRecallTeamMemberPhaseOut = 0x280006d1, FxRecallMissionTeamPhaseOut = 0x280006d2,
+        public const UInt32 FxRecallTeamMemberPhaseOut = 0x280006d1,
             FxGenericAbilityUpgrade = 0x2800041b;
 
         // Object states (StateMachine ids in gameobjects.gob)
@@ -340,14 +340,15 @@ namespace hds
         /// <summary>DisableUsage/Difficulty of the security devices (Security_Panel 466: 10; Security_Desk 377: 0).</summary>
         public static int SecurityDifficulty(UInt16 goid) => goid == 466 ? 10 : 0;
 
-        internal static uint? RecallRefusal(WorldClient caster, ushort targetView, ushort? spawn,
+        internal static uint? RecallRefusal(WorldClient caster, ushort ability, ushort targetView, ushort? spawn,
             out WorldClient recipient)
         {
             recipient = null;
-            if (!AbilityPassives.IsLoaded(caster, RecallTeamMember)) return AbilityRefusals.NotLoaded;
+            if (!AbilityPassives.IsLoaded(caster, ability)) return AbilityRefusals.NotLoaded;
             var fight = CombatManager.GetHandler(caster);
             if (fight.isCombatRunning || fight.HasActiveInterlock) return AbilityRefusals.MustBeOutsideCombat;
             if (CombatStyles.Active(caster) != CombatStyles.HackerStyle) return AbilityRefusals.WrongStyle;
+            if (ability == RecallMissionTeam) return null;
             var selected = AbilitySupport.PlayerInView(caster, targetView, spawn);
             if (selected == null || selected == caster) return AbilityRefusals.InvalidTarget;
             var team = SocialGroups.Instance.FindTeamOf(caster.playerData.getCharID());
@@ -435,21 +436,20 @@ namespace hds
                 }
                 string targetName = TimedEffects.PlayerName(target);
                 var combat = CombatManager.GetHandler(target);
-                bool singleRecall = ability == RecallTeamMember;
-                if (combat.isCombatRunning || (singleRecall && combat.HasActiveInterlock))
+                if (combat.isCombatRunning || combat.HasActiveInterlock)
                 {
-                    RecallFailed(caster, $"{targetName} is in combat and cannot be recalled.", singleRecall);
+                    RecallFailed(caster, $"{targetName} is in combat and cannot be recalled.");
                     continue;
                 }
                 if (target.playerData.isDead || target.playerData.duelDeath)
                 {
-                    RecallFailed(caster, $"{targetName} is dead and cannot be recalled.", singleRecall);
+                    RecallFailed(caster, $"{targetName} is dead and cannot be recalled.");
                     continue;
                 }
 
                 ToTarget(target, TeleportingTarget, ability, casterName);
-                ServerPackets.SendPlayerAbilityEffect(target,
-                    singleRecall ? FxRecallTeamMemberPhaseOut : FxRecallMissionTeamPhaseOut);
+                // RecallMissionTeam_DirectObject calls the team member callback for every recipient.
+                ServerPackets.SendPlayerAbilityEffect(target, FxRecallTeamMemberPhaseOut);
                 MissionStaging.Teleport(target, x, y, z);
                 target.FlushQueue();
                 PvpFlag.ToWatchers(target, PvpFight.BuildFacing(target.playerInstance.YawInterval.getValue()[0],
@@ -459,14 +459,11 @@ namespace hds
             }
         }
 
-        private static void RecallFailed(WorldClient caster, string text, bool notify)
+        private static void RecallFailed(WorldClient caster, string text)
         {
             // The two script names have no verified local string IDs. Publish the refusal through the system text channel.
-            if (notify)
-            {
-                new ServerPackets().sendSystemChatMessage(caster, text, "BROADCAST");
-                caster.FlushQueue();
-            }
+            new ServerPackets().sendSystemChatMessage(caster, text, "BROADCAST");
+            caster.FlushQueue();
             Output.WriteDebugLog($"[UTILITY] Recall: {text}");
         }
 

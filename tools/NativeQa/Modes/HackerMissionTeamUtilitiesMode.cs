@@ -13,17 +13,17 @@ public sealed class HackerMissionTeamUtilitiesMode : NativeQaMode
     // Complete stock requests from the PR483 native capture. Only the live direct object of 382 is variable.
     private const string StockRecallMember = "80b97e01040002000000000000000000000000000000000000000000000000e08f767241086b0000000000";
     private const string StockRecallTeam = "80b9e601000000000000000000000000000000000000000000000000585cae0001000000086b0000000000";
-    private const int X = 24800, Y = 495, Z = -1498;
+    private const int X = 17000, Y = 495, Z = 6400;
     private static readonly (string Handle, int X, int Z)[] Stands =
     {
-        ("QAFriend", 25183, -1177), ("QAFar", 25719, -2269), ("QAOther", 25100, -1498)
+        ("QAFriend", 17200, Z), ("QAFar", 17400, Z), ("QAOther", 17100, Z)
     };
 
     public override string Name => "ability-parity-hacker-mission-utilities";
     public override NativeQaModePlan Plan { get; } = new(
         new ushort[] { 2, 17, Map, RecallMember, RecallTeam, CombatStyles.HackerStyle }, X, Z,
         Array.Empty<string>(), Array.Empty<string>(),
-        new[] { "UPDATE characters SET alignment=3, repMero=100, y=495 WHERE charId=110" }
+        new[] { $"UPDATE characters SET alignment=3, repMero=100, y={Y}, rotation={MobAggro.YawTowards(X, Z, Stands[0].X, Z)} WHERE charId=110" }
             .Concat(Stands.Select(stand =>
                 $"UPDATE characters SET x={stand.X}, y=495, z={stand.Z}, alignment=3, pvpflag=0 WHERE handle='{stand.Handle}'"))
             .ToArray(),
@@ -33,14 +33,16 @@ public sealed class HackerMissionTeamUtilitiesMode : NativeQaMode
         extraQaMetadata: new() { ["ScopedStockRows"] = "44,382,486", ["NativeCloseableRows"] = 0 },
         readyMessages: new[]
         {
-            "Step A. Select Hacker Style on page 2 slot 4. Form a mission team with QAFriend and QAFar using the normal radial and helper accept. Keep QAOther outside. Their initial stands are separate and within view.",
+            "Step A. CSR starts on outdoor NAV (17000,495,6400), facing QAFriend (17200,495,6400). QAFar (17400,495,6400) and QAOther (17100,495,6400) are visible on the same pavement. Try 486 in Self Defense, then choose Hacker Style on page 2 slot 4. Form a mission team with QAFriend and QAFar using the radial and helper accept. Keep QAOther outside.",
             "Step B. Select QAFriend and press page 2 slot 2 (382). Watch QAFriend's avatar actually move beside CSR. QAFar and QAOther must stay in place. Then walk several meters away from QAFriend along the open street so both helpers must visibly move on the next cast.",
-            "Step C. With 44 loaded, take the Locked Safe Fixture from Flood and approach its printed safe stand. Confirm CSR gets the Safe 1 minimap ping. Clear selection and use slot 3 Recall Mission Team. Both teammates arrive; QAOther stays outside the team.",
+            "Step C. With 44 loaded, take the Locked Safe Fixture from Flood and approach its printed safe stand. Confirm CSR gets the Safe 1 minimap ping. Clear selection and use slot 3 Recall Mission Team. Both teammates phase out with effect 0x280006d1 and arrive beside CSR; QAOther stays outside the team. Expect a 2 s cast, 75 IS and 180 s own reuse.",
             "Step D. Expect [UTILITY] Download Mission Map: team pings sent owner=110 recipient=6111 and recipient=6112. Move QAOther near the stand through helper teleport if you want the same-floor exclusion. There should be no team ping for 6113. Enter ?qaunload 44 and check the solo and both team clear lines. Pings expire within 3 s. Reloading 44 does not refresh the old mission."
         });
 
     public override async Task<byte[]> AfterStartAsync(NativeQaBootstrapContext context)
     {
+        foreach (var stand in Stands)
+            StarterHackerPassiveFixture.CheckNav(context, stand.X);
         var server = context.ActualServer ?? throw new InvalidOperationException("Expected a disposable mission-utility server.");
         foreach (var stand in Stands)
         {
@@ -53,8 +55,15 @@ public sealed class HackerMissionTeamUtilitiesMode : NativeQaMode
         if (context.StockProbe is not { } actor) return Array.Empty<byte>();
         var db = context.OwnedDatabase ?? throw new InvalidOperationException("Expected a disposable mission-utility database.");
         await actor.EnterWorldAsync();
+        byte[] teamRequest = Convert.FromHexString(StockRecallTeam);
+        var refusedStyle = await StarterHackerControlTargetMode.RefusedAsync(actor, RecallTeam, teamRequest, AbilityRefusals.WrongStyle);
         actor.SendRpc(StarterHackerViralSightMode.StockStyle);
         await actor.WaitForViewUpdateAsync(2, "02 80 80 80 80 80 10 ee 03 00 00");
+        var recallRow = AbilityMemoryUiFixture.Decode(actor.CharacterData[6]).Single(row => AbilityCatalog.IdOf(row.Descriptor) == RecallTeam);
+        var recallArchive = new Dictionary<ushort, AbilityMemoryUiFixture.Tuple> { [RecallTeam] = recallRow };
+        await StockAbilityProfile.ChangeLoadoutAsync(actor, recallArchive, new[] { RecallTeam }, load: false);
+        var refusedUnloaded = await StarterHackerControlTargetMode.RefusedAsync(actor, RecallTeam, teamRequest, AbilityRefusals.NotLoaded);
+        await StockAbilityProfile.ChangeLoadoutAsync(actor, recallArchive, new[] { RecallTeam }, load: true);
         foreach (var stand in Stands)
         {
             var view = await actor.WaitForViewNamedAsync(stand.Handle);
@@ -100,7 +109,7 @@ public sealed class HackerMissionTeamUtilitiesMode : NativeQaMode
         var pingStarts = recipients.ToDictionary(member => member, member => member.World.RpcSnapshot().Count);
         int outsiderAt = outsider.World.RpcSnapshot().Count;
         int teamStart = server.DebugLog().Length;
-        var team = await CheckRecallAsync(actor, outsider, Convert.FromHexString(StockRecallTeam), recipients, new[] { outsider }, missionStand);
+        var team = await CheckRecallAsync(actor, outsider, teamRequest, recipients, new[] { outsider }, missionStand);
         Check.That(server.DebugLog()[teamStart..].Contains($"[ABILITY-COST] char={actor.CharId} ability=486 paid=75 "),
             "Recall Mission Team pays the stored 75 IS");
         foreach (var member in recipients)
@@ -131,6 +140,7 @@ public sealed class HackerMissionTeamUtilitiesMode : NativeQaMode
             JsonSerializer.Serialize(new
             {
                 RefusedSelf = refusedSelf.Hex, RefusedNonMember = refusedNonMember.Hex, RefusedStale = refusedStale.Hex,
+                TeamWrongStyle = refusedStyle.Hex, TeamUnloaded = refusedUnloaded.Hex,
                 SingleRecall = single, TeamRecall = team, Outsider = outsider.Handle, map.Flags, Map = map.Reveal.Hex
             }));
         return Array.Empty<byte>();
@@ -147,8 +157,9 @@ public sealed class HackerMissionTeamUtilitiesMode : NativeQaMode
         var teleport = OwnPosition(stand.X, stand.Y, stand.Z);
         ushort ability = BinaryPrimitives.ReadUInt16LittleEndian(request.AsSpan(2));
         bool single = ability == RecallMember;
-        uint expectedFx = single ? 0x280006d1u : 0x280006d2u;
-        var ownFx = WireFormat.ToHex(ServerPackets.BuildPlayerAbilityEffect(expectedFx, 0, true)[2..^1]) + " ??";
+        const uint expectedFx = 0x280006d1;
+        byte[] ownFx = ServerPackets.BuildPlayerAbilityEffect(expectedFx, 0, true)[..^1];
+        byte[] ownTeleport = { 2, 0, 1, 0x1c };
         int started = actor.World.RpcSnapshot().Count;
         actor.SendRpc(request);
         await EvidenceRetestWire.CastBarAsync(actor, ability, 2);
@@ -157,8 +168,14 @@ public sealed class HackerMissionTeamUtilitiesMode : NativeQaMode
         foreach (var recipient in recipients)
         {
             byte[] own = await WaitForPositionAsync(recipient, cursors[recipient], teleport, "own recall arrival");
-            await EvidenceRetestWire.ViewSinceAsync(recipient, cursors[recipient], 2, ownFx);
-            proof.Add(new { Recipient = recipient.Handle, Own = WireFormat.ToHex(own) });
+            var seen = recipient.World.ViewSnapshot().Skip(cursors[recipient]).ToArray();
+            int phaseOut = Array.FindIndex(seen, frame => frame.AsSpan().IndexOf(ownFx) >= 0);
+            int arrival = Array.FindIndex(seen, teleport.Occurs);
+            bool inOrder = phaseOut >= 0 && (phaseOut < arrival || (phaseOut == arrival &&
+                own.AsSpan().IndexOf(ownFx) < own.AsSpan().IndexOf(ownTeleport)));
+            Check.That(inOrder,
+                $"{recipient.Handle} sees the team-member phase-out before their recall arrival");
+            proof.Add(new { Recipient = recipient.Handle, PhaseOut = WireFormat.ToHex(seen[phaseOut]), Own = WireFormat.ToHex(own) });
             foreach (var watcher in watchers)
             {
                 var before = creations[watcher].LastOrDefault(view => view.Name == recipient.Handle);

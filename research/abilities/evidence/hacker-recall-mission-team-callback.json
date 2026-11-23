@@ -1,0 +1,18 @@
+{
+  "abilities": {
+    "486": {
+      "checks": {
+        "script": {
+          "source": "GOB 486 stores targetless mission-team cast mode, Hacker Style, outside-combat use, 75 IS, 2 seconds and 180-second reuse. RecallMissionTeam_Test sets the caster's construct. RecallMissionTeam_DirectObject skips the caster and delegates to RecallTeamMember_DirectObject, which checks the construct, Loading Area, combat and death, then plays RECALL_TEAMMEMBER_FX (0x280006d1) before realTeleport. Roster-backed movement was observed in PR634. research/client-scripts/ability/hacker/misc.py:17–29,53–67; research/client-scripts/ltfxmap.py:167–172. https://github.com/kylebrussell/mxo-hd/pull/634#issuecomment-7060078149",
+          "runtime": "The server resolves the caster's live mission team at landing, excludes the caster and other constructs or world transitions, and checks both combat paths and death on each recipient. Each eligible member receives the shared 0x280006d1 phase-out before the relocation. The stock string IDs for combat/death refusals are unverified, so the server sends the corresponding plain system texts.",
+          "test": "The existing mission-utilities mode replays the full stock PR483 targetless 486 request and observes phase-out before own arrival on each member, with matching movement on the caster's and an outsider's live views. The earlier PR634 stock witness establishes team recall and outsider exclusion on the prior runtime. It did not identify the recipient FX ID or exercise the new refusals. https://github.com/kylebrussell/mxo-hd/pull/634#issuecomment-7060078149"
+        },
+        "behavior-tests": {
+          "source": "GOB 382 and 486 share an ordinary Hacker Style and out-of-combat admission requirement. 382 requires a selected teammate. 486 selects its recipients from the mission-team roster and does not use line of sight.",
+          "runtime": "The stock targetless request is accepted with 486 loaded in Hacker Style at rest. Unloaded, incompatible style and in-combat casts fail before a cast bar, IS debit or reuse. Each permitted recipient is processed independently and an outsider stays in place.",
+          "test": "RecallMissionTeamRequiresLoadedHackerAtRestAndNeedsNoSelection checks the two ability shapes and the shared admission gates. The disposable ability-parity-hacker-mission-utilities replay verifies reason 13 and reason 7 without debit, 2-second cast, 75 IS and 180-second reuse for the valid request, two phase-out and relocation records, and the existing map refresh and outsider exclusions. https://github.com/kylebrussell/mxo-hd/pull/634#issuecomment-7060078149"
+        }
+      }
+    }
+  }
+}
