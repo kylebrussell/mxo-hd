@@ -18,12 +18,22 @@
   "abilities": {
     "588": {
       "family": "coder-enrage-armed-npc",
-      "note": "PR866 verifies the NPC GenericEnrageUpdate consumer, the exact lifetime and ordinary dismissal of the existing fight. The remaining player controls are the EnrageInit interlock target-change and IS Block restrictions in tempmods.py. The existing player withdrawal gate is tested. https://github.com/kylebrussell/mxo-hd/pull/866#issuecomment-7088184673",
+      "note": "PR866 verifies the selected NPC application, GenericEnrageUpdate, the exact twelve-second lifetime and ordinary dismissal. Stock session g separately records player 588 Withdraw refusal and release. PR883 confirms the shared state 93 Block and target change controls on a stock player. PR919 directly exercises those same controls with an ordinary level-25 server cast of 588. https://github.com/kylebrussell/mxo-hd/pull/866#issuecomment-7088184673 https://github.com/kylebrussell/mxo-hd/blob/1944e614/docs/COMBAT-ROUND-ENTRIES.md#L50 https://github.com/kylebrussell/mxo-hd/pull/919",
       "checks": {
         "targeting": {
           "source": "GOB 588 uses CastDirectObjects 0, CastValidTarget 3, SelectionRange 16, CastWhenUsed 1, and TestFunction 2. GenericEnrageUpdate excludes players and occupied NPCs before seeking an enemy in sight within 1000 units.",
           "runtime": "AbilityHandler holds the original hostile selection through cast completion; AbilityTargets tests viral deflection before the selected recipient gets state 93. MobAggro.EnragePulse separately searches eligible enemies in sight and opens close combat for an idle NPC only.",
           "test": "PR850 and PR866 land on the selected NPC. PR866 observes one NPC seek to the nearby helper and no second engagement against CSR. EnrageNpcUpdatesTests covers expiry and death guards; AbilityRefusalFeedbackTests.DelayedHostileCastCannotLandOnANewerSpawnInTheOriginalView and FreeCastViralLandingTests.ActualNpcLandingDeflectsBeforeDamageDebuffAndProcAndOnlyRoutesToVisibleSameWorld cover the 588 stale selection and deflection paths. https://github.com/kylebrussell/mxo-hd/pull/850#issuecomment-7087168434 https://github.com/kylebrussell/mxo-hd/pull/866#issuecomment-7088184673"
+        },
+        "controls": {
+          "source": "GOB 588 stores Enraged state 93 for twelve seconds. The same authored EnrageInit and EnrageTerm apply the withdraw, target-change and AllowedToISBlock gates. GenericEnrageUpdate handles the separate idle NPC seek.",
+          "runtime": "TimedEffects applies and retires the correct 588 record. ControlActions reads active state 93 in the same shared paths used by 597. CombatHandler suppresses the Block IS award on active Enrage and PvpCombat admits retarget after removal; existing combat rounds continue. MobAggro keeps ordinary NPC pursuit and existing interlock identity independent of the state expiration.",
+          "test": "PR919 proves the actual L25 588 player cast, matched state removal and notification, Block +10/0/+10 and retarget refusal/recovery. Stock session g verifies 588 Withdraw refusal and release. PR883 separately verifies the shared stock Block and 40 controls using 597. PR866 proves the selected NPC state, pursuit and expiry. https://github.com/kylebrussell/mxo-hd/pull/919 https://github.com/kylebrussell/mxo-hd/blob/1944e614/docs/COMBAT-ROUND-ENTRIES.md#L50 https://github.com/kylebrussell/mxo-hd/pull/883#issuecomment-7090902540 https://github.com/kylebrussell/mxo-hd/pull/883#issuecomment-7091177642 https://github.com/kylebrussell/mxo-hd/pull/866#issuecomment-7088184673"
+        },
+        "behavior-tests": {
+          "source": "GOB 588 costs 27 IS, casts for two seconds, starts a 28 s reuse and applies a non-damaging twelve-second state to one valid hostile. EnrageInit/Term and GenericEnrageUpdate supply the explicit player gates and bounded NPC updates.",
+          "runtime": "The ordinary selected cast and viral contest enforce admission and the exact state lifetime. The live NPC and player paths consume state 93 without changing unrelated tactic or sight rules.",
+          "test": "The PR866 stock result measures the cast, debit, timer, state, seek and safe NPC expiry. PR919 covers the admitted and refused player path, exact 588 cast/lifetime and real live combat controls. The stock PR883 and earlier 588 Withdraw session cover native presentation and behavior for those common controls. https://github.com/kylebrussell/mxo-hd/pull/866#issuecomment-7088184673 https://github.com/kylebrussell/mxo-hd/pull/919 https://github.com/kylebrussell/mxo-hd/pull/883#issuecomment-7091177642 https://github.com/kylebrussell/mxo-hd/blob/1944e614/docs/COMBAT-ROUND-ENTRIES.md#L50"
         }
       }
     },
