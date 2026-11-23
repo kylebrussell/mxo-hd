@@ -91,6 +91,8 @@ public class MultifightingInterlockTests : IDisposable
     [InlineData(249, "Sliding Volley")]
     [InlineData(242, "Pistol Evasive")]
     [InlineData(244, "Pistol Barrage")]
+    [InlineData(126, "Disarming Shot")]
+    [InlineData(176, "Covering Fire")]
     public void SelectedSpecialCannotTransferToANewOpponentOrRespawn(ushort id, string name)
     {
         var (fight, sides) = Group();

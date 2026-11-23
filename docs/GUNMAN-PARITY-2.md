@@ -30,8 +30,8 @@ Operative also gives +4 melee accuracy. Review each gun style with a matching eq
 | 128, 240 | Exact loaded Initiative Bonus records and upgrade grants, removed on unload. The ordinary attack reads Initiative 1044, and the shipped passive supplies linked bonus 1046. The retail coefficient and consumption remain open. |
 | 498 | Known consumers exist for the defense, resistance and Powerless duration bonuses. The modeled Determination duration policy still needs retail comparison, and the row remains open. |
 | 129, 147, 158 | All seven active-style stats feed attack, damage, typed defenses and direct withdrawal. Unit tests cover weapon-class/ILDB selection, and native runs showed style-specific rounds. The retained stock trace did not identify the exact opening stand records. [Native run](https://github.com/kylebrussell/mxo-hd/pull/330#issuecomment-7006864509) |
-| 126 | The retained native round queued Disarming Shot and landed 9522. The live accuracy range differs from GOB -15. The DirectObject script's unequip path and exact damage remain unresolved. |
-| 176 | A single-SMG native run landed 21083. Root probability, state breaks and exact damage remain open. |
+| 126 | Stock queued Disarming Shot with move 9522 and the shipped fixed base 11. The client-visible live accuracy range differs from GOB -15. The older DirectObject unequip path remains unresolved. |
+| 176 | Stock single-SMG interlock used 21083 and the shipped fixed base 17. The timed Rooted state holds movement and releases on expiry. The original localized term presentation remains open. |
 | 241 | The native run naturally applied Off Balance with Grab and landed 9527 in Handguns. The same capture proves the move and one Powerless result. The proc distribution, callbacks and damage/targeting remain open. [Native run](https://github.com/kylebrussell/mxo-hd/pull/330#issuecomment-7006864509) |
 | 242 | Shipped caster defenses now land and expire. The active cast replay retains enemy damage. Exact damage, Block callback, and queued choreography remain open. |
 | 243, 244 | Pistol Aerial has a retained 9518 observation. The exact conditional stun behavior and the Barrage proc, animation and damage still need coverage. |
@@ -40,6 +40,12 @@ Operative also gives +4 melee accuracy. Review each gun style with a matching eq
 | 499, 500, 501, 502 | Existing effects cover portions of the dual-pistol attacks. Point Blank's Powerless path, Dash targeting, Whip's duration, and Execution's two conditional debuffs require further confirmation. Old scripts have separate damage constants. |
 | 1060, 1070, 1074, 1075, 1076 | Self-only recipient, exact numeric totals and replacement tested. Grouped stock proof pending. |
 | 1180 | The GOB has a five-metre radial definition and a five-second stun with immunity callback. Area eligibility, immunity timing and native accessibility remain open. |
+
+## Disarming Shot and Covering Fire cast targets
+
+The GOB gives both shots CastWhenUsed 2, CastWhatHow 2 and a four-second cast. A valid at-rest shot may still land directly. A shot admitted in interlock can queue only against its original live opponent, with the original fight and required single-weapon category through cast completion. If the queued opponent changes, that shot is removed. A midcast weapon swap cannot turn an interlock shot into direct damage.
+
+The rank-19 fixture uses a level-26 character so both prerequisite chains fit simultaneously. Its bootstrap replays the two retained stock interlock requests and checks the weapon-swap cancellation and unchanged-fight controls. The stock plan probes both at-rest requests separately.
 
 ## Gunman Upgrade activation and reuse
 
