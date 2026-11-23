@@ -233,6 +233,12 @@ public static partial class Scenarios
         new Scenario("absorb-simulacra-server", AbsorbSimulacraServer,
             new Dictionary<string, string>(StillNpcs) { ["MXO_DEV_COMMANDS"] = "1", ["MXO_DESPERATION_QA_HOLD_HEALTH"] = "1" }),
         new Scenario("coder-pet-typed-daemon", CoderPetDaemonTyped, StillNpcs),
+        new Scenario("daemon-boost-accuracy-server", DaemonBoostAccuracyServer,
+            new Dictionary<string, string>(PvpOpponentsFixture.Environment)
+            {
+                ["MXO_DEV_COMMANDS"] = "1", ["MXO_PROXY_TECHNICIAN_QA_ROLL"] = "80",
+                [WorldConfig.RemoteProxySheetVariable] = "Simulacra.Karate"
+            }),
         new Scenario("daemon-boost-friendly-pets-server", DaemonBoostFriendlyPetsServer,
             new Dictionary<string, string>(StillNpcs)
             {

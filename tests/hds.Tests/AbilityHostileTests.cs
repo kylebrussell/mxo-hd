@@ -1621,7 +1621,10 @@ public class AbilityHostileTests
         Assert.Equal(699, AbilityAuras.EffectOf(609));
         Assert.Equal(5, AbilityAuras.DrainOf(609));
         Assert.Equal(5, AbilityAuras.IntervalOf(609));
-        Assert.False(AbilityAuras.Handles(619)); // Daemon Boost 2.0 retains its existing CoderPets scheduler.
+        Assert.True(AbilityAuras.Handles(619));
+        Assert.Equal(700, AbilityAuras.EffectOf(619));
+        Assert.Equal(5, AbilityAuras.DrainOf(619));
+        Assert.Equal(5, AbilityAuras.IntervalOf(619));
         Assert.Equal(1, AbilityHostile.InstantDamage(Client(), 694)); // stored raw viral 1, no influence
     }
 

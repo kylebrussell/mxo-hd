@@ -220,6 +220,98 @@ public class ProxyTechnicianTests
     }
 
     [Fact]
+    public void DaemonAccuracyUsesTheTenMetreFriendlyBoundaryAndThreeActualAttackChannels()
+    {
+        using var source = new Fixture();
+        using var target = new Fixture();
+        source.RemoveOwnPet();
+        source.Owner.playerData.passives.Loaded[619] = 50;
+        Assert.True(AbilityAuras.Handles(619));
+        Assert.Equal(47, AbilityBuffBuffer.Size(619));
+        Assert.Equal(19, AbilityCatalog.Find(700).Number("Ability/CastDirectObjects"));
+        Assert.Equal(700, AbilityAuras.EffectOf(619));
+        Assert.Equal(5, AbilityAuras.DrainOf(619));
+        Assert.Equal(5, AbilityAuras.IntervalOf(619));
+        target.Pet.Mob.setXPos(1000);
+
+        var pulse = Assert.IsType<DaemonBoost.PulseEffect>(DaemonBoost.Project(source.Owner, target.Pet, 20, 619));
+        Assert.Equal((0, 0, 64, 64, 64), pulse.Values);
+        Assert.Equal(25, pulse.Until);
+        Assert.Equal(64, DaemonBoost.Accuracy(target.Pet, 24, ranged: false));
+        Assert.Equal(64, DaemonBoost.Accuracy(target.Pet, 24, ranged: true));
+        Assert.Equal(95, CoderPets.HitChance(target.Pet, 50, 24));
+        target.Pet.Kind = CoderPets.Kind.Nuker;
+        Assert.Equal(64, DaemonBoost.Accuracy(target.Pet, 24, ranged: true));
+        Assert.Equal(95, CoderPets.HitChance(target.Pet, 50, 24));
+        target.Pet.Kind = CoderPets.Kind.Healer;
+        Assert.Equal(0, DaemonBoost.Accuracy(target.Pet, 24, ranged: false));
+        Assert.Equal(80, CoderPets.DaemonBoostHealing(target.Pet, 80, 24));
+
+        target.Pet.Mob.setXPos(1001);
+        Assert.Null(DaemonBoost.Project(source.Owner, target.Pet, 21, 619));
+        target.Pet.Mob.setXPos(500);
+        target.Owner.playerData.pvpFlag = true;
+        target.Owner.playerInstance.OrganizationID.setValue((byte)2);
+        Assert.Equal(PvpRules.Verdict.Allowed, PvpCombat.Check(source.Owner, target.Owner));
+        Assert.Null(DaemonBoost.Project(source.Owner, target.Pet, 22, 619));
+        target.Pet.Kind = CoderPets.Kind.Proxy;
+        Assert.Equal(64, DaemonBoost.Accuracy(target.Pet, 24, ranged: false));
+        Assert.Equal(75, CoderPets.HitChance(target.Pet, 50, 25));
+    }
+
+    [Theory]
+    [InlineData(CoderPets.Kind.Proxy, "Karate", 79)]
+    [InlineData(CoderPets.Kind.Proxy, "Rifle", 82)]
+    [InlineData(CoderPets.Kind.Nuker, "Nuker", 86)]
+    [InlineData(CoderPets.Kind.Healer, "Healer", 75)]
+    public void DaemonAccuracyConsumesOnlyTheAttackingPetChannel(CoderPets.Kind kind, string sheet, int expected)
+    {
+        using var source = new Fixture();
+        using var target = new Fixture();
+        target.Pet.Kind = kind;
+        target.Pet.Sheet = sheet;
+        target.Pet.DaemonBoostAccuracyEffect = new DaemonBoost.PulseEffect(source.Owner, target.Owner, 700,
+            (0, 0, 4, 7, 11), 15);
+
+        Assert.Equal(expected, CoderPets.HitChance(target.Pet, 50, 14));
+        Assert.Equal(75, CoderPets.HitChance(target.Pet, 50, 15));
+    }
+
+    [Fact]
+    public void DaemonAccuracyAndDamageChildrenKeepIndependentExpiriesAndSourceLifetimes()
+    {
+        using var source = new Fixture();
+        using var next = new Fixture();
+        using var target = new Fixture();
+        source.Owner.playerData.passives.Loaded[609] = 50;
+        source.Owner.playerData.passives.Loaded[619] = 50;
+        next.Owner.playerData.passives.Loaded[619] = 47;
+        next.Owner.playerInstance.Level.setValue((byte)47);
+
+        CoderPets.ApplyPowerBoost(target.Pet, 50, 10);
+        Assert.NotNull(DaemonBoost.Project(source.Owner, target.Pet, 308));
+        Assert.NotNull(DaemonBoost.Project(source.Owner, target.Pet, 309, 619));
+        Assert.Equal(100, CoderPets.PowerBoostDamage(target.Pet, 80, 309));
+        Assert.Equal(80, CoderPets.PowerBoostDamage(target.Pet, 80, 310));
+        Assert.Equal(95, CoderPets.HitChance(target.Pet, 50, 310));
+        Assert.Equal((25, 25), DaemonBoost.Values(target.Pet, 312));
+        Assert.Equal((0, 0), DaemonBoost.Values(target.Pet, 313));
+        Assert.Equal(64, DaemonBoost.Accuracy(target.Pet, 313, ranged: false));
+        Assert.Equal(75, CoderPets.HitChance(target.Pet, 50, 314));
+
+        Assert.NotNull(DaemonBoost.Project(source.Owner, target.Pet, 320, 619));
+        source.Owner.playerData.passives.Loaded.Remove(619);
+        DaemonBoost.LoadoutChanged(source.Owner);
+        Assert.Null(DaemonBoost.Project(source.Owner, target.Pet, 321, 619));
+        Assert.Equal(64, DaemonBoost.Accuracy(target.Pet, 321, ranged: false));
+        Assert.NotNull(DaemonBoost.Project(next.Owner, target.Pet, 322, 619));
+        source.Owner.playerData.lifeGeneration++;
+        Assert.Equal(61, DaemonBoost.Accuracy(target.Pet, 322, ranged: false));
+        target.Owner.playerData.worldGeneration++;
+        Assert.Equal(0, DaemonBoost.Accuracy(target.Pet, 323, ranged: false));
+    }
+
+    [Fact]
     public void ModeOwnsItsIndependentPetRollWithoutLeakingItToDefaultOrOtherModes()
     {
         var plan=NativeQaModes.Find("proxy-technician").Plan;

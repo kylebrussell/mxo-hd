@@ -69,8 +69,7 @@ namespace hds
             var regen = modifiers.Single(mod => mod.Target == 114);
             return ((int)cost.Number("MinValue"), (int)regen.Number("MinValue"), cost.Number("Duration"));
         });
-        public const UInt16 DrainCode = 19, FortifySimulacra = 20, DetonateProxy = 34, StopProxyEffect = 1109, ChargeSimulacra = 603,
-            DaemonBoost1 = DaemonBoost.Ability, DaemonBoost2 = 619, DaemonBoostEffect2 = 700;
+        public const UInt16 DrainCode = 19, FortifySimulacra = 20, DetonateProxy = 34, StopProxyEffect = 1109, ChargeSimulacra = 603;
         public static readonly UInt16[] Repairs = { 30, 31, 587, 596, 615 };
         internal static readonly UInt16[] ContinuousLoadAbilities = { FortifySimulacra, 30, ChargeSimulacra, AbsorbSimulacra, ProxyMasterGrant };
 
@@ -87,9 +86,7 @@ namespace hds
             _ => null
         };
 
-        public static bool IsDaemonBoost(UInt16 id) => id == DaemonBoost1 || id == DaemonBoost2;
-
-        public static bool Handles(UInt16 id) => Summons.ContainsKey(id) || TargetsOwnPet(id) || IsDaemonBoost(id);
+        public static bool Handles(UInt16 id) => Summons.ContainsKey(id) || TargetsOwnPet(id) || DaemonBoost.Handles(id);
 
         /// <summary>NPC_BASE_SIMULACRA (gameobjects.csv 40376 = 0x9db8).</summary>
         public const UInt16 SimulacraGoId = 40376;
@@ -117,12 +114,11 @@ namespace hds
             internal double ProxyMasterUntil;
             // OURS: retail pet sheet IS/cost/regen values are not established. A real bounded pool makes 603 meaningful.
             public double InnerStrength = 100, MaxInnerStrength = 100, LastResourceTick;
-            public int FortifyResistance, BoostAccuracy;
+            public int FortifyResistance;
             public double PowerBoostUntil;
             internal int PowerForceCombat;
             public int PowerMeleeDamage, PowerBallisticDamage;
-            public double BoostUntil;
-            internal DaemonBoost.PulseEffect DaemonBoostEffect;
+            internal DaemonBoost.PulseEffect DaemonBoostEffect, DaemonBoostAccuracyEffect;
             public bool Gone, WindowRemoved;
             public byte Counter;
             internal bool Walking;
@@ -134,8 +130,6 @@ namespace hds
 
         private static readonly Dictionary<UInt32, Pet> pets = new Dictionary<UInt32, Pet>();
         private static readonly Dictionary<UInt32, byte> simulacraCounters = new Dictionary<UInt32, byte>();
-        private static readonly Dictionary<UInt32, double> nextBoostPulse = new Dictionary<UInt32, double>();
-        private static readonly Dictionary<UInt32, UInt16> boosts = new Dictionary<UInt32, UInt16>();
         private static readonly Random random = new Random();
         private static Timer timer;
 
@@ -304,8 +298,15 @@ namespace hds
         }
 
         // OURS base roll/level curve; sourced 700 accuracy (level*1.3) now changes the actual attack roll.
-        public static double HitChance(Pet pet, int targetLevel, double now) => Math.Clamp(
-            75 + (pet.Mob.getLevel() - targetLevel) * 2 + (now < pet.BoostUntil ? pet.BoostAccuracy : 0) + ProxyTechnician.Accuracy(pet,now,Ranged(pet)), 5, 95);
+        public static double HitChance(Pet pet, int targetLevel, double now)
+        {
+            bool ranged = Ranged(pet);
+            int accuracy = DaemonBoost.Accuracy(pet, now, ranged) + ProxyTechnician.Accuracy(pet, now, ranged);
+            return CalculateHitChance(pet, targetLevel, accuracy);
+        }
+
+        private static double CalculateHitChance(Pet pet, int targetLevel, int accuracy) =>
+            Math.Clamp(75 + (pet.Mob.getLevel() - targetLevel) * 2 + accuracy, 5, 95);
 
         public sealed class OwnPetCast
         {
@@ -346,19 +347,6 @@ namespace hds
             int influence = pet.Kind != Kind.Proxy || now >= pet.PowerBoostUntil ? 0 :
                 Ranged(pet) ? pet.PowerBallisticDamage : pet.PowerMeleeDamage;
             return (UInt16)Math.Clamp((int)(baseDamage * (1 + influence / 100.0)), 0, UInt16.MaxValue);
-        }
-
-        /// <summary>Apply the legacy Daemon Boost 2.0 accuracy effect.</summary>
-        public static void ApplyDaemonBoostAccuracy(Pet pet, int casterLevel, double now)
-        {
-            pet.BoostAccuracy = 0;
-            var entry = AbilityCatalog.Find(DaemonBoostEffect2);
-            foreach (var modifier in entry.Modifiers)
-            {
-                if (!AbilityValues.TryValue(modifier, casterLevel, casterLevel, out int value)) continue;
-                pet.BoostAccuracy = value; // all three accuracy modifiers share level × 1.3
-            }
-            pet.BoostUntil = now + entry.Modifiers.First().Number("Duration");
         }
 
         public static UInt16 DaemonBoostDamage(Pet pet, int damage, double now) =>
@@ -655,7 +643,6 @@ namespace hds
         public static void OwnerLeft(WorldClient owner)
         {
             Dismiss(owner, false);
-            lock (boosts) { boosts.Remove(owner.playerData.getCharID()); nextBoostPulse.Remove(owner.playerData.getCharID()); }
         }
 
         // ---- Orders ----------------------------------------------------------------------------------------------
@@ -927,19 +914,6 @@ namespace hds
             return OwnerDistanceMetres(pet) <= range;
         }
 
-        public static bool IsToggledOn(WorldClient caster, UInt16 id)
-        {
-            lock (boosts) return boosts.TryGetValue(caster.playerData.getCharID(), out UInt16 on) && on == id;
-        }
-
-        /// <summary>Daemon Boost used while on switches it off.</summary>
-        public static void ToggleOff(WorldClient caster)
-        {
-            lock (boosts) { boosts.Remove(caster.playerData.getCharID()); nextBoostPulse.Remove(caster.playerData.getCharID()); }
-            Pet pet = Of(caster);
-            if (pet != null) pet.BoostUntil = 0;
-        }
-
         /// <summary>The cast finished.</summary>
         internal static void Land(WorldClient caster, UInt16 id, OwnPetCast cast, bool summonUnloaded = false)
         {
@@ -961,20 +935,6 @@ namespace hds
                     else if (StarterSummonRequiresLoaded(id))
                         Output.WriteDebugLog($"[PET] {id} fizzles: the summon was unloaded during the cast");
                 }
-                return;
-            }
-            if (id == DaemonBoost2)
-            {
-                double now = TimeUtils.GetSimTimeSeconds();
-                lock (boosts)
-                {
-                    var charId = caster.playerData.getCharID();
-                    boosts[charId] = id;
-                    nextBoostPulse[charId] = now + 5;
-                }
-                EnsureTimer();
-                // ApplyAuraEffect has an init callback. ISDrainWithAbilityDeactivation only has an update callback.
-                PulseBoostAccuracy(caster, now);
                 return;
             }
             Pet pet = cast?.Target;
@@ -1265,14 +1225,6 @@ namespace hds
                 List<Pet> all;
                 lock (pets) all = pets.Values.ToList();
                 foreach (Pet pet in all) Tick(pet, now);
-                List<(UInt32, UInt16)> on;
-                lock (boosts) on = boosts.Select(b => (b.Key, b.Value)).ToList();
-                foreach (var (charId, _) in on)
-                {
-                    WorldClient owner = SocialHandler.OnlineWhere(c => c.playerData.getCharID() == charId).FirstOrDefault();
-                    if (owner == null) { lock (boosts) boosts.Remove(charId); continue; }
-                    BoostTick(owner, now);
-                }
             }
             catch (Exception e)
             {
@@ -1375,15 +1327,22 @@ namespace hds
         private static void Attack(Pet pet, Mob target, double now)
         {
             if (!SpendAction(pet, now)) return;
+            bool ranged = Ranged(pet);
+            int daemonAccuracy = DaemonBoost.Accuracy(pet, now, ranged);
+            int technician = ProxyTechnician.Accuracy(pet, now, ranged);
             double roll=ProxyTechnician.AttackRoll(pet,out bool forced);
-            double chance=HitChance(pet,target.getLevel(),now);
-            int technician=ProxyTechnician.Accuracy(pet,now,Ranged(pet));
+            double chance = CalculateHitChance(pet, target.getLevel(), technician + daemonAccuracy);
             if(forced || technician!=0) Output.WriteDebugLog("[PROXYTECH] attack owner="+TimedEffects.PlayerName(pet.Owner)+" bonus="+technician+" roll="+roll+" chance="+chance+" hit="+(roll<chance));
+            if (daemonAccuracy != 0)
+            {
+                string channel = pet.Kind == Kind.Nuker ? "viral" : ranged ? "ballistic" : "melee";
+                Output.WriteDebugLog($"[DAEMON BOOST] 700 attack owner={TimedEffects.PlayerName(pet.Owner)} channel={channel} accuracy={daemonAccuracy}");
+            }
             if (roll >= chance) return;
             UInt16 rawDamage = CombatCalculator.CalculateMobDamageWithTactics(pet.Mob.getLevel(), target.getLevel());
             UInt16 damage = DaemonBoostDamage(pet, PowerBoostDamage(pet, rawDamage, now), now);
             if (damage != rawDamage) Output.WriteDebugLog("[PET] typed influence " + pet.Kind + " base " + rawDamage + " final " + damage);
-            UInt32 fx = Ranged(pet) ? CombatCalculator.GetRandomRangedHitFx() : CombatCalculator.GetRandomMeleeHitFx();
+            UInt32 fx = ranged ? CombatCalculator.GetRandomRangedHitFx() : CombatCalculator.GetRandomMeleeHitFx();
             FaceTowards(pet, target.getXPos(), target.getZPos());
             DamageForOwner(pet, target, damage, fx);
             Output.WriteDebugLog("[PET] " + pet.Mob.getName() + " hits " + target.getName() + " for " + damage);
@@ -1426,41 +1385,6 @@ namespace hds
             if (amount != rawHealing) Output.WriteDebugLog("[PET] typed healing base " + rawHealing + " final " + amount);
             UInt16 healed = AbilityHandler.HealSelf(owner, (UInt16)amount);
             Output.WriteDebugLog($"[VITALS] char={owner.playerData.getCharID()} pet={pet.SimulacraId} ability={pet.Ability} HP {current} -> {healed}");
-        }
-
-        /// <summary>
-        /// Legacy Daemon Boost 2.0: spend 5 Inner Strength and refresh effect 700 every 5 seconds.
-        /// </summary>
-        private static void BoostTick(WorldClient owner, double now)
-        {
-            lock (boosts)
-            {
-                var charId = owner.playerData.getCharID();
-                if (!boosts.ContainsKey(charId) || now < nextBoostPulse[charId]) return;
-                nextBoostPulse[charId] = now + 5;
-            }
-            UInt16 current = AbilityHandler.CurrentInnerStrength(owner);
-            if (current < 5)
-            {
-                ToggleOff(owner);
-                new ServerPackets().sendSystemChatMessage(owner, "Daemon Boost ends: not enough Inner Strength.", "BROADCAST");
-                owner.FlushQueue();
-                return;
-            }
-            UInt16 left = AbilityHandler.SpendInnerStrength(owner, 5);
-            new ServerPackets().sendISCurrent(owner, left);
-            owner.FlushQueue();
-            PulseBoostAccuracy(owner, now);
-        }
-
-        private static void PulseBoostAccuracy(WorldClient owner, double now)
-        {
-            Pet pet = Of(owner);
-            if (pet == null || pet.Mob.getIsDead()) return;
-            var entry = AbilityCatalog.Find(DaemonBoostEffect2);
-            if (OwnerDistanceMetres(pet) > entry.Number("Ability/RadiusOfEffect")) { pet.BoostUntil = now + 5; pet.BoostAccuracy = 0; return; }
-            lock (pet) ApplyDaemonBoostAccuracy(pet, owner.playerInstance.Level.getValue()[0], now);
-            SendHit(pet, FirstFx(entry));
         }
 
         internal static Pet[] SnapshotPets() { lock(pets) return pets.Values.ToArray(); }
@@ -1553,7 +1477,7 @@ namespace hds
                         ", aura viral/heal " + daemonBoost.Viral + "/" + daemonBoost.Healing +
                         ", power melee/ballistic " + (now < current.PowerBoostUntil ? current.PowerMeleeDamage : 0) + "/" +
                         (now < current.PowerBoostUntil ? current.PowerBallisticDamage : 0) +
-                        ", accuracy " + (now < current.BoostUntil ? current.BoostAccuracy : 0) +
+                        ", accuracy " + DaemonBoost.Accuracy(current, now, Ranged(current)) +
                         (current.Target != null ? ", fighting " + current.Target.getName() : "") +
                         ", technician melee/ballistic " + ProxyTechnician.Accuracy(current, now, false) + "/" + ProxyTechnician.Accuracy(current, now, true);
                 }
