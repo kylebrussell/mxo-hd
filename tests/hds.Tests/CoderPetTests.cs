@@ -382,7 +382,14 @@ public class CoderPetTests
         Assert.Equal(337, pet.Mob.getHealthC());
 
         Assert.Equal(610, pet.ProxyMasterUntil);
-        pet.InnerStrength = 0;
+        pet.InnerStrength = 7.5;
+        pet.LastResourceTick = 610;
+        Assert.False(CoderPets.SpendAction(pet, 610));
+        Assert.Equal(7.5, pet.InnerStrength);
+        pet.InnerStrength = 10;
+        Assert.True(CoderPets.SpendAction(pet, 610));
+        Assert.Equal(0, pet.InnerStrength);
+
         pet.LastResourceTick = 609;
         CoderPets.Regenerate(pet, 611);
         Assert.Equal(5, pet.InnerStrength);
