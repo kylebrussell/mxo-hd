@@ -1,0 +1,83 @@
+{
+  "families": {
+    "full-auto-specials-native": {
+      "representative": 494,
+      "result": "pass",
+      "head": "8bc8c9c0484c6315a66f3683f264eac5d0eda374",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/975#issuecomment-7101010986",
+      "scope": "Stock L46, 61/92 memory and dual SMGs. Local pre-state refusal for both. The proper Stagger/Daze requests queued after 4s for +24; first 494 ordinary loss had no hit/effect, then 153 with named 21084; 496 queued 187 with both -15 records lasting eight seconds. At rest after +20 same-target armor and matching state, both go direct and show typed 145/177; 494 Enrage rolled and had paired eight-second state removal. 38/45 IS and 10s own/5s group689. No claim that this stock comment identifies 496's numeric move."
+    }
+  },
+  "abilities": {
+    "494": {
+      "family": "full-auto-specials-native",
+      "checks": {
+        "damage": {
+          "source": "Shipped data/ability_catalog.json and the ILDB SMG move bindings.",
+          "runtime": "Current AbilityHandler, CombatSpecials, CombatSystem/Interlock and the typed ability and temporary modifier consumers after merged PR975.",
+          "test": "GOB fixed Ballistic 123 and the loaded SMG influence drive both routes. Native neutral queued 153 and same-target direct 145 with +20 armor. AbilityRefusalFeedbackTests exercises both routes and typed damage."
+        },
+        "controls": {
+          "source": "Shipped data/ability_catalog.json and the ILDB SMG move bindings.",
+          "runtime": "Current AbilityHandler, CombatSpecials, CombatSystem/Interlock and the typed ability and temporary modifier consumers after merged PR975.",
+          "test": "GOB 40% links state 93 Enrage for 8 s. AbilityRefusalFeedbackTests isolates the chance boundary, modifier and teardown. Native directly procced once and matched both record removals after eight seconds, and showed an ordinary interlock loss without effects."
+        },
+        "targeting": {
+          "source": "Shipped data/ability_catalog.json and the ILDB SMG move bindings.",
+          "runtime": "Current AbilityHandler, CombatSpecials, CombatSystem/Interlock and the typed ability and temporary modifier consumers after merged PR975.",
+          "test": "GOB requires Stagger (state 8), the active SMG style and its matching weapon. AbilityRefusalFeedbackTests exercises target identity, fight/weapon loss, near/outside paths and sight. Native omitted the request before Stagger; corrected queue and at-rest routing both completed."
+        },
+        "proc": {
+          "source": "Shipped data/ability_catalog.json and the ILDB SMG move bindings.",
+          "runtime": "Current AbilityHandler, CombatSpecials, CombatSystem/Interlock and the typed ability and temporary modifier consumers after merged PR975.",
+          "test": "GOB 40% is evaluated only on a landed eligible cast. Tests exercise success/failure rolls and native showed a nondamaging miss, a neutral landed hit without Enrage, and a landed direct cast with eight-second Enrage."
+        },
+        "choreography": {
+          "source": "Shipped data/ability_catalog.json and the ILDB SMG move bindings.",
+          "runtime": "Current AbilityHandler, CombatSpecials, CombatSystem/Interlock and the typed ability and temporary modifier consumers after merged PR975.",
+          "test": "The shipped move name resolves to 21084 via the existing ILDB binding. The native stock run played that exact animation on a neutral landed round and rendered the normal exchange with neither hit nor modifier on loss."
+        },
+        "source-parity": {
+          "source": "Shipped data/ability_catalog.json and the ILDB SMG move bindings.",
+          "runtime": "Current AbilityHandler, CombatSpecials, CombatSystem/Interlock and the typed ability and temporary modifier consumers after merged PR975.",
+          "test": "GOB fixed 123, four-second CastWhenUsed=2, +24 special tactic, 38 IS, 10s own/5s group689 reuse and 40% eight-second Enrage agree with live typed and timed routes and explicit runtime tests."
+        },
+        "behavior-tests": {
+          "source": "Shipped data/ability_catalog.json and the ILDB SMG move bindings.",
+          "runtime": "Current AbilityHandler, CombatSpecials, CombatSystem/Interlock and the typed ability and temporary modifier consumers after merged PR975.",
+          "test": "AbilityRefusalFeedbackTests and the exact fixture cover recorded route, original fight/target/weapon guards, pre-state refusal, neutral queued 153, normal no-effect loss, armored direct 145, expiry and debit/reuse. Native verifies the real 494 request and named 21084."
+        }
+      }
+    },
+    "496": {
+      "checks": {
+        "damage": {
+          "source": "Shipped data/ability_catalog.json and the ILDB SMG move bindings.",
+          "runtime": "Current AbilityHandler, CombatSpecials, CombatSystem/Interlock and the typed ability and temporary modifier consumers after merged PR975.",
+          "test": "GOB fixed Ballistic 150 through the same shipped typed source path. Native queued 187 and at-rest typed 177 under +20 same-target armor; AbilityRefusalFeedbackTests independently checks both routes."
+        },
+        "targeting": {
+          "source": "Shipped data/ability_catalog.json and the ILDB SMG move bindings.",
+          "runtime": "Current AbilityHandler, CombatSpecials, CombatSystem/Interlock and the typed ability and temporary modifier consumers after merged PR975.",
+          "test": "GOB requires Dazed (state 2), the SMG style and matching equipped weapon. Native offered the exact refusal before Daze, and both queued and authored at-rest route afterward. AbilityRefusalFeedbackTests exercises original fight, target identity, state and weapon/sight safeguards."
+        },
+        "choreography": {
+          "source": "Shipped data/ability_catalog.json and the ILDB SMG move bindings.",
+          "runtime": "Current AbilityHandler, CombatSpecials, CombatSystem/Interlock and the typed ability and temporary modifier consumers after merged PR975.",
+          "test": "The authored SubM FullAuto Redux resolves to 21085 in shipped ILDB bindings and executable server queue/serializing coverage. Native accepted the queued Round 17 hit specifically, with 21085 covered by executable serialization and no claim the native comment names that number."
+        },
+        "source-parity": {
+          "source": "Shipped data/ability_catalog.json and the ILDB SMG move bindings.",
+          "runtime": "Current AbilityHandler, CombatSpecials, CombatSystem/Interlock and the typed ability and temporary modifier consumers after merged PR975.",
+          "test": "GOB fixes 150 damage, +24 queued tactic, four-second cast, 45 IS, 10s own/5s group689 reuse, and -15 timed 522/524. Native and tests independently prove exact route/values and same eight-second paired add/remove. No older inferred 80/90 value is used."
+        },
+        "behavior-tests": {
+          "source": "Shipped data/ability_catalog.json and the ILDB SMG move bindings.",
+          "runtime": "Current AbilityHandler, CombatSpecials, CombatSystem/Interlock and the typed ability and temporary modifier consumers after merged PR975.",
+          "test": "AbilityRefusalFeedbackTests and the retained-stock fixture exercise original target/fight/weapon, state-only admission, four-second queued and direct hits, typed amount, exact modifier maps, and timer/expiry. Native independently proves pre-state refusal, 187/177, 45 IS, shared reuse and paired -15 records."
+        }
+      },
+      "note": "Stock PR975 confirms the native queued and direct routes. The current stock comment does not identify the numeric 496 animation. https://github.com/kylebrussell/mxo-hd/pull/975#issuecomment-7101010986"
+    }
+  }
+}

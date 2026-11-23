@@ -1,0 +1,63 @@
+{
+  "families": {
+    "hacker-white-noise-code-shock-native": {
+      "representative": 362,
+      "result": "pass",
+      "head": "8e0a32ea",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/973#issuecomment-7101139007",
+      "scope": "Ordinary stock selected casts on a living opponent with no damage. White Noise blinds its primary and in-radius enemy. Code Shock puts five timed states on the selected enemy only and then publishes a separate twelve-second control immunity. Both stock rows reject allies and the same 17 m opponent without a debit or timer."
+    }
+  },
+  "abilities": {
+    "362": {
+      "family": "hacker-white-noise-code-shock-native",
+      "checks": {
+        "controls": {
+          "source": "GOB White Noise applies Blind state 90 for 12 seconds and has no immunity initializer.",
+          "runtime": "The normal viral contest and control application send the Blind and its linked attack penalty. The state expires without granting 734.",
+          "test": "WhiteNoise362BlindsForTwelveSecondsAndAttackRecovers exercises the -30 attack reduction and recovery. Stock logged two 12 s Blind adds, then both removals and no immunity. https://github.com/kylebrussell/mxo-hd/pull/973#issuecomment-7101139007"
+        },
+        "area": {
+          "source": "GOB 362 uses selected-target splash selector 3, a 7 m radius and default angle.",
+          "runtime": "The ordinary hostile-area executor centers the splash on the valid selected enemy, then filters by opponent and radius.",
+          "test": "WhiteNoiseAndCodeShockUseTheOrdinarySelectedControlPath hits the exact 7.00 m enemy and excludes 7.01 m and an ally. Stock reached QAEnemy and QAFar at 6.6 m, excluded QAOther at 7.4 m and spared QAFriend. https://github.com/kylebrussell/mxo-hd/pull/973#issuecomment-7101139007"
+        },
+        "targeting": {
+          "source": "GOB White Noise requires the selected hostile, Hacker Style, sight and ordinary viral TestFunction 2 within 13 m.",
+          "runtime": "The common admission fence validates ownership, sight and the original selected spawn. The native-shaped viral contest still runs at landing.",
+          "test": "Stock denied the ally with reason 24 and 17 m with reason 34, then landed at 2 m. ActualNpcLandingDeflectsBeforeDamageDebuffAndProcAndOnlyRoutesToVisibleSameWorld proves the real 362 deflection path. https://github.com/kylebrussell/mxo-hd/pull/973#issuecomment-7101139007"
+        },
+        "behavior-tests": {
+          "source": "GOB base 29 IS, two seconds of casting and 58 s own reuse.",
+          "runtime": "The complete ranked profile's +15% Dedicated Code discount charges 25 IS and uses the same scheduled control landing as native.",
+          "test": "The focused direct cast and area tests use the complete profile, verify 25 IS, two seconds, 58 s reuse and zero damage. Stock matched 500→475 and the two recipients and expiries. https://github.com/kylebrussell/mxo-hd/pull/973#issuecomment-7101139007"
+        }
+      }
+    },
+    "482": {
+      "family": "hacker-white-noise-code-shock-native",
+      "checks": {
+        "controls": {
+          "source": "GOB Code Shock stores Stun and Blind for 6 s and Daze, Off-Balance and Stagger for 5 s.",
+          "runtime": "The common control path publishes each state and expiry. The full profile has two +5% Stun Duration modifiers from 73 and 477, extending only Stun to 6.6 s.",
+          "test": "Stock logged 102 at 6.6 s, 90 at 6 s, 199/200/201 at 5 s and all paired removals in order. CodeShock482AppliesAllFiveStatesAndTwelveSecondsOfImmunity also verifies movement and ability use restrictions and recovery. https://github.com/kylebrussell/mxo-hd/pull/973#issuecomment-7101139007"
+        },
+        "targeting": {
+          "source": "GOB Code Shock selects one hostile, requires Hacker Style, uses 14 m range, sight and TestFunction 2.",
+          "runtime": "The shared selected-hostile path admits and retains the correct live opposing spawn. The ordinary contest can deflect the entire application.",
+          "test": "Stock denied the ally and distant enemy before the cast and published 482 only on the selected QAEnemy at 2 m. The real 482 NPC deflection case yields no states or damage. https://github.com/kylebrussell/mxo-hd/pull/973#issuecomment-7101139007"
+        },
+        "script": {
+          "source": "GOB 482 has a separate 0.01 s marker with value 12 and AddControlImmunityTimerVal on term. The shipped script checks for existing immunity at term and notifies caster and target.",
+          "runtime": "The existing scheduler executes the marker and publishes a 734/681 record only when no other immunity exists. The internal marker is not presented as an attribute or state.",
+          "test": "The focused boundary test verifies no immediate immunity, the later 12 s record and suppression of a repeated terminal callback under an existing timer. The stock sequence shows five states first, the separate 734/681 record, then the state removals before immunity expiry. https://github.com/kylebrussell/mxo-hd/pull/973#issuecomment-7101139007"
+        },
+        "behavior-tests": {
+          "source": "GOB base 56 IS, four seconds of casting and 60 s own reuse, with the five state modifiers and separate immunity callback.",
+          "runtime": "The full ranked profile pays 48 IS after the normal +15% discount. The ordinary cast uses per-state timing, callback and zero direct damage.",
+          "test": "The normal selected cast regression covers actual landing, published caster notice, no splash and no HP damage. Stock matched 475→427, 4 s, 60 s and the specified five-state and immunity sequence. https://github.com/kylebrussell/mxo-hd/pull/973#issuecomment-7101139007"
+        }
+      }
+    }
+  }
+}

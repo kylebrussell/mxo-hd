@@ -1,0 +1,69 @@
+{
+  "abilities": {
+    "492": {
+      "checks": {
+        "damage": {
+          "source": "Shipped GOB row 492 fixes Ballistic 21, rank-aware common influence and 45 IS.",
+          "runtime": "The player cast follows the fixed typed Ballistic path at landing and applies ordinary typed target resistance. Archived NPC caster outcomes remain separate.",
+          "test": "StarterGunmanShotDamageTests and AbilityRefusalFeedbackTests cover fixed sources and typed/rank inputs. PR972's native L42 equal-level run reproduced 26 neutral, 24 against +20 Enemy armor with Other still at 26."
+        },
+        "controls": {
+          "source": "Current player GOB specifies eight seconds of Root. The archived NPC caster's 14.08-second sample is retained independently.",
+          "runtime": "Root state 99 and its linked effect publish movement override and receive matching terminal removal, preserving existing root correction. The exact server timer uses caster role.",
+          "test": "ConditionalControlTests covers both role-specific durations and movement release. Actual QAEnemy 6114 and QAOther 6113 each took eight seconds. QAOther could not move 20 units before removal and could afterward."
+        },
+        "area": {
+          "source": "GOB 492 specifies an eight metre cone at 45 degrees.",
+          "runtime": "The ordinary selected hostile anchor uses the live facing, faction, geometry, sight and area membership predicates. Armor does not change admission.",
+          "test": "Focused area tests cover the exact shape boundaries; PR972 included the exact 8 m enemy while excluding 8m+1 and an in-cone ally."
+        },
+        "targeting": {
+          "source": "GOB selected hostile at rest, dual SMGs and eight metre cone.",
+          "runtime": "AbilityHandler validates a current hostile target/view, range and LOS against the shared cone entry and preserves the admitted caster/anchor route through the two-second cast.",
+          "test": "AbilityRefusalFeedbackTests covers exact area/selection rejection and stock Direct Fire exercises the same trigger. Both real openers landed on QAEnemy and QAOther; the ally and just-outside guard stayed untouched."
+        },
+        "source-parity": {
+          "source": "GOB player base21, 8s Root, 45 IS, 2s, reuse10/5 group690; separately qualified old NPC root14.08.",
+          "runtime": "The player's fixed typed base and eight-second movement override use the authored runtime; the archived NPC timed record is kept by role.",
+          "test": "PR972 exact stock input, paid=45, both timers, neutral/resisted damage, Root on both and corrected movement/release. ConditionalControlTests independently proves 14.08 NPC and 8 player."
+        },
+        "behavior-tests": {
+          "source": "Shipped typed damage, cone placement, player Root and timer input.",
+          "runtime": "Covered by fixed typed damage, foe-only area evaluation and root position gate through expiry.",
+          "test": "StarterGunmanShotDamageTests, DesperateSpeedTests, AbilityRefusalFeedbackTests, ConditionalControlTests and exact live stock QA cover these controls independently."
+        }
+      },
+      "note": "Stock head c606c6b2. Stock dual SMGs and L42, 59/84 memory. The fixture initially used its older seed at z2300. The operator disclosed and verified a manual ?tp to the planned (17000,495,6400) before all witnessed cases, resetting QAOther to z7200 as well. Direct Fire refused an ally and the far target without costs/reuse. Actual stock 492 and 493 cast 2s, paid 45/50, take 10s own/5s group690 and stay outside combat. 492 26/24 under +20 typed armor, Root stat99 and 8s linked removals on 6114/6113; the helper move is corrected to z7200 then succeeds to z7220. 493 43/40 and one natural 10s Enrage with matching paired removals on QAEnemy, after a normal non-proc. QAOther at 8m kept neutral damage. In-cone ally QAFriend and QAFar 8m+1 world unit received no hit. https://github.com/kylebrussell/mxo-hd/pull/972#issuecomment-7101369244"
+    },
+    "493": {
+      "checks": {
+        "damage": {
+          "source": "Shipped GOB row 493 fixes Ballistic 35 and 50 IS.",
+          "runtime": "The player cast follows the fixed typed Ballistic path at landing and applies ordinary typed target resistance. Archived NPC caster outcomes remain separate.",
+          "test": "StarterGunmanShotDamageTests and AbilityRefusalFeedbackTests cover fixed sources and typed/rank inputs. PR972's native L42 equal-level run reproduced 43 neutral, 40 against +20 Enemy armor with Other still at 43."
+        },
+        "controls": {
+          "source": "GOB 493 gives independent 30% Enraged on landing for ten seconds.",
+          "runtime": "Timed effect source493 applies two linked records and removes them together. Shared Enrage controls handle targeting and ordinary rights while the state is active.",
+          "test": "PR972 landed one cast with no proc, then a real separate 10s Enrage on 6114 with matching paired removals. Scoped tests cover chance gating; PR883/919 verify shared Enraged target-change/Block behavior."
+        },
+        "targeting": {
+          "source": "GOB 493 selects a hostile while at rest and uses the shared hostile cone.",
+          "runtime": "Normal dual-SMG route validates live anchor, sight, exact range and faction. The two-second outside-combat cast stays direct.",
+          "test": "PR972 got 24/34 with no debit or timer. Correct requests hit QAEnemy and boundary QAOther only; no damage on ally/8m+1. Headless refusal and shared cone tests cover independently."
+        },
+        "source-parity": {
+          "source": "GOB player base35, 30% 10s Enrage, 50 IS, 2s and 10s own/5s group690.",
+          "runtime": "Typed direct area cast uses the fixed authored player entry. Distinct older recorded NPC raw226 remains an NPC role observation.",
+          "test": "PR972 measured 43/40, same neutral secondary, first roll misses the state, second procs with exact matched natural expiry, and 50 IS/2s tracked. Focused runtime tests check current source data separately."
+        },
+        "behavior-tests": {
+          "source": "GOB specifies fixed damage, area targeting and landed independent Enrage.",
+          "runtime": "The typed shot, scope checks and normal Enrage timer use shared production paths.",
+          "test": "StarterGunmanShotDamageTests and AbilityRefusalFeedbackTests cover fixed, typed, scoped and timed runtime; PR972 verifies real hostile input, allied/range refusals, non-proc/proc and same-target armor."
+        }
+      },
+      "note": "Stock head c606c6b2. Stock dual SMGs and L42, 59/84 memory. The fixture initially used its older seed at z2300. The operator disclosed and verified a manual ?tp to the planned (17000,495,6400) before all witnessed cases, resetting QAOther to z7200 as well. Direct Fire refused an ally and the far target without costs/reuse. Actual stock 492 and 493 cast 2s, paid 45/50, take 10s own/5s group690 and stay outside combat. 492 26/24 under +20 typed armor, Root stat99 and 8s linked removals on 6114/6113; the helper move is corrected to z7200 then succeeds to z7220. 493 43/40 and one natural 10s Enrage with matching paired removals on QAEnemy, after a normal non-proc. QAOther at 8m kept neutral damage. In-cone ally QAFriend and QAFar 8m+1 world unit received no hit. https://github.com/kylebrussell/mxo-hd/pull/972#issuecomment-7101369244"
+    }
+  }
+}
