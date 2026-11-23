@@ -253,6 +253,39 @@ public class DesperateSpeedTests
         finally { AbilityBuffs.RemoveAll(player); }
     }
 
+    [Theory]
+    [InlineData(0, 115, .45f, -.05f)]
+    [InlineData(Stealth.SneakGrantAbility, 877, .12f, -.38f)]
+    [InlineData(Stealth.InvisibilityGrantAbility, 878, .12f, -.38f)]
+    public void HinderingShotReadsTheSelectedMovementChannelAndRestoresThePreviousScale(
+        ushort stance, ushort channel, float baseline, float slowed)
+    {
+        var player = Client(level: 50);
+        var subject = TimedEffects.ForPlayer(player);
+        try
+        {
+            Assert.True(AbilityBuffs.Apply(player, HyperSpeed));
+            if (stance != 0) Assert.NotNull(Stealth.Begin(player, Stealth.Defs[stance], 25));
+            Assert.True(TempMods.TryGet(CombatSpecials.HinderingShot, out var effect));
+            var selectedRecord = Assert.Single(effect.Mods, mod => mod.Target == channel);
+            Assert.Equal((-50, -50, 8f), (selectedRecord.MinValue, selectedRecord.MaxValue, selectedRecord.Seconds));
+
+            // Each shipped channel has the same value, so isolate its record to detect a fallback to stat115.
+            double start = TimeUtils.GetSimTimeSeconds();
+            var isolated = new TempMods.Effect { Ability = effect.Ability, Mods = new[] { selectedRecord } };
+            TimedEffects.Apply(subject, isolated, start);
+            Assert.Equal(slowed, BitConverter.ToSingle(player.playerInstance.MovementScale.getValue()));
+            TimedEffects.RunDue(start + 8.01);
+            Assert.Equal(baseline, BitConverter.ToSingle(player.playerInstance.MovementScale.getValue()));
+        }
+        finally
+        {
+            TimedEffects.Clear(subject);
+            Stealth.End(player, "test cleanup", false);
+            AbilityBuffs.RemoveAll(player);
+        }
+    }
+
     [Fact]
     public void RemovingHinderingShotPreservesActiveSlow()
     {

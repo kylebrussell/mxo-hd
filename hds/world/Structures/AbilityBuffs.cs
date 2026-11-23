@@ -385,9 +385,9 @@ namespace hds
         private const ushort RunMovementStat = 115, SneakMovementStat = 877, InvisibleMovementStat = 878;
 
         private static bool UsesStanceMovementChannel(ushort source) => source == CrashAbility || source == BottleneckField ||
-            source == CombatSpecials.CripplingShot;
+            source == CombatSpecials.HinderingShot || source == CombatSpecials.CripplingShot;
 
-        public static bool ProjectsTimedMovementDebuff(ushort source) => source == 86 || source == 130 || UsesStanceMovementChannel(source);
+        public static bool ProjectsTimedMovementDebuff(ushort source) => source == 86 || UsesStanceMovementChannel(source);
 
         private static bool ProjectsSignedMovementDebuff(TimedEffects.Active modifier) =>
             ProjectsTimedMovementDebuff(modifier.Parent) &&

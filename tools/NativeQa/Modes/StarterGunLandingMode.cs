@@ -75,11 +75,13 @@ public sealed class StarterGunLandingMode : NativeQaMode
         actor.SendRpc(WithHandle(HinderingFrame, handle));
         await EvidenceRetestWire.CastBarAsync(actor, Hindering, 2);
         await EvidenceRetestWire.TimerAsync(actor, positiveAt, Hindering, AbilityCooldowns.OwnTimer, 8);
-        await actor.WaitUntilAsync(() => server.DebugLog()[from..].Contains("[EFFECTS] 130 on QA Sight Target:", StringComparison.Ordinal),
-            "Hindering Shot lands on the original view after sight and range are restored", HeadlessPlayer.DefaultTimeout);
+        await actor.WaitUntilAsync(() =>
+        {
+            string log = server.DebugLog()[from..];
+            return log.Contains("[EFFECTS] 130 on QA Sight Target:", StringComparison.Ordinal) &&
+                log.Contains($"[ABILITY] 130 lands on view {target.ViewId} for 9", StringComparison.Ordinal);
+        }, "Hindering Shot lands for 9 with its effects after sight and range are restored", HeadlessPlayer.DefaultTimeout);
         string positive = server.DebugLog()[from..];
-        Check.That(positive.Contains($"[ABILITY] 130 lands on view {target.ViewId} for 9", StringComparison.Ordinal),
-            "The original target still takes the shipped, neutral 9 on the clear route");
         foreach (string effect in new[] { "Stat 115 -50 8 s", "Stat 877 -50 8 s", "Stat 878 -50 8 s", "Stat 519 -10 8 s" })
             Check.That(positive.Contains(effect, StringComparison.Ordinal), $"The admitted hit applies {effect}");
         await EvidenceRetestWire.TimerAsync(actor, positiveAt, 690, AbilityCooldowns.GroupTimer, 5, ended: true);

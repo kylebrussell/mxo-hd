@@ -71,7 +71,19 @@ namespace hds
             { HolyWater, KilledOnlyByHolyWater }, { HolyWaterPlus, KilledOnlyByHolyWater },
         };
 
-        internal const ushort CripplingShot = 450;
+        internal const ushort HinderingShot = 130, CripplingShot = 450;
+
+        internal static uint? HinderingShotRefusal(WorldClient caster)
+        {
+            var fight = CombatManager.GetHandler(caster);
+            if (fight.isCombatRunning || fight.HasActiveInterlock) return AbilityRefusals.MustBeOutsideCombat;
+            if (!AbilityPassives.IsLoaded(caster, HinderingShot)) return AbilityRefusals.NotLoaded;
+            // The shipped ReqCategory is IWHg, the single-handgun category.
+            if (RangedWeapons.GetStats(SharpshooterFreeFire.EquippedWeapon(caster))?.Category != "IWHg")
+                return AbilityRefusals.RequiredItemCategory;
+            if (CombatStyles.Active(caster) != CombatStyles.RequiredStyle(HinderingShot)) return AbilityRefusals.WrongStyle;
+            return null;
+        }
 
         // These shipped Rifles openers have CastWhenUsed = 1 and cast for two seconds.
         public static bool IsRifleOpener(ushort id)
