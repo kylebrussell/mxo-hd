@@ -430,6 +430,8 @@ try
                         actor, q.GetProperty("x").GetSingle(), q.GetProperty("y").GetSingle(), q.GetProperty("z").GetSingle());
                     result = new { actor.Handle, position.X, position.Y, position.Z };
                 }
+                else if (fixtureMode is NativeQa.Modes.InvisibilityBeltWatcherMode && action == "belt-watcher")
+                    await NativeQa.Modes.InvisibilityBeltWatcherMode.SetWatcherAsync(actor, q.GetProperty("phase").GetString()!);
                 else if (action == "move")
                 {
                     var bytes = new List<byte>(WireFormat.FromHex("02 00 01 08"));
