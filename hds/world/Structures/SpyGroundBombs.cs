@@ -79,11 +79,13 @@ namespace hds
             return new Cast();
         }
 
-        public static bool HasInvisibilityBelt(WorldClient caster)
+        public static bool HasInvisibilityBelt(WorldClient caster) => HasInvisibilityBelt(caster, null);
+
+        internal static bool HasInvisibilityBelt(WorldClient caster, ushort? slot)
         {
             if (caster?.playerData == null || Store.dbManager?.WorldDbHandler == null) return false;
             return Store.dbManager.WorldDbHandler.GetInventoryItems(caster.playerData.getCharID())
-                .Any(i => i.Slot < 97 && i.Goid == InvisibilityBeltGoid);
+                .Any(i => i.Slot < 97 && (!slot.HasValue || i.Slot == slot.Value) && i.Goid == InvisibilityBeltGoid);
         }
 
         public static void Land(WorldClient caster, AbilityItem ability, Cast cast, Func<WorldClient, bool> hasBelt = null)

@@ -24,6 +24,7 @@ namespace hds
             if (command == "fixture-weapon" || command == "w") return CombatFixtureWeapons.Set(caller, args.Length == 2 ? args[1] : "");
             if (command == "fixture-disengage" || command == "stop") return CombatFixtureWeapons.Disengage(caller);
             if (command == "rb" && args.Length == 1) return CombatFixtureWeapons.ArmRifleEscapeWin(caller);
+            if (command == "beltblind" && args.Length == 1) return InvisibilityBeltQa.BlindWatcher(caller);
             if (command == "pw" && args.Length == 1) return CombatFixtureWeapons.ArmPistolWhipLoss(caller);
             if (command == "fixture-reset-ballistic-resisted") return CombatFixtureWeapons.ResetDummy(caller, resistanceStat: 181);
             if (command == "fixture-reset") return CombatFixtureWeapons.ResetDummy(caller);

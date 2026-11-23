@@ -269,6 +269,20 @@ namespace hds
         public static string Refusal(WorldClient client, UInt16 id, UInt16 targetView, out uint reason)
         {
             reason = AbilityRefusals.LegacyAmbiguous;
+            if (id == InvisibilityGrantAbility)
+            {
+                if (!AbilityPassives.IsLoaded(client, id))
+                {
+                    reason = AbilityRefusals.NotLoaded;
+                    return "Load Invisibility before using the Belt.";
+                }
+                var combat = CombatManager.GetHandler(client);
+                if (combat.isCombatRunning || combat.HasActiveInterlock)
+                {
+                    reason = AbilityRefusals.MustBeOutsideCombat;
+                    return "You cannot become invisible in combat.";
+                }
+            }
             if (id == EscapeAndEvasionAbility)
             {
                 if (!AbilityPassives.IsLoaded(client, id))
@@ -343,16 +357,17 @@ namespace hds
 
                 return "You cannot sneak while an enemy is watching."; // InitialSneakTest
             }
-            if (def.Kind == Kind.Disguise && DisguiseWatcher(client) is string watcher)
+            if (def.Kind == Kind.Disguise && NearbyStealthWatcher(client, ignoreBlinded: false) is string watcher)
             {
                 reason = AbilityRefusals.NoClientMessage;
                 Output.WriteDebugLog($"[STEALTH] Disguise watcher {watcher} refuses {TimedEffects.PlayerName(client)}");
                 return "You cannot disguise while an enemy is watching.";
             }
-            if (def.Kind == Kind.Invisibility && EnemyWatching(client, InvisibilityProximityUnits, ignoreBlinded: true))
+            if (def.Kind == Kind.Invisibility && NearbyStealthWatcher(client, ignoreBlinded: true) is string invisibleWatcher)
             {
                 // InvisibilityGrant_Test supplies the proximity message itself. Keep the 80 ba response silent.
                 reason = AbilityRefusals.NoClientMessage;
+                Output.WriteDebugLog($"[STEALTH] Belt watcher {invisibleWatcher} refuses {TimedEffects.PlayerName(client)}");
                 return "You cannot become invisible near enemies.";
             }
             if (def.Kind == Kind.Imparted && (BitsOf(client) & Invisible) != 0) return "You are already invisible.";
@@ -733,9 +748,9 @@ namespace hds
         /// <summary>InitialSneakTest / InvisibilityGrant_Test: an enemy in range, facing the player (floor-mesh sight approximation; see NavMesh.HasSightPath).</summary>
         public static bool EnemyWatching(WorldClient client, double range, bool ignoreBlinded = false) => EnemiesFacing(client, range, ignoreBlinded).Any();
 
-        private static string DisguiseWatcher(WorldClient client)
+        private static string NearbyStealthWatcher(WorldClient client, bool ignoreBlinded)
         {
-            foreach (var (other, _) in EnemiesFacing(client, InvisibilityProximityUnits, ignoreBlinded: false))
+            foreach (var (other, _) in EnemiesFacing(client, InvisibilityProximityUnits, ignoreBlinded))
                 return TimedEffects.PlayerName(other);
 
             Position(client, out double x, out double y, out double z);
@@ -752,14 +767,16 @@ namespace hds
                 if (mob.missionInstance != 0 &&
                     !ReferenceEquals(MissionRuntime.FindMissionMob(client.playerData, mob.getEntityId()), mob))
                     continue;
-                if (DisguiseWatchGeometry(district, mob.getXPos(), mob.getYPos(), mob.getZPos(),
+                if (ignoreBlinded && TimedEffects.ForMob(mob).Effects.HasAt(TempMods.BlindAbility, TimeUtils.GetSimTimeSeconds()))
+                    continue;
+                if (WatcherGeometry(district, mob.getXPos(), mob.getYPos(), mob.getZPos(),
                     (byte)mob.getRotation(), x, y, z))
                     return mob.getName();
             }
             return null;
         }
 
-        internal static bool DisguiseWatchGeometry(ushort district, double ox, double oy, double oz, byte yaw,
+        private static bool WatcherGeometry(ushort district, double ox, double oy, double oz, byte yaw,
             double x, double y, double z)
         {
             double dx = ox - x, dz = oz - z;

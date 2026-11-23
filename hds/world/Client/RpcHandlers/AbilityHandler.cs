@@ -907,6 +907,13 @@ namespace hds
                 Deny(AbilityID, "Carry a disguise tool, or select its inventory slot.");
                 return;
             }
+            if (AbilityID == Stealth.InvisibilityGrantAbility && !Stealth.IsOn(Store.currentClient, AbilityID) &&
+                !SpyGroundBombs.HasInvisibilityBelt(Store.currentClient, itemSlot))
+            {
+                Deny(AbilityID, "Carry an Invisibility Belt, or activate it from its inventory slot.",
+                    AbilityRefusals.RequiredItemCategory);
+                return;
+            }
             if (AbilityID == ProxyTechnician.Ability && ProxyTechnician.Refusal(Store.currentClient) is string proxyRefusal)
             { Deny(AbilityID,proxyRefusal); return; }
             if (DaemonBoost.Handles(AbilityID) && !DaemonBoost.Loaded(Store.currentClient, AbilityID))
