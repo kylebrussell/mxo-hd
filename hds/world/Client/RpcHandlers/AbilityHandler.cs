@@ -69,7 +69,7 @@ namespace hds
             bool selectedHackerCast = AbilityID == 238 || AbilityID == 311 || AbilityID == 312 || AbilityID == 313 || AbilityID == 333;
             // These selected abilities bind a live enemy before the cast, including the centre of any splash.
             bool selectedViralField = AbilityID == 343 || AbilityID == 361 || AbilityID == 401 || AbilityID == 402 ||
-                AbilityID == 403 || AbilityID == 465 || AbilityID == 360 || AbilityID == 1081;
+                AbilityID == 403 || AbilityID == 465 || AbilityID == 360 || AbilityID == 1081 || AbilityID == 473 || AbilityID == 479;
             bool enrage = AbilityID == 588;
             bool selectedCoderViral = AbilityID == 595 || AbilityID == 597 || AbilityID == 598;
             bool selectedDestroyerField = AbilityID == 462 || AbilityID == 467 || AbilityID == 1088;
