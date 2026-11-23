@@ -100,6 +100,7 @@ public class DesperateSpeedTests
 
     [Theory]
     [InlineData(12, .45f, .12f, 600)]
+    [InlineData(291, .40f, .20f, 15)]
     [InlineData(323, .25f, .05f, 720)]
     [InlineData(423, .45f, .10f, 960)]
     public void MovementBuffProjectsTheSelectedStanceWithoutStackingChannels(ushort ability, float run, float stealth, int duration)
