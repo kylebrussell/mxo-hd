@@ -529,6 +529,7 @@ public class AbilityRefusalFeedbackTests:IDisposable
     [InlineData(254, 4)]
     [InlineData(255, 41)]
     [InlineData(255, 4)]
+    [InlineData(404, 41)]
     public void DelayedHostileCastCannotLandOnANewerSpawnInTheOriginalView(ushort abilityId, int length)
     {
         var caster = Client();
@@ -540,8 +541,9 @@ public class AbilityRefusalFeedbackTests:IDisposable
         caster.playerInstance.OrganizationID.setValue((byte)1);
         target.playerInstance.OrganizationID.setValue((byte)2);
         caster.playerData.pvpFlag = target.playerData.pvpFlag = true;
-        caster.playerData.combatStyle = abilityId == 53 || abilityId is >= 57 and <= 60
+        caster.playerData.combatStyle = abilityId is 53 or 404 or (>= 57 and <= 60)
             ? CombatStyles.HackerStyle : CombatStyles.CoderStyle;
+        if (abilityId == 404) caster.playerData.passives.Loaded[CombatStyles.HackerStyle] = 30;
         if (abilityId is 254 or 255)
         {
             caster.playerData.combatStyle = CombatStyles.Rifles;
@@ -578,6 +580,7 @@ public class AbilityRefusalFeedbackTests:IDisposable
         Assert.Equal(1000, PvpCombat.HealthOf(target));
         Assert.False(TimedEffects.ForPlayer(target).Effects.Has(TempMods.RootedAbility));
         Assert.False(TimedEffects.ForPlayer(target).Effects.Has(TempMods.EnrageAbility));
+        Assert.False(TimedEffects.ForPlayer(target).Effects.HasParent(abilityId));
         Assert.True(AbilityCooldowns.IsCoolingDown(caster.playerData, abilityId, TimeUtils.GetSimTimeSeconds()));
         Assert.Empty(Rpcs(target));
     }
@@ -588,6 +591,7 @@ public class AbilityRefusalFeedbackTests:IDisposable
     [InlineData(58)]
     [InlineData(59)]
     [InlineData(60)]
+    [InlineData(404)]
     public void UnloadedStarterViralDamageCastRefusesBeforeCost(ushort id)
     {
         var caster = Client();

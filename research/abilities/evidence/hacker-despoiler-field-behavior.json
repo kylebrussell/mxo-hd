@@ -1,0 +1,23 @@
+{
+  "abilities": {
+    "404": {
+      "checks": {
+        "area": {
+          "source": "GOB 404 stores selected-hostile selector 3, 4 m radius and no periodic field. The retained stock request selects the primary using its live view and spawn.",
+          "runtime": "AbilityTargets and PvpCombat centre the one application on the original eligible target, with independent recipient admission and viral contests.",
+          "test": "HackerDespoilerFieldMode exact stock replay observes all four records on QAEnemy and the exact 4.00 m edge QAOther, excluding QAFar at 4.01 m, the in-radius ally and CSR."
+        },
+        "targeting": {
+          "source": "GOB 404 stores 16 m selection reach, Hacker Style, outside-combat gate and a separate viral contest. Vector6 CSEQ 1913 supplies the full selected frame.",
+          "runtime": "AbilityHandler checks owned loaded membership, live hostile selection, range, sight, at-rest use and Hacker Style before any debit, and verifies the original spawn and range again before the common landing resolver.",
+          "test": "HackerDespoilerFieldMode sends the exact archived frame with no target, an ally, and the hostile at 16.01 m before the reachable positive. AbilityRefusalFeedbackTests checks unloaded and replacement-spawn invalidation. Existing common free-cast tests verify per-recipient viral contest and sight."
+        },
+        "behavior-tests": {
+          "source": "GOB 404 stores 40 IS, a 6 s cast, 30 s own reuse and four fixed 30 s modifiers: Melee Damage and Ballistic Damage -14, Melee Accuracy and Ballistic Accuracy -39.",
+          "runtime": "The timed hostile effect preserves all four source-specific records. AbilityStats reads the combat accuracy and typed damage totals while active and removes them independently at expiry.",
+          "test": "DespoilerChangesMeleeAndBallisticAccuracyAndDamageForThirtySeconds checks both accuracy and damage consumers and expiry. The exact NativeQa headless replay observes 40 IS, 6 s, 30 s, both recipient lifetimes and all four separate removals. Native-family remains open."
+        }
+      }
+    }
+  }
+}
