@@ -828,6 +828,7 @@ public class FreeCastViralLandingTests : IDisposable
         foreach(var c in new[]{hidden,foreign,deleting}){Assert.Empty(c.messageQueue.RPCMessagesQueue);Assert.Empty(c.messageQueue.ObjectMessagesQueue);}
     }
     [Theory]
+    [InlineData(333, 4, TempMods.StunAbility, 0)]
     [InlineData(343, 5, 1009, -21)]
     [InlineData(401, 7, 117, -20)]
     [InlineData(403, 5, 183, -50)]
@@ -864,12 +865,14 @@ public class FreeCastViralLandingTests : IDisposable
             Assert.False(TimedEffects.ForPlayer(primary).Effects.HasParent(id));
             Assert.Equal(FreeCastViralContest.DeflectFx, NumericalUtils.ByteArrayToUint32(primary.playerInstance.EffectID.getValue(), 1));
             Assert.Equal(value, AbilityStats.Player(edge, witnessStat));
-            Assert.True(TimedEffects.ForPlayer(edge).Effects.HasParent(id));
+            Assert.Contains(TimedEffects.ForPlayer(edge).Effects.Snapshot(), effect =>
+                effect.Parent == id && effect.Target == witnessStat && effect.Value == value);
             Assert.Equal(1000, PvpCombat.HealthOf(edge));
             foreach (var excluded in new[] { caster, outside, ally, unseen })
                 Assert.False(TimedEffects.ForPlayer(excluded).Effects.HasParent(id));
             TimedEffects.RunDue(TimeUtils.GetSimTimeSeconds() + 46);
             Assert.Equal(0, AbilityStats.Player(edge, witnessStat));
+            Assert.False(TimedEffects.ForPlayer(edge).Effects.HasParent(id));
         }
         finally
         {

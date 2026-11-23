@@ -1,0 +1,18 @@
+{
+  "abilities": {
+    "333": {
+      "checks": {
+        "targeting": {
+          "source": "Shipped 333 is a hostile Hacker Style cast, selected area type 3, inclusive 4 m radius around the target, 14 m selection range and viral TestFunction 2. The exact targeted 80 b9 request is retained in proxy_020, lines 140965–140967.",
+          "runtime": "The ordinary selected Hacker cast path checks learned loadout, stance, opposing live view and spawn, range and line of sight before debit. A landing validates the original target identity and location again. AbilityTargets evaluates each eligible area recipient's own viral contest.",
+          "test": "SelectedFieldUsesTheAdmittedLiveSpawnAndCannotSplashAfterInvalidation covers pre-debit no-target, ally, stale, range, sight, style and unloaded refusals. It also covers spawn replacement, retreat and sight loss during a paid cast. SelectedFieldUsesThePrimaryCentreAndEachRecipientOwnContest verifies a deflected primary, a landed edge stun, and exclusions for a player just outside, an ally and a hidden view."
+        },
+        "behavior-tests": {
+          "source": "Shipped 333 applies Stun state 102 for five base seconds and AddControlImmunityTimerVal creates the independent ten-second immunity.",
+          "runtime": "The existing status, immunity and ordinary control presentation remain on the selected cast path. No HP damage is applied. The landed field uses the original valid target centre.",
+          "test": "HackerStunAppliesImmunitySeparatelyAndRetainsItAfterTheStateEnds verifies duration, damage retention, separate immunity and reapplication. ActualNpcLandingDeflectsBeforeDamageDebuffAndProcAndOnlyRoutesToVisibleSameWorld covers a deflected NPC. The disposable control sweep replays the exact retained 333 request with its current target handle. PR313 stock witnessed Stun, immunity and a refused follow-up, and PR321 witnessed the spaced area result. https://github.com/kylebrussell/mxo-hd/pull/313#issuecomment-6998807737 https://github.com/kylebrussell/mxo-hd/pull/321#issuecomment-7001527488"
+        }
+      }
+    }
+  }
+}

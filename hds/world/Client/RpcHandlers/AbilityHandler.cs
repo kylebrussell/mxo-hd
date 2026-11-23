@@ -66,7 +66,7 @@ namespace hds
                 return;
             }
 
-            bool midlevelViralDamage = AbilityID == 238 || AbilityID == 311 || AbilityID == 312 || AbilityID == 313;
+            bool selectedHackerCast = AbilityID == 238 || AbilityID == 311 || AbilityID == 312 || AbilityID == 313 || AbilityID == 333;
             // These selected abilities bind a live enemy before the cast, including the centre of any splash.
             bool selectedViralField = AbilityID == 343 || AbilityID == 401 || AbilityID == 402 || AbilityID == 403;
             bool enrage = AbilityID == 588;
@@ -75,7 +75,7 @@ namespace hds
                 AbilityID == 350 || AbilityID == 351 || AbilityID == 353 ||
                 AbilityID == 392 || AbilityID == 394 || AbilityID == 395 || AbilityID == 396 || selectedViralField || selectedCoderViral;
             ushort? lockedDamageTargetSpawn = null;
-            bool selectedHostileCast = selectedViralAttack || selectedDespoilerArea || midlevelViralDamage;
+            bool selectedHostileCast = selectedViralAttack || selectedDespoilerArea || selectedHackerCast;
             if (selectedHostileCast)
             {
                 var caster = Store.currentClient;
@@ -275,7 +275,7 @@ namespace hds
                     (ushort?)Store.currentClient.viewMan.getViewById(currentTargetViewId)?.spawnId)
                 : null;
             var definition = AbilityCatalog.Find(AbilityID);
-            if (midlevelViralDamage)
+            if (selectedHackerCast)
             {
                 var caster = Store.currentClient;
                 if (!AbilityTargets.HasSelectionSight(caster, definition, currentTargetViewId))
