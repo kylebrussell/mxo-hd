@@ -1,0 +1,28 @@
+{
+  "families": {
+    "master-shadow-parent-withdraw-stock": {
+      "representative": 367,
+      "result": "pass",
+      "head": "8f2a3cb27d11e8f5679b6d2ce5b5ae8996caf792",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/1029#issuecomment-7115102710",
+      "scope": "MasterShadowWithdrawMode uses the ordinary archive commands and verifies the 1045/passive, 1118 action and 44 wire transitions. Stock 8f2a3cb2 kept 120 +25 in all cases; direct 65 yielded input 84, 81 and 84 for 367 loaded, unloaded and reloaded. The stale 1118 shortcut was suppressed during unload. https://github.com/kylebrussell/mxo-hd/pull/1029#issuecomment-7115102710"
+    }
+  },
+  "abilities": {
+    "367": {
+      "family": "master-shadow-parent-withdraw-stock",
+      "checks": {
+        "stats": {
+          "source": "GOB 367 authors fixed +5 Contested Withdraw Bonus (1045) and zero-rank membership for Shadow action 1118. Ordinary Withdraw uses the known direct 1005 and linked percentage path from the existing withdrawal model.",
+          "runtime": "Loaded 367 adds the fixed passive and the grant. Ordinary RPC 44 consumes the current 1045 total, while unload removes only the parent contribution and the action membership. This verifies the implemented percentage input for these stock samples.",
+          "test": "MasterShadowWithdrawMode uses the ordinary archive commands and verifies the 1045/passive, 1118 action and 44 wire transitions. Stock 8f2a3cb2 kept 120 +25 in all cases; direct 65 yielded input 84, 81 and 84 for 367 loaded, unloaded and reloaded. The stale 1118 shortcut was suppressed during unload. https://github.com/kylebrussell/mxo-hd/pull/1029#issuecomment-7115102710"
+        },
+        "behavior-tests": {
+          "source": "GOB 367 authors fixed +5 Contested Withdraw Bonus (1045) and zero-rank membership for Shadow action 1118. Ordinary Withdraw uses the known direct 1005 and linked percentage path from the existing withdrawal model.",
+          "runtime": "Loaded 367 adds the fixed passive and the grant. Ordinary RPC 44 consumes the current 1045 total, while unload removes only the parent contribution and the action membership. This verifies the implemented percentage input for these stock samples.",
+          "test": "MasterShadowWithdrawMode uses the ordinary archive commands and verifies the 1045/passive, 1118 action and 44 wire transitions. Stock 8f2a3cb2 kept 120 +25 in all cases; direct 65 yielded input 84, 81 and 84 for 367 loaded, unloaded and reloaded. The stale 1118 shortcut was suppressed during unload. https://github.com/kylebrussell/mxo-hd/pull/1029#issuecomment-7115102710"
+        }
+      }
+    }
+  }
+}
