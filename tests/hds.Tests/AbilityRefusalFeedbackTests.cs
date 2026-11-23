@@ -2954,7 +2954,23 @@ public class AbilityRefusalFeedbackTests:IDisposable
     [InlineData(393, "retreat", 0u)]
     [InlineData(352, "retreat", 0u)]
     [InlineData(393, "unload", 0u)]
-    public void SelectedPacifyRefusesBeforeCostAndRetainsTheAdmittedSpawn(ushort id, string state, uint reason)
+    [InlineData(355, "empty", AbilityRefusals.InvalidTarget)]
+    [InlineData(355, "ally", AbilityRefusals.InvalidTarget)]
+    [InlineData(355, "spawn", AbilityRefusals.InvalidTarget)]
+    [InlineData(355, "far", AbilityRefusals.TargetOutOfRange)]
+    [InlineData(355, "blocked", AbilityRefusals.TargetNotInSight)]
+    [InlineData(355, "unloaded", AbilityRefusals.NotLoaded)]
+    [InlineData(355, "combat", AbilityRefusals.MustBeOutsideCombat)]
+    [InlineData(355, "style", AbilityRefusals.WrongStyle)]
+    [InlineData(355, "swap", 0u)]
+    [InlineData(355, "retreat", 0u)]
+    [InlineData(355, "unload", 0u)]
+    [InlineData(355, "left sight", 0u)]
+    [InlineData(355, "joined combat", 0u)]
+    [InlineData(355, "changed style", 0u)]
+    [InlineData(355, "land", 0u)]
+    [InlineData(355, "deflect", 0u)]
+    public void SelectedDirectControlRefusesBeforeCostAndRetainsTheAdmittedSpawn(ushort id, string state, uint reason)
     {
         string root = AppContext.BaseDirectory;
         while (!File.Exists(Path.Combine(root, "data", "sector_properties.csv")))
@@ -2972,7 +2988,7 @@ public class AbilityRefusalFeedbackTests:IDisposable
         target.playerData.setCharID(111);
         target.playerData.setEntityId(42);
         caster.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(21750, 1095, 16150));
-        double distantX = id == 393 ? 20349 : 19749;
+        double distantX = 21749 - AbilityCatalog.Find(id).Number("Ability/SelectionRange") * 100;
         double initialX = state == "far" ? distantX : state == "blocked" ? 22350 : 21550;
         target.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(initialX, 1095, 16150));
         WorldServer.Clients.Add("target", target);
@@ -2983,18 +2999,30 @@ public class AbilityRefusalFeedbackTests:IDisposable
 
         var ability = new AbilityItem();
         ability.setAbilityID(id);
-        ability.setAbilityName("Selected Pacify");
+        ability.setAbilityName("Selected direct control");
         ability.setCastAnimStart(new byte[4]);
         DataLoader.getInstance().AbilityDB.Add(ability);
         var combat = CombatManager.GetHandler(caster);
         combat.isCombatRunning = state == "combat";
+        // Construct a handler input for this regression. No complete retained Vector stock cast is known.
         var request = new byte[41];
         BitConverter.GetBytes(id).CopyTo(request, 0);
         BitConverter.GetBytes(state == "empty" ? (ushort)0 : targetView.ViewID).CopyTo(request, 2);
         BitConverter.GetBytes((ushort)(state == "spawn" ? 8 : 9)).CopyTo(request, 4);
         double castBefore = caster.playerData.castEndsAt;
+        bool resolvesContest = state is "land" or "deflect";
+        string[] viralKeys = { "MXO_FREECAST_VIRAL_QA", FreeCastViralContest.AttackQa, FreeCastViralContest.DefenseQa };
+        string?[] savedViral = viralKeys.Select(Environment.GetEnvironmentVariable).ToArray();
         try
         {
+            if (resolvesContest)
+            {
+                caster.playerData.setEntityId(110);
+                caster.playerData.setUDPSessionEstablished(true);
+                target.playerData.setUDPSessionEstablished(true);
+                string[] draws = state == "land" ? new[] { "1", "32766", "0" } : new[] { "1", "0", "32766" };
+                foreach (var (key, value) in viralKeys.Zip(draws)) Environment.SetEnvironmentVariable(key, value);
+            }
             new AbilityHandler().ProcessAbility(ref request);
             if (reason == 0)
             {
@@ -3005,6 +3033,10 @@ public class AbilityRefusalFeedbackTests:IDisposable
                 if (state == "retreat")
                     target.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(distantX, 1095, 16150));
                 if (state == "unload") caster.playerData.passives.Loaded.Remove(id);
+                if (state == "left sight")
+                    target.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(22350, 1095, 16150));
+                if (state == "joined combat") combat.isCombatRunning = true;
+                if (state == "changed style") caster.playerData.combatStyle = CombatStyles.SelfDefense;
                 DelayedActions.RunDue(castEnd + 1);
                 Assert.True(AbilityCooldowns.IsCoolingDown(caster.playerData, id, TimeUtils.GetSimTimeSeconds()));
             }
@@ -3015,11 +3047,31 @@ public class AbilityRefusalFeedbackTests:IDisposable
                 Assert.Equal(500, AbilityHandler.CurrentInnerStrength(caster));
                 Assert.Empty(caster.playerData.cooldownEndsAt);
             }
-            Assert.Empty(Rpcs(target));
-            Assert.True(ControlActions.CanUseAbilities(TimedEffects.ForPlayer(target).Effects));
+            var effects = TimedEffects.ForPlayer(target).Effects;
+            if (state == "land")
+            {
+                Assert.False(ControlActions.CanUseAbilities(effects));
+                var powerless = Assert.Single(effects.Snapshot(), effect => effect.Parent == id && effect.Target == TempMods.PowerlessAbility);
+                var defense = Assert.Single(effects.Snapshot(), effect => effect.Parent == id && effect.Target == 183);
+                Assert.Equal(8.94f, powerless.Seconds);
+                Assert.Equal(-60, defense.Value);
+                Assert.Equal(30, defense.Seconds);
+                Assert.Equal(1000, PvpCombat.HealthOf(target));
+            }
+            else
+            {
+                if (!resolvesContest) Assert.Empty(Rpcs(target));
+                Assert.False(effects.HasParent(id));
+                Assert.True(ControlActions.CanUseAbilities(effects));
+            }
         }
         finally
         {
+            if (resolvesContest)
+            {
+                TimedEffects.Clear(TimedEffects.ForPlayer(target));
+                foreach (var (key, value) in viralKeys.Zip(savedViral)) Environment.SetEnvironmentVariable(key, value);
+            }
             combat.isCombatRunning = false;
             CombatManager.RemoveClient(caster);
         }
