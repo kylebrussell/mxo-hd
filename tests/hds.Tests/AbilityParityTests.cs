@@ -378,6 +378,41 @@ public class AbilityParityTests
     }
 
     [Fact]
+    public void EmergencyRepairsTwoCapsThePulseAndWaitsThroughFullHealthWithoutEnding()
+    {
+        var client = Client();
+        client.playerInstance.Health.setValue((ushort)499);
+        client.playerInstance.Level.setValue((byte)50);
+        AbilityPassives.SetLoaded(client, new (ushort, ushort)[] { (309, 50), (CombatStyles.HackerStyle, 50) });
+        client.playerData.combatStyle = CombatStyles.HackerStyle;
+        AbilityPassives.Refresh(client, false);
+        Assert.Equal((ushort)24, AbilityCosts.Effective(client, 332));
+        AbilitySupport.Land(client, 332, 2);
+        var subject = TimedEffects.ForPlayer(client);
+        var effect = Assert.Single(subject.Effects.Snapshot());
+        Assert.Equal(96, effect.Value);
+        Assert.Equal(5, effect.TickDamage);
+        Assert.Equal((ushort)499, PvpCombat.HealthOf(client));
+
+        TimedEffects.RunDue(effect.Expires - 47.5);
+        Assert.Equal((ushort)500, PvpCombat.HealthOf(client));
+        Assert.Contains(client.messageQueue.ObjectMessagesQueue.Cast<SequencedMessage>(),
+            frame => frame.content.SequenceEqual(ServerPackets.BuildSelfHealthUpdate(500)));
+        int fullHealthFrames = client.messageQueue.ObjectMessagesQueue.Count;
+
+        TimedEffects.RunDue(effect.Expires - 45);
+        Assert.Equal(fullHealthFrames, client.messageQueue.ObjectMessagesQueue.Count);
+        Assert.Same(effect, Assert.Single(subject.Effects.Snapshot()));
+
+        client.playerInstance.Health.setValue((ushort)450);
+        TimedEffects.RunDue(effect.Expires - 42.5);
+        Assert.Equal((ushort)455, PvpCombat.HealthOf(client));
+        TimedEffects.RunDue(effect.Expires);
+        Assert.Equal((ushort)500, PvpCombat.HealthOf(client));
+        Assert.Empty(subject.Effects.Snapshot());
+    }
+
+    [Fact]
     public void ClassBuffReplacementAppliesVitalDeltaAtomicallyAndRemovalClamps()
     {
         var client = Client();

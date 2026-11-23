@@ -911,8 +911,15 @@ namespace hds
             }
             if (mod.Proc == TempMods.Proc.Hot)
             {
-                AbilityHandler.HealSelf(client, (UInt16)Math.Clamp(damage, 0, UInt16.MaxValue));
-                Output.WriteDebugLog("[EFFECTS] " + mod.Parent + " heals " + Name + " for " + damage);
+                ushort before = PvpCombat.HealthOf(client);
+                ushort maximum = NumericalUtils.ByteArrayToUint16(client.playerInstance.MaxHealth.getValue(), 1);
+                int heal = Math.Min(damage, maximum - before);
+                if (heal > 0)
+                {
+                    ushort after = AbilityHandler.HealSelf(client, (ushort)heal);
+                    Output.WriteDebugLog($"[EFFECTS] {mod.Parent} heals {Name} for {heal}");
+                    Output.WriteDebugLog($"[VITALS] char={client.playerData.getCharID()} ability={mod.Parent} HOT raw={damage} HP {before}->{after} max={maximum}");
+                }
                 return true;
             }
             damage = PunishingBlows.Player(mod.Caster, client, damage);
