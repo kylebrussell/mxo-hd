@@ -1,0 +1,23 @@
+{
+  "abilities": {
+    "176": {
+      "checks": {
+        "script": {
+          "source": "Covering Fire and Immobilizing Shot both store EnableRootWithChance and the same Root activation strings. Covering Fire stores 15 percent proc chance, eight seconds and fifty percent damage-break value. The retained 254 release path pairs the state and linked removal with a single Rooted end message.",
+          "runtime": "The landed 176 modifier attaches the same chance/first-hit protection and publishes the source-specific caster and target Root messages with the break value. Natural expiry and qualifying incoming damage both release the current Rooted generation and restore movement.",
+          "test": "RootWithBreakChancePublishesAuthoredActivationAndOneStateEnd tests both natural and damage-induced removal of 176 and retained 254. PR949 stock renders the caster Root line, the helper verifies the recipient text and paired 274/275 removal, and the same player transitions from corrected movement and −1 scale to its ordinary movement with a single state-end. https://github.com/kylebrussell/mxo-hd/pull/949#issuecomment-7095667026"
+        },
+        "source-parity": {
+          "source": "Current Covering Fire stores fixed Ballistic damage 17 and the Root proc. The old SMG prone handler is in old_sm_smg.py, outside the shipped abilities.py importer. The identical current Root string fields and the retained 254 sibling determine the complete presentation.",
+          "runtime": "The playable SMG action uses the current authored damage and Root effects. AbilityMessages.RootWithBreakChance uses the shared activation layout and TimedEffects preserves the ordinary Rooted release lifecycle.",
+          "test": "PR941 records the natural Root proc on an actual at-rest 176 and the interlock 21083 result. PR949 reproduces localization and (with a fixed modifier proc after the landed hit) observes paired expiry and movement recovery. Existing chance boundary tests qualify the natural draw. https://github.com/kylebrussell/mxo-hd/pull/941#issuecomment-7094930174 https://github.com/kylebrussell/mxo-hd/pull/949#issuecomment-7095667026"
+        },
+        "behavior-tests": {
+          "source": "Shipped 176 requires a single SMG style, a selected hostile, four seconds, 25 IS and 8/5 s reuse. The action can land directly or in an admitted interlock and gives a chance-driven timed Root.",
+          "runtime": "AbilityHandler checks the selected target and equipped weapon through release, retains the original combat route, and invokes typed damage, gameplay Root state and paired movement restoration on the qualified target.",
+          "test": "PR941 stock demonstrates at-rest 18, natural Root admission/release, 21083 interlock 18 and a spent weapon-swap fizzle without queue or hit. PR949 stock adds the source-backed presentation and recipient movement witness. The focused tests cover stale target/weapon, Root break threshold, expiry and both conditional records. https://github.com/kylebrussell/mxo-hd/pull/941#issuecomment-7094930174 https://github.com/kylebrussell/mxo-hd/pull/949#issuecomment-7095667026"
+        }
+      }
+    }
+  }
+}

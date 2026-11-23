@@ -1,0 +1,31 @@
+{
+  "abilities": {
+    "399": {
+      "checks": {
+        "controls": {
+          "source": "The shipped 399 template supplies six seconds of Powerless and no immunity initializer. The state gate prohibits ability activation while the matching state is active. Historical 9.9 and 10.14 second records are two separate casts with unknown source profiles.",
+          "runtime": "TimedEffects applies the authored state and its linked record for each admitted recipient. The source 399 exception leaves 734 absent. ControlActions prevents normal ability activation until the state expires.",
+          "test": "PR905 stock supplies the six-second base with +9 percent, its 6.54 second paired recipient state and the complete first cast. PR947 stock repeats the paired 6.54 second records at 8.00 m, refuses ordinary Empty Mind on both affected players without spending or starting reuse, and admits that exact request after expiry. The ally and 8.01 m player receive no state and both cast immediately. No immunity or damage. https://github.com/kylebrussell/mxo-hd/pull/905#issuecomment-7090233496 https://github.com/kylebrussell/mxo-hd/pull/947#issuecomment-7095249118"
+        }
+      }
+    },
+    "126": {
+      "checks": {
+        "source-parity": {
+          "source": "The current GOB 126 has fixed Ballistic 11 and equal Accuracy min/max −15 for ten seconds. Shipped abilities.py imports ability.soldier.misc. The old 50 physical damage/unequip callback is outside that import list, and 126 has no stored unequip callback. The archived −34 to −18 records identify NPC casters.",
+          "runtime": "TempMods.TryGet selects the authored accuracy modifier for playable casters and preserves the captured NPC range. The shot delivers its fixed damage through the type-1 Ballistic path. The victim's weapon stays equipped.",
+          "test": "DisarmingShotSeparatesPlayerAccuracyFromArchivedNpcValues verifies the fixed player/NPC distinction. PR945 native at 8d48a8c5 reports move 9522 for 11 and the ten-second −15 source 126/524 record. The same-gun Ballistic Fire input moves 19→4→19, while melee stays 19. https://github.com/kylebrussell/mxo-hd/pull/945#issuecomment-7095556716"
+        },
+        "behavior-tests": {
+          "source": "Current GOB 126 stores the chosen hostile, allowed direct/interlock usage, four-second cast, 20 IS, eight-second reuse with a five-second group timer, fixed Ballistic 11 and −15 Accuracy for ten seconds.",
+          "runtime": "AbilityHandler distinguishes the admitted direct or queued route and retains target and weapon authority through release. CombatSpecials handles the original interlock move. TempMods applies the authored Accuracy record and the Ballistic attack consumer samples it until paired expiry.",
+          "test": "PR941 native verifies direct 11, one timed queue for the original opponent and no direct fallback after a weapon/fight change, with the proper cost and timers. PR945 native verifies the current accuracy magnitude, retention of the original gun and recovered attack after record 276 is removed. Handler and conditional tests cover stale views and incompatible equipment. https://github.com/kylebrussell/mxo-hd/pull/941#issuecomment-7094930174 https://github.com/kylebrussell/mxo-hd/pull/945#issuecomment-7095556716"
+        }
+      }
+    }
+  },
+  "notes": {
+    "217 NPC entry": "PR942 stock pays 40 IS for Evade, then shows two genuine NPC forced attempts 5 s apart draining 7 IS each, with the defender meter 255→194→133. Third shortfall refuses the attempt, clears 217/624, preserves 5 IS and starts 30 s reuse. Next ordinary aggro opens interlock. Adds NPC-initiated evidence to the existing DONE row. https://github.com/kylebrussell/mxo-hd/pull/942#issuecomment-7095362223",
+    "148 crowd": "PR943 stock verifies one and two opponents against the same NPC, including the real helper ranged attack. Both ordinary rifle roll inputs go −15 solo, −30 crowded, zero with 148 loaded, −30 after unloading, and −15 after the helper stops. The original wider caller and exact threshold remain open. https://github.com/kylebrussell/mxo-hd/pull/943#issuecomment-7095448973"
+  }
+}
