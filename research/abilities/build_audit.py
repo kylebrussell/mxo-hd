@@ -228,6 +228,10 @@ def server(i):
         return 'IS 30; 2s cast; reuse 10s / group 689 5s; fixed Ballistic base 18 with influence and resistance; dual handgun direct or +15 queued Handguns cast; 40% landed Powerless for8s with linked timer; 9534 at the authored close pose, 9519 medium fallback, ordinary exchange on miss; [evidence](GUNMAN-PARITY-2.md)'
     if i == 1107:
         return 'rank-zero grant from loaded599; 200 base IS, 2s cast and 15s reuse; same owned visible pet within16m through landing; pet action cost -25% and IS regen +50% for600s; pet HP regen and periodic NegativeConditionSweepPulse unimplemented; [evidence](https://github.com/kylebrussell/mxo-hd/pull/891)'
+    if i == 442:
+        return '30 IS; loaded Rifles and an equipped rifle required to start at rest; Ballistic Accuracy +20 consumed by ordinary rifle shots; 30 IS every5s; manual off or shortfall removes the bonus and starts 15s own reuse; [evidence](GUNMAN-PARITY-2.md)'
+    if i == 436:
+        return '100 IS, 8s cast and 15s reuse; caster-centred 10m team area with support-radius influence; 300s caster-level typed defense records; RefundIS grants 25 once to each terminating recipient; a pending cast requires loaded436 and landed copies persist through Archive unload'
     if i in (947, 948):
         return 'stored level 99 selected-load prerequisite exceeds the level 50 cap; no shipped prerequisite or grant includes this ability in another load; [qualification proof](https://github.com/kylebrussell/mxo-hd/pull/880)'
     if i == 1149:

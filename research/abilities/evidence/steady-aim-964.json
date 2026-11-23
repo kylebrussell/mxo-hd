@@ -1,0 +1,33 @@
+{
+  "families": {
+    "steady-aim-rifle-drain-and-term": {
+      "representative": 442,
+      "result": "pass",
+      "head": "26fefbefa4a2fb2d3a356b57fe45409ad3be42d7",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/964#issuecomment-7099666927",
+      "scope": "Level-36 stock client with rifle 692 and Rifles at an equal 5 m armed target. Combat denied 442 with reason 21 before debit/reuse. At-rest activation charged 30 IS, applied one +20 Ballistic Accuracy from 442 and started no reuse. The first five-second drain paid 30. A manual toggle-off spent zero, removed its matching modifier and started one 15-second own reuse. The client suppressed early reuse. On a fresh activation the actual rifle contest input rose from 48 to 68. Exact equality paid the first drain at 30 IS and remained active. The next shortage at zero sent the 30 IS shortfall, paired removal and one new 15-second term timer. Rifle accuracy returned to 48. The authored GrabDistruptedBuff field has no identified reader or demonstrated gameplay consequence."
+    }
+  },
+  "abilities": {
+    "442": {
+      "family": "steady-aim-rifle-drain-and-term",
+      "checks": {
+        "stats": {
+          "source": "Catalog 442 stores Ballistic Accuracy 524 +20, upkeep callback amount 30 and update interval five seconds.",
+          "runtime": "AbilityScaledBuffs and AbilityBuffs publish the live 524 modifier. AbilityStats.Attack reads it in the ordinary rifle contest. Upkeep routes through the existing paid-drain scheduler rather than reporting a character-sheet stat.",
+          "test": "SteadyAimConsumesOnlyBallisticAccuracyAndStartsReuseOnTermination verifies the live ballistic input, unaffected melee control, exact drain and paired removal. Stock PR964 observed 48 to 68 to 48 and the ordered paid/shortfall ticks."
+        },
+        "script": {
+          "source": "tempmods.py binds 442's DoNothing init, ISDrainWithAbilityDeactivation update and AddRecastTimer term with Value15.",
+          "runtime": "Ordinary ability and buff handlers preserve no init reuse, deduct each paid tick once and terminate on shortfall. AbilityCooldowns uses the catalog term callback value for natural or manual release.",
+          "test": "SteadyAimConsumesOnlyBallisticAccuracyAndStartsReuseOnTermination covers both releases and the precise timer. Stock PR964 independently verified exactly one 15-second own reuse for each path with no activation timer."
+        },
+        "behavior-tests": {
+          "source": "Catalog 442 stores the loaded rifle profile, at-rest cast, +20 ballistic input, 30 activation IS, five-second upkeep and term-only reuse.",
+          "runtime": "AbilityHandler checks loading, current combat, Rifles and rifle class before activation. The loaded active toggle bypasses new-activation admission to release cleanly. Modifier and timer records share the ordinary removal path.",
+          "test": "SteadyAimChecksTheRifleProfileBeforeSpendingInnerStrength covers all four refusal reasons without debit or reuse. SteadyAimConsumesOnlyBallisticAccuracyAndStartsReuseOnTermination covers timer phases, modifier lifetime and equality/shortfall. PR964 supplies stock equivalent positive cases and the actual ordinary rifle path."
+        }
+      }
+    }
+  }
+}
