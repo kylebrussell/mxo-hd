@@ -555,11 +555,12 @@ namespace hds
         {
             // Capture before ANY activation/upgrade lock: reset owns the transport gate first.
             var drain=new DrainLifetime(client);
-            if (abilityId != Virii.DeflectVirus1Child) return ApplyCaptured();
+            var transport = client.TransportFence;
+            if (abilityId != Virii.DeflectVirus1Child || transport == null) return ApplyCaptured();
 
             // The child publishes a world-bound reuse record. Take transport admission before the upgrade lock.
             bool applied = false;
-            return client.TransportFence.TryRun(drain.Transport, () => applied = ApplyCaptured()) && applied;
+            return transport.TryRun(drain.Transport, () => applied = ApplyCaptured()) && applied;
 
             bool ApplyCaptured()
             {
