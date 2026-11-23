@@ -43,7 +43,7 @@ public sealed class PistolSlideMode : NativeQaMode
         {
             $"Level {Level}, {Loadout.Sum(AbilityMemory.Cost)}/{AbilityMemory.ForLevel(Level)} legal memory. CSR ({X},{Y},{CasterZ}) faces QAEnemy ({X},{Y},{EnemyZ}); the second hostile QAOther ({OtherX},{Y},{EnemyZ}) is off to the side. A revolver is equipped. Page 2 Handguns then Pistol Slide.",
             "Select Handguns and QAEnemy. Try slot 2 at rest. Open ordinary Close Combat, reselect Handguns and try slot 2 before imposing Off Balance. Expect a grey local gate or a refusal without IS/reuse.",
-            "Select QAEnemy again. Enter ?cd offbalance 30 and wait for 885/200 on QAEnemy. Press slot 2. Retain the exact request, [PVP] landed 9527 and a 73 hit. Expect 20 IS, 10 s own and 5 s group 690. An ordinary contest miss can be retried after reuse. A natural Powerless proc lasts 8 s.",
+            "Select QAEnemy again. Enter ?cd offbalance 30 and wait for 885/200 on QAEnemy. Press slot 2. Expect [SPECIAL-TACTIC OURS] ability=241 bonus=29 with total=base+29 on the queued round. Retain the exact request, [PVP] landed 9527 and a 73 hit. Expect 20 IS, 10 s own and 5 s group 690. An ordinary contest miss can be retried after reuse. A natural Powerless proc lasts 8 s.",
             """Submit ?cd fixture-disengage and wait for the HUD to clear. Send helper {"actor":"QAEnemy","action":"slide-armor"}. The helper waits out any landed Powerless. Verify [MODIFIER] char=6114 source=1061 stat=181 add value=+20. Reopen Close Combat on QAEnemy, reselect Handguns and apply ?cd offbalance 30 again. Slot 2 should produce [TYPED-RESISTANCE OURS] 241 type1 total20 raw73 final64 and the same 9527. The upgrade raises only the helper's max HP by 50. Projected DONE +1 (241)."""
         });
 
@@ -129,6 +129,8 @@ public sealed class PistolSlideMode : NativeQaMode
                 string log = server.DebugLog()[logAt..];
                 Check.That(log.Contains("[ABILITY-COST] char=110 ability=241 paid=20", StringComparison.Ordinal),
                     "Each admitted Pistol Slide debits the stored 20 IS");
+                Check.That(log.Contains("[SPECIAL-TACTIC OURS] ability=241 bonus=29 ", StringComparison.Ordinal),
+                    "The queued round uses Pistol Slide's authored tactic bonus");
                 if (!log.Contains("PistolSlideAbility lands on QAEnemy for ", StringComparison.Ordinal)) continue;
                 Check.That(log.Contains($"PistolSlideAbility lands on QAEnemy for {expected}", StringComparison.Ordinal) &&
                     log.Contains("animation 9527 (Pistol Slide)", StringComparison.Ordinal), $"Expected Pistol Slide damage {expected} and native move 9527");

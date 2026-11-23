@@ -27,6 +27,26 @@ public class TypedSpecialAttackTests
         Assert.Equal(AbilityStats.Attack(c,false),AbilityStats.SpecialAttack(c,Move(197)));
         foreach(var move in new AbilityItem?[]{null,Move(7),Move(121)}) Assert.Equal(AbilityStats.Attack(c,false),AbilityStats.SpecialAttack(c,move!));
     }
+
+    [Theory]
+    [InlineData(241, 29)]
+    [InlineData(243, 19)]
+    [InlineData(249, 24)]
+    [InlineData(105, 0)]
+    [InlineData(208, 0)]
+    [InlineData(242, 0)]
+    [InlineData(1024, 0)]
+    public void StyleBoundQueuedGunSpecialFeedsItsAuthoredBonusIntoTheRound(ushort id, int bonus)
+    {
+        var actor = Client();
+        Stat(actor, 163, 3);
+        Stat(actor, 524, 17);
+        var move = Move(id);
+
+        Assert.Equal(20, AbilityStats.Attack(actor, true));
+        Assert.Equal(20 + bonus, InterlockInitiative.Attack(actor, move));
+    }
+
     [Fact]
     public void CapturedThrownDebuffChangesProductionContestWhileMeleeDoesNot()
     {
