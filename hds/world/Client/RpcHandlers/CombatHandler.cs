@@ -306,7 +306,7 @@ namespace hds
         internal bool CanResolveNpcQueuedAbility(CombatSession session, AbilityItem ability)
         {
             if (!CombatAnimations.CanResolveQueuedAbility(client, ability)) return false;
-            return ability?.getAbilityID() != CombatSpecials.SlidingVolley ||
+            return !CombatSpecials.KeepsQueuedOpponent(ability?.getAbilityID()) ||
                 PowerShotOpponent(session.QueuedAbilityTarget, (ushort)(session.TargetViewSpawnId >> 16)) == session.TargetViewSpawnId;
         }
 

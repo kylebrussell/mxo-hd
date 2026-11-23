@@ -307,6 +307,8 @@ try
                     await NativeQa.Modes.EscapeAndEvasionMode.RevealAsync(actor);
                 else if (fixtureMode is NativeQa.Modes.PistolSlideMode && action == "slide-armor")
                     await NativeQa.Modes.PistolSlideMode.ApplyArmorAsync(actor);
+                else if (fixtureMode is NativeQa.Modes.PistolEvasiveMode && action == "evasive-armor")
+                    await NativeQa.Modes.PistolSlideMode.ApplyArmorAsync(actor);
                 else if (fixtureMode is NativeQa.Modes.PistolAerialMode && action == "aerial-armor")
                     await NativeQa.Modes.PistolSlideMode.ApplyArmorAsync(actor);
                 else if (fixtureMode is NativeQa.Modes.PistolAerialMode && action == "aerial-immune")

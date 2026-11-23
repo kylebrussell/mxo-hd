@@ -43,7 +43,7 @@ namespace hds
             /// <summary>The move the next round decides.</summary>
             public CombatInterlock.Move Move;
             public AbilityItem QueuedAbility;
-            internal uint QueuedSlidingVolleyOpponent;
+            internal uint QueuedRequiredOpponent;
             public bool SneakOpener;
             public bool Withdrawing;
             internal bool OrdinaryWithdrawalRequested;
@@ -458,15 +458,15 @@ namespace hds
             lock (sync)
             {
                 Side side = SideOf(client);
-                bool slidingVolley = ability.getAbilityID() == CombatSpecials.SlidingVolley;
+                bool keepOpponent = CombatSpecials.KeepsQueuedOpponent(ability.getAbilityID());
                 if (!IsActive || side?.Move == null || (UInt16)side.OpponentHandle != targetViewId ||
-                    (slidingVolley && !requiredOpponent.HasValue) ||
+                    (keepOpponent && !requiredOpponent.HasValue) ||
                     (requiredOpponent.HasValue && !MatchesQueuedOpponent(client, requiredOpponent.Value)))
                 {
                     return false;
                 }
                 side.QueuedAbility = ability;
-                side.QueuedSlidingVolleyOpponent = slidingVolley ? requiredOpponent.Value : 0;
+                side.QueuedRequiredOpponent = keepOpponent ? requiredOpponent.Value : 0;
                 side.SneakOpener = sneakOpener;
                 SendMoveChanged(side);
                 Output.WriteDebugLog("[PVP] " + ability.getAbilityName() + " is " + PvpFlag.Name(client) + "'s next move");
@@ -478,17 +478,17 @@ namespace hds
         {
             side.Other = opponent;
             side.OpponentHandle = PvpCombat.HandleOf(side.Client, opponent.Client);
-            if (side.QueuedAbility?.getAbilityID() != CombatSpecials.SlidingVolley) return false;
+            if (!CombatSpecials.KeepsQueuedOpponent(side.QueuedAbility?.getAbilityID())) return false;
             side.QueuedAbility = null;
-            side.QueuedSlidingVolleyOpponent = 0;
+            side.QueuedRequiredOpponent = 0;
             return true;
         }
 
         internal static AbilityItem QueuedAbilityForRound(Side side, Side opponent)
         {
             var ability = side.QueuedAbility;
-            if (ability?.getAbilityID() != CombatSpecials.SlidingVolley) return ability;
-            uint handle = side.QueuedSlidingVolleyOpponent;
+            if (!CombatSpecials.KeepsQueuedOpponent(ability?.getAbilityID())) return ability;
+            uint handle = side.QueuedRequiredOpponent;
             if (!ReferenceEquals(side.Other, opponent) || !opponent.Present || side.OpponentHandle != handle)
                 return null;
             var view = side.Client.viewMan.getViewById((ushort)handle);
@@ -668,11 +668,11 @@ namespace hds
                 if (!opening)
                 {
                     p.QueuedAbility = null;
-                    p.QueuedSlidingVolleyOpponent = 0;
+                    p.QueuedRequiredOpponent = 0;
                     if (counter)
                     {
                         n.QueuedAbility = null;
-                        n.QueuedSlidingVolleyOpponent = 0;
+                        n.QueuedRequiredOpponent = 0;
                     }
                 }
 

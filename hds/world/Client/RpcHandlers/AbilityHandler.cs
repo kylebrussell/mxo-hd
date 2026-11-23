@@ -263,17 +263,35 @@ namespace hds
                 }
             }
 
-            bool starterGunCast = AbilityID == 126 || AbilityID == 176 || protectedGunSpecial;
+            bool pistolEvasive = AbilityID == CombatSpecials.PistolEvasive;
+            object pistolInterlock = null;
+            if (pistolEvasive)
+            {
+                var shooter = Store.currentClient;
+                if (!AbilityPassives.IsLoaded(shooter, AbilityID))
+                {
+                    Deny(AbilityID, "Load this ability before using it.", AbilityRefusals.NotLoaded, sendServerText: false);
+                    return;
+                }
+                if (!CombatAnimations.HasRequiredGunWeapon(shooter, AbilityID))
+                {
+                    Deny(AbilityID, "Equip a handgun before using Pistol Evasive.", AbilityRefusals.RequiredItemCategory, sendServerText: false);
+                    return;
+                }
+                pistolInterlock = CombatManager.GetHandler(shooter).ActiveInterlockIdentity;
+            }
+            bool selectedTimedGun = AbilityID == 126 || AbilityID == 176 || protectedGunSpecial || pistolEvasive;
             bool rifleOpener = CombatSpecials.IsRifleOpener(AbilityID);
             bool woundingShot = AbilityID == CombatSpecials.WoundingShot;
             ushort? gunTargetSpawn = null;
-            if (starterGunCast)
+            if (selectedTimedGun)
             {
                 var shooter = Store.currentClient;
                 gunTargetSpawn = (ushort?)shooter.viewMan.getViewById(currentTargetViewId)?.spawnId;
                 ushort? requestedSpawn = packet.Length == 41 ? BitConverter.ToUInt16(packet, 4) : gunTargetSpawn;
                 if (!gunTargetSpawn.HasValue ||
-                    !AbilityTargets.HasLiveAttackSelection(shooter, currentTargetViewId, requestedSpawn, requireOpponent: true))
+                    !AbilityTargets.HasLiveAttackSelection(shooter, currentTargetViewId, requestedSpawn, requireOpponent: true) ||
+                    (pistolInterlock != null && !CombatManager.GetHandler(shooter).PowerShotOpponent(currentTargetViewId, requestedSpawn).HasValue))
                 {
                     Deny(AbilityID, "Select a living enemy before using this ability.", AbilityRefusals.InvalidTarget, sendServerText: false);
                     return;
@@ -313,7 +331,7 @@ namespace hds
                 }
             }
 
-            bool starterRangedControl = AbilityID == 43 || AbilityID == 48 || AbilityID == 130 || starterGunCast;
+            bool starterRangedControl = AbilityID == 43 || AbilityID == 48 || AbilityID == 130 || selectedTimedGun;
             if ((selectedHostileCast || starterMovementDebuff || selectedCoderCast || starterRangedControl || AbilityID == 69) &&
                 !AbilityTargets.WithinSelectionRange(Store.currentClient, AbilityID, currentTargetViewId))
             {
@@ -374,7 +392,7 @@ namespace hds
                     return;
                 }
             }
-            bool selectedGunShot = starterGunCast || AbilityID == 130 || rifleOpener;
+            bool selectedGunShot = selectedTimedGun || AbilityID == 130 || rifleOpener;
             if ((selectedGunShot && !rifleOpener || enrage) &&
                 !AbilityTargets.HasSelectionSight(Store.currentClient, definition, currentTargetViewId))
             {
@@ -1132,6 +1150,28 @@ namespace hds
                 }
                 if (threeRoundBurst && !CombatStyles.CanUse(client, AbilityID)) return;
             }
+            if (pistolEvasive)
+            {
+                var fight = CombatManager.GetHandler(client);
+                if (!AbilityPassives.IsLoaded(client, AbilityID) || !CombatAnimations.CanQueueGunCast(client, AbilityID) ||
+                    !ReferenceEquals(fight.ActiveInterlockIdentity, pistolInterlock))
+                {
+                    Output.WriteDebugLog("[ABILITY] 242 fizzles: the loaded move, handgun, style or interlock changed");
+                    return;
+                }
+
+                if (pistolInterlock != null)
+                {
+                    uint? opponent = fight.PowerShotOpponent(hostileView, gunTargetSpawn);
+                    if (!opponent.HasValue || !fight.QueueRoundAbility(ability, hostileView, sneakOpener, opponent))
+                        Output.WriteDebugLog("[ABILITY] 242 fizzles: the interlock opponent changed");
+                }
+                else
+                {
+                    AbilityTargets.Land(client, ability, hostileView, sneakOpener, AbilityCastOrigin.NormalFreeCast);
+                }
+                return;
+            }
             // Stun Pulse's legacy buff flag conflicts with its shipped hostile area selector.
             if (hostileView > 2 && !support && !pet && !derez && definition?.FriendlyTarget != true &&
                 (!ability.getIsBuff() || CombatSpecials.TargetsEnemy(AbilityID) || engageFoes!=null) &&
@@ -1282,6 +1322,7 @@ namespace hds
                 197 => 0,  // Head Butt
                 198 => 0,  // Cheap Shot
                 238 => 2,  // Harmful Code 2.0
+                242 => 1,  // Pistol Evasive
                 254 => 1,  // Immobilizing Shot
                 255 => 1,  // Disabling Shot
                 253 => 1,  // Wounding Shot

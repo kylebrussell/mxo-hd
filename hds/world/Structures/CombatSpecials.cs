@@ -29,6 +29,8 @@ namespace hds
 
         internal const ushort SlidingVolley = 249, ControlledBurst = 250, ThreeRoundBurst = 256;
 
+        internal static bool KeepsQueuedOpponent(ushort? ability) => ability == SlidingVolley || ability == PistolEvasive;
+
         internal static bool HasEquippedDualSubmachineGuns(WorldClient caster) =>
             RangedWeapons.GetStats(SharpshooterFreeFire.EquippedWeapon(caster))?.Category == "IWDS";
 
