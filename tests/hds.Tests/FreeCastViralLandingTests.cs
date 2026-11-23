@@ -39,6 +39,100 @@ public class FreeCastViralLandingTests : IDisposable
         WorldServer.Clients[id.ToString()]=c;return c;
     }
 
+    [Fact]
+    public void CodeFluxChangesTheLiveSneakObserverAndEvasionEntryOnTheSameRecipient()
+    {
+        const ushort flux = 478;
+        var caster = Client(110);
+        var target = Client(111);
+        var runner = Client(112);
+        var clients = new[] { caster, target, runner };
+        int[] z = { 6400, 6600, 8401 };
+        for (int i = 0; i < clients.Length; i++)
+        {
+            typeof(WorldClient).GetField("<TransportFence>k__BackingField", BindingFlags.NonPublic | BindingFlags.Instance)!
+                .SetValue(clients[i], new WorldSendFence());
+            clients[i].playerData.setEntityId((ulong)(85000410 + i));
+            clients[i].playerData.pvpFlag = true;
+            clients[i].playerInstance.OrganizationID.setValue((byte)(i == 1 ? 2 : 1));
+            clients[i].playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(17000, 495, z[i]));
+        }
+        target.playerInstance.YawInterval.setValue((byte)0);
+        target.playerInstance.StealthAwareness.setValue((byte)1);
+        runner.playerInstance.NoiseLevel.setValue((byte)0);
+        caster.playerInstance.InnerStrengthMax.setValue((ushort)1000);
+        caster.playerInstance.InnerStrengthAvailable.setValue((ushort)500);
+        var view = caster.viewMan.addView(target.playerData.getEntityId(), 1);
+        view.viewCreated = true;
+        view.spawnId = 2;
+        uint handle = DuelPackets.Handle(view.ViewID, view.spawnId);
+        Store.currentClient = caster;
+        Environment.SetEnvironmentVariable("MXO_FREECAST_VIRAL_QA_ATTACK15", "32766");
+        Environment.SetEnvironmentVariable("MXO_FREECAST_VIRAL_QA_DEFENSE15", "0");
+        var world = Store.world;
+        try
+        {
+            Store.world = (WorldServer)RuntimeHelpers.GetUninitializedObject(typeof(WorldServer));
+            var profile = new NativeQa.Modes.HackerCodeFluxConsumersMode().Plan.Abilities;
+            Assert.Equal(52, profile.Sum(AbilityMemory.Cost));
+            AbilityPassives.SetLoaded(caster, profile.Select(ability => (ability, (ushort)50)));
+            CombatStyles.Select(caster, CombatStyles.HackerStyle);
+            ushort[] roots = { 2, 17, 217, 293, 298 };
+            AbilityPassives.SetLoaded(target, roots.Concat(roots.SelectMany(root => AbilityPrerequisites.Current.Closure(root).Keys))
+                .Distinct().Select(ability => (ability, (ushort)50)));
+            Assert.True(AbilityBuffs.Apply(target, 217));
+            Assert.True(AbilityBuffs.Apply(target, 293));
+            Assert.Equal(108, Stealth.AwarenessOf(target));
+            var sneak = Stealth.Begin(runner, Stealth.Defs[Stealth.SneakGrantAbility], 45);
+            runner.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(17000, 495, 7000));
+            Assert.True(Stealth.DetectedByPlayer(runner, sneak));
+            Stealth.End(runner, "baseline complete");
+            runner.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(17000, 495, 8401));
+            Assert.False(CombatInsightEngagement.Allows(caster, target, handle, out var original));
+            Assert.Equal(80, original.Force);
+            Assert.Equal(110, original.Evade);
+
+            var request = new byte[41];
+            BitConverter.GetBytes(flux).CopyTo(request, 0);
+            BitConverter.GetBytes(handle ^ 0x10000u).CopyTo(request, 2);
+            var handler = new AbilityHandler();
+            handler.ProcessAbility(ref request);
+            byte[] stale = AbilityRefusals.Encode(new AbilityRefusals.Record(flux, AbilityRefusals.InvalidTarget));
+            Assert.Contains(caster.messageQueue.RPCMessagesQueue.Cast<SequencedMessage>(), message => message.content.AsSpan(1).SequenceEqual(stale));
+            Assert.Equal(500, AbilityHandler.CurrentInnerStrength(caster));
+            BitConverter.GetBytes(handle).CopyTo(request, 2);
+            double before = TimeUtils.GetSimTimeSeconds();
+            handler.ProcessAbility(ref request);
+            double end = caster.playerData.castEndsAt;
+            Assert.InRange(end, before + 2, TimeUtils.GetSimTimeSeconds() + 2);
+            Assert.Equal(458, AbilityHandler.CurrentInnerStrength(caster));
+            AbilityCastInterrupts.FinishDue(caster, end);
+            Assert.Equal(1000, PvpCombat.HealthOf(target));
+            Assert.Equal(8, Stealth.AwarenessOf(target));
+            sneak = Stealth.Begin(runner, Stealth.Defs[Stealth.SneakGrantAbility], 45);
+            runner.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(17000, 495, 7000));
+            Assert.Equal(45, Stealth.StealthLevelOf(runner));
+            Assert.False(Stealth.DetectedByPlayer(runner, sneak));
+            Assert.True(CombatInsightEngagement.Allows(caster, target, handle, out var affected));
+            Assert.Equal(80, affected.Force);
+            Assert.Equal(10, affected.Evade);
+
+            var curse = Assert.Single(TimedEffects.ForPlayer(target).Effects.Snapshot(), mod => mod.Parent == flux && mod.Target == 204);
+            Assert.Equal(60, curse.Seconds);
+            TimedEffects.RunDue(curse.Start + 60.01);
+            Assert.Equal(28, Stealth.AwarenessOf(target));
+            Assert.False(CombatInsightEngagement.Allows(caster, target, handle, out var restored));
+            Assert.Equal(original.Evade, restored.Evade);
+        }
+        finally
+        {
+            Stealth.End(runner, "fixture complete");
+            TimedEffects.Clear(TimedEffects.ForPlayer(target));
+            AbilityBuffs.RemoveAll(target);
+            Store.world = world;
+        }
+    }
+
     [Theory]
     [InlineData(481, 2, 14, 47, 30, 60, false)]
     [InlineData(488, 4, 16, 50, 10, 50, true)]
@@ -1606,6 +1700,7 @@ public class FreeCastViralLandingTests : IDisposable
 
     [Theory]
     [InlineData(21)]
+    [InlineData(478)]
     [InlineData(36)]
     [InlineData(514)]
     [InlineData(33)]
