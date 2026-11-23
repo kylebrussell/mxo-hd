@@ -65,6 +65,58 @@ public static partial class Scenarios
         Check.That(GroundDistance(current.Position,new[]{approach.x,approach.y,approach.z})<=MobAggro.MeleeDistanceUnits+1,"NPC closes to melee without teleporting");
     }
 
+    private static async Task WorldNpcChaseActiveFight(ScenarioContext context)
+    {
+        WorldNpcCornerFixture.CheckGeometry(context.RepositoryRoot);
+        double[] goofOrigin = { 18924, 95, -8852 };
+        double[] mushfakeOrigin = { 19615, 95, -8583 };
+        var stand = Enumerable.Range(0, 16).Select(step => step * Math.PI / 8)
+            .Select(angle => new[] { mushfakeOrigin[0] + 200 * Math.Cos(angle), 95, mushfakeOrigin[2] + 200 * Math.Sin(angle) })
+            .First(point => NavMesh.Locate(1, point[0], point[1], point[2], out var at) && !at.indoors &&
+                Math.Abs(point[1] - at.floorY - 95) < 1 && WorldNpcCornerFixture.Straight(mushfakeOrigin, point) &&
+                WorldNpcCornerFixture.Straight(goofOrigin, point) && GroundDistance(goofOrigin, point) is > 800 and < 1200);
+        var seed = OpenWorldFirstLevelFixture.Seed with
+        {
+            Handle = "ChaseActiveFight", X = stand[0], Y = stand[1], Z = stand[2],
+            Level = 2, Experience = 5100, Health = 5000, MaxHealth = 5000
+        };
+        var actor = (await context.AddPlayersInWorldAsync(seed))[0];
+        ViewCreation? SelectedMushfake() => actor.World.CreationSnapshot().LastOrDefault(view =>
+            view.Goid == 599 && view.Name == "Blackwood Mushfake" &&
+            GroundDistance(EngageFoesFixture.Position(view), mushfakeOrigin) < 1);
+        await actor.WaitUntilAsync(() => SelectedMushfake() != null, "The world Mushfake at the nearby stand", TimeSpan.FromSeconds(10));
+        var mushfake = SelectedMushfake()!;
+        OpenWorldCurrentNpc.Current? firstChase = null;
+        await actor.WaitUntilAsync(() =>
+        {
+            try { firstChase = WorldNpcCornerFixture.Observe(actor); }
+            catch (InvalidDataException) { return false; }
+            return firstChase.Positions.Count > 1 && firstChase.LastMotion == Mob.Animations.WALK;
+        }, "Blackwood Goof is already pursuing the player", TimeSpan.FromSeconds(10));
+        Check.That(GroundDistance(firstChase!.Position, stand) > MobAggro.MeleeDistanceUnits + 100,
+            "The old chase still has ground to cover");
+        string current = HandleOf(mushfake), pursuing = HandleOf(firstChase.View);
+        actor.SendRpc($"40 {current} 01 6b");
+        await actor.WaitForRpcAsync($"46 {current} 01");
+        await actor.WaitUntilAsync(() =>
+        {
+            var goof = WorldNpcCornerFixture.Observe(actor);
+            return GroundDistance(goof.Position, stand) <= MobAggro.MeleeDistanceUnits + 1 &&
+                goof.LastMotion == Mob.Animations.STAND;
+        }, "The old Goof pursuit reaches arm's length and stops", TimeSpan.FromSeconds(10));
+
+        Check.Equal(0, actor.Received($"46 {pursuing} 01").Count, "The pursuing Goof did not take over the newer fight");
+        Check.Equal(0, actor.Received($"46 {current} 00").Count, "The newer Mushfake fight stays open");
+        actor.SkipReceived();
+        uint targetHandle = (uint)mushfake.ViewId | (uint)mushfake.SpawnId << 16;
+        byte[] round = (await actor.WaitForRpcAsync("45", TimeSpan.FromSeconds(10))).Bytes;
+        Check.That(round.Length >= 40 && BitConverter.ToUInt32(round, round.Length - 40) == targetHandle &&
+            BitConverter.ToUInt32(round, round.Length - 36) == targetHandle,
+            "A fresh round still addresses the original Mushfake after the Goof arrives");
+        Check.Equal(0, actor.Received($"46 {pursuing} 01").Count, "The old chase still cannot replace the opponent");
+        Console.WriteLine($"Mara stand {string.Join(",", stand)}: Goof arrived while Mushfake's interlock continued.");
+    }
+
     private static async Task WorldNpcCornerStationary(ScenarioContext context)
     {
         WorldNpcCornerFixture.CheckGeometry(context.RepositoryRoot);

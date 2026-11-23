@@ -33,6 +33,7 @@ public static partial class Scenarios
         new Scenario("earned-level-four",c=>EarnedLaterLevel(c,3,20900,572),EarnedLaterLevelEnvironment,Timeout:TimeSpan.FromMinutes(5)),
         new Scenario("world-npc-wander",WorldNpcWander,new Dictionary<string,string>{["MXO_MOBS"]="world",["MXO_AGGRO"]="0",["MXO_MOB_WANDER"]="1",["MXO_DEV_COMMANDS"]="1",["MXO_QA_MOB_WANDER_SEED"]="42"}),
         new Scenario("world-npc-chase",WorldNpcChase,new Dictionary<string,string>{["MXO_MOBS"]="world",["MXO_AGGRO"]="1",["MXO_MOB_WANDER"]="0"}),
+        new Scenario("world-npc-chase-active-fight", WorldNpcChaseActiveFight, WorldNpcCornerFixture.Environment),
         new Scenario("world-npc-corner-chase",WorldNpcCornerChase,WorldNpcCornerFixture.Environment),
         new Scenario("world-npc-corner-stationary", WorldNpcCornerStationary, WorldNpcCornerFixture.StationaryEnvironment),
         new Scenario("coder-enrage-588-server", CoderEnrage588, CoderEnrage588Environment),
