@@ -20,7 +20,8 @@ public sealed class MartialPlayerControlMode : NativeQaMode
     private const string StockKarate = "80b984000400020000000000000000000000000000000000000000000000000000000000086b0000000000";
     private const string StockCheapShot = "80b9c600050003000000000000000000000000000000000000000000c6000000006b0000086b0000000000";
     private static readonly TimeSpan Hold = TimeSpan.FromSeconds(10);
-    private sealed record Sample(ushort Id, ushort State, float Seconds, string? Setup = null)
+    private sealed record Sample(ushort Id, ushort State, float Seconds, string? Setup = null,
+        ushort SecondaryState = 0, float SecondarySeconds = 0)
     {
         public float ImmunitySeconds => MathF.Floor(Seconds);
     }
@@ -99,7 +100,7 @@ public sealed class MartialPlayerControlMode : NativeQaMode
         NativeQaReadiness.RequireNoAmbientAggro(server, recipient);
         if (context.StockProbe is not { } caster)
         {
-            _ = WatchNativeAsync(context, recipient, server);
+            _ = WatchNativeAsync(context, recipient, server, Samples);
             return Array.Empty<byte>();
         }
 
@@ -217,7 +218,12 @@ public sealed class MartialPlayerControlMode : NativeQaMode
         }
     }
 
-    private static async Task WatchNativeAsync(NativeQaBootstrapContext context, HeadlessPlayer recipient, ServerInstance server)
+    internal static Task WatchBashAsync(NativeQaBootstrapContext context, HeadlessPlayer recipient, ServerInstance server) =>
+        WatchNativeAsync(context, recipient, server,
+            new[] { new Sample(618, TempMods.StunAbility, 4, SecondaryState: TempMods.EnrageAbility, SecondarySeconds: 8) }, "bash-player-control");
+
+    private static async Task WatchNativeAsync(NativeQaBootstrapContext context, HeadlessPlayer recipient,
+        ServerInstance server, Sample[] samples, string artifact = "martial-player-control")
     {
         string stop = Path.Combine(context.OutputDirectory, "stop");
         try
@@ -225,20 +231,20 @@ public sealed class MartialPlayerControlMode : NativeQaMode
             var csr = await WaitForNativeEventAsync(() => recipient.World.CreationSnapshot().LastOrDefault(view => view.Name == "CSR_Tester"));
             if (csr == null) return;
             int cursor = 0;
-            foreach (Sample sample in Samples)
+            foreach (Sample sample in samples)
             {
                 Console.WriteLine($"MARTIAL RECIPIENT WAITING {sample.Id}");
                 var added = await WaitForNativeEventAsync(() => recipient.World.RpcSnapshot().Skip(cursor)
                     .FirstOrDefault(frame => State(frame, sample, false)));
                 if (added == null) return;
-                cursor = await ObserveRecipientAsync(context, recipient, Handle(csr), sample, cursor, added);
+                cursor = await ObserveRecipientAsync(context, recipient, Handle(csr), sample, cursor, added, artifact);
             }
         }
         catch (Exception error)
         {
             if (!Running()) return;
             Console.WriteLine($"MARTIAL RECIPIENT FAILED {error.Message}");
-            await File.WriteAllTextAsync(Path.Combine(context.OutputDirectory, "martial-player-control-failure.log"), error.ToString());
+            await File.WriteAllTextAsync(Path.Combine(context.OutputDirectory, artifact + "-failure.log"), error.ToString());
         }
 
         bool Running()
@@ -266,7 +272,7 @@ public sealed class MartialPlayerControlMode : NativeQaMode
     }
 
     private static async Task<int> ObserveRecipientAsync(NativeQaBootstrapContext context, HeadlessPlayer recipient,
-        uint caster, Sample sample, int cursor, RpcRecord added)
+        uint caster, Sample sample, int cursor, RpcRecord added, string artifact = "martial-player-control")
     {
         long stateAt = Stopwatch.GetTimestamp();
         var immune = await StockAbilityProfile.ObserveAsync(recipient, cursor, frame => Immunity(frame, sample, false),
@@ -275,6 +281,17 @@ public sealed class MartialPlayerControlMode : NativeQaMode
             sample.Seconds, "control");
         var immuneExpiry = ExpiryAsync(frame => Immunity(frame, sample, true) && SameLocator(immune, frame),
             sample.ImmunitySeconds, "immunity");
+        RpcRecord? secondary = null;
+        Task<(RpcRecord Record, double Seconds)>? secondaryExpiry = null;
+        if (sample.SecondaryState != 0)
+        {
+            bool MatchesSecondary(RpcRecord frame, bool remove) => ControlRecord(frame, TempMods.KindState,
+                sample.Id, sample.SecondaryState, sample.SecondarySeconds, remove);
+            secondary = await StockAbilityProfile.ObserveAsync(recipient, cursor, frame => MatchesSecondary(frame, false),
+                $"secondary state add {sample.Id}/{sample.SecondaryState}");
+            secondaryExpiry = ExpiryAsync(frame => MatchesSecondary(frame, true) && SameLocator(secondary, frame),
+                sample.SecondarySeconds, "secondary control");
+        }
         byte[] action = StarterHackerControlTargetMode.WithHandle(StockCheapShot, caster);
         int attempt = recipient.World.RpcSnapshot().Count;
         int views = recipient.World.ViewSnapshot().Count;
@@ -304,15 +321,19 @@ public sealed class MartialPlayerControlMode : NativeQaMode
             frame => frame.Bytes.Length == 89 && frame.Bytes[0] == 0x45 &&
                 BinaryPrimitives.ReadUInt32LittleEndian(frame.Bytes.AsSpan(13)) == (0x80000000u | Probe),
             $"recovered Cheap Shot submitted an ordinary round after {sample.Id}");
-        string path = Path.Combine(context.OutputDirectory, "martial-player-controls.jsonl");
+        var endedSecondary = secondaryExpiry == null ? ((RpcRecord Record, double Seconds)?)null : await secondaryExpiry;
+        string path = Path.Combine(context.OutputDirectory, artifact + "s.jsonl");
         await File.AppendAllTextAsync(path, JsonSerializer.Serialize(new
         {
             sample.Id, sample.State, sample.Seconds, sample.ImmunitySeconds, stateElapsed, immuneElapsed,
             Recipient = recipient.CharId, Request = Convert.ToHexString(action),
             Add = added.Hex, Remove = removed.Hex, ImmunityAdd = immune.Hex, ImmunityRemove = immuneRemoved.Hex,
+            sample.SecondaryState, sample.SecondarySeconds, SecondaryElapsed = endedSecondary?.Seconds,
+            SecondaryAdd = secondary?.Hex, SecondaryRemove = endedSecondary?.Record.Hex,
             Refusal = refused.Hex, Message = message, RecoveryTimer = recovery.Hex, RecoveryRound = round.Hex
         }) + Environment.NewLine);
-        Console.WriteLine($"MARTIAL RECIPIENT PASS {sample.Id} ({sample.State}/{sample.Seconds}s); state and immunity removed; Cheap Shot refused then recovered.");
+        string label = sample.SecondaryState == 0 ? "MARTIAL" : "BASH";
+        Console.WriteLine($"{label} RECIPIENT PASS {sample.Id} ({sample.State}/{sample.Seconds}s); state and immunity removed; Cheap Shot refused then recovered.");
         await recipient.WaitForRpcAsync(frame => ProbeTimer(frame, true), $"Cheap Shot ready for next control after {sample.Id}", TimeSpan.FromSeconds(22));
         Console.WriteLine($"MARTIAL RECIPIENT NEXT after {sample.Id}");
         return recipient.World.RpcSnapshot().Count;

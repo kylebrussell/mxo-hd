@@ -794,6 +794,9 @@ public class FreeCastViralLandingTests : IDisposable
         var victim = TimedEffects.ForPlayer(target);
         var ability = new AbilityItem();
         ability.setAbilityID(id);
+        target.playerData.combatTactic = CombatTactic.Block;
+        target.playerInstance.InnerStrengthAvailable.setValue((ushort)100);
+        target.playerInstance.InnerStrengthMax.setValue((ushort)200);
 
         try
         {
@@ -802,6 +805,8 @@ public class FreeCastViralLandingTests : IDisposable
             victim.Effects.Apply(271, new[] { Stat(180, resistance) }, now);
             Assert.Equal(17, AbilityStats.Influence(caster, 159));
             Assert.Equal(raw, AbilityHandler.AbilityDamage(ability, new Random(17), characterLevel: 50));
+            CombatHandler.ApplyRoundInnerStrength(target);
+            Assert.Equal(110, AbilityHandler.CurrentInnerStrength(target));
             PvpCombat.LandAbilityOn(caster, ability, target);
             Assert.Equal(1000 - expected, PvpCombat.HealthOf(target));
 
@@ -809,18 +814,38 @@ public class FreeCastViralLandingTests : IDisposable
             if (id == 605)
             {
                 Assert.Empty(states);
+                CombatHandler.ApplyRoundInnerStrength(target);
+                Assert.Equal(120, AbilityHandler.CurrentInnerStrength(target));
                 return;
             }
 
             Assert.Equal(new[] { TempMods.EnrageAbility, TempMods.StunAbility }, states.Select(effect => effect.Target));
             Assert.Equal(8, states[0].Seconds);
             Assert.Equal(4, states[1].Seconds);
-            double afterStun = states[1].Expires + 0.01;
-            TimedEffects.RunDue(afterStun);
-            Assert.True(ControlActions.CanUseAbilities(victim.Effects));
+            Assert.False(ControlActions.CanUseAbilities(target));
+            Assert.False(ControlActions.CanUseWeapons(victim.Effects));
             Assert.False(ControlActions.CanWithdraw(victim.Effects));
+            Assert.False(ControlActions.CanChangeInterlockTarget(victim.Effects));
+            Assert.True(victim.Effects.HasControlImmunity(TimeUtils.GetSimTimeSeconds()));
+            Assert.Empty(victim.Effects.HealthChanged(1, belowMaximum: true, new Random(1)));
+            var immunity = Assert.Single(victim.Effects.Snapshot(), effect => effect.Parent == TempMods.ControlImmunityTimerAbility);
+            Assert.Equal(4, immunity.Seconds);
+
+            TimedEffects.RunDue(states[1].Expires + 0.01);
+            Assert.True(ControlActions.CanUseAbilities(victim.Effects));
+            Assert.True(ControlActions.CanUseWeapons(victim.Effects));
+            Assert.False(victim.Effects.HasControlImmunity(states[1].Expires + 0.01));
+            Assert.False(ControlActions.CanWithdraw(victim.Effects));
+            Assert.False(ControlActions.CanChangeInterlockTarget(victim.Effects));
+            Assert.True(ControlActions.CanChangeTactic(victim.Effects));
+            CombatHandler.ApplyRoundInnerStrength(target);
+            Assert.Equal(110, AbilityHandler.CurrentInnerStrength(target));
+
             TimedEffects.RunDue(states[0].Expires + 0.01);
             Assert.True(ControlActions.CanWithdraw(victim.Effects));
+            Assert.True(ControlActions.CanChangeInterlockTarget(victim.Effects));
+            CombatHandler.ApplyRoundInnerStrength(target);
+            Assert.Equal(120, AbilityHandler.CurrentInnerStrength(target));
         }
         finally
         {
