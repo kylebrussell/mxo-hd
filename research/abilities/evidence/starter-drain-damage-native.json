@@ -5,9 +5,20 @@
         "damage": {
           "source": "GOB 19 has a fixed type-5 target health effect of 8000 and a separate fixed caster IS restore of 50. Decoy1_Test requires the selected pet to belong to the caster.",
           "runtime": "CoderPets reads both fixed effects from their GOB records. A surviving pet receives its new HP in the world view and pet window, while the owner receives the capped IS return.",
-          "test": "StarterDrainCodeDamageMode checks the full 8000 damage with Fortify active on a deliberately durable Proxy. The native run observed HP 9000 to 1000, IS 720 to 770, a surviving pet window and 58 s own reuse. PR680 and PR700 separately cover foreign, out-of-range and in-combat denial. The 60 s DecoyDuration and remaining complete behavior evidence stay open. https://github.com/kylebrussell/mxo-hd/pull/710#issuecomment-7071169854"
+          "test": "StarterDrainCodeDamageMode and stock PR710 both check the 8000 damage on a deliberately durable Proxy with Fortify active. The original HP changed from 9000 to 1000 and caster IS from 720 to 770, with 58 s own reuse. Stock PR917 repeats the result and observes the lethal second hit. PR680 and PR700 separately cover foreign, out-of-range and in-combat denial. https://github.com/kylebrussell/mxo-hd/pull/710#issuecomment-7071169854 https://github.com/kylebrussell/mxo-hd/pull/917#issuecomment-7091322127"
+        },
+        "source-parity": {
+          "source": "GOB 19 retains DecoyDuration 60 but its two enabled modifiers use DurationType 1 and apply direct neutral damage and caster IS immediately. Decoy1_Test checks ownership. The shipped script declares a 60-second acoustic decoy constant without any call from Drain Code to a delayed, spawn or decay callback.",
+          "runtime": "CoderPets interprets the authored request as one owned pet hit and one capped owner IS restoration. A surviving original pet remains registered and targetable until its existing lifecycle removes it. The Drain Code handler does not create a replacement or schedule a pet or actor change from DecoyDuration.",
+          "test": "Stock PR917 observes the same original Proxy and its window more than 60 seconds after the first Drain lands. The second cast lands on that original Proxy and unregisters its only pet window at zero HP, with no replacement. StarterDrainCodeDamageMode replays both retained stock-shaped casts using the live handle across the same observed interval. https://github.com/kylebrussell/mxo-hd/pull/917#issuecomment-7091322127"
+        },
+        "behavior-tests": {
+          "source": "GOB 19 is an outside-combat selected owned-pet cast with zero IS, a two-second cast, 58 s reuse, an instant fixed neutral hit 8000 and a separate +50 IS restoration. The only explicit Drain Test script checks the pet owner.",
+          "runtime": "AbilityHandler and CoderPets fence the original owned pet and loaded membership. They reject invalid owner, unavailable pet, out of range or combat before landing and preserve reused view identity. The existing pet lifecycle handles both a surviving hit and immediate lethal removal; caster IS is independently capped.",
+          "test": "Stock PR593 verifies lethal Drain and IS, PR680 and PR700 cover foreign, range and combat refusals, PR710 verifies surviving damage and persistence, and PR917 observes the original survivor past 60 seconds followed by lethal removal and a second +50 IS. StarterDrainCodeDamageMode and the existing ownership and cast regressions exercise the actual recorded policies. https://github.com/kylebrussell/mxo-hd/pull/710#issuecomment-7071169854 https://github.com/kylebrussell/mxo-hd/pull/917#issuecomment-7091322127"
         }
-      }
+      },
+      "note": "Stock PR917 confirms that the same surviving Proxy and window remain after the 58-second reuse and the subsequent wait, beyond 60 seconds from the first Drain. The second Drain removes that original Proxy and its window. Both casts return 50 IS and no replacement appears. https://github.com/kylebrussell/mxo-hd/pull/917#issuecomment-7091322127"
     }
   }
 }
