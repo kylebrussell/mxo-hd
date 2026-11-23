@@ -774,7 +774,10 @@ namespace hds
 
         public static byte[] Record(TimedEffects.Active m, bool off)
         {
-            return AbilityBuffs.BuildModifier(m.Kind, m.RecordId, m.Parent, m.Target, m.Value, off, float.IsPositiveInfinity(m.Seconds) ? 0 : m.Seconds);
+            // The captured Pistol Aerial marker has no attribute target on the wire.
+            ushort target = m.Parent == AbilityConditionalControls.PistolAerial && m.Proc == TempMods.Proc.Terminal
+                ? (ushort)0 : m.Target;
+            return AbilityBuffs.BuildModifier(m.Kind, m.RecordId, m.Parent, target, m.Value, off, float.IsPositiveInfinity(m.Seconds) ? 0 : m.Seconds);
         }
 
         /// <summary>A state's own record: the state ability as parent, its linked stat and value, no time.</summary>

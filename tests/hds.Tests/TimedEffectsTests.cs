@@ -131,8 +131,11 @@ public class TimedEffectsTests
         // lands while it is on ("Stun stacking detected")
         var subject = new RecordingSubject();
         double now = 5000;
-        List<TimedEffects.Active> first = TimedEffects.Apply(subject, TempMods.Retail[243], now);
-        Assert.Single(first);
+        Assert.True(TempMods.TryGet(243, out var pistolAerial));
+        List<TimedEffects.Active> first = TimedEffects.Apply(subject, pistolAerial, now, fixtureProc: true);
+        Assert.Equal(TempMods.Proc.Terminal, Assert.Single(first).Proc);
+        Assert.False(subject.Effects.Has(TempMods.StunAbility));
+        TimedEffects.RunDue(now + .02);
         Assert.NotNull(subject.LastImmunity);
         Assert.Equal(4f, subject.LastImmunity!.Seconds);
         Assert.Equal(TempMods.ISDrainTargetAbility, subject.LastImmunity.Target);
@@ -278,7 +281,8 @@ public class TimedEffectsTests
         Assert.Equal("80bc11000305" + "00f3000000" + "6600" + "00000000" + "00" + "00008040", Hex(PlayerEffects.Record(stun, false)));
         Assert.Equal("80bc1d000405" + "0066000000" + "0000" + "00000000" + "00" + "00000000", Hex(PlayerEffects.LinkedRecord(stun, false)));
         // ... and ControlImmunityTimer: 80 bc 01 00 06 05 00 de 02 00 00 a9 02 00 00 00 00 00 00 00 80 40
-        TimedEffects.Active immunity = TimedEffects.ImmunityFor(TempMods.Retail[243], stun);
+        Assert.True(TempMods.TryGet(243, out var pistolAerial));
+        TimedEffects.Active immunity = TimedEffects.ImmunityFor(pistolAerial, stun);
         immunity.Parent = TempMods.ControlImmunityTimerAbility;
         immunity.RecordId = 0x506;
         Assert.Equal("80bc01000605" + "00de020000" + "a902" + "00000000" + "00" + "00008040", Hex(PlayerEffects.Record(immunity, false)));

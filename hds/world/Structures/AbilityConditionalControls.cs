@@ -7,6 +7,8 @@ namespace hds
     /// The fixed value is passed directly to addStateMod/addTempMod by the script.</summary>
     public static class AbilityConditionalControls
     {
+        // Proxy_003 PvP 8690–8699 shows Pistol Aerial's terminal marker, stun and immunity on a successful roll.
+        internal const ushort PistolAerial = 243;
         // tempmods2362: callback is initialization-only and has no explicit immunity timer.
         public static bool HandlesInitial(ushort ability) => ability == 340 && AbilityCatalog.Find(ability)?.Modifiers.Any(
             m => m.Text("StatModInitFunc") == "ApplyPowerlessIfStaggered") == true;
@@ -30,7 +32,7 @@ namespace hds
 
         internal static bool TerminalStun(ushort ability, AbilityCatalog.Modifier modifier) =>
             modifier.Text("StatModTermFunc") == "ApplyStunEffectIfDazed" ||
-            ((ability == 253 || ability == 256 || ability == 265 || ability == 429 || ability == 468 || ability == 504 || ability == 505 || ability == 532 || ability == 534) &&
+            ((ability == PistolAerial || ability == 253 || ability == 256 || ability == 265 || ability == 429 || ability == 468 || ability == 504 || ability == 505 || ability == 532 || ability == 534) &&
                 modifier.Text("StatModTermFunc") == "ApplyStunWithTimer");
 
         internal static void Term(TimedEffects.Subject subject, TimedEffects.Active marker, double now)

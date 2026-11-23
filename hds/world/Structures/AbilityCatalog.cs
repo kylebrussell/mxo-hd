@@ -75,7 +75,8 @@ namespace hds
                     m.Number("DurationType", -1) == 0 && m.Number("Duration") > 0 &&
                     AbilityValues.TryValue(m, 0, 0, out int stunSeconds))
                 {
-                    mods.Add(new TempMods.Mod { Kind = TempMods.KindFx, Target = id,
+                    ushort kind = id == AbilityConditionalControls.PistolAerial ? TempMods.KindLinked : TempMods.KindFx;
+                    mods.Add(new TempMods.Mod { Kind = kind, Target = id,
                         Proc = TempMods.Proc.Terminal, Seconds = (float)m.Number("Duration"),
                         MinValue = stunSeconds, MaxValue = stunSeconds, Chance = (float)m.Number("ProcTriggerChance", 1) });
                 }
