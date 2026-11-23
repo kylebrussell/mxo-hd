@@ -97,6 +97,9 @@ public sealed class DualSmgConeOpenersMode : NativeQaMode
             Loadout.All(id => AbilityPrerequisites.Current.Closure(id).All(req => archive.TryGetValue(req.Key, out var row) && row.Level >= req.Value)),
             "Complete ranked dual-SMG cone profile fits");
         await PvpOpponentsFixture.EnterAsync(actor);
+        var self = actor.World.CreationSnapshot().Last(view => view.ViewId == 2);
+        Check.That(EngageFoesFixture.Position(self).SequenceEqual(new double[] { X, Y, Z }),
+            $"CSR enters at the exact outdoor stand ({X},{Y},{Z}) before any movement");
         await CombatFixtureLoadout.VerifyWeaponAtLoginAsync(actor, Weapon);
         NativeQaReadiness.RequireNoAmbientAggro(server, actor);
         foreach (var stand in Stands)
