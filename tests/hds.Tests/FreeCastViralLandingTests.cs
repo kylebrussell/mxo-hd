@@ -472,6 +472,25 @@ public class FreeCastViralLandingTests : IDisposable
         Assert.Equal(expected, AbilityHandler.AbilityDamage(item, new PacketLossRoll(roll), characterLevel: 27));
     }
 
+    [Fact]
+    public void CompletePacketLossProfileUsesItsActualDamageCostAndControlInfluences()
+    {
+        var caster = Client(110);
+        caster.playerInstance.Level.setValue((byte)30);
+        var profile = new NativeQa.Modes.HackerPacketLossMode().Plan.Abilities;
+        AbilityPassives.SetLoaded(caster, profile.Select(id => (id, (ushort)30)));
+        CombatStyles.Select(caster, CombatStyles.HackerStyle);
+
+        Assert.Equal(18, AbilityStats.Player(caster, 172));
+        Assert.Equal(9, AbilityStats.Player(caster, 1031));
+        Assert.Equal(27, AbilityStats.Influence(caster, 172));
+        Assert.Equal(0, AbilityStats.Influence(caster, 117));
+        Assert.Equal(20, AbilityCosts.Effective(caster, 947));
+        Assert.Equal(24, AbilityCosts.Effective(caster, 948));
+        Assert.Equal(10f, AbilityControlDurations.Scale(caster, 99, 10));
+        Assert.Equal(10f, AbilityControlDurations.Scale(caster, 102, 10));
+    }
+
     [Theory]
     [InlineData(947, 62, 299, 20)]
     [InlineData(948, 100, 419, 24)]

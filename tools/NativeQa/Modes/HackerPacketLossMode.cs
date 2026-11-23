@@ -1,5 +1,6 @@
 using hds;
 using HeadlessClient;
+using MxoHd.PacketResearch;
 
 namespace NativeQa.Modes;
 
@@ -46,7 +47,7 @@ public sealed class HackerPacketLossMode : NativeQaMode
             "Select Hacker Style on page 2 slot 1. Try slots 2 and 3 with no target, /target QAFriend, then /target QAOther. A sent request returns 24 or 34. The native client may suppress it locally. No IS or timer should change.",
             $"Select /target QAEnemy and press slot 2 Packet Loss 1.0. Save the first full stock request. Expect 2 s cast, 20 IS (1600→1580), and 4 s own/shared 682. After reuse press slot 3 Packet Loss 2.0 and save its request. Expect 2 s cast, 24 IS (1580→1556), and 4 s own/shared 682. With +{StyleBonus} style and +{LinkedBonus} linked influence, neutral [PVP] damage is {Influenced(62)}–{Influenced(299)} and {Influenced(100)}–{Influenced(419)} to QAEnemy only.",
             $"On /target QAFar ask helper action aura-resist. Check source=8 stat=157 +{Resistance} for 20 s. Use slots 2 and 3 after shared reuse. For each [TYPED-RESISTANCE OURS] 947 or 948, confirm type2/total{Resistance}, raw in its documented damage range, and final below raw. Only the selected helper should lose HP. No [VITALS] maximum change.",
-            "After each shared reset, repeat slot 2 on QAEnemy until the natural 10% Root proc, then wait for removal. Expect source=947 stat=99 add 0 for 10 s and a matching removal, with no 734. Repeat slot 3 on QAFar until the natural 15% Stun. Expect source=948 stat=102 and 734/681 10 s add/removes. Random damage and state procs stay natural. The fixed disposable roll applies only to the hit contest. If one state does not proc in the time available, report it separately."
+            "After each shared reset, repeat slot 2 on QAEnemy until the natural 10% Root proc (up to 35 landed casts), then wait for removal. Expect source=947 stat=99 add 0 for 10 s and a matching removal, with no 734. Repeat slot 3 on QAFar until the natural 15% Stun (up to 23 landed casts). Expect source=948 stat=102 and 734/681 10 s add/removes. Stop repeating a row as soon as its effect appears. Both limits take about six minutes of uninterrupted casts and give about a 95% chance of seeing both procs. If a limit is reached without a proc, report that row's state check as incomplete. The fixture fixes only hit contests."
         });
 
     public override async Task<byte[]> AfterStartAsync(NativeQaBootstrapContext context)
@@ -89,9 +90,13 @@ public sealed class HackerPacketLossMode : NativeQaMode
             frame => StockAbilityProfile.Bonus(frame, Style, 172, StyleBonus, 0, false), "Hacker Style Viral Damage");
         await StockAbilityProfile.ObserveAsync(actor, 0,
             frame => StockAbilityProfile.Bonus(frame, 95, 1031, LinkedBonus, 0, false), "Transmit Virus linked Viral Damage");
+        Check.Equal(StyleBonus, ReportedTotal(actor, 172), "Entire ranked archive and style report +18 direct Viral Damage");
+        Check.Equal(LinkedBonus, ReportedTotal(actor, 1031), "Entire ranked archive reports +9 linked Viral Damage");
+        Check.Equal(0, ReportedTotal(actor, 117) + ReportedTotal(actor, 1053), "Entire ranked archive and style report no cost discount");
         var enemy = await actor.WaitForViewNamedAsync("QAEnemy");
         var friend = await actor.WaitForViewNamedAsync("QAFriend");
         string capture = StarterHackerViralSightMode.Samples[2].Capture;
+        int innerStrength = StartingIs;
         await StarterHackerViralDamageMode.VerifyInvalidTargets(actor, Control, capture, enemy, friend);
         await CastControl("QAEnemy", 0);
         await StarterPathogenistAuraResistanceMode.ApplyResistanceAsync(context.Helpers["QAFar"], Resistance);
@@ -107,10 +112,15 @@ public sealed class HackerPacketLossMode : NativeQaMode
             var recipient = context.Helpers[target];
             int targetAt = recipient.World.RpcSnapshot().Count;
             int sourceAt = actor.World.RpcSnapshot().Count;
+            int isAt = actor.World.ViewSnapshot().Count;
             var view = await actor.WaitForViewNamedAsync(target);
             uint handle = DuelPackets.Handle(view.ViewId, view.SpawnId);
             actor.SendRpc($"81 51 {WireFormat.ToHex(BitConverter.GetBytes(handle))}");
             actor.SendRpc(StarterHackerControlTargetMode.WithHandle(capture, handle));
+            innerStrength -= AbilityCosts.Cost(Control);
+            await actor.WaitUntilAsync(() => actor.World.ViewSnapshot().Skip(isAt)
+                .SelectMany(AbilityParityCoderSweepMode.InnerStrengthUpdates).Contains((ushort)innerStrength),
+                $"Stock Logic Blast pays its full 7 IS, reaching {innerStrength}", HeadlessPlayer.DefaultTimeout);
             await EvidenceRetestWire.CastBarAsync(actor, Control, 2);
             await EvidenceRetestWire.TimerAsync(actor, sourceAt, Control, AbilityCooldowns.OwnTimer, 4);
             await EvidenceRetestWire.TimerAsync(actor, sourceAt, AbilityCooldowns.VirusDamage1, AbilityCooldowns.GroupTimer, 4);
@@ -123,4 +133,13 @@ public sealed class HackerPacketLossMode : NativeQaMode
     }
 
     private static int Influenced(int raw) => (int)(raw * (double)(1 + (StyleBonus + LinkedBonus) / 100f));
+
+    private static int ReportedTotal(HeadlessPlayer actor, ushort stat) => actor.World.RpcSnapshot()
+        .Select(frame => ManageBonusRecord.TryDecode(frame.Bytes, out var bonus) ? bonus : null)
+        .OfType<ManageBonusRecord>()
+        .Where(bonus => bonus.TargetId == stat && bonus.IndividualOperation.HasValue && bonus.Type is 0x15 or 0x45)
+        .GroupBy(bonus => (bonus.SourceId, bonus.Locator))
+        .Select(records => records.Last())
+        .Where(bonus => bonus.IndividualOperation != IndividualBonusOperation.Remove)
+        .Sum(bonus => bonus.SignedValue);
 }
