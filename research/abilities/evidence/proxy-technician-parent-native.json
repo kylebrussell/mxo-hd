@@ -1,0 +1,18 @@
+{
+  "abilities": {
+    "589": {
+      "checks": {
+        "pets": {
+          "source": "GOB 589 calls ApplyAuraEffect immediately and every five seconds with child 698. Child 698 uses the shipped selector 19 for friendly simulacra, radius 20 m and a five-second duration.",
+          "runtime": "AbilityAuras dispatches the parent pulse to ProxyTechnician. It refreshes the current eligible pets in the caster's district and checks the owner relationships and the configured radius. Unload retires the parent and the last child expires on its own.",
+          "test": "ProxyTechnicianParentMode proves the ordinary retained activation, two eligible live pets, 20.00 m inclusion, 20.01 m and nearby opposing PvP exclusion, then matching unload and expiry. Stock PR959 observes those outcomes, two actual upkeep debits and no new pulses after the single off event. https://github.com/kylebrussell/mxo-hd/pull/959#issuecomment-7098060277"
+        },
+        "source-parity": {
+          "source": "GOB 589 stores a 15 IS activation, 15 s own reuse, 30 owner buffer, 5 IS every five seconds and a recurring friendly-pet child pulse. The child owns the typed accuracy modifiers and is covered by the independent 698 row.",
+          "runtime": "ProxyTechnician uses the authored startup, timer and upkeep. Existing lifecycle code stops the parent once upon manual removal, an unaffordable tick, unload or loss of eligibility. The general pet hit curve remains a separate qualified model.",
+          "test": "Stock PR959 verifies 15 IS, 15 s own reuse, two 5 IS updates, +38/+38 on exactly the two admitted pets, one owner off and later technician 0/0. The existing lifecycle and control replays and focused shortfall/recipient/expiry tests exercise the other parent exit paths. https://github.com/kylebrussell/mxo-hd/pull/959#issuecomment-7098060277"
+        }
+      }
+    }
+  }
+}

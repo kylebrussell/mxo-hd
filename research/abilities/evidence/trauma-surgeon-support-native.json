@@ -1,0 +1,45 @@
+{
+  "families": {
+    "trauma-surgeon-team-heal-and-radius": {
+      "representative": 1093,
+      "result": "pass",
+      "head": "7db24bcd",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/962#issuecomment-7098908912",
+      "scope": "Stock CSR accepts the mission team invite, uses 1093 with a teammate selected and receives three self-only records for 20 IS and 30 s reuse. 371 heals 28→30→28, and the 9 m member is admitted only during 1093. A stock second use removes all three records."
+    },
+    "upgrade-master-parent-archive": {
+      "representative": 425,
+      "result": "pass",
+      "head": "7db24bcd",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/962#issuecomment-7098908912",
+      "scope": "Stock unload and reload produce one +5 Concentration Bonus removal and add, and remove and restore Upgrade Master Upgrade 1096 once in Actions. This legal fixture exercises no interruptible cast with 425."
+    }
+  },
+  "abilities": {
+    "1093": {
+      "family": "trauma-surgeon-team-heal-and-radius",
+      "checks": {
+        "stats": {
+          "source": "GOB 1093 stores caster Heal and Upgrade Area Radius +10, Concentration +7 and Healing +10. Concentration is the same direct stat 564 used by 1092.",
+          "runtime": "AbilitySupport applies all three records only to the caster. The radius and healing logic read those inputs independently. AbilityCastInterrupts uses the effective Concentration stat shared by both upgrades.",
+          "test": "TraumaSurgeonChangesTheSharedHealAndRadiusAndAddsSevenConcentration covers effective 564, healing and team area in the actual executor. Stock PR962 measures all adds and removals, 28→30→28 HP and the 9 m eligibility change. PR960 exercises the same direct +7 concentration on a stock interruptible cast. https://github.com/kylebrussell/mxo-hd/pull/962#issuecomment-7098908912 https://github.com/kylebrussell/mxo-hd/pull/960#issuecomment-7098249561"
+        },
+        "behavior-tests": {
+          "source": "GOB 1093 is granted by loaded Trauma Surgeon 439 and stores 20 IS, 30 s own reuse and three self support modifiers.",
+          "runtime": "Normal grant registration exposes the cast under the loaded discipline. The ordinary independent self upgrade leaves the selected teammate untouched, applies its modifiers to the source, and removes all three on the stock repeat toggle.",
+          "test": "The exact retained stock Archive/371 bootstrap verifies the granted profile and prior baseline. In native PR962, the granted 1093 costs 20 IS, starts 30 s reuse, increases the 371 heal from 28 to 30 and adds the eligible 9 m teammate while excluding the 9.5 m teammate. Toggling it off restores 28 and the initial scope. https://github.com/kylebrussell/mxo-hd/pull/962#issuecomment-7098908912"
+        }
+      }
+    },
+    "425": {
+      "family": "upgrade-master-parent-archive",
+      "checks": {
+        "stats": {
+          "source": "GOB 425 supplies Concentration Bonus 1090 +5 while loaded. Direct Concentration 564 links to 1090.",
+          "runtime": "AbilityPassives publishes the learned bonus once, and the effective cast-through input reads it through the stored link. Unloading restores the same input baseline.",
+          "test": "UpgradeMasterChangesTheLinkedConcentrationInputInTheLegalSupportProfile verifies 20→15→20 and the resulting thresholds 85→82→85 in the shared consumer. Stock PR962 verifies the single +5 removal and restoration on 425 Archive unload/reload. https://github.com/kylebrussell/mxo-hd/pull/962#issuecomment-7098908912"
+        }
+      }
+    }
+  }
+}

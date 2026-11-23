@@ -1,0 +1,73 @@
+{
+  "families": {
+    "daemon-boost-two-pet-accuracy-aura": {
+      "representative": 619,
+      "result": "pass",
+      "head": "e9d73a9c",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/899#issuecomment-7098379126",
+      "scope": "Stock activated 619 for 2 s, 20 IS and 15 s own reuse. At level 50, 700 applied +64 melee, ballistic and viral accuracy to the own Rifle, the 10.00 m friendly Karate and the nearby friendly Nuker only. The 10.01 m and opposing pets were excluded. A 5 IS refresh spent 9→4, then shortfall stopped the parent with zero later pulses. The surviving proxy reported zero accuracy after child expiry."
+    }
+  },
+  "abilities": {
+    "619": {
+      "family": "daemon-boost-two-pet-accuracy-aura",
+      "checks": {
+        "aura": {
+          "source": "The authored 619 uses ApplyAuraEffect on activation and each five-second update to refresh 700. ISDrainWithAbilityDeactivation supplies the periodic affordability check. GOB 700 limits every pulse to friendly simulacra within 10 m.",
+          "runtime": "The shared scheduler dispatches the immediate and paid periodic friendly-pet pulses, stops the parent on shortfall with no refresh and lets the final child expire naturally.",
+          "test": "PR899 stock saw the correct three admitted pets and both exclusions, the immediate and paid five-second pulse, then one off on shortfall with no subsequent upkeep or pulse and the final own accuracy returning to zero. https://github.com/kylebrussell/mxo-hd/pull/899#issuecomment-7098379126"
+        },
+        "stats": {
+          "source": "GOB 619 stores 20 IS, 2 s cast, 15 s reuse, ApplyAuraEffect child 700, and a 5 IS drain every 5 s with ISDrainWithAbilityDeactivation.",
+          "runtime": "AbilityAuras checks affordability before publishing each refresh. It debits the stored upkeep and reports ordinary vitals; a shortfall stops the toggle with no debit.",
+          "test": "AurasReadTheirDrainAndEffectFromTheTemplate verifies the stored child and drain. PR899 stock records 29→9 at activation and 9→4 at upkeep, followed by a shortfall and no later charge. https://github.com/kylebrussell/mxo-hd/pull/899#issuecomment-7098379126"
+        },
+        "pets": {
+          "source": "GOB 619 stores 20 IS, 2 s cast, 15 s reuse, ApplyAuraEffect child 700, and a 5 IS drain every 5 s with ISDrainWithAbilityDeactivation. Child 700 admits friendly Simulacra in its 10 m circle.",
+          "runtime": "The parent applies to live friendly Simulacra in the caster's district. Each pet gets a typed, source-bound snapshot that expires independently.",
+          "test": "DaemonAccuracyUsesTheTenMetreFriendlyBoundaryAndThreeActualAttackChannels and daemon-boost-accuracy-server check the live range and ownership. Stock saw exactly three eligible pets and no out-of-range or hostile owner. https://github.com/kylebrussell/mxo-hd/pull/899#issuecomment-7098379126"
+        },
+        "script": {
+          "source": "GOB 619 stores 20 IS, 2 s cast, 15 s reuse, ApplyAuraEffect child 700, and a 5 IS drain every 5 s with ISDrainWithAbilityDeactivation.",
+          "runtime": "AbilityAuras starts the actual 619 activation with an immediate 700 pulse, debits 5 IS before each later refresh, and ends the parent at shortfall. The finite child retains its natural five-second expiry.",
+          "test": "AurasReadTheirDrainAndEffectFromTheTemplate and daemon-boost-accuracy-server cover the mapped source, active effects and unload. Stock verifies the immediate/paid pulses, one shortfall off, and cleanup. https://github.com/kylebrussell/mxo-hd/pull/899#issuecomment-7098379126"
+        },
+        "source-parity": {
+          "source": "GOB 619 stores 20 IS, 2 s cast, 15 s reuse, ApplyAuraEffect child 700, and a 5 IS drain every 5 s with ISDrainWithAbilityDeactivation.",
+          "runtime": "The script callbacks supply the source, amount, cadence and stop condition. The runtime publishes the deterministic child values independently of the server's common pet roll baseline.",
+          "test": "The live daemon-boost-accuracy-server and stock PR899 scenarios verify the documented activation and aura behavior. The native comment abbreviates the first 619 request. https://github.com/kylebrussell/mxo-hd/pull/899#issuecomment-7098379126"
+        },
+        "behavior-tests": {
+          "source": "GOB 619 stores 20 IS, 2 s cast, 15 s reuse, ApplyAuraEffect child 700, and a 5 IS drain every 5 s with ISDrainWithAbilityDeactivation.",
+          "runtime": "The ordinary cast and shared aura scheduler preserve the stored parent cost/timing and the per-recipient finite effects across paid ticks, shortfall, unload and source removal.",
+          "test": "DaemonAccuracyAndDamageChildrenKeepIndependentExpiriesAndSourceLifetimes, daemon-boost-accuracy-server and PR899 verify independent expiration and same-rank refresh/stop behavior. https://github.com/kylebrussell/mxo-hd/pull/899#issuecomment-7098379126"
+        }
+      }
+    },
+    "700": {
+      "family": "daemon-boost-two-pet-accuracy-aura",
+      "checks": {
+        "area": {
+          "source": "GOB 700 selects friendly Simulacra (selector 19) within 10 m of the caster, with no stored angle.",
+          "runtime": "Eligible pet stands are checked in a caster-centered area at each parent pulse, and the runtime rejects opposing and retired pets.",
+          "test": "DaemonAccuracyUsesTheTenMetreFriendlyBoundaryAndThreeActualAttackChannels checks the live edge. Stock saw a pulse at 10.00 m and none at 10.01 m or on the closer opposing pet. https://github.com/kylebrussell/mxo-hd/pull/899#issuecomment-7098379126"
+        },
+        "pets": {
+          "source": "Child 700 stores separate function-3 caster-level modifiers for melee 522, ballistic 524 and viral 342, at scale 1.3 for 5 s.",
+          "runtime": "Each active snapshot supplies only the attacking pet's matching channel to its actual attack roll. Healer output and expired or stale snapshots receive no accuracy contribution.",
+          "test": "DaemonAccuracyConsumesOnlyTheAttackingPetChannel uses deliberately distinct values so it detects a wrong channel. The server replay observes actual melee and viral +64 attack inputs, and stock checks all three +64 fields on each eligible live pet. https://github.com/kylebrussell/mxo-hd/pull/899#issuecomment-7098379126"
+        },
+        "source-parity": {
+          "source": "GOB 700 authors the friendly radius, three accuracy inputs, scale, and lifespan. The shared hit-curve baseline is common pet combat policy.",
+          "runtime": "The runtime applies the authored contribution exactly once in the ordinary pet attack roll, preserving the same baseline when the effect expires or the wrong channel is used.",
+          "test": "DaemonAccuracyConsumesOnlyTheAttackingPetChannel and daemon-boost-accuracy-server verify the contribution itself, including a live fixed-roll miss→hit→miss. Stock independently verifies scope, all three actual field values, and expiration to zero. https://github.com/kylebrussell/mxo-hd/pull/899#issuecomment-7098379126"
+        },
+        "behavior-tests": {
+          "source": "The sourced 700 pulse supplies the three typed values to eligible friendly pets for five seconds. An eligible parent refresh replaces the current contribution.",
+          "runtime": "The pet consumes the matching typed input until expiry. Independent source and sibling auras have separate effects, and healing stays unaffected.",
+          "test": "DaemonAccuracyAndDamageChildrenKeepIndependentExpiriesAndSourceLifetimes and daemon-boost-accuracy-server verify attack consumption and cleanup. Stock observed the immediate/refresh values, the boundary controls and zero remaining accuracy. https://github.com/kylebrussell/mxo-hd/pull/899#issuecomment-7098379126"
+        }
+      }
+    }
+  }
+}
