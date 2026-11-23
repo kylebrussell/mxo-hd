@@ -471,18 +471,25 @@ public class HackerBatchBParityTests
         Assert.Equal(0, AbilityStats.Attack(target, true));
     }
 
-    [Fact]
-    public void FreezeArea479DamageBreakLeavesImmunityAndCapturedViralVulnerability()
+    [Theory]
+    [InlineData(true, 10.02f, -100, 123)]
+    [InlineData(false, 6f, -80, 118)]
+    public void FreezeArea479ChoosesValuesByCasterAndDamageBreakLeavesImmunity(bool npcCaster,
+        float stateSeconds, int resistance, int damage)
     {
         var target = Client();
-        Assert.True(TimedEffects.ApplyToPlayer(target, 479, "Enemy"));
+        var caster = npcCaster ? null : Client();
+        Assert.True(TimedEffects.ApplyToPlayer(target, 479, "Enemy", caster));
         var effects = TimedEffects.ForPlayer(target);
         var pacify = Assert.Single(effects.Effects.Snapshot(), m => m.Target == TempMods.MezAbility);
-        Assert.Equal(10.02f, pacify.Seconds);
+        Assert.Equal(stateSeconds, pacify.Seconds);
+        Assert.Equal(12, Assert.Single(effects.Effects.Snapshot(), m => m.Target == 157).Seconds);
+        Assert.Equal(resistance, AbilityStats.Player(target, 157));
         Assert.False(ControlActions.CanUseAbilities(target));
-        Assert.Equal(123, TypedAbilityResistance.Player(Client(), target, 357, 100));
+        Assert.Equal(damage, TypedAbilityResistance.Player(Client(), target, 357, 100));
         TimedEffects.HealthChanged(effects, 1, true, damageEvent: true);
         Assert.True(ControlActions.CanUseAbilities(target));
+        Assert.Equal(0, AbilityStats.Player(target, 157));
         Assert.True(effects.Effects.HasControlImmunity(pacify.Start + 11.99));
         Assert.False(effects.Effects.HasControlImmunity(pacify.Start + 12.01));
     }

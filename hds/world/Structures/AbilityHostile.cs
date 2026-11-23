@@ -24,7 +24,7 @@ namespace hds
     /// </summary>
     public static class AbilityHostile
     {
-        internal const ushort FreezeSystem3 = 473;
+        internal const ushort FreezeSystem3 = 473, FreezeArea2 = 479;
         public const uint DebuffCategory = 0x30424455; // "UDB0"
 
         // stringtable_client (unnamed rows; text matches the script's Send*Output arguments)
@@ -81,7 +81,8 @@ namespace hds
                     Proc = TempMods.Proc.State };
             ushort target = m.Target;
             // Controls separately read the immunity callback. Its presence must not discard Freeze's resistance modifier.
-            bool immunityInit = (ability == 47 || ability == 48 || ability == 352 || ability == FreezeSystem3) && target == 157 &&
+            bool immunityInit = (ability == 47 || ability == 48 || ability == 352 || ability == FreezeSystem3 ||
+                ability == FreezeArea2) && target == 157 &&
                 m.Text("StatModInitFunc") == "AddControlImmunityTimer";
             if (target == 0 || target == 108 || target == TempMods.DOTPlaceHolderAbility ||
                 Scripted(m, allowInit: immunityInit) || !Fixed(m)) return null;

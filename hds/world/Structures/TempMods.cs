@@ -266,7 +266,7 @@ namespace hds
             // Vector, crashover2k_008 40322: Powerless 8.94 s (7.44 s on Morpheuzzz, 1829), ViralDeflection -60 for 30 s;
             // ControlImmunityTimer 8 s (7 s)
             { 355, Virus(355, State(PowerlessAbility, 8.94f), Stat(183, -60, 30)) },
-            // Freeze Area 2.0, Rajko MaraCThenTimeDOut 60983: ViralResistance -100 for 12 s, pacified 10.02 s, immunity 12 s
+            // NPC Radueriel's Freeze Area 2.0 on RajkoHaxor: ViralResistance -100 for 12 s, Pacify 10.02 s, immunity 12 s.
             { 479, new Effect { Ability = 479, Virus = true, ImmunitySeconds = 12,
                 Mods = new[] { Stat(157, -100, 12), State(MezAbility, 10.02f) } } },
 
@@ -340,8 +340,8 @@ namespace hds
             // AbilityHostile's catalog debuffs also give the thrown specials (Poison Knife, Wounding Throw, Sever Artery,
             // CombatSpecials) their stored ThrownDOT and timed debuffs
             Effect source = AbilityHostile.Merge(AbilityCatalog.Controls(id), AbilityHostile.Catalog(id));
-            // The 21.12 s Suppression Fire capture is from an NPC cast. Playable casts use the authored 12 s root.
-            if ((id == 248 && !npcCaster) || !Retail.TryGetValue(id, out var captured))
+            // The Suppression Fire and Freeze Area 2.0 captures are from NPC casters. Players use the authored values.
+            if ((!npcCaster && (id == 248 || id == AbilityHostile.FreezeArea2)) || !Retail.TryGetValue(id, out var captured))
             {
                 effect = source;
                 return effect != null;
