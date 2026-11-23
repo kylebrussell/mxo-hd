@@ -1,6 +1,6 @@
 {
   "notes": {
-    "946": "PR574 confirms the live three-metre boundary and hostile filter. GOB 946 also carries TestFunction 2. The current reapplied instant drain bypasses a distinct viral contest. The shipped ApplyAuraEffect uses the native reapplyAbility call, whose deflection semantics for this child remain unverified. Keep targeting open. https://github.com/kylebrussell/mxo-hd/pull/574"
+    "946": "PR574 establishes the live three-metre boundary and hostile filter. PR840 verifies the per-recipient TestFunction 2 deflection branch, sight and PvP exclusions, and separate caster upkeep in the stock session with a seeded 945 parent. QA did not observe the text of the deflection notice. https://github.com/kylebrussell/mxo-hd/pull/574 https://github.com/kylebrussell/mxo-hd/pull/840#issuecomment-7088027020"
   },
   "abilities": {
     "38": {
@@ -36,6 +36,15 @@
           "source": "GOB 694 stores selector 4 and radius 6 m for the instant child of Static Field 89.",
           "runtime": "AbilityAuras.Pulse applies the caster-centred child at the GOB radius using the shared radius and hostile-player selector.",
           "test": "PR574 PacketLog 3052 and 3114 show the only first-pulse damage recipients at 3 and 6 m. It excludes the hostile at 6.01 m and the nearby friendly. The exact-stock bootstrap reproduces it. https://github.com/kylebrussell/mxo-hd/pull/574"
+        }
+      }
+    },
+    "946": {
+      "checks": {
+        "targeting": {
+          "source": "GOB 945 reapplies child 946 every four seconds. Child 946 uses selector 4, radius 3 m and TestFunction 2 before its instant Current Inner Strength -20.",
+          "runtime": "AbilityAuras.Pulse filters player recipients through the hostile area checks and invokes FreeCastViralContest independently for each eligible recipient before applying the 946 debit. The paid caster upkeep is separate from the hit outcome.",
+          "test": "PR574 and its replay cover the inclusive three-metre boundary and the landed hostile IS debit. In stock PR840 c9cdc0fc five pulses deflected against QAEnemy, with no victim effect, QAFar excluded for sight and QAFriend excluded as NotOpponent. The caster paid 20 IS per pulse and toggled off cleanly. FreeCastViralLandingTests.TrojanHorseDrainsOnlyNearbyHostilePlayersEveryFourthSecond covers the live predicates and the stock-frame bootstrap reproduces this deflection fixture. https://github.com/kylebrussell/mxo-hd/pull/574 https://github.com/kylebrussell/mxo-hd/pull/840#issuecomment-7088027020"
         }
       }
     },

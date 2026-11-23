@@ -1,0 +1,58 @@
+{
+  "families": {
+    "coder-bash-staggered-interlock": {
+      "representative": 618,
+      "result": "pass",
+      "head": "524eff3096c7c1eb36cd9a35d47188406f14734a",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/881#issuecomment-7088359315",
+      "scope": "Stock suppressed both slots at rest and Bash before Stagger. After Stagger, Bash queued against the live selected dummy, played 289, paid 40 IS, sent 10/5 s reuse, hit 77 and 63 with +75 resistance, and sent matching four-second Stun and eight-second Enrage adds and removals. Low Blow independently confirmed 19/15, 30 IS, six-second reuse and 288."
+    }
+  },
+  "abilities": {
+    "605": {
+      "checks": {
+        "targeting": {
+          "source": "GOB 605 requires an active fight in Coder Style and a selected opponent.",
+          "runtime": "AbilityHandler restricts 605 to the loaded move and live current opponent in the same interlock before creating the pending special.",
+          "test": "CoderSpecialsRequireTheLoadedMoveAndLiveCurrentOpponent covers ownership, live target and no-cost rejection. Stock PR881 suppresses it at rest and queues it against the selected Melee Dummy in ordinary Close Combat. https://github.com/kylebrussell/mxo-hd/pull/881#issuecomment-7088359315"
+        },
+        "source-parity": {
+          "source": "GOB 605 stores fixed physical damage 17 and no health control modifier. The legacy endpoints 17/0 omit a usable range.",
+          "runtime": "The shipped fixed fallback runs through the ordinary melee special landing and typed resistance calculation.",
+          "test": "CoderSpecialsUseFixedPhysicalDamageAndOnlyBashAppliesControl checks the 17 base and 19/15 live profile outputs. Stock PR881 observes those same neutral and +75-resisted values and the keyed animation. https://github.com/kylebrussell/mxo-hd/pull/881#issuecomment-7088359315"
+        },
+        "behavior-tests": {
+          "source": "GOB 605 specifies 30 IS, six-second reuse, Coder interlock and fixed damage without a control state.",
+          "runtime": "Ordinary interlock queue, contest, landing, typed damage and reuse paths handle 605 without injecting states.",
+          "test": "PR881 verifies at-rest suppression, paid 30 IS, 288 choreography, six-second reuse, 19/15 effects and no extra controls. The matching fixture replays the retained full 605 request and both focused tests cover selected admission and application. https://github.com/kylebrussell/mxo-hd/pull/881#issuecomment-7088359315"
+        }
+      }
+    },
+    "618": {
+      "family": "coder-bash-staggered-interlock",
+      "note": "PR881 covers the authored Bash move, Stagger admission, fixed damage and both state lifetimes. The shared Enrage interlock controls still have the IS Block gap described with row 588. https://github.com/kylebrussell/mxo-hd/pull/881#issuecomment-7088359315",
+      "checks": {
+        "damage": {
+          "source": "GOB 618 supplies fixed physical base 66.",
+          "runtime": "The catalog fixed-base fallback runs through the melee interlock special and typed mitigation.",
+          "test": "CoderSpecialsUseFixedPhysicalDamageAndOnlyBashAppliesControl and stock PR881 agree on 77 neutral and 63 under +75 Melee Resistance. https://github.com/kylebrussell/mxo-hd/pull/881#issuecomment-7088359315"
+        },
+        "targeting": {
+          "source": "GOB 618 requires active Coder Style combat and CastRequiredStates mask 8 on the selected opponent.",
+          "runtime": "AbilityHandler validates the loaded move, current interlock opponent and Stagger before queueing.",
+          "test": "CoderSpecialsRequireTheLoadedMoveAndLiveCurrentOpponent verifies actual refusal and queue paths. Stock PR881 gets an outside-combat and a Stagger refusal before the successful selected Bash. https://github.com/kylebrussell/mxo-hd/pull/881#issuecomment-7088359315"
+        },
+        "choreography": {
+          "source": "ILDB 289 identifies the unarmed Coder Style Bash exchange.",
+          "runtime": "The queued combat special publishes that stock combat exchange for the accepted opponent.",
+          "test": "PR881 observes 289 on the landed Bash, including the separate typed-resistance pass. https://github.com/kylebrussell/mxo-hd/pull/881#issuecomment-7088359315"
+        },
+        "source-parity": {
+          "source": "GOB 618 supplies the fixed 66 health modifier, four-second Stun and eight-second Enrage.",
+          "runtime": "The fixed damage and distinct control lifetimes come from the shipped values. The inherited Enrage interlock flags are tracked under controls and behavior.",
+          "test": "Stock PR881 observes the resulting typed 77/63, both effect records and both removals. The focused live-landing test verifies their independent durations. https://github.com/kylebrussell/mxo-hd/pull/881#issuecomment-7088359315"
+        }
+      }
+    }
+  }
+}

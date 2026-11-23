@@ -15,7 +15,7 @@
         "targeting": {
           "source": "GOB 942 stores TestFunction 2 separately from DamageType 5. The health callback's reapplyAbility call uses the same script entry point as ApplyAuraEffect. Existing 694 and 701 paths evaluate the viral test stored on their child records.",
           "runtime": "The reconstructed 942 path uses FreeCastViralContest for each eligible player or NPC. The ordinary cast handler continues to reject direct activation of the internal 942 template.",
-          "test": "The reactive-code-area replays observe exactly one contest for the eligible hostile. A forced pass produces the neutral damage; a forced deflection produces no HP change. Sight, distance and allied exclusions never contest. The test also sends an internal-effect request and receives the direct-use refusal. The deflection is a headless result."
+          "test": "The reactive-code-area replays observe exactly one contest for the eligible hostile, the landed neutral hit, the no-damage deflection and the direct-child refusal. Stock PR858 at 8ede8e18, with the same seeded parent as PR545, sees exactly one 942 contest and the visible deflection line at the 3.00 m boundary. Sight, distance and allied exclusions never contest. No HP changes on any recipient. Toggling 941 off prevents the next health change from triggering 942. This verifies the child execution and presentation. https://github.com/kylebrussell/mxo-hd/pull/858#issuecomment-7088416979"
         }
       }
     }

@@ -1,5 +1,12 @@
 {
   "families": {
+    "coder-enrage-armed-npc": {
+      "representative": 588,
+      "result": "pass",
+      "head": "6d543c9e1f057e90642c1ec32e011fa95a1ab0d2",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/866#issuecomment-7088184673",
+      "scope": "Stock selected wounded Blackwood. 27 IS, two-second cast, 28-second own reuse, 12-second state 93 and no HP damage. One close-combat seek to the nearby helper. The fight persisted two rounds past Enraged removal without opening combat against the caster and ended on ordinary helper withdrawal."
+    },
     "coder-engage-foes-enrage-area": {
       "representative": 610,
       "result": "pass",
@@ -10,7 +17,15 @@
   },
   "abilities": {
     "588": {
-      "note": "PR850 independently verified the original 588 request, 27 IS, 2 s cast, 28 s own reuse, and selected NPC state 93 add/removal in 12 s with no HP damage. Its distinct NPC GenericEnrageUpdate consumer is still open. https://github.com/kylebrussell/mxo-hd/pull/850#issuecomment-7087168434"
+      "family": "coder-enrage-armed-npc",
+      "note": "PR866 verifies the NPC GenericEnrageUpdate consumer, the exact lifetime and ordinary dismissal of the existing fight. The remaining player controls are the EnrageInit interlock target-change and IS Block restrictions in tempmods.py. The existing player withdrawal gate is tested. https://github.com/kylebrussell/mxo-hd/pull/866#issuecomment-7088184673",
+      "checks": {
+        "targeting": {
+          "source": "GOB 588 uses CastDirectObjects 0, CastValidTarget 3, SelectionRange 16, CastWhenUsed 1, and TestFunction 2. GenericEnrageUpdate excludes players and occupied NPCs before seeking an enemy in sight within 1000 units.",
+          "runtime": "AbilityHandler holds the original hostile selection through cast completion; AbilityTargets tests viral deflection before the selected recipient gets state 93. MobAggro.EnragePulse separately searches eligible enemies in sight and opens close combat for an idle NPC only.",
+          "test": "PR850 and PR866 land on the selected NPC. PR866 observes one NPC seek to the nearby helper and no second engagement against CSR. EnrageNpcUpdatesTests covers expiry and death guards; AbilityRefusalFeedbackTests.DelayedHostileCastCannotLandOnANewerSpawnInTheOriginalView and FreeCastViralLandingTests.ActualNpcLandingDeflectsBeforeDamageDebuffAndProcAndOnlyRoutesToVisibleSameWorld cover the 588 stale selection and deflection paths. https://github.com/kylebrussell/mxo-hd/pull/850#issuecomment-7087168434 https://github.com/kylebrussell/mxo-hd/pull/866#issuecomment-7088184673"
+        }
+      }
     },
     "610": {
       "family": "coder-engage-foes-enrage-area",

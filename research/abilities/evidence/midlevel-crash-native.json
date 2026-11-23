@@ -1,0 +1,33 @@
+{
+  "families": {
+    "hacker-crash-stance-movement": {
+      "representative": 396,
+      "result": "pass",
+      "head": "07f20cba",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/864#issuecomment-7087906306",
+      "scope": "Native selected Crash with seven records and the two effect lifetimes; helper lands the same stack on the stock CSR, showing 1301→599→1285 stock displacement and exact −0.50 then zero."
+    }
+  },
+  "abilities": {
+    "396": {
+      "family": "hacker-crash-stance-movement",
+      "checks": {
+        "targeting": {
+          "source": "GOB 396 is a selected hostile viral cast, with the ordinary live view/spawn, range and sight rules.",
+          "runtime": "AbilityHandler admits the original opposing spawn before cost and revalidates it at the common viral landing.",
+          "test": "StarterViralDebuffRequiresTheOriginalHostileSpawnAtLanding, the exact stock-wire replay and PR864 cover stale, ally, empty, shared resolution and real opposing target. https://github.com/kylebrussell/mxo-hd/pull/864#issuecomment-7087906306"
+        },
+        "stats": {
+          "source": "The shipped Crash stores 115/877/878/520 −50 and 519 −15 for 28 s, plus Viral and Ballistic Accuracy −27 for 42 s. Force Combat has an explicit duration even though its DurationType is omitted.",
+          "runtime": "AbilityHostile adds the raw records. AbilityBuffs uses one signed movement channel, and the normal Force Combat, evasion and accuracy consumers read their own records.",
+          "test": "CrashAppliesOneMovementPenaltyInEachStanceAndRestoresItFirst checks all stances and both expiration windows. Native PR864 receives seven records, and ordinary owner/observer movement goes to −0.50 and returns to zero while the accuracy debuff continues. https://github.com/kylebrussell/mxo-hd/pull/864#issuecomment-7087906306"
+        },
+        "behavior-tests": {
+          "source": "GOB 396 costs 25 IS, casts for 4 s and has 15 s own reuse, with no direct health effect.",
+          "runtime": "The native-selected cast and helper with a captured stock request share the same ordinary handler and effect application.",
+          "test": "Native PR864 observed 25 IS/4 s/15 s, no interlock or damage and forward runs 1301→599→1285. The exact disposable bootstrap confirms companion owner/observer records and the separate 28/42 second removals. https://github.com/kylebrussell/mxo-hd/pull/864#issuecomment-7087906306"
+        }
+      }
+    }
+  }
+}

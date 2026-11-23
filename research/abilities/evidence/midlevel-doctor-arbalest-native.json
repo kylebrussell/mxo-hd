@@ -1,0 +1,17 @@
+{
+  "families": {
+    "hacker-doctor-arbalest-selected-viral": {
+      "representative": 238,
+      "result": "pass",
+      "head": "fddec5669b9eac6b06da00044e056b5287d4bb3e",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/878#issuecomment-7088108618",
+      "scope": "Stock captured all four first casts, empty/ally/range refusals, and current selected enemy only. Full loaded stats explain 46/43/55/25 and costs 29/8/10/18. Stock directly observed the 311 and 313 +64 resistance results; 238 and 312 under resistance are executable full-profile tests. The 313 interlock attempt was suppressed locally. Rebased 9d3212d5 corrected tests and fixture expectations with the same shipped gameplay delta."
+    }
+  },
+  "abilities": {
+    "238": { "family": "hacker-doctor-arbalest-selected-viral" },
+    "311": { "family": "hacker-doctor-arbalest-selected-viral" },
+    "312": { "family": "hacker-doctor-arbalest-selected-viral" },
+    "313": { "family": "hacker-doctor-arbalest-selected-viral" }
+  }
+}
