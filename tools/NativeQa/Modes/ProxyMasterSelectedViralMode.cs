@@ -8,6 +8,8 @@ public sealed class ProxyMasterSelectedViralMode : NativeQaMode
 {
     private const int Level = 50, X = 17000, Y = 495, CasterZ = 6400, CentreZ = 6600;
     private const int EnrageEdgeZ = 7100, PulseEdgeZ = 7300, OutsideZ = 7301;
+    private const int RetargetX = 17250, RetargetZ = 6450;
+    private const string Recipient = "CSR_Tester";
     private const ushort Pulse = 595, Enrage = 597, Barrage = 598, StaticBlast = 33;
     private const ushort RunAdvancedProgram = 585, ProxyMaster = 599;
     // PR885 pr885-PacketLog.txt lines 4152-4153. Only the live selection handle is replaced.
@@ -46,7 +48,7 @@ public sealed class ProxyMasterSelectedViralMode : NativeQaMode
             ["MXO_AGGRO"] = "0", ["MXO_MOB_WANDER"] = "0", ["MXO_PVP_SERVER"] = "1", ["MXO_PVP_MAX_SAFE_LEVEL"] = "15",
             ["MXO_SIMULACRUM_QA_HOLD_IS"] = "1", ["MXO_FREECAST_VIRAL_QA"] = "1",
             ["MXO_FREECAST_VIRAL_QA_ATTACK15"] = "32766", ["MXO_FREECAST_VIRAL_QA_DEFENSE15"] = "0",
-            [AreaTargetDiagnostics.Variable] = "1"
+            [AreaTargetDiagnostics.Variable] = "1", [EnrageRetargetQa.Mode] = "1"
         },
         extraQaMetadata: new() { ["ScopedStockRows"] = "595,597,598", ["NativeCloseableRows"] = 1, ["MemoryUsed"] = Memory },
         readyMessages: new[]
@@ -56,11 +58,12 @@ public sealed class ProxyMasterSelectedViralMode : NativeQaMode
             "Enrage 2.0, slot 3. Expect 4 s, 43 IS (700->657), 30 s own reuse, and [MODIFIER] source=597 stat=93 add value=0 duration=10s for char=6114 and 6113. QAFar and QAFriend are excluded. Wait for both removals. No HP change.",
             $$"""Move QAOther to the verified 7.00 m edge with {"actor":"QAOther","action":"move","x":{{X}},"y":{{Y}},"z":{{PulseEdgeZ}}}. Press Stun Pulse slot 2. Expect 6 s, 29 IS (657->628), 30 s own reuse, and [FREECAST-VIRAL] ability=595 hit=True on 6114 and 6113 only. Both receive [MODIFIER] source=595 stat=102 add value=0 duration=6s and source=734 stat=681 add value=0 duration=12s, then paired removals. No HP change. QAFar is 7.01 m away and QAFriend is an ally.""",
             """Static Barrage 2.0, slot 4. Expect 2 s, 26 IS (628->602), 6 s own and 4 s group 683 reuse. Only QAEnemy loses 87 HP (1000->913). Once the own timer clears, /target QAFar and send {"actor":"QAFar","action":"aura-resist"}. After OK and [MODIFIER] char=6112 source=8 stat=157 +75 duration=20s, press slot 4. Expect 26 IS (602->576), identical timers and [TYPED-RESISTANCE OURS] 598 type2 total75 raw87 final71, only QAFar HP 1000->929. No [PVP] interlock or max [VITALS] change. Slot 5 is the Static Blast bootstrap control.""",
-            "Optional interlock retarget stage. You can skip the original three rows already passed by PR885. Use /target QAEnemy and its radial Close Combat to open ordinary PvP. Wait until the first exchange. QAEnemy is the original opponent, and QAOther starts 7 m from CSR on the same clear outdoor line. Keep CSR still, then use /target QAOther to select your alternate before arming the stage.",
-            """Send {"actor":"QAFar","action":"enrage-retarget"} once. QAFar casts the captured Enrage 2.0 request while outside the fight (4 s, 43 IS, 30 s own reuse). Expect [MODIFIER] char=110 source=597 stat=93 add value=0 duration=9s. QAOther joins your existing fight immediately after that add. The helper prints ENRAGE RETARGET ARMED when QAOther is in the fight.""",
-            "While Enraged, try radial Close Combat on the selected QAOther. Save the stock 40 or the local refusal if the client sends none. Selection may change but the fight must keep QAEnemy. There should be no old 46 flag 00, new 40 echo or new 46 flag 01 on CSR. If the request reaches the server, expect [PVP] Target change refused for CSR_Tester: Enraged.",
-            "After [MODIFIER] char=110 source=597 stat=93 remove, repeat the same radial Close Combat on QAOther. Expect the old 46 flag 00, new 40 echo, and new 46 flag 01 for QAOther. Save the full native 40 attempts and matching server replies.",
-            "Optional IS Block sample during this same fight. Before arming, choose Block under Actions > Awakened and wait for one +10 own IS round. Keep Block selected through the cast, retarget attempts and recovery. The fixture holds background IS regeneration, so compare one live Block round without the award while stat 93 is active and one +10 round after removal. Save the 42, rounds and own IS views. The server interprets the separate shipped ISBlock flag as the Block round IS award. Stock verification is pending."
+            "PR883 retest: skip the earlier casts and the already-passed natural nine-second Block sample. Open stock Close Combat on QAEnemy and choose Block to keep the fight stable.",
+            $$"""Send {"actor":"QAOther","action":"enrage-retarget-prepare"}. QAOther moves to verified outdoor NAV ({{RetargetX}},{{Y}},{{RetargetZ}}), about 2.55 m to CSR's side, and joins the existing fight. The helper prints RETARGET PREPARED. Repeating preparation in that fight keeps the same alternate instead of opening another fight.""",
+            "With no Enrage yet, /target QAOther and find a Close Combat input that sends 40. Try the target radial, then the stock Close Combat action on the combat tray if the radial offers only Details. Confirm the old 46 flag 00, new 40 echo and new 46 flag 01. Use the same control to switch back to QAEnemy. Selection alone is separate from the interlock target.",
+            $$"""Preselect QAOther again, then type ?combatdepth {{EnrageRetargetQa.Command}}. This is a disclosed disposable hold, with no cast or debit. After RETARGET HOLD ACTIVE, the actual Enraged state 93 lasts {{EnrageRetargetQa.HoldSeconds}} s. Use the same proven stock Close Combat control on QAOther. Expect an incoming 40 and [PVP] Target change refused for CSR_Tester: Enraged, with no target swap or echo.""",
+            "After [MODIFIER] char=110 source=597 stat=93 remove, repeat the same control on QAOther. Expect the old 46 flag 00, new 40 echo, and new 46 flag 01 for QAOther. Save all three stock 40 samples and the replies. If the calm dry run cannot send 40, record the UI behavior with the hold still off.",
+            """The original helper action {"actor":"QAFar","action":"enrage-retarget"} still uses the captured 597 cast, 4 s/43 IS/30 s reuse and the natural nine-second state on CSR with Deflect Code. Its Block +10/0/+10 sample passed natively at 6c57075e."""
         });
 
     public override async Task<byte[]> AfterStartAsync(NativeQaBootstrapContext context)
@@ -68,7 +71,7 @@ public sealed class ProxyMasterSelectedViralMode : NativeQaMode
         string root = context.RepositoryRoot!;
         SectorProperties.Load(Path.Combine(root, "data", "sector_properties.csv"));
         NavMesh.UseDirectory(Path.Combine(root, "data", "navmesh"));
-        foreach (var (x, z) in Stands.Select(stand => (stand.X, stand.Z)).Concat(new[] { (X, CasterZ), (X, PulseEdgeZ) }))
+        foreach (var (x, z) in Stands.Select(stand => (stand.X, stand.Z)).Concat(new[] { (X, CasterZ), (X, PulseEdgeZ), (RetargetX, RetargetZ) }))
         {
             Check.That(NavMesh.Locate(1, x, Y, z, out var stand) && !stand.indoors &&
                 Math.Abs(stand.floorY + 95 - Y) < 1, $"Verified outdoor NAV ({x},{Y},{z})");
@@ -143,7 +146,7 @@ public sealed class ProxyMasterSelectedViralMode : NativeQaMode
         await VerifyRetargetAsync(caster, context.Helpers, server);
         Check.Equal(0, caster.World.Problems.Count + context.Helpers.Values.Sum(helper => helper.World.Problems.Count),
             "Static Blast control framing");
-        Console.WriteLine("PROXY MASTER BOOTSTRAP PASS. The stock Block tactic remains usable in live rounds, its +10 IS award pauses during Enrage, and award and retarget both resume after expiry.");
+        Console.WriteLine("PROXY MASTER BOOTSTRAP PASS. Natural nine-second Enrage still suspends Block IS. The staged alternate switches normally, is blocked during the disclosed hold, and switches again after that hold expires.");
         return Array.Empty<byte>();
     }
 
@@ -151,12 +154,9 @@ public sealed class ProxyMasterSelectedViralMode : NativeQaMode
         ServerInstance server)
     {
         if (caster.Handle != "QAFar") throw new InvalidOperationException("Use QAFar to arm the Enrage retarget stage.");
-        const string recipient = "CSR_Tester";
-        var original = helpers["QAEnemy"];
         var alternate = helpers["QAOther"];
-        string originalSubject = HandleHex(await original.WaitForViewNamedAsync(recipient));
-        await original.WaitForRpcAsync($"46 {originalSubject} 01", TimeSpan.FromSeconds(3));
-        var target = await caster.WaitForViewNamedAsync(recipient);
+        await RequireOriginalFightAsync(helpers["QAEnemy"]);
+        var target = await caster.WaitForViewNamedAsync(Recipient);
         caster.SendRpc(StarterCoderPetBuffsAndDetonateMode.CoderStock);
         await caster.WaitForViewUpdateAsync(2, "02 80 80 80 80 80 10 f0 03 00 00");
         uint selected = DuelPackets.Handle(target.ViewId, target.SpawnId);
@@ -174,12 +174,51 @@ public sealed class ProxyMasterSelectedViralMode : NativeQaMode
             .Contains("[MODIFIER] char=110 source=597 stat=93 add value=0 duration=9s", StringComparison.Ordinal),
             "Enrage 2.0 lands on the stock recipient in the original interlock", TimeSpan.FromSeconds(7));
 
-        string alternateSubject = HandleHex(await alternate.WaitForViewNamedAsync(recipient));
-        alternate.SkipReceived();
-        alternate.SendRpc($"40 {alternateSubject} 01 6b");
-        await alternate.WaitForRpcAsync($"46 {alternateSubject} 01");
+        await JoinAlternateAsync(alternate);
         Console.WriteLine("ENRAGE RETARGET ARMED. Try Close Combat on QAOther before stat 93 expires.");
-        return new { Ability = Enrage, Target = recipient, Request = Convert.ToHexString(request), Alternate = alternate.Handle };
+        return new { Ability = Enrage, Target = Recipient, Request = Convert.ToHexString(request), Alternate = alternate.Handle };
+    }
+
+    public static async Task PrepareRetargetAsync(HeadlessPlayer alternate, IReadOnlyDictionary<string, HeadlessPlayer> helpers)
+    {
+        if (alternate.Handle != "QAOther") throw new InvalidOperationException("Use QAOther to prepare the retarget stage.");
+        var original = helpers["QAEnemy"];
+        await RequireOriginalFightAsync(original);
+        string handle = HandleHex(await alternate.WaitForViewNamedAsync(Recipient));
+        if (!HasActiveTarget(alternate, handle))
+        {
+            var observed = await original.WaitForViewNamedAsync(alternate.Handle);
+            byte[] coordinates = new[] { (float)RetargetX, Y, RetargetZ }.SelectMany(BitConverter.GetBytes).ToArray();
+            alternate.World.SendViewList(WireFormat.FromHex("02 00 01 08").Concat(coordinates).Concat(new byte[] { 0, 0 }).ToArray());
+            await original.WaitForViewUpdateAsync(observed.ViewId, $"01 08 {WireFormat.ToHex(coordinates)}");
+        }
+        await JoinAlternateAsync(alternate);
+        Console.WriteLine($"RETARGET PREPARED. QAOther is in the fight. Side stand ({RetargetX},{Y},{RetargetZ}). Try the calm control first.");
+    }
+
+    private static async Task RequireOriginalFightAsync(HeadlessPlayer original)
+    {
+        string handle = HandleHex(await original.WaitForViewNamedAsync(Recipient));
+        await original.WaitUntilAsync(() => HasActiveTarget(original, handle),
+            "QAEnemy is still interlocked with CSR", TimeSpan.FromSeconds(3));
+    }
+
+    private static async Task JoinAlternateAsync(HeadlessPlayer alternate)
+    {
+        string handle = HandleHex(await alternate.WaitForViewNamedAsync(Recipient));
+        if (HasActiveTarget(alternate, handle)) return;
+        alternate.SendRpc($"40 {handle} 01 6b");
+        await alternate.WaitUntilAsync(() => HasActiveTarget(alternate, handle),
+            "QAOther joins CSR's existing interlock", HeadlessPlayer.DefaultTimeout);
+    }
+
+    private static bool HasActiveTarget(HeadlessPlayer helper, string handle)
+    {
+        byte[] opened = WireFormat.FromHex($"46 {handle} 01");
+        byte[] closed = WireFormat.FromHex($"46 {handle} 00");
+        var flag = helper.World.RpcSnapshot().LastOrDefault(frame =>
+            frame.Bytes.AsSpan().SequenceEqual(opened) || frame.Bytes.AsSpan().SequenceEqual(closed));
+        return flag?.Bytes[^1] == 1;
     }
 
     private static async Task VerifyRetargetAsync(HeadlessPlayer recipient, IReadOnlyDictionary<string, HeadlessPlayer> helpers,
@@ -189,6 +228,8 @@ public sealed class ProxyMasterSelectedViralMode : NativeQaMode
         string alternate = HandleHex(await recipient.WaitForViewNamedAsync("QAOther"));
         recipient.SendRpc($"40 {original} 01 6b");
         await recipient.WaitForRpcAsync($"46 {original} 01");
+        await PrepareRetargetAsync(helpers["QAOther"], helpers);
+        await PrepareRetargetAsync(helpers["QAOther"], helpers);
         ushort originalIs = ReadInnerStrength();
         int blockStart = recipient.World.ViewSnapshot().Count;
         await SelectTacticAsync(3, "Block");
@@ -230,6 +271,12 @@ public sealed class ProxyMasterSelectedViralMode : NativeQaMode
         foreach (string packet in swap) await recipient.WaitForRpcAsync(packet);
         await WaitForInnerStrengthAsync(innerStrengthCursor, (ushort)(heldIs + 10), "The Block round award returns after Enrage expires");
 
+        recipient.SendRpc($"40 {original} 01 6b");
+        await recipient.WaitForRpcAsync($"46 {alternate} 00");
+        await recipient.WaitForRpcAsync($"40 {original} 00 6b");
+        await recipient.WaitForRpcAsync($"46 {original} 01");
+        await VerifyLongHoldAsync(recipient, server, alternate, swap, swaps);
+
         ushort ReadInnerStrength() => recipient.World.ViewSnapshot().SelectMany(AbilityParityCoderSweepMode.InnerStrengthUpdates).Last();
 
         Task WaitForInnerStrengthAsync(int cursor, ushort value, string description) =>
@@ -244,6 +291,31 @@ public sealed class ProxyMasterSelectedViralMode : NativeQaMode
                 .Contains($"[COMBAT] Tactic changed to {name} (Normal) for CSR_Tester", StringComparison.Ordinal),
                 $"The stock {name} tactic request reaches the live fight", HeadlessPlayer.DefaultTimeout);
         }
+    }
+
+    private static async Task VerifyLongHoldAsync(HeadlessPlayer recipient, ServerInstance server, string alternate,
+        string[] swap, BytePattern[] swaps)
+    {
+        int logCursor = server.DebugLog().Length;
+        int rpcCursor = recipient.World.RpcSnapshot().Count;
+        recipient.SendChat($"?combatdepth {EnrageRetargetQa.Command}");
+        await recipient.WaitForTextAsync($"RETARGET HOLD ACTIVE for {EnrageRetargetQa.HoldSeconds} seconds.");
+        await recipient.WaitUntilAsync(() => server.DebugLog()[logCursor..].Contains(
+            $"[MODIFIER] char=110 source=597 stat=93 add value=0 duration={EnrageRetargetQa.HoldSeconds}s", StringComparison.Ordinal),
+            "The disclosed fixture hold uses the true Enrage state", HeadlessPlayer.DefaultTimeout);
+
+        recipient.SendRpc($"40 {alternate} 01 6b");
+        await recipient.WaitUntilAsync(() => server.DebugLog()[logCursor..].Contains(
+            "[PVP] Target change refused for CSR_Tester: Enraged", StringComparison.Ordinal),
+            "The real retarget gate also denies the request during the longer test hold", TimeSpan.FromSeconds(5));
+        await recipient.WaitUntilAsync(() => server.DebugLog()[logCursor..].Contains(
+            $"[MODIFIER] char=110 source=597 stat=93 remove value=0 duration={EnrageRetargetQa.HoldSeconds}s", StringComparison.Ordinal),
+            "The fixture hold expires naturally", TimeSpan.FromSeconds(EnrageRetargetQa.HoldSeconds + 5));
+        Check.That(!recipient.World.RpcSnapshot().Skip(rpcCursor).Any(frame => swaps.Any(pattern => pattern.IsMatch(frame.Bytes))),
+            "The fixture hold does not send a target swap or echo");
+        recipient.SkipReceived();
+        recipient.SendRpc($"40 {alternate} 01 6b");
+        foreach (string packet in swap) await recipient.WaitForRpcAsync(packet);
     }
 
     private static string HandleHex(ViewCreation view) => WireFormat.ToHex(BitConverter.GetBytes(DuelPackets.Handle(view.ViewId, view.SpawnId)));

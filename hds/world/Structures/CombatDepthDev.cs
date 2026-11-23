@@ -57,6 +57,7 @@ namespace hds
                 return "Special defence 281 stat1011 total " + defence + "; seeded landed " + hits + "/1000; diagnostic HP " + before + "->" + PvpCombat.HealthOf(caller) + ".";
             }
             if (command == "daze") return CombatDepthDaze.Run(caller, args);
+            if (command == EnrageRetargetQa.Command && args.Length == 1) return EnrageRetargetQa.Hold(caller);
             if (command == "empweakness" && args.Length == 3 && (args[1] == "on" || args[1] == "off") &&
                 ushort.TryParse(args[2],out ushort empHealth) && empHealth > 0)
                 return AbilityEmpBlast.Fixture(caller,args[1] == "on",empHealth);

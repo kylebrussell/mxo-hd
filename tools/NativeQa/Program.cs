@@ -324,6 +324,8 @@ try
                     await NativeQa.Modes.StarterPathogenistAuraResistanceMode.ApplyResistanceAsync(actor);
                 else if (fixtureMode is NativeQa.Modes.ProxyMasterSelectedViralMode && action == "enrage-retarget")
                     result = await NativeQa.Modes.ProxyMasterSelectedViralMode.ArmRetargetAsync(actor, helpers, server);
+                else if (fixtureMode is NativeQa.Modes.ProxyMasterSelectedViralMode && action == "enrage-retarget-prepare")
+                    await NativeQa.Modes.ProxyMasterSelectedViralMode.PrepareRetargetAsync(actor, helpers);
                 else if (fixtureMode is NativeQa.Modes.HackerDoctorArbalestViralMode && action == "aura-resist")
                     await NativeQa.Modes.StarterPathogenistAuraResistanceMode.ApplyResistanceAsync(actor,
                         NativeQa.Modes.HackerDoctorArbalestViralMode.Resistance);
