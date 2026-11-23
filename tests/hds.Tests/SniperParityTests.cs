@@ -96,6 +96,9 @@ public class SniperParityTests
         Assert.Equal(50, AbilityProgression.GrantLevel(503, 51));
         Assert.Equal(18, AbilityPassives.Level(client, Stealth.ConcealmentGrantAbility));
         Assert.Equal(18, Stealth.AbilityLevel(client, Stealth.ConcealmentGrantAbility));
+        Assert.Equal(2300, Stealth.ConcealmentWatchingRange(client));
+        AbilityPassives.SetLoaded(client, new[] { ((ushort)503, (ushort)18), ((ushort)151, (ushort)30) }, true);
+        Assert.Equal(1100, Stealth.ConcealmentWatchingRange(client));
         var modifiers = Stealth.ModifiersFor(Stealth.Defs[Stealth.ConcealmentGrantAbility], 18, 19);
         Assert.Contains(modifiers, modifier => modifier.Stat == 209 && modifier.Value == 18);
 

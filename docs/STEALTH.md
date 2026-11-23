@@ -42,6 +42,16 @@ Fixture `ability-parity-improved-sneak` seeds the real owned prerequisites at le
 
 SA is the player's StealthAwareness: the creation value of 1, plus Stealth Detection (204) totals, which come from Awakened's passive and Stealth Awareness. SL is the state's Stealth record plus loaded and active Stealth totals. Player and NPC awareness is bounded to the byte input range so negative debuffs cannot wrap into high awareness.
 
+## Concealment Grant (1137)
+
+The loaded rank of Concealment 503 supplies the rank of its 1137 grant. The shipped 1137 action requires Rifles and starts outside combat. It casts for two seconds, starts a 15-second reuse on activation, and publishes Stealth 209 at the loaded grant rank together with Concealed 623 and Stealthed 881. The current 20 IS comes from the server's compatibility cost because the player cost field is absent. [Catalog](../data/ability_catalog.json#L1093)
+
+`ConcealmentGrant_DirectObject` adds the `kSneak` dissembling bit and shuts off the listed auras. `ConcealInit` and `ConcealUpdate` set the Invisibility pose 1a, with `ConcealTerm` restoring Standing. The live state owns this pose alongside the separate `kSneak` bit. The shipped panic branch repairs an inconsistent exclusive-owner field. The server publishes the state under one synchronization lock after replacing the previous exclusive holder. [DirectObject and Deactivate](../research/client-scripts/ability/spy/sneaks.py#L30) · [Pose callbacks](../research/client-scripts/tempmods.py#L2155)
+
+Initial admission and periodic detection use the current ordinary Sneak grant 1111 rank for radius. A profile without 1111 uses the script's rank-zero radius of 23 m. The periodic contest still uses the active 1137 rank for Stealth, then adds other live Stealth totals. The current detection path uses floor-mesh sight and existing hostile view rules. The original localized watching and paired reveal text metadata and shared world-interaction exclusive breaks remain open. [Initial and periodic tests](../research/client-scripts/ability/utility.py#L403)
+
+Stock checks already cover rank-19 visibility, healing versus damage break, active parent unload with independent Sneak preserved, and cast cancellation followed by a clean fresh activation. The dedicated fixture checks the new pose, aura shutdown and 16 m hostile reveal with the same stock 1137 Action frame. [Damage break](https://github.com/kylebrussell/mxo-hd/pull/768#issuecomment-7082973621) · [Active unload](https://github.com/kylebrussell/mxo-hd/pull/778#issuecomment-7083503883) · [Cast cancellation](https://github.com/kylebrussell/mxo-hd/pull/780#issuecomment-7084050308)
+
 ## Escape and Evasion (507)
 
 The shipped startup loads `ability.spy.sneaks`. Its 507 implementation calls `activateSneak`, installs `SneakUpdate` and `EscapeAndEvasionTerm`, and turns off the auras named by `utility.turnOffAuras`. The deactivation function removes 507 and deactivates Sneak. The term function explicitly restores Standing, deactivates Sneak and turns off its parent. The catalog's health callback uses the existing damage break. [Activation, test and deactivation](../research/client-scripts/ability/spy/sneaks.py#L58) · [Term callback](../research/client-scripts/tempmods.py#L2302)

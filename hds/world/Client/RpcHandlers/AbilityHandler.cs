@@ -839,7 +839,9 @@ namespace hds
             }
             if (stealth && Stealth.Refusal(Store.currentClient, AbilityID, currentTargetViewId, out uint stealthRefusalReason) is string refusal)
             {
-                Deny(AbilityID, refusal, stealthRefusalReason);
+                bool clientReportsConcealmentGate = concealment &&
+                    (stealthRefusalReason == AbilityRefusals.MustBeOutsideCombat || stealthRefusalReason == AbilityRefusals.WrongStyle);
+                Deny(AbilityID, refusal, stealthRefusalReason, sendServerText: !clientReportsConcealmentGate);
                 return;
             }
             if (StealthShieldAbilities.Refusal(Store.currentClient,AbilityID,currentTargetViewId) is string freeRefusal)
