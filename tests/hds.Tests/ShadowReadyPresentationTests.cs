@@ -151,6 +151,8 @@ public class ShadowReadyPresentationTests
     [Fact] public void NativeFixtureNeverArchivesTheGrantedActionAndStopsAtNormalListingGate()
     {
         var plan=new ShadowReadyPresentationMode().Plan;Assert.Contains((ushort)290,plan.Abilities);Assert.DoesNotContain((ushort)1117,plan.Abilities);
-        Assert.False(plan.DevCommands);Assert.False(plan.GmCharacter110);Assert.DoesNotContain(plan.BeforeLoadout.Concat(plan.AfterLoadout).Concat(plan.AfterHelpers),sql=>sql.Contains("1117"));
+        Assert.True(plan.DevCommands); // Optional NAV return only. Stock Archive drives the loadout.
+        Assert.False(plan.GmCharacter110);Assert.False(plan.FixedCallbackRolls);Assert.False(plan.HasHotbar);
+        Assert.DoesNotContain(plan.BeforeLoadout.Concat(plan.AfterLoadout).Concat(plan.AfterHelpers),sql=>sql.Contains("1117"));
     }
 }
