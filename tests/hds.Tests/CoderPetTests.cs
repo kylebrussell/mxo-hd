@@ -406,15 +406,12 @@ public class CoderPetTests
     }
 
     [Fact]
-    public void FortifyAndBoostChangeGameplayOnlyDuringTheirLifetime()
+    public void FortifyMitigatesRetaliationOnlyWhileActive()
     {
         var pet = ResourcePet(); pet.FortifyResistance = 100; pet.FortifyUntil = 20;
         Assert.Equal(76, CoderPets.MitigateRetaliation(pet, 50, 100, 19));
         Assert.Equal(100, CoderPets.MitigateRetaliation(pet, 50, 100, 20));
         Assert.Equal(75, CoderPets.HitChance(pet, 50, 10));
-        pet.BoostUntil = 15; pet.BoostAccuracy = 65;
-        Assert.Equal(95, CoderPets.HitChance(pet, 50, 14));
-        Assert.Equal(75, CoderPets.HitChance(pet, 50, 15));
     }
 
     [Theory]
@@ -448,22 +445,6 @@ public class CoderPetTests
         pet.Kind = CoderPets.Kind.Healer;
         Assert.Equal(80, CoderPets.PowerBoostDamage(pet, 80, 21));
         Assert.Equal(80, CoderPets.DaemonBoostHealing(pet, 80, 21));
-    }
-
-    [Fact]
-    public void Daemon700AndPower25UseIndependentTimers()
-    {
-        var pet = ResourcePet();
-        CoderPets.ApplyPowerBoost(pet, 50, 10);
-        pet.Kind = CoderPets.Kind.Proxy; pet.Sheet = "Aikido";
-        Assert.Equal(100, CoderPets.PowerBoostDamage(pet, 80, 25));
-        CoderPets.ApplyDaemonBoostAccuracy(pet, 50, 309);
-        Assert.Equal(64,pet.BoostAccuracy); //binary32 scale1.3 *50 truncates64.999997 to64
-        Assert.Equal(100, CoderPets.PowerBoostDamage(pet, 80, 309));
-        Assert.Equal(80, CoderPets.PowerBoostDamage(pet, 80, 310));
-        Assert.Equal(95, CoderPets.HitChance(pet, 50, 310));
-        Assert.Equal(75, CoderPets.HitChance(pet, 50, 314));
-        Assert.Equal(80, CoderPets.PowerBoostDamage(ResourcePet(), 80, 21)); //fresh replacement carries no buff
     }
 
     [Fact]

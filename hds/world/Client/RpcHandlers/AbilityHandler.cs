@@ -124,7 +124,7 @@ namespace hds
             // Internal effect templates are reapplied by their sourced parent callbacks, never a free client cast.
             if(AbilityID == AbilityEmpBlast.Weakness) { Deny(AbilityID,"NPC-only ownership marker cannot be activated."); return; }
             if(AbilityID == CoderPets.StopProxyEffect) { Deny(AbilityID,"Use Detonate Proxy on your simulacrum."); return; }
-            if(AbilityHealthCallbacks.InternalEffect(AbilityID)) { Deny(AbilityID,"Use the parent ability, not its internal effect."); return; }
+            if(AbilityID == DaemonBoost.AccuracyEffect || AbilityHealthCallbacks.InternalEffect(AbilityID)) { Deny(AbilityID,"Use the parent ability, not its internal effect."); return; }
 
             if (AbilityID == AbilityBuffs.SittingEffect) return; // Owned by the normal sit/stand stance requests.
 
@@ -808,7 +808,7 @@ namespace hds
             }
             if (AbilityID == ProxyTechnician.Ability && ProxyTechnician.Refusal(Store.currentClient) is string proxyRefusal)
             { Deny(AbilityID,proxyRefusal); return; }
-            if (AbilityID == DaemonBoost.Ability && !DaemonBoost.Loaded(Store.currentClient))
+            if (DaemonBoost.Handles(AbilityID) && !DaemonBoost.Loaded(Store.currentClient, AbilityID))
             {
                 Deny(AbilityID, "Load this ability before using it.", AbilityRefusals.NotLoaded, sendServerText: false);
                 return;
@@ -841,11 +841,6 @@ namespace hds
             { Output.WriteDebugLog("[STEALTH-FREE]"+AbilityID+" cast refused: "+freeRefusal);Deny(AbilityID,freeRefusal);return; }
             // Coder simulacra: summons, abilities on the caster's own simulacrum and Daemon Boost (CoderPets)
             bool pet = CoderPets.Handles(AbilityID);
-            if (pet && CoderPets.IsToggledOn(Store.currentClient, AbilityID))
-            {
-                CoderPets.ToggleOff(Store.currentClient);
-                return;
-            }
             // The 43-byte stock request carries the view and spawn as one network handle.
             UInt16? targetSpawn = packet.Length == 41 && currentTargetViewId > 2 ? (UInt16?)BitConverter.ToUInt16(packet, 4) : null;
             CoderPets.OwnPetCast ownPet = null;

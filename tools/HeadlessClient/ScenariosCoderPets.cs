@@ -79,7 +79,9 @@ public static partial class Scenarios
         var dummy = await owner.WaitForViewNamedAsync("Simulacra Dummy");
         owner.SendRpc($"81 7b fe 02 {dummy.ViewId & 255:x2} {dummy.ViewId >> 8:x2} 00 00");
         await owner.WaitForViewUpdateAsync(dummy.ViewId,"04 80 80 80",TimeSpan.FromSeconds(18));
-        owner.SendChat("?pet cast 619"); await Task.Delay(1000);
+        owner.SendChat("?pet cast 619");
+        await owner.WaitForRpcAsync("80 bd 05 6b 02 00 00 00 00 00 00");
+        await Task.Delay(5500);
         owner.SendChat("?pet"); await owner.WaitForTextAsync("accuracy 0");
         Cast(owner,19);
         await owner.WaitForRpcAsync("81 77");
