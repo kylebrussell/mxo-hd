@@ -11,7 +11,7 @@ public sealed class AwakenedDetectionDisguiseMode : NativeQaMode
     // The full stock Countermeasure frame is from PR413 and the two mask setup frames are from PR435c.
     private const string Countermeasure = "80b92a0100000000000000000000000000000000000000000000000064f11a00b030893f08080000000000";
     private const string SpyUse = "80b95804000000000000000000000000000000000000000000000000585cc50001000000086b0000000000";
-    private const string MaskUse = "80b95a0400000000000000000000000000000000000000000000000064f11a00101a0c3d08280000000000";
+    internal const string MaskUse = "80b95a0400000000000000000000000000000000000000000000000064f11a00101a0c3d08280000000000";
     private static readonly ushort[] Loadout = StockAbilityProfile.Profile(2, 17, Detect).Order().ToArray();
     private static readonly ushort[] MaskLoadout = StockAbilityProfile.Profile(2, 17, CombatStyles.SpyStyle, 120).Order().ToArray();
     private static readonly (string Handle, int Id, int X, int Z, int Org)[] Witnesses =
