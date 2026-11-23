@@ -261,8 +261,6 @@ namespace hds
             { 472, Virus(472, Dot(716, 716, 30)) },
             // Code Infection 4, morpheuzzz_001 2394 (866) and crashover2k_008 40520 (880), 30 s
             { 474, Virus(474, Dot(866, 880, 30)) },
-            // Infect Area 1, morpheuzzz_001 2590: 450 over 30 s
-            { 353, Virus(353, Dot(450, 450, 30)) },
             // Infect Area 2, morpheuzzz_001 2808: 624 over 30 s
             { 475, Virus(475, Dot(624, 624, 30)) },
             // Vector, crashover2k_008 40322: Powerless 8.94 s (7.44 s on Morpheuzzz, 1829), ViralDeflection -60 for 30 s;

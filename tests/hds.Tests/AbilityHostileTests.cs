@@ -330,7 +330,7 @@ public class AbilityHostileTests
     [Theory]
     [InlineData(350, 100, 8)]
     [InlineData(351, 129, 11)]
-    [InlineData(353, 450, 38)] // Runtime capture override; GOB total is 94.
+    [InlineData(353, 94, 8)]
     public void VectorVirusDealsElevenRoundedViralTicksBeforeExpiry(ushort id, int total, int tickDamage)
     {
         var target = Client();

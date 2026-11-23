@@ -454,7 +454,7 @@ public class FreeCastViralLandingTests : IDisposable
     [InlineData(400, 500, TempMods.DOTPlaceHolderAbility, 74, 15, 12, false)]
     [InlineData(399, 800, TempMods.PowerlessAbility, 0, 11.0526, 0, true)]
     [InlineData(400, 500, TempMods.DOTPlaceHolderAbility, 74, 15, 12, true)]
-    [InlineData(353, 500, TempMods.DOTPlaceHolderAbility, 549, 30, 46, false)]
+    [InlineData(353, 500, TempMods.DOTPlaceHolderAbility, 114, 30, 10, false)]
     [InlineData(402, 600, 115, -125, 18, 0, false)]
     public void DespoilerFieldsLandOnTheSelectedEnemyAndExactRadiusEdge(
         ushort id, int edgeRadius, ushort stat, int amount, double duration, int damagePerTick, bool deflectPrimary)
