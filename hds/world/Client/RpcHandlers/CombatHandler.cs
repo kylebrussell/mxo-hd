@@ -250,6 +250,9 @@ namespace hds
             return mob != null && session != null && session.IsActive && session.DefenderMob == mob;
         }
 
+        internal uint? CurrentInterlockHandle() => pvpFight?.SideOf(client)?.OpponentHandle ??
+            currentSession?.TargetViewSpawnId;
+
         internal uint? PowerShotOpponent(ushort targetViewId, ushort? requestedSpawn)
         {
             if (targetViewId <= 2) return null;
@@ -347,7 +350,7 @@ namespace hds
             bool playerStunned = ControlActions.Incapacitated(TimedEffects.ForPlayer(player).Effects);
             if (!ControlActions.CanWithdraw(TimedEffects.ForPlayer(player).Effects)) withdrawing = false;
             if (!CanResolveNpcQueuedAbility(session, ability)) ability = null;
-            bool escapeMove = CombatSpecials.IsRifleEscape(ability?.getAbilityID());
+            bool escapeMove = CombatSpecials.IsWithdrawalSpecial(ability?.getAbilityID());
             bool attemptsWithdrawal = withdrawing || escapeMove;
             bool ordinaryWithdrawal=WithdrawalInput.Ordinary(attemptsWithdrawal,opening,ability,ordinaryWithdrawalRequested);
             bool playerHit, npcHit, condition, playerFirst;
@@ -429,7 +432,10 @@ namespace hds
                 player.FlushQueue();
                 withdrawing = false;
                 if (abilityLands)
-                    AbilityTargets.Land(player, ability, abilityTarget, sneakOpener);
+                {
+                    if (ability.getAbilityID() == Stealth.VanishAbility) Stealth.ScheduleVanish(player);
+                    else AbilityTargets.Land(player, ability, abilityTarget, sneakOpener);
+                }
                 if (session.IsActive)
                     session.Stop(CombatSession.CombatEndReason.AttackerFled);
                 return;

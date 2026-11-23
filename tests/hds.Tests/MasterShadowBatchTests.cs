@@ -35,6 +35,28 @@ public class MasterShadowBatchTests
         return client;
     }
 
+    [Theory]
+    [InlineData(CombatTactic.Grab, 4271u)]
+    [InlineData(CombatTactic.Speed, 4272u)]
+    [InlineData(CombatTactic.Power, 4273u)]
+    public void VanishUsesTheNamedWithdrawalMoveWithoutDamage(CombatTactic tactic, uint clip)
+    {
+        var actor = Client();
+        var move = new AbilityItem();
+        move.setAbilityID(Vanish);
+        Assert.True(CombatSpecials.IsWithdrawalSpecial(Vanish));
+        Assert.True(CombatSpecials.KeepsQueuedOpponent(Vanish));
+        Assert.Equal(InterlockInitiative.Attack(actor, move) + 30, WithdrawalInput.Attack(actor, move, false));
+        Assert.Equal(clip, CombatAnimations.Special(Vanish, true, tactic, 'S').Id);
+        Assert.Null(CombatAnimations.Special(Vanish, false, tactic, 'S'));
+
+        var win = CombatRules.SuccessfulWithdrawal(escapeMove: true);
+        Assert.True(win.SpecialMoveLands);
+        Assert.True(win.Withdrew);
+        Assert.Equal(0, win.DamageToNpc);
+        Assert.Equal(0, win.DamageToPlayer);
+    }
+
     [Fact]
     public void MasterShadow367RegistersAndUnregistersGrant1118AndPassiveStat1045()
     {
