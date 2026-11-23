@@ -863,6 +863,16 @@ public class AbilityRefusalFeedbackTests:IDisposable
     [InlineData(595, "replacement", 0u)]
     [InlineData(595, "retreat", 0u)]
     [InlineData(595, "sight-loss", 0u)]
+    [InlineData(333, "empty", AbilityRefusals.InvalidTarget)]
+    [InlineData(333, "ally", AbilityRefusals.InvalidTarget)]
+    [InlineData(333, "stale", AbilityRefusals.InvalidTarget)]
+    [InlineData(333, "far", AbilityRefusals.TargetOutOfRange)]
+    [InlineData(333, "blocked", AbilityRefusals.TargetNotInSight)]
+    [InlineData(333, "style", AbilityRefusals.WrongStyle)]
+    [InlineData(333, "unloaded", AbilityRefusals.NotLoaded)]
+    [InlineData(333, "replacement", 0u)]
+    [InlineData(333, "retreat", 0u)]
+    [InlineData(333, "sight-loss", 0u)]
     public void SelectedFieldUsesTheAdmittedLiveSpawnAndCannotSplashAfterInvalidation(ushort id, string action, uint refusal)
     {
         string root = AppContext.BaseDirectory;
