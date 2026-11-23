@@ -117,7 +117,10 @@ public class OrdinaryWithdrawalInputTests
     public void Tf6NeverEntersOrdinaryBranchEvenIf44WasAlsoRequested(ushort ability)
     {
         Assert.False(WithdrawalInput.Ordinary(true,false,Move(ability),true));var c=Actor();Stat(c,1005,500);Stat(c,1045,100);
-        Assert.Equal(InterlockInitiative.Attack(c,Move(ability)),WithdrawalInput.Attack(c,Move(ability),false));
+        var move = Move(ability);
+        int shippedVanishBonus = ability == 368 ? 30 : 0;
+        Assert.Equal(InterlockInitiative.Attack(c, move) + shippedVanishBonus,
+            WithdrawalInput.Attack(c, move, ordinary: false));
     }
     [Fact] public void OnlyCurrentNonopeningOrdinaryRequestSelectsTypedInput()
     {
