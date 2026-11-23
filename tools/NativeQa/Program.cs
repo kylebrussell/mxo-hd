@@ -311,6 +311,8 @@ try
                     result = await NativeQa.Modes.AssassinUpgradeDetectionMode.WatchAsync(actor, server, q.GetProperty("phase").GetString()!);
                 else if (fixtureMode is NativeQa.Modes.DisguiseWatcherMode && action == "disguise-watcher")
                     await NativeQa.Modes.DisguiseWatcherMode.SetWatcherAsync(actor, q.GetProperty("phase").GetString()!);
+                else if (fixtureMode is NativeQa.Modes.ImpartedInvisibilityStockMode && action == "imparted-detect")
+                    await NativeQa.Modes.ImpartedInvisibilityStockMode.RevealAsync(actor);
                 else if (fixtureMode is NativeQa.Modes.ConcealmentGrantMode && action == "concealment-grant")
                     await NativeQa.Modes.ConcealmentGrantMode.SendPhaseAsync(actor, q.GetProperty("phase").GetString()!);
                 else if (fixtureMode is NativeQa.Modes.EscapeAndEvasionMode && action == "escape-and-evasion-reveal")
