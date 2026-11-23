@@ -26,6 +26,19 @@ namespace hds
             AbilityID = AbilityCatalog.Canonical(AbilityID);
             if (PrisonDevices.Handles(AbilityID)) { PrisonDevices.Activate(Store.currentClient, AbilityID, packet); return; }
             UInt16 currentTargetViewId = reader.ReadUInt16(1);
+            bool dualSmgCone = CombatSpecials.IsDualSmgConeOpener(AbilityID);
+            ushort? coneSpawn = null;
+            if (dualSmgCone)
+            {
+                var caster = Store.currentClient;
+                coneSpawn = packet.Length == 41 ? BitConverter.ToUInt16(packet, 4) :
+                    (ushort?)caster.viewMan.getViewById(currentTargetViewId)?.spawnId;
+                if (CombatSpecials.DualSmgConeRefusal(caster, AbilityID, currentTargetViewId, coneSpawn) is uint coneRefusal)
+                {
+                    Deny(AbilityID, $"Dual SMG cone refusal {coneRefusal}.", coneRefusal, sendServerText: false);
+                    return;
+                }
+            }
             bool selectedDespoilerArea = AbilityID == 399 || AbilityID == 400 || AbilityID == 404;
 
             bool starterViralDebuffNeedsLoadout = AbilityID == 43 || AbilityID == 48 || AbilityID == 69;
@@ -1028,6 +1041,17 @@ namespace hds
                 StealthShieldAbilities.Execute(client,ability,target,freeStealth);
                 return;
             }
+            if (dualSmgCone)
+            {
+                if (CombatSpecials.DualSmgConeRefusal(client, AbilityID, currentTargetViewId, coneSpawn).HasValue ||
+                    !CombatStyles.CanUse(client, AbilityID))
+                {
+                    Output.WriteDebugLog($"[ABILITY] {AbilityID} fizzles: the dual SMG cone's admission changed");
+                    return;
+                }
+                AbilityTargets.Land(client, ability, currentTargetViewId, sneakOpener, AbilityCastOrigin.NormalFreeCast);
+                return;
+            }
             if (CasterHostileArea.Handles(AbilityID))
             {
                 CasterHostileArea.Land(client, ability);
@@ -1220,6 +1244,8 @@ namespace hds
                 311 => 2,  // Logic Blast 2.0
                 312 => 2,  // Logic Barrage 3.0
                 313 => 2,  // Logic Cannon 1.0
+                247 => 1,  // Bullet Spray
+                248 => 1,  // Suppression Fire
                 514 => 2,  // Advanced Tinkering
                 605 => 0,  // Low Blow
                 618 => 0,  // Bash

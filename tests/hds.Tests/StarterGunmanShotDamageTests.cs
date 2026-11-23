@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using hds;
 
 namespace hds.Tests;
@@ -9,6 +10,8 @@ public class StarterGunmanShotDamageTests
     [InlineData(176, 50, 0, 17)]
     [InlineData(243, 0, 0, 16)]
     [InlineData(CombatSpecials.ControlledBurst, 0, 0, 26)]
+    [InlineData(247, 25, 0, 25)]
+    [InlineData(248, 0, 0, 15)]
     public void IncompleteLegacyEndpointsUseFixedBallisticBase(ushort id, short oldMin, ushort oldMax, ushort expected)
     {
         string root = AppContext.BaseDirectory;
@@ -45,6 +48,31 @@ public class StarterGunmanShotDamageTests
             Assert.Equal(-5, modifier.Value);
             Assert.Equal(10, modifier.Seconds);
         });
+    }
+
+    [Theory]
+    [InlineData(247, 25, 28, 26)]
+    [InlineData(248, 15, 17, 15)]
+    public void DualSmgConesUseTheMatchingBallisticInfluenceAndResistance(ushort ability, int basis, ushort raw, ushort resisted)
+    {
+        var caster = PlayerWithStats((158, 171, 9), (125, 1139, 3), (246, 1139, 4));
+        var target = PlayerWithStats((1061, 181, 20));
+        Assert.Equal(16, AbilityStats.Influence(caster, 171));
+        Assert.Equal(raw, AbilityStats.ScaleAbilityDamage(caster, ability, basis));
+        Assert.Equal(resisted, TypedAbilityResistance.Player(caster, target, ability, raw));
+
+        static WorldClient PlayerWithStats(params (ushort Source, ushort Stat, int Value)[] modifiers)
+        {
+            var player = (WorldClient)RuntimeHelpers.GetUninitializedObject(typeof(WorldClient));
+            player.playerData = new ClientData();
+            player.playerInstance = new PlayerCharacter();
+            player.playerInstance.Level.setValue((byte)33);
+            foreach (var (source, stat, value) in modifiers)
+                TimedEffects.ForPlayer(player).Effects.Apply(source,
+                    new[] { new TimedEffects.Active { Proc = TempMods.Proc.Stat, Target = stat, Value = value, Seconds = 10 } },
+                    TimeUtils.GetSimTimeSeconds());
+            return player;
+        }
     }
 
     [Fact]

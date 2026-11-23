@@ -232,9 +232,33 @@ public class DesperateSpeedTests
     }
 
     [Theory]
+    [InlineData(false, 12f)]
+    [InlineData(true, 21.12f)]
+    public void SuppressionFireUsesAuthoredPlayerAndArchivedNpcDurations(bool npcCaster, float seconds)
+    {
+        var recipient = Client(24801, 33);
+        var caster = npcCaster ? null : Client(24802, 33);
+        var subject = TimedEffects.ForPlayer(recipient);
+        try
+        {
+            Assert.True(TimedEffects.ApplyToPlayer(recipient, 248, "Shooter", caster));
+            var root = Assert.Single(subject.Effects.Snapshot(), mod => mod.Target == TempMods.RootedAbility);
+            Assert.Equal(seconds, root.Seconds);
+            Assert.False(ControlActions.CanMove(subject.Effects));
+            TimedEffects.RunDue(root.Expires + .01);
+            Assert.True(ControlActions.CanMove(subject.Effects));
+        }
+        finally
+        {
+            TimedEffects.Clear(subject);
+        }
+    }
+
+    [Theory]
     [InlineData(176)]
+    [InlineData(248)]
     [InlineData(254)]
-    public void ChanceRootOverridesBothSpeedAndSlowAndRestoresTheEffectsStillActive(ushort ability)
+    public void RootOverrideSupersedesBothSpeedAndSlowAndRestoresTheEffectsStillActive(ushort ability)
     {
         var player = Client();
         var subject = TimedEffects.ForPlayer(player);
@@ -244,7 +268,8 @@ public class DesperateSpeedTests
         {
             Assert.True(AbilityBuffs.Apply(player, HyperSpeed));
             double now = TimeUtils.GetSimTimeSeconds();
-            TimedEffects.Apply(subject, root, now, rng: new RootRoll());
+            var applied = TimedEffects.Apply(subject, root, now, rng: new RootRoll());
+            var rootState = Assert.Single(applied, mod => mod.Target == TempMods.RootedAbility);
             Assert.False(ControlActions.CanMove(subject.Effects));
             Assert.Equal(-1f, BitConverter.ToSingle(player.playerInstance.MovementScale.getValue()));
             Assert.Contains(player.messageQueue.ObjectMessagesQueue.Cast<SequencedMessage>(),
@@ -254,13 +279,39 @@ public class DesperateSpeedTests
             Assert.True(AbilityBuffs.Remove(player, HyperSpeed));
             Assert.True(AbilityBuffs.Apply(player, 184));
             Assert.Equal(-1f, BitConverter.ToSingle(player.playerInstance.MovementScale.getValue()));
-            TimedEffects.RunDue(now + 8.01);
+            TimedEffects.RunDue(rootState.Expires + .01);
             Assert.True(ControlActions.CanMove(subject.Effects));
             Assert.Equal(-.35f, BitConverter.ToSingle(player.playerInstance.MovementScale.getValue()));
             Assert.True(AbilityBuffs.Remove(player, 184));
             Assert.Equal(-.50f, BitConverter.ToSingle(player.playerInstance.MovementScale.getValue()));
             Assert.True(TimedEffects.RemoveParent(subject, 86));
             Assert.Equal(0f, BitConverter.ToSingle(player.playerInstance.MovementScale.getValue()));
+        }
+        finally { AbilityBuffs.RemoveAll(player); }
+    }
+
+    [Fact]
+    public void SuppressionFireRetainsMovementOverrideWhenItsRootIsRenewed()
+    {
+        var player = Client();
+        var subject = TimedEffects.ForPlayer(player);
+        Assert.True(TempMods.TryGet(CombatSpecials.SuppressionFire, out var root));
+        try
+        {
+            Assert.True(AbilityBuffs.Apply(player, HyperSpeed));
+            double now = TimeUtils.GetSimTimeSeconds();
+            var first = Assert.Single(TimedEffects.Apply(subject, root, now));
+            Assert.Equal(-1f, BitConverter.ToSingle(player.playerInstance.MovementScale.getValue()));
+
+            player.messageQueue.ObjectMessagesQueue.Clear();
+            var renewed = Assert.Single(TimedEffects.Apply(subject, root, now + 2));
+            Assert.Empty(player.messageQueue.ObjectMessagesQueue);
+            TimedEffects.RunDue(first.Expires + .01);
+            Assert.Equal(-1f, BitConverter.ToSingle(player.playerInstance.MovementScale.getValue()));
+
+            TimedEffects.RunDue(renewed.Expires + .01);
+            Assert.Equal(.45f, BitConverter.ToSingle(player.playerInstance.MovementScale.getValue()));
+            Assert.True(ControlActions.CanMove(subject.Effects));
         }
         finally { AbilityBuffs.RemoveAll(player); }
     }

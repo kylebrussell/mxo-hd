@@ -300,7 +300,9 @@ namespace hds
             { 502, E(502, Stat(522, -34, 8)) },
             // Deadly Shot, Vector 31513: captured four-second stun.
             { 454, E(454, State(StunAbility, 4)) },
-            // Suppression Fire, ProxyM2_m2_packets_5 28162: rooted 21.12 s; Pinning Fire, Rajko MaraCCyphs 51874: 14.08 s
+            // Warboy ProxyM2_m2_packets_5 28162 records 21.12 s from a Cypherite SMG Specialist.
+            // This is the captured effective NPC duration. The player template stores 12 s.
+            // Pinning Fire, Rajko MaraCCyphs 51874: 14.08 s.
             { 248, E(248, State(RootedAbility, 21.12f)) },
             { 492, E(492, State(RootedAbility, 14.08f)) },
             // Pistol Dash, Rajko AgentsAndIntPorting 40215: enraged 8 s
@@ -330,13 +332,20 @@ namespace hds
             return TryGet(abilityId, out _);
         }
 
-        public static bool TryGet(UInt16 id, out Effect effect)
+        public static bool TryGet(UInt16 id, out Effect effect) => TryGet(id, out effect, npcCaster: false);
+
+        internal static bool TryGet(UInt16 id, out Effect effect, bool npcCaster)
         {
             id = AbilityCatalog.Canonical(id);
             // AbilityHostile's catalog debuffs also give the thrown specials (Poison Knife, Wounding Throw, Sever Artery,
             // CombatSpecials) their stored ThrownDOT and timed debuffs
             Effect source = AbilityHostile.Merge(AbilityCatalog.Controls(id), AbilityHostile.Catalog(id));
-            if (!Retail.TryGetValue(id, out var captured)) { effect = source; return effect != null; }
+            // The 21.12 s Suppression Fire capture is from an NPC cast. Playable casts use the authored 12 s root.
+            if ((id == 248 && !npcCaster) || !Retail.TryGetValue(id, out var captured))
+            {
+                effect = source;
+                return effect != null;
+            }
             var mods = new List<Mod>();
             foreach (Mod m in captured.Mods)
             {

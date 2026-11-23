@@ -261,6 +261,9 @@ def server(i):
         parts.append('stored fixed ballistic base 8 for a live Rifles interlock opponent, with ordinary damage influence and ballistic resistance (stock 8 neutral, 6 resisted)')
     elif i == 176 and not r['damage']:
         parts.append('stored fixed ballistic base 17 with incomplete legacy endpoints; stock interlock landed 18; wider damage and admission unresolved')
+    elif i in (247, 248) and not r['damage']:
+        base = {247: 25, 248: 15}[i]
+        parts.append(f'stored fixed ballistic base {base} when legacy endpoints are incomplete; current stock scaling unresolved')
     elif r['damage']:
         parts.append(f"captured hit {r['damage']['min']}..{r['damage']['max']}")
     elif i == 504:

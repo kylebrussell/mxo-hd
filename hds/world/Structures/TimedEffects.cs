@@ -660,7 +660,7 @@ namespace hds
         /// <summary>The ability lands on an NPC: its tempmods go on (<see cref="TempMods.Retail"/>). False when it has none.</summary>
         public static bool ApplyToMob(WorldClient caster, Mob mob, UInt16 targetView, UInt16 abilityId,AbilityReverseBulldog.Cast reverseBulldog=null)
         {
-            if (!TempMods.TryGet(abilityId, out TempMods.Effect effect) || mob == null || mob.getIsDead())
+            if (!TempMods.TryGet(abilityId, out TempMods.Effect effect, npcCaster: caster == null) || mob == null || mob.getIsDead())
             {
                 return false;
             }
@@ -672,7 +672,7 @@ namespace hds
         /// <summary>An ability (an NPC's, another player's) lands on a player: its records go to them.</summary>
         public static bool ApplyToPlayer(WorldClient client, UInt16 abilityId, string casterName, WorldClient caster = null,AbilityReverseBulldog.Cast reverseBulldog=null)
         {
-            if (!TempMods.TryGet(abilityId, out TempMods.Effect effect))
+            if (!TempMods.TryGet(abilityId, out TempMods.Effect effect, npcCaster: caster == null))
             {
                 return false;
             }
