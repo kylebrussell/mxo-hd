@@ -1,0 +1,60 @@
+{
+  "families": {
+    "gunslinger-initiative-and-upgrade-native": {
+      "representative": 240,
+      "result": "pass",
+      "head": "8035f4be537f039f78b2e04364b759799b084c71",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/918#issuecomment-7091415575",
+      "scope": "Stock Actions showed the derived Gunslinger Upgrade 1075. Unloading 240 removed the grant and its individual +2 Initiative and +1 Ballistic Damage records, and reloading restored them. With both disciplines loaded, the stock Desperation cast used 10 IS, set +86 for 20 s and retained the snapshot when either parent was unloaded."
+    },
+    "scattershot-initiative-and-upgrade-native": {
+      "representative": 245,
+      "result": "pass",
+      "head": "8035f4be537f039f78b2e04364b759799b084c71",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/918#issuecomment-7091415575",
+      "scope": "Stock Actions showed the derived Scattershot Upgrade 1071. Unloading 245 removed the grant and its individual +1 Initiative records, and reloading restored them. With both disciplines loaded, the stock Desperation cast used 10 IS, set +86 for 20 s and retained the snapshot when either parent was unloaded."
+    }
+  },
+  "abilities": {
+    "240": {
+      "family": "gunslinger-initiative-and-upgrade-native",
+      "checks": {
+        "stats": {
+          "source": "GOB 240 supplies Initiative Bonus 1046 +2 + the shipped Ballistic Damage +1 and grants Gunslinger Upgrade 1075 while loaded. DesperationFunction reads 1046 as a percentage at application.",
+          "runtime": "AbilityPassives publishes the individual loaded records and AbilityGrantRegistration registers child 1075. AbilityScaledBuffs reads current 1046 when creating the fixed Desperation snapshot. AbilityStats consumes the Ballistic Damage record in typed damage.",
+          "test": "GunslingerAndScattershotIndependentlyFeedTheLiveDesperationSnapshot verifies all four parent combinations against +83/+84/+85/+86, independent grant membership and typed Ballistic Damage. Stock PR918 confirms both unload/reload cycles, effects and the expiration of the +86 snapshot. https://github.com/kylebrussell/mxo-hd/pull/918#issuecomment-7091415575"
+        },
+        "consumer": {
+          "source": "GOB 240 supplies Initiative Bonus 1046 +2 + the shipped Ballistic Damage +1 and grants Gunslinger Upgrade 1075 while loaded. DesperationFunction reads 1046 as a percentage at application.",
+          "runtime": "AbilityPassives publishes the individual loaded records and AbilityGrantRegistration registers child 1075. AbilityScaledBuffs reads current 1046 when creating the fixed Desperation snapshot. AbilityStats consumes the Ballistic Damage record in typed damage.",
+          "test": "GunslingerAndScattershotIndependentlyFeedTheLiveDesperationSnapshot verifies all four parent combinations against +83/+84/+85/+86, independent grant membership and typed Ballistic Damage. Stock PR918 confirms both unload/reload cycles, effects and the expiration of the +86 snapshot. https://github.com/kylebrussell/mxo-hd/pull/918#issuecomment-7091415575"
+        },
+        "behavior-tests": {
+          "source": "GOB 240 supplies Initiative Bonus 1046 +2 + the shipped Ballistic Damage +1 and grants Gunslinger Upgrade 1075 while loaded. DesperationFunction reads 1046 as a percentage at application.",
+          "runtime": "AbilityPassives publishes the individual loaded records and AbilityGrantRegistration registers child 1075. AbilityScaledBuffs reads current 1046 when creating the fixed Desperation snapshot. AbilityStats consumes the Ballistic Damage record in typed damage.",
+          "test": "GunslingerAndScattershotIndependentlyFeedTheLiveDesperationSnapshot verifies all four parent combinations against +83/+84/+85/+86, independent grant membership and typed Ballistic Damage. Stock PR918 confirms both unload/reload cycles, effects and the expiration of the +86 snapshot. https://github.com/kylebrussell/mxo-hd/pull/918#issuecomment-7091415575"
+        }
+      }
+    },
+    "245": {
+      "family": "scattershot-initiative-and-upgrade-native",
+      "checks": {
+        "stats": {
+          "source": "GOB 245 supplies Initiative Bonus 1046 +1 and grants Scattershot Upgrade 1071 while loaded. DesperationFunction reads 1046 as a percentage at application.",
+          "runtime": "AbilityPassives publishes the individual loaded records and AbilityGrantRegistration registers child 1071. AbilityScaledBuffs reads current 1046 when creating the fixed Desperation snapshot.",
+          "test": "GunslingerAndScattershotIndependentlyFeedTheLiveDesperationSnapshot verifies all four parent combinations against +83/+84/+85/+86, independent grant membership and typed Ballistic Damage. Stock PR918 confirms both unload/reload cycles, effects and the expiration of the +86 snapshot. https://github.com/kylebrussell/mxo-hd/pull/918#issuecomment-7091415575"
+        },
+        "consumer": {
+          "source": "GOB 245 supplies Initiative Bonus 1046 +1 and grants Scattershot Upgrade 1071 while loaded. DesperationFunction reads 1046 as a percentage at application.",
+          "runtime": "AbilityPassives publishes the individual loaded records and AbilityGrantRegistration registers child 1071. AbilityScaledBuffs reads current 1046 when creating the fixed Desperation snapshot.",
+          "test": "GunslingerAndScattershotIndependentlyFeedTheLiveDesperationSnapshot verifies all four parent combinations against +83/+84/+85/+86, independent grant membership and typed Ballistic Damage. Stock PR918 confirms both unload/reload cycles, effects and the expiration of the +86 snapshot. https://github.com/kylebrussell/mxo-hd/pull/918#issuecomment-7091415575"
+        },
+        "behavior-tests": {
+          "source": "GOB 245 supplies Initiative Bonus 1046 +1 and grants Scattershot Upgrade 1071 while loaded. DesperationFunction reads 1046 as a percentage at application.",
+          "runtime": "AbilityPassives publishes the individual loaded records and AbilityGrantRegistration registers child 1071. AbilityScaledBuffs reads current 1046 when creating the fixed Desperation snapshot.",
+          "test": "GunslingerAndScattershotIndependentlyFeedTheLiveDesperationSnapshot verifies all four parent combinations against +83/+84/+85/+86, independent grant membership and typed Ballistic Damage. Stock PR918 confirms both unload/reload cycles, effects and the expiration of the +86 snapshot. https://github.com/kylebrussell/mxo-hd/pull/918#issuecomment-7091415575"
+        }
+      }
+    }
+  }
+}

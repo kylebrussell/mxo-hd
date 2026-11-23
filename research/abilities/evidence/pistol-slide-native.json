@@ -1,0 +1,34 @@
+{
+  "abilities": {
+    "241": {
+      "checks": {
+        "damage": {
+          "source": "GOB 241 supplies fixed Ballistic damage 67. Existing ILDB 9527 is the Pistol Slide exchange.",
+          "runtime": "AbilityHandler selects the authored typed ability base, then normal live Ballistic influence and recipient resistance apply in PvP.",
+          "test": "Stock PR897 measured 73 against the original player and raw 73/final 64 after the same target gained stat181 +20. The retained stock-form replay matches both outcomes and animation 9527. https://github.com/kylebrussell/mxo-hd/pull/897#issuecomment-7091619776"
+        },
+        "controls": {
+          "source": "GOB 241 has a 30% landed Powerless for eight seconds.",
+          "runtime": "TempMods and TimedEffects apply state 96 only after a successful landed special and retire it at the normal duration.",
+          "test": "GunControlsRespectTheirStoredProbabilityAtLanding verifies the threshold, duration and expiry. Stock PR330 witnessed eight-second Powerless after 9527; the two stock PR897 rolls did not proc. https://github.com/kylebrussell/mxo-hd/pull/897#issuecomment-7091619776"
+        },
+        "targeting": {
+          "source": "GOB 241 requires Handguns plus an Off-Balance opponent in active interlock.",
+          "runtime": "AbilityHandler checks loaded membership, current fight identity, live target spawn, sight and range before queuing or consuming resources.",
+          "test": "Stock PR897 verified outside combat and missing Off Balance are locally blocked. PistolSlideMode replays retained stock 241 and additionally checks other-opponent, stale-spawn and missing state refusals with no debit. https://github.com/kylebrussell/mxo-hd/pull/897#issuecomment-7091619776"
+        },
+        "proc": {
+          "source": "GOB 241 applies eight-second Powerless with a stored 30% landed chance.",
+          "runtime": "The normal landed modifier path uses the stored probability once per eligible hit.",
+          "test": "GunControlsRespectTheirStoredProbabilityAtLanding observes no state on the exact threshold, then observes state below the threshold and its natural removal. Stock PR330 supplies native Powerless presentation. https://github.com/kylebrussell/mxo-hd/pull/897#issuecomment-7091619776"
+        },
+        "behavior-tests": {
+          "source": "GOB 241 stores 20 IS, Handguns interlock, Off Balance, Ballistic 67, own/group 10/5 s and 30% landed Powerless.",
+          "runtime": "The admitted queue uses the current live fight target with typed damage, existing 9527 choreography and conditional state.",
+          "test": "PistolSlideMode covers loadout, retained cast, admission, exact typed neutral and resisted values, cost, cooldown and conditional state. PR897 stock independently confirms cast and refusals. Source use of the separate TacticBonus remains open. https://github.com/kylebrussell/mxo-hd/pull/897#issuecomment-7091619776"
+        }
+      },
+      "note": "PR897 qualifies the stock typed hit, admission, choreography and IS cost and reuse. The authored TacticBonus +29 is stored but the current typed queued attack code does not read it. The original authoritative producer remains open. https://github.com/kylebrussell/mxo-hd/pull/897#issuecomment-7091619776"
+    }
+  }
+}

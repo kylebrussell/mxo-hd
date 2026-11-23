@@ -1,0 +1,42 @@
+{
+  "families": {
+    "patch-daemon-three-owner-heals": {
+      "representative": 617,
+      "result": "pass",
+      "head": "41605f316eb24758ad87e3287751cfbe4523b65a",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/855#issuecomment-7091725774",
+      "scope": "Stock L44 80/88 profile summoned the L44 Healer with 1725 max HP, one 81 76, and one private owner notice. IS went 330 to 160 and own reuse was 10 s. Wounded CSR received 617 heals about every 3 s while QAFriend received only ordinary regen. Stock Deactivate produced one 81 77, removed its body, and stopped all 617 heals for the next 12+ s."
+    }
+  },
+  "abilities": {
+    "616": {
+      "checks": {
+        "script": {
+          "source": "simulacra.py:117–129 defines the Nuker sheet, random gender selection, owner level clamped to 35–50, the caster output after creation, and Deactivate destroying the current summon. utility.py:269–270 routes the shipped callback to the caster.",
+          "runtime": "CoderPets creates one owned Nuker at the clamped level, publishes a private success notice after registration, and routes stock Deactivate to removal of that exact pet. The notice uses server wording through the existing System channel. The original localized string ID and high-rank gender-specific description IDs remain unverified.",
+          "test": "PR855 stock replaced the L44 Aikido with the L44 Nuker, showed one caster notice, and directly deactivated the Nuker with one 81 77 and no remaining body. PR312 separately witnessed the L50 clamp, Defensive, Passive and direct Attack. https://github.com/kylebrussell/mxo-hd/pull/855#issuecomment-7091725774 https://github.com/kylebrussell/mxo-hd/pull/312#issuecomment-7000140962"
+        },
+        "behavior-tests": {
+          "source": "GOB 616 stores the eight-second cast, 150 IS, and ten-second reuse. The shipped subject and deactivation callbacks specify the owned Nuker lifecycle.",
+          "runtime": "The ordinary owned summon route debits IS, replaces the old window, publishes the live Nuker and its private notice, and dismisses it on the stock command. The old pet survives a replacement whose membership check fails before publication.",
+          "test": "AdvancedSimulacraOwnerNotice verifies the cast, exact old/new window ordering, owner-only notice and failed in-flight replacement in a server scenario. PR855 stock confirms 480→330 IS, 10 s reuse, a single L44 Nuker and notice, followed by native Deactivate. The PR comment abbreviates the first stock request, and the headless bootstrap uses only retained Coder/594/Deactivate bytes. https://github.com/kylebrussell/mxo-hd/pull/855#issuecomment-7091725774"
+        }
+      }
+    },
+    "617": {
+      "family": "patch-daemon-three-owner-heals",
+      "checks": {
+        "script": {
+          "source": "simulacra.py:162–174 defines the Healer sheet, random gender selection, owner level clamped to 44–50, caster output after creation, and Deactivate destroying the current summon. utility.py:269–270 sends that output to the caster.",
+          "runtime": "CoderPets creates and registers the owned Healer, sends a single private System notice, heals the wounded owner while the pet is live and in range, and stops healing on Deactivate. The notice wording and heal curve are server choices.",
+          "test": "PR855 stock saw one L44 Healer and one owner notice, owner-only heals with two wounded players, then one 81 77 and no post-dismiss heals for 12+ s. The server scenario separately verifies one-window Nuker-to-Healer replacement. https://github.com/kylebrussell/mxo-hd/pull/855#issuecomment-7091725774"
+        },
+        "behavior-tests": {
+          "source": "GOB 617 stores eight seconds, 170 IS, and ten-second reuse. The shipped subject and Deactivate callbacks define the owned Healer lifecycle.",
+          "runtime": "The ordinary CoderPets route consumes the authored activation values and uses the rank-derived Healer model. The live owner gets the heal and the helper remains excluded.",
+          "test": "AdvancedSimulacraOwnerNotice verifies the cast, reuse, exact replacement, level-44 1725 HP, private output, owner-only pulses and no further heals after stock Deactivate. PR855 stock confirms 330→160 IS, 10 s reuse and HP examples 100→108 and 118→129 while QAFriend only regenerates. The native run dismissed the Nuker before 617, so 617 replacement is server-tested. https://github.com/kylebrussell/mxo-hd/pull/855#issuecomment-7091725774"
+        }
+      }
+    }
+  }
+}
