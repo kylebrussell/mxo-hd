@@ -354,8 +354,10 @@ public class TimedEffectsTests
         return list;
     }
 
-    [Fact]
-    public void ImmobilizingShotSendsTheCapturedRootMessageAndExistingReleaseMessage()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void ImmobilizingShotSendsTheCapturedRootMessageAndExistingReleaseMessage(bool damageBreak)
     {
         const ushort ability = 254;
         const string casterName = "Korron";
@@ -376,19 +378,45 @@ public class TimedEffectsTests
         try
         {
             TimedEffects.Apply(subject, immobilizing, now, caster, casterName);
+            var applied = Rpcs(victim);
             Assert.Equal("8167170020005201007c00fe000000000000003000000807004b6f72726f6e000e00416674657257686f72754e656f0002003200000000000000",
-                Assert.Single(Rpcs(victim), rpc => rpc.StartsWith("8167", StringComparison.Ordinal)));
+                Assert.Single(applied, rpc => rpc.StartsWith("8167", StringComparison.Ordinal)));
+            var adds = applied.Where(rpc => rpc.StartsWith("80bc", StringComparison.Ordinal)).ToArray();
+            Assert.Equal(4, adds.Length);
             Assert.Equal(Hex(AbilityMessages.AboutAbility(AbilityMessages.RootCaster, true, ability, casterName, victimName, 50, 0)),
                 Assert.Single(Rpcs(caster)));
             Assert.False(ControlActions.CanMove(subject.Effects));
 
-            TimedEffects.RunDue(now + 8.01);
+            if (damageBreak)
+            {
+                Assert.Empty(subject.Effects.HealthChanged(1, true, new RootBreakRoll(0)));
+                Assert.Empty(subject.Effects.HealthChanged(1, true, new RootBreakRoll(50)));
+                Assert.False(ControlActions.CanMove(subject.Effects));
+                var removed = subject.Effects.HealthChanged(1, true, new RootBreakRoll(49));
+                Assert.Equal(3, removed.Count);
+                subject.Ended(removed);
+            }
+            else TimedEffects.RunDue(now + 8.01);
+
+            var released = Rpcs(victim);
+            var expectedOff = adds.Select(on =>
+            {
+                byte[] bytes = Convert.FromHexString(on);
+                bytes[17] = 1;
+                return Hex(bytes);
+            }).Order().ToArray();
+            Assert.Equal(expectedOff, released.Where(rpc => rpc.StartsWith("80bc", StringComparison.Ordinal)).Order());
             Assert.Equal("816717001a003c00007a0100000000000000002a0000080100000e00416674657257686f72754e656f0001005501007a",
-                Assert.Single(Rpcs(victim), rpc => rpc.StartsWith("8167", StringComparison.Ordinal)));
+                Assert.Single(released, rpc => rpc.StartsWith("8167", StringComparison.Ordinal)));
             Assert.Empty(Rpcs(caster));
             Assert.True(ControlActions.CanMove(subject.Effects));
         }
         finally { TimedEffects.Clear(subject); }
+    }
+
+    private sealed class RootBreakRoll(int value) : Random
+    {
+        public override int Next(int maxValue) => value;
     }
 
     [Fact]
