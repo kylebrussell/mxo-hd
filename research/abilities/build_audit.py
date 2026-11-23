@@ -233,6 +233,7 @@ STOCK_VERIFIED_SUMMARIES = {
     493: '50 IS, 2 s cast and 10 s own/5 s group 690 reuse; dual-SMG hostile cone at rest within 8 m; fixed player Ballistic base 35; independent 30% landed Enrage for 10 s; retained NPC damage separate',
     494: '38 IS, 4 s cast and 10 s own/5 s group 689 reuse; staggered original opponent with dual SMGs and active style; fixed Ballistic base 123; +24 queued tactic or at-rest cast; ILDB move 21084; 40% landed Enrage for 8 s',
     496: '45 IS, 4 s cast and 10 s own/5 s group 689 reuse; dazed original opponent with dual SMGs and active style; fixed Ballistic base 150; +24 queued tactic or at-rest cast; ILDB move 21085; Melee and Ballistic Accuracy each −15 for 8 s',
+    499: '30 IS and 10 s own/5 s group 690 reuse; instant +29 queued Handguns special with dual handguns and the original Off-Balance opponent; fixed Ballistic base 98; move 9533 at the observed 140-unit pose; 6 s base Powerless with duration bonuses and independent immunity',
     969: 'Loaded 277 grants Compiler activation on the selected bag tool. The exclusive session publishes a zero-value 968 link and typing stance. Closing or accepted movement clears both. Moving during a pending compile cancels it and preserves Info and the code charge.',
     970: 'Loaded 37 grants Writer activation on the selected Code Analyser. The exclusive session publishes a zero-value 968 link and typing stance. Turning leaves it active. Closing or accepted movement clears both.',
 }
