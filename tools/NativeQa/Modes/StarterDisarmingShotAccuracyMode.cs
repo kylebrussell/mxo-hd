@@ -45,7 +45,7 @@ public sealed class StarterDisarmingShotAccuracyMode : NativeQaMode
         {
             $"Level {Level}, {Memory}/{AbilityMemory.ForLevel(Level)} memory. CSR ({X},{Y},{Z}) faces QAEnemy ({EnemyX},{Y},{Z}) on clear outdoor NAV. Both have handguns and stay on the same stands. The helper takes one baseline shot and stops. Wait for DISARM ACCURACY baseline.",
             "Use /target QAEnemy or select the helper, right-click Close Combat, then choose Handguns on page 2 slot 1 and Disarming Shot on slot 2. If it misses, wait 8 s and retry. When it lands, type ?cd stop immediately, within the 10 s effect. Keep the same gun equipped.",
-            "Expect [MODIFIER] char=6114 source=126 stat=524 value=-34 through -18 duration=10 s, then its matching removal. The helper fires again during and after the effect. Its real [SHARPSHOOTER OURS] attackBonus before the range rule must drop by exactly the record value and then recover. The [ATTACK-TOTALS] melee control remains unchanged. Wait for DISARM ACCURACY PASS."
+            "Expect [MODIFIER] char=6114 source=126 stat=524 value=-15 duration=10 s, then its matching removal. The helper fires again during and after the effect. Its real [SHARPSHOOTER OURS] attackBonus before the range rule must drop by exactly the record value and then recover. The [ATTACK-TOTALS] melee control remains unchanged. Wait for DISARM ACCURACY PASS."
         });
 
     public override async Task<byte[]> AfterStartAsync(NativeQaBootstrapContext context)
@@ -172,6 +172,6 @@ public sealed class StarterDisarmingShotAccuracyMode : NativeQaMode
 
     private static ManageBonusRecord? Effect(RpcRecord packet, bool remove = false) =>
         ManageBonusRecord.TryDecode(packet.Bytes, out var record) &&
-        record is { SourceId: Disarm, TargetId: BallisticAccuracy, Duration: 10, SignedValue: >= -34 and <= -18 } &&
+        record is { SourceId: Disarm, TargetId: BallisticAccuracy, Duration: 10, SignedValue: -15 } &&
         record.AddRemoveType == (remove ? 1 : 0) ? record : null;
 }

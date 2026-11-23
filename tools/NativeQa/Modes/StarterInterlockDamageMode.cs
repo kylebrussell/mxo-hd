@@ -31,7 +31,7 @@ public sealed class StarterInterlockDamageMode : NativeQaMode
         },
         readyMessages: new[]
         {
-            "Level 19, rank 15, 44/50 memory. With the pistol equipped, use ordinary Close Combat on QAEnemy, reselect Handguns and use Disarming Shot (126). Capture the ordinary landed interlock move and its captured Ballistic Accuracy penalty of -34..-18 for 10 seconds. The shipped attached base is ballistic 11.",
+            "Level 19, rank 15, 44/50 memory. With the pistol equipped, use ordinary Close Combat on QAEnemy, reselect Handguns and use Disarming Shot (126). Capture the ordinary landed interlock move and its authored Ballistic Accuracy penalty of -15 for 10 seconds. The shipped attached base is ballistic 11.",
             "Leave the fight, unequip the pistol, and use ordinary Close Combat on Melee Dummy. Reselect Aikido and use Iron Guard (139): physical base 12 and both caster-only +10 defense records for 12 seconds.",
             "For a Guard Breaker-only stock retest use ability-parity-starter-guard-breaker, which starts unarmed with an isolated NPC target and a sixty-second Off Balance setup."
         },
@@ -61,8 +61,8 @@ public sealed class StarterInterlockDamageMode : NativeQaMode
         await Select(caster, opponent, 129);
         int accuracyStart = enemy.World.RpcSnapshot().Count;
         await Land(caster, opponent, DisarmingShot, server, 11, "Pistol Disarming Shot", pvp: true);
-        int accuracy = await Modifier(enemy, DisarmingShot, 524, -34, 10, accuracyStart, maximum: -18);
-        await Modifier(enemy, DisarmingShot, 524, accuracy, 10, accuracyStart, remove: true);
+        await Modifier(enemy, DisarmingShot, 524, -15, 10, accuracyStart);
+        await Modifier(enemy, DisarmingShot, 524, -15, 10, accuracyStart, remove: true);
         await Leave(caster, opponent);
         await CombatFixtureLoadout.VerifyWeaponSwapAsync(caster, schema, "unarmed", 0);
 
@@ -162,24 +162,18 @@ public sealed class StarterInterlockDamageMode : NativeQaMode
         }), "target view shows active interlock and Off Balance 04", TimeSpan.FromSeconds(start.HasValue ? 10 : 100));
     }
 
-    private static async Task<int> Modifier(HeadlessPlayer actor, ushort id, ushort stat, int value, int duration,
-        int cursor, bool remove = false, int? maximum = null)
+    private static async Task Modifier(HeadlessPlayer actor, ushort id, ushort stat, int value, int duration,
+        int cursor, bool remove = false)
     {
-        ManageBonusRecord? found = null;
         await actor.WaitUntilAsync(() =>
         {
             foreach (var rpc in actor.World.RpcSnapshot().Skip(cursor))
             {
                 if (ManageBonusRecord.TryDecode(rpc.Bytes, out var mod) && mod!.SourceId == id && mod.TargetId == stat &&
-                    mod.SignedValue >= value && mod.SignedValue <= (maximum ?? value) &&
-                    mod.Duration == duration && mod.AddRemoveType == (remove ? 1 : 0))
-                {
-                    found = mod;
+                    mod.SignedValue == value && mod.Duration == duration && mod.AddRemoveType == (remove ? 1 : 0))
                     return true;
-                }
             }
             return false;
         }, $"sourced {id}/{stat} modifier for {duration}s, removal={remove}", TimeSpan.FromSeconds(15));
-        return found!.SignedValue;
     }
 }

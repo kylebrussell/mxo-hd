@@ -84,6 +84,32 @@ public class AbilityHostileTests
         return TimedEffects.Apply(TimedEffects.ForPlayer(victim), effect, TimeUtils.GetSimTimeSeconds(), caster, "Caster");
     }
 
+    [Fact]
+    public void DisarmingShotSeparatesPlayerAccuracyFromArchivedNpcValues()
+    {
+        var victim = Client();
+        var caster = Client();
+        var target = TimedEffects.ForPlayer(victim);
+        try
+        {
+            Assert.True(TempMods.TryGet(126, out var authored, npcCaster: false));
+            var playerModifier = Assert.Single(authored.Mods);
+            Assert.Equal((524, -15, -15, 10f),
+                ((int)playerModifier.Target, playerModifier.MinValue, playerModifier.MaxValue, playerModifier.Seconds));
+            Assert.True(TimedEffects.ApplyToPlayer(victim, 126, "Caster", caster));
+            Assert.Equal(-15, target.Effects.Total(524));
+            TimedEffects.Clear(target);
+
+            Assert.True(TempMods.TryGet(126, out var retained, npcCaster: true));
+            var npcModifier = Assert.Single(retained.Mods);
+            Assert.Equal((524, -34, -18, 10f),
+                ((int)npcModifier.Target, npcModifier.MinValue, npcModifier.MaxValue, npcModifier.Seconds));
+            Assert.True(TimedEffects.ApplyToPlayer(victim, 126, "Special Agent"));
+            Assert.InRange(target.Effects.Total(524), -34, -18);
+        }
+        finally { TimedEffects.Clear(target); }
+    }
+
     [Theory]
     [InlineData(315, 7, 14)]
     [InlineData(333, 5, 10)]

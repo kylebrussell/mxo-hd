@@ -340,8 +340,8 @@ namespace hds
             // AbilityHostile's catalog debuffs also give the thrown specials (Poison Knife, Wounding Throw, Sever Artery,
             // CombatSpecials) their stored ThrownDOT and timed debuffs
             Effect source = AbilityHostile.Merge(AbilityCatalog.Controls(id), AbilityHostile.Catalog(id));
-            // The Suppression Fire and Freeze Area 2.0 captures are from NPC casters. Players use the authored values.
-            if ((!npcCaster && (id == 248 || id == AbilityHostile.FreezeArea2)) || !Retail.TryGetValue(id, out var captured))
+            // These retained Disarming Shot, Suppression Fire and Freeze Area 2.0 values are from NPC casters.
+            if ((!npcCaster && (id == 126 || id == 248 || id == AbilityHostile.FreezeArea2)) || !Retail.TryGetValue(id, out var captured))
             {
                 effect = source;
                 return effect != null;
