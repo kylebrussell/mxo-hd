@@ -904,6 +904,32 @@ namespace hds
                 }
             }
             bool switchOff = AbilityBuffs.IsToggledOn(Store.currentClient, AbilityID);
+            if (AbilityID == AbilityBuffs.SteadyAim && !switchOff)
+            {
+                var shooter = Store.currentClient;
+                if (!AbilityPassives.IsLoaded(shooter, AbilityID))
+                {
+                    Deny(AbilityID, "Load Steady Aim before using it.", AbilityRefusals.NotLoaded, sendServerText: false);
+                    return;
+                }
+                var fight = CombatManager.GetHandler(shooter);
+                if (fight.isCombatRunning || fight.HasActiveInterlock)
+                {
+                    Deny(AbilityID, "Steady Aim cannot be started during combat.", AbilityRefusals.MustBeOutsideCombat, sendServerText: false);
+                    return;
+                }
+                if (!CombatSpecials.HasEquippedRifle(shooter))
+                {
+                    Deny(AbilityID, "Equip a rifle before starting Steady Aim.", AbilityRefusals.RequiredItemCategory, sendServerText: false);
+                    return;
+                }
+                if (CombatStyles.Active(shooter) != CombatStyles.RequiredStyle(AbilityID))
+                {
+                    Deny(AbilityID, "Steady Aim requires the Rifles style.", AbilityRefusals.WrongStyle, sendServerText: false);
+                    return;
+                }
+            }
+
             if (!switchOff)
             {
                 // Snapshot the same existing admission inputs once; the response reports their exact positive deficit.

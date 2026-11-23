@@ -278,6 +278,138 @@ public class AbilityRefusalFeedbackTests:IDisposable
     }
     static byte[][] Rpcs(WorldClient c)=>c.messageQueue.RPCMessagesQueue.Cast<SequencedMessage>().Select(m=>m.content.Skip(1).ToArray()).ToArray();
 
+    [Theory]
+    [InlineData("unloaded", AbilityRefusals.NotLoaded)]
+    [InlineData("combat", AbilityRefusals.MustBeOutsideCombat)]
+    [InlineData("wrong weapon", AbilityRefusals.RequiredItemCategory)]
+    [InlineData("wrong style", AbilityRefusals.WrongStyle)]
+    public void SteadyAimChecksTheRifleProfileBeforeSpendingInnerStrength(string scenario, uint reason)
+    {
+        const ushort ability = AbilityBuffs.SteadyAim;
+        var caster = SeedSteadyAim(120);
+        using var endpoint = new BuffDrainTestOwner(caster);
+        var fight = CombatManager.GetHandler(caster);
+        fight.isCombatRunning = scenario == "combat";
+        if (scenario == "unloaded") caster.playerData.passives.Loaded.Remove(ability);
+        if (scenario == "wrong weapon") caster.playerInstance.EquippedItemID.setValue(CombatFixtureWeapons.Handgun);
+        if (scenario == "wrong style") caster.playerData.combatStyle = CombatStyles.SelfDefense;
+
+        try
+        {
+            UseSteadyAim();
+            Assert.Equal(AbilityRefusals.Encode(new(ability, reason)), Assert.Single(Rpcs(caster)));
+            Assert.Equal(120, AbilityHandler.CurrentInnerStrength(caster));
+            Assert.Empty(caster.playerData.cooldownEndsAt);
+            Assert.False(AbilityBuffs.IsActive(caster, ability));
+        }
+        finally
+        {
+            fight.isCombatRunning = false;
+            CombatManager.RemoveClient(caster);
+        }
+    }
+
+    [Theory]
+    [InlineData(false, 120, 60)]
+    [InlineData(true, 60, 0)]
+    public void SteadyAimConsumesOnlyBallisticAccuracyAndStartsReuseOnTermination(bool shortfall, ushort start, ushort afterDrain)
+    {
+        const ushort ability = AbilityBuffs.SteadyAim;
+        var caster = SeedSteadyAim(start);
+        using var endpoint = new BuffDrainTestOwner(caster);
+        int ballistic = AbilityStats.Attack(caster, true), melee = AbilityStats.Attack(caster, false);
+        var fight = CombatManager.GetHandler(caster);
+        try
+        {
+            UseSteadyAim();
+            Assert.Equal(start - 30, AbilityHandler.CurrentInnerStrength(caster));
+            Assert.Equal(ballistic + 20, AbilityStats.Attack(caster, true));
+            Assert.Equal(melee, AbilityStats.Attack(caster, false));
+            Assert.Empty(caster.playerData.cooldownEndsAt);
+            var active = caster.playerData.activeBuffs[ability];
+            Assert.Equal(524, Assert.Single(active.Definition.Modifiers).Stat);
+            Assert.Equal(5, active.Definition.DrainSeconds);
+            Assert.Equal(30, active.Definition.DrainAmount);
+            Assert.Contains(Rpcs(caster), packet => packet.SequenceEqual(AbilityBuffs.BuildExclusive(ability, true)));
+
+            AbilityBuffs.TickActiveDrain(caster, active);
+            Assert.Equal(afterDrain, AbilityHandler.CurrentInnerStrength(caster));
+            Assert.True(AbilityBuffs.IsActive(caster, ability));
+            Assert.Empty(caster.playerData.cooldownEndsAt);
+            caster.messageQueue.RPCMessagesQueue.Clear();
+            double term = TimeUtils.GetSimTimeSeconds();
+            if (shortfall)
+                AbilityBuffs.TickActiveDrain(caster, active);
+            else
+            {
+                // The start-only gates do not trap a player in an already-active toggle.
+                fight.isCombatRunning = true;
+                caster.playerData.lastAbilityTime = term - 1;
+                UseSteadyAim();
+                fight.isCombatRunning = false;
+            }
+            Assert.False(AbilityBuffs.IsActive(caster, ability));
+            Assert.Equal(afterDrain, AbilityHandler.CurrentInnerStrength(caster));
+            Assert.Equal(ballistic, AbilityStats.Attack(caster, true));
+            Assert.Equal(melee, AbilityStats.Attack(caster, false));
+            Assert.InRange(caster.playerData.cooldownEndsAt[ability], term + 15, TimeUtils.GetSimTimeSeconds() + 15);
+            byte[][] after = Rpcs(caster);
+            byte[] reuse = AbilityCooldowns.BuildTimer(ability, AbilityCooldowns.OwnTimer, 15, true);
+            Assert.Single(after.Where(frame => frame.SequenceEqual(reuse)));
+            Assert.Contains(after, packet => packet.SequenceEqual(AbilityBuffs.BuildExclusive(ability, false)));
+            string name = StringUtils.charBytesToString_NZ(caster.playerInstance.CharacterName.getValue());
+            byte[] shortage = AbilityMessages.AboutAbility(AbilityAuras.DrainDeactivated, true, ability, name, name, 30);
+            Assert.Equal(shortfall ? 1 : 0, after.Count(frame => frame.SequenceEqual(shortage)));
+            byte[] removal = Assert.Single(AbilityBuffs.BuildRecords(ability, active.Definition, active.RecordIds, true));
+            Assert.Contains(after, packet => packet.SequenceEqual(removal));
+
+            AbilityBuffs.TickActiveDrain(caster, active);
+            Assert.Equal(afterDrain, AbilityHandler.CurrentInnerStrength(caster));
+            if (!shortfall)
+            {
+                caster.messageQueue.RPCMessagesQueue.Clear();
+                caster.playerData.lastAbilityTime = term - 1;
+                UseSteadyAim();
+                Assert.Equal(AbilityCooldowns.BuildDenied(ability, AbilityCooldowns.DeniedTimerRunning), Assert.Single(Rpcs(caster)));
+                Assert.Equal(afterDrain, AbilityHandler.CurrentInnerStrength(caster));
+            }
+        }
+        finally
+        {
+            fight.isCombatRunning = false;
+            CombatManager.RemoveClient(caster);
+        }
+    }
+
+    private static WorldClient SeedSteadyAim(ushort inner)
+    {
+        const ushort ability = AbilityBuffs.SteadyAim, level = 36;
+        var caster = Client(inner);
+        caster.playerInstance.Level.setValue((byte)level);
+        caster.playerInstance.EquippedItemID.setValue(CombatFixtureWeapons.Rifle);
+        var profile = new ushort[] { 2, 17, CombatStyles.Rifles, ability }
+            .SelectMany(id => AbilityPrerequisites.Current.Closure(id).Keys.Append(id)).Distinct().ToArray();
+        Assert.True(profile.Sum(AbilityMemory.Cost) <= AbilityMemory.ForLevel(level));
+        AbilityPassives.SetLoaded(caster, profile.Select(id => (id, level)));
+        CombatStyles.Select(caster, CombatStyles.Rifles);
+        caster.messageQueue.RPCMessagesQueue.Clear();
+        Store.currentClient = caster;
+        var template = new AbilityItem();
+        template.setAbilityID(ability);
+        template.setAbilityName("SteadyAimAbility");
+        template.setCastAnimStart(new byte[4]);
+        DataLoader.getInstance().AbilityDB.Add(template);
+        return caster;
+    }
+
+    private static void UseSteadyAim()
+    {
+        // Internal handler body, not a claimed client capture.
+        var request = new byte[41];
+        BitConverter.GetBytes(AbilityBuffs.SteadyAim).CopyTo(request, 0);
+        new AbilityHandler().ProcessAbility(ref request);
+    }
+
     [Fact]
     public void PersonalFirewall2OutsideCombatGateDoesNotStartItsCast()
     {
