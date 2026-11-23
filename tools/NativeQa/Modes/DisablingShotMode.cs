@@ -13,7 +13,7 @@ public sealed class DisablingShotMode : NativeQaMode
     private const int Raw = 17, Resisted = 15;
     private static readonly ushort[] Loadout = Closure(2, 17, Rifles, Shot);
     private static readonly ushort[] EnemyLoadout = Closure(2, 17, Soldier);
-    private const string StockShot = "80b9ff00070005000000000000000000000000000000000000000000ffff7f7f00000000086b0000000000";
+    internal const string StockShot = "80b9ff00070005000000000000000000000000000000000000000000ffff7f7f00000000086b0000000000";
     internal const string StockRifles = "80b993000400020000000000000000000000000000000000000000000000000000000000086b0000000000";
     // Full PR381 view-zero Soldier Upgrade request, PacketLog 0291e4b5eae0:1880–1881.
     internal const string StockUpgrade = "80b925040000000000000000000000000000000000000000000000d557377c20000000086b0000000000";
