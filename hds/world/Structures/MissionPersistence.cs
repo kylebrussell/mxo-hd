@@ -112,6 +112,25 @@ namespace hds
             client.playerData.missionCheckpoint=Store.dbManager.WorldDbHandler.LoadActiveMission(client.playerData.getCharID());
             client.playerData.missionCheckpointLoaded=true;
         }
+        internal static int NewComputerHacks(MissionProgress.SavedState previous, MissionProgress.SavedState next)
+        {
+            if (previous?.Identity == null || next == null || previous.Identity != next.Identity ||
+                previous.Mission != next.Mission || next.EverDone.Length <= previous.EverDone.Length)
+                return 0;
+            var phase = MissionDefinitions.Find(next.Mission)?.phases.ElementAtOrDefault(previous.Phase);
+            if (phase == null) return 0;
+            var newGoals = next.EverDone.Except(previous.EverDone).ToHashSet();
+            return phase.missionObjectives.Count(goal => goal.computerHack && newGoals.Contains(goal.goal));
+        }
+
+        internal static uint ComputerHackExperience(int playerLevel)
+        {
+            // serverrules.py ComputerHack uses the weakling multiplier without the kill level-difference factor.
+            int level = Math.Max(1, playerLevel - 1);
+            return (uint)(KillExperience.WeaklingMultiplier + KillExperience.XPKnob *
+                (level * KillExperience.WeaklingMultiplier * KillExperience.XPConstantMultiplier - KillExperience.WeaklingMultiplier));
+        }
+
         public static void Save(WorldClient client, bool clear = false)
         {
             if(!Available(client)||deferredKill==client||deferredContainerCheckpoint==client)return;

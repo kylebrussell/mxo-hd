@@ -191,7 +191,8 @@ public static partial class Scenarios
          Y=origin[1],
          DistrictId=contactSpot?.metrId??((int?)m.Xml.Attribute("district")??1),District=contactSpot?.metrId==2?"dt":(string?)m.Xml.Attribute("districtName")??"slums",
          MerovingianReputation=(int?)m.Xml.Attribute("minReputation")??0,
-         OwnedLoadedAbilities=new(ushort,ushort)[]{(2,50),(17,50),(45,50),(1006,50),(77,50)}});
+         OwnedLoadedAbilities=m.Id==MachinesCriticalFixture.CamilloMission?MachinesCriticalFixture.Abilities:
+            new(ushort,ushort)[]{(2,50),(17,50),(45,50),(1006,50),(77,50)}});
     }
 
     private static async Task SweepOne(ScenarioContext c, SweepMission m, SweepMission[] catalog, SweepStep step,

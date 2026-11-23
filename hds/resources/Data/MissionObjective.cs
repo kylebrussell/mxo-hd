@@ -37,6 +37,7 @@ namespace hds
         public ushort objectId;    // MissionObjectDef.id for Search, Put and Use
         public string escortTo = "exit"; // Escort: "exit", "npc:<id>", "object:<id>" or "hardline"
         public bool optional;      // the phase can end without it
+        public bool computerHack;  // authored Use objective that runs ComputerHack (rule 1002)
         public List<int> waves = new List<int>(); // DefeatAll: only these waves (0: the phase's own hostiles); empty: all of them
         public double seconds;     // Survive: how long to hold out
         public double limit;       // the mission fails if this isn't done this many seconds after it opens; 0: no limit

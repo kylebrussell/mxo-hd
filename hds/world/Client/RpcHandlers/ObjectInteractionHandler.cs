@@ -377,7 +377,8 @@ namespace hds
             bool followed = interactedView != null &&
                             ObjectStates.OnUse(Store.currentClient, interactedView.entityId, (byte)objectTypeID);
 
-            if (interactedView != null && MissionRuntime.OnViewUse(Store.currentClient, interactedView.entityId))
+            if (interactedView != null && MissionRuntime.OnViewUse(Store.currentClient, interactedView,
+                    (ushort)(numericObjectId >> 16), (byte)objectTypeID))
             {
                 return;
             }

@@ -19,7 +19,7 @@
     <briefing>Zion-Machine relations continue to be... tenuous. We are making a considerable effort to prove our cooperation to the humans. There is an Exile by the name of Camillo who has made himself very troublesome to the Zionites. I am sending you his location. I expect you to delete him.</briefing>
     <enter><say>I've run a scan on the area and it looks like there is a security system in Camillo's office. You can try to sneak past the camera, or if you're able, disable the system itself. It doesn't matter how you achieve access to Camillo, but you must reach him to take him out. I don't see him leaving his office anytime soon... although... There *is* a single computer that has access to the internal network that Camillo is using. If you could hack the computer and shut down his network access, you might be able to get him to leave the safety of his office, making him more... accessible.</say></enter>
     <object id="1" kind="Computer" />
-    <objective goal="1" text="Hack the computer to shut down Camillo's network access" type="Use" object="1" optional="1" />
+    <objective goal="1" text="Hack the computer to shut down Camillo's network access" type="Use" object="1" optional="1" computerHack="1" />
     <objective goal="2" text="Find Camillo" type="Talk" npc="1">
       <talk><say npc="1">You! What in the name of all that is evil are you doing here? Guards!</say></talk>
     </objective>

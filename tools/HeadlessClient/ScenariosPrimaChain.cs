@@ -14,9 +14,10 @@ public static partial class Scenarios
     }
     // Shared test-only driver. Every selected completion is earned over the protocol; SQL seeds prerequisites only.
     private static async Task RunPrimaChain(ScenarioContext context,string handle,byte org,int[] ids,int[] prerequisites,
-        string filePattern,double startX=17000,double startZ=2300,bool requireStandardCourier=false,string? evidenceLabel=null,bool relogAfterChain=false,bool checkpointRecreatedCarriedNpcs=false,bool strictFollowupApproach=false,int? actorLevel=null)
+        string filePattern,double startX=17000,double startZ=2300,bool requireStandardCourier=false,string? evidenceLabel=null,bool relogAfterChain=false,bool checkpointRecreatedCarriedNpcs=false,bool strictFollowupApproach=false,int? actorLevel=null,
+        IReadOnlyList<(ushort Ability, ushort Level)>? ownedLoadout=null)
     {
-        var seed=PrimaActorSeed(handle,org,startX,startZ,actorLevel);
+        var seed=PrimaActorSeed(handle,org,startX,startZ,actorLevel) with { OwnedLoadedAbilities = ownedLoadout };
         // Opt-in213 profile validates before AddPlayerAsync can mutate SQL or start Margin.
         if(strictFollowupApproach)seed=MervFollowupFixture.BeforeMargin(seed,ids,prerequisites,MervFollowupFixture.NextMission);
         var p=await context.AddPlayerAsync(seed);

@@ -27,7 +27,11 @@ public class MachinesCriticalTests
     {
         var p=new MachinesCriticalMode().Plan;Assert.Equal(MachinesCriticalFixture.SeedPrerequisites(110),p.AfterHelpers[0]);
         Assert.True(p.DevCommands);Assert.False(p.FixedCallbackRolls);Assert.False(p.GmCharacter110);
-        Assert.Equal("201101",Assert.Single(p.EnvironmentOverrides).Value);Assert.Equal(new ushort[]{2,17,1006,77},p.Abilities);
+        Assert.Equal("201101",Assert.Single(p.EnvironmentOverrides).Value);
+        Assert.Equal(new ushort[]{2,17,45,52,57,77,1006},p.Abilities);
+        var owned=MachinesCriticalFixture.Abilities.ToDictionary(row=>row.Ability,row=>row.Level);
+        foreach(var requirement in AbilityPrerequisites.Current.Closure(52))
+            Assert.True(owned.GetValueOrDefault(requirement.Key)>=Math.Max(1,requirement.Value));
     }
     [Fact] public void CurrentListSelectionRejectsStaleSameTitleAndStandardNames()
     {
@@ -36,5 +40,19 @@ public class MachinesCriticalTests
         history.Add(Entry(9,0,"Interference"));history.Add(Entry(7,1,"Interference"));
         Assert.Equal(7,MissionContactChoice.CriticalIndex(history.Skip(start),"Interference"));
         Assert.Throws<InvalidOperationException>(()=>MissionContactChoice.CriticalIndex(history,"Interference"));
+    }
+
+    [Fact]
+    public void ComputerHackNativeModeStartsOnlyTheAuthoredAreaWithTheLegalHackerProfile()
+    {
+        var plan = new MissionComputerHackerMode().Plan;
+        Assert.Equal(MachinesCriticalFixture.Abilities.Select(row => row.Ability), plan.Abilities);
+        Assert.True(plan.DevCommands);
+        Assert.False(plan.GmCharacter110);
+        Assert.False(plan.FixedCallbackRolls);
+        Assert.Equal("1", plan.EnvironmentOverrides["MXO_QA_MISSION_PHASE_COMMAND"]);
+        Assert.Contains(plan.ReadyMessages, message => message.Contains("?missionphase 201103 1"));
+        Assert.Contains(plan.ReadyMessages, message => message.Contains("assisted ?tp is only valid after that ride"));
+        Assert.Contains(plan.ReadyMessages, message => message.Contains("6030 XP gain"));
     }
 }
