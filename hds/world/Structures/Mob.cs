@@ -307,15 +307,16 @@ namespace hds
             lock(combatSync)return new System.Collections.Generic.List<WorldClient>(combatants).ToArray();
         }
         /// <summary>One NPC action clock for player sessions and pet retaliation.</summary>
-        public bool TryRetaliate(double now, double interval, bool againstPet = false)
+        public bool TryRetaliate(double now, double interval, CoderPets.Pet pet = null)
         {
             lock (combatSync)
             {
                 if (PassiveTarget || is_dead || healthC == 0 || now < nextRetaliation ||
-                    againstPet && (combatants.Count != 0 || !is_spawned)) return false;
+                    pet != null && (combatants.Count != 0 || !is_spawned || CapturedEvasion?.CanRetaliateAgainst(pet) == false))
+                    return false;
                 nextRetaliation = now + interval;
-                lastRetaliationAgainstPet = againstPet;
-                if (!againstPet)
+                lastRetaliationAgainstPet = pet != null;
+                if (pet == null)
                     Output.WriteDebugLog("[COMBAT-NPC] action " + name + " at " + now.ToString("F3", System.Globalization.CultureInfo.InvariantCulture));
                 return true;
             }
@@ -741,7 +742,12 @@ namespace hds
         /// </summary>
         public void setCombatTarget(WorldClient target)
         {
-            lock (combatSync) { combatants.Add(target); combatTarget = target; }
+            lock (combatSync)
+            {
+                combatants.Add(target);
+                combatTarget = target;
+                CapturedEvasion?.DisplacePet();
+            }
         }
 
         /// <summary>

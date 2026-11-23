@@ -91,6 +91,7 @@ namespace hds
             public Command Order = Command.Follow;
             public Stance Stance = Stance.Defensive;
             public Mob Target;
+            internal int TargetDeathGeneration;
             public double NextAttack;
             public UInt16 BaseMaxHealth;
             public double FortifyUntil;
@@ -100,6 +101,7 @@ namespace hds
             public double InnerStrength = 100, MaxInnerStrength = 100, LastResourceTick;
             public int FortifyResistance, BoostAccuracy;
             public double PowerBoostUntil;
+            internal int PowerForceCombat;
             public int PowerMeleeDamage, PowerBallisticDamage;
             public double BoostUntil;
             internal DaemonBoost.PulseEffect DaemonBoostEffect;
@@ -126,6 +128,7 @@ namespace hds
         public const string ChargeRangeQa = "MXO_PET_CHARGE_RANGE_QA";
         public const string DrainDamageQa = "MXO_SIMULACRUM_QA_DRAIN_DAMAGE";
         public const string RifleProxyQa = "MXO_SIMULACRUM_QA_RIFLE";
+        public const string KarateProxyQa = "MXO_SIMULACRUM_QA_KARATE";
         public const double FollowDistanceMetres = 2.5, MeleeRangeMetres = 2.5, RangedRangeMetres = 15.0, LeashMetres = 60.0;
         public const double StepMetres = 5.0;
         private const double RouteReplanDistance = 100, RouteRetrySeconds = 3;
@@ -287,16 +290,18 @@ namespace hds
         public static void ApplyPowerBoost(Pet pet, int casterLevel, double now)
         {
             var entry = AbilityCatalog.Find(PowerBoost);
-            pet.PowerMeleeDamage = pet.PowerBallisticDamage = 0;
+            pet.PowerMeleeDamage = pet.PowerBallisticDamage = pet.PowerForceCombat = 0;
             foreach (var modifier in entry.Modifiers)
             {
                 if (!AbilityValues.TryValue(modifier, casterLevel, casterLevel, out int value)) continue;
                 if (modifier.Target == 159) pet.PowerMeleeDamage = value;
                 if (modifier.Target == 171) pet.PowerBallisticDamage = value;
+                if (modifier.Target == CombatTactics.StatForceCombat) pet.PowerForceCombat = value;
             }
             pet.PowerBoostUntil = now + entry.Modifiers.First(m => m.Target == 159).Number("Duration");
-            // ForceCombat40 has no pet forced-interlock/shield consumer; intentionally remains a documented gap.
         }
+
+        internal static int ActivePowerForce(Pet pet, double now) => now < pet.PowerBoostUntil ? pet.PowerForceCombat : 0;
 
         /// <summary>159/171 damage influence uses /100, as the existing combat damage pipeline does.
         /// Only proxy melee/firearms qualify: Nuker viral attacks and healer healing receive neither stat.</summary>
@@ -385,6 +390,7 @@ namespace hds
             (x, y, z) = SummonStand(district, x, y, z);
 
             if (fixtureRifle) sheet = "Rifle";
+            if (fixtureOwner && ability == 28 && Environment.GetEnvironmentVariable(KarateProxyQa) == "1") sheet = "Karate";
             byte simId;
             lock (simulacraCounters)
             {
@@ -561,6 +567,7 @@ namespace hds
         private static void RemoveLocked(Pet pet, UInt32 fx)
         {
             if (pet.Gone) return;
+            ReleaseClosePair(pet);
             pet.Gone = true;
             RemoveWindow(pet);
             if (fx != 0 && !pet.Mob.getIsDead()) SendHit(pet, fx);
@@ -580,6 +587,7 @@ namespace hds
         private static void KillLocked(Pet pet, uint impactFx = 0)
         {
             if (pet.Gone || !pet.Mob.TryClaimDeath()) return;
+            ReleaseClosePair(pet);
             pet.Mob.setHealthC(0);
             RemoveWindow(pet);
             // Keep lethal impact and default death FX in one ordered view list.
@@ -669,13 +677,20 @@ namespace hds
             switch (command)
             {
                 case Command.Stay:
+                    ReleaseClosePair(pet);
                     pet.Order = Command.Stay; pet.Target = null; pet.Route = null; SetStanding(pet); SendWindow(pet, false); return null;
                 case Command.Follow:
+                    ReleaseClosePair(pet);
                     pet.Order = Command.Follow; pet.Target = null; pet.Route = null; SendWindow(pet, false); return null;
                 case Command.Attack:
                     Mob target = ResolveAttackTarget(pet, client, targetObject, fromClient);
                     if (target == null) return "Choose a hostile NPC within your simulacrum's leash.";
-                    if (pet.Target != target) pet.Route = null;
+                    if (pet.Target != target)
+                    {
+                        ReleaseClosePair(pet);
+                        pet.Route = null;
+                    }
+                    pet.TargetDeathGeneration = target.DeathGeneration;
                     pet.Order = Command.Attack; pet.Target = target; SendWindow(pet, false); return null;
                 case Command.Mode:
                     if (value > 2) return "Unknown mode.";
@@ -708,6 +723,11 @@ namespace hds
         private static bool CanPursue(Pet pet, Mob target) =>
             target != null && !target.isFriendly && target.pet == null && !target.getIsDead() && target.getIsSpawned() &&
             target.getDistrict() == pet.Mob.getDistrict() && OwnerDistanceTo(pet, target) <= LeashMetres;
+
+        private static NpcEvasion CloseEntryShield(Pet pet) => pet.Order == Command.Attack && !Ranged(pet)
+            ? pet.Target?.CapturedEvasion : null;
+
+        private static void ReleaseClosePair(Pet pet) => pet.Target?.CapturedEvasion?.ReleasePet(pet);
 
         /// <summary>The owner's close-combat target, or the nearest hostile within 20 m.</summary>
         public static Mob DefaultTarget(WorldClient owner, Pet pet)
@@ -1233,8 +1253,10 @@ namespace hds
             Regenerate(pet, now);
             if (pet.FortifyUntil > 0 && now >= pet.FortifyUntil) { pet.FortifyUntil = 0; ApplyMaxHealth(pet); }
 
-            if (pet.Target != null && !CanPursue(pet, pet.Target))
+            if (pet.Target != null && (!CanPursue(pet, pet.Target) ||
+                CloseEntryShield(pet) != null && pet.Target.DeathGeneration != pet.TargetDeathGeneration))
             {
+                ReleaseClosePair(pet);
                 pet.Target = null;
                 if (pet.Order == Command.Attack)
                 {
@@ -1267,12 +1289,20 @@ namespace hds
                 double reach = Ranged(pet) ? RangedRangeMetres : MeleeRangeMetres;
                 bool inReach = MoveToward(pet, (pet.Target.getXPos(), pet.Target.getYPos(), pet.Target.getZPos()), reach, now,
                     pet.Order == Command.Stay);
+                NpcEvasion shield = CloseEntryShield(pet);
+                if (!inReach && shield != null)
+                {
+                    shield.ReleasePet(pet);
+                    return;
+                }
+
                 if (inReach && now >= pet.NextAttack)
                 {
                     pet.NextAttack = now + AttackPeriodSeconds;
+                    if (shield != null && !shield.TryOpenPet(pet, pet.Target, now)) return;
                     Attack(pet, pet.Target, now);
                 }
-                Retaliate(pet, pet.Target, now);
+                if (shield == null || shield.HasPet(pet)) Retaliate(pet, pet.Target, now);
                 return;
             }
             if (pet.Order == Command.Follow) MoveToward(pet, OwnerPosition(pet), FollowDistanceMetres, now);
@@ -1309,7 +1339,7 @@ namespace hds
             if (NavMesh.Locate(district, mob.getXPos(), mob.getYPos(), mob.getZPos(), out var from) &&
                 !GroundLine(district, from, mob.getXPos(), mob.getZPos(), (target.getXPos(), target.getYPos(), target.getZPos())))
                 return;
-            if (!target.TryRetaliate(now, AttackPeriodSeconds, againstPet: true)) return;
+            if (!target.TryRetaliate(now, AttackPeriodSeconds, pet)) return;
             ushort raw = CombatCalculator.CalculateMobDamageWithTactics(target.getLevel(), mob.getLevel());
             int damage = MitigateRetaliation(pet, target.getLevel(), raw, now);
             ushort before = mob.getHealthC();
