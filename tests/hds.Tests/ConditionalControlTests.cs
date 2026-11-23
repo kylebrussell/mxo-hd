@@ -251,6 +251,7 @@ public class ConditionalControlTests
 
     [Theory]
     [InlineData(241, 96, 8, .30f)]
+    [InlineData(244, 96, 8, .40f)]
     [InlineData(247, 93, 8, .15f)]
     [InlineData(249, 93, 10, .20f)]
     [InlineData(250, 93, 8, .40f)]
@@ -265,8 +266,15 @@ public class ConditionalControlTests
         Assert.DoesNotContain(TimedEffects.Apply(subject, effect, now, rng: new FixedProcRoll(chance)), mod => mod.Target == state);
         Assert.Equal(seconds, Assert.Single(TimedEffects.Apply(subject, effect, now,
             rng: new FixedProcRoll(chance - .001)), mod => mod.Target == state).Seconds);
+        if (id == CombatSpecials.PistolBarrage)
+        {
+            var immunity = Assert.Single(subject.Effects.Snapshot(), mod => mod.Parent == TempMods.ControlImmunityTimerAbility);
+            Assert.Equal(seconds, immunity.Seconds);
+            Assert.True(subject.Effects.HasControlImmunity(now + 1));
+        }
         TimedEffects.RunDue(now + seconds + .01);
         Assert.False(subject.Effects.Has(state));
+        if (id == CombatSpecials.PistolBarrage) Assert.False(subject.Effects.HasControlImmunity(now + seconds + .01));
         TimedEffects.Clear(subject);
     }
 

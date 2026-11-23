@@ -311,6 +311,10 @@ try
                     await NativeQa.Modes.PistolSlideMode.ApplyArmorAsync(actor);
                 else if (fixtureMode is NativeQa.Modes.PistolEvasiveMode && action == "evasive-armor")
                     await NativeQa.Modes.PistolSlideMode.ApplyArmorAsync(actor);
+                else if (fixtureMode is NativeQa.Modes.PistolBarrageMode && action == "barrage-probe")
+                    NativeQa.Modes.PistolBarrageMode.ProbePowerless(actor);
+                else if (fixtureMode is NativeQa.Modes.PistolBarrageMode && action == "barrage-records")
+                    result = NativeQa.Modes.PistolBarrageMode.Records(actor);
                 else if (fixtureMode is NativeQa.Modes.PistolAerialMode && action == "aerial-armor")
                     await NativeQa.Modes.PistolSlideMode.ApplyArmorAsync(actor);
                 else if (fixtureMode is NativeQa.Modes.PistolAerialMode && action == "aerial-immune")

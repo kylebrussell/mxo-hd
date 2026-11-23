@@ -47,6 +47,7 @@ namespace hds
             {
                 126 => RangedWeapons.ClassPistol,
                 CombatSpecials.PistolEvasive => RangedWeapons.ClassPistol,
+                CombatSpecials.PistolBarrage => RangedWeapons.ClassDualPistol,
                 176 => RangedWeapons.ClassSubmachinegun,
                 CombatSpecials.ControlledBurst => RangedWeapons.ClassDualSubmachinegun,
                 CombatSpecials.ThreeRoundBurst => RangedWeapons.ClassRifle,
@@ -58,8 +59,8 @@ namespace hds
         internal static bool CanResolveQueuedAbility(WorldClient caster, AbilityItem ability) =>
             ControlActions.CanUseAbilities(caster) && (ability == null ||
                 ControlActions.CanPerformSpecialMove(caster, ability.getAbilityID()) &&
-                (ability.getAbilityID() != CombatSpecials.ControlledBurst && ability.getAbilityID() != CombatSpecials.ThreeRoundBurst ||
-                 AbilityPassives.IsLoaded(caster, ability.getAbilityID())) &&
+                (ability.getAbilityID() != CombatSpecials.ControlledBurst && ability.getAbilityID() != CombatSpecials.ThreeRoundBurst &&
+                 ability.getAbilityID() != CombatSpecials.PistolBarrage || AbilityPassives.IsLoaded(caster, ability.getAbilityID())) &&
                 (ability.getAbilityID() != CombatSpecials.PistolEvasive || AbilityPassives.IsLoaded(caster, CombatSpecials.PistolEvasive)) &&
                 (ability.getAbilityID() == CombatSpecials.SlidingVolley
                     ? AbilityPassives.IsLoaded(caster, CombatSpecials.SlidingVolley) &&
