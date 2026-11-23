@@ -335,6 +335,8 @@ try
                             ? NativeQa.Modes.StarterViralSplashResistanceMode.Resistance : 75);
                 else if (fixtureMode is NativeQa.Modes.DisablingShotMode && action == "disabling-probe")
                     result = await NativeQa.Modes.DisablingShotMode.ProbeAsync(actor);
+                else if (fixtureMode is NativeQa.Modes.ImmobilizingShotMode && action == "immobilizing-fire")
+                    await NativeQa.Modes.ImmobilizingShotMode.FireAsync(actor, "CSR_Tester");
                 else if (fixtureMode is NativeQa.Modes.HackerBufferOverflowMode && action == "buffer-firewall")
                     await NativeQa.Modes.HackerBufferOverflowMode.SendFirewallAsync(actor, helpers["QAEnemy"]);
                 else if (action == "stop") actor.SendRpc("44 00");

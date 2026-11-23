@@ -11,7 +11,7 @@ public sealed class StarterInterlockControlMode : NativeQaMode
     private static readonly byte EnemyYaw = MobAggro.YawTowards(X, EnemyZ, X, Z);
     private static readonly Position EnemyStand = new(X, Y, EnemyZ);
     private static readonly byte[] PositionHandoff = Convert.FromHexString("0200010c");
-    private readonly record struct Position(float X, float Y, float Z)
+    internal readonly record struct Position(float X, float Y, float Z)
     {
         internal string Hex => WireFormat.ToHex(new[] { X, Y, Z }.SelectMany(BitConverter.GetBytes).ToArray());
     }
@@ -214,17 +214,17 @@ public sealed class StarterInterlockControlMode : NativeQaMode
                 $"Recipient {row.Id}/{stat} value={value} remove={remove}", TimeSpan.FromSeconds(row.Seconds + 5));
     }
 
-    private static void Move(HeadlessPlayer actor, Position to) =>
+    internal static void Move(HeadlessPlayer actor, Position to) =>
         actor.World.SendViewList(WireFormat.FromHex($"02 00 01 08 {to.Hex} 00 00"));
 
-    private static Task ObserveMoveAsync(HeadlessPlayer observer, ushort view, int from, Position to, string description)
+    internal static Task ObserveMoveAsync(HeadlessPlayer observer, ushort view, int from, Position to, string description)
     {
         var packet = BytePattern.Parse($"{StockAbilityProfile.LittleEndianHex(view)} 01 08 {to.Hex}");
         return observer.WaitUntilAsync(() => observer.World.ViewSnapshot().Skip(from).Any(packet.Occurs),
             description, HeadlessPlayer.DefaultTimeout);
     }
 
-    private static async Task<int> ObserveScaleAsync(HeadlessPlayer player, ushort view, int attribute, int from, float scale)
+    internal static async Task<int> ObserveScaleAsync(HeadlessPlayer player, ushort view, int attribute, int from, float scale)
     {
         var wire = PlayerViewAttributes.Build((attribute, PlayerViewAttributes.F32(scale)));
         var pattern = BytePattern.Parse($"{StockAbilityProfile.LittleEndianHex(view)} {WireFormat.ToHex(wire)}");
@@ -234,7 +234,7 @@ public sealed class StarterInterlockControlMode : NativeQaMode
         return match + 1;
     }
 
-    private static async Task<Position> CorrectedPositionAsync(HeadlessPlayer enemy, Position probe)
+    internal static async Task<Position> CorrectedPositionAsync(HeadlessPlayer enemy, Position probe)
     {
         int from = enemy.World.ViewSnapshot().Count;
         Move(enemy, probe);
