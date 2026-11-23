@@ -1,0 +1,39 @@
+{
+  "abilities": {
+    "256": {
+      "checks": {
+        "damage": {
+          "source": "The current GOB fixes the Ballistic base at 80. The legacy endpoint pair was incomplete.",
+          "runtime": "The landed path uses base 80, active Rifles and linked Ballistic influence, then the recipient's typed resistance.",
+          "test": "TimedGunSpecialBindsItsEligibleTargetAndConsumesTypedResistance verifies the L27 same-target 90 and 82 through Ballistic Resistance +20. Stock observed both. https://github.com/kylebrussell/mxo-hd/pull/934#issuecomment-7093436603"
+        },
+        "controls": {
+          "source": "The 40% landed 0.01-second marker runs ApplyStunWithTimer. StunAbility 102 supplies four seconds and linked Combat Tactics -20 with independent immunity.",
+          "runtime": "The timed state gates Withdraw. The linked Combat Tactics modifier changes the affected fighter's attack inputs, and its own record and the independent immunity retire with their original IDs.",
+          "test": "ThreeRoundBurstStunLowersBothAttackInputsAndRemovesTheSameLinkedRecord verifies actual attacks and exact add/remove. Stock saw one natural marker and 281–285 paired, including 102/163 and 734/681, a blocked then recovered Withdraw and one state-end. https://github.com/kylebrussell/mxo-hd/pull/934#issuecomment-7093436603"
+        },
+        "targeting": {
+          "source": "The current GOB requires Staggered, Rifles, the original live hostile within 20 m and both ordinary timed routes.",
+          "runtime": "Admission validates Stagger, weapon, sight, range and the selected spawn. A cast admitted in interlock queues only in the original fight. The at-rest route remains separate.",
+          "test": "TimedGunSpecialQueuesAgainstTheOriginalInterlock and TimedGunSpecialBindsItsEligibleTargetAndConsumesTypedResistance cover state, wrong target, style inputs, spawn, range/sight and live fight changes. Stock showed the local Stagger gate, the eligible bound target and the separate at-rest request. https://github.com/kylebrussell/mxo-hd/pull/934#issuecomment-7093436603"
+        },
+        "choreography": {
+          "source": "The extracted 256 rule names its successful Rifle move 11367. A non-landed interlock outcome uses the ordinary style exchange.",
+          "runtime": "The queued success chooses 11367. The direct route has no queued round. The ordinary result uses the same common no-special path established for other gun specials.",
+          "test": "Stock showed 11367 at both armor levels and the separate direct route. The executable queue test exercises the ordinary 256 miss binding. The shared fallback has stock coverage from PR914. https://github.com/kylebrussell/mxo-hd/pull/934#issuecomment-7093436603 https://github.com/kylebrussell/mxo-hd/pull/914#issuecomment-7092713226"
+        },
+        "source-parity": {
+          "source": "The current template supplies 20 IS, four seconds of cast, 10/5 second reuse in group689, +21 tactic, fixed Ballistic 80, Stagger admission and a 40% four-second Stun.",
+          "runtime": "The timed admission, typed hit, selected target and the sourced linked Stun stack use the current authored values. The unrelated older fixed 100 and original 11368 selector remain separately qualified.",
+          "test": "Native verified no early queue, the actual 20/4/10/5 and +21, accepted Staggered hits in both routes, typed results and the original-ID state removal. https://github.com/kylebrussell/mxo-hd/pull/934#issuecomment-7093436603"
+        },
+        "behavior-tests": {
+          "source": "The current GOB sets the timed selection, typed hit, authored tactic input, success move and ApplyStunWithTimer branch.",
+          "runtime": "Both ordinary in-world routes use the original timed target and weapon, pay and schedule once, and apply the terminal proc, Stun and independent immunity on a landed hit.",
+          "test": "The named admission, fixed damage, chance boundary, linked-stat consumer and queue tests supplement the native both-route, state recovery and typed damage evidence. https://github.com/kylebrussell/mxo-hd/pull/934#issuecomment-7093436603"
+        }
+      },
+      "note": "Every interlock press in PR934 landed. The shared ordinary fallback has executable coverage and the stock proof from PR914. The separate 11368 selector remains an archived animation question. https://github.com/kylebrussell/mxo-hd/pull/934#issuecomment-7093436603"
+    }
+  }
+}
