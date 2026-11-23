@@ -1,0 +1,18 @@
+{
+  "abilities": {
+    "416": {
+      "checks": {
+        "script": {
+          "source": "ability/hacker/health.py RejuvenateRSI_DirectObject resuscitates the recipient, fills current HP and IS maxima, plays FX_CHARACTER_RESTORE_RSI and Stand/Action_Resurrect with context 416, sends separate caster and recipient results, then applies flag-only 1208 to the caster if the recipient is PvP-flagged.",
+          "runtime": "The normal 81 88 approval dispatch reaches AbilityResurrection.Reply after a matching offer. RestoreVitals preserves Death Effect and the recipient's flag. Present publishes the self vitals, built-in stand, effect and both replies before the conditional caster flag.",
+          "test": "RejuvenateNativeReplyRunsTheScriptCallbackOnlyAfterConsent verifies the offer, accepted and declined native-shaped replies, duplicate approval handling, both result messages, live vitals plus the 416 stand, restore FX, and the conditional caster flag. PR696 separately witnessed the shared 1208 callback on a flagged stock Restore 325 recipient. https://github.com/kylebrussell/mxo-hd/pull/696#issuecomment-7069292847"
+        },
+        "behavior-tests": {
+          "source": "GOB 416 stores 150 IS and a 15 s own reuse for the dead-friendly cast. Its authored callback reads live maxima and awaits recipient consent.",
+          "runtime": "AbilityHandler admits and costs the normal corpse-targeted cast. AbilityResurrection's authenticated offer and consent paths publish the resources and stock movement. Rejuvenate uses its own context 416.",
+          "test": "The ability-health-parity bootstrap uses PR316's full captured 416 request with only the corpse handle rebound and the PR290 stock Yes reply. RejuvenateRestoresLiveMaximaAfterDeathEffectRecovery covers 605/1080, 610/1090 and 615/1090. RejuvenateNativeReplyRunsTheScriptCallbackOnlyAfterConsent checks both PvP states, refusal and repeated replies. Native PR290 witnessed decline, accept and stand. PR316 and PR321 confirmed the live restored maxima at distinct points in Death Effect recovery. https://github.com/kylebrussell/mxo-hd/pull/290#issuecomment-6974177832 https://github.com/kylebrussell/mxo-hd/pull/316#issuecomment-6999442131 https://github.com/kylebrussell/mxo-hd/pull/321#issuecomment-7001527488"
+        }
+      }
+    }
+  }
+}
