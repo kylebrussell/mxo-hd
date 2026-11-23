@@ -72,13 +72,16 @@ public static partial class Scenarios
         await RefusalAsync(own, AbilityRefusals.NotLoaded);
         owner.SendChat("?pet");
         await owner.WaitForTextAsync("cost 7.5");
+        await ProxyMasterResourceFixture.CheckRateAsync(owner, ownPet, 3, 7.5);
         other.SendChat("?pet");
         await other.WaitForTextAsync("cost 10");
 
         owner.SendRpc("81 7a fe 01");
         await owner.WaitForRpcAsync($"81 77 {ownPet:x2}");
         owner.SendChat("?pet summon 27");
-        await owner.WaitForRpcAsync("81 76");
+        byte replacement = (await owner.WaitForRpcAsync("81 76")).Bytes[3];
+        Check.That(replacement != ownPet, "Replacement has a distinct pet generation");
+        await ProxyMasterResourceFixture.CheckRateAsync(owner, replacement, 2, 10);
         owner.SendChat("?pet");
         await owner.WaitForTextAsync("cost 10");
         Check.Equal(0, owner.World.Problems.Count + other.World.Problems.Count, "Grant, views and casts decode");
