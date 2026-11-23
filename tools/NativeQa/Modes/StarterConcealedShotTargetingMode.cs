@@ -11,8 +11,8 @@ public sealed class StarterConcealedShotTargetingMode : NativeQaMode
     private const ushort ConcealedIs = StartingIs - AbilityCosts.Default;
     private const ushort Rifles = 147, Parent = 503, Conceal = Stealth.ConcealmentGrantAbility, Shot = CombatSpecials.ConcealedShot;
     // Full stock PR429 Concealment (7483f644ff39:1600–1601) and PR410 Concealed Shot (3ef3dc4c8f4c:2400–2401).
-    private const string ConcealFrame = "80b97104000000000000000000000000000000000000000000000000d557377c20000000086b0000000000";
-    private const string ShotFrame = "80b9f801040002000000000000000000000000000000000000000000585cc10001000000086b0000000000";
+    internal const string ConcealFrame = "80b97104000000000000000000000000000000000000000000000000d557377c20000000086b0000000000";
+    internal const string ShotFrame = "80b9f801040002000000000000000000000000000000000000000000585cc10001000000086b0000000000";
     private static readonly ushort[] Loadout = new ushort[] { 2, 17, Rifles, Parent, Shot }
         .SelectMany(id => AbilityPrerequisites.Current.Closure(id).Keys.Append(id)).Distinct().Order().ToArray();
 
@@ -121,7 +121,7 @@ public sealed class StarterConcealedShotTargetingMode : NativeQaMode
             $"Teleported to {floor.sector:x}/{floor.region:x}");
     }
 
-    private static Teleport FindFarStand()
+    internal static Teleport FindFarStand()
     {
         for (int distance = 3100; distance <= 3900; distance += 200)
         foreach (var (dx, dz) in new[] { (-1, 0), (0, -1), (0, 1), (1, 0) })

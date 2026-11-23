@@ -103,6 +103,112 @@ public class AbilityRefusalFeedbackTests:IDisposable
 
         void SetTarget(double x) => target.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(x, 1095, 16150));
     }
+
+    [Theory]
+    [InlineData("unloaded", AbilityRefusals.NotLoaded)]
+    [InlineData("exposed", AbilityRefusals.CasterStateRequired)]
+    [InlineData("sneak", AbilityRefusals.CasterStateRequired)]
+    [InlineData("combat", AbilityRefusals.MustBeOutsideCombat)]
+    [InlineData("ally", AbilityRefusals.InvalidTarget)]
+    [InlineData("stale", AbilityRefusals.InvalidTarget)]
+    [InlineData("far", AbilityRefusals.TargetOutOfRange)]
+    [InlineData("blocked", AbilityRefusals.TargetNotInSight)]
+    [InlineData("changed", 0u)]
+    [InlineData("left sight", 0u)]
+    [InlineData("left range", 0u)]
+    [InlineData("neutral hit", 0u)]
+    [InlineData("resisted hit", 0u)]
+    public void SniperShotBindsItsConcealedRifleCastToTheOriginalLiveTarget(string state, uint denial)
+    {
+        const ushort shot = CombatSpecials.SniperShot;
+        const int near = 21550, blocked = 22350, far = 18550;
+        string root = AppContext.BaseDirectory;
+        while (!File.Exists(Path.Combine(root, "data", "sector_properties.csv"))) root = Path.GetDirectoryName(root)!;
+        SectorProperties.Load(Path.Combine(root, "data", "sector_properties.csv"));
+        NavMesh.UseDirectory(Path.Combine(root, "data", "navmesh"));
+        var caster = Client();
+        var enemy = Client();
+        caster.playerData.setEntityId(110);
+        enemy.playerData.setCharID(111);
+        enemy.playerData.setEntityId(111);
+        caster.playerData.pvpFlag = enemy.playerData.pvpFlag = true;
+        caster.playerInstance.OrganizationID.setValue((byte)1);
+        enemy.playerInstance.OrganizationID.setValue((byte)(state == "ally" ? 1 : 2));
+        caster.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(21750, 1095, 16150));
+        PlaceEnemy(state == "far" ? far : state == "blocked" ? blocked : near);
+        WorldServer.Clients.Add("caster", caster);
+        WorldServer.Clients.Add("enemy", enemy);
+        var view = caster.viewMan.addView(111, 12);
+        view.viewCreated = true;
+        view.spawnId = 9;
+        caster.playerData.passives.Loaded[CombatStyles.Rifles] = 26;
+        caster.playerData.combatStyle = CombatStyles.Rifles;
+        if (state != "unloaded") caster.playerData.passives.Loaded[shot] = 26;
+        ushort stealth = state == "sneak" ? Stealth.SneakGrantAbility : Stealth.ConcealmentGrantAbility;
+        if (state != "exposed") Assert.NotNull(Stealth.Begin(caster, Stealth.Defs[stealth], 26));
+        if (state == "resisted hit")
+            TimedEffects.ForPlayer(enemy).Effects.Apply(514, new[] { new TimedEffects.Active
+            {
+                Target = 181, Value = 75, Seconds = 20
+            } }, TimeUtils.GetSimTimeSeconds());
+        caster.messageQueue.RPCMessagesQueue.Clear();
+        enemy.messageQueue.RPCMessagesQueue.Clear();
+        Store.currentClient = caster;
+
+        var ability = new AbilityItem();
+        ability.setAbilityID(shot);
+        ability.setAbilityName("Sniper Shot");
+        ability.setCastAnimStart(new byte[4]);
+        ability.setValueFrom(4);
+        DataLoader.getInstance().AbilityDB.Add(ability);
+        var fight = CombatManager.GetHandler(caster);
+        fight.isCombatRunning = state == "combat";
+        // Handler regression body. NativeQa only sends live stock captures.
+        var body = new byte[41];
+        BitConverter.GetBytes(shot).CopyTo(body, 0);
+        BitConverter.GetBytes(view.ViewID).CopyTo(body, 2);
+        BitConverter.GetBytes((ushort)(state == "stale" ? 8 : 9)).CopyTo(body, 4);
+        try
+        {
+            double before = TimeUtils.GetSimTimeSeconds();
+            new AbilityHandler().ProcessAbility(ref body);
+            if (denial != 0)
+            {
+                uint flags = denial == AbilityRefusals.CasterStateRequired ? Stealth.ConcealmentFlag : 0;
+                Assert.Contains(Rpcs(caster), rpc => rpc.AsSpan().SequenceEqual(AbilityRefusals.Encode(new(shot, denial, states: flags))));
+                Assert.Equal(state != "exposed", Stealth.IsOn(caster, stealth));
+                Assert.Equal(500, AbilityHandler.CurrentInnerStrength(caster));
+                Assert.False(AbilityCooldowns.IsCasting(caster.playerData, before));
+                Assert.Empty(caster.playerData.cooldownEndsAt);
+                Assert.Equal(1000, PvpCombat.HealthOf(enemy));
+                return;
+            }
+
+            Assert.InRange(caster.playerData.castEndsAt - before, 6, 6.5);
+            Assert.False(Stealth.IsOn(caster, stealth));
+            Assert.Equal(440, AbilityHandler.CurrentInnerStrength(caster));
+            Assert.Equal(1000, PvpCombat.HealthOf(enemy));
+            if (state == "changed") view.spawnId++;
+            else if (state == "left sight") PlaceEnemy(blocked);
+            else if (state == "left range") PlaceEnemy(far);
+            DelayedActions.RunDue(caster.playerData.castEndsAt + 1);
+            Assert.True(AbilityCooldowns.IsCoolingDown(caster.playerData, shot, TimeUtils.GetSimTimeSeconds()));
+
+            int expectedDamage = state == "neutral hit" ? 47 :
+                state == "resisted hit" ? TypedAbilityResistance.Amount(47, 50, 50, 75) : 0;
+            if (state == "resisted hit") Assert.InRange(expectedDamage, 1, 46);
+            Assert.Equal(1000 - expectedDamage, PvpCombat.HealthOf(enemy));
+        }
+        finally
+        {
+            fight.isCombatRunning = false;
+            CombatManager.RemoveClient(caster);
+            Stealth.Cleared(caster);
+            TimedEffects.Clear(TimedEffects.ForPlayer(enemy));
+        }
+
+        void PlaceEnemy(int x) => enemy.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(x, 1095, 16150));
+    }
     public void Dispose(){Store.currentClient=oldClient;Store.config=oldConfig;WorldServer.Clients=oldClients!;loaderField.SetValue(null,oldLoader);for(int i=0;i<keys.Length;i++)Environment.SetEnvironmentVariable(keys[i],oldEnv[i]);}
 
     [Fact]

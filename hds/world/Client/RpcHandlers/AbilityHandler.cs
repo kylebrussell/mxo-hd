@@ -563,7 +563,14 @@ namespace hds
                 }
             }
 
-            if (rifleOpener || AbilityID == CombatSpecials.ConcealedShot)
+            bool sniperShot = AbilityID == CombatSpecials.SniperShot;
+            bool concealmentShot = sniperShot || AbilityID == CombatSpecials.ConcealedShot;
+            if (sniperShot && !AbilityPassives.IsLoaded(Store.currentClient, AbilityID))
+            {
+                Deny(AbilityID, "Load Sniper Shot before using it.", AbilityRefusals.NotLoaded, sendServerText: false);
+                return;
+            }
+            if (rifleOpener || concealmentShot)
             {
                 var shooter = Store.currentClient;
                 var fight = CombatManager.GetHandler(shooter);
@@ -590,15 +597,15 @@ namespace hds
                     shooter.FlushQueue();
                     return;
                 }
-                if (rifleOpener) gunTargetSpawn = spawn;
-                if (AbilityID == CombatSpecials.ConcealedShot)
+                if (rifleOpener || sniperShot) gunTargetSpawn = spawn;
+                if (concealmentShot)
                 {
                     if (!Stealth.IsOn(shooter, Stealth.ConcealmentGrantAbility))
                     {
                         shooter.messageQueue.addRpcMessage(AbilityRefusals.Encode(new AbilityRefusals.Record(
                             AbilityID, AbilityRefusals.CasterStateRequired, states: Stealth.ConcealmentFlag)));
                         shooter.FlushQueue();
-                        Output.WriteDebugLog("[ABILITY] Denied 504: requires Concealment");
+                        Output.WriteDebugLog($"[ABILITY] Denied {AbilityID}: requires Concealment");
                         return;
                     }
                     if (!AbilityTargets.WithinSelectionRange(shooter, AbilityID, currentTargetViewId))
@@ -1106,7 +1113,7 @@ namespace hds
             }
             // Attack abilities on the current close-combat target hit it (buffs used with a target selected don't).
             ushort hostileView=engageFoes?.PrimaryView??currentTargetViewId;
-            if (selectedGunShot && (!AbilityTargets.HasLiveAttackSelection(client, hostileView, gunTargetSpawn, requireOpponent: true) ||
+            if ((selectedGunShot || sniperShot) && (!AbilityTargets.HasLiveAttackSelection(client, hostileView, gunTargetSpawn, requireOpponent: true) ||
                 !AbilityTargets.WithinSelectionRange(client, AbilityID, hostileView) ||
                 !AbilityTargets.HasSelectionSight(client, definition, hostileView)))
             {
@@ -1267,7 +1274,8 @@ namespace hds
             // These reviewed legacy rows omit a usable range and have one fixed, instant health modifier.
             int? fixedType = source?.Id switch
             {
-                504 => 1,  // Concealed Shot
+                CombatSpecials.ConcealedShot => 1,
+                CombatSpecials.SniperShot => 1,
                 CombatSpecials.ControlledBurst => 1,
                 CombatSpecials.SlidingVolley => 1,
                 CombatSpecials.ThreeRoundBurst => 1,
