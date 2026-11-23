@@ -133,6 +133,49 @@ public class DesperateSpeedTests
     }
 
     [Theory]
+    [InlineData(0, .45f, -.67f, -.30f)]
+    [InlineData(Stealth.SneakGrantAbility, .12f, -.91f, -.63f)]
+    [InlineData(Stealth.InvisibilityGrantAbility, .12f, -.91f, -.63f)]
+    public void CripplingShotProjectsOnlyTheCurrentChannelAndRestoresTheLiveSpeed(ushort stance,
+        float speed, float capturedScale, float playerScale)
+    {
+        var player = Client(level: 50);
+        var subject = TimedEffects.ForPlayer(player);
+        // Exact NPC-to-player records from trinity proxy_011 at 12:46:58. The distinct values prove channel selection.
+        var captured = new TempMods.Effect
+        {
+            Ability = CombatSpecials.CripplingShot,
+            Mods = new[] { (Stat: (ushort)115, Value: -112), (Stat: (ushort)877, Value: -103), (Stat: (ushort)878, Value: -103) }
+                .Select(stat => new TempMods.Mod { Target = stat.Stat, Proc = TempMods.Proc.Stat, Kind = 0x15,
+                    MinValue = stat.Value, MaxValue = stat.Value, Seconds = 8 }).ToArray()
+        };
+        try
+        {
+            Assert.True(AbilityBuffs.Apply(player, HyperSpeed));
+            if (stance != 0) Assert.NotNull(Stealth.Begin(player, Stealth.Defs[stance], 25));
+            double now = TimeUtils.GetSimTimeSeconds();
+            TimedEffects.Apply(subject, captured, now);
+            Assert.Equal(capturedScale, BitConverter.ToSingle(player.playerInstance.MovementScale.getValue()));
+            TimedEffects.RunDue(now + 8.01);
+            Assert.Equal(speed, BitConverter.ToSingle(player.playerInstance.MovementScale.getValue()));
+
+            Assert.True(TempMods.TryGet(CombatSpecials.CripplingShot, out var playerShot));
+            Assert.True(TempMods.TryGet(CombatSpecials.CripplingShot, out var npcShot, npcCaster: true));
+            Assert.All(playerShot.Mods, modifier => Assert.Equal((-75, -75, 8f), (modifier.MinValue, modifier.MaxValue, modifier.Seconds)));
+            Assert.Contains(npcShot.Mods, modifier => modifier.Target == 115 && modifier.MinValue == -124 && modifier.MaxValue == -75);
+            TimedEffects.Apply(subject, playerShot, now + 9);
+            Assert.Equal(playerScale, BitConverter.ToSingle(player.playerInstance.MovementScale.getValue()));
+            TimedEffects.RunDue(now + 17.01);
+            Assert.Equal(speed, BitConverter.ToSingle(player.playerInstance.MovementScale.getValue()));
+        }
+        finally
+        {
+            Stealth.End(player, "test cleanup", false);
+            AbilityBuffs.RemoveAll(player);
+        }
+    }
+
+    [Theory]
     [InlineData(0)]
     [InlineData(Stealth.SneakGrantAbility)]
     [InlineData(Stealth.InvisibilityGrantAbility)]

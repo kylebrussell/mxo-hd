@@ -67,11 +67,13 @@ namespace hds
             { HolyWater, KilledOnlyByHolyWater }, { HolyWaterPlus, KilledOnlyByHolyWater },
         };
 
-        // The shipped Rifles openers have CastWhenUsed = 1 and the same two-second casting script.
+        internal const ushort CripplingShot = 450;
+
+        // These shipped Rifles openers have CastWhenUsed = 1 and cast for two seconds.
         public static bool IsRifleOpener(ushort id)
         {
             id = AbilityCatalog.Canonical(id);
-            return id == WoundingShot || id == 254 || id == 255;
+            return id == WoundingShot || id == 254 || id == 255 || id == CripplingShot;
         }
 
         internal static bool HasEquippedRifle(WorldClient caster) =>
