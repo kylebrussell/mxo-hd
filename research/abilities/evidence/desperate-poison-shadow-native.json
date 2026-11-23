@@ -44,7 +44,24 @@
     },
     "1117": {
       "family": "shadow-upgrade-stock-last-grant",
-      "note": "PR1012 confirms stock 290 unload removes original 1117 records 283–286 and the exclusive flag once, then reload restores only the action. The 30-second timer clears at its original deadline. Exact retained 356/1087 selective cleanup is same-family precedent, not a direct original 1117 trace. The wider 1117 stat consumers remain open. https://github.com/kylebrussell/mxo-hd/pull/1012#issuecomment-7110595516"
+      "note": "PR1012 confirms stock 290 unload removes original 1117 records 283–286 and the exclusive flag once, then reload restores only the action. The 30-second timer clears at its original deadline. Exact retained 356/1087 selective cleanup is same-family precedent, not a direct original 1117 trace. https://github.com/kylebrussell/mxo-hd/pull/1012#issuecomment-7110595516",
+      "checks": {
+        "stats": {
+          "source": "GOB 1117 stores 644 +3, 878 +10, 1032 +5 and 1005 +6.",
+          "runtime": "The active upgrade feeds the Belt lease, direct Invisibility gait channel, typed Thrown Accuracy and direct Contested Withdraw input.",
+          "test": "ShadowUpgradeFeedsTheOrdinaryWithdrawalAndTypedThrowInputs checks the consumers and restoration. Stock Leg Sweep measured 66 to 71 and Withdraw direct 65 to 71, final 81 to 88 with the unchanged +25 linked prerequisite. https://github.com/kylebrussell/mxo-hd/pull/1016#issuecomment-7111351327"
+        },
+        "consumer": {
+          "source": "644 extends the new Belt lease; 878 uses the direct invisible movement channel shared with Movement Accelerator.",
+          "runtime": "Only the actual Invisibility gait picks up the direct bonus. Parent unload removes the scale contribution without changing the active Belt lease.",
+          "test": "ShadowUpgradeUsesTheDirectInvisibleMovementChannelAndRestoresItWithoutChangingLifetime covers gating, composition and cleanup. Stock Belt 130 to 133 s and 360.1 to 395.5 u/s (1.099x) returned to 359.5 on parent unload in the same Belt. https://github.com/kylebrussell/mxo-hd/pull/1016#issuecomment-7111351327"
+        },
+        "behavior-tests": {
+          "source": "GOB 1117 is a 20 IS upgrade with 30-second reuse and four active modifiers from the selected Shadow grant.",
+          "runtime": "The ordinary grant action publishes the four modifiers; its selected parent unload removes them once and reload restores only the grant.",
+          "test": "InvisibilityDurationTests and the disposable Shadow consumer fixture provide executable coverage. Stock PR1016 confirmed ordinary request, cost, timer, both movement consumers, both combat consumers and all four removals without reapplying on reload. https://github.com/kylebrussell/mxo-hd/pull/1016#issuecomment-7111351327"
+        }
+      }
     }
   }
 }
