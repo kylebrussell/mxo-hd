@@ -6,12 +6,19 @@
       "head": "8547ef869a64b29656ff4c3153f7ccbeb2556226",
       "native": "https://github.com/kylebrussell/mxo-hd/pull/873#issuecomment-7088259016",
       "scope": "Stock empty and ally refusals, selected-area casts, exact recipient edges, movement-scale add and removal for Bottleneck, and eleven timed viral ticks for Infect. Infect magnitude and scaling remain open."
+    },
+    "hacker-infect-area-one-selected-viral-dot": {
+      "representative": 353,
+      "result": "pass",
+      "head": "6267d5ba22bf0a9ae756ce2d7463ac3737f62c33",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/905#issuecomment-7090233496",
+      "scope": "Stock PR905 at level 24 and legal 54/54 Hacker loadout. The actual cast paid 15 IS, lasted 2 s and started 12 s own reuse. The primary and exact 5.00 m edge alone received +114 stat 1157 for 30 s, then eleven 10-point ticks and removal. The ally and 5.01 m hostile received nothing. The archived 450-point generation remains unresolved."
     }
   },
   "abilities": {
     "353": {
-      "family": "hacker-infect-bottleneck-selected-area",
-      "note": "Native PR873 confirms the earlier level-24 implementation: 15 IS, two-second cast, twelve-second reuse, and eleven ticks on each eligible recipient. The earlier implementation treated the 450-point level-50 live record in morpheuZZZ as a base and applied this profile's +22%, producing 549. The server now projects directly from the shipped fixed 94. The historical 450-point generation remains unresolved and this note does not credit the changed magnitude as stock verified. https://github.com/kylebrussell/mxo-hd/pull/873#issuecomment-7088259016",
+      "family": "hacker-infect-area-one-selected-viral-dot",
+      "note": "The shipped fixed 94 is projected to +114 with +22% in the stock PR905 fixture. The earlier level-50 live record on MorpheuZZZ carried +450. Its original scaling inputs remain unresolved. https://github.com/kylebrussell/mxo-hd/pull/905#issuecomment-7090233496",
       "checks": {
         "area": {
           "source": "GOB 353 specifies a five-metre radius around the selected direct object and a 30-second ViralDOT.",
@@ -22,6 +29,11 @@
           "source": "GOB 353 requires a selected hostile, has a stored selection range and carries the per-recipient viral test.",
           "runtime": "AbilityHandler rejects invalid selections before costs, fences the original view and spawn through completion, and applies the shared hostile and sight filters before the viral contest.",
           "test": "Stock PR873 exercises empty and friendly refusals with no cost or timer, then accepts the selected hostile. The updated AbilityRefusalFeedbackTests cover missing, out-of-range and substituted selection cases. The ordinary primary and splash contest path is covered by FreeCastViralLandingTests. https://github.com/kylebrussell/mxo-hd/pull/873#issuecomment-7088259016"
+        },
+        "behavior-tests": {
+          "source": "GOB 353 specifies a selected hostile viral contest, 5 m radius, 15 IS, two-second cast, 12 s reuse and a fixed 94 ViralDOT pool for 30 s, with updates every 2.5 s.",
+          "runtime": "Normal cast admission snapshots the selected entity. AbilityTargets and FreeCastViralContest apply the test separately per eligible recipient and TimedEffects sends the sourced rounded viral ticks through current TypedAbilityResistance.",
+          "test": "DespoilerFieldsLandOnTheSelectedEnemyAndExactRadiusEdge proves hostile and sight scope, exact edge, 30 s expiry, temporary edge resistance and no twelfth tick. PR873 covers empty and allied refusal. PR905 verifies the updated 15 IS, cast and reuse, +114 record and eleven 10-point ticks in stock. https://github.com/kylebrussell/mxo-hd/pull/905#issuecomment-7090233496"
         }
       }
     },
