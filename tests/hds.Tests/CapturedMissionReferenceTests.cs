@@ -33,7 +33,13 @@ public class CapturedMissionReferenceTests
     {
         var old=new CharacterSeed("Compatibility"){Level=50,X=17000,Z=2300,Health=5000,MaxHealth=5000,InnerStrength=2000,MaxInnerStrength=2000,Organization=2};
         Assert.Equal(JsonSerializer.Serialize(old),JsonSerializer.Serialize(Seed(null)));
-        var parameter=typeof(Scenarios).GetMethod("RunPrimaChain",BindingFlags.NonPublic|BindingFlags.Static)!.GetParameters().Last();Assert.Equal("actorLevel",parameter.Name);Assert.True(parameter.HasDefaultValue);Assert.Null(parameter.DefaultValue);
+        var parameters = typeof(Scenarios).GetMethod("RunPrimaChain", BindingFlags.NonPublic | BindingFlags.Static)!.GetParameters();
+        var actorLevel = Assert.Single(parameters, parameter => parameter.Name == "actorLevel");
+        Assert.True(actorLevel.HasDefaultValue);
+        Assert.Null(actorLevel.DefaultValue);
+        var ownedLoadout = Assert.Single(parameters, parameter => parameter.Name == "ownedLoadout");
+        Assert.True(ownedLoadout.HasDefaultValue);
+        Assert.Null(ownedLoadout.DefaultValue);
         foreach(int level in new[]{17,50}){var seed=Seed(level);Assert.Equal(level,seed.Level);Assert.Equal((int)PlayerProgression.ExperienceForLevel(level),seed.Experience);}
     }
     [Theory][InlineData(0)][InlineData(51)]

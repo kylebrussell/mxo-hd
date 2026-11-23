@@ -52,6 +52,7 @@ public class MachinesCriticalTests
         Assert.False(plan.FixedCallbackRolls);
         Assert.Equal("1", plan.EnvironmentOverrides["MXO_QA_MISSION_PHASE_COMMAND"]);
         Assert.Contains(plan.ReadyMessages, message => message.Contains("?missionphase 201103 1"));
+        Assert.Contains(plan.ReadyMessages, message => message.Contains("assisted ?tp is only valid after that ride"));
         Assert.Contains(plan.ReadyMessages, message => message.Contains("6030 XP gain"));
     }
 }

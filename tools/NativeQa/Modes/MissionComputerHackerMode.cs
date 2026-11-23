@@ -27,7 +27,8 @@ public sealed class MissionComputerHackerMode : NativeQaMode
         readyMessages: new[]
         {
             "Use ?missionphase 201103 1. This starts the ordinary Camillo room with goal 1 open and bypasses the contact chain.",
-            "Use the printed street door and lobby car, then walk to the Computer object 1 on the printed NAV stand and face it.",
+            "Open the printed street door and enter the lobby. In the stock lift choose Open. Wait for the Operator's 'Sending you to the right floor' and for the ride to finish on the mission floor.",
+            "After the stock lift ride finishes, follow the printed Computer object 1 stand and facing. The assisted ?tp is only valid after that ride.",
             "Use ?qaunload 52, then right-click Hack. Expect 'Load Hacker before attempting to hack this computer.', goal 1 still open, and no XP.",
             "Use ?qaload 52. Check [MODIFIER] source=52 stat=643 +8, then use stock Hack again. Expect one goal 1 completion, idle terminal, and one 6030 XP gain.",
             "Try Hack again if the menu still offers it. No second gain. Note any progress bar and how the stock feedback renders."
