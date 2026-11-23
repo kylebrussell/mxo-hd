@@ -92,7 +92,6 @@ namespace hds
             public Stance Stance = Stance.Defensive;
             public Mob Target;
             public double NextAttack;
-            public double NextRetaliation;
             public UInt16 BaseMaxHealth;
             public double FortifyUntil;
             public UInt16 FortifyHealth;
@@ -1273,7 +1272,7 @@ namespace hds
                     pet.NextAttack = now + AttackPeriodSeconds;
                     Attack(pet, pet.Target, now);
                 }
-                if (now >= pet.NextRetaliation) Retaliate(pet, pet.Target, now);
+                Retaliate(pet, pet.Target, now);
                 return;
             }
             if (pet.Order == Command.Follow) MoveToward(pet, OwnerPosition(pet), FollowDistanceMetres, now);
@@ -1303,21 +1302,21 @@ namespace hds
         /// <summary>An NPC the simulacrum fights, and that isn't fighting a player, hits the simulacrum back each round.</summary>
         private static void Retaliate(Pet pet, Mob target, double now)
         {
-            if (target.PassiveTarget || target.getIsDead() || target.getCombatTarget() != null || target.IsStunned(now)) return;
+            if (target.PassiveTarget || target.getIsDead() || target.IsStunned(now)) return;
             if (OwnerDistanceTo(pet, target) > LeashMetres || Distance(pet.Mob, target.getXPos(), target.getYPos(), target.getZPos()) > RangedRangeMetres * 100) return;
             var mob = pet.Mob;
             ushort district = mob.getDistrict();
             if (NavMesh.Locate(district, mob.getXPos(), mob.getYPos(), mob.getZPos(), out var from) &&
                 !GroundLine(district, from, mob.getXPos(), mob.getZPos(), (target.getXPos(), target.getYPos(), target.getZPos())))
                 return;
-            pet.NextRetaliation = now + AttackPeriodSeconds;
+            if (!target.TryRetaliate(now, AttackPeriodSeconds, againstPet: true)) return;
             ushort raw = CombatCalculator.CalculateMobDamageWithTactics(target.getLevel(), mob.getLevel());
             int damage = MitigateRetaliation(pet, target.getLevel(), raw, now);
             ushort before = mob.getHealthC();
             DamagePet(pet, damage, CombatCalculator.GetRandomMeleeHitFx());
             int rating = now < pet.FortifyUntil ? pet.FortifyResistance : 0;
-            Output.WriteDebugLog($"[PET RETALIATION] attacker={target.getName()} attackerLevel={target.getLevel()} pet={pet.SimulacraId} " +
-                $"petLevel={mob.getLevel()} meleeRating={rating} raw={raw} final={damage} HP={before}->{mob.getHealthC()}");
+            Output.WriteDebugLog(FormattableString.Invariant(
+                $"[PET RETALIATION] attacker={target.getName()} attackerLevel={target.getLevel()} pet={pet.SimulacraId} petLevel={mob.getLevel()} meleeRating={rating} raw={raw} final={damage} HP={before}->{mob.getHealthC()} owner={TimedEffects.PlayerName(pet.Owner)} at={now:F3}"));
         }
 
         /// <summary>Patch Daemon heals its owner when hurt. No retail value is known: it heals the NPC round amount at its level (our choice).</summary>

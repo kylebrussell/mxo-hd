@@ -300,20 +300,23 @@ namespace hds
         private readonly object hitSync = new object();
         private readonly System.Collections.Generic.HashSet<WorldClient> combatants = new System.Collections.Generic.HashSet<WorldClient>();
         private double nextRetaliation;
+        private bool lastRetaliationAgainstPet;
         public int CombatantCount { get { lock (combatSync) return combatants.Count; } }
         internal WorldClient[] CombatantsSnapshot()
         {
             lock(combatSync)return new System.Collections.Generic.List<WorldClient>(combatants).ToArray();
         }
-        /// <summary>One NPC action clock shared by every player's session (including movement).
-        /// Pairwise presentation remains separate; adding attackers must not multiply retaliation.</summary>
-        public bool TryRetaliate(double now, double interval)
+        /// <summary>One NPC action clock for player sessions and pet retaliation.</summary>
+        public bool TryRetaliate(double now, double interval, bool againstPet = false)
         {
             lock (combatSync)
             {
-                if (PassiveTarget || is_dead || healthC == 0 || now < nextRetaliation) return false;
+                if (PassiveTarget || is_dead || healthC == 0 || now < nextRetaliation ||
+                    againstPet && (combatants.Count != 0 || !is_spawned)) return false;
                 nextRetaliation = now + interval;
-                Output.WriteDebugLog("[COMBAT-NPC] action " + name + " at " + now.ToString("F3", System.Globalization.CultureInfo.InvariantCulture));
+                lastRetaliationAgainstPet = againstPet;
+                if (!againstPet)
+                    Output.WriteDebugLog("[COMBAT-NPC] action " + name + " at " + now.ToString("F3", System.Globalization.CultureInfo.InvariantCulture));
                 return true;
             }
         }
@@ -323,7 +326,13 @@ namespace hds
             {
                 combatants.Remove(player);
                 if (combatTarget == player) combatTarget = System.Linq.Enumerable.FirstOrDefault(combatants);
-                if (combatants.Count == 0) { nextRetaliation = 0; if (!is_dead) currentState = (int)statusList.STANDING; }
+                if (combatants.Count == 0)
+                {
+                    // A short player session may end before the NPC gets another action.
+                    // It cannot erase the ongoing cooldown from the preceding pet retaliation.
+                    if (!lastRetaliationAgainstPet) nextRetaliation = 0;
+                    if (!is_dead) currentState = (int)statusList.STANDING;
+                }
             }
         }
 
@@ -361,7 +370,7 @@ namespace hds
             healthC = healthM;
             is_dead = false;
             is_lootable = false;
-            lock (combatSync) { combatants.Clear(); combatTarget = null; nextRetaliation = 0; }
+            ClearCombatants();
             mobHitCounter = 0;
             hitCounter = 0;
             xPos = xBase;
@@ -748,10 +757,18 @@ namespace hds
         /// </summary>
         public void clearCombatTarget()
         {
-            lock (combatSync) { combatants.Clear(); combatTarget = null; nextRetaliation = 0; }
-            if (!is_dead)
+            ClearCombatants();
+            if (!is_dead) currentState = (int)statusList.STANDING;
+        }
+
+        private void ClearCombatants()
+        {
+            lock (combatSync)
             {
-                currentState = (int)statusList.STANDING;
+                combatants.Clear();
+                combatTarget = null;
+                nextRetaliation = 0;
+                lastRetaliationAgainstPet = false;
             }
         }
 
