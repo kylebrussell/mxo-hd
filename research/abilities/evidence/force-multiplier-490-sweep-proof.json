@@ -1,0 +1,28 @@
+{
+  "families": {
+    "force-multiplier-archive-grant-stock": {
+      "representative": 490,
+      "result": "pass",
+      "head": "447888fa94d60f33ad79c5716a26831cca638963",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/368#issuecomment-7019642941",
+      "scope": "The stock Archive accepted the complete Force Multiplier load sequence including 490, and the inherited 1091 appeared in stock Actions and activated. Separately PR356 exercised the stock 487 team range and an actual delayed cleanse. The 490-specific pulse threshold is established by the executable legal loadout comparison. https://github.com/kylebrussell/mxo-hd/pull/356#issuecomment-7012381535"
+    }
+  },
+  "abilities": {
+    "490": {
+      "family": "force-multiplier-archive-grant-stock",
+      "checks": {
+        "stats": {
+          "source": "GOB 490 publishes a fixed +5 Sweep Bonus 1052 and grants Force Multiplier Upgrade 1091 while loaded. GOB 487 stores base chance 30 and a five-second update interval.",
+          "runtime": "AbilityPassives publishes the loaded passive and grants 1091. AbilityHostile.ApplySweep snapshots the caster's total 1052 into the ordinary pulse chance while retaining the base value in its wire record.",
+          "test": "LoadedForceMultiplierRaisesTheOrdinarySweepPartyPulseFromFortyToFortyFive uses a legal 61/100 level-50 Archive profile. The fixed prerequisite sources 71 and 74 total +10, and 490 adds +5. With an identical roll 42 the ordinary pulse leaves Slow with 490 unloaded and removes it when 490 is reloaded. Both wire records retain base 30 and 25 s."
+        },
+        "behavior-tests": {
+          "source": "GOB 490's scope is loaded membership, stat1052 +5 and the zero-rank child 1091. The shipped NegativeConditionSweepPulse supplies the eligible-parent callback for ordinary Sweep Party. The server policy treats source 1052 as whole chance points from the caster.",
+          "runtime": "AbilityMemory qualifies the real ranked Archive and the 490 round trip. AbilitySupport.Land routes the ordinary 487 pulse to the teammate; TimedEffects schedules it, and AbilityHostile.Pulse consumes 490's modifier once at the normal boundary. The child 1091 can be available without its separate sweep being active.",
+          "test": "LoadedForceMultiplierRaisesTheOrdinarySweepPartyPulseFromFortyToFortyFive exercises the ordinary 487 landing, delayed pulse and Slow's state on a live teammate with and without 490. It also verifies inherited 1091 membership and unchanged 487 wire records. PR368 native confirms the ordinary Archive activation and Actions grant, while PR356 native confirms the separate ordinary team sweep, its range and removal. https://github.com/kylebrussell/mxo-hd/pull/368#issuecomment-7019642941 https://github.com/kylebrussell/mxo-hd/pull/356#issuecomment-7012381535"
+        }
+      }
+    }
+  }
+}
