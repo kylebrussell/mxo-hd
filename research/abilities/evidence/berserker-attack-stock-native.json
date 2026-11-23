@@ -1,0 +1,23 @@
+{
+  "abilities": {
+    "535": {
+      "checks": {
+        "targeting": {
+          "source": "GOB 535 is a Karate current-opponent special with 40 IS, 60 s own and 5 s group 687 reuse, and caster-only WhenEnabled 1 modifiers. The shipped move mapping selects ILDB 5939.",
+          "runtime": "BerserkerAttackAdmission checks the live current opponent and rejects an out-of-combat, stale or wrong handle; the landed interlock moves deals no direct damage and applies 159 +11, 180 +50 and 181 +50 for 21 s to the caster.",
+          "test": "Stock 335edef6 blocked 535 at rest and then landed the ordinary request for 40 IS, round 0x100 and animation 5939. All three caster records ended after 20.98 s, with no dummy modifier or max-vitals change. MartialArtsGrandmasterBatchTests checks the exact timers and authored caster modifiers separately from the native run. https://github.com/kylebrussell/mxo-hd/pull/1035#issuecomment-7117083179"
+        },
+        "choreography": {
+          "source": "GOB 535 is a Karate current-opponent special with 40 IS, 60 s own and 5 s group 687 reuse, and caster-only WhenEnabled 1 modifiers. The shipped move mapping selects ILDB 5939.",
+          "runtime": "BerserkerAttackAdmission checks the live current opponent and rejects an out-of-combat, stale or wrong handle; the landed interlock moves deals no direct damage and applies 159 +11, 180 +50 and 181 +50 for 21 s to the caster.",
+          "test": "Stock 335edef6 blocked 535 at rest and then landed the ordinary request for 40 IS, round 0x100 and animation 5939. All three caster records ended after 20.98 s, with no dummy modifier or max-vitals change. MartialArtsGrandmasterBatchTests checks the exact timers and authored caster modifiers separately from the native run. https://github.com/kylebrussell/mxo-hd/pull/1035#issuecomment-7117083179"
+        },
+        "behavior-tests": {
+          "source": "GOB 535 is a Karate current-opponent special with 40 IS, 60 s own and 5 s group 687 reuse, and caster-only WhenEnabled 1 modifiers. The shipped move mapping selects ILDB 5939.",
+          "runtime": "BerserkerAttackAdmission checks the live current opponent and rejects an out-of-combat, stale or wrong handle; the landed interlock moves deals no direct damage and applies 159 +11, 180 +50 and 181 +50 for 21 s to the caster.",
+          "test": "Stock 335edef6 blocked 535 at rest and then landed the ordinary request for 40 IS, round 0x100 and animation 5939. All three caster records ended after 20.98 s, with no dummy modifier or max-vitals change. MartialArtsGrandmasterBatchTests checks the exact timers and authored caster modifiers separately from the native run. https://github.com/kylebrussell/mxo-hd/pull/1035#issuecomment-7117083179"
+        }
+      }
+    }
+  }
+}
