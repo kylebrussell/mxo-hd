@@ -485,6 +485,75 @@ public class TimedEffectsTests
     }
 
     [Fact]
+    public void SniperShotSendsTheArchivedVictimStunStackAndLinkedTactics()
+    {
+        const ushort id = CombatSpecials.SniperShot;
+        const string casterName = "TheBruceter";
+        const string victimName = "AfterWhoruNeo";
+        var caster = NewClient();
+        caster.playerInstance = new PlayerCharacter();
+        caster.playerInstance.CharacterName.setValue(casterName);
+        var victim = NewClient();
+        victim.playerInstance = new PlayerCharacter();
+        victim.playerInstance.CharacterName.setValue(victimName);
+        victim.playerData.nextBuffRecordId = 0x012b;
+        var effects = TimedEffects.ForPlayer(victim);
+        double now = TimeUtils.GetSimTimeSeconds();
+
+        try
+        {
+            int attackBefore = AbilityStats.Attack(victim, true);
+            Assert.True(TempMods.TryGet(id, out var effect));
+            TimedEffects.Apply(effects, effect, now, caster, casterName, fixtureProc: true);
+            Assert.Equal("80bc1d002b0100f9010000000004000000000ad7233c", Assert.Single(Rpcs(victim)));
+            Assert.Empty(Rpcs(caster));
+            Assert.False(ControlActions.Incapacitated(effects.Effects));
+
+            TimedEffects.RunDue(now + .02);
+            Assert.Equal(new[]
+            {
+                "80bc1d002b0100f9010000000004000000010ad7233c",
+                "80bc11002c0100f90100006600000000000000008040",
+                "80bc1d002d0100660000000000000000000000000000",
+                "80bc15002e010066000000a300ecffffff0000000000",
+                "80bc01002f0100de020000a902000000000000008040",
+                Hex(AbilityMessages.AboutAbility(AbilityMessages.StunTarget, true, id, casterName, victimName, 0)),
+                Hex(AbilityMessages.AboutAbility(AbilityMessages.ImmunityTarget, true, id, casterName, victimName, 4)),
+            }, Rpcs(victim));
+            Assert.Equal(new[]
+            {
+                Hex(AbilityMessages.AboutAbility(AbilityMessages.StunCaster, true, id, casterName, victimName, 0)),
+                Hex(AbilityMessages.AboutAbility(AbilityMessages.ImmunityCaster, true, id, casterName, victimName, 4)),
+            }, Rpcs(caster));
+            Assert.True(ControlActions.Incapacitated(effects.Effects));
+            Assert.Equal(attackBefore - 20, AbilityStats.Attack(victim, true));
+
+            // A second proc during the immunity window retires its marker and leaves the original Stun intact.
+            TimedEffects.Apply(effects, effect, now + 1, caster, casterName, fixtureProc: true);
+            Assert.Equal("80bc1d00300100f9010000000004000000000ad7233c", Assert.Single(Rpcs(victim)));
+            TimedEffects.RunDue(now + 1.02);
+            Assert.Equal("80bc1d00300100f9010000000004000000010ad7233c", Assert.Single(Rpcs(victim)));
+            Assert.True(ControlActions.Incapacitated(effects.Effects));
+            Assert.Equal(attackBefore - 20, AbilityStats.Attack(victim, true));
+
+            TimedEffects.RunDue(now + 4.03);
+            Assert.Equal(new[]
+            {
+                "80bc11002c0100f90100006600000000000100008040",
+                "80bc1d002d0100660000000000000000000100000000",
+                "80bc15002e010066000000a300ecffffff0100000000",
+                "80bc01002f0100de020000a902000000000100008040",
+            }, Rpcs(victim).Where(rpc => rpc.StartsWith("80bc", StringComparison.Ordinal)));
+            Assert.False(ControlActions.Incapacitated(effects.Effects));
+            Assert.Equal(attackBefore, AbilityStats.Attack(victim, true));
+        }
+        finally
+        {
+            TimedEffects.Clear(effects);
+        }
+    }
+
+    [Fact]
     public void PistolAerialSendsTheArchivedLinkedStunAndMessageOrder()
     {
         const ushort ability = AbilityConditionalControls.PistolAerial;

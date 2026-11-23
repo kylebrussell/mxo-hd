@@ -581,7 +581,22 @@ namespace hds
                 }
             }
 
-            if (rifleOpener || AbilityID == CombatSpecials.ConcealedShot)
+            bool sniperShot = AbilityID == CombatSpecials.SniperShot;
+            bool concealmentShot = sniperShot || AbilityID == CombatSpecials.ConcealedShot;
+            if (sniperShot)
+            {
+                if (!AbilityPassives.IsLoaded(Store.currentClient, AbilityID))
+                {
+                    Deny(AbilityID, "Load Sniper Shot before using it.", AbilityRefusals.NotLoaded, sendServerText: false);
+                    return;
+                }
+                if (!CombatSpecials.HasEquippedRifle(Store.currentClient))
+                {
+                    Deny(AbilityID, "Sniper Shot requires a rifle.", AbilityRefusals.RequiredItemCategory, sendServerText: false);
+                    return;
+                }
+            }
+            if (rifleOpener || concealmentShot)
             {
                 var shooter = Store.currentClient;
                 var fight = CombatManager.GetHandler(shooter);
@@ -595,7 +610,7 @@ namespace hds
                     Deny(AbilityID, "This rifle shot cannot be used during combat.", AbilityRefusals.MustBeOutsideCombat, sendServerText: !woundingShot);
                     return;
                 }
-                if (woundingShot && !CombatSpecials.HasWoundingShotWeapon(shooter))
+                if (woundingShot && !CombatSpecials.HasEquippedRifle(shooter))
                 {
                     Deny(AbilityID, "Equip a rifle-category weapon before using Wounding Shot.", AbilityRefusals.RequiredItemCategory, sendServerText: false);
                     return;
@@ -608,15 +623,15 @@ namespace hds
                     shooter.FlushQueue();
                     return;
                 }
-                if (rifleOpener) gunTargetSpawn = spawn;
-                if (AbilityID == CombatSpecials.ConcealedShot)
+                if (rifleOpener || sniperShot) gunTargetSpawn = spawn;
+                if (concealmentShot)
                 {
                     if (!Stealth.IsOn(shooter, Stealth.ConcealmentGrantAbility))
                     {
                         shooter.messageQueue.addRpcMessage(AbilityRefusals.Encode(new AbilityRefusals.Record(
                             AbilityID, AbilityRefusals.CasterStateRequired, states: Stealth.ConcealmentFlag)));
                         shooter.FlushQueue();
-                        Output.WriteDebugLog("[ABILITY] Denied 504: requires Concealment");
+                        Output.WriteDebugLog($"[ABILITY] Denied {AbilityID}: requires Concealment");
                         return;
                     }
                     if (!AbilityTargets.WithinSelectionRange(shooter, AbilityID, currentTargetViewId))
@@ -1124,7 +1139,17 @@ namespace hds
             }
             // Attack abilities on the current close-combat target hit it (buffs used with a target selected don't).
             ushort hostileView=engageFoes?.PrimaryView??currentTargetViewId;
-            if (selectedGunShot && (!AbilityTargets.HasLiveAttackSelection(client, hostileView, gunTargetSpawn, requireOpponent: true) ||
+            if (sniperShot)
+            {
+                var fight = CombatManager.GetHandler(client);
+                if (!CombatSpecials.HasEquippedRifle(client) || !AbilityPassives.IsLoaded(client, AbilityID) ||
+                    CombatStyles.Active(client) != CombatStyles.Rifles || fight.isCombatRunning || fight.HasActiveInterlock)
+                {
+                    Output.WriteDebugLog("[ABILITY] 505 fizzles: the rifle, loaded selection or combat state changed");
+                    return;
+                }
+            }
+            if ((selectedGunShot || sniperShot) && (!AbilityTargets.HasLiveAttackSelection(client, hostileView, gunTargetSpawn, requireOpponent: true) ||
                 !AbilityTargets.WithinSelectionRange(client, AbilityID, hostileView) ||
                 !AbilityTargets.HasSelectionSight(client, definition, hostileView)))
             {
@@ -1181,7 +1206,7 @@ namespace hds
                 if (woundingShot)
                 {
                     var fight = CombatManager.GetHandler(client);
-                    if (!AbilityPassives.IsLoaded(client, AbilityID) || !CombatSpecials.HasWoundingShotWeapon(client) ||
+                    if (!AbilityPassives.IsLoaded(client, AbilityID) || !CombatSpecials.HasEquippedRifle(client) ||
                         !CombatStyles.CanUse(client, AbilityID) || fight.isCombatRunning || fight.HasActiveInterlock)
                     {
                         Output.WriteDebugLog("[ABILITY] 253 fizzles: the loaded shot, rifle category, style or combat state changed");
@@ -1307,7 +1332,8 @@ namespace hds
             // These reviewed legacy rows omit a usable range and have one fixed, instant health modifier.
             int? fixedType = source?.Id switch
             {
-                504 => 1,  // Concealed Shot
+                CombatSpecials.ConcealedShot => 1,
+                CombatSpecials.SniperShot => 1,
                 CombatSpecials.ControlledBurst => 1,
                 CombatSpecials.SlidingVolley => 1,
                 CombatSpecials.ThreeRoundBurst => 1,

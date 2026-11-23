@@ -305,6 +305,8 @@ try
                         fixtureMode is NativeQa.Modes.HackerSecondPassMode ? NativeQa.Modes.HackerSecondPassMode.Stands : null);
                 else if (fixtureMode is NativeQa.Modes.EscapeAndEvasionMode && action == "escape-and-evasion-reveal")
                     await NativeQa.Modes.EscapeAndEvasionMode.RevealAsync(actor);
+                else if (fixtureMode is NativeQa.Modes.SniperShotMode && action == "sniper-armor")
+                    await NativeQa.Modes.PistolSlideMode.ApplyArmorAsync(actor);
                 else if (fixtureMode is NativeQa.Modes.PistolSlideMode && action == "slide-armor")
                     await NativeQa.Modes.PistolSlideMode.ApplyArmorAsync(actor);
                 else if (fixtureMode is NativeQa.Modes.PistolEvasiveMode && action == "evasive-armor")
