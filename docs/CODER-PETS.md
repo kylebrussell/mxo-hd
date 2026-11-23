@@ -190,6 +190,8 @@ The shipped `PowerBoost1Ability` (25) stores own-simulacrum target 11, noncombat
 
 The shipped NPC templates include a passive Evade Interlock rating (772 → stat 520) and an Evade State Flipper (874). The flipper toggles the native interlock state. Player Evade Combat creates a shield through a separate hook. Which ordinary NPCs use the flipper remains unresolved in the placement data. Pet Attack resolves damage directly against NPCs, and pet-owned interlock remains unimplemented. [NPC state flipper](../research/client-scripts/tempmods.py#L1736) · [Player shield creation](../research/client-scripts/tempmods.py#L552)
 
+The NPC Force Combat templates also separate the direct stat (774 → 519), its bonus (1331 → 1048), and the entry permission (891 sets and restores `AllowedToForceCombat`). Power Boost supplies direct 519. Connecting it requires a pet-owned entry check and a live NPC evasion lifecycle. [NPC templates](../data/ability_catalog.json) · [Entry permission callback](../research/client-scripts/tempmods.py#L411)
+
 ### Native follow-up checklist (Claude only)
 
 Use the exact reviewed follow-up head. Commands below are instructions for Claude; no Codex agent runs the fixture. `--build-info` is a read-only exit before lock/database setup.
