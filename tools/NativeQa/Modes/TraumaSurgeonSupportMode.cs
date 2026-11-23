@@ -32,6 +32,7 @@ public sealed class TraumaSurgeonSupportMode : NativeQaMode
         readyMessages: new[]
         {
             "Level 50, 94/100 memory. Outdoor NAV CSR (17000,495,6400) faces the two far stands at z7300 and z7350. Accept QAFriend's team invite. QAFriend stands 2 m east and the other two teammates stand 9 and 9.5 m away.",
+            """If the invite dialog never appears after CSR is in world, resend it with helper action {"actor":"QAFriend","action":"invite","target":"CSR_Tester"}.""",
             "Page 2 slots 1–3 are Hacker Style, Restore Group 2.0 (371), and Trauma Surgeon (1093). Choose Hacker Style, /target QAOther, then use slot 2. CSR and QAFriend heal for 28. Neither far teammate heals.",
             "Use ?qaunload 425, then ?qaload 425. Expect source=425 stat=1090 value=+5 removed and added once, and the single 1096 Actions grant removed and restored. Record the passive and grant; this fixture uses no interruption cast.",
             "Keep QAOther selected and use slot 3. Retain the first full outgoing 1093 frame. Expect CSR-only [MODIFIER] source=1093 adds 127 +10, 174 +10, and 564 +7, a 20 IS debit and 30 s own reuse. Use slot 2 again: CSR, QAFriend, and QAFar heal for 30, while QAOther at 9.5 m stays outside.",

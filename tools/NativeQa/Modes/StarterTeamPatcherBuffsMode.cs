@@ -10,7 +10,7 @@ public sealed class StarterTeamPatcherBuffsMode : NativeQaMode
     // Full requests from stock .2 sessions 0aae41370c7f and 8f7023603b50.
     private const string StockAuraUse = "80b92a00000000000000000000000000000000000000000000000000d557377c20000000086b0000000000";
     private const string StockAuraUseAfterSelectionUpdate = "80b92a000000000000000000000000000000000000000000000000000cf11a0001000000086b0000000000";
-    private const string StockFirewall = "80b93f000000000000000000000000000000000000000000000000000cf11a0001000000086b0000000000";
+    internal const string StockFirewall = "80b93f000000000000000000000000000000000000000000000000000cf11a0001000000086b0000000000";
     private const string StockResistCombat = "80b94800000000000000000000000000000000000000000000000000d557377c20000000086b0000000000";
     private const int X = 24800, Y = 495, Z = -1498;
     private static readonly ushort[] Loadout = StockAbilityProfile.Profile(2, 17, CombatAura, Firewall, ResistCombat).Order().ToArray();
