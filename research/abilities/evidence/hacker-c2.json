@@ -113,7 +113,7 @@
         "script": {
           "source": "GOB 353 stores ViralDOT total 94 and a 2.5 s update interval over 30 s. The script rounds each tick and stops updating at expiry.",
           "runtime": "TimedEffects.RunDue advances the displayed modifier's 2.5 s schedule and PlayerEffects.Ticked applies each rounded damage update.",
-          "test": "DespoilerFieldsLandOnTheSelectedEnemyAndExactRadiusEdge checks the actual level-24 selected cast, a stored total of 114 after +22% influence, eleven 10-point ticks, expiry and excluded recipients."
+          "test": "DespoilerFieldsLandOnTheSelectedEnemyAndExactRadiusEdge checks the level-24 selected cast, total 114 after +22% influence, eleven nominal 10-point ticks, expiry and excluded recipients. The same edge target takes 7 from the first two pulses under +43 Viral Resistance, then 10 after the resistance expires."
         }
       }
     },

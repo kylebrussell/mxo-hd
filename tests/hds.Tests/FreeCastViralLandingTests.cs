@@ -520,18 +520,19 @@ public class FreeCastViralLandingTests : IDisposable
             }).ToArray();
             Assert.All(excluded, target => Assert.False(TimedEffects.ForPlayer(target).Effects.HasParent(id)));
 
-            if (id == 400)
+            int resistedDamage = id switch { 353 => 3, 400 => 2, _ => 0 };
+            if (resistedDamage != 0)
                 TimedEffects.ForPlayer(edge).Effects.Apply(8,
                     new[] { new TimedEffects.Active { Target = 157, Value = 43, Seconds = 5.1f, Proc = TempMods.Proc.Stat } },
                     effects[0].Start);
             TimedEffects.RunDue(effects.Max(effect => effect.Start) + 2.51);
-            Assert.All(affected, target => Assert.Equal(1000 - damagePerTick + (id == 400 && target == edge ? 2 : 0), PvpCombat.HealthOf(target)));
+            Assert.All(affected, target => Assert.Equal(1000 - damagePerTick + (target == edge ? resistedDamage : 0), PvpCombat.HealthOf(target)));
             TimedEffects.RunDue(effects.Max(effect => effect.Start) + 5.01);
-            Assert.All(affected, target => Assert.Equal(1000 - 2 * damagePerTick + (id == 400 && target == edge ? 4 : 0), PvpCombat.HealthOf(target)));
+            Assert.All(affected, target => Assert.Equal(1000 - 2 * damagePerTick + (target == edge ? 2 * resistedDamage : 0), PvpCombat.HealthOf(target)));
             TimedEffects.RunDue(effects.Max(effect => effect.Expires) + 0.01);
             TimedEffects.RunDue(effects.Max(effect => effect.Expires) + 3);
             int ticks = id == 353 ? 11 : 5;
-            Assert.All(affected, target => Assert.Equal(1000 - ticks * damagePerTick + (id == 400 && target == edge ? 4 : 0), PvpCombat.HealthOf(target)));
+            Assert.All(affected, target => Assert.Equal(1000 - ticks * damagePerTick + (target == edge ? 2 * resistedDamage : 0), PvpCombat.HealthOf(target)));
             if (id == 402) Assert.All(affected, target => Assert.Equal(0f, BitConverter.ToSingle(target.playerInstance.MovementScale.getValue())));
             Assert.All(excluded, target => Assert.Equal(1000, PvpCombat.HealthOf(target)));
             Assert.All(subjects, subject =>
