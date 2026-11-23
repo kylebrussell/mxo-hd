@@ -147,4 +147,42 @@ public class SpyBombsAndParalyzingThrowTests
         Assert.Equal((ushort)1216, cd1135.Group);
         Assert.Equal(3f, cd1135.GroupSeconds);
     }
+
+    [Fact]
+    public void BombGroundRadiiAndControlRollsUseTheirShippedValues()
+    {
+        var caster = Client();
+        foreach (var (id, radius) in new[] { (FlashBomb, 5d), (SmokeBomb, 3d) })
+        {
+            Assert.Equal(radius, AbilityRadius.TargetMetres(caster, id));
+            Assert.True(AbilityTargets.WithinArea(17000, 495, 6800, 17000 + radius * 100, 495, 6800, radius));
+            Assert.False(AbilityTargets.WithinArea(17000, 495, 6800, 17001 + radius * 100, 495, 6800, radius));
+            Assert.False(AbilityTargets.WithinArea(17000, 495, 6800, 17000, 645, 6800, radius));
+        }
+
+        Assert.True(TempMods.TryGet(FlashBomb, out var flash));
+        Assert.True(TempMods.TryGet(SmokeBomb, out var smoke));
+        Assert.Equal(0f, flash.ImmunitySeconds);
+        Assert.Equal(0f, smoke.ImmunitySeconds);
+        ushort[] states = { TempMods.BlindAbility, TempMods.DazeAbility, TempMods.OffBalanceAbility, TempMods.StaggeredAbility };
+        Assert.Equal(states, flash.Mods.Select(mod => mod.Target).Order());
+        Assert.All(flash.Mods, mod =>
+        {
+            Assert.Equal(12f, mod.Seconds);
+            Assert.Equal(TempMods.BreakRule.None, mod.Break);
+            Assert.Equal(mod.Target == TempMods.BlindAbility ? 1f : .15f, mod.Chance, precision: 6);
+        });
+        var blind = Assert.Single(smoke.Mods);
+        Assert.Equal(TempMods.BlindAbility, blind.Target);
+        Assert.Equal(20f, blind.Seconds);
+        Assert.Equal(1f, blind.Chance);
+        Assert.Equal(TempMods.BreakRule.None, blind.Break);
+        Assert.Equal(states, TimedEffects.Instantiate(flash, new FixedBombDraw(.149)).Select(mod => mod.Target).Order());
+        Assert.Equal(TempMods.BlindAbility, Assert.Single(TimedEffects.Instantiate(flash, new FixedBombDraw(.151))).Target);
+    }
+
+    private sealed class FixedBombDraw(double draw) : Random
+    {
+        public override double NextDouble() => draw;
+    }
 }

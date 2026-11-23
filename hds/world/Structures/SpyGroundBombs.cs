@@ -16,6 +16,13 @@ namespace hds
     {
         public const ushort FlashBomb = 107, SmokeBomb = 364;
         public const uint InvisibilityBeltGoid = 460;
+        public const string FlashProcQaMode = "MXO_FLASH_BOMB_QA_PROC";
+
+        internal static bool FixtureProc(WorldClient caster, WorldClient recipient, ushort ability) =>
+            caster != null && recipient?.playerData.getCharID() == 6114 && ability == FlashBomb &&
+            caster.playerData.getCharID() == 110 && Environment.GetEnvironmentVariable(FlashProcQaMode) == "1" &&
+            QaLoadout.Allowed(Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS"),
+                Store.config?.dbParams?.DatabaseName, 110, caster.playerData.getOnWorld(), caster.playerData.isDead);
         // SmokeBomb 0.3 s term -> SmokeBombInit schedules 0.2 s VanishInit (tempmods.py 1147-1166).
         public const double SmokeBombVanishDelaySeconds = 0.5;
 
