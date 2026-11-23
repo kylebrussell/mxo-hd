@@ -457,6 +457,79 @@ public class FreeCastViralLandingTests : IDisposable
         finally {AbilityBuffs.RemoveAll(c);AbilityBuffs.RemoveAll(target);}
     }
     [Theory]
+    [InlineData(947, 0, 62)]
+    [InlineData(947, 16384, 181)]
+    [InlineData(947, 32767, 299)]
+    [InlineData(948, 0, 100)]
+    [InlineData(948, 16384, 260)]
+    [InlineData(948, 32767, 419)]
+    public void PacketLossSamplesTheStoredViralRange(ushort id, int roll, ushort expected)
+    {
+        var item = new AbilityItem();
+        item.setAbilityID(id);
+        item.setValueFrom(50);
+        item.setValueTo(80);
+        Assert.Equal(expected, AbilityHandler.AbilityDamage(item, new PacketLossRoll(roll), characterLevel: 27));
+    }
+
+    [Theory]
+    [InlineData(947, 62, 299, 20)]
+    [InlineData(948, 100, 419, 24)]
+    public void PacketLossLandsTypedViralDamageOnlyAfterTheSelectedOpponentContest(ushort id, int minimum, int maximum, int cost)
+    {
+        var caster = Client(110);
+        var target = Client(111);
+        Store.currentClient = caster;
+        caster.playerData.pvpFlag = target.playerData.pvpFlag = true;
+        caster.playerInstance.OrganizationID.setValue((byte)1);
+        target.playerInstance.OrganizationID.setValue((byte)2);
+        caster.viewMan.addView(111, 1).viewCreated = true;
+        AbilityPassives.SetLoaded(caster, new[] { (id, (ushort)27) });
+        var item = new AbilityItem();
+        item.setAbilityID(id);
+        TimedEffects.Subject source = TimedEffects.ForPlayer(caster), victim = TimedEffects.ForPlayer(target);
+        try
+        {
+            var now = TimeUtils.GetSimTimeSeconds();
+            source.Effects.Apply(185, new[] { Modifier(172, 30) }, now);
+            victim.Effects.Apply(8, new[] { Modifier(157, 64) }, now);
+            Assert.Equal(cost, AbilityCosts.Cost(id));
+            Assert.True(AbilityCooldowns.TryGet(id, out var timer));
+            Assert.Equal(new AbilityCooldowns.Cooldown(4, 682, 4), timer);
+            Assert.True(FreeCastViralContest.Applies(id, AbilityCastOrigin.NormalFreeCast));
+
+            PvpCombat.LandAbilityOn(caster, item, target, origin: AbilityCastOrigin.NormalFreeCast);
+            Assert.Equal(1000, PvpCombat.HealthOf(target));
+            Assert.False(victim.Effects.HasParent(id));
+
+            Environment.SetEnvironmentVariable("MXO_FREECAST_VIRAL_QA_ATTACK15", "32766");
+            Environment.SetEnvironmentVariable("MXO_FREECAST_VIRAL_QA_DEFENSE15", "0");
+            PvpCombat.LandAbilityOn(caster, item, target, origin: AbilityCastOrigin.NormalFreeCast);
+            var expected = Enumerable.Range(minimum, maximum - minimum + 1)
+                .Select(raw => TypedAbilityResistance.Amount((int)(raw * (double)1.3f), 50, 50, 64));
+            Assert.Contains(1000 - PvpCombat.HealthOf(target), expected.Select(value => (int)value));
+        }
+        finally
+        {
+            TimedEffects.Clear(source);
+            TimedEffects.Clear(victim);
+        }
+        static TimedEffects.Active Modifier(ushort stat, int value) => new()
+        {
+            Kind = TempMods.KindStat, Target = stat, Seconds = 30, Value = value, Proc = TempMods.Proc.Stat
+        };
+    }
+
+    private sealed class PacketLossRoll(int value) : Random
+    {
+        public override int Next(int maximum)
+        {
+            Assert.Equal(32768, maximum);
+            return value;
+        }
+    }
+
+    [Theory]
     [InlineData(333, false)]
     [InlineData(333, true)]
     [InlineData(336, false)]

@@ -326,6 +326,9 @@ try
                             ? NativeQa.Modes.StarterViralSplashResistanceMode.Resistance : 75);
                 else if (fixtureMode is NativeQa.Modes.HackerBufferOverflowMode && action == "buffer-firewall")
                     await NativeQa.Modes.HackerBufferOverflowMode.SendFirewallAsync(actor, helpers["QAEnemy"]);
+                else if (fixtureMode is NativeQa.Modes.HackerPacketLossMode && action == "aura-resist")
+                    await NativeQa.Modes.StarterPathogenistAuraResistanceMode.ApplyResistanceAsync(actor,
+                        NativeQa.Modes.HackerPacketLossMode.Resistance);
                 else if (action == "stop") actor.SendRpc("44 00");
                 else if (action == "move")
                 {

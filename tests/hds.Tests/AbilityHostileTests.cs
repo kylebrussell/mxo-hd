@@ -361,8 +361,14 @@ public class AbilityHostileTests
         var applied = Assert.Single(TimedEffects.Apply(holder, effect, now, rng: new ProcRoll(threshold - .00001)));
         Assert.Equal(stateId, applied.Target);
         Assert.Equal(10, applied.Seconds);
+        Assert.False(ControlActions.CanMove(holder.Effects));
+        Assert.Equal(id == 947, ControlActions.CanUseAbilities(holder.Effects));
+        Assert.Equal(id == 948, holder.Effects.HasControlImmunity(now));
         TimedEffects.RunDue(applied.Expires + .01);
         Assert.False(holder.Effects.HasParent(id));
+        Assert.True(ControlActions.CanMove(holder.Effects));
+        Assert.True(ControlActions.CanUseAbilities(holder.Effects));
+        Assert.False(holder.Effects.HasControlImmunity(applied.Expires + .01));
     }
 
     [Fact]

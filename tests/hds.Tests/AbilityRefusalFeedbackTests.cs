@@ -600,6 +600,83 @@ public class AbilityRefusalFeedbackTests:IDisposable
         }
     }
 
+    [Theory]
+    [InlineData(947, "empty", AbilityRefusals.InvalidTarget)]
+    [InlineData(948, "ally", AbilityRefusals.InvalidTarget)]
+    [InlineData(947, "range", AbilityRefusals.TargetOutOfRange)]
+    [InlineData(948, "sight", AbilityRefusals.TargetNotInSight)]
+    [InlineData(947, "style", AbilityRefusals.WrongStyle)]
+    [InlineData(948, "unloaded", AbilityRefusals.NotLoaded)]
+    [InlineData(947, "stale", 0u)]
+    [InlineData(948, "left range", 0u)]
+    [InlineData(948, "unload", 0u)]
+    public void PacketLossRequiresTheOriginalLiveSelectedEnemy(ushort id, string action, uint refusal)
+    {
+        var caster = Client();
+        var target = Client();
+        caster.playerData.passives.Loaded[CombatStyles.HackerStyle] = 27;
+        if (action != "unloaded") caster.playerData.passives.Loaded[id] = 27;
+        if (action != "style") caster.playerData.combatStyle = CombatStyles.HackerStyle;
+        caster.playerInstance.OrganizationID.setValue((byte)1);
+        target.playerInstance.OrganizationID.setValue((byte)(action == "ally" ? 1 : 2));
+        caster.playerData.pvpFlag = target.playerData.pvpFlag = true;
+        target.playerData.setCharID(111);
+        target.playerData.setEntityId(42);
+        target.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(action == "range" ? 2001 : 200, 0, 0));
+        if (action == "sight")
+        {
+            string root = HeadlessClient.NativeBoundFurnitureFixture.FindRepository();
+            SectorProperties.Load(Path.Combine(root, "data", "sector_properties.csv"));
+            NavMesh.UseDirectory(Path.Combine(root, "data", "navmesh"));
+            caster.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(21925, 1095, 16100));
+            target.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(21675, 1095, 16100));
+        }
+        WorldServer.Clients.Add("target", target);
+        var view = caster.viewMan.addView(42, 12);
+        view.viewCreated = true;
+        view.spawnId = 9;
+        Store.currentClient = caster;
+
+        var ability = new AbilityItem();
+        ability.setAbilityID(id);
+        ability.setAbilityName("Packet Loss");
+        ability.setCastAnimStart(new byte[4]);
+        DataLoader.getInstance().AbilityDB.Add(ability);
+        var request = new byte[41];
+        BitConverter.GetBytes(id).CopyTo(request, 0);
+        BitConverter.GetBytes(action == "empty" ? (ushort)0 : view.ViewID).CopyTo(request, 2);
+        BitConverter.GetBytes((ushort)9).CopyTo(request, 4);
+        double before = caster.playerData.castEndsAt;
+        try
+        {
+            new AbilityHandler().ProcessAbility(ref request);
+            if (refusal == 0)
+            {
+                double end = caster.playerData.castEndsAt;
+                Assert.True(end > before);
+                Assert.Equal(500 - AbilityCosts.Cost(id), AbilityHandler.CurrentInnerStrength(caster));
+                if (action == "left range") target.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(2001, 0, 0));
+                if (action == "stale") view.spawnId++;
+                if (action == "unload") caster.playerData.passives.Loaded.Remove(id);
+                DelayedActions.RunDue(end + 1);
+                Assert.True(AbilityCooldowns.IsCoolingDown(caster.playerData, id, TimeUtils.GetSimTimeSeconds()));
+            }
+            else
+            {
+                Assert.Equal(AbilityRefusals.Encode(new(id, refusal)), Assert.Single(Rpcs(caster)));
+                Assert.Equal(before, caster.playerData.castEndsAt);
+                Assert.Equal(500, AbilityHandler.CurrentInnerStrength(caster));
+                Assert.Empty(caster.playerData.cooldownEndsAt);
+            }
+            Assert.Equal(1000, PvpCombat.HealthOf(target));
+            Assert.False(TimedEffects.ForPlayer(target).Effects.HasParent(id));
+        }
+        finally
+        {
+            CombatManager.RemoveClient(caster);
+        }
+    }
+
     [Fact] public void ActualTimerPredicateReportsReuseAndPreservesCostAndTimer()
     {
         var c=Client(500);double beforeCast=c.playerData.castEndsAt;Store.currentClient=c;double end=TimeUtils.GetSimTimeSeconds()+100;c.playerData.cooldownEndsAt[77]=end;

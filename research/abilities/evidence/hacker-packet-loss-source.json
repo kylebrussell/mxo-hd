@@ -1,0 +1,72 @@
+{
+  "abilities": {
+    "947": {
+      "checks": {
+        "damage": {
+          "source": "GOB 947 stores an instant viral health modifier, Function 0, bounds 62 and 300. The client evaluator at 6251802e–6251804e multiplies the interval by a 15-bit draw and shifts right 15 before adding the minimum, so the largest reachable base is 299.",
+          "runtime": "The normal health landing path uses AbilityValues.TryRandomValue before the existing Viral Damage influence and defender Viral Resistance.",
+          "test": "PacketLossSamplesTheStoredViralRange checks 62/181/299 at draws 0/16384/32767. PacketLossLandsTypedViralDamageOnlyAfterTheSelectedOpponentContest exercises the live PvP hit, deflection and resistance pipeline."
+        },
+        "source-parity": {
+          "source": "The shipped 62–300 bound is corroborated by the explicit Function 0 math in research/protocol/stat-linked-caps-native.txt. The emulator still uses its own random stream.",
+          "runtime": "The previous generic damage interval is superseded on this row by the shipped template and retained evaluator.",
+          "test": "PacketLossSamplesTheStoredViralRange supplies an obsolete legacy interval and verifies that it cannot override the source bounds."
+        },
+        "targeting": {
+          "source": "GOB 947 stores one selected target, 20 m, Hacker Style and viral TestFunction 2.",
+          "runtime": "Before cost, the ordinary request must bind an owned/loaded ability to a live in-range opponent in sight and matching the presented spawn. Landing revalidates the original enemy and range before a single-target viral contest.",
+          "test": "PacketLossRequiresTheOriginalLiveSelectedEnemy exercises the unloaded and wrong-style refusals, missing/ally/blocked/out-of-range selection and changed spawn/range/load at completion for the shared Packet Loss path. PacketLossLandsTypedViralDamageOnlyAfterTheSelectedOpponentContest verifies the actual hit/deflect path."
+        },
+        "controls": {
+          "source": "GOB 947 stores a 10 s Rooted state (99) and no immunity marker.",
+          "runtime": "The landed Rooted state prevents movement without disabling abilities or granting control immunity. It expires independently of the direct hit.",
+          "test": "PacketLossUsesItsStoredProcThresholdOnTheLandedEffect verifies the movement and ability gates and their release on expiry."
+        },
+        "proc": {
+          "source": "GOB 947 stores a 0.1 chance on that state modifier.",
+          "runtime": "A successful viral hit rolls independently for Rooted. A deflection runs neither damage nor state.",
+          "test": "PacketLossUsesItsStoredProcThresholdOnTheLandedEffect checks equality refuses and a roll immediately below 0.1 procs. The real deflect test confirms no state is attached."
+        },
+        "behavior-tests": {
+          "source": "The 2 s cast costs 20 IS and starts 4 s own and shared group 682 reuse.",
+          "runtime": "The normal cast/cost path and existing catalog timer handle the cast, independent of the state draw.",
+          "test": "PacketLossRequiresTheOriginalLiveSelectedEnemy checks cast reservation, cost and timer after admission and no debit on refusal. PacketLossLandsTypedViralDamageOnlyAfterTheSelectedOpponentContest verifies group 682. Sibling stock bootstrap exercises ordinary framing in the grouped fixture."
+        }
+      }
+    },
+    "948": {
+      "checks": {
+        "damage": {
+          "source": "GOB 948 stores an instant viral health modifier, Function 0, bounds 100 and 420. The client evaluator at 6251802e–6251804e makes 419 the largest reachable base.",
+          "runtime": "The normal health landing path uses AbilityValues.TryRandomValue before Viral Damage influence and defender Viral Resistance.",
+          "test": "PacketLossSamplesTheStoredViralRange checks 100/260/419 at draws 0/16384/32767. PacketLossLandsTypedViralDamageOnlyAfterTheSelectedOpponentContest exercises the live PvP hit, deflection and resistance pipeline."
+        },
+        "source-parity": {
+          "source": "The shipped 100–420 bound is corroborated by the explicit Function 0 math in research/protocol/stat-linked-caps-native.txt. The emulator still uses its own random stream.",
+          "runtime": "The previous generic damage interval is superseded on this row by the shipped template and retained evaluator.",
+          "test": "PacketLossSamplesTheStoredViralRange supplies an obsolete legacy interval and verifies that it cannot override the source bounds."
+        },
+        "targeting": {
+          "source": "GOB 948 stores one selected target, 20 m, Hacker Style and viral TestFunction 2.",
+          "runtime": "Before cost, the ordinary request must bind an owned/loaded ability to a live in-range opponent in sight and matching the presented spawn. Landing revalidates the original enemy and range before a single-target viral contest.",
+          "test": "PacketLossRequiresTheOriginalLiveSelectedEnemy exercises owned, hostile, sight and original spawn/range gates for the shared Packet Loss path. PacketLossLandsTypedViralDamageOnlyAfterTheSelectedOpponentContest verifies the actual hit/deflect path."
+        },
+        "controls": {
+          "source": "GOB 948 stores a 10 s Stun state (102). Its separate 10 s immunity uses the existing shared server stun policy.",
+          "runtime": "Successful Stun stops movement and prevents ability use until expiry; the shared temporary immunity also ends after 10 s.",
+          "test": "PacketLossUsesItsStoredProcThresholdOnTheLandedEffect verifies movement/ability gates, immunity and their release on expiry."
+        },
+        "proc": {
+          "source": "GOB 948 stores a 0.15 chance on that state modifier.",
+          "runtime": "A successful viral hit rolls independently for Stun. A deflection runs neither damage nor state.",
+          "test": "PacketLossUsesItsStoredProcThresholdOnTheLandedEffect checks equality refuses and a roll immediately below 0.15 procs. The real deflect test confirms no state is attached."
+        },
+        "behavior-tests": {
+          "source": "The 2 s cast costs 24 IS and starts 4 s own and shared group 682 reuse.",
+          "runtime": "The normal cast/cost path and existing catalog timer handle the cast, independent of the state draw.",
+          "test": "PacketLossRequiresTheOriginalLiveSelectedEnemy checks cast reservation, cost and timer after admission and no debit on refusal. PacketLossLandsTypedViralDamageOnlyAfterTheSelectedOpponentContest verifies group 682. Sibling stock bootstrap exercises ordinary framing in the grouped fixture."
+        }
+      }
+    }
+  }
+}

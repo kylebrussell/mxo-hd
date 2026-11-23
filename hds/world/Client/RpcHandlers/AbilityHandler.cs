@@ -72,6 +72,8 @@ namespace hds
             bool selectedViralAttack = enrage || AbilityID == 53 || (AbilityID >= 57 && AbilityID <= 60) ||
                 AbilityID == 350 || AbilityID == 351 || AbilityID == 392 || AbilityID == 394 || AbilityID == 395 || AbilityID == 396 || selectedViralField;
             ushort? lockedDamageTargetSpawn = null;
+            bool packetLoss = AbilityID == 947 || AbilityID == 948;
+            selectedViralAttack |= packetLoss;
             if (selectedViralAttack || selectedDespoilerArea)
             {
                 var caster = Store.currentClient;
@@ -291,10 +293,15 @@ namespace hds
                 }
             }
             bool selectedGunShot = starterGunCast || AbilityID == 130;
-            if ((selectedGunShot || enrage) && !AbilityTargets.HasSelectionSight(Store.currentClient, definition, currentTargetViewId))
+            if ((selectedGunShot || enrage || packetLoss) && !AbilityTargets.HasSelectionSight(Store.currentClient, definition, currentTargetViewId))
             {
                 Deny(AbilityID, $"Sight blocked for selected target {currentTargetViewId}.",
                     AbilityRefusals.TargetNotInSight, sendServerText: false);
+                return;
+            }
+            if (packetLoss && CombatStyles.Active(Store.currentClient) != CombatStyles.HackerStyle)
+            {
+                Deny(AbilityID, "This ability requires Hacker Style.", AbilityRefusals.WrongStyle, sendServerText: false);
                 return;
             }
 
@@ -1032,6 +1039,13 @@ namespace hds
         {
             var source = AbilityCatalog.Find(ability.getAbilityID());
             if (source != null && !source.DirectDamage) return 0;
+            // Packet Loss uses the stored unequal Function 0 interval, before the typed influence and resistance paths.
+            if (source?.Id == 947 || source?.Id == 948)
+            {
+                var hit = source.Modifiers.Single(m => m.Target == 108 && m.Number("DamageType", -1) == 2 &&
+                    m.Number("WhenEnabled", -1) == 2 && m.Number("DurationType", -1) == 1);
+                if (AbilityValues.TryRandomValue(hit, random.Next(32768), out int amount)) return (ushort)amount;
+            }
             if ((source?.Id == 126 || source?.Id == 138 || source?.Id == 139) &&
                 (ability.getValueFrom() <= 0 || ability.getValueTo() < ability.getValueFrom()))
             {
