@@ -1,0 +1,34 @@
+{
+  "families": {
+    "stock-concealed-sniper-shot": {
+      "representative": 505,
+      "result": "pass",
+      "head": "594fed86",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/888#issuecomment-7093732288",
+      "scope": "Stock verified Concealment admission, sight and range refusals, the six-second direct Rifle cast, the same-target resistance witness, and the natural linked Stun with independent immunity."
+    }
+  },
+  "abilities": {
+    "505": {
+      "family": "stock-concealed-sniper-shot",
+      "checks": {
+        "controls": {
+          "source": "GOB 505 stores a 50% terminal Stun on a 0.01 s marker, with four seconds for the linked Stun and control immunity. The archived victim shows the linked 102/163 record.",
+          "runtime": "The captured marker retires, then the landed effect applies 102 and its linked -20 together with independent 734/681. The timer prevents replacement and the original stack retires in order.",
+          "test": "SniperShotSendsTheArchivedVictimStunStackAndLinkedTactics and ConcealedAndSniperShotsUseTheirOwnDelayedStunProbabilities exercise the exact record ordering, attack consumer, chance and expiry. Native saw marker 280 retire before the four-second linked records 281–284, all paired. https://github.com/kylebrussell/mxo-hd/pull/888#issuecomment-7093732288"
+        },
+        "targeting": {
+          "source": "GOB 505 requires a rifle-category weapon, Rifles style, Concealment and a hostile within 30 m from rest.",
+          "runtime": "The ordinary request keeps its target view and spawn through the cast, rechecks sight, range, rifle, original combat state and loaded style, and consumes Concealment on admission.",
+          "test": "SniperShotBindsItsConcealedRifleCastToTheOriginalLiveTarget covers the complete gates and loss cases. Stock refused the exposed attempt locally, returned 9 and 34 at the blocked and far stands without a debit, and admitted the visible target from PICK. https://github.com/kylebrussell/mxo-hd/pull/888#issuecomment-7093732288"
+        },
+        "choreography": {
+          "source": "The GOB's outside-combat rule specifies a six-second direct shot. The named archived impact and Stun precede a separate generic next-move change.",
+          "runtime": "The ordinary Rifle cast uses the direct selected-target hit path, presenting the cast and paired impact state without generating an interlock round.",
+          "test": "Stock presented the six-second cast and direct impact, including the armored sample and the natural Stun release. Retained archive context and the stock route support a direct presentation. https://github.com/kylebrussell/mxo-hd/pull/888#issuecomment-7093732288"
+        }
+      },
+      "note": "Stock measured 52 and raw52/final47 under +20 Ballistic. The archived 1660 damage with 182 absorbed keeps the original scaling and source-parity checks open. https://github.com/kylebrussell/mxo-hd/pull/888#issuecomment-7093732288"
+    }
+  }
+}
