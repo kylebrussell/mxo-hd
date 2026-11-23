@@ -1,0 +1,44 @@
+{
+  "abilities": {
+    "243": {
+      "checks": {
+        "damage": {
+          "source": "GOB 243 stores fixed Ballistic 16 for its landed Handguns special.",
+          "runtime": "The queued hit uses that base, current Ballistic influence and recipient stat181 resistance.",
+          "test": "Stock PR894 landed 17 on the original target and raw17/final15 after the target gained 181 +20. PistolAerialLandsItsFixedBaseAgainstBallisticResistance tests those typed influences. https://github.com/kylebrussell/mxo-hd/pull/894#issuecomment-7092426110"
+        },
+        "targeting": {
+          "source": "GOB 243 requires a loaded Handguns special within its interlock and a live original opponent in range and sight.",
+          "runtime": "The normal handler admits the current view and spawn, then preserves the same fight and opponent when it queues.",
+          "test": "The ordinary request tests exercise unloaded, rest, stale, range, blocked sight and valid admission. Native PR894 locally blocked the at-rest cast. The active interlock emitted the original QAEnemy handle during the attempted other-target step. https://github.com/kylebrussell/mxo-hd/pull/894#issuecomment-7092426110"
+        },
+        "proc": {
+          "source": "GOB ApplyStunWithTimer sets a 40% landed chance and four-second Stun with associated immunity records.",
+          "runtime": "The landed conditional modifier uses the stored chance and the live immunity state. On immunity it emits only the brief marker and keeps the existing immunity until its registered expiry.",
+          "test": "PistolAerialUsesItsOwnStoredStunRollAndFourSecondImmunity checks both chance sides. The disclosed stock run forces the modifier branch and observes ordinary contest misses, then a landed stack, a separate immunity refusal, and one paired retirement of the held immunity. https://github.com/kylebrussell/mxo-hd/pull/894#issuecomment-7092426110"
+        },
+        "script": {
+          "source": "ApplyStunWithTimer specifies the marker, four-second Stun and immunity with caster feedback, including the lower-stacking refusal to the caster.",
+          "runtime": "TimedEffects publishes the captured marker, Stun and linked stat163 -20, and the independent 734/681 record. The refusal uses one private visible notice with the same meaning. The original numeric localization remains unverified.",
+          "test": "PistolAerialSendsTheArchivedLinkedStunAndMessageOrder, PistolAerialTermMarkerUsesTheArchivedTargetlessAddAndRemoveFrames and PistolAerialRepeatDuringImmunityKeepsTheExistingStackUntilExpiry verify the wire stack. Stock PR894 saw the messages, paired removals and one private refusal without reapplying immunity. https://github.com/kylebrussell/mxo-hd/pull/894#issuecomment-7092426110"
+        },
+        "source-parity": {
+          "source": "GOB 243 supplies fixed 16 and TacticBonus +19. The known success binding is 9518. Archived player packets show the linked Stun, -20 and immunity ordering.",
+          "runtime": "The queued Ballistic route adds the +19 once under the documented PR922 policy and uses 9518 on a hit. The script refusal and effect ordering use the captured state records and equivalent caster feedback.",
+          "test": "Native PR894 observed base33→52, 9518, the two typed outcomes, both Stun outcomes and unchanged 40 s immunity record 300 on refusal. The scope leaves the original refusal localization metadata qualified. https://github.com/kylebrussell/mxo-hd/pull/894#issuecomment-7092426110"
+        },
+        "behavior-tests": {
+          "source": "GOB 243 has 20 IS, own/group 10/5 s, Handguns selected interlock, Ballistic 16, tactic +19, and optional four-second Stun.",
+          "runtime": "The ordinary admission, selected fight identity, typed hit, 9518, and conditional Stun/expiry path together consume the authored inputs.",
+          "test": "Executable admission, damage, RNG threshold, record and expiry checks combine with stock PR894 cost/reuse, natural contest misses, two landed damage variants, immune hold isolation and the private notice. QAOther received no matching records. https://github.com/kylebrussell/mxo-hd/pull/894#issuecomment-7092426110"
+        },
+        "controls": {
+          "source": "ApplyStunWithTimer and the retained player records specify a four-second Stun with linked Combat Tactics -20 and independent 734/681 immunity. The original marker is an instantaneous trigger.",
+          "runtime": "TimedEffects manages the Stun, linked modifier and immunity as distinct records. Active immunity retains its source record and expiry and declines a second Stun. The common Stun state uses the existing ability and attack gates.",
+          "test": "Stock PR894 sees the paired four-second linked Stun and immunity removals, then only the transient marker and one refusal while held record 300 stays active until its original expiry. PistolAerialRepeatDuringImmunityKeepsTheExistingStackUntilExpiry proves exact replacement denial. PR921 separately witnesses the shared Stun gate and recovery. https://github.com/kylebrussell/mxo-hd/pull/894#issuecomment-7092426110 https://github.com/kylebrussell/mxo-hd/pull/921#issuecomment-7092064206"
+        }
+      },
+      "note": "PR894 uses a visible server-owned refusal preserving the authored recipient and meaning. The original numeric string ID was not recovered. https://github.com/kylebrussell/mxo-hd/pull/894#issuecomment-7092426110"
+    }
+  }
+}
