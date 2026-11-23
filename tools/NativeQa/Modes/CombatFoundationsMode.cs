@@ -20,7 +20,7 @@ public sealed class CombatFoundationsMode : NativeQaMode
         }, readyMessages:new[]
         {
             "Enter ?combatdepth foundations-sight. The fixture equips the rifle and puts CSR at 22700,1095,16100 facing west. Try Free Fire and Logic Barrage 4.0 toward AB1 Blocked across the outdoor gap. Turn east to AB1 Clear and check 525 damage with the default Self Defense style.",
-            "Enter ?combatdepth foundations-cone. The fixture equips dual SMGs. Aim Direct Fire at AB1 Aim. Only AB1 Aim and AB1 Inside should take damage. AB1 Resisted holds its effect for 30 minutes. Logic Barrage should deal 431. See docs/COMBAT-FOUNDATIONS-QA.md."
+            "Enter ?combatdepth foundations-cone. The fixture equips dual SMGs. Select Submachine Guns and aim Direct Fire at AB1 Aim. Only AB1 Aim and AB1 Inside should take damage. AB1 Resisted holds its effect for 30 minutes. Logic Barrage should deal 431. See docs/COMBAT-FOUNDATIONS-QA.md."
         }, loadAbilityAncestors: true);
 
     internal static async Task<object> VerifyLogicBarrageAsync(ServerInstance server, HeadlessPlayer actor)

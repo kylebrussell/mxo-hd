@@ -396,14 +396,14 @@ namespace hds
 
         private static bool OverridesMovementScale(TimedEffects.Active modifier) =>
             modifier.Proc == TempMods.Proc.State && modifier.Target == TempMods.RootedAbility &&
-            (modifier.Parent == CombatSpecials.SuppressionFire ||
+            (modifier.Parent == CombatSpecials.SuppressionFire || modifier.Parent == CombatSpecials.PinningFire ||
              (modifier.Parent == 176 || modifier.Parent == 254) && modifier.Break == TempMods.BreakRule.Chance);
 
         internal static float WithTimedMovementDebuffs(WorldClient client, float movementScale)
         {
             var active = TimedEffects.ForPlayer(client).Effects.Snapshot();
             // Vector26 shows the root override and restore for Immobilizing Shot.
-            // Warboy ProxyM2_m2_packets_5 28162 and 30146 show it before and during a Suppression Fire renewal.
+            // Warboy ProxyM2_m2_packets_5 28162/30146 and Rajko MaraCCyphs 51874 show the two SMG roots.
             if (active.Any(OverridesMovementScale)) return -1f;
             ushort movementStat = MovementStatFor(Stealth.Current(client));
             // Crash and Bottleneck each specify three movement channels. Apply only the current one.

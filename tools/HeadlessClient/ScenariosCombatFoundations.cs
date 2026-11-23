@@ -82,6 +82,11 @@ public static partial class Scenarios
         var inside = await actor.WaitForViewNamedAsync("AB1 Inside");
         var outside = await actor.WaitForViewNamedAsync("AB1 Outside");
         var resisted = await actor.WaitForViewNamedAsync("AB1 Resisted");
+        // PR330 stock Submachine Guns Actions activation. Substitute only the current aim handle.
+        byte[] submachine = Convert.FromHexString("80b99e00040002000000000000000000000000000000000000000000d557377c20000000086b0000000000");
+        BitConverter.GetBytes(DuelPackets.Handle(aim.ViewId, aim.SpawnId)).CopyTo(submachine, 4);
+        actor.SendRpc(submachine);
+        await actor.WaitForViewUpdateAsync(2, "02 80 80 80 80 80 10 9e 00 00 00");
         Cast(493, aim);
         await actor.WaitUntilAsync(() => context.Server.DebugLog().Contains(Lands(493, aim)) &&
             context.Server.DebugLog().Contains(Lands(493, inside)), "template cone reaches two NPCs",

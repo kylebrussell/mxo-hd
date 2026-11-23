@@ -109,8 +109,9 @@ namespace hds
         /// <summary>Moves used on an enemy target (they go through the round queue or land on the target when cast).</summary>
         public static bool TargetsEnemy(ushort id) => Handles(id) && AbilityCatalog.Canonical(id) != Taunt;
 
-        internal const ushort SuppressionFire = 248;
-        internal static bool IsDualSmgConeOpener(ushort id) => id == 247 || id == SuppressionFire;
+        internal const ushort SuppressionFire = 248, PinningFire = 492, DirectFire = 493;
+        internal static bool IsAdvancedDualSmgConeOpener(ushort id) => id == PinningFire || id == DirectFire;
+        internal static bool IsDualSmgConeOpener(ushort id) => id == 247 || id == SuppressionFire || IsAdvancedDualSmgConeOpener(id);
 
         internal static uint? DualSmgConeRefusal(WorldClient caster, ushort id, ushort view, ushort? spawn)
         {
@@ -119,6 +120,8 @@ namespace hds
             if (fight.isCombatRunning || fight.HasActiveInterlock) return AbilityRefusals.MustBeOutsideCombat;
             if (RangedWeapons.GetStats(SharpshooterFreeFire.EquippedWeapon(caster))?.Category != "IWDS")
                 return AbilityRefusals.RequiredItemCategory;
+            if (IsAdvancedDualSmgConeOpener(id) && CombatStyles.Active(caster) != CombatStyles.RequiredStyle(id))
+                return AbilityRefusals.WrongStyle;
             if (!spawn.HasValue || !AbilityTargets.HasLiveAttackSelection(caster, view, spawn, requireOpponent: true))
                 return AbilityRefusals.InvalidTarget;
             if (!AbilityTargets.WithinSelectionRange(caster, id, view)) return AbilityRefusals.TargetOutOfRange;

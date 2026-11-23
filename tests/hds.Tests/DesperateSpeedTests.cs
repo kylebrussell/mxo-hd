@@ -290,12 +290,14 @@ public class DesperateSpeedTests
         finally { AbilityBuffs.RemoveAll(player); }
     }
 
-    [Fact]
-    public void SuppressionFireRetainsMovementOverrideWhenItsRootIsRenewed()
+    [Theory]
+    [InlineData(CombatSpecials.SuppressionFire)]
+    [InlineData(CombatSpecials.PinningFire)]
+    public void SmgConeRootsRetainMovementOverrideWhenRenewed(ushort ability)
     {
         var player = Client();
         var subject = TimedEffects.ForPlayer(player);
-        Assert.True(TempMods.TryGet(CombatSpecials.SuppressionFire, out var root));
+        Assert.True(TempMods.TryGet(ability, out var root));
         try
         {
             Assert.True(AbilityBuffs.Apply(player, HyperSpeed));

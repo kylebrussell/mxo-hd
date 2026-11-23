@@ -14,7 +14,7 @@ public sealed class DualSmgConeOpenersMode : NativeQaMode
     private const int Level = 33, X = 17000, Y = 495, Z = 6400;
     private const uint Weapon = CombatFixtureWeapons.DualSmgs;
     // Full Submachine Guns style activation from the PR330 stock dual-SMG PacketLog.
-    private const string StockStyle =
+    internal const string StockStyle =
         "80b99e00040002000000000000000000000000000000000000000000d557377c20000000086b0000000000";
     private static readonly ushort[] Loadout = Profile(2, 17, Style, BulletSpray, SuppressionFire).Order().ToArray();
     private static readonly (string Name, uint Id, int X, int Z, byte Organization)[] Stands =
