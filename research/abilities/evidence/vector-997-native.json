@@ -1,0 +1,14 @@
+{
+  "abilities": {
+    "355": {
+      "note": "PR997 stock on f61d60d8 refused wrong style (13), 21.5 m range (34), and the blocked 6 m sight line (9) before IS, cast, or reuse. On clear ground the stock client made a normal 2 s cast and spent 35 IS (700 to 665) with 60 s own reuse. Only the selected target was affected, without HP damage or interlock. The server's comparison records were Powerless 8.94 s, stat 183 -60 for 30 s, and source 734/stat 681 immunity 8 s. Both effects and the immunity record were removed separately. The authored 6 s/-35 vs archived player 7.44 or 8.94 s and -60 remains unresolved. The public comment abbreviates the cast frame. https://github.com/kylebrussell/mxo-hd/pull/997#issuecomment-7105881233",
+      "checks": {
+        "targeting": {
+          "source": "GOB 355 is a selected direct hostile control with a 16 m range, 2 s cast, Hacker Style and CastWhenUsed 1. TestFunction 2 selects the viral contest.",
+          "runtime": "AbilityHandler verifies an owned loaded ability, original live hostile view and spawn, range and sight before debit. Completion rechecks the live spawn, distance, sight and caster admission before the existing single-target viral contest. Timed effects preserve the existing comparison values.",
+          "test": "PR997 stock observed normal visible refusals for style, range and sight and the hit on the selected target. AbilityRefusalFeedbackTests.SelectedDirectControlRefusesBeforeCostAndRetainsTheAdmittedSpawn exercises empty, same-org, stale and changed targets, unload, delayed range/sight and style/combat changes, and forced PvP hit/deflect on the production handler. FreeCastViralLandingTests.ActualNpcLandingDeflectsBeforeDamageDebuffAndProcAndOnlyRoutesToVisibleSameWorld verifies actual NPC deflection has no new effects. https://github.com/kylebrussell/mxo-hd/pull/997#issuecomment-7105881233"
+        }
+      }
+    }
+  }
+}
