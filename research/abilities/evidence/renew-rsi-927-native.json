@@ -1,0 +1,24 @@
+{
+  "abilities": {
+    "438": {
+      "family": "friendly-resurrection",
+      "checks": {
+        "resurrection": {
+          "source": "GOB 438 selects a dead friendly target within 10 m and waits for ordinary approval. health.py RenewRSI_DirectObject fills the current maxima and calls Stance_Stand and Action_Resurrect with Revive RSI 375 while keeping Renew 438 in both result messages.",
+          "runtime": "AbilityResurrection.Request keeps the recipient down while the offer is pending. Reply uses the live offer and accepted 438 to fill HP and IS, then presents the stand in motion context 375.",
+          "test": "PR927 stock at 3b2750ac selects prone QAFriend with 438, waits for the named offer, then sees the in-place stand and Renew result. The recipient proof records 777 HP, 333 IS, action 63 and 375 motion. RenewNativeReplyKeepsItsOwnResultAndUsesTheReviveMotion verifies the pose and exact vitals packet after changing both live maxima. https://github.com/kylebrussell/mxo-hd/pull/927#issuecomment-7101902751"
+        },
+        "script": {
+          "source": "health.py:71–80 resuscitates, fills health and IS, plays Restore RSI FX and Revive's 375 standing motion, reports Renew 438, and applies 1208 to the caster after an eligible flagged recipient accepts.",
+          "runtime": "The ordinary live offer reaches AbilityResurrection.Reply through CLIENT_ABILITY_APPROVAL. Restore publishes the accepted callback once and keeps the recipient flag and Death Effect. A flagged accepted recipient conditionally flags the caster.",
+          "test": "RenewNativeReplyKeepsItsOwnResultAndUsesTheReviveMotion exercises the ordinary reply dispatcher for acceptance with both recipient flags and for a decline, submits a duplicate and checks one live restore, matching 438 result packets and Restore FX. PR927 stock independently observes the accepted unflagged outcome with no new PvP flag. https://github.com/kylebrussell/mxo-hd/pull/927#issuecomment-7101902751"
+        },
+        "behavior-tests": {
+          "source": "GOB 438 stores a 2 s cast, 150 IS, 15 s own recast, 60 s approval period and selected dead-friendly scope. The shipped callback controls the live maxima, presentation and conditional flag.",
+          "runtime": "The ordinary timed cast and AbilityResurrection target and life/world fences bind the pending offer. One valid approval restores the live recipient and publishes the authored motion and result.",
+          "test": "CorpseGateChecksDeadFriendlyRangeAndWorldState and RenewNativeReplyKeepsItsOwnResultAndUsesTheReviveMotion cover admission, decline, duplicate approval, same-lifecycle restore, nonzero maxima, state and conditional flag. PR927 stock sees 500→350 IS, 2 s cast, 15 s own timer, a 438 offer that leaves QAFriend down until approval, and a visible stand when accepted. Its comment abbreviates the initial stock frame. https://github.com/kylebrussell/mxo-hd/pull/927#issuecomment-7101902751"
+        }
+      }
+    }
+  }
+}

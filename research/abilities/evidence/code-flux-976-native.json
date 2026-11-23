@@ -1,0 +1,48 @@
+{
+  "families": {
+    "hacker-code-flux-consumers-native": {
+      "representative": 478,
+      "result": "pass",
+      "head": "aebf1f7d",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/976#issuecomment-7101533957",
+      "scope": "Stock level 50, legal 52/100. The actual selected cast rejects the ally before debit, then applies both sixty-second penalties to QAEnemy. The same QAEnemy goes from seeing QAFar to missing the detection contest and from refusing to admitting the same force score with Evade up. Both records remove together. Blind did not roll in this native sample; executable coverage supplies the optional proc."
+    }
+  },
+  "abilities": {
+    "478": {
+      "family": "hacker-code-flux-consumers-native",
+      "checks": {
+        "controls": {
+          "source": "GOB 478 applies independent Blind 90 for eight seconds at a ten-percent chance. That state does not replace either sixty-second penalty.",
+          "runtime": "The ordinary timed effect executor applies the Blind state only on its proc branch, then uses the shared Blind presentation and independent state expiry.",
+          "test": "CodeFlux478AlwaysReducesAwarenessAndEvasionWithIndependentBlindRoll checks draws 0.099 and 0.101 and removal by 8.01 s while awareness remains reduced. Stock did not roll Blind in this sample. https://github.com/kylebrussell/mxo-hd/pull/976#issuecomment-7101533957"
+        },
+        "targeting": {
+          "source": "GOB 478 selects one hostile within 14 m, requires Hacker Style at rest and uses ordinary viral TestFunction 2.",
+          "runtime": "The actual 80 b9 dispatch validates ownership, style, sight, PvP relationship, original spawn and range. The normal NPC viral contest can deflect before any effect.",
+          "test": "Stock denied the friendly selection with reason 24 before debit, then selected QAEnemy and landed. CodeFluxChangesTheLiveSneakObserverAndEvasionEntryOnTheSameRecipient verifies the stale-spawn refusal and live selected cast, and ActualNpcLandingDeflectsBeforeDamageDebuffAndProcAndOnlyRoutesToVisibleSameWorld verifies the real NPC deflection. https://github.com/kylebrussell/mxo-hd/pull/976#issuecomment-7101533957"
+        },
+        "stats": {
+          "source": "GOB 478 includes two fixed -100 records for Stealth Detection 204 and Combat Evasion 520, each lasting sixty seconds.",
+          "runtime": "The ordinary timed effect records feed Stealth.AwarenessOf and the existing PvP Evade scoring during interlock admission.",
+          "test": "Stock source478 records 286/287 added -100 on each stat for 60 s, with matching simultaneous removals. The same active shield refused force80 against evade110 and admitted force80 against evade10 during 478. https://github.com/kylebrussell/mxo-hd/pull/976#issuecomment-7101533957"
+        },
+        "stealth-detection": {
+          "source": "GOB's 204 penalty targets the selected observer's detection input; it has no stealth modifier on the runner.",
+          "runtime": "The normal opponent observation uses current awareness in its visibility contest. The fixture runs the exact ordinary Countermeasures and Sneak controls with the same observer, challenger, detection distance and stealth level.",
+          "test": "Stock logs saw QAFar with SA108 versus SL45 at 4 m before 478. The same observer missed after landing with SA8 versus SL45 at 4 m. The production-path regression checks the changed input and recovery after timed expiry. https://github.com/kylebrussell/mxo-hd/pull/976#issuecomment-7101533957"
+        },
+        "proc": {
+          "source": "GOB's ten-percent Blind90 proc belongs to the separate condition modifier. Awareness and evasion apply irrespective of that draw.",
+          "runtime": "The common TimedEffects executor performs the individual chance roll after the hostile cast lands and observes the distinct state deadline.",
+          "test": "CodeFlux478AlwaysReducesAwarenessAndEvasionWithIndependentBlindRoll proves both sides of the 10% threshold and independent expiry. Stock observed the non-proc branch with both full debuffs. https://github.com/kylebrussell/mxo-hd/pull/976#issuecomment-7101533957"
+        },
+        "behavior-tests": {
+          "source": "GOB 478 has 42 IS, two seconds of casting, thirty-second own reuse, two guaranteed sixty-second debuffs and optional eight-second Blind. It has no health damage modifier.",
+          "runtime": "The selected action uses the ordinary cast, contest and timed cleanup. Both gameplay consumers update while their modifiers are active.",
+          "test": "Exact PR976 native matched 500→458 IS, 2 s, 30 s, zero damage, ally refusal, both changed consumers and both removals. CodeFluxChangesTheLiveSneakObserverAndEvasionEntryOnTheSameRecipient and the focused proc/deflection tests cover the remaining deterministic branches. https://github.com/kylebrussell/mxo-hd/pull/976#issuecomment-7101533957"
+        }
+      }
+    }
+  }
+}
