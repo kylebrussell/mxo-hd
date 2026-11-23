@@ -352,7 +352,7 @@ public class AbilityRefusalFeedbackTests:IDisposable
             Assert.Equal(afterDrain, AbilityHandler.CurrentInnerStrength(caster));
             Assert.Equal(ballistic, AbilityStats.Attack(caster, true));
             Assert.Equal(melee, AbilityStats.Attack(caster, false));
-            Assert.InRange(caster.playerData.cooldownEndsAt[ability], term + 15, TimeUtils.GetSimTimeSeconds() + 15);
+            Assert.InRange(caster.playerData.cooldownEndsAt[ability], term + 15d, TimeUtils.GetSimTimeSeconds() + 15d);
             byte[][] after = Rpcs(caster);
             byte[] reuse = AbilityCooldowns.BuildTimer(ability, AbilityCooldowns.OwnTimer, 15, true);
             Assert.Single(after.Where(frame => frame.SequenceEqual(reuse)));
