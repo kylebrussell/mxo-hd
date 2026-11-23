@@ -1,6 +1,7 @@
 using System.Text.Json;
 using hds;
 using HeadlessClient;
+using MxoHd.PacketResearch;
 using static NativeQa.Modes.StarterHackerWithdrawBonusMode;
 
 namespace NativeQa.Modes;
@@ -8,13 +9,14 @@ namespace NativeQa.Modes;
 public sealed class StarterPhageWithdrawMode : NativeQaMode
 {
     private const int ResistRank = 19;
-    private const ushort Resist = 76, Phage = 83, Virologist = 98, Doctor = 236, Upgrade = 1082;
+    private const ushort Resist = 76, Phage = 83, Virologist = 98, Doctor = 236, Upgrade = 1082, DoctorUpgrade = 1097;
     private static readonly ushort[] Loadout = StockAbilityProfile.Profile(2, SelfDefense, Resist, Phage, Doctor).Order().ToArray();
     private static readonly int Memory = Loadout.Sum(AbilityMemory.Cost);
     private static readonly (ushort Parent, ushort Child, (ushort Stat, int Value)[] Stats)[] Sources =
     {
         (Resist, 0, new (ushort, int)[] { (1030, 4), (1045, 4), (1049, 2) }),
-        (Phage, Upgrade, new (ushort, int)[] { (1030, 1), (1045, 1), (1049, 1) })
+        (Phage, Upgrade, new (ushort, int)[] { (1030, 1), (1045, 1), (1049, 1) }),
+        (Doctor, DoctorUpgrade, new (ushort, int)[] { (1045, 2) })
     };
 
     public override string Name => "ability-parity-starter-phage-withdraw";
@@ -52,6 +54,7 @@ public sealed class StarterPhageWithdrawMode : NativeQaMode
             AbilityPrerequisites.Current.Closure(id).All(need => archive.TryGetValue(need.Key, out var row) && row.Level >= need.Value)),
             "The learned Resist Viruses rank qualifies all loaded prerequisites");
         Check.Equal((ushort)ResistRank, archive[Resist].Level, "Resist Viruses uses its ordinary +4% learned-rank source");
+        Check.That(!archive.ContainsKey(DoctorUpgrade), "Doctor Upgrade is granted without a separate owned Archive row");
         var server = context.ActualServer!;
         await actor.EnterWorldAsync();
         NativeQaReadiness.RequireNoAmbientAggro(server, actor);
@@ -60,26 +63,35 @@ public sealed class StarterPhageWithdrawMode : NativeQaMode
 
         await StockAbilityProfile.ObserveAsync(actor, 0, frame => StockAbilityProfile.Bonus(frame, Virologist, 1045, 1, 0, false),
             "Required Virologist contributes +1 to the fixed baseline");
-        await StockAbilityProfile.ObserveAsync(actor, 0, frame => StockAbilityProfile.Bonus(frame, Doctor, 1045, 2, 0, false),
-            "Doctor supplies a fixed +2 to make Phage's +1 cross the integer breakpoint");
         var proof = new List<object>();
         await StockAbilityProfile.CheckPassivesAsync(actor, proof, Sources, 0, remove: false);
         await SampleAsync(actor, server, dummy, 8, 70);
 
-        foreach (var (ability, percent, input) in new[] { (Phage, 7, 69), (Resist, 4, 67) })
+        foreach (var (ability, percent, input) in new[] { (Phage, 7, 69), (Resist, 4, 67), (Doctor, 6, 68) })
         {
             var source = Sources.Where(row => row.Parent == ability).ToArray();
             int removal = await StockAbilityProfile.ChangeLoadoutAsync(actor, archive, new[] { ability }, load: false);
             await StockAbilityProfile.CheckPassivesAsync(actor, proof, source, removal, remove: true);
+            if (ability == Doctor) CheckOnlyDoctorsWithdrawChanged(removal);
             await SampleAsync(actor, server, dummy, percent, input);
 
             int restored = await StockAbilityProfile.ChangeLoadoutAsync(actor, archive, new[] { ability }, load: true);
             await StockAbilityProfile.CheckPassivesAsync(actor, proof, source, restored, remove: false);
+            if (ability == Doctor) CheckOnlyDoctorsWithdrawChanged(restored);
             await SampleAsync(actor, server, dummy, 8, 70);
         }
 
         Check.Equal(0, actor.World.Problems.Count, "Phage withdrawal and grant packet framing");
         await File.WriteAllTextAsync(Path.Combine(context.OutputDirectory, "phage-withdraw-modifiers.json"), JsonSerializer.Serialize(proof));
+        Console.WriteLine("DOCTOR WITHDRAW PASS: source 236 +2 and grant 1097 remove/reload, ordinary input 70→68→70.");
         return Array.Empty<byte>();
+
+        void CheckOnlyDoctorsWithdrawChanged(int cursor)
+        {
+            var records = actor.World.RpcSnapshot().Skip(cursor).ToArray();
+            Check.That(!records.Any(frame => ManageBonusRecord.TryDecode(frame.Bytes, out var record) &&
+                record!.TargetId == 1045 && record.SourceId != Doctor), "Doctor alone changes the loaded Withdraw sources");
+            Check.That(!records.Any(StockAbilityProfile.GrantRecord(Upgrade, remove: true)), "Selective Phage keeps its grant");
+        }
     }
 }

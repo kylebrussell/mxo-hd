@@ -1,0 +1,23 @@
+{
+  "abilities": {
+    "236": {
+      "checks": {
+        "stats": {
+          "source": "GOB Doctor supplies fixed +2 to Contested Withdraw Bonus 1045 while loaded. The stock PR823 log attributes the +2 record to 236.",
+          "runtime": "The ordinary Withdraw handler adds the current 1045 percentage delta to direct 1005 using the server's existing truncation policy. Self Defense contributes the same direct 65 in every sample.",
+          "test": "The disposable Phage Withdraw mode toggles only owned Doctor through ordinary Archive RPCs. Its +2 removal/restoration changes total 1045 from 8 to 6 to 8 and live 44 01 withdrawal input from 70 to 68 to 70. Stock PR823 verifies the full profile at 70, with source 236 active. https://github.com/kylebrussell/mxo-hd/pull/823#issuecomment-7086466324"
+        },
+        "behavior-tests": {
+          "source": "Doctor supplies the fixed Withdraw passive and zero-valued loaded grant for Doctor Upgrade 1097. The retained retail locator-kind-3 grant packet is proxy_025_loading_area_load_and_unload_hacker_trees.log.txt line 5260, decoded in research/protocol/loaded-grant-membership.json with both operations retained.",
+          "runtime": "Ordinary loadout reconciliation publishes 236's numeric modifier and independently adds or removes 1097 hidden membership, with no separately owned child row.",
+          "test": "StarterPhageWithdrawMode checks the stock-style Archive load path and the 236/1045 modifier, 1097 base grant and source236/target1097 locator-kind-3 records at entry, removal and reload. It checks that other Withdraw sources and the Selective Phage grant stay active, and reads live ordinary withdrawal inputs across the same changes."
+        },
+        "native-family": {
+          "source": "PR823 stock used ordinary Close Combat and Withdraw with Doctor loaded and directly observed source236 stat1045 +2. The expected combined input was 70 from direct65 and loaded aggregate+8. The archived stock client also received the 236→1097 membership. https://github.com/kylebrussell/mxo-hd/pull/823#issuecomment-7086466324",
+          "runtime": "Doctor's loaded passive and its grant membership are each witnessed. The 1097 active cast is a separate ability row.",
+          "test": "The added exact Archive and Withdraw replay isolates 236 from the other stock-proven contributors and verifies the live input and both grant transitions."
+        }
+      }
+    }
+  }
+}
