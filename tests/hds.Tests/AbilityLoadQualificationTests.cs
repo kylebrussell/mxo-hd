@@ -98,4 +98,29 @@ public class AbilityLoadQualificationTests
         Assert.Null(at.Refusal);Assert.False(at.LevelRefused);Assert.Equal(rows.Length,at.Accepted.Length);
         Assert.Equal(49,at.Used); //Actual Code Shield closure fits the sourced level33 capacity.
     }
+
+    [Theory]
+    [InlineData(947, 30)]
+    [InlineData(947, PlayerProgression.MaxLevel)]
+    [InlineData(948, 30)]
+    [InlineData(948, PlayerProgression.MaxLevel)]
+    public void PacketLossCannotLoadAtPlayableLevelsEvenWithItsEntireOwnedArchive(ushort id, int level)
+    {
+        var graph = AbilityPrerequisites.Current;
+        Assert.Equal(99, graph.Find(id).CharacterLevel);
+        Assert.DoesNotContain(graph.All.Values, entry => entry.Direct.ContainsKey(id));
+        Assert.DoesNotContain(graph.All.Keys, ability => AbilityProgression.GrantsOf(ability).Contains(id));
+
+        var owned = Closed(id, level);
+        var requests = owned.Select(row => new AbilityProgression.LoadoutEntry
+        {
+            Ability = row.Ability, Slot = row.Slot, Level = row.Level
+        }).ToArray();
+        var plan = AbilityMemory.Plan(owned, requests, unload: false, Xp(level), level);
+
+        Assert.True(plan.LevelRefused);
+        Assert.Equal("Your character level is too low to load that ability.", plan.Refusal);
+        Assert.Empty(plan.Accepted);
+        Assert.Empty(plan.Loaded);
+    }
 }

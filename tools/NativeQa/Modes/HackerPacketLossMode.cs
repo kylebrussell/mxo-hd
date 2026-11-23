@@ -40,14 +40,18 @@ public sealed class HackerPacketLossMode : NativeQaMode
             ["MXO_AGGRO"] = "0", ["MXO_MOB_WANDER"] = "0", ["MXO_PVP_SERVER"] = "1", ["MXO_PVP_MAX_SAFE_LEVEL"] = "15",
             ["MXO_SIMULACRUM_QA_HOLD_IS"] = "1", ["MXO_FREECAST_VIRAL_QA"] = "1",
             ["MXO_FREECAST_VIRAL_QA_ATTACK15"] = "32766", ["MXO_FREECAST_VIRAL_QA_DEFENSE15"] = "0"
-        }, extraQaMetadata: new() { ["ScopedStockRows"] = "947,948", ["NativeCloseableRows"] = 2, ["MemoryUsed"] = Memory },
+        }, extraQaMetadata: new()
+        {
+            ["ScopedStockRows"] = "947,948", ["NativeCloseableRows"] = 0, ["MemoryUsed"] = Memory,
+            ["AccessScope"] = "Seeded diagnostic. Both selected roots require character level 99; normal progression ends at 50."
+        },
         readyMessages: new[]
         {
-            $"Level {Level}, full Trojan Horse profile at {Memory}/{AbilityMemory.ForLevel(Level)} memory. CSR ({X},{Y},{Z}) faces QAEnemy ({X},{Y},{Z+300}) on clear outdoor NAV. QAFriend ({X+150},{Y},{Z}) is friendly. QAOther ({X},{Y},{Z+2001}) is at 20.01 m. QAFar ({X+125},{Y},{Z+300}) is the resistance control.",
+            $"Seeded diagnostic at level {Level}, full Trojan Horse profile at {Memory}/{AbilityMemory.ForLevel(Level)} memory. Both selected roots require character level 99 through the ordinary archive. CSR ({X},{Y},{Z}) faces QAEnemy ({X},{Y},{Z+300}) on clear outdoor NAV. QAFriend ({X+150},{Y},{Z}) is friendly. QAOther ({X},{Y},{Z+2001}) is at 20.01 m. QAFar ({X+125},{Y},{Z+300}) is the resistance control.",
             "Select Hacker Style on page 2 slot 1. Try slots 2 and 3 with no target, /target QAFriend, then /target QAOther. A sent request returns 24 or 34. The native client may suppress it locally. No IS or timer should change.",
             $"Select /target QAEnemy and press slot 2 Packet Loss 1.0. Save the first full stock request. Expect 2 s cast, 20 IS (1600→1580), and 4 s own/shared 682. After reuse press slot 3 Packet Loss 2.0 and save its request. Expect 2 s cast, 24 IS (1580→1556), and 4 s own/shared 682. With +{StyleBonus} style and +{LinkedBonus} linked influence, neutral [PVP] damage is {Influenced(62)}–{Influenced(299)} and {Influenced(100)}–{Influenced(419)} to QAEnemy only.",
             $"On /target QAFar ask helper action aura-resist. Check source=8 stat=157 +{Resistance} for 20 s. Use slots 2 and 3 after shared reuse. For each [TYPED-RESISTANCE OURS] 947 or 948, confirm type2/total{Resistance}, raw in its documented damage range, and final below raw. Only the selected helper should lose HP. No [VITALS] maximum change.",
-            "After each shared reset, repeat slot 2 on QAEnemy until the natural 10% Root proc (up to 35 landed casts), then wait for removal. Expect source=947 stat=99 add 0 for 10 s and a matching removal, with no 734. Repeat slot 3 on QAFar until the natural 15% Stun (up to 23 landed casts). Expect source=948 stat=102 and 734/681 10 s add/removes. Stop repeating a row as soon as its effect appears. Both limits take about six minutes of uninterrupted casts and give about a 95% chance of seeing both procs. If a limit is reached without a proc, report that row's state check as incomplete. The fixture fixes only hit contests."
+            "For a seeded proc diagnostic, repeat slot 2 on QAEnemy after reuse until the natural 10% Root proc (up to 35 landed casts). Expect source=947 stat=99 add 0 for 10 s and a matching removal, with no 734. Repeat slot 3 on QAFar until the natural 15% Stun (up to 23 landed casts). Expect source=948 stat=102 and 734/681 10 s add/removes. Stop a row after its first proc. Both limits take about six minutes of uninterrupted casts and give about a 95% chance of seeing both procs. The fixture fixes only hit contests."
         });
 
     public override async Task<byte[]> AfterStartAsync(NativeQaBootstrapContext context)
