@@ -10,7 +10,7 @@ public sealed class StarterInitiativeBatchMode : NativeQaMode
     private const ushort InitiativeBonus = 1046, Initiative = 1044;
     private static readonly ushort[] Loadout = Profile(2, 17, Gunman, Soldier, Desperation).Order().ToArray();
     // Full stock Desperation with no target, a91de5605bf5:738–739.
-    private const string StockCast = "80b97d040000000000000000000000000000000000000000000000e05bc50001000000086b0000000000";
+    internal const string StockCast = "80b97d040000000000000000000000000000000000000000000000e05bc50001000000086b0000000000";
 
     public override string Name => "ability-parity-starter-initiative-and-desperation";
     public override NativeQaModePlan Plan { get; } = new(Loadout, CombatFixtureLoadout.CasterX, CombatFixtureLoadout.CasterZ,

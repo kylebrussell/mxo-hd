@@ -219,6 +219,56 @@ public class AbilityScaledBuffTests
     }
 
     [Theory]
+    [InlineData(false, false, 5, 83)]
+    [InlineData(false, true, 6, 84)]
+    [InlineData(true, false, 7, 85)]
+    [InlineData(true, true, 8, 86)]
+    public void GunslingerAndScattershotIndependentlyFeedTheLiveDesperationSnapshot(
+        bool gunslinger, bool scattershot, int initiativeBonus, int snapshot)
+    {
+        const ushort gunslingerId = 240, scattershotId = 245, desperation = 1149;
+        var actor = Client(39);
+        actor.playerInstance.Health.setValue((ushort)101);
+        ushort[] profile = new NativeQa.Modes.GunslingerScattershotInitiativeMode().Plan.Abilities.ToArray();
+        var baseProfile = profile.Where(ability => ability != gunslingerId && ability != scattershotId).ToArray();
+        Assert.Equal(77, profile.Sum(AbilityMemory.Cost));
+        Assert.True(profile.Sum(AbilityMemory.Cost) <= AbilityMemory.ForLevel(39));
+        Assert.DoesNotContain((ushort)1071, profile);
+        Assert.DoesNotContain((ushort)1075, profile);
+        Assert.True(AbilityGrantRegistration.Handles(gunslingerId, 1075));
+        Assert.True(AbilityGrantRegistration.Handles(scattershotId, 1071));
+
+        Load(baseProfile);
+        int baselineBallistic = AbilityStats.Influence(actor, 171);
+        ushort baselineDamage = AbilityStats.ScaleAbilityDamage(actor, 105, 1000);
+        var selected = profile.Where(ability => (ability != gunslingerId || gunslinger) && (ability != scattershotId || scattershot));
+        Load(selected);
+        Assert.Equal(gunslinger, AbilityPassives.IsLoaded(actor, 1075));
+        Assert.Equal(scattershot, AbilityPassives.IsLoaded(actor, 1071));
+        Assert.Equal(baselineBallistic + (gunslinger ? 1 : 0), AbilityStats.Influence(actor, 171));
+        int delta = AbilityStats.ScaleAbilityDamage(actor, 105, 1000) - baselineDamage;
+        if (gunslinger) Assert.InRange(delta, 9, 11);
+        else Assert.Equal(0, delta);
+        Assert.Equal(initiativeBonus, AbilityStats.Player(actor, 1046));
+
+        try
+        {
+            Assert.True(AbilityBuffs.Apply(actor, desperation));
+            Assert.Equal(snapshot, AbilityStats.Player(actor, 1044));
+            Assert.Equal(20, actor.playerData.activeBuffs[desperation].Definition.Seconds);
+            Load(baseProfile);
+            Assert.False(AbilityPassives.IsLoaded(actor, 1075));
+            Assert.False(AbilityPassives.IsLoaded(actor, 1071));
+            Assert.Equal(5, AbilityStats.Player(actor, 1046));
+            Assert.Equal(snapshot, AbilityStats.Player(actor, 1044));
+        }
+        finally { AbilityBuffs.RemoveAll(actor); }
+
+        void Load(IEnumerable<ushort> abilities) =>
+            AbilityPassives.SetLoaded(actor, abilities.Select(ability => (ability, (ushort)39)), true);
+    }
+
+    [Theory]
     [InlineData(128, 1, 1070)]
     [InlineData(240, 2, 1075)]
     public void LoadedGunmanAndGunslingerRetainTheShippedInitiativeBonusAndGrant(
