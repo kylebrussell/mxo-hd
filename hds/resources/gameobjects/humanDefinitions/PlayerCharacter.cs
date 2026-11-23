@@ -82,6 +82,7 @@ namespace hds
 					if (client.playerData.craftingSession != null && !Position.getValue().AsSpan().SequenceEqual(nextPosition))
 						CraftingSession.End(client);
 					Position.setValue(nextPosition);
+                    MovementSampleQa.Record(client, state.X, state.Y, state.Z);
                     MissionProxyIntroduction.AcceptedPosition(Store.currentClient,state.X,state.Y,state.Z);
 				}
 

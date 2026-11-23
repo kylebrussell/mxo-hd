@@ -38,6 +38,8 @@ namespace hds{
             return (float)SimClock.Elapsed.TotalSeconds;
         }
 
+        internal static long GetSimTimeMilliseconds() => SimClock.ElapsedMilliseconds;
+
         public static byte[] getCurrentSimTime()
         {
             return NumericalUtils.floatToByteArray(GetSimTimeSeconds(), 1);
