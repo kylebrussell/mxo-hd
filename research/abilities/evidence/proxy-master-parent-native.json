@@ -1,0 +1,23 @@
+{
+  "families": {
+    "proxy-master-loaded-parent": {
+      "representative": 599,
+      "result": "pass",
+      "head": "fdec072c",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/891#issuecomment-7097797322",
+      "scope": "The ordinary loaded parent publishes stat 1053 +5 and the stock grant. Unloading removes both and reloading restores each once. Three otherwise identical Remote Proxy casts cost 114, 120 and 114 IS. The granted 1107 ability was never cast."
+    }
+  },
+  "abilities": {
+    "599": {
+      "family": "proxy-master-loaded-parent",
+      "checks": {
+        "behavior-tests": {
+          "source": "GOB 599 grants 1107 and publishes a fixed +5 to Inner Strength Cost Modifier Bonus 1053 while loaded. The direct cost stat 117 links to 1053.",
+          "runtime": "AbilityGrantRegistration admits the (599,1107) pair and publishes one hidden rank-zero grant. Archive changes apply or remove the associated stat and grant, and ordinary ability spending consumes the linked reduction once.",
+          "test": "ProxyMasterParentMode replays retained Archive and 594 inputs, checks matching modifier and rank-zero grant add/remove/re-add records, and confirms 114/120/114 IS. PR891 independently saw the +5 record and the grant in stock Actions, their removal and reappearance, and the same three debits. The granted active ability has a separate test and was left unused in stock. https://github.com/kylebrussell/mxo-hd/pull/891#issuecomment-7097797322"
+        }
+      }
+    }
+  }
+}

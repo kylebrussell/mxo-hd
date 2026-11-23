@@ -104,8 +104,8 @@
       "checks": {
         "stats": {
           "source": "GOB 599 grants +5 Inner Strength Cost Modifier Bonus 1053 and ability 1107; the direct stat 117 definition links to 1053.",
-          "runtime": "AbilityPassives resolves and publishes +5 at login. The gameplay cost calculation still needs verified treatment of the linked bonus.",
-          "test": "ability-parity-coder-advanced checks the exact +5 passive record from 599 at login."
+          "runtime": "AbilityPassives resolves and publishes +5 at login. The linked bonus reduces ordinary ability spending through stat 117 while the parent is loaded.",
+          "test": "ability-parity-coder-advanced checks the exact +5 login record. PR891 stock and ProxyMasterParentMode confirm 594 costs 114, 120 and 114 IS across the parent's load, unload and reload. https://github.com/kylebrussell/mxo-hd/pull/891#issuecomment-7097797322"
         }
       }
     },

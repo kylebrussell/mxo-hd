@@ -223,6 +223,12 @@ PASSIVE_LIMITS = {
 
 
 def server(i):
+    if i == 242:
+        return 'IS 30; 2s cast; reuse 10s / group 689 5s; fixed Ballistic base 5 with influence and resistance; selected Handguns cast at rest or queued with +10 tactic; caster defenses 1009/1010/1011 +20 for12s on landing; 9530 at the authored close pose, 9529 medium fallback, ordinary exchange on miss; [evidence](GUNMAN-PARITY-2.md)'
+    if i == 244:
+        return 'IS 30; 2s cast; reuse 10s / group 689 5s; fixed Ballistic base 18 with influence and resistance; dual handgun direct or +15 queued Handguns cast; 40% landed Powerless for8s with linked timer; 9534 at the authored close pose, 9519 medium fallback, ordinary exchange on miss; [evidence](GUNMAN-PARITY-2.md)'
+    if i == 1107:
+        return 'rank-zero grant from loaded599; 200 base IS, 2s cast and 15s reuse; same owned visible pet within16m through landing; pet action cost -25% and IS regen +50% for600s; pet HP regen and periodic NegativeConditionSweepPulse unimplemented; [evidence](https://github.com/kylebrussell/mxo-hd/pull/891)'
     if i in (947, 948):
         return 'stored level 99 selected-load prerequisite exceeds the level 50 cap; no shipped prerequisite or grant includes this ability in another load; [qualification proof](https://github.com/kylebrussell/mxo-hd/pull/880)'
     if i == 1149:
