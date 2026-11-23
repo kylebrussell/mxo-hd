@@ -2713,8 +2713,10 @@ public class AbilityRefusalFeedbackTests:IDisposable
         }
     }
 
-    [Fact]
-    public void RifleEscapeWinAidIsDisposablePairScopedAndConsumedOnce()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void InterlockRoundAidIsDisposablePairScopedAndConsumedOnce(bool rifleEscape)
     {
         var caster = Client();
         var enemy = Client();
@@ -2731,11 +2733,17 @@ public class AbilityRefusalFeedbackTests:IDisposable
         fight.Attacker.OpponentHandle = DuelPackets.Handle(view.ViewID, view.spawnId);
         var handler = CombatManager.GetHandler(caster);
         handler.pvpFight = fight;
-        var mode = CombatFixtureWeapons.RifleEscapeWinMode;
+        ushort abilityId = rifleEscape ? CombatSpecials.RifleButtSmash : CombatSpecials.PistolWhip;
+        var mode = rifleEscape ? CombatFixtureWeapons.RifleEscapeWinMode : CombatFixtureWeapons.PistolWhipLossMode;
+        var unchanged = rifleEscape ? (0, 120) : (120, 0);
+        var assisted = rifleEscape ? (1, 0) : (80, 91);
         string? priorMode = Environment.GetEnvironmentVariable(mode);
-        const string denied = "Rifle Butt Smash win aid requires the disposable rifle fixture.";
-        const string needsFight = "Rifle Butt Smash win aid requires the active interlock with QAEnemy.";
-        const string armed = "Next Rifle Butt Smash against QAEnemy is armed for one winning withdrawal roll.";
+        string denied = rifleEscape ? "Rifle Butt Smash win aid requires the disposable rifle fixture." :
+            "Pistol Whip loss aid requires the disposable dual-pistol fixture.";
+        string needsFight = rifleEscape ? "Rifle Butt Smash win aid requires the active interlock with QAEnemy." :
+            "Pistol Whip loss aid requires the active interlock with QAEnemy.";
+        string armed = rifleEscape ? "Next Rifle Butt Smash against QAEnemy is armed for one winning withdrawal roll." :
+            "Next Pistol Whip against QAEnemy is armed for one ordinary loss.";
         var dbField = typeof(ServerConfig).GetField("_dbParams", BindingFlags.Instance | BindingFlags.NonPublic)!;
         var db = dbField.GetValue(Store.config);
         try
@@ -2755,22 +2763,28 @@ public class AbilityRefusalFeedbackTests:IDisposable
             Assert.Equal(armed, Arm());
             Assert.Equal(armed, Arm());
 
-            Assert.Equal((0, 120), Rolls(126));
+            Assert.Equal(unchanged, Rolls(126));
+            if (!rifleEscape)
+            {
+                enemy.playerData.combatTactic = CombatTactic.Block;
+                Assert.Equal(unchanged, Rolls(abilityId));
+                enemy.playerData.combatTactic = CombatTactic.Speed;
+            }
             Environment.SetEnvironmentVariable(mode, null);
-            Assert.Equal((0, 120), Rolls(453));
+            Assert.Equal(unchanged, Rolls(abilityId));
             Environment.SetEnvironmentVariable(mode, "1");
             enemy.playerData.setCharID(6111);
-            Assert.Equal((0, 120), Rolls(453));
+            Assert.Equal(unchanged, Rolls(abilityId));
             enemy.playerData.setCharID(6114);
             view.spawnId++;
-            Assert.Equal((0, 120), Rolls(453));
+            Assert.Equal(unchanged, Rolls(abilityId));
             view.spawnId--;
-            Assert.Equal((1, 0), Rolls(453));
-            Assert.Equal((0, 120), Rolls(453));
+            Assert.Equal(assisted, Rolls(abilityId));
+            Assert.Equal(unchanged, Rolls(abilityId));
 
             Assert.Equal(armed, Arm());
             active.SetValue(fight, false);
-            Assert.Equal((0, 120), Rolls(453));
+            Assert.Equal(unchanged, Rolls(abilityId));
             Assert.Equal(needsFight, Arm());
         }
         finally
@@ -2781,14 +2795,28 @@ public class AbilityRefusalFeedbackTests:IDisposable
             CombatManager.RemoveClient(caster);
         }
 
-        string Arm() => CombatDepthDev.Run(caster, new[] { "rb" });
+        string Arm() => CombatDepthDev.Run(caster, new[] { rifleEscape ? "rb" : "pw" });
         (int, int) Rolls(ushort id)
         {
             var ability = new AbilityItem();
             ability.setAbilityID(id);
-            ushort attack = 0, defence = 120;
-            fight.ApplyRifleEscapeWin(fight.Attacker, fight.Defender, ability, ref attack, ref defence);
-            return (attack, defence);
+            ushort attack = (ushort)unchanged.Item1, opposingAttack = (ushort)unchanged.Item2;
+            if (rifleEscape)
+                fight.ApplyRifleEscapeWin(fight.Attacker, fight.Defender, ability, ref attack, ref opposingAttack);
+            else if (fight.ApplyPistolWhipLoss(fight.Attacker, fight.Defender, id, ref attack, 80, ref opposingAttack, 90))
+            {
+                var outcome = CombatRules.Resolve(
+                    new CombatRules.Fighter { Tactic = CombatTactic.Speed, Hits = attack > 80, SpecialMove = true, Damage = 99, Health = 1000 },
+                    new CombatRules.Fighter { Tactic = CombatTactic.Speed, Hits = opposingAttack > 90, Damage = 23, Health = 1000 },
+                    playerAttacksFirst: true, opening: false);
+                Assert.False(outcome.PlayerWins);
+                Assert.False(outcome.SpecialMoveLands);
+                Assert.False(outcome.Withdrew);
+                Assert.Equal(CombatRules.AttackerHits, outcome.Flags);
+                Assert.Equal(0, outcome.DamageToNpc);
+                Assert.Equal(23, outcome.DamageToPlayer);
+            }
+            return (attack, opposingAttack);
         }
     }
 
