@@ -44,7 +44,7 @@ namespace hds
             {
                 126 => RangedWeapons.ClassPistol,
                 176 => RangedWeapons.ClassSubmachinegun,
-                250 => RangedWeapons.ClassDualSubmachinegun,
+                CombatSpecials.ControlledBurst => RangedWeapons.ClassDualSubmachinegun,
                 256 => RangedWeapons.ClassRifle,
                 _ => 0
             };
@@ -55,6 +55,7 @@ namespace hds
         internal static bool CanResolveQueuedAbility(WorldClient caster, AbilityItem ability) =>
             ControlActions.CanUseAbilities(caster) && (ability == null ||
                 ControlActions.CanPerformSpecialMove(caster, ability.getAbilityID()) &&
+                (ability.getAbilityID() != CombatSpecials.ControlledBurst || AbilityPassives.IsLoaded(caster, CombatSpecials.ControlledBurst)) &&
                 (ability.getCastingTime() <= 0 || CanQueueGunCast(caster, ability.getAbilityID())));
 
         // Name matches/aliases between the GOB ability and ILDB choreography. Aliases are server policy;

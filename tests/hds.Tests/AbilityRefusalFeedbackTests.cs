@@ -1192,6 +1192,209 @@ public class AbilityRefusalFeedbackTests:IDisposable
         }
     }
 
+    [Theory]
+    [InlineData("unloaded", AbilityRefusals.NotLoaded)]
+    [InlineData("single SMG", AbilityRefusals.RequiredItemCategory)]
+    [InlineData("ally", AbilityRefusals.InvalidTarget)]
+    [InlineData("stale request", AbilityRefusals.InvalidTarget)]
+    [InlineData("far", AbilityRefusals.TargetOutOfRange)]
+    [InlineData("blocked", AbilityRefusals.TargetNotInSight)]
+    [InlineData("left range", 0u)]
+    [InlineData("lost sight", 0u)]
+    [InlineData("new spawn", 0u)]
+    [InlineData("unloaded while casting", 0u)]
+    [InlineData("swapped while casting", 0u)]
+    [InlineData("neutral", 0u)]
+    [InlineData("resisted", 0u)]
+    public void ControlledBurstBindsItsEligibleTargetAndConsumesTypedResistance(string scenario, uint refusal)
+    {
+        const ushort id = CombatSpecials.ControlledBurst;
+        var caster = ControlledBurstCaster(unloaded: scenario == "unloaded", singleSmg: scenario == "single SMG");
+        var target = Client();
+        target.playerData.setCharID(111);
+        target.playerData.setEntityId(111);
+        target.playerInstance.Level.setValue((byte)27);
+        caster.playerInstance.OrganizationID.setValue((byte)1);
+        target.playerInstance.OrganizationID.setValue((byte)(scenario == "ally" ? 1 : 2));
+        caster.playerData.pvpFlag = target.playerData.pvpFlag = true;
+        SetTargetX(scenario == "far" ? 20349 : scenario == "blocked" ? 22350 : 21550);
+        WorldServer.Clients.Add("caster", caster);
+        WorldServer.Clients.Add("target", target);
+        var view = caster.viewMan.addView(111, 12);
+        view.viewCreated = true;
+        view.spawnId = 9;
+        byte[] request = ControlledBurstRequest(DuelPackets.Handle(view.ViewID, scenario == "stale request" ? 8 : view.spawnId));
+        double start = TimeUtils.GetSimTimeSeconds();
+        if (scenario == "resisted")
+        {
+            TimedEffects.ForPlayer(target).Effects.Apply(181,
+                new[] { new TimedEffects.Active { Target = 181, Value = 20, Seconds = 60, Proc = TempMods.Proc.Stat } }, start);
+        }
+
+        try
+        {
+            new AbilityHandler().ProcessAbility(ref request);
+            if (refusal != 0)
+            {
+                Assert.Equal(AbilityRefusals.Encode(new(id, refusal)), Assert.Single(Rpcs(caster)));
+                Assert.Equal(500, AbilityHandler.CurrentInnerStrength(caster));
+                Assert.Empty(caster.playerData.cooldownEndsAt);
+                return;
+            }
+
+            double castEnd = caster.playerData.castEndsAt;
+            Assert.InRange(castEnd - start, 3.99, 4.25);
+            Assert.Equal(470, AbilityHandler.CurrentInnerStrength(caster));
+            Assert.Equal(1000, PvpCombat.HealthOf(target));
+            Assert.True(AbilityCooldowns.TryGet(id, out var cooldown));
+            Assert.Equal(10f, cooldown.Seconds);
+            Assert.Equal(689, cooldown.Group);
+            Assert.Equal(5f, cooldown.GroupSeconds);
+
+            switch (scenario)
+            {
+                case "left range": SetTargetX(20349); break;
+                case "lost sight": SetTargetX(22350); break;
+                case "new spawn": view.spawnId++; break;
+                case "unloaded while casting": caster.playerData.passives.Loaded.Remove(id); break;
+                case "swapped while casting": caster.playerInstance.EquippedItemID.setValue(698u); break;
+            }
+
+            ushort scaled = AbilityStats.ScaleAbilityDamage(caster, id, 26);
+            ushort damage = TypedAbilityResistance.Player(caster, target, id, scaled);
+            if (scenario == "resisted") Assert.InRange(damage, 1, scaled - 1);
+            AbilityCastInterrupts.FinishDue(caster, castEnd + .01);
+            Assert.True(AbilityCooldowns.IsCoolingDown(caster.playerData, id, TimeUtils.GetSimTimeSeconds()));
+            Assert.Equal(scenario is "neutral" or "resisted" ? 1000 - damage : 1000, PvpCombat.HealthOf(target));
+        }
+        finally { TimedEffects.Clear(TimedEffects.ForPlayer(target)); }
+
+        void SetTargetX(double x) =>
+            target.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(x, 1095, 16150));
+    }
+
+    [Theory]
+    [InlineData("same fight")]
+    [InlineData("different opponent")]
+    [InlineData("fight ends")]
+    [InlineData("fight replaced")]
+    public void ControlledBurstQueuesAgainstTheOriginalInterlock(string scenario)
+    {
+        const ushort id = CombatSpecials.ControlledBurst;
+        var caster = ControlledBurstCaster();
+        var target = new Mob();
+        target.setEntityId(250000);
+        target.setDistrict(1);
+        target.setHealthC(1000);
+        target.setHealthM(1000);
+        target.setLevel(27);
+        target.setIsSpawned(true);
+        target.setXPos(21550);
+        target.setYPos(1095);
+        target.setZPos(16150);
+        var view = caster.viewMan.addView(target.getEntityId(), 1);
+        view.viewCreated = true;
+        view.spawnId = 9;
+        uint handle = DuelPackets.Handle(view.ViewID, view.spawnId);
+        var original = NewFight(scenario == "different opponent" ? handle ^ 0x10000 : handle);
+        var handler = CombatManager.GetHandler(caster);
+        var sessionField = typeof(CombatHandler).GetField("currentSession", BindingFlags.Instance | BindingFlags.NonPublic)!;
+        sessionField.SetValue(handler, original);
+        var previousMobs = WorldServer.mobs;
+        WorldServer.mobs = new System.Collections.ArrayList { target };
+
+        try
+        {
+            byte[] request = ControlledBurstRequest(handle);
+            new AbilityHandler().ProcessAbility(ref request);
+            Assert.Null(original.QueuedAbility);
+            if (scenario == "different opponent")
+            {
+                Assert.Equal(AbilityRefusals.Encode(new(id, AbilityRefusals.InvalidTarget)), Assert.Single(Rpcs(caster)));
+                Assert.Equal(500, AbilityHandler.CurrentInnerStrength(caster));
+                return;
+            }
+
+            Assert.Equal(470, AbilityHandler.CurrentInnerStrength(caster));
+            CombatSession? replacement = scenario == "fight replaced" ? NewFight(handle) : null;
+            if (scenario != "same fight") sessionField.SetValue(handler, replacement);
+            AbilityCastInterrupts.FinishDue(caster, caster.playerData.castEndsAt + .01);
+            Assert.Equal(1000, target.getHealthC());
+            if (scenario == "same fight")
+            {
+                var queued = Assert.IsType<AbilityItem>(original.QueuedAbility);
+                Assert.Equal(id, queued.getAbilityID());
+                Assert.Equal(view.ViewID, original.QueuedAbilityTarget);
+                Assert.Equal(21082u, CombatAnimations.Special(id, true, CombatTactic.Speed)?.Id);
+                Assert.True(CombatAnimations.CanResolveQueuedAbility(caster, queued));
+                caster.playerData.passives.Loaded.Remove(id);
+                Assert.False(CombatAnimations.CanResolveQueuedAbility(caster, queued));
+            }
+            else
+            {
+                Assert.Null(original.QueuedAbility);
+                Assert.Null(replacement?.QueuedAbility);
+            }
+        }
+        finally
+        {
+            sessionField.SetValue(handler, null);
+            CombatManager.RemoveClient(caster);
+            WorldServer.mobs = previousMobs;
+        }
+
+        CombatSession NewFight(uint opponent)
+        {
+            var fight = new CombatSession(caster, target, opponent, CombatSession.CombatType.Melee)
+            {
+                CurrentMove = new CombatInterlock.Move()
+            };
+            typeof(CombatSession).GetField("<IsActive>k__BackingField", BindingFlags.Instance | BindingFlags.NonPublic)!
+                .SetValue(fight, true);
+            return fight;
+        }
+    }
+
+    private static WorldClient ControlledBurstCaster(bool unloaded = false, bool singleSmg = false)
+    {
+        const ushort id = CombatSpecials.ControlledBurst;
+        string root = AppContext.BaseDirectory;
+        while (!File.Exists(Path.Combine(root, "data", "sector_properties.csv"))) root = Path.GetDirectoryName(root)!;
+        SectorProperties.Load(Path.Combine(root, "data", "sector_properties.csv"));
+        NavMesh.UseDirectory(Path.Combine(root, "data", "navmesh"));
+
+        var caster = Client();
+        caster.playerInstance.Level.setValue((byte)27);
+        caster.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(21750, 1095, 16150));
+        caster.playerInstance.EquippedItemID.setValue(singleSmg ? 698u : 2503u);
+        var profile = new ushort[] { 2, 17, CombatStyles.SubmachineGuns, id }
+            .SelectMany(entry => AbilityPrerequisites.Current.Closure(entry).Keys.Append(entry)).Distinct().ToArray();
+        Assert.True(profile.Sum(AbilityMemory.Cost) <= AbilityMemory.ForLevel(27));
+        AbilityPassives.SetLoaded(caster, profile.Where(entry => !unloaded || entry != id).Select(entry => (entry, (ushort)27)));
+        CombatStyles.Select(caster, CombatStyles.SubmachineGuns);
+        caster.messageQueue.RPCMessagesQueue.Clear();
+        caster.messageQueue.ObjectMessagesQueue.Clear();
+        Store.currentClient = caster;
+
+        var ability = new AbilityItem();
+        ability.setAbilityID(id);
+        ability.setAbilityName("Controlled Burst");
+        ability.setIsCastable(true);
+        ability.setCastingTime(4);
+        ability.setCastAnimStart(new byte[4]);
+        DataLoader.getInstance().AbilityDB.Add(ability);
+        return caster;
+    }
+
+    private static byte[] ControlledBurstRequest(uint handle)
+    {
+        // In-process handler frame. No external bootstrap treats it as a stock capture.
+        var request = new byte[41];
+        BitConverter.GetBytes(CombatSpecials.ControlledBurst).CopyTo(request, 0);
+        BitConverter.GetBytes(handle).CopyTo(request, 2);
+        return request;
+    }
+
     [Fact] public void ModeUsesProvenClosedLoadoutWithoutGmOrRandomControls()
     {
         var plan=new NativeQa.Modes.AbilityRefusalFeedbackMode().Plan;Assert.Equal(new ushort[]{2,17,45,1006,77},plan.Abilities);Assert.True(plan.DevCommands);Assert.False(plan.GmCharacter110);Assert.False(plan.FixedCallbackRolls);

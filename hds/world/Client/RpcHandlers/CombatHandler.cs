@@ -61,8 +61,9 @@ namespace hds
         public PvpFight pvpFight;
         public PvpGunfire pvpGunfire;
 
-        internal bool HasActiveInterlock => pvpFight?.IsActive == true ||
-            currentSession is { IsActive: true, Type: CombatSession.CombatType.Melee };
+        internal bool HasActiveInterlock => ActiveInterlockIdentity != null;
+        internal object ActiveInterlockIdentity => pvpFight?.IsActive == true ? (object)pvpFight :
+            currentSession is { IsActive: true, Type: CombatSession.CombatType.Melee } ? currentSession : null;
 
         /// <summary>
         /// Ends what the player is fighting before a fight with another player starts: an NPC fight as if they had left
