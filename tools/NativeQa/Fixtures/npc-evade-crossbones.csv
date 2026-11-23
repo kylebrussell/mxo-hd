@@ -1,0 +1,3 @@
+District;DistrictName;Name;Level;MaxHealth;Health;Rsi;X;Y;Z;Rotation;Dead;Lootable;Field13;Field14;Field15;Field16;Field17;Field18;Field19;Weapon;StealthAwareness;Field22
+1;slums;Crossbones Tar;7;337;337;59030008;97619;695;10761;229;false;false;18;100000;b51c00c6;;2;9;f9070000;;1;671091229
+1;slums;Crossbones Tar;7;337;337;59030008;105371;695;6654;166;false;false;34;100000;b51c00c6;4;2;9;7080000;;1;
