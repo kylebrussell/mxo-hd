@@ -229,6 +229,69 @@ public class FreeCastViralLandingTests : IDisposable
         }
     }
 
+    [Theory]
+    [InlineData(0, 85)]
+    [InlineData(20, 76)]
+    public void SlidingVolleyLandsItsFixedBaseThroughTheLevel22BallisticPath(int resistance, ushort damage)
+    {
+        const ushort level = 22;
+        var caster = Client(110);
+        var target = Client(111);
+        Store.currentClient = caster;
+        caster.playerData.pvpFlag = target.playerData.pvpFlag = true;
+        caster.playerInstance.OrganizationID.setValue((byte)1);
+        target.playerInstance.OrganizationID.setValue((byte)2);
+        caster.viewMan.addView(111, 1).viewCreated = true;
+        caster.playerInstance.Level.setValue((byte)level);
+        target.playerInstance.Level.setValue((byte)level);
+        caster.playerInstance.EquippedItemID.setValue(2503u);
+        var profile = new ushort[] { 2, 17, CombatStyles.SubmachineGuns, CombatSpecials.SlidingVolley }
+            .SelectMany(id => AbilityPrerequisites.Current.Closure(id).Keys.Append(id)).Distinct();
+        AbilityPassives.SetLoaded(caster, profile.Select(id => (id, level)));
+        CombatStyles.Select(caster, CombatStyles.SubmachineGuns);
+        Assert.Equal(11, AbilityStats.Influence(caster, 171));
+
+        var volley = new AbilityItem();
+        volley.setAbilityID(CombatSpecials.SlidingVolley);
+        var effects = TimedEffects.ForPlayer(target);
+        try
+        {
+            if (resistance > 0)
+            {
+                effects.Effects.Apply(1061, new[]
+                {
+                    new TimedEffects.Active { Kind = TempMods.KindStat, Target = 181, Value = resistance,
+                        Seconds = 10, Proc = TempMods.Proc.Stat }
+                }, TimeUtils.GetSimTimeSeconds());
+            }
+
+            PvpCombat.LandAbilityOn(caster, volley, target);
+
+            Assert.Equal(1000 - damage, PvpCombat.HealthOf(target));
+        }
+        finally
+        {
+            TimedEffects.Clear(effects);
+        }
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void SlidingVolleyNormalMissKeepsTheOrdinaryRoundWithoutSpecialDamage(bool opponentHits)
+    {
+        var shooter = new CombatRules.Fighter { Tactic = CombatTactic.Speed, SpecialMove = true, Damage = 85, Health = 1000 };
+        var opponent = new CombatRules.Fighter { Tactic = CombatTactic.Speed, Hits = opponentHits, Damage = 11, Health = 1000 };
+
+        var result = CombatRules.Resolve(shooter, opponent, playerAttacksFirst: true, opening: false);
+
+        Assert.False(result.SpecialMoveLands);
+        Assert.Equal(0u, result.Flags & CombatRules.SpecialMove);
+        Assert.Equal(0, result.DamageToNpc);
+        Assert.Equal(opponentHits ? 11 : 0, result.DamageToPlayer);
+        Assert.Null(CombatAnimations.Special(CombatSpecials.SlidingVolley, false, CombatTactic.Speed));
+    }
+
     [Fact]
     public void TrojanHorseDrainsOnlyNearbyHostilePlayersEveryFourthSecond()
     {

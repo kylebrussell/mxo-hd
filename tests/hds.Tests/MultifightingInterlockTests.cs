@@ -87,6 +87,52 @@ public class MultifightingInterlockTests : IDisposable
         Assert.Equal(90,Input(f,s[0]));
         s[2].Client.playerData.setDistrictId(2);Assert.Equal(100,Input(f,s[0]));
     }
+    [Fact]
+    public void SlidingVolleyCannotTransferToANewOpponentOrRespawn()
+    {
+        var (fight, sides) = Group();
+        Set(fight, "rng", new Random(1));
+        var (shooter, opponent, other) = (sides[0], sides[1], sides[2]);
+        shooter.Client.viewMan = new ViewManager();
+        shooter.Move = new CombatInterlock.Move();
+        var original = AddView(opponent, 4001, 9);
+        var replacement = AddView(other, 4002, 10);
+        uint handle = DuelPackets.Handle(original.ViewID, original.spawnId);
+        shooter.OpponentHandle = handle;
+        var volley = new AbilityItem();
+        volley.setAbilityID(CombatSpecials.SlidingVolley);
+        volley.setAbilityName("Sliding Volley");
+
+        Assert.True(fight.QueueAbility(shooter.Client, volley, original.ViewID, requiredOpponent: handle));
+        Assert.Same(volley, PvpFight.QueuedAbilityForRound(shooter, opponent));
+        Assert.Null(PvpFight.QueuedAbilityForRound(shooter, other));
+        original.spawnId++;
+        Assert.Null(PvpFight.QueuedAbilityForRound(shooter, opponent));
+        original.spawnId--;
+        opponent.Present = false;
+        Assert.Null(PvpFight.QueuedAbilityForRound(shooter, opponent));
+        opponent.Present = true;
+
+        Assert.True(fight.ChangeTarget(shooter.Client, other.Client,
+            Retarget(DuelPackets.Handle(replacement.ViewID, replacement.spawnId))));
+        Assert.Null(shooter.QueuedAbility);
+        Assert.True(fight.ChangeTarget(shooter.Client, opponent.Client, Retarget(handle)));
+        Assert.Null(PvpFight.QueuedAbilityForRound(shooter, opponent));
+        Assert.True(fight.QueueAbility(shooter.Client, volley, original.ViewID, requiredOpponent: handle));
+        Assert.Same(volley, PvpFight.QueuedAbilityForRound(shooter, opponent));
+
+        ClientView AddView(PvpFight.Side side, uint entity, ushort spawn)
+        {
+            side.Client.playerData.setEntityId(entity);
+            var view = shooter.Client.viewMan.addView(entity, 1);
+            view.viewCreated = true;
+            view.spawnId = spawn;
+            return view;
+        }
+
+        static byte[] Retarget(uint target) => BitConverter.GetBytes(target).Concat(new byte[] { 1, 0x6b }).ToArray();
+    }
+
     public void Dispose()
     {
         foreach(var c in clients){CombatManager.GetHandler(c).pvpFight=null;CombatManager.RemoveClient(c);c.Alive=false;}

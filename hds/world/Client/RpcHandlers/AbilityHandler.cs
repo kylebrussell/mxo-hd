@@ -242,7 +242,7 @@ namespace hds
                     Deny(AbilityID, "Load Controlled Burst before using it.", AbilityRefusals.NotLoaded, sendServerText: false);
                     return;
                 }
-                if (!CombatSpecials.HasControlledBurstWeapon(shooter))
+                if (!CombatSpecials.HasEquippedDualSubmachineGuns(shooter))
                 {
                     Deny(AbilityID, "Controlled Burst requires dual submachine guns.", AbilityRefusals.RequiredItemCategory, sendServerText: false);
                     return;
@@ -466,10 +466,17 @@ namespace hds
             bool coderInterlock = AbilityID == 605 || AbilityID == 618;
             bool pistolSlide = AbilityID == 241;
             bool pistolAerial = AbilityID == AbilityConditionalControls.PistolAerial;
-            bool checkedInterlockSelection = coderInterlock || pistolSlide || pistolAerial;
+            bool slidingVolley = AbilityID == CombatSpecials.SlidingVolley;
+            bool checkedInterlockSelection = coderInterlock || pistolSlide || pistolAerial || slidingVolley;
             if (checkedInterlockSelection && !AbilityPassives.IsLoaded(Store.currentClient, AbilityID))
             {
                 Deny(AbilityID, "Load this ability before using it.", AbilityRefusals.NotLoaded, sendServerText: false);
+                return;
+            }
+
+            if (slidingVolley && !CombatSpecials.HasEquippedDualSubmachineGuns(Store.currentClient))
+            {
+                Deny(AbilityID, "Sliding Volley requires dual submachine guns.", AbilityRefusals.RequiredItemCategory, sendServerText: false);
                 return;
             }
 
@@ -485,7 +492,7 @@ namespace hds
                     _ => false
                 });
             uint stateMask = AbilityID == 197 ? 2u :
-                martialInterlock || coderInterlock || pistolSlide ? (uint)definition.Number("Ability/CastRequiredStates") : 0u;
+                martialInterlock || coderInterlock || pistolSlide || slidingVolley ? (uint)definition.Number("Ability/CastRequiredStates") : 0u;
             ushort requiredState = stateMask switch
             {
                 2 => TempMods.DazeAbility,
@@ -1089,7 +1096,7 @@ namespace hds
             if (controlledBurst)
             {
                 var combat = CombatManager.GetHandler(client);
-                if (!AbilityPassives.IsLoaded(client, AbilityID) || !CombatSpecials.HasControlledBurstWeapon(client) ||
+                if (!AbilityPassives.IsLoaded(client, AbilityID) || !CombatSpecials.HasEquippedDualSubmachineGuns(client) ||
                     !ReferenceEquals(combat.ActiveInterlockIdentity, controlledBurstFight))
                 {
                     Output.WriteDebugLog("[ABILITY] 250 fizzles: the loadout, weapon or interlock changed");
@@ -1228,6 +1235,7 @@ namespace hds
             {
                 504 => 1,  // Concealed Shot
                 CombatSpecials.ControlledBurst => 1,
+                CombatSpecials.SlidingVolley => 1,
                 36 => 2,   // Tinkering
                 105 => 1,  // Body Shot
                 243 => 1,  // Pistol Aerial

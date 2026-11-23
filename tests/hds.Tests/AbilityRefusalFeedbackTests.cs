@@ -1026,6 +1026,130 @@ public class AbilityRefusalFeedbackTests:IDisposable
         Assert.Empty(caster.playerData.cooldownEndsAt);
     }
 
+    [Theory]
+    [InlineData("unloaded", AbilityRefusals.NotLoaded)]
+    [InlineData("single SMG", AbilityRefusals.RequiredItemCategory)]
+    [InlineData("out of combat", AbilityRefusals.InvalidTarget)]
+    [InlineData("other opponent", AbilityRefusals.InvalidTarget)]
+    [InlineData("stale request", AbilityRefusals.InvalidTarget)]
+    [InlineData("outside range", AbilityRefusals.TargetOutOfRange)]
+    [InlineData("blocked sight", AbilityRefusals.TargetNotInSight)]
+    [InlineData("no daze", AbilityRefusals.TargetStateRequired)]
+    [InlineData("current daze", 0u)]
+    [InlineData("current tactic daze", 0u)]
+    public void SlidingVolleyQueuesOnlyOnTheDazedCurrentOpponent(string scenario, uint refusal)
+    {
+        const ushort id = CombatSpecials.SlidingVolley, level = 22;
+        string root = AppContext.BaseDirectory;
+        while (!File.Exists(Path.Combine(root, "data", "sector_properties.csv"))) root = Path.GetDirectoryName(root)!;
+        SectorProperties.Load(Path.Combine(root, "data", "sector_properties.csv"));
+        NavMesh.UseDirectory(Path.Combine(root, "data", "navmesh"));
+
+        var caster = Client();
+        caster.playerInstance.Level.setValue((byte)level);
+        caster.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(21750, 1095, 16150));
+        caster.playerInstance.EquippedItemID.setValue(scenario == "single SMG" ? 698u : 2503u);
+        var profile = new ushort[] { 2, 17, CombatStyles.SubmachineGuns, id }
+            .SelectMany(ability => AbilityPrerequisites.Current.Closure(ability).Keys.Append(ability)).Distinct().ToArray();
+        Assert.True(profile.Sum(AbilityMemory.Cost) <= AbilityMemory.ForLevel(level));
+        AbilityPassives.SetLoaded(caster, profile.Where(ability => scenario != "unloaded" || ability != id)
+            .Select(ability => (ability, level)));
+        CombatStyles.Select(caster, CombatStyles.SubmachineGuns);
+        caster.messageQueue.RPCMessagesQueue.Clear();
+        caster.messageQueue.ObjectMessagesQueue.Clear();
+        Store.currentClient = caster;
+
+        var enemy = new Mob();
+        enemy.setEntityId(249000);
+        enemy.setDistrict(1);
+        enemy.setLevel(level);
+        enemy.setHealthC(1000);
+        enemy.setHealthM(1000);
+        enemy.setIsSpawned(true);
+        enemy.setXPos(scenario == "outside range" ? 20149 : scenario == "blocked sight" ? 22350 : 21550);
+        enemy.setYPos(1095);
+        enemy.setZPos(16150);
+        var view = caster.viewMan.addView(enemy.getEntityId(), 1);
+        view.viewCreated = true;
+        view.spawnId = 9;
+        uint handle = DuelPackets.Handle(view.ViewID, view.spawnId);
+        var session = new CombatSession(caster, enemy, scenario == "other opponent" ? handle ^ 0x10000 : handle,
+            CombatSession.CombatType.Melee) { CurrentMove = new CombatInterlock.Move() };
+        typeof(CombatSession).GetField("<IsActive>k__BackingField", BindingFlags.Instance | BindingFlags.NonPublic)!
+            .SetValue(session, true);
+        var handler = CombatManager.GetHandler(caster);
+        var sessionField = typeof(CombatHandler).GetField("currentSession", BindingFlags.Instance | BindingFlags.NonPublic)!;
+        if (scenario != "out of combat") sessionField.SetValue(handler, session);
+        var previousMobs = WorldServer.mobs;
+        WorldServer.mobs = new System.Collections.ArrayList { enemy };
+        var subject = TimedEffects.ForMob(enemy);
+
+        try
+        {
+            if (scenario == "current tactic daze")
+            {
+                typeof(Mob).GetField("conditionFlags", BindingFlags.Instance | BindingFlags.NonPublic)!
+                    .SetValue(enemy, CombatInterlock.ConditionBit(CombatTactic.Speed));
+            }
+            else if (scenario != "no daze")
+            {
+                var daze = CombatDepthDaze.Effect(30);
+                subject.Effects.Apply(daze.Ability, TimedEffects.Instantiate(daze, new Random(1)), TimeUtils.GetSimTimeSeconds());
+            }
+            var ability = new AbilityItem();
+            ability.setAbilityID(id);
+            ability.setAbilityName("Sliding Volley");
+            ability.setCastAnimStart(new byte[4]);
+            DataLoader.getInstance().AbilityDB.Add(ability);
+
+            // Internal handler frame, never replayed by an external bootstrap.
+            var request = new byte[41];
+            BitConverter.GetBytes(id).CopyTo(request, 0);
+            BitConverter.GetBytes(scenario == "stale request" ? handle ^ 0x10000 : handle).CopyTo(request, 2);
+            new AbilityHandler().ProcessAbility(ref request);
+
+            if (refusal != 0)
+            {
+                Assert.Equal(AbilityRefusals.Encode(new(id, refusal, states: scenario == "no daze" ? 2u : 0u)),
+                    Assert.Single(Rpcs(caster)));
+                Assert.Null(session.QueuedAbility);
+                Assert.Equal(500, AbilityHandler.CurrentInnerStrength(caster));
+                Assert.Empty(caster.playerData.cooldownEndsAt);
+                return;
+            }
+
+            Assert.Same(ability, session.QueuedAbility);
+            Assert.Equal(view.ViewID, session.QueuedAbilityTarget);
+            Assert.Equal(485, AbilityHandler.CurrentInnerStrength(caster));
+            Assert.Equal(1000, enemy.getHealthC());
+            Assert.True(AbilityCooldowns.IsCoolingDown(caster.playerData, id, TimeUtils.GetSimTimeSeconds()));
+            Assert.True(AbilityCooldowns.TryGet(id, out var cooldown));
+            Assert.Equal(10f, cooldown.Seconds);
+            Assert.Equal(689, cooldown.Group);
+            Assert.Equal(5f, cooldown.GroupSeconds);
+            Assert.Equal(21081u, CombatAnimations.Special(id, true, CombatTactic.Speed)?.Id);
+            Assert.True(handler.CanResolveNpcQueuedAbility(session, ability));
+            view.spawnId++;
+            Assert.False(handler.CanResolveNpcQueuedAbility(session, ability));
+            view.spawnId--;
+            view.viewNeedsToBeDeleted = true;
+            Assert.False(handler.CanResolveNpcQueuedAbility(session, ability));
+            view.viewNeedsToBeDeleted = false;
+            caster.playerInstance.EquippedItemID.setValue(698u);
+            Assert.False(handler.CanResolveNpcQueuedAbility(session, ability));
+            caster.playerInstance.EquippedItemID.setValue(2503u);
+            caster.playerData.passives.Loaded.Remove(id);
+            Assert.False(handler.CanResolveNpcQueuedAbility(session, ability));
+        }
+        finally
+        {
+            TimedEffects.Clear(subject);
+            sessionField.SetValue(handler, null);
+            CombatManager.RemoveClient(caster);
+            WorldServer.mobs = previousMobs;
+        }
+    }
+
     [Fact] public void ActualDisplayEnqueueChangesNoResourcesTimersOrLoadedMembershipAndPrunesOnReset()
     {
         var c=Client(123);double beforeCast=c.playerData.castEndsAt;Store.currentClient=c;c.playerData.passives.Loaded[77]=50;c.playerData.cooldownEndsAt[77]=12345;

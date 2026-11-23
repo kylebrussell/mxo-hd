@@ -56,7 +56,10 @@ namespace hds
             ControlActions.CanUseAbilities(caster) && (ability == null ||
                 ControlActions.CanPerformSpecialMove(caster, ability.getAbilityID()) &&
                 (ability.getAbilityID() != CombatSpecials.ControlledBurst || AbilityPassives.IsLoaded(caster, CombatSpecials.ControlledBurst)) &&
-                (ability.getCastingTime() <= 0 || CanQueueGunCast(caster, ability.getAbilityID())));
+                (ability.getAbilityID() == CombatSpecials.SlidingVolley
+                    ? AbilityPassives.IsLoaded(caster, CombatSpecials.SlidingVolley) &&
+                      CombatSpecials.HasEquippedDualSubmachineGuns(caster) && CombatStyles.CanUse(caster, CombatSpecials.SlidingVolley)
+                    : ability.getCastingTime() <= 0 || CanQueueGunCast(caster, ability.getAbilityID())));
 
         // Name matches/aliases between the GOB ability and ILDB choreography. Aliases are server policy;
         // IDs/durations are extracted, never inferred from ability IDs. Unmapped moves retain tactic fallback.

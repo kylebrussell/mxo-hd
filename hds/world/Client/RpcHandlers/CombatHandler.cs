@@ -303,6 +303,13 @@ namespace hds
             return true;
         }
 
+        internal bool CanResolveNpcQueuedAbility(CombatSession session, AbilityItem ability)
+        {
+            if (!CombatAnimations.CanResolveQueuedAbility(client, ability)) return false;
+            return ability?.getAbilityID() != CombatSpecials.SlidingVolley ||
+                PowerShotOpponent(session.QueuedAbilityTarget, (ushort)(session.TargetViewSpawnId >> 16)) == session.TargetViewSpawnId;
+        }
+
         /// <summary>
         /// One close-combat round, by retail's interlock/combat_resolution (see <see cref="CombatRules"/>): both fighters
         /// roll with their tactics, <see cref="CombatRules.Resolve"/> decides who wins and who is hurt, the round's
@@ -336,7 +343,7 @@ namespace hds
             bool stunned = mob.IsStunned(now);
             bool playerStunned = ControlActions.Incapacitated(TimedEffects.ForPlayer(player).Effects);
             if (!ControlActions.CanWithdraw(TimedEffects.ForPlayer(player).Effects)) withdrawing = false;
-            if (!CombatAnimations.CanResolveQueuedAbility(player, ability)) ability = null;
+            if (!CanResolveNpcQueuedAbility(session, ability)) ability = null;
             bool ordinaryWithdrawal=WithdrawalInput.Ordinary(withdrawing,opening,ability,ordinaryWithdrawalRequested);
             bool playerHit, npcHit, condition, playerFirst;
             UInt16 playerAttack, playerDefense, npcAttack, npcDefense;
