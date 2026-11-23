@@ -1,5 +1,6 @@
 using hds;
 using hds.shared;
+using MxoHd.PacketResearch;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -450,6 +451,155 @@ public class FreeCastViralLandingTests : IDisposable
     }
 
     [Theory]
+    [InlineData(361, 800, 35, false)]
+    [InlineData(361, 800, 35, true)]
+    [InlineData(465, 400, 17, false)]
+    [InlineData(465, 400, 17, true)]
+    public void FumbleFieldAndUiLagApplyEveryTypedModifierAndExpireOnIndependentRecipients(
+        ushort id, int radius, float duration, bool primaryDeflects)
+    {
+        var caster = Client(110);
+        Store.currentClient = caster;
+        caster.playerData.pvpFlag = true;
+        caster.playerInstance.OrganizationID.setValue((byte)1);
+        caster.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(17000, 495, 6400));
+        AbilityPassives.SetLoaded(caster, new[] { (id, (ushort)50) });
+        Environment.SetEnvironmentVariable("MXO_FREECAST_VIRAL_QA_ATTACK15", "32766");
+        Environment.SetEnvironmentVariable("MXO_FREECAST_VIRAL_QA_DEFENSE15", "32766");
+
+        const int centre = 6700;
+        var primary = Recipient(111, centre);
+        var edge = Recipient(112, centre + radius);
+        var outside = Recipient(113, centre + radius + 1);
+        var friend = Recipient(114, centre + 100, organization: 1);
+        var hidden = Recipient(115, centre + 100, visible: false);
+        if (primaryDeflects) primary.playerData.passives.Totals[183] = 150;
+        var affected = primaryDeflects ? new[] { edge } : new[] { primary, edge };
+        var excluded = primaryDeflects ? new[] { caster, outside, friend, hidden, primary } : new[] { caster, outside, friend, hidden };
+        var participants = affected.Concat(excluded).ToArray();
+        var ability = new AbilityItem();
+        ability.setAbilityID(id);
+        (ushort Stat, int Value)[] expected = id == 361
+            ? new (ushort, int)[] { (524, -27), (1032, -27) }
+            : new (ushort, int)[] { (524, -20), (1010, -18), (1011, -18), (1032, -20) };
+
+        try
+        {
+            var targetView = caster.viewMan.FindViewForEntity(111);
+            Assert.True(AbilityTargets.Land(caster, ability, targetView.ViewID, origin: AbilityCastOrigin.NormalFreeCast));
+            if (primaryDeflects)
+                Assert.Equal(FreeCastViralContest.DeflectFx,
+                    NumericalUtils.ByteArrayToUint32(primary.playerInstance.EffectID.getValue(), 1));
+
+            double lastExpiry = 0;
+            foreach (var target in affected)
+            {
+                var effects = TimedEffects.ForPlayer(target).Effects.Snapshot().Where(effect => effect.Parent == id).ToArray();
+                Assert.Equal(expected, effects.OrderBy(effect => effect.Target).Select(effect => (effect.Target, effect.Value)));
+                Assert.All(effects, effect => Assert.Equal(duration, effect.Seconds));
+                Assert.Equal(expected.Select(pair => (pair.Stat, pair.Value, duration)), Records(target, false)
+                    .Select(record => (record.TargetId, record.SignedValue, record.Duration)));
+                lastExpiry = Math.Max(lastExpiry, effects.Max(effect => effect.Expires));
+                foreach (var (stat, value) in expected) Assert.Equal(value, AbilityStats.Player(target, stat));
+            }
+            Assert.All(excluded, target =>
+            {
+                Assert.False(TimedEffects.ForPlayer(target).Effects.HasParent(id));
+                Assert.Empty(Records(target, false));
+            });
+            Assert.All(participants, target => Assert.Equal(1000, PvpCombat.HealthOf(target)));
+
+            TimedEffects.RunDue(lastExpiry + 0.01);
+            foreach (var target in affected)
+            {
+                Assert.False(TimedEffects.ForPlayer(target).Effects.HasParent(id));
+                Assert.Equal(Records(target, false).Select(record => (record.TargetId, record.RecordId)),
+                    Records(target, true).Select(record => (record.TargetId, record.RecordId)));
+                foreach (var (stat, _) in expected) Assert.Equal(0, AbilityStats.Player(target, stat));
+            }
+        }
+        finally
+        {
+            foreach (var client in participants) TimedEffects.Clear(TimedEffects.ForPlayer(client));
+        }
+
+        WorldClient Recipient(uint id, int z, byte organization = 2, bool visible = true)
+        {
+            var recipient = Client(id);
+            recipient.playerData.pvpFlag = true;
+            recipient.playerInstance.OrganizationID.setValue(organization);
+            recipient.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(17000, 495, z));
+            if (visible) caster.viewMan.addView(id, 1).viewCreated = true;
+            return recipient;
+        }
+
+        ManageBonusRecord[] Records(WorldClient client, bool remove) => client.messageQueue.RPCMessagesQueue.Cast<SequencedMessage>()
+            .Select(message => ManageBonusRecord.TryDecode(message.content.AsSpan(1), out var record) ? record : null)
+            .OfType<ManageBonusRecord>().Where(record => record.SourceId == id && record.AddRemoveType == (remove ? 1 : 0))
+            .OrderBy(record => record.TargetId).ToArray();
+    }
+
+    [Theory]
+    [InlineData(361, 30, 58, 8)]
+    [InlineData(465, 17, 30, 4)]
+    public void FumbleFieldAndUiLagUseTheFullRankedCostAndTheirOwnNativeTimers(ushort id, ushort cost, int reuse, double radius)
+    {
+        var caster = Client(110);
+        var profile = new NativeQa.Modes.HackerFumbleFieldUiLagMode().Plan.Abilities;
+        AbilityPassives.SetLoaded(caster, profile.Select(loaded => (loaded, (ushort)50)));
+        Assert.Equal(15, AbilityStats.Influence(caster, 117));
+        Assert.Equal(cost, AbilityCosts.Effective(caster, id));
+        Assert.Equal(radius, AbilityRadius.TargetMetres(caster, id));
+        Assert.Equal(2f, AbilityCatalog.Find(id).CastSeconds);
+        Assert.True(AbilityCooldowns.TryGet(id, out var cooldown));
+        Assert.Equal(new AbilityCooldowns.Cooldown(reuse), cooldown);
+    }
+
+    [Theory]
+    [InlineData(361)]
+    [InlineData(465)]
+    public void FumbleFieldAndUiLagRequireSightFromTheirSelectedCentreToEachSecondary(ushort id)
+    {
+        string root = HeadlessClient.NativeBoundFurnitureFixture.FindRepository();
+        SectorProperties.Load(Path.Combine(root, "data", "sector_properties.csv"));
+        NavMesh.UseDirectory(Path.Combine(root, "data", "navmesh"));
+        var caster = Client(110);
+        var primary = Client(111);
+        var blocked = Client(112);
+        Store.currentClient = caster;
+        caster.playerData.pvpFlag = primary.playerData.pvpFlag = blocked.playerData.pvpFlag = true;
+        caster.playerInstance.OrganizationID.setValue((byte)1);
+        primary.playerInstance.OrganizationID.setValue((byte)2);
+        blocked.playerInstance.OrganizationID.setValue((byte)2);
+        caster.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(22125, 1095, 16100));
+        primary.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(21925, 1095, 16100));
+        blocked.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(21675, 1095, 16100));
+        var selected = caster.viewMan.addView(111, 1);
+        selected.viewCreated = true;
+        caster.viewMan.addView(112, 1).viewCreated = true;
+        AbilityPassives.SetLoaded(caster, new[] { (id, (ushort)50) });
+        Environment.SetEnvironmentVariable("MXO_FREECAST_VIRAL_QA_ATTACK15", "32766");
+        Environment.SetEnvironmentVariable("MXO_FREECAST_VIRAL_QA_DEFENSE15", "0");
+        var ability = new AbilityItem();
+        ability.setAbilityID(id);
+
+        try
+        {
+            Assert.True(CombatSight.Between(caster, primary));
+            Assert.Equal("sight", AbilityHostile.PlayerAreaReason(caster, blocked, 21925, 1095, 16100,
+                AbilityRadius.TargetMetres(caster, id), primary, out _));
+            Assert.True(AbilityTargets.Land(caster, ability, selected.ViewID, origin: AbilityCastOrigin.NormalFreeCast));
+            Assert.True(TimedEffects.ForPlayer(primary).Effects.HasParent(id));
+            Assert.False(TimedEffects.ForPlayer(blocked).Effects.HasParent(id));
+        }
+        finally
+        {
+            TimedEffects.Clear(TimedEffects.ForPlayer(primary));
+            TimedEffects.Clear(TimedEffects.ForPlayer(blocked));
+        }
+    }
+
+    [Theory]
     [InlineData(399, 800, TempMods.PowerlessAbility, 0, 6.54, 0, false)]
     [InlineData(400, 500, TempMods.DOTPlaceHolderAbility, 74, 15, 12, false)]
     [InlineData(399, 800, TempMods.PowerlessAbility, 0, 6.54, 0, true)]
@@ -800,6 +950,8 @@ public class FreeCastViralLandingTests : IDisposable
     [InlineData(343)]
     [InlineData(350)]
     [InlineData(351)]
+    [InlineData(361)]
+    [InlineData(465)]
     [InlineData(468)]
     [InlineData(59)]
     [InlineData(60)]
