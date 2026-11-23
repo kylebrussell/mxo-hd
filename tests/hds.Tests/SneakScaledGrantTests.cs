@@ -45,6 +45,120 @@ public class SneakScaledGrantTests
         Assert.Contains(snapshot,m=>m.Stat==115&&m.Value==-200);Assert.Contains(snapshot,m=>m.Stat==509&&m.Value==10);
         // Character50/learned50 already received50 from the previous fallback, not server stealth0.
     }
+    [Fact]
+    public void ShippedImprovedSneakDefinesTheMasteryLinkAndNoOwnModifiers()
+    {
+        var entry = AbilityCatalog.Find(186);
+        Assert.Equal(1, entry.Number("Ability/MasteryAbility"));
+        Assert.Equal(151, AbilityCatalog.IdOf((uint)entry.Number("Ability/MasteryBaseAbility")));
+        Assert.Equal(25, AbilityPrerequisites.Current.Closure(186)[151]);
+        Assert.Equal(1, entry.Number("Ability/IsAToggleAbility"));
+        Assert.Equal(1, entry.Number("Ability/CastWhenUsed"));
+        Assert.Equal(1, entry.Number("Ability/AbilityIsExclusive"));
+        Assert.Equal(2, entry.Number("Ability/CastingTime"));
+        Assert.Equal(0, entry.Number("Ability/DetectionDifficultyChange", -1));
+        Assert.Empty(entry.Modifiers);
+    }
+
+    [Theory]
+    [InlineData(25)]
+    [InlineData(40)]
+    public void ImprovedSneakUsesTheLinkedRankAndKeepsItsOwnRecords(ushort rank)
+    {
+        var client = Client(true);
+        var archive = new (ushort, ushort)[] { (151, rank), (186, 1) };
+        AbilityPassives.SetLoaded(client, archive);
+        var previousClients = WorldServer.Clients;
+        WorldServer.Clients = new Dictionary<string, WorldClient>();
+        try
+        {
+            Stealth.Land(client, 186, 0);
+            var state = Assert.IsType<Stealth.State>(Stealth.Current(client));
+            Assert.Equal(186, state.Def.Ability);
+            Assert.Equal(rank, state.Level);
+            Assert.Equal(rank, Stealth.StealthLevelOf(client));
+            Assert.Equal(Stealth.Sneak, Stealth.BitsOf(client));
+            Assert.Equal(AnimationPackets.StanceSneaking, EmoteHandler.Stance(client));
+            Assert.Contains(Packets(client), p => p.AsSpan().SequenceEqual(AbilityBuffs.BuildExclusive(186, true)));
+            var modifier = Assert.Single(state.Mods.Select((mod, i) => (mod, i)), pair => pair.mod.Stat == 209);
+            ushort record = state.RecordIds[modifier.i];
+            Assert.Contains(Packets(client), p => p.AsSpan().SequenceEqual(
+                AbilityBuffs.BuildModifier(AbilityBuffs.KindStat, record, 186, 209, rank, false, 0)));
+
+            AbilityPassives.SetLoaded(client, new[] { ((ushort)151, rank) });
+            Assert.Null(Stealth.Current(client));
+            Assert.Equal(AnimationPackets.StanceStanding, EmoteHandler.Stance(client));
+            Assert.Contains(Packets(client), p => p.AsSpan().SequenceEqual(
+                AbilityBuffs.BuildModifier(AbilityBuffs.KindStat, record, 186, 209, rank, true, 0)));
+            Assert.Contains(Packets(client), p => p.AsSpan().SequenceEqual(AbilityBuffs.BuildExclusive(186, false)));
+
+            Stealth.Land(client, 1111, 0);
+            var ordinary = Assert.IsType<Stealth.State>(Stealth.Current(client));
+            Assert.Equal(1111, ordinary.Def.Ability);
+            Assert.Equal(rank, ordinary.StealthLevel);
+            AbilityPassives.SetLoaded(client, archive);
+            AbilityPassives.SetLoaded(client, new[] { ((ushort)151, rank) });
+            Assert.Same(ordinary, Stealth.Current(client));
+        }
+        finally
+        {
+            Stealth.Cleared(client);
+            CombatManager.RemoveClient(client);
+            WorldServer.Clients = previousClients;
+        }
+    }
+
+    [Fact]
+    public void UnderRankAndUnloadedMasteryFailBeforeActivation()
+    {
+        var client = Client(true);
+        AbilityPassives.SetLoaded(client, new (ushort, ushort)[] { (151, 24), (186, 1) });
+        Assert.NotNull(Stealth.Refusal(client, 186, 0, out uint reason));
+        Assert.Equal(AbilityRefusals.NotLoaded, reason);
+        Stealth.Land(client, 186, 0);
+        Assert.Null(Stealth.Current(client));
+
+        AbilityPassives.SetLoaded(client, new (ushort, ushort)[] { (151, 25) });
+        Assert.NotNull(Stealth.Refusal(client, 186, 0, out reason));
+        Assert.Equal(AbilityRefusals.NotLoaded, reason);
+
+        AbilityPassives.SetLoaded(client, new (ushort, ushort)[] { (151, 25), (186, 1) });
+        var handler = CombatManager.GetHandler(client);
+        var previousClients = WorldServer.Clients;
+        WorldServer.Clients = new Dictionary<string, WorldClient>();
+        try
+        {
+            handler.isCombatRunning = true;
+            Assert.NotNull(Stealth.Refusal(client, 186, 0, out reason));
+            Assert.Equal(AbilityRefusals.MustBeOutsideCombat, reason);
+            Stealth.Land(client, 186, 0);
+            Assert.Null(Stealth.Current(client));
+        }
+        finally
+        {
+            handler.isCombatRunning = false;
+            CombatManager.RemoveClient(client);
+            WorldServer.Clients = previousClients;
+        }
+    }
+
+    [Fact]
+    public void UnloadingDuringTheCastCancelsItEvenIfTheMasteryIsReloaded()
+    {
+        var client = Client(true);
+        var archive = new (ushort, ushort)[] { (151, 25), (186, 1) };
+        AbilityPassives.SetLoaded(client, archive);
+        AbilityCooldowns.StartCast(client.playerData, TimeUtils.GetSimTimeSeconds(), 2);
+        var pending = AbilityCastInterrupts.Begin(client, 186, 2);
+
+        AbilityPassives.SetLoaded(client, new (ushort, ushort)[] { (151, 25) });
+        AbilityPassives.SetLoaded(client, archive);
+
+        Assert.False(AbilityCastInterrupts.Complete(pending, () => Stealth.Land(client, 186, 0)));
+        Assert.Null(Stealth.Current(client));
+        Assert.Equal(25, Stealth.LoadedImprovedSneakRank(client));
+    }
+
     [Fact] public void SourceCapIsSafeAndUnseenLegacyAndZeroPoliciesRemainSeparate()
     {
         Assert.Equal((ushort)50,AbilityProgression.GrantLevel(151,ushort.MaxValue));Assert.Equal((ushort)0,AbilityProgression.GrantLevel(151,0));

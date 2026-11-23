@@ -10,7 +10,7 @@ public sealed class StarterStealthObserverMode : NativeQaMode
     private const int SneakRank = 15;
     // PR530 ordinary Sneak and PR465 ordinary Stealth Countermeasures.
     private const string StockSneak = "80b95704000000000000000000000000000000000000000000000000585cc20001000000086b0000000000";
-    private const string StockCountermeasures = "80b92501000000000000000000000000000000000000000000000000585cac0001000000086b0000000000";
+    internal const string StockCountermeasures = "80b92501000000000000000000000000000000000000000000000000585cac0001000000086b0000000000";
     private static readonly ushort[] ObserverRoots = { 2, 17, Awareness, Countermeasures, Detection };
     private static readonly ushort[] ObserverLoadout = Closure(ObserverRoots);
     private static readonly ushort[] SneakLoadout = Closure(new ushort[] { 2, 17, 151 });
