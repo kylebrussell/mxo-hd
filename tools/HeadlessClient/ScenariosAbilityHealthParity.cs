@@ -44,12 +44,14 @@ public static partial class Scenarios
             player.SendChat("?pvpflag on");
             await player.WaitForViewUpdateAsync(2, OwnPvpFlagOn);
         }
+        // Retained ordinary Hacker Style action from the starter viral sight fixture.
+        caster.SendRpc("80b9ee030000000000000000000000000000000000000000000000000000000090c97941086b0000000000");
         // Retail actions_combat line 16215, cast on a selected target.
         caster.SendRpc(HealthCast("80 b9 d2 01 0a 00 a1 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 08 6b 00 00 00 00 00", enemyView));
         var applied = await enemy.WaitForRpcAsync(ModPattern(466, 1157) + " 00 00 70 41", TimeSpan.FromSeconds(10));
         int total = BinaryPrimitives.ReadInt32LittleEndian(applied.Bytes.AsSpan(13));
-        // Loaded Transmit Virus (95) contributes +15% viral influence at level 50.
-        Check.That(total is >= 487 and <= 510, $"Plague Zone captured total scaled by +15% viral influence, actual {total}");
+        // Level-50 Hacker Style adds 27 and loaded Transmit Virus (95) adds 15.
+        Check.That(total is >= 602 and <= 630, $"Plague Zone captured total scaled by +42% viral influence, actual {total}");
         await ally.WaitForRpcAsync(ModPattern(169, 1157, true), TimeSpan.FromSeconds(20));
         await enemy.WaitForRpcAsync(ModPattern(466, 1157, true), TimeSpan.FromSeconds(20));
         MatchCollection hot = Regex.Matches(context.Server.DebugLog(), @"169 heals HealthAlly for (\d+)");

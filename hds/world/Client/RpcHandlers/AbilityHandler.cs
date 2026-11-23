@@ -40,7 +40,7 @@ namespace hds
                 }
             }
             bool selectedArtilleristArea = AbilityID == 336 || AbilityID == 337;
-            bool selectedDespoilerArea = AbilityID == 399 || AbilityID == 400 || AbilityID == 404;
+            bool selectedDespoilerOrPlagueZone = AbilityID == 399 || AbilityID == 400 || AbilityID == 404 || AbilityID == 466;
 
             bool needsLoadout = AbilityID == 43 || AbilityID == 48 || AbilityID == 69 || AbilityID == AbilityAuras.CombatAuraTwo;
             if (!CoderPets.IsCastLoaded(Store.currentClient, AbilityID) ||
@@ -97,7 +97,7 @@ namespace hds
                 AbilityID == 392 || AbilityID == 394 || AbilityID == 395 || AbilityID == 396 ||
                 selectedViralField || selectedCoderViral || selectedArtilleristArea;
             ushort? lockedDamageTargetSpawn = null;
-            bool selectedHostileCast = selectedViralAttack || selectedDespoilerArea || selectedHackerCast || selectedDestroyerField;
+            bool selectedHostileCast = selectedViralAttack || selectedDespoilerOrPlagueZone || selectedHackerCast || selectedDestroyerField;
             if (selectedHostileCast)
             {
                 var caster = Store.currentClient;
@@ -451,7 +451,7 @@ namespace hds
                 return;
             }
 
-            if (selectedDespoilerArea || selectedArtilleristArea)
+            if (selectedDespoilerOrPlagueZone || selectedArtilleristArea)
             {
                 var caster = Store.currentClient;
                 if (!AbilityTargets.HasSelectionSight(caster, definition, currentTargetViewId))

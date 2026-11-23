@@ -1352,6 +1352,20 @@ public class AbilityRefusalFeedbackTests:IDisposable
         CheckSelectedFieldAdmission(id, action, refusal);
 
     [Theory]
+    [InlineData(466, "empty", AbilityRefusals.InvalidTarget)]
+    [InlineData(466, "ally", AbilityRefusals.InvalidTarget)]
+    [InlineData(466, "range", AbilityRefusals.TargetOutOfRange)]
+    [InlineData(466, "style", AbilityRefusals.WrongStyle)]
+    [InlineData(466, "sight", AbilityRefusals.TargetNotInSight)]
+    [InlineData(466, "unloaded", AbilityRefusals.NotLoaded)]
+    [InlineData(466, "stale", 0u)]
+    [InlineData(466, "left range", 0u)]
+    [InlineData(466, "combat", 0u)]
+    [InlineData(466, "land", 0u)]
+    public void PlagueZoneTwoBindsTheOriginalSelectedOpponent(ushort id, string action, uint refusal) =>
+        CheckSelectedFieldAdmission(id, action, refusal);
+
+    [Theory]
     [InlineData(361, "empty", AbilityRefusals.InvalidTarget)]
     [InlineData(465, "ally", AbilityRefusals.InvalidTarget)]
     [InlineData(361, "range", AbilityRefusals.TargetOutOfRange)]
@@ -1405,7 +1419,10 @@ public class AbilityRefusalFeedbackTests:IDisposable
         DataLoader.getInstance().AbilityDB.Add(ability);
         var fight = CombatManager.GetHandler(caster);
         fight.isCombatRunning = action == "combat";
-        var request = new byte[41];
+        // Plague Zone 2.0 first action from abilities_use_plague_zone_2_0_at_corrupted.log.txt, lines 53–55.
+        var request = id == 466
+            ? Hex("d20106002e00000000000000000000000000000000000000000000002000000074f212002a6b0000000000")
+            : new byte[41];
         BitConverter.GetBytes(id).CopyTo(request, 0);
         BitConverter.GetBytes(action == "empty" ? (ushort)0 : view.ViewID).CopyTo(request, 2);
         BitConverter.GetBytes((ushort)9).CopyTo(request, 4);
