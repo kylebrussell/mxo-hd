@@ -36,6 +36,7 @@ public static partial class Scenarios
         new Scenario("world-npc-corner-chase",WorldNpcCornerChase,WorldNpcCornerFixture.Environment),
         new Scenario("world-npc-corner-stationary", WorldNpcCornerStationary, WorldNpcCornerFixture.StationaryEnvironment),
         new Scenario("coder-enrage-588-server", CoderEnrage588, CoderEnrage588Environment),
+        new Scenario("coder-enrage-interlock-retarget", CoderEnrageInterlockRetarget, CoderEnrage588Environment),
         new Scenario("enrage-npc-close-combat-server", EnrageNpcCloseCombat, new Dictionary<string, string>(StillNpcs)
         {
             ["MXO_MOBS"] = "world", ["MXO_DEV_COMMANDS"] = "1", ["MXO_FREECAST_VIRAL_QA"] = "1",
