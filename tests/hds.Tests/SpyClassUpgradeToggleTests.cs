@@ -75,6 +75,55 @@ public class SpyClassUpgradeToggleTests
         Assert.True(AbilityBuffs.Remove(actor, 1115));
     }
 
+    [Fact]
+    public void InfiltratorUpgradeAppliesDirectSneakMovementOnlyAndClearsItWithoutBreakingSneak()
+    {
+        var actor = Client(50);
+        Assert.True(AbilityBuffs.Apply(actor, 1115));
+        Assert.Equal(0f, Scale());
+
+        Assert.NotNull(Stealth.Begin(actor, Stealth.Defs[1116], 50));
+        Assert.Equal(0f, Scale());
+        Stealth.Cleared(actor);
+
+        var sneak = Stealth.Begin(actor, Stealth.Defs[1111], 50);
+        Assert.NotNull(sneak);
+        Assert.Equal(.10f, Scale());
+        Assert.True(AbilityBuffs.Remove(actor, 1115));
+        Assert.Equal(0f, Scale());
+        Assert.Same(sneak, Stealth.Current(actor));
+        Stealth.Cleared(actor);
+
+        float Scale() => BitConverter.ToSingle(actor.playerInstance.MovementScale.getValue());
+    }
+
+    [Fact]
+    public void InfiltratorUpgradeFeedsDisguiseLeaseAndBothCombatInputs()
+    {
+        var actor = Client(50);
+        var sweep = new AbilityItem();
+        sweep.setAbilityID(134);
+        int defence = AbilityStats.Defense(actor, false);
+        int rangedDefence = AbilityStats.Defense(actor, true);
+        int throwing = AbilityStats.SpecialAttack(actor, sweep);
+        var mask = Stealth.Begin(actor, Stealth.Defs[1114], 50, 1308623188);
+        Assert.Equal(56, mask.Seconds);
+        Stealth.Cleared(actor);
+
+        Assert.True(AbilityBuffs.Apply(actor, 1115));
+        Assert.Equal(defence + 3, AbilityStats.Defense(actor, false));
+        Assert.Equal(rangedDefence, AbilityStats.Defense(actor, true));
+        Assert.Equal(throwing + 3, AbilityStats.SpecialAttack(actor, sweep));
+        mask = Stealth.Begin(actor, Stealth.Defs[1114], 50, 1308623188);
+        Assert.Equal(59, mask.Seconds);
+        Assert.True(AbilityBuffs.Remove(actor, 1115));
+        Assert.Same(mask, Stealth.Current(actor));
+        Assert.Equal(59, mask.Seconds);
+        Assert.Equal(defence, AbilityStats.Defense(actor, false));
+        Assert.Equal(throwing, AbilityStats.SpecialAttack(actor, sweep));
+        Stealth.Cleared(actor);
+    }
+
     [Theory]
     [InlineData(155, 1113)]
     [InlineData(131, 1115)]

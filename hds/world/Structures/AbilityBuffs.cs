@@ -358,14 +358,20 @@ namespace hds
                 ? stealth.Mods.Where(modifier => modifier.Stat == SneakMovementStat).Sum(modifier => modifier.Value) / 100f
                 : 0f;
             ushort stat = MovementStatFor(stealth);
-            if (stat == InvisibleMovementStat)
+            ushort movementUpgrade = stat switch
             {
-                // Shadow Upgrade writes direct points to the same channel as Movement Accelerator.
+                SneakMovementStat => InfiltratorUpgrade,
+                InvisibleMovementStat => AbilityShadowPresentation.Child,
+                _ => 0
+            };
+            if (movementUpgrade != 0)
+            {
+                // These upgrades write direct movement points for their own gait.
                 lock (client.playerData.activeBuffs)
-                    if (client.playerData.activeBuffs.TryGetValue(AbilityShadowPresentation.Child, out var shadow) &&
-                        ActiveDefinition(shadow, out Buff upgrade))
+                    if (client.playerData.activeBuffs.TryGetValue(movementUpgrade, out var active) &&
+                        ActiveDefinition(active, out Buff upgrade))
                         stanceScale += upgrade.Modifiers.Where(modifier =>
-                            modifier.Kind == KindStat && modifier.Stat == InvisibleMovementStat).Sum(modifier => modifier.Value) / 100f;
+                            modifier.Kind == KindStat && modifier.Stat == stat).Sum(modifier => modifier.Value) / 100f;
             }
             if (buff == null) return stanceScale;
             if (stat == RunMovementStat) return buff.MovementScale;
@@ -391,6 +397,9 @@ namespace hds
         }
 
         private const ushort CrashAbility = 396, BottleneckField = 402;
+        private const ushort InfiltratorUpgrade = 1115;
+        private static bool UsesStanceMovement(ushort id) => id == InfiltratorUpgrade || id == AbilityShadowPresentation.Child;
+
         private const ushort RunMovementStat = 115, SneakMovementStat = 877, InvisibleMovementStat = 878;
 
         private static bool UsesStanceMovementChannel(ushort source) => source == CrashAbility || source == BottleneckField ||
@@ -674,7 +683,7 @@ namespace hds
             if (IsCatalogSpeedBuff(abilityId))
                 client.messageQueue.addObjectMessage(BuildMovementUpdate(movementScale,
                     (ushort)(DissemblingBits(client) | Stealth.BitsOf(client))), false);
-            if (abilityId == AbilityShadowPresentation.Child) PresentCurrentMovementScale(client);
+            if (UsesStanceMovement(abilityId)) PresentCurrentMovementScale(client);
             Output.WriteDebugLog("[BUFF] " + abilityId + " on" + (buff.Seconds > 0 ? " for " + buff.Seconds + " s" : ""));
 
             if (HasClassSweep(abilityId))
@@ -905,7 +914,7 @@ namespace hds
                     client.messageQueue.addObjectMessage(BuildMovementUpdate(scale, (ushort)(DissemblingBits(client) | Stealth.BitsOf(client))), false);
                 }
             }
-            if (abilityId == AbilityShadowPresentation.Child && !keepMovement) PresentCurrentMovementScale(client);
+            if (UsesStanceMovement(abilityId) && !keepMovement) PresentCurrentMovementScale(client);
             if (buff.EvadeShield)
             {
                 EvasionShield.Removed(client);
