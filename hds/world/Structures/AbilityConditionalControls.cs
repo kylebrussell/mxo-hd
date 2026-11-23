@@ -23,7 +23,7 @@ namespace hds
             HasCapturedStunStack(modifier.Parent) && modifier.Proc == TempMods.Proc.Terminal;
 
         internal static bool UsesStunCallbackPresentation(ushort source) =>
-            HasCapturedStunStack(source) || source == DevastationField;
+            HasCapturedStunStack(source) || source == DevastationField || source == CombatSpecials.ConcealedShot;
 
         private static bool UsesStunCombatTactics(ushort source) =>
             UsesStunCallbackPresentation(source) || source == CombatSpecials.ThreeRoundBurst;

@@ -1,5 +1,6 @@
 using hds;
 using HeadlessClient;
+using MxoHd.PacketResearch;
 using static NativeQa.StockAbilityProfile;
 using static NativeQa.Modes.StarterHackerControlTargetMode;
 
@@ -32,13 +33,14 @@ public sealed class StarterConcealedShotTargetingMode : NativeQaMode
         environmentOverrides: new()
         {
             ["MXO_AGGRO"] = "0", ["MXO_MOB_WANDER"] = "0", ["MXO_PVP_SERVER"] = "1", ["MXO_PVP_MAX_SAFE_LEVEL"] = "6",
-            ["MXO_SIMULACRUM_QA_HOLD_IS"] = "1"
+            ["MXO_SIMULACRUM_QA_HOLD_IS"] = "1", [StarterInterlockControlQa.ConcealedShotMode] = "1"
         }, extraQaMetadata: new() { ["ScopedStockRows"] = "504,1137", ["NativeCloseableRows"] = 0 },
         readyMessages: new[]
         {
             $"Level {Level}, 42/49 legal memory and rifle equipped. CSR PICK ({PickX},{Y},{Z}) faces QAEnemy ({TargetX},{Y},{Z}) from behind. Page 2 Rifles, 1137, 504. Use slot 1 and target QAEnemy. Keep the selection without Escape.",
-            "Use slot 2 and wait for 1137 on (+19/623/881). Use the printed BLOCK move and press slot 3. Expected local sight refusal or server reason 9. Use the printed FAR move, which retains sight beyond 30 m, and press slot 3 again. Expected local range refusal or server reason 34.",
-            $"Both refusals leave 1137 active, IS at {ConcealedIs} after the initial 1137 cost, and no 504 cast bar, damage, modifier or reuse. Return to PICK with ?tp {PickX} {Y} {Z} 265 f 4 - 40, keep 1137 active, and press slot 3. Expect [STEALTH] 1137 off at cast start, 45 IS, 6 s bar, 23 damage and 45 s own reuse. No max [VITALS] change or [PVP] round."
+            $"Stay at PICK. Use slot 2 and wait for 1137 on, then use slot 3 once. Expect [STEALTH] 1137 off at cast start, 45 IS ({ConcealedIs} to {ConcealedIs - 45}), a 6 s bar, 23 damage on the unarmored target, and 45 s own reuse. No [PVP] round.",
+            "This disposable fixture forces the 504 marker after a hit on QAEnemy. Expect source 504 marker value 4 for 0.1 s, then Stun 102 for 4 s, linked Combat Tactics 163 -20 for the same lifetime, and immunity 734/681 for 4 s. The linked wire record uses source 102 with duration 0. Capture the Stun and immunity notices and the matching add/remove records from QAEnemy.",
+            "The retained bootstrap separately covers the BLOCK and FAR refusals. Armor piercing and historical damage scaling remain open."
         });
 
     public override async Task<byte[]> AfterStartAsync(NativeQaBootstrapContext context)
@@ -98,11 +100,36 @@ public sealed class StarterConcealedShotTargetingMode : NativeQaMode
         await EvidenceRetestWire.CastBarAsync(actor, Shot, 6);
         await ObserveAsync(enemy, hitAt, rpc => rpc.Bytes.AsSpan().SequenceEqual(hit), "Neutral 504 hits the original enemy for 23");
         await EvidenceRetestWire.TimerAsync(actor, castAt, Shot, AbilityCooldowns.OwnTimer, 45);
+        var marker = await EffectAsync(Shot, Shot, 4, .1f);
+        var stun = await EffectAsync(Shot, TempMods.StunAbility, 0, 4);
+        var tactics = await EffectAsync(TempMods.StunAbility, TempMods.CombatTacticsAbility, -20, 0);
+        var immunity = await EffectAsync(TempMods.ControlImmunityTimerAbility, TempMods.ISDrainTargetAbility, 0, 4);
+        Check.That(marker.RecordId < stun.RecordId && stun.RecordId < tactics.RecordId && tactics.RecordId < immunity.RecordId,
+            "Concealed Shot registers the terminal marker, Stun, linked tactics and independent immunity in order");
+        foreach (var record in new[] { marker, stun, tactics, immunity })
+        {
+            var removal = record with { AddRemoveType = 1 };
+            await ObserveAsync(enemy, hitAt, rpc => ManageBonusRecord.TryDecode(rpc.Bytes, out var decoded) && decoded == removal,
+                $"The original {record.SourceId}/{record.TargetId} record is removed");
+        }
+        await ObserveAsync(actor, castAt, rpc => rpc.Bytes.AsSpan().SequenceEqual(AbilityMessages.AboutAbility(
+            AbilityMessages.StunCaster, true, Shot, actor.Handle, enemy.Handle, 0)), "Caster sees the Concealed Shot Stun notice");
+        await ObserveAsync(actor, castAt, rpc => rpc.Bytes.AsSpan().SequenceEqual(AbilityMessages.AboutAbility(
+            AbilityMessages.ImmunityCaster, true, Shot, actor.Handle, enemy.Handle, 4)), "Caster sees the four-second immunity notice");
         var innerStrength = actor.World.ViewSnapshot().SelectMany(AbilityParityCoderSweepMode.InnerStrengthUpdates).ToArray();
         Check.That(innerStrength.Contains(ConcealedIs) && innerStrength.Contains((ushort)(ConcealedIs - 45)),
             "The original stealth cast spends the current 20 IS and only the final admitted shot debits another 45 IS");
         Check.Equal(0, actor.World.Problems.Count + enemy.World.Problems.Count, "Concealed Shot targeting protocol framing");
+        Console.WriteLine("CONCEALED SHOT PASS: retained cast delivered the 0.1 s marker, 4 s Stun and immunity, linked -20 tactics, and matching removals.");
         return Array.Empty<byte>();
+
+        async Task<ManageBonusRecord> EffectAsync(ushort source, ushort stat, int value, float seconds)
+        {
+            var frame = await ObserveAsync(enemy, hitAt, rpc => Bonus(rpc, source, stat, value, seconds, false),
+                $"Concealed Shot publishes {source}/{stat} {value} for {seconds} s");
+            ManageBonusRecord.TryDecode(frame.Bytes, out var record);
+            return record!;
+        }
 
         async Task MoveAsync(Teleport location)
         {
