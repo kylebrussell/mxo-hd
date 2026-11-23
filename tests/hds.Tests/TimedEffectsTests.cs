@@ -529,6 +529,21 @@ public class TimedEffectsTests
             Assert.Equal(attackBefore - 20, AbilityStats.Attack(victim, true));
             Assert.True(ControlActions.Incapacitated(effects.Effects));
 
+            // A repeat on the already immune target removes its own marker and tells only the caster.
+            caster.LivenessClock = () => 0;
+            caster.Alive = true;
+            caster.playerData.setOnWorld(true);
+            TimedEffects.Apply(effects, effect, now + 1, caster, casterName, fixtureProc: true);
+            TimedEffects.RunDue(now + 1.02);
+            Assert.Equal(new[]
+            {
+                "80bc1d00070500f3000000000004000000000ad7233c",
+                "80bc1d00070500f3000000000004000000010ad7233c"
+            }, Rpcs(victim));
+            Assert.Equal(Hex(ServerPackets.BuildSystemChatMessage(
+                "AfterWhoruNeo is immune to Pistol Aerial's Stun.", "BROADCAST")), Assert.Single(Rpcs(caster)));
+            Assert.Equal(attackBefore - 20, AbilityStats.Attack(victim, true));
+
             TimedEffects.RunDue(now + 4.03);
             Assert.Equal(new[]
             {

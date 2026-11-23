@@ -36,6 +36,7 @@ namespace hds
                 return $"Rejuvenate maxima HP={hp} IS={AbilityHandler.MaxInnerStrength(caller)}";
             }
             if (command == "offbalance") return CombatDepthOffBalance.Run(caller,args);
+            if (command == "aerial-immune" && args.Length == 1) return StarterInterlockControlQa.HoldPistolAerialImmunity(caller);
             if (command == "control-karate" && args.Length == 1) return MartialPlayerControlQa.LoadKarate(caller);
             if (command == "stagger") return CombatDepthStagger.Run(caller,args);
             if (command == "mobius") return MobiusCodeQa.Run(caller,args);

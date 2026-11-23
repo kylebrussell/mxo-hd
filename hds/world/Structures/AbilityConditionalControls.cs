@@ -50,7 +50,19 @@ namespace hds
             if (callback.Text("StatModTermFunc") == "ApplyStunEffectIfDazed" &&
                 !subject.Effects.HasAt(TempMods.DazeAbility, now) &&
                 (subject.ConditionFlags & CombatInterlock.ConditionBit(CombatTactic.Speed)) == 0) return;
-            if (subject.Effects.HasControlImmunity(now)) return;
+            if (subject.Effects.HasControlImmunity(now))
+            {
+                if (marker.Parent == PistolAerial && subject is PlayerEffects player)
+                {
+                    string targetName = TimedEffects.PlayerName(player.Context);
+                    Output.WriteDebugLog($"[EFFECTS] 243 on {targetName}: Stun suppressed by active control immunity");
+                    // ApplyStunWithTimer reports lower-buff stacking to the caster. Its localized ID is unresolved.
+                    if (marker.Caster is WorldClient source && source != player.Context && source.Alive &&
+                        source.playerData.getOnWorld() && !source.playerData.worldChangePending)
+                        new ServerPackets().sendSystemChatMessage(source, $"{targetName} is immune to Pistol Aerial's Stun.", "BROADCAST");
+                }
+                return;
+            }
 
             var stun = new TimedEffects.Active { Kind = TempMods.KindState, Target = TempMods.StunAbility,
                 Seconds = marker.Value, Proc = TempMods.Proc.State, Caster = marker.Caster,

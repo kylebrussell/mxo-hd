@@ -185,10 +185,12 @@ public class FreeCastViralLandingTests : IDisposable
     }
 
     [Theory]
-    [InlineData(181, 0, 16)]
-    [InlineData(180, 75, 16)]
-    [InlineData(181, 75, 13)]
-    public void PistolAerialLandsItsFixedBaseAgainstBallisticResistance(ushort stat, int resistance, ushort damage)
+    [InlineData(50, 0, 181, 0, 16)]
+    [InlineData(50, 0, 180, 75, 16)]
+    [InlineData(50, 0, 181, 75, 13)]
+    [InlineData(25, 9, 181, 0, 17)]
+    [InlineData(25, 9, 181, 20, 15)]
+    public void PistolAerialLandsItsFixedBaseAgainstBallisticResistance(byte level, int influence, ushort stat, int resistance, ushort damage)
     {
         var caster = Client(110);
         var target = Client(111);
@@ -199,9 +201,17 @@ public class FreeCastViralLandingTests : IDisposable
         caster.viewMan.addView(111, 1).viewCreated = true;
         var shot = new AbilityItem();
         shot.setAbilityID(AbilityConditionalControls.PistolAerial);
+        caster.playerInstance.Level.setValue(level);
+        target.playerInstance.Level.setValue(level);
+        var casterEffects = TimedEffects.ForPlayer(caster);
         var effects = TimedEffects.ForPlayer(target);
         try
         {
+            casterEffects.Effects.Apply(129, new[]
+            {
+                new TimedEffects.Active { Kind = TempMods.KindStat, Target = 171, Value = influence,
+                    Seconds = 10, Proc = TempMods.Proc.Stat }
+            }, TimeUtils.GetSimTimeSeconds());
             effects.Effects.Apply(271, new[]
             {
                 new TimedEffects.Active { Kind = TempMods.KindStat, Target = stat, Value = resistance,
@@ -212,7 +222,11 @@ public class FreeCastViralLandingTests : IDisposable
 
             Assert.Equal(1000 - damage, PvpCombat.HealthOf(target));
         }
-        finally { TimedEffects.Clear(effects); }
+        finally
+        {
+            TimedEffects.Clear(casterEffects);
+            TimedEffects.Clear(effects);
+        }
     }
 
     [Fact]
