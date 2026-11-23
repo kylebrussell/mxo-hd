@@ -667,7 +667,28 @@ public class AbilityRefusalFeedbackTests:IDisposable
     [InlineData(399, "stale", 0u)]
     [InlineData(400, "left range", 0u)]
     [InlineData(400, "combat", 0u)]
-    public void DespoilerAreasValidateTheOriginalSelectionBeforeItsSplash(ushort id, string action, uint refusal)
+    public void DespoilerAreasValidateTheOriginalSelectionBeforeItsSplash(ushort id, string action, uint refusal) =>
+        CheckSelectedFieldAdmission(id, action, refusal);
+
+    [Theory]
+    [InlineData(361, "empty", AbilityRefusals.InvalidTarget)]
+    [InlineData(465, "ally", AbilityRefusals.InvalidTarget)]
+    [InlineData(361, "range", AbilityRefusals.TargetOutOfRange)]
+    [InlineData(465, "range", AbilityRefusals.TargetOutOfRange)]
+    [InlineData(361, "sight", AbilityRefusals.TargetNotInSight)]
+    [InlineData(465, "sight", AbilityRefusals.TargetNotInSight)]
+    [InlineData(361, "style", AbilityRefusals.WrongStyle)]
+    [InlineData(465, "unloaded", AbilityRefusals.NotLoaded)]
+    [InlineData(361, "combat", AbilityRefusals.MustBeOutsideCombat)]
+    [InlineData(465, "combat", AbilityRefusals.MustBeOutsideCombat)]
+    [InlineData(361, "stale", 0u)]
+    [InlineData(465, "left range", 0u)]
+    [InlineData(361, "land", 0u)]
+    [InlineData(465, "land", 0u)]
+    public void FumbleFieldAndUiLagBindTheOriginalHostileBeforeSpendingOrLanding(ushort id, string action, uint refusal) =>
+        CheckSelectedFieldAdmission(id, action, refusal);
+
+    private static void CheckSelectedFieldAdmission(ushort id, string action, uint refusal)
     {
         var caster = Client();
         var target = Client();
@@ -679,7 +700,8 @@ public class AbilityRefusalFeedbackTests:IDisposable
         caster.playerData.pvpFlag = target.playerData.pvpFlag = true;
         target.playerData.setCharID(111);
         target.playerData.setEntityId(42);
-        target.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(action == "range" ? 1401 : 200, 0, 0));
+        double outsideRange = AbilityCatalog.Find(id).Number("Ability/SelectionRange") * 100 + 1;
+        target.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(action == "range" ? outsideRange : 200, 0, 0));
         if (action == "sight")
         {
             string repository = HeadlessClient.NativeBoundFurnitureFixture.FindRepository();
@@ -697,7 +719,7 @@ public class AbilityRefusalFeedbackTests:IDisposable
 
         var ability = new AbilityItem();
         ability.setAbilityID(id);
-        ability.setAbilityName("Despoiler area");
+        ability.setAbilityName("Selected hostile field");
         ability.setCastAnimStart(new byte[4]);
         DataLoader.getInstance().AbilityDB.Add(ability);
         var fight = CombatManager.GetHandler(caster);
@@ -707,8 +729,19 @@ public class AbilityRefusalFeedbackTests:IDisposable
         BitConverter.GetBytes(action == "empty" ? (ushort)0 : view.ViewID).CopyTo(request, 2);
         BitConverter.GetBytes((ushort)9).CopyTo(request, 4);
         double before = caster.playerData.castEndsAt;
+        bool lands = action == "land";
+        string[] viralKeys = { "MXO_FREECAST_VIRAL_QA", FreeCastViralContest.AttackQa, FreeCastViralContest.DefenseQa };
+        string?[] savedViral = viralKeys.Select(Environment.GetEnvironmentVariable).ToArray();
         try
         {
+            if (lands)
+            {
+                caster.playerData.setEntityId(110);
+                caster.playerData.setUDPSessionEstablished(true);
+                target.playerData.setUDPSessionEstablished(true);
+                foreach (var (key, value) in viralKeys.Zip(new[] { "1", "32766", "0" }))
+                    Environment.SetEnvironmentVariable(key, value);
+            }
             new AbilityHandler().ProcessAbility(ref request);
             if (refusal == 0)
             {
@@ -716,8 +749,8 @@ public class AbilityRefusalFeedbackTests:IDisposable
                 Assert.True(end > TimeUtils.GetSimTimeSeconds());
                 Assert.Equal(500 - AbilityCosts.Cost(id), AbilityHandler.CurrentInnerStrength(caster));
                 if (action == "left range")
-                    target.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(1401, 0, 0));
-                else
+                    target.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(outsideRange, 0, 0));
+                else if (!lands)
                     view.spawnId++;
                 DelayedActions.RunDue(end + 1);
                 Assert.True(AbilityCooldowns.IsCoolingDown(caster.playerData, id, TimeUtils.GetSimTimeSeconds()));
@@ -729,11 +762,17 @@ public class AbilityRefusalFeedbackTests:IDisposable
                 Assert.Equal(500, AbilityHandler.CurrentInnerStrength(caster));
                 Assert.Empty(caster.playerData.cooldownEndsAt);
             }
-            Assert.Empty(Rpcs(target));
-            Assert.False(TimedEffects.ForPlayer(target).Effects.HasParent(id));
+            if (!lands) Assert.Empty(Rpcs(target));
+            Assert.Equal(lands, TimedEffects.ForPlayer(target).Effects.HasParent(id));
+            Assert.Equal(1000, PvpCombat.HealthOf(target));
         }
         finally
         {
+            if (lands)
+            {
+                TimedEffects.Clear(TimedEffects.ForPlayer(target));
+                foreach (var (key, value) in viralKeys.Zip(savedViral)) Environment.SetEnvironmentVariable(key, value);
+            }
             fight.isCombatRunning = false;
             CombatManager.RemoveClient(caster);
         }

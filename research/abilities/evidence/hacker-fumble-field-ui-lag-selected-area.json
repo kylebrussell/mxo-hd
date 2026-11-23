@@ -1,0 +1,37 @@
+{
+  "abilities": {
+    "361": {
+      "checks": {
+        "targeting": {
+          "source": "GOB Fumble Field stores selected hostile, 12 m range, Hacker Style, CastWhenUsed=1 and viral TestFunction=2.",
+          "runtime": "The ordinary cast validates loaded membership, a living hostile view/spawn, sight, range, Hacker Style and outside-combat state before spending IS. Landing requires the same live enemy and range. A recipient deflects before any modifier is applied.",
+          "test": "FumbleFieldAndUiLagBindTheOriginalHostileBeforeSpendingOrLanding checks ordinary refusal packets, absence of a debit or timer on refusal, in-flight target invalidation and a complete valid cast. FumbleFieldAndUiLagApplyEveryTypedModifierAndExpireOnIndependentRecipients deflects the primary while an eligible secondary still receives its own modifiers."
+        },
+        "area": {
+          "source": "GOB 361 stores CastDirectObjects=3 and radius 8 m.",
+          "runtime": "The selected enemy supplies the area centre. Each eligible hostile must be within 8 m and visible, including a valid sight path from the centre. The caster, friend, hidden character and next-centimetre recipient are excluded.",
+          "test": "FumbleFieldAndUiLagApplyEveryTypedModifierAndExpireOnIndependentRecipients verifies exact 8.00/8.01 m, independent contests, both add/remove packet records and unmodified HP. FumbleFieldAndUiLagRequireSightFromTheirSelectedCentreToEachSecondary exercises a mapped obstructed secondary inside the radius. The stock fixture prepares verified stands for native confirmation."
+        }
+      }
+    },
+    "465": {
+      "checks": {
+        "targeting": {
+          "source": "GOB UI Lag 2.0 stores selected hostile, 16 m range, Hacker Style, CastWhenUsed=1 and viral TestFunction=2.",
+          "runtime": "The ordinary cast validates loaded membership, a living hostile view/spawn, sight, range, Hacker Style and outside-combat state before spending IS. Landing requires the same live enemy and range. A recipient deflects before any modifier is applied.",
+          "test": "FumbleFieldAndUiLagBindTheOriginalHostileBeforeSpendingOrLanding checks ordinary refusal packets, absence of a debit or timer on refusal, in-flight target invalidation and a complete valid cast. FumbleFieldAndUiLagApplyEveryTypedModifierAndExpireOnIndependentRecipients deflects the primary while an eligible secondary still receives its own modifiers."
+        },
+        "area": {
+          "source": "GOB 465 stores CastDirectObjects=3 and radius 4 m.",
+          "runtime": "The selected enemy supplies the area centre. Each eligible hostile must be within 4 m and visible, including a valid sight path from the centre. The caster, friend, hidden character and next-centimetre recipient are excluded.",
+          "test": "FumbleFieldAndUiLagApplyEveryTypedModifierAndExpireOnIndependentRecipients verifies exact 4.00/4.01 m, independent contests, all four add/remove packet records and unmodified HP. FumbleFieldAndUiLagRequireSightFromTheirSelectedCentreToEachSecondary exercises a mapped obstructed secondary within the radius."
+        },
+        "behavior-tests": {
+          "source": "GOB 465 stores -20 ballistic/thrown accuracy and -18 ballistic/thrown defence for 17 s, 20 base IS, 2 s casting, and 30 s own reuse.",
+          "runtime": "A successful ordinary cast emits 524/1032 at -20 and 1010/1011 at -18, which feed the ballistic and thrown combat consumers through expiry. The ranked native profile includes Dedicated Code, lowering effective cost to 17 IS.",
+          "test": "UiLagRankTwoChangesBallisticAndThrownContestsUntilExpiry exercises all four combat consumers. FumbleFieldAndUiLagApplyEveryTypedModifierAndExpireOnIndependentRecipients verifies all four individual record IDs on add/remove. FumbleFieldAndUiLagUseTheFullRankedCostAndTheirOwnNativeTimers checks cost and timer inputs, and the ordinary request tests cover admission and landing."
+        }
+      }
+    }
+  }
+}
