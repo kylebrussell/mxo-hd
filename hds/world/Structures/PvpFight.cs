@@ -130,6 +130,11 @@ namespace hds
                 Side side = SideOf(client), opponent = SideOf(target);
                 if (!IsActive || side?.Present != true || opponent?.Present != true || side == opponent) return false;
                 if (side.Other == opponent) return true;
+                if (!ControlActions.CanChangeInterlockTarget(TimedEffects.ForPlayer(client).Effects))
+                {
+                    Output.WriteDebugLog($"[PVP] Target change refused for {PvpFlag.Name(client)}: Enraged");
+                    return true;
+                }
                 client.messageQueue.addRpcMessage(ServerPackets.BuildCombatTargetFlag(side.OpponentHandle, 0));
                 membershipVersion++;
                 side.Other = opponent;

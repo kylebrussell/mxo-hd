@@ -12,6 +12,91 @@ public static partial class Scenarios
             ["MXO_FREECAST_VIRAL_QA_ATTACK15"] = "32766", ["MXO_FREECAST_VIRAL_QA_DEFENSE15"] = "0"
         };
 
+    private static async Task CoderEnrageInterlockRetarget(ScenarioContext context)
+    {
+        const ushort enrage = 588, level = 25;
+        const int y = 495, z = 6400, casterX = 16800, subjectX = 17000, originalX = 17150, replacementX = 17250;
+        SectorProperties.Load(Path.Combine(context.RepositoryRoot, "data", "sector_properties.csv"));
+        NavMesh.UseDirectory(Path.Combine(context.RepositoryRoot, "data", "navmesh"));
+        foreach (int x in new[] { casterX, subjectX, originalX, replacementX })
+            Check.That(NavMesh.Locate(1, x, y, z, out var stand) && !stand.indoors &&
+                Math.Abs(stand.floorY + 95 - y) < 1 && NavMesh.HasSightPath(1, x, y, z, subjectX, y, z),
+                $"Visible outdoor NAV stand ({x},{y},{z})");
+
+        ushort[] loaded = { 2, 17, CombatStyles.CoderStyle, enrage };
+        var profile = loaded.SelectMany(id => AbilityPrerequisites.Current.Closure(id).Keys.Append(id))
+            .Distinct().Order().Select(id => (id, level)).ToArray();
+        Check.That(profile.Sum(row => AbilityMemory.Cost(row.id)) <= AbilityMemory.ForLevel(level),
+            "The complete ranked caster profile fits in memory");
+
+        CharacterSeed Seed(string name, int x, int org) => new(name)
+        {
+            X = x, Y = y, Z = z, Level = level, Experience = checked((int)PlayerProgression.ExperienceForLevel(level)),
+            Health = 5000, MaxHealth = 5000, InnerStrength = 250, MaxInnerStrength = 250, Organization = org,
+            OwnedLoadedAbilities = new (ushort, ushort)[] { (2, 1), (17, 1) }
+        };
+
+        var caster = await context.AddPlayerAsync(Seed("EnrageRetargetCaster", casterX, 1) with { OwnedLoadedAbilities = profile });
+        var subject = await context.AddPlayerAsync(Seed("EnrageRetargetSubject", subjectX, 2));
+        var original = await context.AddPlayerAsync(Seed("EnrageRetargetOld", originalX, 1));
+        var replacement = await context.AddPlayerAsync(Seed("EnrageRetargetNew", replacementX, 1));
+        foreach (var player in new[] { caster, subject, original, replacement })
+            await PvpOpponentsFixture.EnterAsync(player);
+
+        static async Task<uint> HandleAsync(HeadlessPlayer viewer, HeadlessPlayer target)
+        {
+            var view = await viewer.WaitForViewNamedAsync(target.Handle);
+            return DuelPackets.Handle(view.ViewId, view.SpawnId);
+        }
+
+        static string Hex(uint handle) => WireFormat.ToHex(BitConverter.GetBytes(handle));
+        var oldHandle = Hex(await HandleAsync(subject, original));
+        var newHandle = Hex(await HandleAsync(subject, replacement));
+        var replacementSubject = Hex(await HandleAsync(replacement, subject));
+        await HandleAsync(original, replacement);
+        await HandleAsync(replacement, original);
+        var castHandle = await HandleAsync(caster, subject);
+
+        subject.SendRpc($"40 {oldHandle} 01 6b");
+        await subject.WaitForRpcAsync($"46 {oldHandle} 01");
+        caster.SendRpc("3e 6b f0 03 00 00 00 00");
+        await caster.WaitForViewUpdateAsync(2, "02 80 80 80 80 80 10 f0 03 00 00");
+        // Separate server probe. Stock Close Combat and target selection retain their captured shapes.
+        caster.SendRpc(new AbilityUseRecord(enrage, castHandle, 0, 0, 0, 0, 0x6b, 0x6b, 0, 0).Encode());
+        string modifier = $"[MODIFIER] char={subject.CharId} source={enrage} stat=93";
+        await subject.WaitUntilAsync(() => context.Server.DebugLog().Contains(modifier + " add"),
+            "The ordinary selected cast Enrages a player already in interlock", TimeSpan.FromSeconds(8));
+
+        replacement.SendRpc($"40 {replacementSubject} 01 6b");
+        await replacement.WaitForRpcAsync($"46 {replacementSubject} 01");
+        subject.SendRpc($"81 51 {newHandle}");
+        subject.SendChat("?combatdepth shieldstatus");
+        await subject.WaitForTextAsync($"target={replacement.Handle}");
+
+        int before = subject.World.RpcSnapshot().Count;
+        string refused = $"[PVP] Target change refused for {subject.Handle}: Enraged";
+        byte[] clearOld = WireFormat.FromHex($"46 {oldHandle} 00");
+        byte[] openNew = WireFormat.FromHex($"46 {newHandle} 01");
+        byte[] echo = WireFormat.FromHex($"40 {newHandle} 00 6b");
+        subject.SendRpc($"40 {newHandle} 01 6b");
+        await subject.WaitUntilAsync(() => context.Server.DebugLog().Contains(refused),
+            "Enrage refuses only the actual interlock retarget", TimeSpan.FromSeconds(5));
+        await subject.WaitUntilAsync(() => context.Server.DebugLog().Contains(modifier + " remove"),
+            "The original Enrage naturally expires", TimeSpan.FromSeconds(16));
+        Check.That(!subject.World.RpcSnapshot().Skip(before).Any(frame => frame.Bytes.AsSpan().SequenceEqual(clearOld) ||
+            frame.Bytes.AsSpan().SequenceEqual(openNew) || frame.Bytes.AsSpan().SequenceEqual(echo)),
+            "The held target stays active without a false echo or an opponent swap");
+
+        subject.SkipReceived();
+        subject.SendRpc($"40 {newHandle} 01 6b");
+        await subject.WaitForRpcAsync($"46 {oldHandle} 00");
+        await subject.WaitForRpcAsync($"40 {newHandle} 00 6b");
+        await subject.WaitForRpcAsync($"46 {newHandle} 01");
+        Check.Equal(0, caster.World.Problems.Count + subject.World.Problems.Count +
+            original.World.Problems.Count + replacement.World.Problems.Count, "Retarget and join packets parse cleanly");
+        Console.WriteLine("ENRAGE RETARGET PASS: normal selection and join stay open, interlock retarget resumes after expiry.");
+    }
+
     private static async Task CoderEnrage588(ScenarioContext context)
     {
         const ushort enrage = 588, level = 25;

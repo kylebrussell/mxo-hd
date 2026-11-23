@@ -932,11 +932,15 @@ namespace hds
         /// </summary>
         internal static void ApplyRoundInnerStrength(WorldClient player)
         {
+            CombatTactic tactic = player.playerData.combatTactic;
+            if (tactic == CombatTactic.Block && !ControlActions.CanGainBlockInnerStrength(TimedEffects.ForPlayer(player).Effects))
+                return;
+
             byte[] isBytes = player.playerInstance.InnerStrengthAvailable.getValue();
             if (isBytes == null || isBytes.Length < 2) return;
 
             UInt16 currentIS = NumericalUtils.ByteArrayToUint16(isBytes, 1);
-            int change = CombatCalculator.RoundInnerStrengthChange(player.playerData.combatTactic);
+            int change = CombatCalculator.RoundInnerStrengthChange(tactic);
             UInt16 newIS = (UInt16)Math.Clamp(currentIS + change, 0, Math.Max(currentIS, AbilityHandler.MaxInnerStrength(player)));
             if (newIS != currentIS)
             {

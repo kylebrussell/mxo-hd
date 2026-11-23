@@ -17,6 +17,13 @@ namespace hds
 
         public static bool CanPerformSpecialMove(WorldClient client, UInt16 ability) =>
             CanPerformSpecialMove(TimedEffects.ForPlayer(client).Effects, ability);
+
+        internal static bool CanChangeInterlockTarget(TimedEffects.Holder holder) => !Has(holder, TempMods.EnrageAbility);
+
+        // The native reader for AllowedToISBlock is unknown. Interpret the separate Enrage flag
+        // as suppressing Block's round IS award while allowing normal tactic selection and defence.
+        internal static bool CanGainBlockInnerStrength(TimedEffects.Holder holder) => !Has(holder, TempMods.EnrageAbility);
+
         public static bool CanWithdraw(TimedEffects.Holder holder) =>
             !Incapacitated(holder) && !Has(holder, TempMods.EnrageAbility) && !Has(holder, TempMods.ConfuseAbility);
         public static bool CanUseAbilities(WorldClient client) => !client.playerData.isDead && !client.playerData.duelDeath && CanUseAbilities(TimedEffects.ForPlayer(client).Effects);
