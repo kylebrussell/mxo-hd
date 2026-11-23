@@ -34,8 +34,8 @@ public class TransmitCodeFixtureTests
         int memory=TransmitCodeFixture.DefenderAbilities.Sum(id=>(int)AbilityCatalog.Find(id)!.Number("Ability/InventoryMemCost"));
         Assert.True(memory<=AbilityMemory.ForLevel(50));
         var mode=NativeQa.NativeQaModes.Find("transmit-code-resistance");Assert.Equal("transmit-code-resistance",mode.Name);
-        Assert.False(mode.Plan.FixedCallbackRolls);Assert.Equal("65",mode.Plan.EnvironmentOverrides["MXO_TYPED_RESISTANCE_QA_DAMAGE_DRAW"]);
-        Assert.Contains("OURS",mode.Plan.ReadyMessages.Single());
+        Assert.False(mode.Plan.FixedCallbackRolls);Assert.Equal("32766",mode.Plan.EnvironmentOverrides["MXO_FREECAST_VIRAL_QA_ATTACK15"]);
+        Assert.Contains(mode.Plan.ReadyMessages, message => message.Contains("OURS"));
     }
     [Fact]public void RetainedNormalHackerCastHasStyled538DamageBeforeTheBonus()
     {

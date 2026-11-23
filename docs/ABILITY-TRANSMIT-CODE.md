@@ -13,20 +13,15 @@ Type7 uses1146; type2 uses1148. The level scale is the existing resistance curve
 
 At equal level50,10 bonus means22 resistance points. The existing typed curve then gives538→510 viral and83→78 thrown for the declared caster profile; this is not a flat10% reduction of health damage. The implementation is in the common typed adapter, covering direct player-to-NPC/PvP health damage, both DOT paths and both conditional-throw components. Existing guards/costs/RNG and the593 producer/load behavior are unchanged. Physical/ranged/unknown types, self/heal bypass, untyped specials, aura/health-callback damage and fixed EMP damage retain their existing behavior. No blanket viral/thrown immunity or complete retail parity is claimed.
 
-## Case and controls
+## Native fixture
 
-Case/mode `transmit-code-resistance` uses level50 opposing disposable actors. The defender owns the full593 prerequisite graph before Margin and keeps every parent row identical while normally unloading/reloading593. The caster has the same qualified typed-resistance loadout throughout, so unrelated parent damage bonuses cannot explain the change. Normal style selection fixes Hacker27/Spy29 influence. Actual received8167 values are decoded through complete offsets/counts/names, not substring matching or the production damage calculator. Existing own reuse timer removal is observed before reusing spells.
+Mode `transmit-code-resistance` starts CSR at (17000,495,6400) facing the helper QAEnemy at (17000,495,6600). Both are on open outdoor NAV, away from the ice. No `?tp` or NPC selection is required. If an NPC appears behind CSR, strafe, turn the camera and single-click the intended name. CSR owns 593 with every ranked prerequisite loaded. The ability itself starts unloaded.
 
-Controls are only the existing strict disposable1135raw draw65 and eligible free-cast viral attack/defence draws32766/0. They change no global combat/callback RNG and inject no resistance buff. The fixture's hostile-server entry profile and seeded level/owned abilities are aids. Headless normal80ae memory requests do not prove the native Hardline/LA UI.
+1. Stay at spawn. Send helper request `{"actor":"QAEnemy","action":"cast","ability":330,"target":"CSR_Tester"}`. The helper uses the complete stock Logic Barrage from PR321 (PacketLog `7a4fc7efcf1c:1742`), rebinding only the current target view and spawn. Its legal L50 profile contributes +27 viral influence from Hacker Style, plus +15, +3, +1 and +5 from abilities 95, 309, 310 and 334. Expect a two-second cast, 13 IS on QAEnemy, four-second reuse and 640 damage to CSR with zero resisted.
+2. Type `?qaload 593`. This aid invokes the normal owned Archive handler. Check source 593 adds of +10 for both stats 1146 and 1148. Wait six seconds from the previous helper request, then repeat it. The same raw 640 now produces 606 damage and 34 resisted. The typed log reports 22 resistance points from the current bonus policy.
+3. Type `?qaunload 593`. Check both modifier removals and repeat the same helper cast after reuse. It returns to 640 damage with zero resisted. The replay also compares each prerequisite's persisted Archive entry across both transitions.
 
-## One-pass native checklist
-
-1. Use mode `transmit-code-resistance`, CSR110 only.593 starts owned/unloaded with the same prerequisites already loaded. Select QAEnemy normally. Its fixed qualified caster loadout is separately installed before its login.
-2. Use ordinary helper self-style/cast requests: Hacker1006 then330 at CSR110 (expect538); Spy1112 then1135 at CSR110 (expect83). Wait normal cooldowns. The helper requests are standard80b9 casts, not injected damage.
-3. Load593 through ordinary Hardline/Loading Area memory UI. Return normally. Verify actual593→1146/1148+10 records. Repeat the same styles/spells:510 viral and78 thrown. Observe normal cast/cost/reuse and health loss.
-4. Optional DOT control: select helper Hacker1006, then normal474 at CSR110; its normal866..880 total scales once with Hacker+27; derive each raw92/93 tick from the fresh sourced Value/30×2.5 formula, then expect87/88 under the same current bonus. No cooldown reset. Unload593 normally and verify both sourced removals; no parent loadout change.
-
-Helper request shapes: `{"actor":"QAEnemy","action":"cast","target":"QAEnemy","ability":1006}` for style, and `{"actor":"QAEnemy","action":"cast","target":"CSR_Tester110","ability":330}` for incoming damage; use the actual selected native handle if it differs. No native result is claimed by this initial source checkpoint.
+The two gated viral contest draws ensure the attack lands without modifying resistance, damage, cooldowns or global rolls. Native observes the normal recipient damage and modifier records through the Archive bridge. Loading Area UI behavior, native thrown/DOT observations and the original Transmit Code coefficient remain open. The historical `transmit-code-resistance` HeadlessClient scenario uses an earlier narrow attacker seed and separately exercises the thrown and DOT consumers.
 
 ## Qualified proof (2026-11-15)
 
