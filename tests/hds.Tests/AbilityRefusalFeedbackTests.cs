@@ -1859,6 +1859,7 @@ public class AbilityRefusalFeedbackTests:IDisposable
     [InlineData("unloaded during cast", 0u)]
     [InlineData("swapped during cast", 0u)]
     [InlineData("rest", 0u)]
+    [InlineData("resisted", 0u)]
     public void PistolEvasiveAtRestBindsAnEligibleSelectionAndAppliesItsDefensesOnLanding(string scenario, uint refusal)
     {
         const ushort id = CombatSpecials.PistolEvasive;
@@ -1881,6 +1882,11 @@ public class AbilityRefusalFeedbackTests:IDisposable
         var request = PistolEvasiveRequest(DuelPackets.Handle(view.ViewID, scenario == "stale request" ? (ushort)8 : view.spawnId));
         var throwAttack = new AbilityItem();
         throwAttack.setAbilityID(347);
+        var enemyEffects = TimedEffects.ForPlayer(target);
+        double start = TimeUtils.GetSimTimeSeconds();
+        if (scenario == "resisted")
+            enemyEffects.Effects.Apply(1061,
+                new[] { new TimedEffects.Active { Target = 181, Value = 20, Seconds = 60, Proc = TempMods.Proc.Stat } }, start);
         int[] baseline = Defenses(caster), enemyBefore = Defenses(target);
         new AbilityHandler().ProcessAbility(ref request);
 
@@ -1893,7 +1899,11 @@ public class AbilityRefusalFeedbackTests:IDisposable
         }
 
         double castEnd = caster.playerData.castEndsAt;
-        Assert.True(castEnd > TimeUtils.GetSimTimeSeconds());
+        Assert.InRange(castEnd - start, 1.99, 2.25);
+        Assert.True(AbilityCooldowns.TryGet(id, out var reuse));
+        Assert.Equal(10f, reuse.Seconds);
+        Assert.Equal(689, reuse.Group);
+        Assert.Equal(5f, reuse.GroupSeconds);
         Assert.Equal(470, AbilityHandler.CurrentInnerStrength(caster));
         Assert.Equal(baseline, Defenses(caster));
         switch (scenario)
@@ -1909,14 +1919,14 @@ public class AbilityRefusalFeedbackTests:IDisposable
             AbilityCastInterrupts.FinishDue(caster, castEnd + .01);
             Assert.True(AbilityCooldowns.IsCoolingDown(caster.playerData, id, TimeUtils.GetSimTimeSeconds()));
             Assert.Equal(enemyBefore, Defenses(target));
-            if (scenario != "rest")
+            if (scenario is not ("rest" or "resisted"))
             {
                 Assert.Equal(1000, PvpCombat.HealthOf(target));
                 Assert.Equal(baseline, Defenses(caster));
                 return;
             }
 
-            Assert.Equal(995, PvpCombat.HealthOf(target));
+            Assert.Equal(scenario == "resisted" ? 996 : 995, PvpCombat.HealthOf(target));
             Assert.Equal(baseline.Select(points => points + 20), Defenses(caster));
             var protection = caster.playerData.activeBuffs[id];
             Assert.Equal(12f, protection.Definition.Seconds);
@@ -1924,7 +1934,11 @@ public class AbilityRefusalFeedbackTests:IDisposable
             TimedEffects.RunDue(protection.Started + 12.01);
             Assert.Equal(baseline, Defenses(caster));
         }
-        finally { AbilityBuffs.RemoveAll(caster); }
+        finally
+        {
+            AbilityBuffs.RemoveAll(caster);
+            TimedEffects.Clear(enemyEffects);
+        }
 
         void SetPosition(double x) => target.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(x, 1095, 16150));
         int[] Defenses(WorldClient actor) =>
@@ -1986,6 +2000,9 @@ public class AbilityRefusalFeedbackTests:IDisposable
                 Assert.Equal(id, queued.getAbilityID());
                 Assert.Equal(view.ViewID, session.QueuedAbilityTarget);
                 Assert.True(CombatAnimations.CanResolveQueuedAbility(caster, queued));
+                Assert.Equal(AbilityStats.Attack(caster, ranged: true) + 10, AbilityStats.SpecialAttack(caster, queued));
+                Assert.Equal(9529u, CombatAnimations.Special(id, true, CombatTactic.Speed)?.Id);
+                Assert.Null(CombatAnimations.Special(id, false, CombatTactic.Speed));
                 caster.playerData.passives.Loaded.Remove(id);
                 Assert.False(CombatAnimations.CanResolveQueuedAbility(caster, queued));
             }

@@ -1,6 +1,10 @@
 # Gunman parity, second batch
 
-Pistol Evasive now applies its three shipped caster modifiers after the hit. Melee, ballistic, and thrown defense each gain 20 for 12 seconds. The same landed executor preserves the existing attack, and the ordinary expiry path removes all three records. The current modeled cast lands directly, so the interlock animation and queued admission remain open.
+Pistol Evasive applies its three authored caster defenses on a landed hit. Melee, Ballistic and Thrown Defense each gain 20 for 12 seconds. The timed cast binds the original visible hostile and handgun. It lands directly from rest or queues in the original interlock, where the current GOB contributes +10 tactic. The current Ballistic base is 5. The older Pistol Evasive script's base 90 and Block-only modifiers belong to a different definition. [Current GOB](../data/ability_catalog.json#L244) [Older script](../research/client-scripts/ability/soldier/old_sm_pistol.py#L59-L72)
+
+Original CombatView entries show the same 242 ability in 9529 MR and 9530 SR. The sampled entries place the fighters around 259 and 140 units apart, respectively. Pistol Barrage's 9519 MR and 9534 SR also appear at different presentation gaps. A continuing Hel fight uses both variant families in consecutive rounds, so the emitted offsets identify presentation rather than the original input classifier. The normal runtime uses the observed 9529. Selection of 9530 remains open. [MR entry](../research/packet-dumps/community-intake/20260608T130150Z-hdneo-public-warboy-world-game-sanitized-selected/logs/ProxyM2_m2_packets.log.txt#L276143-L276150) [SR entry](../research/packet-dumps/community-intake/20260607T015831Z-hdneo-public-inventory-lastday-rajko-nearend-selected/logs/mxopackets2_RajkoPacketsNearTheEnd_PacketsGotIntoHelAgain.log.txt#L4101-L4108)
+
+The level-22 fixture checks 5 neutral and 4 after the same enemy gains +20 Ballistic Resistance. Both stock cast routes and the owner's 12-second defense records have a native plan. Headless startup uses the retained Handguns and Close Combat controls.
 
 ## Stock retest
 
