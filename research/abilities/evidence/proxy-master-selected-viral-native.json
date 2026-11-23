@@ -11,7 +11,7 @@
   "abilities": {
     "595": {
       "family": "stock-proxy-master-selected-viral",
-      "note": "PR885 witnesses the selected hostile edge and 6 s Stun with 12 s immunity. The PacketLog follow-up identifies Stun Pulse with 53 02. Native CSEQ96 and SSEQ286 at 20:06:21 show the cast and `80 ac 53 02` float `00 00 c0 40` (6 s). SSEQ314 at 20:06:27 starts the 30 s reuse, which clears at 20:06:57. The reported 4 s trace uses 55 02, Enrage 2.0 (597). https://github.com/kylebrussell/mxo-hd/pull/885#issuecomment-7088896662",
+      "note": "PR885 witnesses the selected hostile edge and 6 s Stun with 12 s immunity. The PacketLog follow-up identifies Stun Pulse with 53 02. Native CSEQ96 and SSEQ286 at 20:06:21 show the cast and `80 ac 53 02` float `00 00 c0 40` (6 s). SSEQ314 at 20:06:27 starts the 30 s reuse, which clears at 20:06:57. The reported 4 s trace uses 55 02, Enrage 2.0 (597). https://github.com/kylebrussell/mxo-hd/pull/885#issuecomment-7088992093",
       "checks": {
         "controls": {
           "source": "GOB 595 specifies six-second Stun and separate 12-second AddControlImmunityTimer.",
@@ -31,7 +31,7 @@
         "behavior-tests": {
           "source": "GOB 595 supplies a six-second cast, 30 nominal IS and 30-second reuse, a selected seven-metre area, six-second Stun and independent 12-second immunity.",
           "runtime": "Ordinary Coder admission starts the shipped cast and cost. Each admitted hostile rolls the viral contest before the common state and immunity handlers schedule their independent removals.",
-          "test": "Stock PR885 pays 29 after the loaded reduction and sees only two eligible recipients with both states and their removals. Correct native `53 02` frames confirm the six-second cast and thirty-second reuse. The disposable selected-area tests cover deflection and the active and expired immunity. https://github.com/kylebrussell/mxo-hd/pull/885#issuecomment-7088896662"
+          "test": "Stock PR885 pays 29 after the loaded reduction and sees only two eligible recipients with both states and their removals. Correct native `53 02` frames confirm the six-second cast and thirty-second reuse. The disposable selected-area tests cover deflection and the active and expired immunity. https://github.com/kylebrussell/mxo-hd/pull/885#issuecomment-7088896662 https://github.com/kylebrussell/mxo-hd/pull/885#issuecomment-7088992093"
         }
       }
     },
