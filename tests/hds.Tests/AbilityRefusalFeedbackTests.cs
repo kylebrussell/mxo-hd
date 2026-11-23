@@ -1105,7 +1105,13 @@ public class AbilityRefusalFeedbackTests:IDisposable
     [InlineData(618, "no-stagger", AbilityRefusals.TargetStateRequired)]
     [InlineData(605, "ready", 0u)]
     [InlineData(618, "ready", 0u)]
-    public void CoderSpecialsRequireTheLoadedMoveAndLiveCurrentOpponent(ushort id, string scenario, uint reason)
+    [InlineData(243, "unloaded", AbilityRefusals.NotLoaded)]
+    [InlineData(243, "rest", AbilityRefusals.InvalidTarget)]
+    [InlineData(243, "stale", AbilityRefusals.InvalidTarget)]
+    [InlineData(243, "far", AbilityRefusals.TargetOutOfRange)]
+    [InlineData(243, "blocked", AbilityRefusals.TargetNotInSight)]
+    [InlineData(243, "ready", 0u)]
+    public void SelectedSpecialsRequireTheLoadedMoveAndLiveCurrentOpponent(ushort id, string scenario, uint reason)
     {
         string root = AppContext.BaseDirectory;
         while (!File.Exists(Path.Combine(root, "data", "sector_properties.csv")))
@@ -1115,8 +1121,9 @@ public class AbilityRefusalFeedbackTests:IDisposable
 
         var caster = Client();
         Store.currentClient = caster;
-        caster.playerData.passives.Loaded[CombatStyles.CoderStyle] = 19;
-        caster.playerData.combatStyle = CombatStyles.CoderStyle;
+        ushort style = id == AbilityConditionalControls.PistolAerial ? CombatStyles.Handguns : CombatStyles.CoderStyle;
+        caster.playerData.passives.Loaded[style] = id == AbilityConditionalControls.PistolAerial ? (byte)25 : (byte)19;
+        caster.playerData.combatStyle = style;
         if (scenario != "unloaded") caster.playerData.passives.Loaded[id] = 38;
 
         var target = new Mob();

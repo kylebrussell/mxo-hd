@@ -7,6 +7,14 @@ namespace hds
     /// The fixed value is passed directly to addStateMod/addTempMod by the script.</summary>
     public static class AbilityConditionalControls
     {
+        // Proxy_003 PvP 8690–8699 shows Pistol Aerial's terminal marker, stun and immunity on a successful roll.
+        internal const ushort PistolAerial = 243;
+
+        internal static bool IsPistolAerialMarker(TimedEffects.Active mod) =>
+            mod.Parent == PistolAerial && mod.Proc == TempMods.Proc.Terminal;
+
+        internal static bool IsPistolAerialStunTactics(TimedEffects.Active mod) =>
+            mod.Parent == PistolAerial && mod.Proc == TempMods.Proc.Stat && mod.Target == TempMods.CombatTacticsAbility;
         // tempmods2362: callback is initialization-only and has no explicit immunity timer.
         public static bool HandlesInitial(ushort ability) => ability == 340 && AbilityCatalog.Find(ability)?.Modifiers.Any(
             m => m.Text("StatModInitFunc") == "ApplyPowerlessIfStaggered") == true;
@@ -30,7 +38,7 @@ namespace hds
 
         internal static bool TerminalStun(ushort ability, AbilityCatalog.Modifier modifier) =>
             modifier.Text("StatModTermFunc") == "ApplyStunEffectIfDazed" ||
-            ((ability == 253 || ability == 256 || ability == 265 || ability == 429 || ability == 468 || ability == 504 || ability == 505 || ability == 532 || ability == 534) &&
+            ((ability == PistolAerial || ability == 253 || ability == 256 || ability == 265 || ability == 429 || ability == 468 || ability == 504 || ability == 505 || ability == 532 || ability == 534) &&
                 modifier.Text("StatModTermFunc") == "ApplyStunWithTimer");
 
         internal static void Term(TimedEffects.Subject subject, TimedEffects.Active marker, double now)
@@ -42,7 +50,19 @@ namespace hds
             if (callback.Text("StatModTermFunc") == "ApplyStunEffectIfDazed" &&
                 !subject.Effects.HasAt(TempMods.DazeAbility, now) &&
                 (subject.ConditionFlags & CombatInterlock.ConditionBit(CombatTactic.Speed)) == 0) return;
-            if (subject.Effects.HasControlImmunity(now)) return;
+            if (subject.Effects.HasControlImmunity(now))
+            {
+                if (marker.Parent == PistolAerial && subject is PlayerEffects player)
+                {
+                    string targetName = TimedEffects.PlayerName(player.Context);
+                    Output.WriteDebugLog($"[EFFECTS] 243 on {targetName}: Stun suppressed by active control immunity");
+                    // ApplyStunWithTimer reports lower-buff stacking to the caster. Its localized ID is unresolved.
+                    if (marker.Caster is WorldClient source && source != player.Context && source.Alive &&
+                        source.playerData.getOnWorld() && !source.playerData.worldChangePending)
+                        new ServerPackets().sendSystemChatMessage(source, $"{targetName} is immune to Pistol Aerial's Stun.", "BROADCAST");
+                }
+                return;
+            }
 
             var stun = new TimedEffects.Active { Kind = TempMods.KindState, Target = TempMods.StunAbility,
                 Seconds = marker.Value, Proc = TempMods.Proc.State, Caster = marker.Caster,
@@ -52,6 +72,17 @@ namespace hds
                 CasterName = marker.CasterName, TargetView = marker.TargetView };
             // addStateMod appends the stun. It must not replace this throw's root/debuff siblings.
             var added = new List<TimedEffects.Active> { stun };
+            if (marker.Parent == PistolAerial)
+            {
+                // The target capture links the Stun template's CombatTactics modifier to this proc.
+                var tactics = AbilityCatalog.Find(TempMods.StunAbility).Modifiers.Single(m =>
+                    m.Component == "CombatTacticsMod" && m.Target == TempMods.CombatTacticsAbility &&
+                    m.Number("WhenEnabled") == 2 && m.Number("DurationType") == 2);
+                if (AbilityValues.TryValue(tactics, 0, 0, out int penalty))
+                    added.Add(new TimedEffects.Active { Kind = TempMods.KindStat, Target = tactics.Target,
+                        Value = penalty, Seconds = stun.Seconds, Proc = TempMods.Proc.Stat, Caster = marker.Caster,
+                        CasterName = marker.CasterName, TargetView = marker.TargetView });
+            }
             var replaced = subject.Effects.Apply(marker.Parent, added, now, preserveOtherTargets: true);
             // An expired timer may still be in the holder until the next server sweep.
             // Its old record must go off before the new timer is presented.

@@ -421,14 +421,16 @@ namespace hds
 
             bool coderInterlock = AbilityID == 605 || AbilityID == 618;
             bool pistolSlide = AbilityID == 241;
-            if ((coderInterlock || pistolSlide) && !AbilityPassives.IsLoaded(Store.currentClient, AbilityID))
+            bool pistolAerial = AbilityID == AbilityConditionalControls.PistolAerial;
+            bool checkedInterlockSelection = coderInterlock || pistolSlide || pistolAerial;
+            if (checkedInterlockSelection && !AbilityPassives.IsLoaded(Store.currentClient, AbilityID))
             {
                 Deny(AbilityID, "Load this ability before using it.", AbilityRefusals.NotLoaded, sendServerText: false);
                 return;
             }
 
             bool existingInterlockPath = AbilityID == AwakenedPowerShot.Id || AbilityID == 197 || AbilityID == 198 || AbilityID == 105 ||
-                AbilityID == 145 || coderInterlock || AbilityID == MartialArtsStarterAdmission.GuardBreaker || CombatSpecials.IsExileWeapon(AbilityID);
+                AbilityID == 145 || checkedInterlockSelection || AbilityID == MartialArtsStarterAdmission.GuardBreaker || CombatSpecials.IsExileWeapon(AbilityID);
             bool martialInterlock = definition?.Number("Ability/CastWhenUsed") == 3 &&
                 definition.Number("Ability/CombatSpecialMove") == 1 &&
                 (CombatStyles.RequiredStyle(AbilityID) switch
@@ -459,12 +461,12 @@ namespace hds
                     DenyMissingInterlock(AbilityID);
                     return;
                 }
-                if ((coderInterlock || pistolSlide) && !AbilityTargets.WithinSelectionRange(Store.currentClient, AbilityID, currentTargetViewId))
+                if (checkedInterlockSelection && !AbilityTargets.WithinSelectionRange(Store.currentClient, AbilityID, currentTargetViewId))
                 {
                     Deny(AbilityID, "The target is out of range.", AbilityRefusals.TargetOutOfRange, sendServerText: false);
                     return;
                 }
-                if ((coderInterlock || pistolSlide) && !AbilityTargets.HasSelectionSight(Store.currentClient, definition, currentTargetViewId))
+                if (checkedInterlockSelection && !AbilityTargets.HasSelectionSight(Store.currentClient, definition, currentTargetViewId))
                 {
                     Deny(AbilityID, "The target is not in sight.", AbilityRefusals.TargetNotInSight, sendServerText: false);
                     return;
@@ -1154,6 +1156,7 @@ namespace hds
                 504 => 1,  // Concealed Shot
                 36 => 2,   // Tinkering
                 105 => 1,  // Body Shot
+                243 => 1,  // Pistol Aerial
                 130 => 1,  // Hindering Shot
                 134 => 7,  // Leg Sweep
                 152 => 7,  // Spinning Backsweep

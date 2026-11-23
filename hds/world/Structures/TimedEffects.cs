@@ -433,11 +433,15 @@ namespace hds
             {
                 mod.OnExpired?.Invoke(subject, mod);
                 mod.OnExpiredAt?.Invoke(subject,mod,now);
-                AbilityConditionalControls.Term(subject, mod, now);
+                if (!AbilityConditionalControls.IsPistolAerialMarker(mod))
+                    AbilityConditionalControls.Term(subject, mod, now);
             }
             if (expired.Count > 0)
             {
                 subject.Ended(expired);
+                // The victim receives the Pistol Aerial marker's off record before its Stun stack.
+                foreach (Active marker in expired.Where(AbilityConditionalControls.IsPistolAerialMarker))
+                    AbilityConditionalControls.Term(subject, marker, now);
             }
         }
 
@@ -569,7 +573,9 @@ namespace hds
                 return mods;
             }
 
-            List<Active> replaced = subject.Effects.Apply(effect.Ability, mods, now, effect.Ability == StealthShieldAbilities.DisableEvasion || effect.Ability==AbilityReverseBulldog.Ability);
+            bool keepOtherTargets = effect.Ability == StealthShieldAbilities.DisableEvasion ||
+                effect.Ability == AbilityReverseBulldog.Ability || effect.Ability == AbilityConditionalControls.PistolAerial;
+            List<Active> replaced = subject.Effects.Apply(effect.Ability, mods, now, keepOtherTargets);
             if (immunity != null)
             {
                 replaced.AddRange(subject.Effects.Apply(TempMods.ControlImmunityTimerAbility, new List<Active> { immunity }, now));
@@ -774,7 +780,12 @@ namespace hds
 
         public static byte[] Record(TimedEffects.Active m, bool off)
         {
-            return AbilityBuffs.BuildModifier(m.Kind, m.RecordId, m.Parent, m.Target, m.Value, off, float.IsPositiveInfinity(m.Seconds) ? 0 : m.Seconds);
+            // The captured Pistol Aerial marker has no attribute target on the wire.
+            ushort target = AbilityConditionalControls.IsPistolAerialMarker(m) ? (ushort)0 : m.Target;
+            bool linkedStunTactics = AbilityConditionalControls.IsPistolAerialStunTactics(m);
+            ushort parent = linkedStunTactics ? TempMods.StunAbility : m.Parent;
+            float seconds = linkedStunTactics || float.IsPositiveInfinity(m.Seconds) ? 0 : m.Seconds;
+            return AbilityBuffs.BuildModifier(m.Kind, m.RecordId, parent, target, m.Value, off, seconds);
         }
 
         /// <summary>A state's own record: the state ability as parent, its linked stat and value, no time.</summary>
@@ -807,12 +818,14 @@ namespace hds
         internal override void Applied(TempMods.Effect effect, List<TimedEffects.Active> added, TimedEffects.Active immunity,
             List<TimedEffects.Active> replaced)
         {
+            bool pistolAerialStun = effect.Ability == AbilityConditionalControls.PistolAerial && immunity != null;
             // Record ids in retail's order (morpheuzzz_001 1829, Vector: Powerless 0x14, ControlImmunityTimer 0x15,
             // Powerless's own record 0x16, ViralDeflection 0x17)
             foreach (TimedEffects.Active m in added)
             {
                 m.RecordId = AbilityBuffs.NextRecordId(client.playerData);
-                if (immunity != null && immunity.RecordId == 0 && m.Proc == TempMods.Proc.State && TempMods.IsControlState(m.Target))
+                if (!pistolAerialStun && immunity != null && immunity.RecordId == 0 &&
+                    m.Proc == TempMods.Proc.State && TempMods.IsControlState(m.Target))
                 {
                     immunity.RecordId = AbilityBuffs.NextRecordId(client.playerData);
                 }
@@ -822,9 +835,11 @@ namespace hds
                 }
             }
 
+            if (pistolAerialStun)
+                immunity.RecordId = AbilityBuffs.NextRecordId(client.playerData);
             SendOff(replaced);
-            // Retail sent the immunity first (morpheuzzz_001 1829: 734 -> 681, then Vector's Powerless and its own record)
-            if (immunity != null)
+            // Vector sends the immunity first. Proxy_003 PvP 8690–8699 sends the Pistol Aerial stun stack first.
+            if (!pistolAerialStun && immunity != null)
             {
                 client.messageQueue.addRpcMessage(Record(immunity, false));
             }
@@ -837,8 +852,11 @@ namespace hds
                 }
             }
 
+            if (pistolAerialStun)
+                client.messageQueue.addRpcMessage(Record(immunity, false));
+
             string caster = added.Count > 0 ? added[0].CasterName ?? "" : "";
-            if (immunity != null)
+            if (!pistolAerialStun && immunity != null)
             {
                 client.messageQueue.addRpcMessage(AbilityMessages.AboutAbility(AbilityMessages.ImmunityTarget, true,
                     effect.Ability, caster, Name, (Int32)immunity.Seconds));
@@ -871,6 +889,19 @@ namespace hds
                     {
                         client.messageQueue.addRpcMessage(AbilityMessages.AboutAbility(line, flag, effect.Ability, caster, Name, values));
                     }
+                }
+            }
+            if (pistolAerialStun)
+            {
+                client.messageQueue.addRpcMessage(AbilityMessages.AboutAbility(AbilityMessages.ImmunityTarget, true,
+                    effect.Ability, caster, Name, (Int32)immunity.Seconds));
+                if (immunity.Caster is WorldClient source && source != client)
+                {
+                    source.messageQueue.addRpcMessage(AbilityMessages.AboutAbility(AbilityMessages.StunCaster, true,
+                        effect.Ability, caster, Name, 0));
+                    source.messageQueue.addRpcMessage(AbilityMessages.AboutAbility(AbilityMessages.ImmunityCaster, true,
+                        effect.Ability, caster, Name, (Int32)immunity.Seconds));
+                    source.FlushQueue();
                 }
             }
             if (effect.Virus && added.Count > 0)

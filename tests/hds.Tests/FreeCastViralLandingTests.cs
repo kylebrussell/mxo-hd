@@ -184,6 +184,51 @@ public class FreeCastViralLandingTests : IDisposable
         }
     }
 
+    [Theory]
+    [InlineData(50, 0, 181, 0, 16)]
+    [InlineData(50, 0, 180, 75, 16)]
+    [InlineData(50, 0, 181, 75, 13)]
+    [InlineData(25, 9, 181, 0, 17)]
+    [InlineData(25, 9, 181, 20, 15)]
+    public void PistolAerialLandsItsFixedBaseAgainstBallisticResistance(byte level, int influence, ushort stat, int resistance, ushort damage)
+    {
+        var caster = Client(110);
+        var target = Client(111);
+        Store.currentClient = caster;
+        caster.playerData.pvpFlag = target.playerData.pvpFlag = true;
+        caster.playerInstance.OrganizationID.setValue((byte)1);
+        target.playerInstance.OrganizationID.setValue((byte)2);
+        caster.viewMan.addView(111, 1).viewCreated = true;
+        var shot = new AbilityItem();
+        shot.setAbilityID(AbilityConditionalControls.PistolAerial);
+        caster.playerInstance.Level.setValue(level);
+        target.playerInstance.Level.setValue(level);
+        var casterEffects = TimedEffects.ForPlayer(caster);
+        var effects = TimedEffects.ForPlayer(target);
+        try
+        {
+            casterEffects.Effects.Apply(129, new[]
+            {
+                new TimedEffects.Active { Kind = TempMods.KindStat, Target = 171, Value = influence,
+                    Seconds = 10, Proc = TempMods.Proc.Stat }
+            }, TimeUtils.GetSimTimeSeconds());
+            effects.Effects.Apply(271, new[]
+            {
+                new TimedEffects.Active { Kind = TempMods.KindStat, Target = stat, Value = resistance,
+                    Seconds = 10, Proc = TempMods.Proc.Stat }
+            }, TimeUtils.GetSimTimeSeconds());
+
+            PvpCombat.LandAbilityOn(caster, shot, target);
+
+            Assert.Equal(1000 - damage, PvpCombat.HealthOf(target));
+        }
+        finally
+        {
+            TimedEffects.Clear(casterEffects);
+            TimedEffects.Clear(effects);
+        }
+    }
+
     [Fact]
     public void TrojanHorseDrainsOnlyNearbyHostilePlayersEveryFourthSecond()
     {

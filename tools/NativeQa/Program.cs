@@ -307,6 +307,12 @@ try
                     await NativeQa.Modes.EscapeAndEvasionMode.RevealAsync(actor);
                 else if (fixtureMode is NativeQa.Modes.PistolSlideMode && action == "slide-armor")
                     await NativeQa.Modes.PistolSlideMode.ApplyArmorAsync(actor);
+                else if (fixtureMode is NativeQa.Modes.PistolAerialMode && action == "aerial-armor")
+                    await NativeQa.Modes.PistolSlideMode.ApplyArmorAsync(actor);
+                else if (fixtureMode is NativeQa.Modes.PistolAerialMode && action == "aerial-immune")
+                    result = await NativeQa.Modes.PistolAerialMode.HoldImmunityAsync(actor);
+                else if (fixtureMode is NativeQa.Modes.PistolAerialMode && action == "aerial-records")
+                    result = NativeQa.Modes.PistolAerialMode.Records(actor);
                 else if (fixtureMode is NativeQa.Modes.StarterMovementObserverMode && action == "movement-observer-arrive")
                     result = await NativeQa.Modes.StarterMovementObserverMode.ArriveAsync(actor);
                 else if (fixtureMode is NativeQa.Modes.StarterStealthObserverMode && action == "stealth-observer-pass")

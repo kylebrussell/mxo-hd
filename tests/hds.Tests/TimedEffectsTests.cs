@@ -131,8 +131,11 @@ public class TimedEffectsTests
         // lands while it is on ("Stun stacking detected")
         var subject = new RecordingSubject();
         double now = 5000;
-        List<TimedEffects.Active> first = TimedEffects.Apply(subject, TempMods.Retail[243], now);
-        Assert.Single(first);
+        Assert.True(TempMods.TryGet(243, out var pistolAerial));
+        List<TimedEffects.Active> first = TimedEffects.Apply(subject, pistolAerial, now, fixtureProc: true);
+        Assert.Equal(TempMods.Proc.Terminal, Assert.Single(first).Proc);
+        Assert.False(subject.Effects.Has(TempMods.StunAbility));
+        TimedEffects.RunDue(now + .02);
         Assert.NotNull(subject.LastImmunity);
         Assert.Equal(4f, subject.LastImmunity!.Seconds);
         Assert.Equal(TempMods.ISDrainTargetAbility, subject.LastImmunity.Target);
@@ -278,7 +281,8 @@ public class TimedEffectsTests
         Assert.Equal("80bc11000305" + "00f3000000" + "6600" + "00000000" + "00" + "00008040", Hex(PlayerEffects.Record(stun, false)));
         Assert.Equal("80bc1d000405" + "0066000000" + "0000" + "00000000" + "00" + "00000000", Hex(PlayerEffects.LinkedRecord(stun, false)));
         // ... and ControlImmunityTimer: 80 bc 01 00 06 05 00 de 02 00 00 a9 02 00 00 00 00 00 00 00 80 40
-        TimedEffects.Active immunity = TimedEffects.ImmunityFor(TempMods.Retail[243], stun);
+        Assert.True(TempMods.TryGet(243, out var pistolAerial));
+        TimedEffects.Active immunity = TimedEffects.ImmunityFor(pistolAerial, stun);
         immunity.Parent = TempMods.ControlImmunityTimerAbility;
         immunity.RecordId = 0x506;
         Assert.Equal("80bc01000605" + "00de020000" + "a902" + "00000000" + "00" + "00008040", Hex(PlayerEffects.Record(immunity, false)));
@@ -478,6 +482,84 @@ public class TimedEffectsTests
         List<string> death = Rpcs(client);
         Assert.Equal("80bc15001700" + "0063010000" + "b700" + "c4ffffff" + "01" + "0000f041", Assert.Single(death));
         Assert.True(effects.Effects.IsEmpty);
+    }
+
+    [Fact]
+    public void PistolAerialSendsTheArchivedLinkedStunAndMessageOrder()
+    {
+        const ushort ability = AbilityConditionalControls.PistolAerial;
+        const string casterName = "Jord92";
+        const string victimName = "AfterWhoruNeo";
+        var caster = NewClient();
+        caster.playerInstance = new PlayerCharacter();
+        caster.playerInstance.CharacterName.setValue(casterName);
+        var victim = NewClient();
+        victim.playerInstance = new PlayerCharacter();
+        victim.playerInstance.CharacterName.setValue(victimName);
+        victim.playerData.nextBuffRecordId = 0x0502;
+        var effects = TimedEffects.ForPlayer(victim);
+        double now = TimeUtils.GetSimTimeSeconds();
+        try
+        {
+            int attackBefore = AbilityStats.Attack(victim, true);
+            Assert.True(TempMods.TryGet(ability, out var effect));
+            TimedEffects.Apply(effects, effect, now, caster, casterName, fixtureProc: true);
+            Assert.Equal(new[] { "80bc1d00020500f3000000000004000000000ad7233c" }, Rpcs(victim));
+            Assert.Empty(Rpcs(caster));
+            Assert.Equal(0, effects.Effects.Total(TempMods.CombatTacticsAbility));
+
+            TimedEffects.RunDue(now + .02);
+            var on = Rpcs(victim);
+            Assert.Equal(new[]
+            {
+                "80bc1d00020500f3000000000004000000010ad7233c",
+                "80bc1100030500f30000006600000000000000008040",
+                "80bc1d00040500660000000000000000000000000000",
+                "80bc150005050066000000a300ecffffff0000000000",
+                "80bc0100060500de020000a902000000000000008040",
+                "8167170020001b0000c401f3000000000000003000000807004a6f72643932000e00416674657257686f72754e656f00010000000000",
+                "816717002000c82000c601f3000000000000003000000807004a6f72643932000e00416674657257686f72754e656f00010004000000",
+            }, on);
+            Assert.Equal(new[]
+            {
+                Hex(AbilityMessages.AboutAbility(AbilityMessages.StunCaster, true, ability, casterName, victimName, 0)),
+                Hex(AbilityMessages.AboutAbility(AbilityMessages.ImmunityCaster, true, ability, casterName, victimName, 4))
+            }, Rpcs(caster));
+            Assert.Equal(-20, effects.Effects.Total(TempMods.CombatTacticsAbility));
+            Assert.Equal(attackBefore - 20, AbilityStats.Attack(victim, true));
+            Assert.True(ControlActions.Incapacitated(effects.Effects));
+
+            // A repeat on the already immune target removes its own marker and tells only the caster.
+            caster.LivenessClock = () => 0;
+            caster.Alive = true;
+            caster.playerData.setOnWorld(true);
+            TimedEffects.Apply(effects, effect, now + 1, caster, casterName, fixtureProc: true);
+            TimedEffects.RunDue(now + 1.02);
+            Assert.Equal(new[]
+            {
+                "80bc1d00070500f3000000000004000000000ad7233c",
+                "80bc1d00070500f3000000000004000000010ad7233c"
+            }, Rpcs(victim));
+            Assert.Equal(Hex(ServerPackets.BuildSystemChatMessage(
+                "AfterWhoruNeo is immune to Pistol Aerial's Stun.", "BROADCAST")), Assert.Single(Rpcs(caster)));
+            Assert.Equal(attackBefore - 20, AbilityStats.Attack(victim, true));
+
+            TimedEffects.RunDue(now + 4.03);
+            Assert.Equal(new[]
+            {
+                "80bc1100030500f30000006600000000000100008040",
+                "80bc1d00040500660000000000000000000100000000",
+                "80bc150005050066000000a300ecffffff0100000000",
+                "80bc0100060500de020000a902000000000100008040",
+            }, Rpcs(victim).Where(rpc => rpc.StartsWith("80bc", StringComparison.Ordinal)));
+            Assert.False(ControlActions.Incapacitated(effects.Effects));
+            Assert.Equal(0, effects.Effects.Total(TempMods.CombatTacticsAbility));
+            Assert.Equal(attackBefore, AbilityStats.Attack(victim, true));
+        }
+        finally
+        {
+            TimedEffects.Clear(effects);
+        }
     }
 
     [Fact]

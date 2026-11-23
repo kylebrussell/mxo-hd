@@ -53,13 +53,67 @@ public class ConditionalControlTests
 
     private sealed class FixedProcRoll(double roll) : Random
     {
-        public override double NextDouble() => roll;
+        public int Calls { get; private set; }
+        public override double NextDouble()
+        {
+            Calls++;
+            return roll;
+        }
     }
 
     [Theory]
     [InlineData(253, .30f, true)]
     [InlineData(256, .40f, false)]
-    public void RifleTermStunsRollOnceAndHonorIndependentImmunity(ushort id, float chance, bool dot)
+    public void RifleTermStunsRollOnceAndHonorIndependentImmunity(ushort id, float chance, bool dot) =>
+        AssertTermStun(id, chance, dot);
+
+    [Fact]
+    public void PistolAerialUsesItsOwnStoredStunRollAndFourSecondImmunity() =>
+        AssertTermStun(AbilityConditionalControls.PistolAerial, .40f, false);
+
+    [Fact]
+    public void PistolAerialTermMarkerUsesTheArchivedTargetlessAddAndRemoveFrames()
+    {
+        const ushort pistolAerial = AbilityConditionalControls.PistolAerial;
+        Assert.True(TempMods.TryGet(pistolAerial, out var effect));
+        var subject = new Subject();
+        var marker = Assert.Single(TimedEffects.Apply(subject, effect, TimeUtils.GetSimTimeSeconds() + 100, rng: new FixedProcRoll(0)));
+        try
+        {
+            marker.RecordId = 0x0502;
+            Assert.Equal(pistolAerial, marker.Target);
+            Assert.Equal(Convert.FromHexString("80BC1D00020500F3000000000004000000000AD7233C"), PlayerEffects.Record(marker, false));
+            Assert.Equal(Convert.FromHexString("80BC1D00020500F3000000000004000000010AD7233C"), PlayerEffects.Record(marker, true));
+        }
+        finally { TimedEffects.Clear(subject); }
+    }
+
+    [Fact]
+    public void PistolAerialRepeatDuringImmunityKeepsTheExistingStackUntilExpiry()
+    {
+        const ushort ability = AbilityConditionalControls.PistolAerial;
+        double now = TimeUtils.GetSimTimeSeconds();
+        var subject = new Subject();
+        Assert.True(TempMods.TryGet(ability, out var effect));
+        try
+        {
+            TimedEffects.Apply(subject, effect, now, rng: new FixedProcRoll(0));
+            TimedEffects.RunDue(now + .02);
+            var stun = Assert.Single(subject.Effects.Snapshot(), mod => mod.Target == TempMods.StunAbility);
+            var penalty = Assert.Single(subject.Effects.Snapshot(), AbilityConditionalControls.IsPistolAerialStunTactics);
+            Assert.Equal(stun.Expires, penalty.Expires);
+            TimedEffects.Apply(subject, effect, now + 1, rng: new FixedProcRoll(0));
+            TimedEffects.RunDue(now + 1.02);
+            Assert.Same(stun, Assert.Single(subject.Effects.Snapshot(), mod => mod.Target == TempMods.StunAbility));
+            Assert.Same(penalty, Assert.Single(subject.Effects.Snapshot(), AbilityConditionalControls.IsPistolAerialStunTactics));
+            Assert.Equal(-20, subject.Effects.Total(TempMods.CombatTacticsAbility));
+            TimedEffects.RunDue(now + 4.03);
+            Assert.True(subject.Effects.IsEmpty);
+        }
+        finally { TimedEffects.Clear(subject); }
+    }
+
+    private static void AssertTermStun(ushort id, float chance, bool dot)
     {
         Assert.True(TempMods.TryGet(id, out var effect));
         var marker = Assert.Single(effect.Mods, mod => mod.Proc == TempMods.Proc.Terminal);
@@ -72,11 +126,15 @@ public class ConditionalControlTests
         var hit = new Subject();
         var immune = new Subject();
         immune.Effects.Apply(734, new[] { new TimedEffects.Active { Target = 681, Proc = TempMods.Proc.State, Seconds = 10 } }, now);
-        TimedEffects.Apply(miss, effect, now, rng: new FixedProcRoll(chance));
-        TimedEffects.Apply(hit, effect, now, rng: new FixedProcRoll(chance - .001));
-        TimedEffects.Apply(immune, effect, now, rng: new FixedProcRoll(0));
+        var missRoll = new FixedProcRoll(chance);
+        var hitRoll = new FixedProcRoll(chance - .001);
+        var immuneRoll = new FixedProcRoll(0);
+        TimedEffects.Apply(miss, effect, now, rng: missRoll);
+        TimedEffects.Apply(hit, effect, now, rng: hitRoll);
+        TimedEffects.Apply(immune, effect, now, rng: immuneRoll);
         Assert.False(hit.Effects.Has(TempMods.StunAbility));
         TimedEffects.RunDue(now + .02);
+        Assert.All(new[] { missRoll, hitRoll, immuneRoll }, roll => Assert.Equal(1, roll.Calls));
         Assert.False(miss.Effects.Has(TempMods.StunAbility));
         Assert.False(immune.Effects.Has(TempMods.StunAbility));
         Assert.Equal(4, Assert.Single(hit.Effects.Snapshot(), mod => mod.Target == TempMods.StunAbility).Seconds);
