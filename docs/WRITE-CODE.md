@@ -103,8 +103,13 @@ slot, exact bare recipe and selected ingredient slots must match.
 Both scripts enter stance3 (`StandType`, shipped movement table `629ce160`) and
 return to stance0 only when still typing. Positive damage, another ability,
 combat, death, control loss, loadout/tool loss and world changes use the common
-cleanup. A changed stance invalidates the session. Exact retail interruption
-ordering and whether movement itself cancels remain unmeasured.
+cleanup. A changed stance or accepted displacement invalidates the session.
+
+### Movement and session close
+
+The tracked capture [`actions_combat_marketplace_abilitychangecoder.log.txt`](../research/packet-dumps/community-intake/20260607T003822Z-hdneo-mxopackets1-combat-ability-selected/logs/actions_combat_marketplace_abilitychangecoder.log.txt#L65987) records Writer 970 activation from bag slot 5 and standing-type idle. In lines 66034–66042 the next position update carries yaw and new coordinates without a stance leave or tool RPC. The server replies with stance 00, then removes the existing linked 970/968 record and clears the exclusive state. The client's `81 1a` follows in lines 66051–66052.
+
+`PlayerCharacter.parseAutoView` ends the active tool session when an admitted position record changes the stored coordinates. A same-position record, yaw-only record or corrected position does not trigger that path. The existing shared close emits standing, one linked removal and the exclusive-off record. This also ends the Compiler, whose tool resource uses the same exclusive typing mechanism. Damage and other ability requests still follow the server's existing interruption policy.
 
 `?writersession [off]` only reports/revokes current writer state under exact
 `MXO_DEV_COMMANDS=1`; it cannot grant, load or activate anything. Fresh headless

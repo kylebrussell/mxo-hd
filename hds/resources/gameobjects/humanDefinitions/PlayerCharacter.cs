@@ -76,7 +76,12 @@ namespace hds
 				}
 				if (state.HasPosition)
 				{
-					Position.setValue(NumericalUtils.doublesToLtVector3d(state.X, state.Y, state.Z));
+					WorldClient client = Store.currentClient;
+					byte[] nextPosition = NumericalUtils.doublesToLtVector3d(state.X, state.Y, state.Z);
+					// Retail closes the Writer on an accepted position change, before the client sends 81 1a.
+					if (client.playerData.craftingSession != null && !Position.getValue().AsSpan().SequenceEqual(nextPosition))
+						CraftingSession.End(client);
+					Position.setValue(nextPosition);
                     MissionProxyIntroduction.AcceptedPosition(Store.currentClient,state.X,state.Y,state.Z);
 				}
 

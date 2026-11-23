@@ -60,6 +60,21 @@ public static partial class Scenarios
         WriterTool(p,2,true); await p.WaitForRpcAsync(ModPattern(969,968,true));
         await p.WaitForRpcAsync(ModPattern(970,968));
         p.SkipReceived(); p.SendRpc("33"); await p.WaitForRpcAsync(ModPattern(970,968,true));
+        p.World.SendViewList(DisturbingTrendsFixture.ClientPosition(new double[] { 17000, 495, 6400 }));
+        WriterTool(p,2,true); await p.WaitForRpcAsync(ModPattern(970,968));
+        int movement = p.World.RpcSnapshot().Count;
+        int movementViews = p.World.ViewSnapshot().Count;
+        p.World.SendViewList(DisturbingTrendsFixture.ClientPosition(new double[] { 17020, 495, 6400 }));
+        await p.WaitForRpcAsync(ModPattern(970,968,true));
+        await p.WaitForRpcAsync("80 bd 05 ca 03 00 00 00 00 00 00");
+        var standing = BytePattern.Parse("02 00 01 28 ?? 40 00 00 00 10");
+        await p.WaitUntilAsync(() => p.World.ViewSnapshot().Skip(movementViews).Any(standing.Occurs),
+            "Movement publishes a new standing pose", HeadlessPlayer.DefaultTimeout);
+        p.SendRpc("81 1a"); // Stock may acknowledge the server-ended UI afterwards.
+        p.SendChat("?writersession"); await p.WaitForTextAsync("inactive");
+        var removed = BytePattern.Parse(ModPattern(970,968,true));
+        Check.Equal(1, p.World.RpcSnapshot().Skip(movement).Count(record => removed.IsMatch(record.Bytes)),
+            "One Writer removal across displacement and late client close");
         WriterTool(p,2,true); await p.WaitForRpcAsync(ModPattern(970,968));
         p.SkipReceived(); p.SendChat("?health 400"); await p.WaitForRpcAsync(ModPattern(970,968,true));
         WriterTool(p,2,true); await p.WaitForRpcAsync(ModPattern(970,968));

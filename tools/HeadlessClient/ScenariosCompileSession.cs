@@ -68,6 +68,30 @@ public static partial class Scenarios
         await p.WaitForRpcAsync("80 bd 05 c9 03 00 00 00 00 00 00");
         p.SendRpc(recipe); await p.WaitForRpcAsync($"81 2f 00 00 {Le(7458u)}");
         p.SendRpc($"60 {Le(7332u)} 90 01 00 03 01"); await p.WaitForRpcAsync("61 01");
+
+        // A position echo leaves the active tool open; accepted displacement ends it without 33 or a UI close RPC.
+        p.World.SendViewList(DisturbingTrendsFixture.ClientPosition(new double[] { 17000, 495, 6400 }));
+        await context.Database.ExecuteAsync($"INSERT INTO char_abilities(char_id,slot,ability_id,level,is_loaded) VALUES({p.CharId},402,{2399u << 7},1,0)");
+        long movementInfo = await context.Database.LongAsync($"SELECT cash FROM characters WHERE charId={p.CharId}");
+        CompilerTool(p,3,true); await p.WaitForRpcAsync(ModPattern(969,968));
+        p.World.SendViewList(DisturbingTrendsFixture.ClientPosition(new double[] { 17000, 495, 6400 }));
+        p.World.SendViewList(WireFormat.FromHex("02 00 01 04 10 00 00"));
+        p.SendChat("?compilesession"); await p.WaitForTextAsync("active; tool slot 3");
+        p.SendRpc("60 5f 09 00 00 92 01 00 03 01");
+        p.SendChat("?compilesession"); await p.WaitForTextAsync("active; tool slot 3");
+        int movement = p.World.ViewSnapshot().Count;
+        p.World.SendViewList(DisturbingTrendsFixture.ClientPosition(new double[] { 17020, 495, 6400 }));
+        await p.WaitForRpcAsync("61 01");
+        await p.WaitForRpcAsync(ModPattern(969,968,true));
+        await p.WaitForRpcAsync("80 bd 05 c9 03 00 00 00 00 00 00");
+        var standing = BytePattern.Parse("02 00 01 28 ?? 40 00 00 00 10");
+        await p.WaitUntilAsync(() => p.World.ViewSnapshot().Skip(movement).Any(standing.Occurs),
+            "Movement publishes a new standing pose", HeadlessPlayer.DefaultTimeout);
+        await Task.Delay(TimeSpan.FromSeconds(3.2));
+        Check.Equal(movementInfo, await context.Database.LongAsync($"SELECT cash FROM characters WHERE charId={p.CharId}"), "Walking cancels a pending compile with no Info debit");
+        Check.Equal(1L, await context.Database.LongAsync($"SELECT level FROM char_abilities WHERE char_id={p.CharId} AND slot=402"), "Walking preserves the pending code charge");
+        Check.Equal(0L, await context.Database.LongAsync($"SELECT COUNT(*) FROM inventory WHERE charId={p.CharId} AND goid=2399"), "Walking prevents the pending pill from materializing");
+
         CompilerTool(p,3,true); await p.WaitForRpcAsync(ModPattern(969,968));
         await context.Database.ExecuteAsync($"DELETE FROM inventory WHERE charId={p.CharId} AND slot=3");
         await p.WaitForRpcAsync(ModPattern(969,968,true));
