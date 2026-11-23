@@ -32,6 +32,7 @@ public class MixedGunmanParityTests
     [InlineData(408, new[] { 163, 183 }, new[] { 200, 200 }, 0)]
     [InlineData(491, new[] { 1143, 1139, 1068, 1047 }, new[] { 5, 5, 5, 10 }, 0)]
     [InlineData(495, new[] { 1046, 995, 1139 }, new[] { 1, 2, 4 }, 1072)]
+    [InlineData(497, new[] { 1046, 1027, 1042 }, new[] { 2, 5, 2 }, 1076)]
     public void LearnedGunmanAndLegacyPassivesPublishAndRemoveTheirStoredTotals(
         ushort id, int[] stats, int[] values, ushort grant)
     {
@@ -62,6 +63,39 @@ public class MixedGunmanParityTests
             Assert.Equal(0, AbilityPassives.Total(client, (ushort)stat));
         if (grant > 0)
             Assert.False(AbilityPassives.IsLoaded(client, grant));
+    }
+
+    [Theory]
+    [InlineData(false, false, 0, 99)]
+    [InlineData(true, false, 1, 100)]
+    [InlineData(false, true, 2, 101)]
+    [InlineData(true, true, 3, 102)]
+    public void SpecialistAndDuelistFeedTheirTypedConsumersAndDesperation(bool specialist, bool duelist,
+        int initiative, int snapshot)
+    {
+        var client = Client();
+        client.playerInstance.Health.setValue((ushort)1);
+        var selected = new[] { ((ushort)495, specialist), ((ushort)497, duelist) };
+        AbilityPassives.SetLoaded(client, selected.Where(entry => entry.Item2).Select(entry => (entry.Item1, (ushort)50)), true);
+
+        Assert.True(AbilityGrantRegistration.Handles(495, 1072));
+        Assert.True(AbilityGrantRegistration.Handles(497, 1076));
+        Assert.Equal(specialist, AbilityPassives.IsLoaded(client, 1072));
+        Assert.Equal(duelist, AbilityPassives.IsLoaded(client, 1076));
+        Assert.Equal(initiative, AbilityStats.Player(client, 1046));
+        Assert.True(AbilityScaledBuffs.Resolve(client, 1149, out var desperation));
+        var modifier = Assert.Single(desperation.Modifiers);
+        Assert.Equal(1044, modifier.Stat);
+        Assert.Equal(snapshot, modifier.Value);
+        Assert.Equal(20f, desperation.Seconds);
+
+        Assert.Equal(specialist ? 111 : 107, AbilityStats.ScaleTypedAbilityDamage(client, 1, 107));
+        Assert.Equal(107, AbilityStats.ScaleTypedAbilityDamage(client, 0, 107));
+        Assert.Equal(duelist ? 2 : 0, AbilityStats.Defense(client, true));
+        Assert.Equal(0, AbilityStats.Defense(client, false));
+        Assert.Equal(specialist ? 4.08f : 4f, AbilityControlDurations.Scale(client, TempMods.StunAbility, 4), 3);
+        Assert.Equal(duelist ? 4.08f : 4f, AbilityControlDurations.Scale(client, TempMods.PowerlessAbility, 4), 3);
+        Assert.Equal(4f, AbilityControlDurations.Scale(client, TempMods.RootedAbility, 4));
     }
 
     [Theory]
