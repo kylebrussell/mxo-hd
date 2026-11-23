@@ -551,8 +551,9 @@ namespace hds
             bool pistolSlide = AbilityID == 241;
             bool pistolAerial = AbilityID == AbilityConditionalControls.PistolAerial;
             bool slidingVolley = AbilityID == CombatSpecials.SlidingVolley;
+            bool rifleEscape = CombatSpecials.IsRifleEscape(AbilityID);
             bool instantDualPistol = CombatSpecials.IsInstantDualPistolSpecial(AbilityID);
-            bool checkedInterlockSelection = coderInterlock || pistolSlide || pistolAerial || slidingVolley || instantDualPistol;
+            bool checkedInterlockSelection = coderInterlock || pistolSlide || pistolAerial || slidingVolley || instantDualPistol || rifleEscape;
             if (checkedInterlockSelection && !AbilityPassives.IsLoaded(Store.currentClient, AbilityID))
             {
                 Deny(AbilityID, "Load this ability before using it.", AbilityRefusals.NotLoaded, sendServerText: false);
@@ -576,6 +577,26 @@ namespace hds
                 if (!CombatStyles.CanUse(shooter, AbilityID))
                 {
                     Deny(AbilityID, "Select Handguns before using this special.", AbilityRefusals.WrongStyle, sendServerText: false);
+                    return;
+                }
+            }
+
+            if (rifleEscape)
+            {
+                var rifleman = Store.currentClient;
+                if (!CombatSpecials.HasEquippedRifle(rifleman))
+                {
+                    Deny(AbilityID, "Rifle Butt Smash requires a rifle.", AbilityRefusals.RequiredItemCategory, sendServerText: false);
+                    return;
+                }
+                if (!CombatStyles.CanUse(rifleman, AbilityID))
+                {
+                    Deny(AbilityID, "Rifle Butt Smash requires the Rifles style.", AbilityRefusals.WrongStyle, sendServerText: false);
+                    return;
+                }
+                if (!ControlActions.CanWithdraw(TimedEffects.ForPlayer(rifleman).Effects))
+                {
+                    Deny(AbilityID, "Unable to withdraw in the current state.", AbilityRefusals.LegacyAmbiguous, sendServerText: false);
                     return;
                 }
             }
@@ -1479,6 +1500,7 @@ namespace hds
                 CombatSpecials.ControlledBurst => 1,
                 CombatSpecials.SlidingVolley => 1,
                 CombatSpecials.ThreeRoundBurst => 1,
+                CombatSpecials.RifleButtSmash => 1,
                 36 => 2,   // Tinkering
                 105 => 1,  // Body Shot
                 243 => 1,  // Pistol Aerial

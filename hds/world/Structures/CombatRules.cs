@@ -68,6 +68,12 @@ namespace hds
             public int DamageToPlayer, PlayerAbsorbed, DamageToNpc, NpcAbsorbed;
         }
 
+        // The shipped withdrawal resolver represents a successful escape ability as an animated special move.
+        internal static Outcome SuccessfulWithdrawal(bool escapeMove) => new Outcome
+        {
+            PlayerWins = true, Withdrew = true, Flags = escapeMove ? SpecialMove : Withdraw, SpecialMoveLands = escapeMove
+        };
+
         /// <summary>
         /// combat_resolution.determineAttacker for a fight between one player and one NPC: on the opening round, whoever
         /// started the fight (opportunityAttack); otherwise the preferred tactic; with the same tactic retail compared
@@ -101,7 +107,8 @@ namespace hds
         /// bug: the killer's own damage and absorbed amounts come out swapped (retail: 0 damage, 1 absorbed).</item>
         /// </list>
         /// </summary>
-        public static Outcome Resolve(Fighter player, Fighter npc, bool playerAttacksFirst, bool opening, bool playerWithdrawing = false)
+        public static Outcome Resolve(Fighter player, Fighter npc, bool playerAttacksFirst, bool opening, bool playerWithdrawing = false,
+            bool escapeMove = false)
         {
             if (playerWithdrawing && !opening)
             {
@@ -110,7 +117,7 @@ namespace hds
                 // which the withdrawer can't hit.
                 if (player.AttackRoll > npc.AttackRoll)
                 {
-                    return new Outcome { PlayerWins = true, Flags = Withdraw, Withdrew = true };
+                    return SuccessfulWithdrawal(escapeMove);
                 }
                 player.Hits = false;
                 player.SpecialMove = false;

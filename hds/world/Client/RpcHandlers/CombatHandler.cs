@@ -347,14 +347,16 @@ namespace hds
             bool playerStunned = ControlActions.Incapacitated(TimedEffects.ForPlayer(player).Effects);
             if (!ControlActions.CanWithdraw(TimedEffects.ForPlayer(player).Effects)) withdrawing = false;
             if (!CanResolveNpcQueuedAbility(session, ability)) ability = null;
-            bool ordinaryWithdrawal=WithdrawalInput.Ordinary(withdrawing,opening,ability,ordinaryWithdrawalRequested);
+            bool escapeMove = CombatSpecials.IsRifleEscape(ability?.getAbilityID());
+            bool attemptsWithdrawal = withdrawing || escapeMove;
+            bool ordinaryWithdrawal=WithdrawalInput.Ordinary(attemptsWithdrawal,opening,ability,ordinaryWithdrawalRequested);
             bool playerHit, npcHit, condition, playerFirst;
             UInt16 playerAttack, playerDefense, npcAttack, npcDefense;
             UInt16 playerDamage, npcDamage;
             Int16 absorbedByNpc, absorbedByPlayer;
             CombatTactic npcTactic;
             bool npcTurn = !stunned && !CombatSpecials.TurnedAway(mob, player) && mob.TryRetaliate(now, CombatInterlock.RoundMs / 1000.0);
-            var gunAdjustment = !opening && !withdrawing && ability == null && npcTurn && !playerStunned
+            var gunAdjustment = !opening && !attemptsWithdrawal && ability == null && npcTurn && !playerStunned
                 ? NpcInterlockGunAdjustment(session) : null;
             lock (roundRng)
             {
@@ -391,7 +393,7 @@ namespace hds
                     Tactic = npcTactic, Hits = npcHit, AttackRoll = npcAttack, SpecialMove = false,
                     Damage = stunned ? 0 : npcDamage, Absorbed = stunned ? 0 : absorbedByPlayer, Health = mob.getHealthC()
                 },
-                playerFirst, opening, withdrawing);
+                playerFirst, opening, attemptsWithdrawal, escapeMove);
             bool abilityLands = outcome.SpecialMoveLands;
             // A finishing move can leave a damage field at -1 (retail's swap); nobody is healed by it
             UInt16 damageToNpc = (UInt16)Math.Max(0, outcome.DamageToNpc);
@@ -416,7 +418,7 @@ namespace hds
             player.messageQueue.addRpcMessage(CombatInterlock.BuildRoundResult(session.RoundRecord, outcome.PlayerWins, decided, session.NpcMove,
                 session.TargetViewSpawnId, outcome.Flags, (UInt16)outcome.DamageToPlayer, (Int16)outcome.PlayerAbsorbed,
                 (UInt16)outcome.DamageToNpc, (Int16)outcome.NpcAbsorbed, CombatStartTime(),
-                withdrawing && !opening ? playerAttack - npcAttack : 0));
+                attemptsWithdrawal && !opening ? playerAttack - npcAttack : 0));
             session.RoundRecord++;
             session.Presentation?.Round(outcome.PlayerWins, outcome.Flags, playerTactic, npcTactic,
                 playerAttack, npcAttack, opening, ability?.getAbilityID() ?? 0, abilityLands);
@@ -426,7 +428,10 @@ namespace hds
                 Output.WriteDebugLog($"[COMBAT] Round {session.RoundRecord}: withdrawal succeeds ({playerAttack} against {npcAttack})");
                 player.FlushQueue();
                 withdrawing = false;
-                session.Stop(CombatSession.CombatEndReason.AttackerFled);
+                if (abilityLands)
+                    AbilityTargets.Land(player, ability, abilityTarget, sneakOpener);
+                if (session.IsActive)
+                    session.Stop(CombatSession.CombatEndReason.AttackerFled);
                 return;
             }
 
