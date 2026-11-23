@@ -1,0 +1,32 @@
+{
+  "abilities": {
+    "360": {
+      "checks": {
+        "area": {
+          "source": "GOB 360 uses selected direct object 3 and a five-metre hostile area centered on that object. The retained request in Vector_abilityloadoutchange.log.txt lines 31127–31128 carries the direct object's view and spawn.",
+          "runtime": "AbilityTargets.Land/LandAround use the live primary position and check each recipient's radius, visibility, sight and PvP relationship before that recipient's separate viral contest.",
+          "test": "PR924 stock saw stats 157/180 -100 and 159 -14 added only to QAEnemy and the 5.00 m opposing helper, with all six matching removals at 24 s. QAFar at 5.01 m and the nearer ally received nothing. The exact archived 43-byte replay matches the same edge. SelectedFieldUsesThePrimaryCentreAndEachRecipientOwnContest covers a deflected primary with an eligible secondary. https://github.com/kylebrussell/mxo-hd/pull/924#issuecomment-7091992858"
+        },
+        "targeting": {
+          "source": "GOB 360 requires Hacker Style and a hostile selected target in sight within 16 m, with a four-second cast, TestFunction 2 and use outside combat.",
+          "runtime": "AbilityHandler checks normal Archive admission and the current hostile view/spawn before costs, then retains that spawn for the range, sight and contest at completion.",
+          "test": "SelectedFieldUsesTheAdmittedLiveSpawnAndCannotSplashAfterInvalidation covers pre-cost empty, ally, stale, sight, range, style and loaded refusals plus replacement, retreat and sight loss during the cast. SelectedFieldUsesThePrimaryCentreAndEachRecipientOwnContest covers hit and deflection. PR924 stock observed 24/24/34 before charge, then 4 s, 23 IS and 58 s own reuse in the legal 95/100 loadout. https://github.com/kylebrussell/mxo-hd/pull/924#issuecomment-7091992858"
+        }
+      }
+    },
+    "1081": {
+      "checks": {
+        "controls": {
+          "source": "GOB 1081 applies eight seconds of Confuse state 91, thirty seconds of Viral Defense 183 -12 and a 100% RemoveRandomBuff callback on a successful single-target cast. It has no separate control immunity modifier.",
+          "runtime": "A successful hostile cast installs the independent timed records and invokes AbilityHostile.LandedOnPlayer; ControlActions applies the live Confuse state to tactic requests. A deflected cast does not consume the target's upgrade or add any record.",
+          "test": "PR924 stock observed 91 plus its linked record, the no-upgrade message, a refused Power request during Confuse, acceptance after the eight-second removal and the independent defense removal at 30 s. SelectedFieldUsesThePrimaryCentreAndEachRecipientOwnContest proves the dispel on hit, no dispel on deflection, survival through ordinary damage and the distinct expiry times. https://github.com/kylebrussell/mxo-hd/pull/924#issuecomment-7091992858"
+        },
+        "targeting": {
+          "source": "GOB 1081 is a single-target hostile Hacker Style activation within 16 m, with a six-second cast, normal viral contest and grant membership from 470.",
+          "runtime": "AbilityHandler gates by the loaded grant, relation, range, sight, selected spawn, style and outside-combat condition. Ordinary PvP landing contests only the selected live player and cannot emit a secondary.",
+          "test": "PR924 stock used the normal inherited action, observed 24/24/34 before charge, and landed with 6 s, 28 IS and 120 s own reuse only on QAEnemy. The optional native stale-Archive step was skipped during reuse. The exact 80 ae replay verifies the 470 grant disappears and returns, and SelectedFieldUsesTheAdmittedLiveSpawnAndCannotSplashAfterInvalidation checks reason 7 and stale-target invalidation. The public 1081 request is abbreviated. The fixture replays the captured 360 activation and normal 470 Archive transactions. https://github.com/kylebrussell/mxo-hd/pull/924#issuecomment-7091992858"
+        }
+      }
+    }
+  }
+}

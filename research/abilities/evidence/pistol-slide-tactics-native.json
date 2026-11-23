@@ -1,0 +1,14 @@
+{
+  "abilities": {
+    "241": {
+      "checks": {
+        "source-parity": {
+          "source": "GOB 241 sets Ability/TacticBonus +29 with TestFunction 1, CastWhenUsed 3, a required gun stance and a shipped success interlock move. The shipped round script uses a precomputed tacticalValue.",
+          "runtime": "AbilityStats.SpecialAttack adds the authored flat +29 once to the live queued Ballistic attack input for this style-bound move. This is the chosen placement of the authored value. The original tacticalValue producer remains unknown.",
+          "test": "StyleBoundQueuedGunSpecialFeedsItsAuthoredBonusIntoTheRound checks the exact inputs for 241, other style-bound moves and control types. The exact PR922 disposable and stock run both observe 241 base25 +29 = 54, followed by stat524 attack54, 9527, raw73, 20 IS and 10/5 s reuse. PR897 covers unchanged typed resistance and local state gating. https://github.com/kylebrussell/mxo-hd/pull/922#issuecomment-7091833140"
+        }
+      },
+      "note": "Stock PR922 verifies the authored +29 once in the live queued attack. Prior PR897 remains the stock armor comparison. https://github.com/kylebrussell/mxo-hd/pull/922#issuecomment-7091833140"
+    }
+  }
+}

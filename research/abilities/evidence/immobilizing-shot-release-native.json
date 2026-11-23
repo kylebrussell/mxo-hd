@@ -1,0 +1,19 @@
+{
+  "abilities": {
+    "254": {
+      "checks": {
+        "source-parity": {
+          "source": "GOB 254 applies a protected first change, then a 50% damage-break check on an eight-second Rooted. Its shipped callback names a generic term. Three observed 254 recipient traces use paired removals plus the standard Rooted state-end, while the generic term dispatch was not observed in those traces.",
+          "runtime": "The ordinary rifle cast applies fixed 18 before typed influence, Force Combat 519 -15, its value-50 break controller, and Rooted with a linked record. Both natural and successful damage release retire the same record IDs, restore movement and send the observed owner state-end. The signed 519 effect participates in the existing documented Evade entry policy.",
+          "test": "ImmobilizingShotSendsTheCapturedRootMessageAndExistingReleaseMessage checks both exit paths; the retained 254/255 replay distinguishes first-hit protection, landed retention and an early landed break. Stock PR923 confirms exact 8 s natural remove (277–280) and approximately 3 s landed damage remove (284–287), one Rooted state-end each, movement release, typed 20/18 and input timers. https://github.com/kylebrussell/mxo-hd/pull/923#issuecomment-7091909490"
+        },
+        "behavior-tests": {
+          "source": "GOB 254 applies a protected first change, then a 50% damage-break check on an eight-second Rooted. Its shipped callback names a generic term. Three observed 254 recipient traces use paired removals plus the standard Rooted state-end, while the generic term dispatch was not observed in those traces.",
+          "runtime": "The ordinary rifle cast applies fixed 18 before typed influence, Force Combat 519 -15, its value-50 break controller, and Rooted with a linked record. Both natural and successful damage release retire the same record IDs, restore movement and send the observed owner state-end. The signed 519 effect participates in the existing documented Evade entry policy.",
+          "test": "ImmobilizingShotSendsTheCapturedRootMessageAndExistingReleaseMessage checks both exit paths; the retained 254/255 replay distinguishes first-hit protection, landed retention and an early landed break. Stock PR923 confirms exact 8 s natural remove (277–280) and approximately 3 s landed damage remove (284–287), one Rooted state-end each, movement release, typed 20/18 and input timers. https://github.com/kylebrussell/mxo-hd/pull/923#issuecomment-7091909490"
+        }
+      },
+      "note": "Native PR923 confirms both observed release paths. The independent original global Force Combat contest formula remains qualified as a modeled engine policy. https://github.com/kylebrussell/mxo-hd/pull/923#issuecomment-7091909490"
+    }
+  }
+}
