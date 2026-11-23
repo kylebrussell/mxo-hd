@@ -102,6 +102,32 @@ public class InvisibilityDurationTests
         Assert.Equal(66, AbilityStats.SpecialAttack(actor, sweep));
     }
 
+    [Fact]
+    public void ImpartedInvisibilityRequiresItsLearnedActionAndDoesNotReplaceBelt()
+    {
+        var c = Client();
+        Assert.NotNull(Stealth.Refusal(c, 629, 0, out uint reason));
+        Assert.Equal(AbilityRefusals.NotLoaded, reason);
+        AbilityPassives.SetLoaded(c, new[] { ((ushort)629, (ushort)50) });
+
+        var belt = Stealth.Begin(c, Stealth.Defs[1116], 50);
+        Assert.NotNull(Stealth.Refusal(c, 629, 0, out reason));
+        Assert.Equal(AbilityRefusals.NoClientMessage, reason);
+        Stealth.Land(c, 629, 0);
+        Assert.Same(belt, Stealth.Current(c));
+        Stealth.Cleared(c);
+
+        Stealth.Land(c, 629, 0);
+        var imparted = Stealth.Current(c);
+        Assert.Equal(120, imparted.Seconds);
+        Assert.Empty(imparted.Mods);
+        Assert.Equal(Stealth.Invisible, Stealth.BitsOf(c));
+        c.playerData.stance = AnimationPackets.StanceSitting;
+        DelayedActions.RunDue(imparted.Expires + 1);
+        Assert.Null(Stealth.Current(c));
+        Assert.Equal(AnimationPackets.StanceStanding, c.playerData.stance);
+    }
+
     [Fact] public void ExistingInvisibilityDoesNotExtendWhenDurationBuffArrivesLater()
     {
         var c=Client();var state=Stealth.Begin(c,Stealth.Defs[1116],50);double expires=state.Expires;

@@ -308,6 +308,25 @@ namespace hds
                 if ((BitsOf(target) & Invisible) != 0) return "Your target is already invisible.";
                 return null;
             }
+            if (id == InvisibilityImpartedAbility)
+            {
+                if (!AbilityPassives.IsLoaded(client, id))
+                {
+                    reason = AbilityRefusals.NotLoaded;
+                    return "Load Impart Invisibility before using it.";
+                }
+                var combat = CombatManager.GetHandler(client);
+                if (combat.isCombatRunning || combat.HasActiveInterlock)
+                {
+                    reason = AbilityRefusals.MustBeOutsideCombat;
+                    return "You cannot use Impart Invisibility in combat.";
+                }
+                if ((BitsOf(client) & Invisible) != 0)
+                {
+                    reason = AbilityRefusals.NoClientMessage;
+                    return "You are already invisible.";
+                }
+            }
             if (id == ImprovedSneakAbility)
             {
                 if (LoadedImprovedSneakRank(client) == 0)
@@ -355,7 +374,6 @@ namespace hds
                 reason = AbilityRefusals.NoClientMessage;
                 return "You cannot become invisible near enemies.";
             }
-            if (def.Kind == Kind.Imparted && (BitsOf(client) & Invisible) != 0) return "You are already invisible.";
             return null;
         }
 
@@ -408,6 +426,7 @@ namespace hds
                     Begin(client, Defs[id], rank);
                 return;
             }
+            if (id == InvisibilityImpartedAbility && Refusal(client, id, targetView, out _) != null) return;
             if (Defs.TryGetValue(id, out Def def)) Begin(client, def, AbilityLevel(client, id));
         }
 
@@ -457,7 +476,9 @@ namespace hds
             if (stance != AnimationPackets.StanceStanding)
                 EmoteHandler.SetStance(client, stance, respectStealth: true);
             // The two DirectObject callbacks turn off listed auras after applying the stealth state.
-            if (def.Ability == EscapeAndEvasionAbility || def.Ability == ConcealmentGrantAbility) StopStealthAuras(client);
+            if (def.Ability == EscapeAndEvasionAbility || def.Ability == ConcealmentGrantAbility ||
+                def.Ability == InvisibilityImpartedAbility)
+                StopStealthAuras(client);
             Output.WriteDebugLog("[STEALTH] " + TimedEffects.PlayerName(client) + " " + def.Ability + " on (bits " + def.Bits +
                 ", SL " + state.StealthLevel + (state.Seconds > 0 ? ", " + state.Seconds + " s" : "") + ")" + HiddenFromList(client));
 
@@ -582,7 +603,9 @@ namespace hds
                 PresentModel(client, state.OriginalDescription, state.OriginalUseRsi, state.OriginalTitle);
             Present(client, 0, state.Def.Flags, false);
             byte stance = MovementStance(state.Def.Ability);
-            if (stance != AnimationPackets.StanceStanding && EmoteHandler.Stance(client) == stance)
+            byte currentStance = EmoteHandler.Stance(client);
+            if (currentStance != AnimationPackets.StanceStanding &&
+                (currentStance == stance || state.Def.Ability == InvisibilityImpartedAbility))
             {
                 var data = client.playerData;
                 if (client.Alive && data.getOnWorld() && !data.worldChangePending && !data.isDead && !data.duelDeath)
