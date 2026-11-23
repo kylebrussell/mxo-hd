@@ -956,6 +956,26 @@ public class AbilityRefusalFeedbackTests:IDisposable
     [InlineData(595, "replacement", 0u)]
     [InlineData(595, "retreat", 0u)]
     [InlineData(595, "sight-loss", 0u)]
+    [InlineData(360, "empty", AbilityRefusals.InvalidTarget)]
+    [InlineData(360, "ally", AbilityRefusals.InvalidTarget)]
+    [InlineData(360, "far", AbilityRefusals.TargetOutOfRange)]
+    [InlineData(360, "blocked", AbilityRefusals.TargetNotInSight)]
+    [InlineData(360, "style", AbilityRefusals.WrongStyle)]
+    [InlineData(360, "combat", AbilityRefusals.MustBeOutsideCombat)]
+    [InlineData(360, "unloaded", AbilityRefusals.NotLoaded)]
+    [InlineData(360, "replacement", 0u)]
+    [InlineData(360, "retreat", 0u)]
+    [InlineData(360, "sight-loss", 0u)]
+    [InlineData(1081, "empty", AbilityRefusals.InvalidTarget)]
+    [InlineData(1081, "ally", AbilityRefusals.InvalidTarget)]
+    [InlineData(1081, "far", AbilityRefusals.TargetOutOfRange)]
+    [InlineData(1081, "blocked", AbilityRefusals.TargetNotInSight)]
+    [InlineData(1081, "style", AbilityRefusals.WrongStyle)]
+    [InlineData(1081, "combat", AbilityRefusals.MustBeOutsideCombat)]
+    [InlineData(1081, "unloaded", AbilityRefusals.NotLoaded)]
+    [InlineData(1081, "replacement", 0u)]
+    [InlineData(1081, "retreat", 0u)]
+    [InlineData(1081, "sight-loss", 0u)]
     [InlineData(333, "empty", AbilityRefusals.InvalidTarget)]
     [InlineData(333, "ally", AbilityRefusals.InvalidTarget)]
     [InlineData(333, "stale", AbilityRefusals.InvalidTarget)]
@@ -978,7 +998,17 @@ public class AbilityRefusalFeedbackTests:IDisposable
         var nearby = Client();
         ushort style = CombatStyles.RequiredStyle(id);
         caster.playerData.passives.Loaded[style] = 38;
-        if (action != "unloaded") caster.playerData.passives.Loaded[id] = 38;
+        if (action != "unloaded")
+        {
+            if (id == 1081)
+            {
+                AbilityPassives.SetLoaded(caster, new[] { (style, (ushort)50), ((ushort)470, (ushort)50) });
+                Assert.True(AbilityPassives.IsLoaded(caster, id));
+                caster.messageQueue.RPCMessagesQueue.Clear();
+                caster.messageQueue.ObjectMessagesQueue.Clear();
+            }
+            else caster.playerData.passives.Loaded[id] = 38;
+        }
         if (action != "style") caster.playerData.combatStyle = style;
         caster.playerInstance.OrganizationID.setValue((byte)1);
         double farX = 21750 - 100 * AbilityCatalog.Find(id).Number("Ability/SelectionRange") - 1;

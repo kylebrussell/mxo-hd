@@ -11,7 +11,8 @@ public abstract class ConcentrationFixtureMode : NativeQaMode
             environmentOverrides:new(){["MXO_CAST_INTERRUPT_QA_ROLL"]="85",["MXO_CONCENTRATION_QA_DAMAGE"]="1"},
             extraQaMetadata:new(){["ConcentrationQa"]=true,["ConcentrateLoaded"]=loaded,["ConcentrationRoll"]=85,
                 ["ConcentrationCastAbility"]=360,["ConcentrationCastSeconds"]=4,["ConcentrationPreparationCommand"]="?pvpflag on",["ConcentrationDamageControl"]="?combatdepth hurtme 100 next",["ConcentrationDamageAmount"]=100,["ConcentrationDamageAfterCastSeconds"]=1,["ConcentrationCastTargetHelper"]="QAEnemy"},
-            readyMessages:new[]{"Concentration: select QAEnemy; ?pvpflag on; ?combatdepth hurtme 100 next; then use normal360 or ?combatdepth cast 360. The arm waits for that cast and applies real100 self damage after1s; no helper attack/interlock needed."});
+            hotbarAbilities:new ushort[] { 1006, 360 },
+            readyMessages:new[]{"Select Hacker Style on page 2, then QAEnemy. Turn PvP on with ?pvpflag on, arm ?combatdepth hurtme 100 next, and use Insidious Code on slot 2 or ?combatdepth cast 360. The arm waits for that cast and applies 100 self damage after one second."});
     }
     public override NativeQaModePlan Plan {get;}
     public override async Task<byte[]> AfterStartAsync(NativeQaBootstrapContext context)
