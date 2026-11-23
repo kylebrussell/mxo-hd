@@ -22,13 +22,14 @@ public sealed class StarterDrainCodeDamageMode : NativeQaMode
         {
             ["MXO_AGGRO"] = "0", ["MXO_MOB_WANDER"] = "0", ["MXO_SIMULACRUM_QA_HOLD_IS"] = "1",
             [CoderPets.DrainDamageQa] = "1"
-        }, extraQaMetadata: new() { ["ScopedStockRows"] = "19,20,27", ["NativeCloseableRows"] = 0 },
+        }, extraQaMetadata: new() { ["ScopedStockRows"] = "19,20,27", ["NativeCloseableRows"] = 1 },
         readyMessages: new[]
         {
             $"Level {Level}, {Loadout.Sum(AbilityMemory.Cost)}/{AbilityMemory.ForLevel(Level)} memory. Outdoor NAV CSR ({X},{Y},{Z}) faces east toward its own pet stand ({X + 150},{Y},{Z}), clear of ice FX. No helpers and no bag.",
             "Leave selection clear. Press page 2 slot 1 Coder Style then slot 2 Remote Proxy. Expect one level-4 Proxy with a deliberately seeded 9000/9000 HP and IS 800 to 750 after the 8 s cast. Type ?pet stay.",
             "With selection still clear, press slot 3 Fortify. Expect 2 s, 8 s reuse and 750 to 720 IS. [VITALS] owner=110 maxHP 9000 -> 9120, current HP 9000, and [PET] Fortify resistance=16 duration=600. Type ?pet to confirm.",
-            "Press slot 4 Drain Code on your Proxy. Selection can stay clear. Expect 2 s, 58 s own reuse and [PET] Drain Code type=5 damage=8000 HP 9000->1000 IS 720->770. The same pet/window stays at 1000/9120 HP. Type ?pet and check the values. No player maximum [VITALS] or [PVP] rounds. The 60 s DecoyDuration question stays open."
+            "Press slot 4 Drain Code on your Proxy. Selection can stay clear. Expect 2 s, 58 s own reuse and [PET] Drain Code type=5 damage=8000 HP 9000->1000 IS 720->770. The original pet and its window stay at 1000/9120 HP. Type ?pet and check the values. No player maximum [VITALS] or [PVP] rounds.",
+            "When slot 4 is ready again, wait five more seconds. Check the original Proxy and window are still present and stationary at 1000/9120. Press slot 4 a second time. Expect the original Proxy to reach 0 HP, IS 770->820 and its only pet window to close. This checks survival beyond the stored 60-second DecoyDuration and the ordinary last-hit removal in one session."
         });
 
     public override async Task<byte[]> AfterStartAsync(NativeQaBootstrapContext context)
@@ -81,9 +82,22 @@ public sealed class StarterDrainCodeDamageMode : NativeQaMode
             "The same pet window reports 1000/9120 HP after Drain");
         Check.That(server.DebugLog().Contains($"Drain Code (19) pet={simId} type=5 damage=8000 HP 9000->1000 IS 720->770"),
             "Drain publishes the independently observable raw damage and IS return");
-        Check.That(!actor.World.RpcSnapshot().Skip(drainAt).Any(frame => frame.Bytes is [0x81, 0x77, ..]),
-            "Drain does not unregister a surviving pet");
-        Check.Equal(0, actor.World.Problems.Count, "Drain damage framing");
+        byte[] reuseClear = AbilityCooldowns.BuildTimer(Drain, AbilityCooldowns.OwnTimer, 58, false);
+        await actor.WaitUntilAsync(() => actor.World.RpcSnapshot().Skip(drainAt)
+            .Any(frame => frame.Bytes.AsSpan().SequenceEqual(reuseClear)), "Drain clears its 58-second timer", TimeSpan.FromSeconds(65));
+        // Observe across the retained 60-second DecoyDuration field before selecting the same view again.
+        await Task.Delay(TimeSpan.FromSeconds(5));
+        Check.That(!actor.World.RpcSnapshot().Skip(drainAt).Any(frame => frame.Bytes is [0x81, 0x76 or 0x77, ..]),
+            "The surviving Proxy stays registered with no replacement beyond 60 seconds");
+        int finalDrainAt = await CastAsync(StarterHackerControlTargetMode.WithHandle(DrainStock, handle), Drain, 2, 58, 820);
+        await StockAbilityProfile.ObserveAsync(actor, finalDrainAt, frame => frame.Bytes is [0x81, 0x77, var id] && id == simId,
+            "The lethal second Drain unregisters the original Proxy");
+        Check.That(server.DebugLog().Contains($"Drain Code (19) pet={simId} type=5 damage=8000 HP 1000->0 IS 770->820"),
+            "The original Proxy receives the second Drain and the caster receives its separate IS return");
+        Check.That(!actor.World.RpcSnapshot().Skip(finalDrainAt).Any(frame => frame.Bytes is [0x81, 0x76, ..]),
+            "Lethal Drain leaves no replacement registration");
+        Check.Equal(0, actor.World.Problems.Count, "Drain damage and survivor framing");
+        Console.WriteLine("DRAIN CODE SURVIVOR PASS: original pet survives past 60 seconds and the second retained cast removes it.");
         return Array.Empty<byte>();
 
         async Task<int> CastAsync(byte[] request, ushort ability, float cast, float reuse, ushort isAfter)
