@@ -45,8 +45,8 @@ public sealed class SniperShotMode : NativeQaMode
             "Select Rifles and QAEnemy at PICK. Try slot 3 while exposed. Expect a local Concealment refusal or reason 23 if it sends. Then activate slot 2. " +
                 "Keep the selection without Escape. Try 505 from the printed BLOCK then the printed FAR. Expect sight/range refusal or reason 9/34, with no shot debit, cast or timer.",
             "Return to PICK. Keep 1137 active and press slot 3. Capture the complete direct stock 505 request. Expect 1137 off at cast start, 60 IS (480 to 420), " +
-                "6 s bar, 51 neutral Ballistic damage (base 47 with Rifles +8 and Firearms Expert +2 influence), and 45 s own reuse. A completed roll may apply Stun for 4 s. The helper PacketLog should show the 505 marker retiring before Stun 102, linked Combat Tactics 163 -20, and the separate 4 s immunity 734/681.",
-            """After reuse, send {"actor":"QAEnemy","action":"sniper-armor"} and confirm source1061 stat181 +20. While still outside combat, activate Concealment and repeat at PICK. Expect [TYPED-RESISTANCE OURS] 505 type1 total20 raw51 final46. Retry after reuse if neither cast rolled Stun; its ordinary chance is 50%. Record the normal cast/release presentation and verify no interlock round is opened.""",
+                "6 s bar, 52 neutral Ballistic damage (base 47 with Rifles +8 and +2 each from Firearms Expert and Concealment's parent), and 45 s own reuse. A completed roll may apply Stun for 4 s. The helper PacketLog should show the 505 marker retiring before Stun 102, linked Combat Tactics 163 -20, and the separate 4 s immunity 734/681.",
+            """After reuse, send {"actor":"QAEnemy","action":"sniper-armor"} and confirm source1061 stat181 +20. While still outside combat, activate Concealment and repeat at PICK. Expect [TYPED-RESISTANCE OURS] 505 type1 total20 raw52 final47. Retry after reuse if neither cast rolled Stun; its ordinary chance is 50%. Record the normal cast/release presentation and verify no interlock round is opened.""",
             "Slot 4 is the retained Concealed Shot control. Capture stock frames and visible presentation on 505 itself."
         });
 
@@ -87,6 +87,7 @@ public sealed class SniperShotMode : NativeQaMode
         actor.SendRpc(RiflesFrame);
         await ObserveAsync(actor, styleAt, rpc => Bonus(rpc, Rifles, 171, 8, 0, false), "Captured Rifles gives +8 Ballistic Damage");
         await ObserveAsync(actor, 0, rpc => Bonus(rpc, 125, 1139, 2, 0, false), "Loaded Firearms Expert gives +2 linked Ballistic Damage");
+        await ObserveAsync(actor, 0, rpc => Bonus(rpc, 503, 1139, 2, 0, false), "Loaded Concealment parent gives +2 linked Ballistic Damage");
         actor.SendRpc($"81 51 {WireFormat.ToHex(BitConverter.GetBytes(handle))}");
         int concealAt = actor.World.RpcSnapshot().Count;
         actor.SendRpc(ConcealFrame);

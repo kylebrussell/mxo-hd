@@ -145,16 +145,22 @@ public class AbilityRefusalFeedbackTests:IDisposable
         var view = caster.viewMan.addView(111, 12);
         view.viewCreated = true;
         view.spawnId = 9;
-        caster.playerData.passives.Loaded[CombatStyles.Rifles] = 26;
-        caster.playerData.combatStyle = CombatStyles.Rifles;
+        const ushort level = 26;
+        caster.playerInstance.Level.setValue((byte)level);
+        enemy.playerInstance.Level.setValue((byte)level);
         caster.playerInstance.EquippedItemID.setValue(state == "wrong weapon" ? CombatFixtureWeapons.Handgun : CombatFixtureWeapons.Rifle);
-        if (state != "unloaded") caster.playerData.passives.Loaded[shot] = 26;
+        var profile = new ushort[] { 2, 17, CombatStyles.Rifles, 503, CombatSpecials.ConcealedShot, shot }
+            .SelectMany(entry => AbilityPrerequisites.Current.Closure(entry).Keys.Append(entry)).Distinct().ToArray();
+        Assert.Equal(46, profile.Sum(AbilityMemory.Cost));
+        AbilityPassives.SetLoaded(caster, profile.Where(entry => state != "unloaded" || entry != shot).Select(entry => (entry, level)));
+        CombatStyles.Select(caster, CombatStyles.Rifles);
+        Assert.Equal(12, AbilityStats.Influence(caster, 171));
         ushort stealth = state == "sneak" ? Stealth.SneakGrantAbility : Stealth.ConcealmentGrantAbility;
         if (state != "exposed") Assert.NotNull(Stealth.Begin(caster, Stealth.Defs[stealth], 26));
         if (state == "resisted hit")
-            TimedEffects.ForPlayer(enemy).Effects.Apply(514, new[] { new TimedEffects.Active
+            TimedEffects.ForPlayer(enemy).Effects.Apply(1061, new[] { new TimedEffects.Active
             {
-                Target = 181, Value = 75, Seconds = 20
+                Target = 181, Value = 20, Seconds = 600
             } }, TimeUtils.GetSimTimeSeconds());
         caster.messageQueue.RPCMessagesQueue.Clear();
         enemy.messageQueue.RPCMessagesQueue.Clear();
@@ -202,9 +208,7 @@ public class AbilityRefusalFeedbackTests:IDisposable
             DelayedActions.RunDue(caster.playerData.castEndsAt + 1);
             Assert.True(AbilityCooldowns.IsCoolingDown(caster.playerData, shot, TimeUtils.GetSimTimeSeconds()));
 
-            int expectedDamage = state == "neutral hit" ? 47 :
-                state == "resisted hit" ? TypedAbilityResistance.Amount(47, 50, 50, 75) : 0;
-            if (state == "resisted hit") Assert.InRange(expectedDamage, 1, 46);
+            int expectedDamage = state == "neutral hit" ? 52 : state == "resisted hit" ? 47 : 0;
             Assert.Equal(1000 - expectedDamage, PvpCombat.HealthOf(enemy));
         }
         finally
