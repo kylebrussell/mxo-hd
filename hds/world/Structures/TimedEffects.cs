@@ -520,7 +520,7 @@ namespace hds
                 m.CasterName = casterName;
                 m.TargetView = targetView;
                 configure?.Invoke(m);
-                if (effect.Ability == MobAggro.EnrageAbility && subject is MobEffects &&
+                if (MobAggro.UsesEnragePursuit(effect.Ability) && subject is MobEffects &&
                     m.Proc == TempMods.Proc.State && m.Target == TempMods.EnrageAbility)
                 {
                     // State 93 binds GenericEnrageUpdate to a three-second cadence.

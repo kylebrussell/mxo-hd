@@ -70,9 +70,10 @@ namespace hds
             // These selected abilities bind a live enemy before the cast, including the centre of any splash.
             bool selectedViralField = AbilityID == 343 || AbilityID == 401 || AbilityID == 402 || AbilityID == 403;
             bool enrage = AbilityID == 588;
+            bool selectedCoderViral = AbilityID == 597 || AbilityID == 598;
             bool selectedViralAttack = enrage || AbilityID == 53 || (AbilityID >= 57 && AbilityID <= 60) ||
                 AbilityID == 350 || AbilityID == 351 || AbilityID == 353 ||
-                AbilityID == 392 || AbilityID == 394 || AbilityID == 395 || AbilityID == 396 || selectedViralField;
+                AbilityID == 392 || AbilityID == 394 || AbilityID == 395 || AbilityID == 396 || selectedViralField || selectedCoderViral;
             ushort? lockedDamageTargetSpawn = null;
             bool selectedHostileCast = selectedViralAttack || selectedDespoilerArea || midlevelViralDamage;
             if (selectedHostileCast)
@@ -296,7 +297,7 @@ namespace hds
                     }
                 }
             }
-            if (selectedViralField)
+            if (selectedViralField || selectedCoderViral)
             {
                 var caster = Store.currentClient;
                 if (!AbilityTargets.HasSelectionSight(caster, definition, currentTargetViewId))
@@ -310,9 +311,10 @@ namespace hds
                     Deny(AbilityID, "This ability cannot be used during combat.", AbilityRefusals.MustBeOutsideCombat, sendServerText: false);
                     return;
                 }
-                if (CombatStyles.Active(caster) != CombatStyles.HackerStyle)
+                ushort requiredStyle = CombatStyles.RequiredStyle(AbilityID);
+                if (CombatStyles.Active(caster) != requiredStyle)
                 {
-                    Deny(AbilityID, "This ability requires Hacker Style.", AbilityRefusals.WrongStyle, sendServerText: false);
+                    Deny(AbilityID, $"This ability requires {CombatStyles.Name(requiredStyle)}.", AbilityRefusals.WrongStyle, sendServerText: false);
                     return;
                 }
             }
@@ -915,6 +917,13 @@ namespace hds
                 return;
             }
 
+            // The legacy rows are marked as buffs, but these are selected hostile Coder casts.
+            if (selectedCoderViral)
+            {
+                AbilityTargets.Land(client, ability, currentTargetViewId, sneakOpener, AbilityCastOrigin.NormalFreeCast);
+                return;
+            }
+
             if (AbilityID == ConcealmentDetection.Ability)
             {
                 ConcealmentDetection.Land(client);
@@ -1094,8 +1103,8 @@ namespace hds
             }
             int from = ability.getValueFrom();
             int to = ability.getValueTo();
-            // These Static Blast tiers have fixed viral GOB components and incomplete legacy CSV ranges.
-            if (source?.Id == 33 || source?.Id == 590 || source?.Id == 591)
+            // The Static Blast/Barrage tiers have fixed viral GOB components and incomplete legacy CSV ranges.
+            if (source?.Id == 33 || source?.Id == 590 || source?.Id == 591 || source?.Id == 598)
             {
                 var hit = source.Modifiers.Single(m => m.Target == 108 && m.Number("DamageType", -1) == 2 &&
                     m.Number("WhenEnabled", -1) == 2 && m.Number("DurationType", -1) == 1);

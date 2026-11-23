@@ -7,12 +7,14 @@ namespace hds.Tests;
 [Collection("DelayedActions")]
 public class EnrageNpcUpdatesTests
 {
-    [Fact]
-    public void OnlyTheSelectedEnrageOnAnNpcUsesTheShippedThreeSecondUpdates()
+    [Theory]
+    [InlineData(588, 12)]
+    [InlineData(597, 10)]
+    public void BothNpcEnrageCastsUseTheShippedThreeSecondUpdates(ushort ability, int duration)
     {
         var mob = Npc();
         var subject = TimedEffects.ForMob(mob);
-        Assert.True(TempMods.TryGet(588, out var enrage));
+        Assert.True(TempMods.TryGet(ability, out var enrage));
         Assert.True(TempMods.TryGet(412, out var tomoNage));
         double now = TimeUtils.GetSimTimeSeconds();
         try
@@ -22,10 +24,10 @@ public class EnrageNpcUpdatesTests
             Assert.Equal(now + 3, state.NextTick);
             var ticks = new List<TimedEffects.Active>();
             var expired = new List<TimedEffects.Active>();
-            subject.Effects.Advance(now + 11, ticks, expired);
+            subject.Effects.Advance(now + duration - 0.01, ticks, expired);
             Assert.Equal(new[] { state, state, state }, ticks);
             Assert.Empty(expired);
-            subject.Effects.Advance(now + 12, ticks, expired);
+            subject.Effects.Advance(now + duration, ticks, expired);
             Assert.Same(state, Assert.Single(expired));
 
             var other = Assert.Single(TimedEffects.Apply(subject, tomoNage, now), m => m.Target == TempMods.EnrageAbility);
@@ -79,6 +81,8 @@ public class EnrageNpcUpdatesTests
     [Theory]
     [InlineData(588, true, false)]
     [InlineData(588, false, false)]
+    [InlineData(597, true, false)]
+    [InlineData(597, false, false)]
     [InlineData(40, true, false)]
     [InlineData(40, false, true)]
     public void ExpiryDoesNotRedirectAnOccupiedNpcAndOnlyOrdinaryEffectsCanStartRetaliation(

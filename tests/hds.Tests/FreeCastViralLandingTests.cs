@@ -552,6 +552,39 @@ public class FreeCastViralLandingTests : IDisposable
         };
     }
 
+    [Theory]
+    [InlineData(0, 87)]
+    [InlineData(75, 71)]
+    public void StaticBarrageUsesItsFixedViralBaseWithMatchingResistance(int resistance, int damage)
+    {
+        const ushort barrage = 598;
+        var caster = Client(110);
+        var victim = Client(111);
+        caster.playerData.pvpFlag = victim.playerData.pvpFlag = true;
+        caster.playerInstance.OrganizationID.setValue((byte)1);
+        victim.playerInstance.OrganizationID.setValue((byte)2);
+        caster.viewMan.addView(111, 1).viewCreated = true;
+        AbilityPassives.SetLoaded(caster, new[] { (barrage, (ushort)44), (CombatStyles.CoderStyle, (ushort)50), ((ushort)585, (ushort)50) });
+        CombatStyles.Select(caster, CombatStyles.CoderStyle);
+        var target = TimedEffects.ForPlayer(victim);
+        double now = TimeUtils.GetSimTimeSeconds();
+        var ability = new AbilityItem();
+        ability.setAbilityID(barrage);
+
+        try
+        {
+            target.Effects.Apply(8, new[] { new TimedEffects.Active
+            {
+                Kind = TempMods.KindStat, Target = 157, Proc = TempMods.Proc.Stat, Value = resistance, Seconds = 20
+            } }, now);
+            Assert.Equal((ushort)64, AbilityHandler.AbilityDamage(ability, new Random(1), characterLevel: 50));
+            Assert.Equal(36, AbilityStats.Influence(caster, 172));
+            PvpCombat.LandAbilityOn(caster, ability, victim);
+            Assert.Equal(1000 - damage, PvpCombat.HealthOf(victim));
+        }
+        finally { TimedEffects.Clear(target); }
+    }
+
     [Fact] public void ExistingUpgradeAttacksAndSereneCalmChangeTheActualCommonContest()
     {
         var c=Client(110);var target=Client(111);Store.currentClient=c;

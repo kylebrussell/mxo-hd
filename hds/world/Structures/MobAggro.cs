@@ -16,7 +16,7 @@ namespace hds
     /// </summary>
     public static class MobAggro
     {
-        internal const ushort EnrageAbility = 588;
+        internal static bool UsesEnragePursuit(ushort ability) => ability == 588 || ability == 597;
         private const double EnrageRangeUnits = 1000;
         public static readonly bool Enabled = Environment.GetEnvironmentVariable("MXO_AGGRO") != "0";
         public static readonly double RangeUnits = ReadDouble("MXO_AGGRO_RANGE", 12) * 100; // 100 units per metre
@@ -229,7 +229,7 @@ namespace hds
             {
                 if (!CanStartEnrage(mob, control) ||
                     !TryEnrageTarget(mob, nearest, out ClientView view, out var position, out _)) return;
-                Output.WriteDebugLog($"[ENRAGE] source={EnrageAbility} entity={mob.getEntityId()} seeks char={nearest.playerData.getCharID()}");
+                Output.WriteDebugLog($"[ENRAGE] source={control.Parent} entity={mob.getEntityId()} seeks char={nearest.playerData.getCharID()}");
                 Attack(nearest, mob, view, position.X, position.Y, position.Z, control);
             });
         }
