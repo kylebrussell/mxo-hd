@@ -765,8 +765,12 @@ namespace hds
                 if (!InFrustum(ox, oz, yaw, x, z)) { Output.WriteDebugLog("[STEALTH] detect " + seen + ": not facing (needs < 60)"); continue; }
                 if (!NavMesh.HasSightPath((ushort)client.playerData.getDistrictId(), ox, oy, oz, x, y, z))
                 { Output.WriteDebugLog("[STEALTH] detect " + seen + ": floor-mesh sight blocked"); continue; }
-                int roll = Roll(random), sa = AwarenessOf(other);
-                if (SneakTest(sa, sl, NoiseOf(client), (float)distance, roll))
+                int sa = AwarenessOf(other), noise = NoiseOf(client);
+                bool fixtureRoll = AssassinDetectionQa.Allows(client, other, state.Def.Ability);
+                int roll = fixtureRoll ? AssassinDetectionQa.BoundaryRoll : Roll(random);
+                if (fixtureRoll)
+                    Output.WriteDebugLog($"[ASSASSIN DETECTION QA] {seen}: SA {sa} SL {sl} noise {noise} roll {roll}");
+                if (SneakTest(sa, sl, noise, (float)distance, roll))
                 {
                     Output.WriteDebugLog("[STEALTH] " + TimedEffects.PlayerName(other) + " sees " + who +
                         " (SA " + sa + " SL " + sl + " d " + (int)distance + " roll " + roll + ")");

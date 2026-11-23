@@ -134,6 +134,96 @@ public class FreeCastViralLandingTests : IDisposable
     }
 
     [Theory]
+    [InlineData("1", "1", "mxotest_assassin", 110, 6114, 1111, true, false, true)]
+    [InlineData("", "1", "mxotest_assassin", 110, 6114, 1111, true, false, false)]
+    [InlineData("1", "0", "mxotest_assassin", 110, 6114, 1111, true, false, false)]
+    [InlineData("1", "1", "reality_hd", 110, 6114, 1111, true, false, false)]
+    [InlineData("1", "1", "mxotest_assassin", 111, 6114, 1111, true, false, false)]
+    [InlineData("1", "1", "mxotest_assassin", 110, 6112, 1111, true, false, false)]
+    [InlineData("1", "1", "mxotest_assassin", 110, 6114, 186, true, false, false)]
+    [InlineData("1", "1", "mxotest_assassin", 110, 6114, 1111, false, false, false)]
+    [InlineData("1", "1", "mxotest_assassin", 110, 6114, 1111, true, true, false)]
+    public void AssassinDetectionRollStaysInsideTheOneDisposableSneakPair(string enabled, string dev, string database,
+        uint sneaker, uint observer, ushort ability, bool bothInWorld, bool eitherDead, bool expected) =>
+        Assert.Equal(expected, AssassinDetectionQa.Allows(enabled, dev, database, sneaker, observer, ability, bothInWorld, eitherDead));
+
+    [Fact]
+    public void AssassinUpgradesReplaceTheLiveSneakInputAndRevealAcrossBothBoundaries()
+    {
+        var actor = Client(110);
+        var observer = Client(6114);
+        var pair = new[] { actor, observer };
+        for (int i = 0; i < pair.Length; i++)
+        {
+            typeof(WorldClient).GetField("<TransportFence>k__BackingField", BindingFlags.NonPublic | BindingFlags.Instance)!
+                .SetValue(pair[i], new WorldSendFence());
+            pair[i].playerData.pvpFlag = true;
+            pair[i].playerInstance.OrganizationID.setValue((byte)(i + 1));
+        }
+        actor.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(17000, 495, 6400));
+        actor.playerInstance.NoiseLevel.setValue((byte)0);
+        observer.playerInstance.YawInterval.setValue((byte)128);
+        observer.playerInstance.StealthAwareness.setValue((byte)1);
+        AbilityPassives.SetLoaded(actor, new (ushort, ushort)[] { (151, 15), (285, 50), (389, 50) });
+        AbilityPassives.SetLoaded(observer, new (ushort, ushort)[] { (2, 50) });
+        Assert.Equal(13, Stealth.AwarenessOf(observer));
+        string? previousMode = Environment.GetEnvironmentVariable(AssassinDetectionQa.Mode);
+        var world = Store.world;
+        try
+        {
+            Store.world = (WorldServer)RuntimeHelpers.GetUninitializedObject(typeof(WorldServer));
+            Environment.SetEnvironmentVariable(AssassinDetectionQa.Mode, "1");
+            var sneak = Begin();
+            Position(7200);
+            Assert.Equal(15, Stealth.StealthLevelOf(actor));
+            Assert.True(Stealth.DetectedByPlayer(actor, sneak));
+            Stealth.End(actor, "baseline revealed");
+
+            AbilitySupport.Land(actor, 1122, 0);
+            sneak = Begin();
+            Position(7200);
+            Assert.Equal(20, Stealth.StealthLevelOf(actor));
+            Assert.False(Stealth.DetectedByPlayer(actor, sneak));
+            Position(6650);
+            Assert.True(Stealth.DetectedByPlayer(actor, sneak));
+            Stealth.End(actor, "Assassin revealed");
+            Assert.Equal(5, Stealth.StealthLevelOf(actor));
+
+            AbilitySupport.Land(actor, 1123, 0);
+            Assert.DoesNotContain((ushort)1122, actor.playerData.activeBuffs.Keys);
+            Assert.Contains(actor.messageQueue.RPCMessagesQueue.Cast<SequencedMessage>(), message =>
+                ManageBonusRecord.TryDecode(message.content[1..], out var record) && record!.SourceId == 1122 &&
+                record.TargetId == 209 && record.SignedValue == 5 && record.AddRemoveType == 1);
+            sneak = Begin();
+            Position(6650);
+            Assert.Equal(23, Stealth.StealthLevelOf(actor));
+            Assert.False(Stealth.DetectedByPlayer(actor, sneak));
+            Assert.True(AbilityBuffs.Apply(observer, 293));
+            Assert.Equal(93, Stealth.AwarenessOf(observer));
+            Assert.True(Stealth.DetectedByPlayer(actor, sneak));
+            Stealth.End(actor, "Master Assassin revealed");
+            Assert.Equal(8, Stealth.StealthLevelOf(actor));
+            Assert.True(AbilityBuffs.Remove(actor, 1123));
+            Assert.Equal(0, Stealth.StealthLevelOf(actor));
+        }
+        finally
+        {
+            Stealth.End(actor, "fixture complete");
+            AbilityBuffs.RemoveAll(actor);
+            AbilityBuffs.RemoveAll(observer);
+            Store.world = world;
+            Environment.SetEnvironmentVariable(AssassinDetectionQa.Mode, previousMode);
+        }
+
+        void Position(int z) => observer.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(17000, 495, z));
+        Stealth.State Begin()
+        {
+            Position(8300);
+            return Stealth.Begin(actor, Stealth.Defs[Stealth.SneakGrantAbility], 15);
+        }
+    }
+
+    [Theory]
     [InlineData(481, 2, 14, 47, 30, 60, false)]
     [InlineData(488, 4, 16, 50, 10, 50, true)]
     public void OwnedBufferInterferenceRequiresItsBoundEnemyAndRunsAuthoredCallbacks(ushort id, int castSeconds,
