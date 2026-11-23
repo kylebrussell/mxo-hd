@@ -1,0 +1,21 @@
+{
+  "families": {
+    "artillerist-selected-viral-area": {
+      "representative": 336,
+      "result": "pass",
+      "head": "b60c899c",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/884#issuecomment-7097162490",
+      "scope": "Both stock casts admit the original hostile and exact 3 m or 5 m edge, refuse missing, friendly and 16.01 m selections before spending, pay 13 or 17 IS, cast for 4 s and publish 2 s own and shared reuse. Power and typed resistance affect the 337 landing only as expected."
+    }
+  },
+  "abilities": {
+    "336": {
+      "family": "artillerist-selected-viral-area",
+      "note": "Stock Logic Bomb hit QAEnemy for 371 and the 3.00 m QAFar for 379, excluding the 3.01 m QAOther and the nearby ally. This confirms the selected-area execution and client presentation. The authored fixed 14 and historical effective 260/280 remain unreconciled. https://github.com/kylebrussell/mxo-hd/pull/884#issuecomment-7097162490"
+    },
+    "337": {
+      "family": "artillerist-selected-viral-area",
+      "note": "Stock Code Nuke hit QAEnemy for 378 and the 5.00 m QAFar for 419, excluding the 5.01 m QAOther and the nearby ally. With Power active at landing, QAEnemy took 465 and only QAFar had the +45 viral-resistance reduction from 507 to 419. The next Speed cast after expiry recorded no reduction. The authored fixed 17 and historical effective 300/360 remain unreconciled. https://github.com/kylebrussell/mxo-hd/pull/884#issuecomment-7097162490"
+    }
+  }
+}

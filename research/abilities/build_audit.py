@@ -189,8 +189,8 @@ _summon = 'NPC_BASE_SIMULACRA spawn (retail creation layout), owned; native8176/
 PETS = {
     25: 'own live pet within 10 m out of combat; 50 IS/4 s/8 s; 300 s caster-level x0.5 Melee 159 and Ballistic 171 influence on Proxy damage, fixed Force Combat 519 +40 in modeled melee entry against the captured NPC Evade shield; stock Attack, Aggressive, Passive and expiry verified',
     26: 'loaded, outside combat; live opposing player pet in sight within 16m through its owner; fixed 13000 type5, ordered lethal impact and ordinary pet death',
-    **{a: _summon.format(lo, hi) + '; random proxy sheet' for a, lo, hi in ((27, 1, 4), (29, 8, 17), (586, 18, 34), (594, 35, 50))},
-    28: _summon.format(4, 7) + '; random proxy sheet; prepares the replacement before retiring the previous summon and publishes one replacement; stock Deactivate removes the current proxy',
+    **{a: _summon.format(lo, hi) + '; configured Remote Proxy sheet or random stock pool' for a, lo, hi in ((27, 1, 4), (29, 8, 17), (586, 18, 34), (594, 35, 50))},
+    28: _summon.format(4, 7) + '; configured Remote Proxy sheet or random stock pool; prepares the replacement before retiring the previous summon and publishes one replacement; stock Deactivate removes the current proxy',
     **{a: _summon.format(lo, hi) + '; Nuker sheet' for a, lo, hi in ((22, 4, 7), (601, 8, 17), (611, 18, 34), (616, 35, 50))},
     **{a: _summon.format(lo, hi) + '; Healer sheet heals owner (amount a choice)' for a, lo, hi in ((602, 12, 22), (612, 23, 43), (617, 44, 50))},
     20: 'own simulacrum only; Max Health +level x15 and four resistance ratings +level x2 for 600s; NPC melee retaliation consumes the Fortify rating using the shipped armor curve normalized to ordinary pet damage (OURS pet caller)',
