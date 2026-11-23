@@ -3,6 +3,7 @@ using System.Runtime.CompilerServices;
 using HeadlessClient;
 using hds;
 using hds.shared;
+using MxoHd.PacketResearch;
 
 namespace hds.Tests;
 
@@ -127,9 +128,19 @@ public class AbilityResurrectionTests
     [InlineData(false, true)]
     [InlineData(true, true)]
     [InlineData(true, false)]
-    public void RejuvenateNativeReplyRunsTheScriptCallbackOnlyAfterConsent(bool recipientFlagged, bool accepted)
+    public void RejuvenateNativeReplyRunsTheScriptCallbackOnlyAfterConsent(bool recipientFlagged, bool accepted) =>
+        VerifyResurrectionReply(416, 416, recipientFlagged, accepted, 777, 333);
+
+    [Theory]
+    [InlineData(false, true)]
+    [InlineData(true, true)]
+    [InlineData(true, false)]
+    public void RenewNativeReplyKeepsItsOwnResultAndUsesTheReviveMotion(bool recipientFlagged, bool accepted) =>
+        VerifyResurrectionReply(438, 375, recipientFlagged, accepted, 813, 477);
+
+    private static void VerifyResurrectionReply(ushort ability, ushort motion, bool recipientFlagged, bool accepted,
+        ushort liveHealth, ushort liveInnerStrength)
     {
-        const ushort rejuvenate = 416;
         var caster = Client(110, capturePackets: true);
         var recipient = Client(6111, dead: true, capturePackets: true);
         caster.playerInstance.OrganizationID.setValue((byte)1);
@@ -143,16 +154,21 @@ public class AbilityResurrectionTests
         WorldServer.Clients = new() { ["Caster"] = caster, ["Recipient"] = recipient };
         try
         {
-            Assert.True(AbilityResurrection.Request(caster, recipient, rejuvenate,
+            Assert.True(AbilityResurrection.Request(caster, recipient, ability,
                 caster.playerData.worldGeneration, caster.playerData.lifeGeneration,
                 recipient.playerData.worldGeneration, life));
             var offer = Assert.Single(recipient.messageQueue.RPCMessagesQueue.Cast<SequencedMessage>()).content.AsSpan(1);
-            Assert.True(offer.StartsWith(new byte[] { 0x81, 0x88, 0xa0, 0x01, 0x00, 0x00 }));
+            Assert.True(offer.StartsWith(new byte[] { 0x81, 0x88 }));
+            Assert.Equal((uint)ability, BitConverter.ToUInt32(offer[2..]));
             Assert.True(recipient.playerData.isDead);
             Assert.False(caster.playerData.pvpFlag);
 
+            recipient.playerInstance.MaxHealth.setValue(liveHealth);
+            recipient.playerInstance.InnerStrengthMax.setValue(liveInnerStrength);
             Store.currentClient = recipient;
-            var reply = NativeBody(rejuvenate);
+            // The PR290 consent layout has the ability as a u32. Use the actual offered id.
+            var reply = Scenarios.NativeRejuvenateConsent()[2..];
+            BitConverter.GetBytes((uint)ability).CopyTo(reply, 0);
             if (!accepted) reply[5] = 1;
             var rpc = new RpcManager();
             rpc.HandleRpc((int)RPCRequestHeader.CLIENT_ABILITY_APPROVAL, ref reply);
@@ -173,17 +189,17 @@ public class AbilityResurrectionTests
 
             Assert.False(recipient.playerData.isDead);
             Assert.Equal(life + 1, recipient.playerData.lifeGeneration);
-            Assert.Equal(777, PvpCombat.HealthOf(recipient));
-            Assert.Equal(333, AbilityHandler.CurrentInnerStrength(recipient));
+            Assert.Equal(liveHealth, PvpCombat.HealthOf(recipient));
+            Assert.Equal(liveInnerStrength, AbilityHandler.CurrentInnerStrength(recipient));
             var objectPackets = recipient.messageQueue.ObjectMessagesQueue.Cast<SequencedMessage>();
-            var stand = BytePattern.Parse("02 00 01 28 ?? 40 00 3f a0 01");
+            var stand = BytePattern.Parse($"02 00 01 28 ?? 40 00 3f {Field(motion)}");
             var aliveAndStand = Assert.Single(objectPackets, message => stand.Occurs(message.content)).content;
-            Assert.True(BytePattern.Parse("02 00 02 80 80 80 d1 00 4d 01 09 03").Occurs(aliveAndStand));
+            Assert.True(BytePattern.Parse($"02 00 02 80 80 80 d1 00 {Field(liveInnerStrength)} {Field(liveHealth)}").Occurs(aliveAndStand));
             Assert.Equal(AbilityResurrection.RestoreEffect, NumericalUtils.ByteArrayToUint32(recipient.playerInstance.EffectID.getValue(), 1));
             Assert.Single(caster.messageQueue.RPCMessagesQueue.Cast<SequencedMessage>(), message =>
-                BytePattern.Parse("81 67 ?? ?? ?? ?? 40 28 00 c6 01 a0 01 00 00").Occurs(message.content));
+                BytePattern.Parse($"81 67 ?? ?? ?? ?? 40 28 00 c6 01 {Field(ability)} 00 00").Occurs(message.content));
             Assert.Single(recipient.messageQueue.RPCMessagesQueue.Cast<SequencedMessage>(), message =>
-                BytePattern.Parse("81 67 ?? ?? ?? ?? 3e 28 00 c6 00 a0 01 00 00").Occurs(message.content));
+                BytePattern.Parse($"81 67 ?? ?? ?? ?? 3e 28 00 c6 00 {Field(ability)} 00 00").Occurs(message.content));
         }
         finally
         {
@@ -191,6 +207,8 @@ public class AbilityResurrectionTests
             WorldServer.Clients = priorClients;
             Store.currentClient = priorClient;
         }
+
+        static string Field(ushort value) => WireFormat.ToHex(BitConverter.GetBytes(value));
     }
 
     [Fact]
