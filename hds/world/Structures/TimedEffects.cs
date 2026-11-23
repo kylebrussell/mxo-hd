@@ -916,7 +916,10 @@ namespace hds
             }
             else if (effect.TargetLine != 0 && added.Count > 0)
             {
-                client.messageQueue.addRpcMessage(AbilityMessages.AboutAbility(effect.TargetLine, false, effect.Ability, caster, Name, 0, 0));
+                int value = effect.Ability == CombatSpecials.CripplingShot
+                    ? added.FirstOrDefault(modifier => modifier.Proc == TempMods.Proc.Stat && modifier.Target == TempMods.MovementSpeedAbility)?.Value ?? 0
+                    : 0;
+                client.messageQueue.addRpcMessage(AbilityMessages.AboutAbility(effect.TargetLine, false, effect.Ability, caster, Name, value, 0));
             }
             AbilityHostile.TellCaster(added.Count > 0 ? added[0].Caster : null, client, effect, added, Name);
             if (AbilityHostile.ChangesVitals(added) || AbilityHostile.ChangesVitals(replaced)) AbilityBuffs.RefreshVitals(client);

@@ -310,6 +310,10 @@ try
                     await NativeQa.Modes.EscapeAndEvasionMode.RevealAsync(actor);
                 else if (fixtureMode is NativeQa.Modes.SniperShotMode && action == "sniper-armor")
                     await NativeQa.Modes.PistolSlideMode.ApplyArmorAsync(actor);
+                else if (fixtureMode is NativeQa.Modes.CripplingShotMode && action == "crippling-speed-and-armor")
+                    await NativeQa.Modes.CripplingShotMode.SpeedAndArmorAsync(actor);
+                else if (fixtureMode is NativeQa.Modes.CripplingShotMode && action == "crippling-records")
+                    result = NativeQa.Modes.CripplingShotMode.Records(actor);
                 else if (fixtureMode is NativeQa.Modes.PistolSlideMode && action == "slide-armor")
                     await NativeQa.Modes.PistolSlideMode.ApplyArmorAsync(actor);
                 else if (fixtureMode is NativeQa.Modes.PistolShortPoseMode && action == "pistol-pose-armor")

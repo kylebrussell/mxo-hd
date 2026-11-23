@@ -384,7 +384,8 @@ namespace hds
         private const ushort CrashAbility = 396, BottleneckField = 402;
         private const ushort RunMovementStat = 115, SneakMovementStat = 877, InvisibleMovementStat = 878;
 
-        private static bool UsesStanceMovementChannel(ushort source) => source == CrashAbility || source == BottleneckField;
+        private static bool UsesStanceMovementChannel(ushort source) => source == CrashAbility || source == BottleneckField ||
+            source == CombatSpecials.CripplingShot;
 
         public static bool ProjectsTimedMovementDebuff(ushort source) => source == 86 || source == 130 || UsesStanceMovementChannel(source);
 
@@ -406,7 +407,7 @@ namespace hds
             // Warboy ProxyM2_m2_packets_5 28162/30146 and Rajko MaraCCyphs 51874 show the two SMG roots.
             if (active.Any(OverridesMovementScale)) return -1f;
             ushort movementStat = MovementStatFor(Stealth.Current(client));
-            // Crash and Bottleneck each specify three movement channels. Apply only the current one.
+            // These movement effects each specify three channels. Apply only the current one.
             int points = active.Where(modifier => ProjectsSignedMovementDebuff(modifier) &&
                 (!UsesStanceMovementChannel(modifier.Parent) || modifier.Target == movementStat)).Sum(modifier => modifier.Value);
             // Retail Crippling Shot 450 combines signed stat 115 points per hundred with the existing scale.

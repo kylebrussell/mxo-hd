@@ -304,7 +304,8 @@ namespace hds
             }
             bool selectedTimedGun = protectedGunSpecial || pistolEvasive;
             bool rifleOpener = CombatSpecials.IsRifleOpener(AbilityID);
-            bool woundingShot = AbilityID == CombatSpecials.WoundingShot;
+            bool cripplingShot = AbilityID == CombatSpecials.CripplingShot;
+            bool protectedRifleOpener = AbilityID == CombatSpecials.WoundingShot || cripplingShot;
             ushort? gunTargetSpawn = null;
             if (selectedTimedGun)
             {
@@ -624,19 +625,24 @@ namespace hds
             {
                 var shooter = Store.currentClient;
                 var fight = CombatManager.GetHandler(shooter);
-                if (woundingShot && !AbilityPassives.IsLoaded(shooter, AbilityID))
+                if (protectedRifleOpener && !AbilityPassives.IsLoaded(shooter, AbilityID))
                 {
                     Deny(AbilityID, "Load this ability before using it.", AbilityRefusals.NotLoaded, sendServerText: false);
                     return;
                 }
                 if (fight.isCombatRunning || fight.HasActiveInterlock)
                 {
-                    Deny(AbilityID, "This rifle shot cannot be used during combat.", AbilityRefusals.MustBeOutsideCombat, sendServerText: !woundingShot);
+                    Deny(AbilityID, "This rifle shot cannot be used during combat.", AbilityRefusals.MustBeOutsideCombat, sendServerText: !protectedRifleOpener);
                     return;
                 }
-                if (woundingShot && !CombatSpecials.HasEquippedRifle(shooter))
+                if (protectedRifleOpener && !CombatSpecials.HasEquippedRifle(shooter))
                 {
-                    Deny(AbilityID, "Equip a rifle-category weapon before using Wounding Shot.", AbilityRefusals.RequiredItemCategory, sendServerText: false);
+                    Deny(AbilityID, "Equip a rifle-category weapon before using this shot.", AbilityRefusals.RequiredItemCategory, sendServerText: false);
+                    return;
+                }
+                if (cripplingShot && CombatStyles.Active(shooter) != CombatStyles.Rifles)
+                {
+                    Deny(AbilityID, "Select Rifles before using Crippling Shot.", AbilityRefusals.WrongStyle, sendServerText: false);
                     return;
                 }
                 ushort? spawn = packet.Length == 41 ? BitConverter.ToUInt16(packet, 4) :
@@ -1250,13 +1256,14 @@ namespace hds
                 (definition == null || definition.DirectDamage || definition.DamageOverTime || TempMods.Has(AbilityID) ||
                  AbilityHostile.Lands(AbilityID) || CombatSpecials.TargetsEnemy(AbilityID)))
             {
-                if (woundingShot)
+                if (protectedRifleOpener)
                 {
                     var fight = CombatManager.GetHandler(client);
                     if (!AbilityPassives.IsLoaded(client, AbilityID) || !CombatSpecials.HasEquippedRifle(client) ||
-                        !CombatStyles.CanUse(client, AbilityID) || fight.isCombatRunning || fight.HasActiveInterlock)
+                        !CombatStyles.CanUse(client, AbilityID) || (cripplingShot && CombatStyles.Active(client) != CombatStyles.Rifles) ||
+                        fight.isCombatRunning || fight.HasActiveInterlock)
                     {
-                        Output.WriteDebugLog("[ABILITY] 253 fizzles: the loaded shot, rifle category, style or combat state changed");
+                        Output.WriteDebugLog($"[ABILITY] {AbilityID} fizzles: the loaded shot, rifle category, style or combat state changed");
                         return;
                     }
                     // Preserve the selected free-cast route through the entire opener.
@@ -1383,6 +1390,7 @@ namespace hds
             {
                 CombatSpecials.ConcealedShot => 1,
                 CombatSpecials.SniperShot => 1,
+                CombatSpecials.CripplingShot => 1,
                 CombatSpecials.PistolBarrage => 1,
                 CombatSpecials.FullAuto => 1,
                 CombatSpecials.FullAutoRedux => 1,

@@ -980,20 +980,34 @@ public class AbilityRefusalFeedbackTests:IDisposable
     }
 
     [Theory]
-    [InlineData("unloaded", AbilityRefusals.NotLoaded)]
-    [InlineData("weapon", AbilityRefusals.RequiredItemCategory)]
-    [InlineData("active combat", AbilityRefusals.MustBeOutsideCombat)]
-    [InlineData("empty", AbilityRefusals.InvalidTarget)]
-    [InlineData("ally", AbilityRefusals.InvalidTarget)]
-    [InlineData("far", AbilityRefusals.TargetOutOfRange)]
-    [InlineData("blocked", AbilityRefusals.TargetNotInSight)]
-    [InlineData("combat during cast", 0u)]
-    [InlineData("out of range during cast", 0u)]
-    [InlineData("rifle", 0u)]
-    [InlineData("shotgun", 0u)]
-    public void WoundingShotUsesAnOutsideCombatRifleCategoryAndItsOriginalLiveTarget(string scenario, uint reason)
+    [InlineData("unloaded", AbilityRefusals.NotLoaded, 253)]
+    [InlineData("weapon", AbilityRefusals.RequiredItemCategory, 253)]
+    [InlineData("active combat", AbilityRefusals.MustBeOutsideCombat, 253)]
+    [InlineData("empty", AbilityRefusals.InvalidTarget, 253)]
+    [InlineData("ally", AbilityRefusals.InvalidTarget, 253)]
+    [InlineData("far", AbilityRefusals.TargetOutOfRange, 253)]
+    [InlineData("blocked", AbilityRefusals.TargetNotInSight, 253)]
+    [InlineData("combat during cast", 0u, 253)]
+    [InlineData("out of range during cast", 0u, 253)]
+    [InlineData("rifle", 0u, 253)]
+    [InlineData("shotgun", 0u, 253)]
+    [InlineData("unloaded", AbilityRefusals.NotLoaded, 450)]
+    [InlineData("weapon", AbilityRefusals.RequiredItemCategory, 450)]
+    [InlineData("style", AbilityRefusals.WrongStyle, 450)]
+    [InlineData("active combat", AbilityRefusals.MustBeOutsideCombat, 450)]
+    [InlineData("empty", AbilityRefusals.InvalidTarget, 450)]
+    [InlineData("ally", AbilityRefusals.InvalidTarget, 450)]
+    [InlineData("far", AbilityRefusals.TargetOutOfRange, 450)]
+    [InlineData("blocked", AbilityRefusals.TargetNotInSight, 450)]
+    [InlineData("combat during cast", 0u, 450)]
+    [InlineData("out of range during cast", 0u, 450)]
+    [InlineData("style during cast", 0u, 450)]
+    [InlineData("rifle", 0u, 450)]
+    [InlineData("armored", 0u, 450)]
+    public void ProtectedRifleOpenersUseAnOutsideCombatRifleAndTheirOriginalLiveTarget(string scenario, uint reason, ushort id)
     {
-        const ushort id = CombatSpecials.WoundingShot;
+        bool crippling = id == CombatSpecials.CripplingShot;
+        ushort level = crippling ? (ushort)42 : (ushort)20;
         string root = AppContext.BaseDirectory;
         while (!File.Exists(Path.Combine(root, "data", "sector_properties.csv"))) root = Path.GetDirectoryName(root)!;
         SectorProperties.Load(Path.Combine(root, "data", "sector_properties.csv"));
@@ -1003,8 +1017,8 @@ public class AbilityRefusalFeedbackTests:IDisposable
         var victim = Client();
         victim.playerData.setCharID(111);
         victim.playerData.setEntityId(111);
-        caster.playerInstance.Level.setValue((byte)20);
-        victim.playerInstance.Level.setValue((byte)20);
+        caster.playerInstance.Level.setValue((byte)level);
+        victim.playerInstance.Level.setValue((byte)level);
         caster.playerInstance.OrganizationID.setValue((byte)1);
         victim.playerInstance.OrganizationID.setValue((byte)(scenario == "ally" ? 1 : 2));
         caster.playerData.pvpFlag = victim.playerData.pvpFlag = true;
@@ -1016,10 +1030,10 @@ public class AbilityRefusalFeedbackTests:IDisposable
 
         var fullProfile = new ushort[] { 2, 17, CombatStyles.Rifles, id }
             .SelectMany(ability => AbilityPrerequisites.Current.Closure(ability).Keys.Append(ability)).Distinct().ToArray();
-        Assert.True(fullProfile.Sum(AbilityMemory.Cost) <= AbilityMemory.ForLevel(20));
+        Assert.True(fullProfile.Sum(AbilityMemory.Cost) <= AbilityMemory.ForLevel(level));
         AbilityPassives.SetLoaded(caster, fullProfile.Where(ability => scenario != "unloaded" || ability != id)
-            .Select(ability => (ability, (ushort)20)));
-        CombatStyles.Select(caster, CombatStyles.Rifles);
+            .Select(ability => (ability, level)));
+        CombatStyles.Select(caster, scenario == "style" ? CombatStyles.SelfDefense : CombatStyles.Rifles);
         caster.messageQueue.RPCMessagesQueue.Clear();
         caster.messageQueue.ObjectMessagesQueue.Clear();
 
@@ -1028,8 +1042,8 @@ public class AbilityRefusalFeedbackTests:IDisposable
         view.spawnId = 9;
         var item = new AbilityItem();
         item.setAbilityID(id);
-        item.setAbilityName("Wounding Shot");
-        item.setValueFrom(6);
+        item.setAbilityName(AbilityCatalog.Find(id).Name);
+        if (!crippling) item.setValueFrom(6);
         item.setCastAnimStart(new byte[4]);
         DataLoader.getInstance().AbilityDB.Add(item);
         Store.currentClient = caster;
@@ -1040,6 +1054,9 @@ public class AbilityRefusalFeedbackTests:IDisposable
         BitConverter.GetBytes(id).CopyTo(request, 0);
         BitConverter.GetBytes(scenario == "empty" ? 0u : DuelPackets.Handle(view.ViewID, view.spawnId)).CopyTo(request, 2);
         var effects = TimedEffects.ForPlayer(victim);
+        if (scenario == "armored")
+            effects.Effects.Apply(1061, new[] { new TimedEffects.Active { Target = 181, Value = 20, Seconds = 60 } },
+                TimeUtils.GetSimTimeSeconds());
         try
         {
             new AbilityHandler().ProcessAbility(ref request);
@@ -1054,13 +1071,29 @@ public class AbilityRefusalFeedbackTests:IDisposable
 
             double castEnd = caster.playerData.castEndsAt;
             Assert.True(castEnd > TimeUtils.GetSimTimeSeconds());
-            Assert.Equal(480, AbilityHandler.CurrentInnerStrength(caster));
+            Assert.Equal(crippling ? 455 : 480, AbilityHandler.CurrentInnerStrength(caster));
             Assert.Equal(1000, PvpCombat.HealthOf(victim));
             if (scenario == "combat during cast") combat.isCombatRunning = true;
             if (scenario == "out of range during cast") MoveTarget(19749);
+            if (scenario == "style during cast") caster.playerData.combatStyle = CombatStyles.SelfDefense;
             AbilityCastInterrupts.FinishDue(caster, castEnd + .01);
             Assert.True(AbilityCooldowns.IsCoolingDown(caster.playerData, id, TimeUtils.GetSimTimeSeconds()));
-            if (scenario is "rifle" or "shotgun")
+            if (crippling && (scenario is "rifle" or "armored"))
+            {
+                Assert.Equal(scenario == "armored" ? 946 : 942, PvpCombat.HealthOf(victim));
+                var slows = effects.Effects.Snapshot().Where(modifier => modifier.Parent == id).OrderBy(modifier => modifier.Target).ToArray();
+                Assert.Equal(new ushort[] { 115, 877, 878 }, slows.Select(modifier => modifier.Target));
+                Assert.All(slows, modifier => Assert.Equal((-75, 8f), (modifier.Value, modifier.Seconds)));
+                Assert.Equal(-.75f, BitConverter.ToSingle(victim.playerInstance.MovementScale.getValue()));
+                byte[] feedback = AbilityMessages.AboutAbility(0x7c000198, false, id,
+                    TimedEffects.PlayerName(caster), TimedEffects.PlayerName(victim), -75, 0);
+                Assert.Contains(Rpcs(victim), packet => packet.SequenceEqual(feedback));
+                TimedEffects.RunDue(slows[0].Expires + .01);
+                Assert.False(effects.Effects.HasParent(id));
+                Assert.Equal(0f, BitConverter.ToSingle(victim.playerInstance.MovementScale.getValue()));
+                Assert.False(combat.HasActiveInterlock);
+            }
+            else if (scenario is "rifle" or "shotgun")
             {
                 Assert.Equal(994, PvpCombat.HealthOf(victim));
                 var dot = Assert.Single(effects.Effects.Snapshot(), mod => mod.Parent == id && mod.Proc == TempMods.Proc.Dot);
