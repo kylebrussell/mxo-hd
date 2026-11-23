@@ -24,7 +24,7 @@ namespace hds
     {
         public const ushort PoisonKnife = 146, WoundingThrow = 281, SeverArtery = 341, BerserkerAttack = 535, Taunt = 647,
             SideRollEscape = 121, BackRollEscape = 122, CartwheelEscape = 292, WoodenStake = 207, SilverBullet = 208, HolyWater = 547, ConcealedShot = 504, WoodenStakePlus = 1022,
-            HolyWaterPlus = 1023, SilverBulletPlus = 1024, PistolEvasive = 242;
+            HolyWaterPlus = 1023, SilverBulletPlus = 1024, PistolEvasive = 242, WoundingShot = 253;
         public const ushort KilledOnlyByHolyWater = 432, KilledOnlyBySilver = 463, KilledOnlyByWood = 464;
 
         internal const ushort ControlledBurst = 250;
@@ -47,12 +47,15 @@ namespace hds
             { HolyWater, KilledOnlyByHolyWater }, { HolyWaterPlus, KilledOnlyByHolyWater },
         };
 
-        // The stock client gates these two Rifles shots outside combat (CastWhenUsed = 1).
+        // The shipped Rifles openers have CastWhenUsed = 1 and the same two-second casting script.
         public static bool IsRifleOpener(ushort id)
         {
             id = AbilityCatalog.Canonical(id);
-            return id == 254 || id == 255;
+            return id == WoundingShot || id == 254 || id == 255;
         }
+
+        internal static bool HasWoundingShotWeapon(WorldClient caster) =>
+            RangedWeapons.GetStats(SharpshooterFreeFire.EquippedWeapon(caster))?.Category == "IWRf";
 
         public static bool Handles(ushort id)
         {

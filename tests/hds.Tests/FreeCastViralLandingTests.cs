@@ -337,6 +337,49 @@ public class FreeCastViralLandingTests : IDisposable
     }
 
     [Theory]
+    [InlineData(20, 5)]
+    [InlineData(75, 4)]
+    public void WoundingShotOnlyAppliesBallisticResistanceToTheFixedHit(int resistance, int resisted)
+    {
+        var caster = Client(110);
+        var target = Client(111);
+        Store.currentClient = caster;
+        caster.playerData.pvpFlag = target.playerData.pvpFlag = true;
+        caster.playerInstance.OrganizationID.setValue((byte)1);
+        target.playerInstance.OrganizationID.setValue((byte)2);
+        caster.viewMan.addView(111, 1).viewCreated = true;
+        var ability = new AbilityItem();
+        ability.setAbilityID(CombatSpecials.WoundingShot);
+        ability.setValueFrom(6);
+        ability.setValueTo(0);
+        var effects = TimedEffects.ForPlayer(target);
+        try
+        {
+            PvpCombat.LandAbilityOn(caster, ability, target);
+            Assert.Equal(994, PvpCombat.HealthOf(target));
+            CheckNeutralDot();
+            effects.Effects.Apply(271, new[]
+            {
+                new TimedEffects.Active { Target = 181, Value = resistance, Proc = TempMods.Proc.Stat, Seconds = 10 }
+            }, TimeUtils.GetSimTimeSeconds());
+            PvpCombat.LandAbilityOn(caster, ability, target);
+            Assert.Equal(994 - resisted, PvpCombat.HealthOf(target));
+            CheckNeutralDot();
+        }
+        finally
+        {
+            TimedEffects.Clear(effects);
+        }
+
+        void CheckNeutralDot()
+        {
+            var dot = Assert.Single(effects.Effects.Snapshot(), mod => mod.Parent == CombatSpecials.WoundingShot && mod.Proc == TempMods.Proc.Dot);
+            Assert.Equal((14, 10f, 2.5, -1), (dot.Value, dot.Seconds, dot.Interval, dot.DamageType));
+            Assert.Equal(4, TypedAbilityResistance.Player(caster, target, CombatSpecials.WoundingShot, 4, dot.DamageType));
+        }
+    }
+
+    [Theory]
     [InlineData(399)]
     [InlineData(468)]
     public void RetiringPlayerViewCannotAnchorAHostileArea(ushort abilityId)
