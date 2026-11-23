@@ -221,7 +221,22 @@ PASSIVE_LIMITS = {
 }
 
 
+STOCK_VERIFIED_SUMMARIES = {
+    362: '29 base IS, 2 s cast and 58 s reuse; selected hostile splash within 7 m of its centre; no damage; 12 s Blind with linked attack penalty and no immunity',
+    450: '45 IS, 2 s cast and 10 s own/5 s group 690 reuse; selected hostile within 20 m, equipped rifle and Rifles at rest; fixed player Ballistic base 49 with influence and typed resistance; −75 in all three movement channels for 8 s with live restoration; retained NPC ranges separate',
+    468: '56 IS, 8 s cast and 30 s reuse; selected hostile within 16 m, Hacker Style at rest and 6 m splash around the selected target; fixed Viral base 1 with typed resistance; independent 50% landed marker lasting 0.1 s, then 6 s Stun and separate 6 s immunity',
+    478: '42 IS, 2 s cast and 30 s reuse; one selected hostile, no damage; Stealth Detection 204 and Combat Evasion 520 each −100 for 60 s; live detection and Evade entry consume them; independent 10% Blind for 8 s',
+    482: '56 base IS, 4 s cast and 60 s reuse; one selected hostile, no damage; authored Stun and Blind for 6 s and Daze, Off-Balance and Stagger for 5 s, with applicable duration influence; terminal marker publishes separate 12 s immunity',
+    492: '45 IS, 2 s cast and 10 s own/5 s group 690 reuse; dual-SMG hostile cone at rest within 8 m; fixed player Ballistic base 21; Root for 8 s with movement correction and release; retained NPC Root is 14.08 s',
+    493: '50 IS, 2 s cast and 10 s own/5 s group 690 reuse; dual-SMG hostile cone at rest within 8 m; fixed player Ballistic base 35; independent 30% landed Enrage for 10 s; retained NPC damage separate',
+    494: '38 IS, 4 s cast and 10 s own/5 s group 689 reuse; staggered original opponent with dual SMGs and active style; fixed Ballistic base 123; +24 queued tactic or at-rest cast; ILDB move 21084; 40% landed Enrage for 8 s',
+    496: '45 IS, 4 s cast and 10 s own/5 s group 689 reuse; dazed original opponent with dual SMGs and active style; fixed Ballistic base 150; +24 queued tactic or at-rest cast; ILDB move 21085; Melee and Ballistic Accuracy each −15 for 8 s',
+}
+
+
 def server(i):
+    if i in STOCK_VERIFIED_SUMMARIES:
+        return STOCK_VERIFIED_SUMMARIES[i]
     if i == 242:
         return 'IS 30; 2s cast; reuse 10s / group 689 5s; fixed Ballistic base 5 with influence and resistance; selected Handguns cast at rest or queued with +10 tactic; caster defenses 1009/1010/1011 +20 for12s on landing; 9530 at the authored close pose, 9529 medium fallback, ordinary exchange on miss; [evidence](GUNMAN-PARITY-2.md)'
     if i == 244:
