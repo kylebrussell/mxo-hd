@@ -6,6 +6,7 @@ namespace NativeQa.Modes;
 public sealed class HackerInfectAndBottleneckMode : NativeQaMode
 {
     private const int Level = 24, X = 17000, Y = 495, Z = 6400, CentreZ = 6600;
+    internal const int ViralResistance = 36;
     private const ushort Infect = 353, Bottleneck = 402, Nuke = 60, Style = CombatStyles.HackerStyle;
     private static readonly ushort[] Loadout = new ushort[] { 2, 17, Style, Nuke, Infect, Bottleneck }
         .SelectMany(id => AbilityPrerequisites.Current.Closure(id).Keys.Append(id)).Distinct().Order().ToArray();
@@ -21,7 +22,10 @@ public sealed class HackerInfectAndBottleneckMode : NativeQaMode
         {
             PvpOpponentsFixture.NativeSql,
             $"UPDATE characters SET level={Level},exp={PlayerProgression.ExperienceForLevel(Level)},x={X},y={Y},z={Z},rotation=0,alignment=1,innerStrC=600,innerStrM=800 WHERE charId=110",
-            "DELETE FROM char_abilities WHERE char_id IN (6111,6112,6113,6114)"
+            "DELETE FROM char_abilities WHERE char_id IN (6111,6112,6113,6114)",
+            "INSERT INTO char_abilities(char_id,slot,ability_id,level,is_loaded) VALUES " +
+                string.Join(",", StockAbilityProfile.Profile(2, 17, 8).Order().Select((id, slot) =>
+                    $"(6112,{slot},{AbilityMessages.AbilityGameObject(id)},{Level},1)"))
         }.Concat(Stands.Select(stand => $"UPDATE characters SET level={Level},exp={PlayerProgression.ExperienceForLevel(Level)}," +
             $"x={stand.X},y={Y},z={stand.Z},alignment={stand.Faction},pvpflag=0,healthC=1000,healthM=1000 WHERE charId={stand.Id}")).ToArray(),
         DevCommands: true, hotbarAbilities: new[] { Style, Bottleneck, Infect, Nuke }, testMobFixture: "martial-player-controls.csv",
@@ -31,11 +35,13 @@ public sealed class HackerInfectAndBottleneckMode : NativeQaMode
             ["MXO_SIMULACRUM_QA_HOLD_IS"] = "1", ["MXO_FREECAST_VIRAL_QA"] = "1",
             ["MXO_FREECAST_VIRAL_QA_ATTACK15"] = "32766", ["MXO_FREECAST_VIRAL_QA_DEFENSE15"] = "0",
             [AreaTargetDiagnostics.Variable] = "1"
-        }, extraQaMetadata: new() { ["ScopedStockRows"] = "353,402", ["NativeCloseableRows"] = 0 },
+        }, extraQaMetadata: new() { ["ScopedStockRows"] = "353,402", ["NativeCloseableRows"] = 1 },
         readyMessages: new[]
         {
             $"Full ranked profile at L{Level}, {Loadout.Sum(AbilityMemory.Cost)}/{AbilityMemory.ForLevel(Level)} memory. Clear outdoor NAV. CSR ({X},{Y},{Z}) faces QAEnemy ({X},{Y},{CentreZ}), QAOther at z7200 is the 6.00 m edge, QAFar at z7201 is 6.01 m, ally QAFriend is 1 m beside the primary at x17100.",
-            "Shipped-value retest: move QAOther and QAFar with the final two Infect requests below before selecting Hacker Style (page 2 slot 1). /target QAEnemy, press slot 3 once and save all eleven ticks and the removal. The Bottleneck and refusal steps are only needed for a full mode rerun.",
+            "Infect resistance retest: select Hacker Style (page 2 slot 1) and /target QAEnemy. Send the Infect resistance move below for QAFar and leave QAOther on its original 6 m stand. Send the printed QAFar aura-resist action. As soon as it reports OK, press slot 3 once and retain the first complete 353 request. This is the focused retest; the Bottleneck and ordinary edge steps below are optional after it expires.",
+            "Expect source 8 stat 157 +36 for 20 s on QAFar only. Infect spends 15 IS (600 to 585), casts for 2 s and starts its 12 s timer. On QAEnemy and QAFar alone: source 353 stat 1157 +114 for 30 s, then matching removals. QAEnemy takes eleven ticks of 10. While source 8 is active QAFar shows [TYPED-RESISTANCE OURS] 353 type2 total36 raw10 final8 and [EFFECTS] 353 ticks on QAFar for 8. After source 8 removes, the same 353 record keeps ticking, now for 10. Expect eleven ticks on QAFar total and no twelfth. No effects on the ally or QAOther. No interlock or [VITALS] max changes.",
+            """Infect resistance move: {"actor":"QAFar","action":"move","x":17000,"y":495,"z":7100}. Then {"actor":"QAFar","action":"aura-resist"}. For a full rerun, return QAFar to its original z7201 before Bottleneck.""",
             "Select Hacker Style (page 2 slot 1). Try slots 2 and 3 without a target and on QAFriend. Any sent request is refused reason 24 before cost/cast/reuse. /target QAEnemy. Use slot 2 Bottleneck Field outside combat and retain the first complete 402 frame. Expect 2 s, 23 IS and 30 s reuse.",
             "Only QAEnemy and QAOther receive [MODIFIER] 402: stats 115/877/878 each -125 and 519 -25 for 18 s. No direct HP or Rooted 99 record. Their scale goes to -1.00 without a positive buff and returns to zero with the four removals. CSR's PacketLog can read each opponent view. Ally and QAFar get no 402 modifier/scale.",
             "After expiry move QAOther and QAFar using the printed console requests. Keep QAEnemy selected, use slot 3 Infect Area 1.0 and retain the first complete 353 frame. Expect 15 IS/2 s/12 s reuse and source 353 stat 1157 +114 on QAEnemy and the 5.00 m edge only for 30 s. The shipped base 94 plus this profile's +22% Viral Damage yields eleven viral ticks of 10 per recipient. The record removes before a twelfth tick. QAFar at 5.01 m and the ally get no effect. No max [VITALS] changes or interlock rounds. The archived 450-point live record has an unresolved historical scaling input.",
@@ -71,14 +77,16 @@ public sealed class HackerInfectAndBottleneckMode : NativeQaMode
         foreach (var helper in context.Helpers.Values) await actor.WaitForViewNamedAsync(helper.Handle);
         actor.SendRpc(StarterHackerViralSightMode.StockStyle);
         await actor.WaitForViewUpdateAsync(2, "02 80 80 80 80 80 10 ee 03 00 00");
-        var primary = await actor.WaitForViewNamedAsync("QAEnemy");
-        uint handle = DuelPackets.Handle(primary.ViewId, primary.SpawnId);
+        var resistant = context.Helpers["QAFar"];
+        await StarterPathogenistAuraResistanceMode.ApplyResistanceAsync(resistant, ViralResistance);
+        var target = await actor.WaitForViewNamedAsync(resistant.Handle);
+        uint resistantHandle = DuelPackets.Handle(target.ViewId, target.SpawnId);
         string nuke = StarterHackerViralSightMode.Samples.Single(sample => sample.Ability == Nuke).Capture;
-        actor.SendRpc($"81 51 {WireFormat.ToHex(BitConverter.GetBytes(handle))}");
-        actor.SendRpc(StarterHackerControlTargetMode.WithHandle(nuke, handle));
+        actor.SendRpc($"81 51 {WireFormat.ToHex(BitConverter.GetBytes(resistantHandle))}");
+        actor.SendRpc(StarterHackerControlTargetMode.WithHandle(nuke, resistantHandle));
         await EvidenceRetestWire.CastBarAsync(actor, Nuke, 4);
-        await actor.WaitUntilAsync(() => context.ActualServer!.DebugLog().Contains("LogicBomb1Ability lands on QAEnemy"),
-            "The retained exact Code Nuke control lands on the selected primary", HeadlessPlayer.DefaultTimeout);
+        await actor.WaitUntilAsync(() => context.ActualServer!.DebugLog().Contains($"60 type2 total{ViralResistance} raw"),
+            "The retained stock Code Nuke control consumes QAFar's live Viral Resistance", HeadlessPlayer.DefaultTimeout);
         Check.Equal(0, actor.World.Problems.Count + context.Helpers.Values.Sum(helper => helper.World.Problems.Count), "Selected area framing");
         return Array.Empty<byte>();
     }

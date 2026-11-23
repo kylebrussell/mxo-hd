@@ -846,10 +846,10 @@ public class FreeCastViralLandingTests : IDisposable
             }).ToArray();
             Assert.All(excluded, target => Assert.False(TimedEffects.ForPlayer(target).Effects.HasParent(id)));
 
-            int resistedDamage = id switch { 353 => 3, 400 => 2, _ => 0 };
+            int resistedDamage = id is 353 or 400 ? 2 : 0;
             if (resistedDamage != 0)
                 TimedEffects.ForPlayer(edge).Effects.Apply(8,
-                    new[] { new TimedEffects.Active { Target = 157, Value = 43, Seconds = 5.1f, Proc = TempMods.Proc.Stat } },
+                    new[] { new TimedEffects.Active { Target = 157, Value = id == 353 ? 36 : 43, Seconds = 5.1f, Proc = TempMods.Proc.Stat } },
                     effects[0].Start);
             TimedEffects.RunDue(effects.Max(effect => effect.Start) + 2.51);
             Assert.All(affected, target => Assert.Equal(1000 - damagePerTick + (target == edge ? resistedDamage : 0), PvpCombat.HealthOf(target)));
