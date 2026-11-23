@@ -66,6 +66,7 @@ namespace hds
                 return;
             }
 
+            bool midlevelViralDamage = AbilityID == 238 || AbilityID == 311 || AbilityID == 312 || AbilityID == 313;
             // These selected abilities bind a live enemy before the cast, including the centre of any splash.
             bool selectedViralField = AbilityID == 343 || AbilityID == 401 || AbilityID == 402 || AbilityID == 403;
             bool enrage = AbilityID == 588;
@@ -73,7 +74,8 @@ namespace hds
                 AbilityID == 350 || AbilityID == 351 || AbilityID == 353 ||
                 AbilityID == 392 || AbilityID == 394 || AbilityID == 395 || AbilityID == 396 || selectedViralField;
             ushort? lockedDamageTargetSpawn = null;
-            if (selectedViralAttack || selectedDespoilerArea)
+            bool selectedHostileCast = selectedViralAttack || selectedDespoilerArea || midlevelViralDamage;
+            if (selectedHostileCast)
             {
                 var caster = Store.currentClient;
                 if (!AbilityPassives.IsLoaded(caster, AbilityID))
@@ -255,7 +257,7 @@ namespace hds
             }
 
             bool starterRangedControl = AbilityID == 43 || AbilityID == 48 || AbilityID == 130 || starterGunCast;
-            if ((selectedViralAttack || selectedDespoilerArea || starterMovementDebuff || selectedCoderCast || starterRangedControl || AbilityID == 69) &&
+            if ((selectedHostileCast || starterMovementDebuff || selectedCoderCast || starterRangedControl || AbilityID == 69) &&
                 !AbilityTargets.WithinSelectionRange(Store.currentClient, AbilityID, currentTargetViewId))
             {
                 Store.currentClient.messageQueue.addRpcMessage(AbilityRefusals.Encode(
@@ -271,6 +273,29 @@ namespace hds
                     (ushort?)Store.currentClient.viewMan.getViewById(currentTargetViewId)?.spawnId)
                 : null;
             var definition = AbilityCatalog.Find(AbilityID);
+            if (midlevelViralDamage)
+            {
+                var caster = Store.currentClient;
+                if (!AbilityTargets.HasSelectionSight(caster, definition, currentTargetViewId))
+                {
+                    Deny(AbilityID, "The target is not in sight.", AbilityRefusals.TargetNotInSight, sendServerText: false);
+                    return;
+                }
+                if (CombatStyles.Active(caster) != CombatStyles.HackerStyle)
+                {
+                    Deny(AbilityID, "This ability requires Hacker Style.", AbilityRefusals.WrongStyle, sendServerText: false);
+                    return;
+                }
+                if (AbilityID == 313)
+                {
+                    var fight = CombatManager.GetHandler(caster);
+                    if (fight.isCombatRunning || fight.HasActiveInterlock)
+                    {
+                        Deny(AbilityID, "Logic Cannon cannot be used during combat.", AbilityRefusals.MustBeOutsideCombat, sendServerText: false);
+                        return;
+                    }
+                }
+            }
             if (selectedViralField)
             {
                 var caster = Store.currentClient;
@@ -857,7 +882,7 @@ namespace hds
                 return;
             }
 
-            if ((selectedCoderCast || selectedViralAttack || selectedDespoilerArea) &&
+            if ((selectedCoderCast || selectedHostileCast) &&
                 (!AbilityTargets.HasLiveAttackSelection(client, currentTargetViewId, lockedDamageTargetSpawn, requireOpponent: true) ||
                  !AbilityTargets.WithinSelectionRange(client, AbilityID, currentTargetViewId)))
             {
@@ -866,7 +891,7 @@ namespace hds
                 return;
             }
 
-            if ((selectedViralAttack || selectedDespoilerArea) && !AbilityPassives.IsLoaded(client, AbilityID))
+            if (selectedHostileCast && !AbilityPassives.IsLoaded(client, AbilityID))
             {
                 Output.WriteDebugLog($"[ABILITY] {AbilityID} fizzles: the starter viral ability was unloaded before landing");
                 return;
@@ -1076,8 +1101,12 @@ namespace hds
                 176 => 1,  // Covering Fire
                 197 => 0,  // Head Butt
                 198 => 0,  // Cheap Shot
+                238 => 2,  // Harmful Code 2.0
                 254 => 1,  // Immobilizing Shot
                 255 => 1,  // Disabling Shot
+                311 => 2,  // Logic Blast 2.0
+                312 => 2,  // Logic Barrage 3.0
+                313 => 2,  // Logic Cannon 1.0
                 514 => 2,  // Advanced Tinkering
                 605 => 0,  // Low Blow
                 _ => null

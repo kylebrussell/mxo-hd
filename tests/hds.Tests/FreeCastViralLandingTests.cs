@@ -37,6 +37,50 @@ public class FreeCastViralLandingTests : IDisposable
         typeof(WorldClient).GetField("lastFlushTick",BindingFlags.Instance|BindingFlags.NonPublic)!.SetValue(c,long.MaxValue);
         WorldServer.Clients[id.ToString()]=c;return c;
     }
+
+    [Theory]
+    [InlineData(238, 0, true, 46)]
+    [InlineData(311, 0, true, 43)]
+    [InlineData(312, 0, true, 55)]
+    [InlineData(313, 0, true, 25)]
+    [InlineData(238, 64, true, 37)]
+    [InlineData(311, 64, true, 35)]
+    [InlineData(312, 64, true, 45)]
+    [InlineData(313, 64, true, 20)]
+    [InlineData(313, 0, false, 0)]
+    public void DoctorAndArbalestFixedDamageUsesTheLiveViralContestAndTypedHealthPath(ushort id, int resistance,
+        bool hits, int expected)
+    {
+        var caster = Client(110);
+        var target = Client(111);
+        caster.playerInstance.Level.setValue((byte)43);
+        target.playerInstance.Level.setValue((byte)43);
+        caster.playerInstance.OrganizationID.setValue((byte)1);
+        target.playerInstance.OrganizationID.setValue((byte)2);
+        caster.playerData.pvpFlag = target.playerData.pvpFlag = true;
+        caster.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(17000, 495, 6400));
+        target.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(17000, 495, 6600));
+        var view = caster.viewMan.addView(111, 12);
+        view.viewCreated = true;
+        view.spawnId = 9;
+        var profile = new NativeQa.Modes.HackerDoctorArbalestViralMode().Plan.Abilities;
+        AbilityPassives.SetLoaded(caster, profile.Select(loaded => (loaded, (ushort)43)));
+        CombatStyles.Select(caster, CombatStyles.HackerStyle);
+        Assert.Equal(40, AbilityStats.Influence(caster, 172));
+        Assert.Equal(4, AbilityStats.Influence(caster, 117));
+        Assert.Equal(id == 238 ? 29 : AbilityCosts.Cost(id), AbilityCosts.Effective(caster, id));
+        target.playerData.passives.Totals[157] = resistance;
+        if (!hits) target.playerData.passives.Totals[183] = 100;
+        Environment.SetEnvironmentVariable("MXO_FREECAST_VIRAL_QA_ATTACK15", hits ? "32766" : "0");
+        Environment.SetEnvironmentVariable("MXO_FREECAST_VIRAL_QA_DEFENSE15", hits ? "0" : "32766");
+        Assert.True(FreeCastViralContest.TryQaDraw(caster, id, out _, out _));
+
+        var ability = new AbilityItem();
+        ability.setAbilityID(id);
+        ability.setAbilityName(AbilityCatalog.Find(id).Name);
+        Assert.True(PvpCombat.LandAbility(caster, ability, view.ViewID, origin: AbilityCastOrigin.NormalFreeCast));
+        Assert.Equal(1000 - expected, PvpCombat.HealthOf(target));
+    }
     [Theory] [InlineData(0)] [InlineData(1)] [InlineData(2)] [InlineData(3)] [InlineData(4)] [InlineData(5)] [InlineData(6)]
     public void ActualQaDrawRejectsSpoofedDbAndLostFixtureOwnership(int mutation)
     {
