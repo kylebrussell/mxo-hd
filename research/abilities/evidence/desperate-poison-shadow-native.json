@@ -1,0 +1,50 @@
+{
+  "families": {
+    "shadow-upgrade-stock-last-grant": {
+      "representative": 1117,
+      "result": "pass",
+      "head": "5a81b7644d6aaf2e5f582b33b532f8bdfb82aa62",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/1012#issuecomment-7110595516",
+      "scope": "Stock 1117 activated for 20 IS and published all four authored records. Stock Archive unload of parent 290 removed the active effect and exclusive flag once, preserved the original timer, and removed the Actions grant. Reload restored one action with no buff reapplication."
+    }
+  },
+  "abilities": {
+    "291": {
+      "checks": {
+        "stats": {
+          "source": "GOB 291 grants 115 +40 and 877/878 +20 for 15 seconds.",
+          "runtime": "The runtime chooses the active gait’s channel and publishes its own and observer movement scale. Expiry removes all three modifiers without clearing the active Belt.",
+          "test": "DesperateSpeedTests covers per-stance composition, observer replication, and zero reset. PR1011 saw 0.40 normal and 0.20 in Sneak and Belt on both views; fixed holds measured about 1.35, 1.17 and 1.20 times their baselines. The 1 s PacketLog resolution limits precision. Native confirmed the natural modifier removals with Belt still active; executable coverage supplies the zero-scale expiry frame. https://github.com/kylebrussell/mxo-hd/pull/1011#issuecomment-7110347143"
+        },
+        "consumer": {
+          "source": "GOB 291 grants 115 +40 and 877/878 +20 for 15 seconds.",
+          "runtime": "The runtime chooses the active gait’s channel and publishes its own and observer movement scale. Expiry removes all three modifiers without clearing the active Belt.",
+          "test": "DesperateSpeedTests covers per-stance composition, observer replication, and zero reset. PR1011 saw 0.40 normal and 0.20 in Sneak and Belt on both views; fixed holds measured about 1.35, 1.17 and 1.20 times their baselines. The 1 s PacketLog resolution limits precision. Native confirmed the natural modifier removals with Belt still active; executable coverage supplies the zero-scale expiry frame. https://github.com/kylebrussell/mxo-hd/pull/1011#issuecomment-7110347143"
+        },
+        "behavior-tests": {
+          "source": "GOB 291 stores 50 IS, 298-second own reuse, and three movement records over 15 seconds.",
+          "runtime": "The ordinary action publishes a timed movement buff that follows the current normal, Sneak or Invisibility channel and terminates on expiry.",
+          "test": "DesperateSpeedCostReuseAndClosureMemoryFitLevel25 and DesperateSpeedPublishesMovementScale040AndClearsOnExpiry cover executable cost, reuse and cleanup. PR1011 confirms the real stock cost and timers, all three gait outcomes and natural record removals. https://github.com/kylebrussell/mxo-hd/pull/1011#issuecomment-7110347143"
+        }
+      }
+    },
+    "146": {
+      "checks": {
+        "targeting": {
+          "source": "GOB 146 is a 20 m outside-combat hostile Spy cast with TestFunction 1. The shipped ranged contest uses strict attack greater than defense.",
+          "runtime": "The loaded ability binds the admitted target and spawn and rechecks sight, range, enemy relation and caster state at landing. The ranged comparison separates hit/deflection from thrown DOT damage.",
+          "test": "Exact retained replay verifies initial gates, stale view and midcast sight loss. PR1013 confirms stock empty/ally/range/sight/interlock refusals, a real selected hit and a deflection with no effect. The fixture controls only the draws. https://github.com/kylebrussell/mxo-hd/pull/1013#issuecomment-7110492716"
+        },
+        "behavior-tests": {
+          "source": "The GOB stores 15 IS, two-second cast, 20/3 s reuse and a 17-point, 25-second ThrownDOT.",
+          "runtime": "A passing ranged contest applies one scaled DOT to the admitted enemy, nine nonterminal ticks and matched expiry. No effect follows refusal or deflection.",
+          "test": "PoisonKnifeUsesTheRangedTestAndThrownDamageAsSeparateChannels and PoisonKnifeLevel4SpyStyleScalesDotTotalTo18With2DamageTicksAndShippedTimers cover the actual paths. Stock PR1013 confirms cast, timers, hit pool 18, nine ticks, expiry and zero DOT on deflection. Original caster notice localization remains qualified separately. https://github.com/kylebrussell/mxo-hd/pull/1013#issuecomment-7110492716"
+        }
+      }
+    },
+    "1117": {
+      "family": "shadow-upgrade-stock-last-grant",
+      "note": "PR1012 confirms stock 290 unload removes original 1117 records 283–286 and the exclusive flag once, then reload restores only the action. The 30-second timer clears at its original deadline. Exact retained 356/1087 selective cleanup is same-family precedent, not a direct original 1117 trace. The wider 1117 stat consumers remain open. https://github.com/kylebrussell/mxo-hd/pull/1012#issuecomment-7110595516"
+    }
+  }
+}
