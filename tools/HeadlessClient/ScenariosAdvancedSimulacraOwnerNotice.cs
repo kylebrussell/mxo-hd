@@ -46,17 +46,38 @@ public static partial class Scenarios
         // The original failed operation may have started the normal 10 s reuse after its cast bar.
         await Task.Delay(TimeSpan.FromSeconds(10));
         byte nuker = await SummonAsync(Nuker, null, Level, "Nuker Simulacrum", old);
+        byte healer = await SummonAsync(Healer, null, Level, "Healer Simulacrum", nuker);
+        byte[] healerReuse = AbilityCooldowns.BuildTimer(Healer, AbilityCooldowns.OwnTimer, 10, start: true);
+        await owner.WaitUntilAsync(() => owner.World.RpcSnapshot().Any(frame => frame.Bytes.AsSpan().SequenceEqual(healerReuse)),
+            "Patch Daemon 3.0 has 10 s own reuse", HeadlessPlayer.DefaultTimeout);
+        Check.That(context.Server.DebugLog().Contains($"[ABILITY-COST] char={owner.CharId} ability=617 paid=170"),
+            "Patch Daemon 3.0 uses its stored 170 IS");
+        int injuredAt = context.Server.DebugLog().Length;
+        owner.SendChat("?health 100");
+        observer.SendChat("?health 100");
+        await observer.WaitUntilAsync(() => RefusalOwnValue(observer, "Health", "02 80 80 80 40") == 100,
+            "The observer is wounded before validating the recipient restriction", HeadlessPlayer.DefaultTimeout);
+        string ownerPulse = $"[VITALS] char={owner.CharId} pet={healer} ability=617 HP ";
+        string observerPulse = $"[VITALS] char={observer.CharId} pet={healer} ability=617 HP ";
+        await owner.WaitUntilAsync(() => context.Server.DebugLog()[injuredAt..].Split(ownerPulse).Length >= 3,
+            "Patch Daemon 3.0 heals its wounded owner twice", TimeSpan.FromSeconds(10));
+        Check.That(!context.Server.DebugLog()[injuredAt..].Contains(observerPulse) &&
+            RefusalOwnValue(observer, "Health", "02 80 80 80 40") == 100, "The equally wounded observer is excluded");
+
         owner.SendRpc(Deactivate);
-        await owner.WaitForRpcAsync($"81 77 {nuker:x2}");
+        await owner.WaitForRpcAsync($"81 77 {healer:x2}");
+        int dismissedAt = context.Server.DebugLog().Length;
+        await Task.Delay(TimeSpan.FromSeconds(CoderPets.AttackPeriodSeconds + 0.5));
+        Check.That(!context.Server.DebugLog()[dismissedAt..].Contains(ownerPulse), "The dismissed Healer stops producing health ticks");
 
         observer.SkipReceived();
         observer.SendRpc("81 48");
         await observer.WaitForRpcAsync("81 49");
-        Check.Equal(2, owner.World.RpcSnapshot().Count(IsNotice), "Exactly the two successful advanced casts notify the owner");
+        Check.Equal(3, owner.World.RpcSnapshot().Count(IsNotice), "Exactly the three successful advanced casts notify the owner");
         Check.That(!observer.World.RpcSnapshot().Any(frame => IsNotice(frame) || frame.Opcode == 0x176),
             "An observer sees pet views but receives neither a private notice nor a Simulacra window");
         Check.Equal(0, owner.World.Problems.Count + observer.World.Problems.Count, "Summon and notice packets decode cleanly");
-        Console.WriteLine("ADVANCED SUMMON OWNER NOTICE SERVER PASS: three lower roles, two private notices and no notice/window on failed replacement.");
+        Console.WriteLine("ADVANCED SUMMON OWNER NOTICE SERVER PASS: three lower roles, three private notices, failed replacement and the Healer lifetime.");
 
         async Task<byte> SummonAsync(ushort ability, string? exactRequest, ushort expectedLevel, string? expectedName, byte previous)
         {
@@ -79,9 +100,11 @@ public static partial class Scenarios
             var observedPet = await PetViewAsync(observer, owner.CharId, key);
             Check.Equal(pet.Name, observedPet.Name, "Owner and observer see the same summoned name");
             Check.Equal((byte)expectedLevel, pet.Attributes["Level"][0], "Shipped summon level cap");
+            if (ability == Healer)
+                Check.Equal((ushort)1725, BitConverter.ToUInt16(pet.Attributes["MaxHealth"]), "Modeled level-44 Healer maximum health");
             Check.That(expectedName == null ? CoderPets.ProxySheets.Any(sheet => pet.Name == $"{sheet} Simulacrum")
                 : pet.Name == expectedName, "The shipped summon sheet is reflected in the view");
-            if (ability is Proxy or Nuker)
+            if (ability is Proxy or Nuker or Healer)
             {
                 string text = $"You summoned a level {expectedLevel} {pet.Name}.";
                 await owner.WaitForTextAsync(text);

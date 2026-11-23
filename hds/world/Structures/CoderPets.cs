@@ -880,7 +880,7 @@ namespace hds
                     if (!summonUnloaded && AbilityPassives.IsLoaded(caster, id))
                     {
                         Pet summoned = SpawnForLocked(caster, id);
-                        if (summoned != null && (id == 594 || id == 616))
+                        if (summoned != null && (id == 594 || id == 616 || id == 617))
                         {
                             // These shipped callbacks notify their owner. The localized string ID
                             // is unavailable, so use the stock-visible private system channel.

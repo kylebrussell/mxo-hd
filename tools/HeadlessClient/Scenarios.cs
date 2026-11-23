@@ -42,7 +42,8 @@ public static partial class Scenarios
             ["MXO_FREECAST_VIRAL_QA_ATTACK15"] = "32766", ["MXO_FREECAST_VIRAL_QA_DEFENSE15"] = "0"
         }),
         new Scenario("advanced-simulacra-owner-notice-server", AdvancedSimulacraOwnerNotice,
-            new Dictionary<string, string>(StillNpcs) { ["MXO_DEV_COMMANDS"] = "1" }, Timeout: TimeSpan.FromMinutes(3)),
+            new Dictionary<string, string>(StillNpcs) { ["MXO_DEV_COMMANDS"] = "1", ["MXO_DESPERATION_QA_HOLD_HEALTH"] = "1" },
+            Timeout: TimeSpan.FromMinutes(3)),
         new Scenario("viral-accuracy-bonus",ViralAccuracyBonus,ViralAccuracyBonusEnvironment()),
         new Scenario("coder-static-blast-tiers-server", CoderStaticBlastTiersServer, new Dictionary<string, string>(StillNpcs)
         {

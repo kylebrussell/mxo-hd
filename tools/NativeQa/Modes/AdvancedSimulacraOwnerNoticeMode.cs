@@ -7,7 +7,7 @@ namespace NativeQa.Modes;
 public sealed class AdvancedSimulacraOwnerNoticeMode : NativeQaMode
 {
     private static readonly int Memory = Abilities.Sum(AbilityMemory.Cost);
-    private static readonly ushort[] Hotbar = { 1008, Proxy, Nuker };
+    private static readonly ushort[] Hotbar = { 1008, Proxy, Nuker, Healer };
 
     public override string Name => "ability-parity-advanced-simulacra-owner-notice";
     public override NativeQaModePlan Plan { get; } = new(
@@ -23,12 +23,14 @@ public sealed class AdvancedSimulacraOwnerNoticeMode : NativeQaMode
         {
             ["MXO_AGGRO"] = "0", ["MXO_MOB_WANDER"] = "0", ["MXO_SIMULACRUM_QA_HOLD_IS"] = "1"
         },
-        extraQaMetadata: new() { ["ScopedStockRows"] = "594,616", ["MemoryUsed"] = Memory },
+        extraQaMetadata: new() { ["ScopedStockRows"] = "594,616,617", ["NativeCloseableRows"] = 1, ["MemoryUsed"] = Memory },
         readyMessages: new[]
         {
             $"Level {Level}, legal ranked profile {Memory}/{AbilityMemory.ForLevel(Level)} memory. Verified Mara NAV CSR ({X},{Y},{Z}) faces pet stand ({X+150},{Y},{Z}); observer QAFriend ({ObserverX},{Y},{Z}). No world object selection needed.",
-            "Choose Coder Style on page 2 slot 1. Press slot 2 for Remote Proxy 5.0. After 8 s expect a level-38 proxy from the six-sheet stock pool, one 81 76 window, [ABILITY-COST] paid=120 IS=600->480 and 8 s own reuse. One visible owner notice reads 'You summoned a level 38 <sheet> Simulacrum.' Check the System tab if needed.",
-            "Use slot 3 for Logic Daemon 4.0. Retain the complete first stock 616 request. After 8 s expect the old 81 77, one new 81 76, level-38 Nuker, [ABILITY-COST] paid=150 IS=480->330 and 10 s own reuse. The owner sees one 'You summoned a level 38 Nuker Simulacrum.' Finally type /ordersimulacra All Deactivate and confirm the new pet and only its window disappear.",
+            "Choose Coder Style on page 2 slot 1. Press slot 2 for Remote Proxy 5.0. After 8 s expect a level-44 proxy from the six-sheet stock pool, one 81 76 window, [ABILITY-COST] paid=120 IS=600->480 and 8 s own reuse. One visible owner notice reads 'You summoned a level 44 <sheet> Simulacrum.' Check the System tab if needed.",
+            "Use slot 3 for Logic Daemon 4.0. Retain the complete first stock 616 request. After 8 s expect the old 81 77, one new 81 76, level-44 Nuker, [ABILITY-COST] paid=150 IS=480->330 and 10 s own reuse. The owner sees one 'You summoned a level 44 Nuker Simulacrum.'",
+            "Press slot 4 for Patch Daemon 3.0 (617). Retain its complete first stock request. After 8 s expect only the old Nuker 81 77 and one Healer 81 76, level 44 with 1725 max HP, [ABILITY-COST] paid=170 IS=330->160 and 10 s own reuse. Expect exactly one 'You summoned a level 44 Healer Simulacrum.'",
+            """Type ?health 100. Wound QAFriend with helper {"actor":"QAFriend","action":"chat","text":"?health 100"}. Verify two [VITALS] char=110 pet=<new ID> ability=617 HP increases around 3 s apart, with no 617 heal on QAFriend. Type /ordersimulacra All Deactivate, verify one 81 77 and the Healer body gone, then confirm no later 617 heal. Projected DONE +1 (617) after stock proof.""",
             "The notice uses the existing private stock-visible system channel and server wording. The original localized string ID and optional Proxy console override remain open."
         });
 
@@ -66,7 +68,7 @@ public sealed class AdvancedSimulacraOwnerNoticeMode : NativeQaMode
         owner.SendRpc(Deactivate);
         await owner.WaitForRpcAsync($"81 77 {id:x2}");
         Check.Equal(0, owner.World.Problems.Count + observer.World.Problems.Count, "Advanced summon views and notices decode cleanly");
-        Console.WriteLine("ADVANCED SUMMON NOTICE NATIVE BOOTSTRAP PASS: retained Coder/594/Deactivate frames, one private owner notice. No 616 activation sent.");
+        Console.WriteLine("ADVANCED SUMMON NOTICE NATIVE BOOTSTRAP PASS: retained Coder/594/Deactivate frames, one private owner notice. Stock 616 and 617 requests are native steps.");
         return Array.Empty<byte>();
     }
 }
