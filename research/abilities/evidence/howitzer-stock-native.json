@@ -1,0 +1,70 @@
+{
+  "families": {
+    "howitzer-stock-357": {
+      "representative": 357,
+      "result": "pass",
+      "head": "bc3072e2",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/1047#issuecomment-7120027676",
+      "scope": "Native 4 s cast for 17 IS, primary and the 4.00 m edge only. 4.01 m and ally excluded. Stock PR1047 observed neutral 495 and 565; QAFar +75 reduced 536→441 while the primary stayed unresisted. https://github.com/kylebrussell/mxo-hd/pull/1047#issuecomment-7120027676 The fixture pins the contest only."
+    },
+    "howitzer-stock-359": {
+      "representative": 359,
+      "result": "pass",
+      "head": "bc3072e2",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/1047#issuecomment-7120027676",
+      "scope": "Native 4 s cast for 22 IS, primary and the 6.00 m edge only. 6.01 m and ally excluded. Stock PR1047 observed neutral 1077 and 1086; QAFar +75 reduced 1312→1079 while the primary stayed unresisted. https://github.com/kylebrussell/mxo-hd/pull/1047#issuecomment-7120027676 The fixture pins the contest only."
+    }
+  },
+  "abilities": {
+    "357": {
+      "family": "howitzer-stock-357",
+      "checks": {
+        "damage": {
+          "source": "GOB 357 stores a typed Viral health modifier. The retained retail damage band feeds the current calibrated base. The original authored-to-archived conversion remains unknown.",
+          "runtime": "With +47 fixture influence the retained rolls produce 448–576 before live typed Viral resistance.",
+          "test": "Stock PR1047 observed neutral 495 and 565; QAFar +75 reduced 536→441 while the primary stayed unresisted. https://github.com/kylebrussell/mxo-hd/pull/1047#issuecomment-7120027676"
+        },
+        "area": {
+          "source": "GOB selects an area around the hostile target with a 4 m radius.",
+          "runtime": "AbilityTargets expands around the selected primary and checks each secondary radius, sight and PvP eligibility.",
+          "test": "Exact replay and stock evidence prove inclusion at 4.00 m, exclusion at 4.01 m and ally exclusion. https://github.com/kylebrussell/mxo-hd/pull/1047#issuecomment-7120027676"
+        },
+        "targeting": {
+          "source": "Shipped selected hostile route, sight and 16 m selection range.",
+          "runtime": "AbilityHandler binds the live selected spawn and checks opponent, range and sight before charging.",
+          "test": "Retained wire and stock refused no target, an ally, a target at 16.01 m and a solid wall. https://github.com/kylebrussell/mxo-hd/pull/1047#issuecomment-7120027676"
+        },
+        "behavior-tests": {
+          "source": "GOB 4 s cast, 2 s own and family 682 reuse.",
+          "runtime": "The ordinary cast uses the standard Viral contest, impact, area delivery and separate typed damage on the actual recipients.",
+          "test": "HowitzerStockAreaMode replays the complete stock request, exact timers and recipient boundaries. Native confirms the cast duration, 17 IS, anti-ally admission and the typed resistance result. Reuse was checked in the replay. https://github.com/kylebrussell/mxo-hd/pull/1047#issuecomment-7120027676"
+        }
+      }
+    },
+    "359": {
+      "family": "howitzer-stock-359",
+      "checks": {
+        "damage": {
+          "source": "GOB 359 stores a typed Viral health modifier. The retained retail damage band feeds the current calibrated base. The original authored-to-archived conversion remains unknown.",
+          "runtime": "With +47 fixture influence the retained rolls produce 948–1739 before live typed Viral resistance.",
+          "test": "Stock PR1047 observed neutral 1077 and 1086; QAFar +75 reduced 1312→1079 while the primary stayed unresisted. https://github.com/kylebrussell/mxo-hd/pull/1047#issuecomment-7120027676"
+        },
+        "area": {
+          "source": "GOB selects an area around the hostile target with a 6 m radius.",
+          "runtime": "AbilityTargets expands around the selected primary and checks each secondary radius, sight and PvP eligibility.",
+          "test": "Exact replay and stock evidence prove inclusion at 6.00 m, exclusion at 6.01 m and ally exclusion. https://github.com/kylebrussell/mxo-hd/pull/1047#issuecomment-7120027676"
+        },
+        "targeting": {
+          "source": "Shipped selected hostile route, sight and 16 m selection range.",
+          "runtime": "AbilityHandler binds the live selected spawn and checks opponent, range and sight before charging.",
+          "test": "Retained wire and stock refused no target, an ally, a target at 16.01 m and a solid wall. https://github.com/kylebrussell/mxo-hd/pull/1047#issuecomment-7120027676"
+        },
+        "behavior-tests": {
+          "source": "GOB 4 s cast, 4 s own and family 683 reuse.",
+          "runtime": "The ordinary cast uses the standard Viral contest, impact, area delivery and separate typed damage on the actual recipients.",
+          "test": "HowitzerStockAreaMode replays the complete stock request, exact timers and recipient boundaries. Native confirms the cast duration, 22 IS, anti-ally admission and the typed resistance result. Reuse was checked in the replay. https://github.com/kylebrussell/mxo-hd/pull/1047#issuecomment-7120027676"
+        }
+      }
+    }
+  }
+}
