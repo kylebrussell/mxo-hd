@@ -1,0 +1,34 @@
+{
+  "abilities": {
+    "407": {
+      "note": "Native kept the original dummy selected, refused at rest, and armed and landed 827 for 28. The broader control and behavior-test checks remain open. https://github.com/kylebrussell/mxo-hd/pull/1113#issuecomment-7141030601",
+      "checks": {
+        "targeting": {
+          "source": "The shipped Aikido special selects the ongoing interlock opponent.",
+          "runtime": "The server validates the current live opponent and spawn, position and applicable state before debit.",
+          "test": "AikidoGrandmasterOpponentMode sends the exact rest, unrelated-target and stale-spawn requests without debit, then the legal cast on the original opponent. Native verified the stock rest gate, selection lock and admitted strike. https://github.com/kylebrussell/mxo-hd/pull/1113#issuecomment-7141030601"
+        }
+      }
+    },
+    "411": {
+      "note": "Native kept the original dummy selected, refused at rest and without Off Balance, and armed and landed 735 for 129. The broader control and behavior-test checks remain open. https://github.com/kylebrussell/mxo-hd/pull/1113#issuecomment-7141030601",
+      "checks": {
+        "targeting": {
+          "source": "The shipped Aikido special selects the ongoing interlock opponent and requires Off Balance.",
+          "runtime": "The server validates the current live opponent and spawn, position and applicable state before debit.",
+          "test": "AikidoGrandmasterOpponentMode sends the exact rest, unrelated-target and stale-spawn requests without debit, then the legal cast on the original opponent. Native verified the stock rest gate, selection lock, Off Balance gate and admitted strike. https://github.com/kylebrussell/mxo-hd/pull/1113#issuecomment-7141030601"
+        }
+      }
+    },
+    "412": {
+      "note": "Native kept the original dummy selected, refused at rest and without Off Balance, and armed and landed 751 for 152. The broader control and behavior-test checks remain open. https://github.com/kylebrussell/mxo-hd/pull/1113#issuecomment-7141030601",
+      "checks": {
+        "targeting": {
+          "source": "The shipped Aikido special selects the ongoing interlock opponent and requires Off Balance.",
+          "runtime": "The server validates the current live opponent and spawn, position and applicable state before debit.",
+          "test": "AikidoGrandmasterOpponentMode sends the exact rest, unrelated-target and stale-spawn requests without debit, then the legal cast on the original opponent. Native verified the stock rest gate, selection lock, Off Balance gate and admitted strike. https://github.com/kylebrussell/mxo-hd/pull/1113#issuecomment-7141030601"
+        }
+      }
+    }
+  }
+}
