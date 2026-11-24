@@ -1,0 +1,69 @@
+{
+  "families": {
+    "network-attacker-accuracy-stock": {
+      "representative": 483,
+      "result": "pass",
+      "head": "efed07d938cbfea464812bb0e963a0f6428412f4",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/1126#issuecomment-7145916940",
+      "scope": "Stock lists one 1080 grant, and live Logic Blast inputs move 72/0 to 69/0 and back as the +5 parent modifier is removed and restored. Stock activates the grant on the caster. Independent retained replay verifies the grant's exact removal and restoration records."
+    }
+  },
+  "abilities": {
+    "405": {
+      "note": "All six Redirection modifiers cycle, including the displayed +5 Enrage Duration record. On the shipped unlinked state, the same Overhand Smash yields 10 s before, during, and after unload. Existing typed Viral Resistance conversion remains open. https://github.com/kylebrussell/mxo-hd/pull/1124#issuecomment-7145836354",
+      "checks": {
+        "consumer": {
+          "source": "Shipped Redirection supplies stat 1068, while the shipped Enraged state 93 has no duration-stat link. Duration application follows the state definition.",
+          "runtime": "Archive changes add or remove the displayed bonus and preserve ordinary Enrage duration for state 93. Linking 1068 to that state would add behavior absent from its authored template.",
+          "test": "AikidoRedirectionEnrageMode checks the six exact passive records and the same state’s 10 s add/remove in all three ordinary stock stages. https://github.com/kylebrussell/mxo-hd/pull/1124#issuecomment-7145836354"
+        }
+      }
+    },
+    "483": {
+      "family": "network-attacker-accuracy-stock",
+      "note": "Rank 50 stock verified the +5 bonus and its live accuracy contribution. The zero-valued grant was visible once in Actions and verified independently on the retained Archive wire. https://github.com/kylebrussell/mxo-hd/pull/1126#issuecomment-7145916940",
+      "checks": {
+        "stats": {
+          "source": "GOB 483 stores exactly +5 on Viral Accuracy Bonus 1147 and grants 1080 while loaded.",
+          "runtime": "The passive contributes its +5 through the existing level-scaled Viral accuracy input. Normal Archive removes or restores that one source while all other inputs stay constant.",
+          "test": "NetworkAttackerAccuracyMode holds the cast, target, Power tactic and draws constant. Native measured 72/0, 69/0 and 72/0 with matching +5 records. https://github.com/kylebrussell/mxo-hd/pull/1126#issuecomment-7145916940"
+        },
+        "source-parity": {
+          "source": "The skill-specific shipped values are fixed +5 Viral Accuracy Bonus and the zero-valued 1080 grant. Both follow the parent’s loaded condition.",
+          "runtime": "The normal renderer publishes the granted action once, and the existing modeled Viral accuracy formula consumes the source exactly once. The shared historical contest calibration remains outside this row.",
+          "test": "The native grant lists once and activates for 20 IS on CSR only. Headless Archive replay verifies the exact zero-valued grant and 1080 load/unload along with the reversible live input. https://github.com/kylebrussell/mxo-hd/pull/1126#issuecomment-7145916940"
+        },
+        "behavior-tests": {
+          "source": "Shipped 483 is a loaded passive with a linked active upgrade.",
+          "runtime": "Ordinary Archive adds and drops 1147 and 1080. Normal free casts consume 1147. The active grant applies its distinct caster-only upgrade.",
+          "test": "HackerBatchB2ParityTests.LoadedNetworkAttackerPublishesTheStoredGrantOnceAndCanReload and NetworkAttackerAccuracyMode verify load transitions, exact grant records, and real contest inputs. Native verifies the stock child and caster-only cast. Earlier PR368 verifies replacement and reuse. https://github.com/kylebrussell/mxo-hd/pull/1126#issuecomment-7145916940 https://github.com/kylebrussell/mxo-hd/pull/368"
+        }
+      }
+    },
+    "1125": {
+      "note": "Native verified the miss leaves the original Sneak and shield intact. On the hit, target 710 lasted 8 seconds and caster 681 lasted 1.5 seconds. The same 217/624 record came back and the caster resumed Sneak. The common historic shield entry calibration belongs to Evade Combat. https://github.com/kylebrussell/mxo-hd/pull/1127#issuecomment-7146101106",
+      "checks": {
+        "source-parity": {
+          "source": "SneakFreeDisableShield_Test calls AbilityThrowFreeAttack and only installs the caster marker after SUCCESS. The target 710 modifier calls DisableEvasion and EnableEvasion after its authored 8 s. The generic throw test reads ThrowAccuracy (1032), ThrowDefenseTactics (1011), Consistency and tactics.",
+          "runtime": "The native-compatible throw comparison runs at the validated tool landing. Deflection preserves the original active shield and Stealthed state. Success applies the two independently timed records and later restores the same shield child under active parent 217.",
+          "test": "Native stock tool requests produced the same input 75/0 with one deflection and one success, exact record pairs and state-specific recovery. QA fixed only the opposing draws. https://github.com/kylebrussell/mxo-hd/pull/1127#issuecomment-7146101106"
+        },
+        "behavior-tests": {
+          "source": "GOB 1125 uses a hostile, shielded target and the carried Weakness Analyzer, with 25 IS, 4 s cast, 45 s reuse and a paired 8 s shield/caster 1.5 s callback.",
+          "runtime": "A valid cast reaches its cost and reuse once. Hit and miss resolve through separate result paths with no damage. The existing lifecycle guards drop obsolete shield or restealth callbacks.",
+          "test": "DisableEvasionContestMode exercises both real selected tool branches and the same original parent record, plus natural own reuse. Its exact native run confirmed both results. StealthShieldTests and the seven legacy scenarios check typed input, independent timers and lifecycle cancellation. https://github.com/kylebrussell/mxo-hd/pull/1127#issuecomment-7146101106 https://github.com/kylebrussell/mxo-hd/pull/547"
+        }
+      }
+    },
+    "1128": {
+      "note": "Stock saw the targeted throw animation and two exact +50 withdraw-bonus records. Headless independently verified receiver-local motion handles, retained Sneak at cast start, and ordinary timed removal. The exact frontal angle, actual Withdraw consumption and other targeting contours remain open. https://github.com/kylebrussell/mxo-hd/pull/1125#issuecomment-7145992386",
+      "checks": {
+        "script": {
+          "source": "SneakFreeDistractingBlow_Subject invokes the stock Aggro/KnifeThrow motion on the selected object. GOB 1128 invokes ApplyAuraEffect with child 1129, which stores stat1005 +50 for 12 s on nearby friendlies.",
+          "runtime": "A legal landed cast ends its originating Sneak, sends the targeted built-in action to views using each receiver's target handle, and reapplies 1129 once against eligible live friendlies within the authored radius.",
+          "test": "DistractingBlowRecipientsMode asserts actor/near-ally views, 77 on the hostile compared with no aura on that target, and paired source1129 records on CSR and QAFriend only. Exact-head native also saw a targeted knife-throw animation, victim flash and caster aura. https://github.com/kylebrussell/mxo-hd/pull/1125#issuecomment-7145992386"
+        }
+      }
+    }
+  }
+}
