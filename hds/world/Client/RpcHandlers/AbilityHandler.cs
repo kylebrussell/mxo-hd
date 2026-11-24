@@ -28,6 +28,7 @@ namespace hds
             UInt16 currentTargetViewId = reader.ReadUInt16(1);
             bool poisonKnife = AbilityID == CombatSpecials.PoisonKnife;
             bool woundingThrow = AbilityID == CombatSpecials.WoundingThrow;
+            bool guardedKnifeThrow = MasterKnifeThrowerBatch.UsesGuardedCast(AbilityID);
             ushort? thrownTargetSpawn = null;
             bool dualSmgCone = CombatSpecials.IsDualSmgConeOpener(AbilityID);
             ushort? coneSpawn = null;
@@ -537,9 +538,9 @@ namespace hds
 
             {
                 ushort? spawn = packet.Length == 41 ? (ushort?)BitConverter.ToUInt16(packet, 4) : null;
-                if (poisonKnife || woundingThrow)
+                if (poisonKnife || woundingThrow || guardedKnifeThrow)
                     thrownTargetSpawn = spawn ?? (ushort?)Store.currentClient.viewMan.getViewById(currentTargetViewId)?.spawnId;
-                if (SpyAbilityRegistry.TryRefuse(Store.currentClient, AbilityID, currentTargetViewId, poisonKnife || woundingThrow ? thrownTargetSpawn : spawn, out uint refusalReason))
+                if (SpyAbilityRegistry.TryRefuse(Store.currentClient, AbilityID, currentTargetViewId, thrownTargetSpawn ?? spawn, out uint refusalReason))
                 {
                     Store.currentClient.messageQueue.addRpcMessage(AbilityRefusals.Encode(new AbilityRefusals.Record(AbilityID, refusalReason)));
                     Store.currentClient.FlushQueue();
@@ -1314,6 +1315,12 @@ namespace hds
                 ThrownDotAdmission.TryRefuse(client, AbilityID, currentTargetViewId, thrownTargetSpawn, out _)))
             {
                 Output.WriteDebugLog("[ABILITY] 281 fizzles: the selected opponent changed, left range or left sight");
+                return;
+            }
+            if (guardedKnifeThrow && (!thrownTargetSpawn.HasValue ||
+                MasterKnifeThrowerBatch.TryRefuse(client, AbilityID, currentTargetViewId, thrownTargetSpawn, out _)))
+            {
+                Output.WriteDebugLog($"[ABILITY] {AbilityID} fizzles: the selected opponent changed, left range or left sight");
                 return;
             }
             if (sniperShot)

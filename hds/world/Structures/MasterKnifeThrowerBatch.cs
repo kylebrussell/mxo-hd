@@ -19,6 +19,8 @@ namespace hds
             return id == NeuroDart || id == BlindingThrow || id == ThroatCuttingThrow || id == SubduingThrow;
         }
 
+        public static bool UsesGuardedCast(ushort id) => id == ThroatCuttingThrow || id == SubduingThrow;
+
         public static bool TryRefuse(WorldClient client, ushort abilityId, ushort targetViewId, ushort? targetSpawnId, out uint refusalReason)
         {
             refusalReason = 0;
@@ -30,9 +32,20 @@ namespace hds
                 refusalReason = AbilityRefusals.MustBeOutsideCombat;
                 return true;
             }
-            if (!AbilityTargets.HasLiveAttackSelection(client, targetViewId, targetSpawnId))
+            bool guarded = UsesGuardedCast(id);
+            if (!AbilityTargets.HasLiveAttackSelection(client, targetViewId, targetSpawnId, requireOpponent: guarded))
             {
                 refusalReason = AbilityRefusals.InvalidTarget;
+                return true;
+            }
+            if (guarded && !AbilityTargets.WithinSelectionRange(client, id, targetViewId))
+            {
+                refusalReason = AbilityRefusals.TargetOutOfRange;
+                return true;
+            }
+            if (guarded && !AbilityTargets.HasSelectionSight(client, AbilityCatalog.Find(id), targetViewId))
+            {
+                refusalReason = AbilityRefusals.TargetNotInSight;
                 return true;
             }
             return false;
