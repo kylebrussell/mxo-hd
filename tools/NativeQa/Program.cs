@@ -399,7 +399,7 @@ try
                 else if (fixtureMode is NativeQa.Modes.ProxyMasterSelectedViralMode && action == "aura-resist")
                     await NativeQa.Modes.StarterPathogenistAuraResistanceMode.ApplyResistanceAsync(actor);
                 else if (fixtureMode is NativeQa.Modes.KiBurstRecipientsMode && action == "ki-withdraw")
-                    await NativeQa.Modes.KiBurstRecipientsMode.CheckWithdrawAsync(actor, server);
+                    result = await NativeQa.Modes.KiBurstRecipientsMode.CheckWithdrawAsync(actor, server);
                 else if (fixtureMode is NativeQa.Modes.ProxyMasterSelectedViralMode && action == "enrage-retarget")
                     result = await NativeQa.Modes.ProxyMasterSelectedViralMode.ArmRetargetAsync(actor, helpers, server);
                 else if (fixtureMode is NativeQa.Modes.ProxyMasterSelectedViralMode && action == "enrage-retarget-prepare")

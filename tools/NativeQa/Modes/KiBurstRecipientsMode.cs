@@ -40,7 +40,7 @@ public sealed class KiBurstRecipientsMode : NativeQaMode
         {
             "Stay at HOME facing QAEnemy. /target QAEnemy, right-click Close Combat, then reselect Aikido on page 2 slot 1. No teleport.",
             """Start {"actor":"QAEnemy","action":"ki-withdraw"} in the background while the fight is active. It waits for your cast, so press Ki Burst slot 2 immediately.""",
-            "Expect 70 IS, a 1 s cast, damage 31 and [MODIFIER] char=6114 source=406 stat=93 add 0 for 15 s. The helper submits ordinary Withdraw during Enrage, waits for the exact paired state removal and localized release, then submits Withdraw again. Expect the first request suppressed and the second accepted for an ordinary round attempt. The win or loss of that attempt is outside the pass criteria.",
+            "Expect 70 IS, a 1 s cast, damage 31 and [MODIFIER] char=6114 source=406 stat=93 add 0 for 15 s. The helper submits ordinary Withdraw during Enrage and verifies the server [ENRAGE] withdraw suppressed char=6114 line. It waits for the exact paired state removal and localized release, then submits Withdraw again. Use the final response with Result.Status = KI BURST WITHDRAW PASS. Expect the first request suppressed and the second accepted for an ordinary round attempt. The win or loss of that attempt is outside the pass criteria.",
             "QA guarantees the Enrage proc on the disposable player witness only. The helper uses the ordinary Withdraw frame twice and never forces an exchange result."
         });
 
@@ -91,7 +91,7 @@ public sealed class KiBurstRecipientsMode : NativeQaMode
         return Array.Empty<byte>();
     }
 
-    internal static async Task CheckWithdrawAsync(HeadlessPlayer enemy, ServerInstance server)
+    internal static async Task<object> CheckWithdrawAsync(HeadlessPlayer enemy, ServerInstance server)
     {
         Check.Equal(6114u, enemy.CharId, "Ki Burst recipient helper");
         int from = enemy.World.RpcSnapshot().Count;
@@ -105,8 +105,9 @@ public sealed class KiBurstRecipientsMode : NativeQaMode
         enemy.SendRpc("44 01");
         enemy.SendRpc("81 48");
         await enemy.WaitForRpcAsync("81 49", HeadlessPlayer.DefaultTimeout);
-        Check.That(!server.DebugLog()[blockedAt..].Contains("[COMBAT] Leave combat requested", StringComparison.Ordinal),
-            "Ordinary Withdraw suppressed while Ki Burst Enrage is active");
+        const string suppressed = "[ENRAGE] withdraw suppressed char=6114 actor=QAEnemy state=93";
+        await enemy.WaitUntilAsync(() => server.DebugLog()[blockedAt..].Contains(suppressed, StringComparison.Ordinal),
+            "Server confirms the first ordinary Withdraw was received and suppressed", HeadlessPlayer.DefaultTimeout);
         byte[] release = AbilityMessages.StateEnd(TempMods.EnrageAbility, enemy.Handle);
         await enemy.WaitUntilAsync(() =>
         {
@@ -119,6 +120,8 @@ public sealed class KiBurstRecipientsMode : NativeQaMode
         enemy.SendRpc("44 01");
         await enemy.WaitUntilAsync(() => server.DebugLog()[acceptedAt..].Contains("[COMBAT] Leave combat requested", StringComparison.Ordinal),
             "Ordinary Withdraw accepted after Ki Burst Enrage ends", HeadlessPlayer.DefaultTimeout);
-        Console.WriteLine("KI BURST WITHDRAW PASS: 15 s Enrage blocks ordinary Withdraw, matched release restores admission.");
+        const string pass = "KI BURST WITHDRAW PASS";
+        Console.WriteLine($"{pass}: 15 s Enrage blocks ordinary Withdraw, matched release restores admission.");
+        return new { Status = pass, Suppressed = suppressed, ReleaseObserved = true, RetryAdmitted = true };
     }
 }
