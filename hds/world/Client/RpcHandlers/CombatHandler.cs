@@ -25,6 +25,9 @@ namespace hds
         /// Active combat session for this handler instance.
         /// </summary>
         private CombatSession currentSession;
+        private (CombatSession Fight, Mob Dummy, ushort Ability) martialFixtureWin;
+
+        internal void ArmMartialFixtureWin(Mob dummy, ushort ability) => martialFixtureWin = (currentSession, dummy, ability);
 
         /// <summary>The NPC this player is in close combat with, if any (simulacra assist it).</summary>
         public Mob CurrentNpcTarget => currentSession != null && currentSession.IsActive ? currentSession.DefenderMob : null;
@@ -382,6 +385,14 @@ namespace hds
                 npcDamage = CombatCalculator.CloseCombatDamage(roundRng, mobLevel, playerLevel, npcTactic, out absorbedByPlayer,
                     CombatTacticType.Normal, AbilityStats.Npc(mob, 1142), AbilityStats.Toughness(player, false));
                 playerFirst = CombatRules.PlayerAttacksFirst(playerTactic, npcTactic, opening, !npcOpenedFight, () => roundRng.Next(2) == 0);
+            }
+            if (!opening && !attemptsWithdrawal && !playerStunned && ReferenceEquals(martialFixtureWin.Fight, session) &&
+                ReferenceEquals(martialFixtureWin.Dummy, mob) && ability?.getAbilityID() == martialFixtureWin.Ability)
+            {
+                martialFixtureWin = default;
+                playerHit = true;
+                playerAttack = (UInt16)(playerDefense + 1);
+                Output.WriteDebugLog($"[MARTIAL STARTER QA] one exchange win {ability.getAbilityID()}");
             }
             session.DefenderTactic = npcTactic;
 
