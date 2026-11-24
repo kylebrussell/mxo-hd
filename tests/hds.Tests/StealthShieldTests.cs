@@ -53,6 +53,31 @@ public class StealthShieldTests
         Assert.Equal(Convert.FromHexString("012007010C4056049900AA00"),StealthShieldAbilities.BuildThrow(false,7,1110,0x00aa0099));
     }
     [Fact]
+    public void DisableEvasionUsesDedicatedThrownContestInputs()
+    {
+        var source = Client();
+        var target = Client();
+        double now = TimeUtils.GetSimTimeSeconds();
+        TimedEffects.ForPlayer(source).Effects.Apply(999, new[]
+        {
+            new TimedEffects.Active{Target=1032, Value=18, Seconds=30},
+            new TimedEffects.Active{Target=524, Value=60, Seconds=30}
+        }, now, true);
+        TimedEffects.ForPlayer(target).Effects.Apply(999, new[]
+        {
+            new TimedEffects.Active{Target=1011, Value=9, Seconds=30},
+            new TimedEffects.Active{Target=1010, Value=90, Seconds=30}
+        }, now, true);
+        source.playerData.combatTactic = CombatTactic.Speed;
+        target.playerData.combatTactic = CombatTactic.Speed;
+        var hit = StealthShieldThrowContest.Evaluate(source, target, 31000, 15000);
+        Assert.Equal(20, hit.AttackInput);
+        Assert.Equal(8, hit.DefenseInput);
+        Assert.True(hit.Hit);
+        Assert.False(StealthShieldThrowContest.Evaluate(source, target, 15000, 31000).Hit);
+    }
+
+    [Fact]
     public void GOBDistinguishesTargetSuppressionFromTheCastersOwnRestealthMarker()
     {
         var e=AbilityCatalog.Find(1125)!;var m=Assert.Single(e.Modifiers);

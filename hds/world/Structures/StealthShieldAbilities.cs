@@ -34,8 +34,8 @@ namespace hds
         public static string Describe(ushort id)=>AbilityCatalog.Canonical(id) switch
         {
             BullDog=>"NeutralDOT terminal at .5s: raw10 once (OURS absent-interval fallback, not retail-exact); builtin Aggro12/KnifeThrow64 per-view target; native damage/clip timing unresolved",
-            DisableEvasion=>"normal hostile cast retains original stealth until validated4s landing: active EvasionState624 target + ITOt tool; suppress only217 child for8s; caster681 marker1.5s then guarded invis/sneak reapply; shield-health/520/throw contest unresolved",
-            EvasionShield.Parent=>"parent217 and record IDs retained while1125 suppresses624; own/observer/late-view shield/state updates; live PvP entry uses 520 and charges 2–10 IS on resistance; meter depletes on resisted entry; depletion or IS shortfall ends the shield with 30s reuse; retail entry predicate and internal scale still open",
+            DisableEvasion=>"normal hostile cast retains original stealth until validated4s landing: active EvasionState624 target + ITOt tool; suppress only217 child for8s; caster681 marker1.5s then guarded invis/sneak reapply; stock throw attack and defense contest; current217 meter and bonus retained across suppression",
+            EvasionShield.Parent=>"parent217 and record IDs retained while1125 suppresses624; own/observer/late-view shield/state updates; live PvP entry uses 520 and charges 2â€“10 IS on resistance; meter depletes on resisted entry; depletion or IS shortfall ends the shield with 30s reuse; retail entry predicate and internal scale still open",
             _=>null
         };
         public static bool Handles(ushort id)=>AbilityCatalog.Canonical(id)==BullDog || AbilityCatalog.Canonical(id)==DisableEvasion;
@@ -96,6 +96,7 @@ namespace hds
             if(range>0 && distance>range){Refused("range "+distance+" > "+range);return;}
             if(id==DisableEvasion && (target==null||!EvasionShield.HasState(target)||!Store.dbManager.WorldDbHandler.GetInventoryItems(caster.playerData.getCharID()).Any(i=>i.Slot<97&&IsTool(i.Goid))))
             {Refused("target217/624 state or carried ITOt tool missing");return;}
+            if (id == DisableEvasion && !StealthShieldThrowContest.Hit(caster, target)) return;
             var subject=target!=null?(TimedEffects.Subject)TimedEffects.ForPlayer(target):TimedEffects.ForMob(mob);
             int targetWorld=target?.playerData.worldGeneration??0,targetLife=target?.playerData.lifeGeneration??0;
             int death=mob?.DeathGeneration??0;

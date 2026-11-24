@@ -56,7 +56,8 @@ public static partial class Scenarios
         await caster.EnterWorldAsync();await victim.EnterWorldAsync();
         victim.SendChat("?pvpflag on");await victim.WaitForViewUpdateAsync(2,OwnPvpFlagOn);
         Cast(victim,217);var original=await victim.WaitForRpcAsync(ModPattern(217,624));
-        Cast(caster,1116);await caster.WaitForRpcAsync(ModPattern(1116,115));
+        caster.SendChat("?stealth invis");
+        await caster.WaitForRpcAsync(ModPattern(1116,115));
         var target=await caster.WaitForViewNamedAsync(victim.Handle);Cast(caster,1125,target.ViewId);
         var debuff=await victim.WaitForRpcAsync(ModPattern(1125,710));
         Check.Equal(8f,BitConverter.ToSingle(debuff.Bytes,18),"Target suppression has its stored8seconds");
