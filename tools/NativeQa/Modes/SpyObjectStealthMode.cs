@@ -23,7 +23,7 @@ public sealed class SpyObjectStealthMode : NativeQaMode
         internal string Command => InvisibilityBeltWatcherMode.Warp(X, GroundY, Z, Yaw, inside: false);
     }
 
-    private static readonly ushort[] Roots = { 2, 17, 151, OpenLocks, DisableSecurityDevices };
+    private static readonly ushort[] Roots = { 2, 17, 151, CombatStyles.SpyStyle, OpenLocks, DisableSecurityDevices };
     private static readonly ushort[] Loadout = Roots
         .Concat(Roots.SelectMany(id => AbilityPrerequisites.Current.Closure(id).Keys))
         .Distinct()
@@ -43,7 +43,7 @@ public sealed class SpyObjectStealthMode : NativeQaMode
         },
         DevCommands: true,
         loadAbilityAncestors: false,
-        hotbarAbilities: new ushort[] { 17, 1111 },
+        hotbarAbilities: new ushort[] { CombatStyles.SpyStyle, 1111 },
         environmentOverrides: new()
         {
             ["MXO_AGGRO"] = "0",
@@ -51,9 +51,9 @@ public sealed class SpyObjectStealthMode : NativeQaMode
         },
         readyMessages: new[]
         {
-            "Bag slots 1/2 hold the stock tools. Page 2 slot 2 is Sneak. Use the printed prop and approach stands; all teleports are before Sneak. Enter each printed command in chunks with one final Enter.",
-            "Warp to LOCK PROP. Type '?objstate 326' then ' 0x836' and press Enter. Warp to LOCK USE, 1.20 m from the cabinet facing it. Stay on the stand, press Sneak slot 2, then radial Pick Lock. Expect OBJECT-USE, 1111 off (picked a lock), Success and UnlockedState.",
-            "Warp to DESK PROP. Type '?objstate 377' then ' 0x839' and press Enter. Warp to DESK USE, 1.40 m from the desk facing it. Stay there, press Sneak slot 2, then radial Use. Expect OBJECT-USE, 1111 off (used a security device), resolved contest and matching state.",
+            "Bag slots 1/2 hold the stock tools. Page 2 slot 1 is Spy Style and slot 2 is Sneak. After each USE teleport, select Spy Style before Sneak. Use the printed prop and approach stands; all teleports are before Sneak. Enter each printed command in chunks with one final Enter.",
+            "Warp to LOCK PROP. Type '?objstate 326' then ' 0x836' and press Enter. Warp to LOCK USE, 1.20 m from the cabinet facing it. Stay on the stand, press Spy Style slot 1, Sneak slot 2, then radial Pick Lock. Expect OBJECT-USE, 1111 off (picked a lock), Success and UnlockedState.",
+            "Warp to DESK PROP. Type '?objstate 377' then ' 0x839' and press Enter. Warp to DESK USE, 1.40 m from the desk facing it. Stay there, press Spy Style slot 1, Sneak slot 2, then radial Use. Expect OBJECT-USE, 1111 off (used a security device), resolved contest and matching state.",
             "No strafe or auto-approach is needed. If the stock client keeps the request pending even at the close stand, record the coordinates and whether stock sent 80 c7. Keep that separate from the server transition check."
         },
         extraQaMetadata: new()
@@ -92,6 +92,8 @@ public sealed class SpyObjectStealthMode : NativeQaMode
             actor.SendChat($"?objstate {goid} {state}");
             var prop = await WaitNewCreationAsync(cursor, $"Object {goid} ready");
             await Move(useStand);
+            actor.SendRpc(AwakenedStockStealthSpeedMode.SpyUse);
+            await actor.WaitForViewUpdateAsync(2, "02 80 80 80 80 80 10 58 04 00 00");
             int enabledAt = actor.World.RpcSnapshot().Count;
             actor.SendRpc(AwakenedStockStealthSpeedMode.SneakUse);
             byte[] on = AbilityBuffs.BuildExclusive(1111, true), off = AbilityBuffs.BuildExclusive(1111, false);
