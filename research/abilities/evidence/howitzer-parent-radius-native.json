@@ -1,0 +1,34 @@
+{
+  "families": {
+    "howitzer-parent-radius": {
+      "representative": 356,
+      "result": "pass",
+      "head": "5065b381",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/1056#issuecomment-7121743549",
+      "scope": "Stock source 356 stat 1055 +5 remains separate from 1087's direct +17 on 177. Logic Bomb paid 17 IS and stayed at 4.00 m through all three Archive states. 1087 extended reach to 4.68 m and dismissal restored 4.00 m."
+    }
+  },
+  "abilities": {
+    "356": {
+      "family": "howitzer-parent-radius",
+      "checks": {
+        "stats": {
+          "source": "GOB 356 grants 1087 and authors passive stat 1055. The granted upgrade independently authors a direct radius modifier.",
+          "runtime": "AbilityPassives publishes the passive and grant across ordinary entry and Archive transitions. The passive and direct totals remain distinct.",
+          "test": "Stock source 356 stat 1055 +5 remains separate from 1087's direct +17 on 177. Logic Bomb paid 17 IS and stayed at 4.00 m through all three Archive states. 1087 extended reach to 4.68 m and dismissal restored 4.00 m. https://github.com/kylebrussell/mxo-hd/pull/1056#issuecomment-7121743549"
+        },
+        "consumer": {
+          "source": "The recovered caster-radius selector reads direct stat 177. The initial shipped 177 owner coefficient for link 1055 is zero.",
+          "runtime": "Parent-only radius remains 4.00 m. The 1087 direct upgrade changes it to 4.68 m; dismissal restores the base.",
+          "test": "QAFar at 4.10 m joins only under active 1087. QAOther at 4.80 m and the same-org ally stay excluded. The disposable aid pins Viral hit success only. Grant membership was verified in the retained-wire replay. https://github.com/kylebrussell/mxo-hd/pull/1056#issuecomment-7121743549"
+        },
+        "behavior-tests": {
+          "source": "The shipped parent is a loaded passive with a zero-rank grant; the direct buff is a separate action.",
+          "runtime": "Same-region and valid recipient checks continue to run on every cast at the resulting radius.",
+          "test": "The disposable retained-stock replay verifies normal Archive, grant wire transitions, unchanged loaded/unloaded/reloaded recipient sets and the direct-upgrade comparison in combination with the native run. https://github.com/kylebrussell/mxo-hd/pull/1056#issuecomment-7121743549"
+        }
+      },
+      "note": "The original retail server's passive coefficient remains undocumented."
+    }
+  }
+}
