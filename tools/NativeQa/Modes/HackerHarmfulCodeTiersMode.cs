@@ -39,14 +39,16 @@ public sealed class HackerHarmfulCodeTiersMode : NativeQaMode
             ["MXO_AGGRO"] = "0", ["MXO_MOB_WANDER"] = "0", ["MXO_PVP_SERVER"] = "1", ["MXO_PVP_MAX_SAFE_LEVEL"] = "15",
             ["MXO_SIMULACRUM_QA_HOLD_IS"] = "1", ["MXO_FREECAST_VIRAL_QA"] = "1",
             ["MXO_FREECAST_VIRAL_QA_ATTACK15"] = "32766", ["MXO_FREECAST_VIRAL_QA_DEFENSE15"] = "0"
-        }, extraQaMetadata: new() { ["ScopedStockRows"] = "415,331", ["NativeCloseableRows"] = 1, ["MemoryUsed"] = 97 },
+        }, extraQaMetadata: new() { ["ScopedStockRows"] = "331", ["NativeCloseableRows"] = 1, ["MemoryUsed"] = 97 },
         readyMessages: new[]
         {
             "Level 50, 97/100 memory. Stay at CSR (17000,495,6400) facing QAEnemy (17000,495,6700). Verified outdoor NAV: QAFar (17125,495,6700), QAFriend (17150,495,6400), QAOther (17000,495,8401).",
             "Page 2 is Hacker Style, Harmful Code tiers 1–3, then Logic Cannon 2.0. Select Hacker Style. Try slots 4–5 without a target, with /target QAFriend, and with /target QAOther. Expect reason 24 or 34 if the client sends an activation. No cast, debit, damage or reuse on those refusals.",
             "Use /target QAEnemy and slot 4 Harmful Code 3.0. Keep the first full outgoing 415 request. Expect 4 s cast, 8 s own and 4 s family 682 reuse, 22 IS paid after Stand Off, and [PVP] lands on QAEnemy for 75. Only QAEnemy takes a hit. Optional lower-tier controls on slots 2–3 deal 17 and 48. Wait for family reuse between Harmful Code tiers.",
             """After 415's own reuse, use /target QAFar and helper request {"actor":"QAFar","action":"aura-resist"}. Expect [MODIFIER] char=6112 source=8 stat=157 +75 for 20 s. Use slot 4 again. Expect [TYPED-RESISTANCE OURS] 415 type2 total75 raw75 final61, with the same cost and timers.""",
-            "Use /target QAEnemy and slot 5 Logic Cannon 2.0 while at rest. Expect an ordinary 8 s direct cast, 26 IS, 15 s own and 15 s family 684 reuse, and a hit on QAEnemy alone. The retained 331 damage magnitude is still under investigation. Record targeting only for this row."
+            "For the 331 retest skip the earlier Harmful Code casts. Use /target QAEnemy and slot 5 Logic Cannon 2.0 at rest. Expect 8 s, 26 IS, 15 s own and 15 s family 684 reuse. Authored fixed base 29 plus +46 influence gives 42 damage to QAEnemy only.",
+            """When reuse clears, /target QAFar. Send {"actor":"QAFar","action":"aura-resist"} and verify Empty Mind +75 stat157. Immediately cast slot 5. Expect [TYPED-RESISTANCE OURS] 331 type2 total75 raw42 final34, same cost, both timers and no splash. The cast and contest draws are independent of this damage value.""",
+            "Fixture aids are seeded full profiles and HP, fixed disposable viral hit draws and stable IS. The authored base replaces the generic random fallback. The archived Corrupted hit had different signed values; its original scaling cannot be inferred from the single known hit."
         });
 
     public override async Task<byte[]> AfterStartAsync(NativeQaBootstrapContext context)
@@ -58,6 +60,9 @@ public sealed class HackerHarmfulCodeTiersMode : NativeQaMode
             Check.That(NavMesh.Locate(1, x, Y, z, out var at) && !at.indoors && at.floorY + 95 == Y &&
                 NavMesh.HasSightPath(1, X, Y, Z, x, Y, z), $"Harmful Code outdoor NAV and sight ({x},{Y},{z})");
 
+        Console.WriteLine($"READY HOME {InvisibilityBeltWatcherMode.Warp(X, Y, Z, 0, inside: false)}");
+        foreach (var stand in Stands)
+            Console.WriteLine($"READY {stand.Handle} {InvisibilityBeltWatcherMode.Warp(stand.X, Y, stand.Z, 128, inside: false)}");
         var server = context.ActualServer ?? throw new InvalidOperationException("Missing Harmful Code fixture server");
         foreach (var stand in Stands)
         {
@@ -91,23 +96,42 @@ public sealed class HackerHarmfulCodeTiersMode : NativeQaMode
 
         // Keep the exact 53 and 331 stock controls. No full 415 request has been recovered.
         await CastAsync(BaseCode, HarmfulCodeMode.StockViralUse, 4, 8, AbilityCooldowns.VirusDamage1, 4, 17);
-        await CastAsync(Cannon2, StockCannon, 8, 15, AbilityCooldowns.LogicCannon, 15, null);
+        await CastAsync(Cannon2, StockCannon, 8, 15, AbilityCooldowns.LogicCannon, 15, 42);
+        byte[] ownEnd = AbilityCooldowns.BuildTimer(Cannon2, AbilityCooldowns.OwnTimer, 15, false);
+        byte[] familyEnd = AbilityCooldowns.BuildTimer(AbilityCooldowns.LogicCannon, AbilityCooldowns.GroupTimer, 15, false);
+        await actor.WaitUntilAsync(() =>
+        {
+            var frames = actor.World.RpcSnapshot();
+            return frames.Any(frame => frame.Bytes.AsSpan().SequenceEqual(ownEnd)) &&
+                frames.Any(frame => frame.Bytes.AsSpan().SequenceEqual(familyEnd));
+        }, "Both 15-second Logic Cannon timers finish", TimeSpan.FromSeconds(20));
+        var defended = context.Helpers["QAFar"];
+        await StarterPathogenistAuraResistanceMode.ApplyResistanceAsync(defended, Resistance);
+        int logAt = server.DebugLog().Length;
+        await CastAsync(Cannon2, StockCannon, 8, 15, AbilityCooldowns.LogicCannon, 15, 34, defended, 8);
+        await actor.WaitUntilAsync(() => server.DebugLog()[logAt..].Contains("331 type2 total75 raw42 final34", StringComparison.Ordinal),
+            "Logic Cannon consumes the recipient's current viral resistance", HeadlessPlayer.DefaultTimeout);
+        Console.WriteLine("LOGIC CANNON TWO PASS: fixed authored damage, controlled resistance, selected delivery and own/shared reuse.");
+        Check.Equal(2, server.DebugLog().Split('\n').Count(line =>
+            line.Contains("[ABILITY-COST] char=110 ability=331 paid=26", StringComparison.Ordinal)),
+            "Only the two admitted Logic Cannon requests charge 26 IS");
         Check.Equal(0, actor.World.Problems.Count + context.Helpers.Values.Sum(player => player.World.Problems.Count),
             "Harmful Code tier controls keep transport framing");
         return Array.Empty<byte>();
 
-        async Task CastAsync(ushort id, string stock, float cast, float own, ushort family, float familySeconds, int? exactDamage)
+        async Task CastAsync(ushort id, string stock, float cast, float own, ushort family, float familySeconds, int damage, HeadlessPlayer? recipient = null, int resisted = 0)
         {
             int at = actor.World.RpcSnapshot().Count;
             var cursors = context.Helpers.Values.ToDictionary(player => player, player => player.World.RpcSnapshot().Count);
-            var enemy = context.Helpers["QAEnemy"];
-            actor.SendRpc(StarterHackerControlTargetMode.WithHandle(stock, DuelPackets.Handle(target.ViewId, target.SpawnId)));
+            var enemy = recipient ?? context.Helpers["QAEnemy"];
+            var view = await actor.WaitForViewNamedAsync(enemy.Handle);
+            actor.SendRpc(StarterHackerControlTargetMode.WithHandle(stock, DuelPackets.Handle(view.ViewId, view.SpawnId)));
             await EvidenceRetestWire.CastBarAsync(actor, id, cast);
             await EvidenceRetestWire.TimerAsync(actor, at, id, AbilityCooldowns.OwnTimer, own);
             await EvidenceRetestWire.TimerAsync(actor, at, family, AbilityCooldowns.GroupTimer, familySeconds);
-            byte[] expected = AbilityMessages.Damage(false, id, actor.Handle, enemy.Handle, exactDamage ?? 0, 0);
-            await StockAbilityProfile.ObserveAsync(enemy, cursors[enemy], packet => exactDamage.HasValue
-                ? packet.Bytes.AsSpan().SequenceEqual(expected) : packet.Bytes.AsSpan().StartsWith(expected[..^8]), "Selected hostile receives the existing damage");
+            byte[] expected = AbilityMessages.Damage(false, id, actor.Handle, enemy.Handle, damage, resisted);
+            await StockAbilityProfile.ObserveAsync(enemy, cursors[enemy], packet => packet.Bytes.AsSpan().SequenceEqual(expected),
+                $"Selected hostile receives damage {damage}, resisted {resisted}");
             foreach (var player in context.Helpers.Values.Where(player => player != enemy))
             {
                 byte[] prefix = AbilityMessages.Damage(false, id, actor.Handle, player.Handle, 0, 0)[..^8];

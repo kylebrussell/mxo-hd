@@ -1565,6 +1565,7 @@ namespace hds
                 311 => 2,  // Logic Blast 2.0
                 312 => 2,  // Logic Barrage 3.0
                 313 => 2,  // Logic Cannon 1.0
+                331 => 2,  // Logic Cannon 2.0 (authored instant health value)
                 415 => 2,  // Harmful Code 3.0
                 468 => 2,  // Devastation Field
                 247 => 1,  // Bullet Spray
