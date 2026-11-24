@@ -87,6 +87,6 @@ public class MartialArtsRemainingSpecialsTests
         Assert.True(TempMods.TryGet(AikidoSpinningClayPigeon, out var e296));
         Assert.Contains(e296.Mods, m => m.Target == TempMods.ConfuseAbility && m.Seconds == 8f);
         Assert.True(TempMods.TryGet(KiBurst, out var e406));
-        Assert.Contains(e406.Mods, m => m.Target == TempMods.EnrageAbility && m.Seconds == 15f);
+        Assert.Contains(e406.Mods, m => m.Target == TempMods.EnrageAbility && m.Seconds == 15f && m.Chance == .2f);
     }
 }

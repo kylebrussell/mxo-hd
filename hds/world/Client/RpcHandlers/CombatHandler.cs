@@ -1567,8 +1567,16 @@ namespace hds
         /// </summary>
         public void ProcessLeaveCloseCombat(ref byte[] rpcData, bool ordinaryRpc = false)
         {
-            if ((pvpFight != null || currentSession?.Type == CombatSession.CombatType.Melee) &&
-                !ControlActions.CanWithdraw(TimedEffects.ForPlayer(client).Effects)) return;
+            if (pvpFight != null || currentSession?.Type == CombatSession.CombatType.Melee)
+            {
+                var effects = TimedEffects.ForPlayer(client).Effects;
+                if (!ControlActions.CanWithdraw(effects))
+                {
+                    if (ordinaryRpc && effects.Has(TempMods.EnrageAbility))
+                        Output.WriteDebugLog($"[ENRAGE] withdraw suppressed char={client.playerData.getCharID()} actor={PvpFlag.Name(client)} state=93");
+                    return;
+                }
+            }
             Output.WriteDebugLog("[COMBAT] Leave combat requested");
 
             // Against another player: gunfire just stops; an interlock is left the way retail let a player leave one
