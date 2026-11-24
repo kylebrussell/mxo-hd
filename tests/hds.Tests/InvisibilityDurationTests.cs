@@ -49,7 +49,7 @@ public class InvisibilityDurationTests
         AbilityPassives.SetLoaded(actor, InvisibilityDurationFixture.Abilities.Select(id => (id, (ushort)50)));
         Assert.Equal(25, AbilityStats.Player(actor, 1051));
         Assert.NotNull(Stealth.Begin(actor, Stealth.Defs[1116], 50));
-        Assert.Equal(0f, Scale());
+        Assert.Equal(.25f, Scale());
         Stealth.Cleared(actor);
 
         Assert.True(AbilityBuffs.Apply(actor, 1117));
@@ -60,16 +60,41 @@ public class InvisibilityDurationTests
 
         var belt = Stealth.Begin(actor, Stealth.Defs[1116], 50);
         Assert.Equal(133, belt.Seconds);
-        Assert.Equal(.10f, Scale());
+        Assert.Equal(.35f, Scale(), 5);
         Assert.True(AbilityBuffs.Apply(actor, 12));
-        Assert.Equal(.22f, Scale(), 5);
+        Assert.Equal(.47f, Scale(), 5);
         Assert.True(AbilityBuffs.Remove(actor, 1117));
-        Assert.Equal(.12f, Scale());
+        Assert.Equal(.37f, Scale(), 5);
         Assert.Same(belt, Stealth.Current(actor));
         Assert.Equal(133, belt.Expires - belt.Started, 5);
         Assert.True(AbilityBuffs.Remove(actor, 12));
-        Assert.Equal(0f, Scale());
+        Assert.Equal(.25f, Scale());
         Stealth.Cleared(actor);
+
+        float Scale() => BitConverter.ToSingle(actor.playerInstance.MovementScale.getValue());
+    }
+
+    [Theory]
+    [InlineData(20, .10f)]
+    [InlineData(50, .25f)]
+    public void BeltConsumesTheLearnedOwnerPercentageAndUpdatesOnArchiveChange(ushort rank, float expected)
+    {
+        var actor = Client();
+        var parent = ((ushort)175, rank);
+        var direct = AbilityCatalog.Find(878);
+        Assert.Equal(1051, AbilityCatalog.IdOf((uint)direct.Number("AbilityAttributeLink/AttributeLink")));
+        Assert.Equal(1, AbilityCatalog.Find(1051).Number("Ability/ValueType"));
+
+        AbilityPassives.SetLoaded(actor, new[] { parent });
+        var belt = Stealth.Begin(actor, Stealth.Defs[1116], rank);
+        Assert.Equal(expected, Scale());
+        AbilityPassives.SetLoaded(actor, Array.Empty<(ushort, ushort)>());
+        Assert.Equal(0f, Scale());
+        AbilityPassives.SetLoaded(actor, new[] { parent });
+        Assert.Equal(expected, Scale());
+        Assert.Same(belt, Stealth.Current(actor));
+        Stealth.Cleared(actor);
+        Assert.Equal(0f, Scale());
 
         float Scale() => BitConverter.ToSingle(actor.playerInstance.MovementScale.getValue());
     }
