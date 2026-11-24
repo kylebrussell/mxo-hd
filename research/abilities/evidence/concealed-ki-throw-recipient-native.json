@@ -1,0 +1,37 @@
+{
+  "abilities": {
+    "340": {
+      "note": "Stock QAEnemy took 123 with and without Stagger. Setup produced source 340 state 96 for 5.7 s (from authored 6 s), paired removal and no new immunity. OperativeBatchTwoTests covers the natural sibling chances. Broader targeting remains open. https://github.com/kylebrussell/mxo-hd/pull/1105#issuecomment-7138264599",
+      "checks": {}
+    },
+    "347": {
+      "note": "Stock QAEnemy took 87 with and without Daze. Setup produced the 0.01 s marker, four-second Stun and separate four-second immunity with paired removals. OperativeBatchTwoTests covers sibling proc chances. Broader targeting remains open. https://github.com/kylebrussell/mxo-hd/pull/1105#issuecomment-7138264599",
+      "checks": {}
+    },
+    "406": {
+      "note": "Native confirmed 70 IS, 31 on the only eligible hostile and a 15 s state add/remove with a guaranteed fixture proc. The withdrawal consumer is still open for this row. https://github.com/kylebrussell/mxo-hd/pull/1104#issuecomment-7138069241",
+      "checks": {
+        "targeting": {
+          "source": "Shipped 406 uses caster-centred hostile selector 4 with a 4 m radius.",
+          "runtime": "CasterHostileArea chooses visible hostile recipients near the caster at completion, independent of selection.",
+          "test": "KiBurstRecipientsMode checks same-floor NAV, radius, the selected distant player and the friendly exclusion. Stock named the far selection in the request, hit only QAEnemy for 31 and excluded the caster. https://github.com/kylebrussell/mxo-hd/pull/1104#issuecomment-7138069241"
+        }
+      }
+    },
+    "504": {
+      "note": "Stock 504 at PICK hit 23 at rank 19 after 6.1 s. Exposed, wall and 31 m attempts did not spend IS. https://github.com/kylebrussell/mxo-hd/pull/1103#issuecomment-7138171828",
+      "checks": {
+        "targeting": {
+          "source": "The shipped selected hostile rifle cast requires Concealment and has a 30 m selector.",
+          "runtime": "The server refuses missing Concealment, blocked sight and targets outside range before charging and retains the live target through the legal cast.",
+          "test": "StarterConcealedShotTargetingMode replays the full 504 packet at verified stands. Stock exposes the client-side state gate and both server geometry refusals. https://github.com/kylebrussell/mxo-hd/pull/1103#issuecomment-7138171828"
+        },
+        "behavior-tests": {
+          "source": "GOB 504 uses fixed ballistic base 22, a six-second cast and an independent 30% terminal Stun marker.",
+          "runtime": "The direct shot consumes Concealment at admission and uses normal Ballistic mitigation. The marker can apply four-second Stun, linked Tactics and independent immunity.",
+          "test": "SniperParityTests verifies fixed base, proc boundary and expiry. ConditionalControlTests verifies the linked Tactics consumer. Retained native fixtures cover admission, IS, damage, typed resistance, localized Stun feedback and removal. https://github.com/kylebrussell/mxo-hd/pull/1103#issuecomment-7138171828 https://github.com/kylebrussell/mxo-hd/pull/1100#issuecomment-7136282761"
+        }
+      }
+    }
+  }
+}
