@@ -1,0 +1,24 @@
+{
+  "abilities": {
+    "140": {
+      "note": "Stock PASS at 1cda4172. The live linked-player count passes 1/2/3/2/1 as helpers join and withdraw. Unloaded attack and defence both receive 0/-10/-15, loading at three gives -5, a withdrawal drops to zero at two, and unloading restores -10 before the last withdrawal. The original threshold and lifetime of opponentsFought remain unknown. https://github.com/kylebrussell/mxo-hd/pull/1071#issuecomment-7126298305",
+      "checks": {
+        "source-parity": {
+          "source": "Shipped tempmods.py toggles the ordinary crowd penalty and combat_modifiers.py supplies the branch and subtraction. The original console default and membership implementation are unavailable.",
+          "runtime": "Supported player interlocks use threshold one and count distinct live direct opponents for both ordinary combat inputs. Visible former opponents stop contributing immediately.",
+          "test": "MultifightingLiveWithdrawalMode and the stock PR1071 run verify both inputs, 1/2/3/2/1 direct links and real load/unload."
+        }
+      }
+    },
+    "148": {
+      "note": "Stock PASS at 0ff84b99. The same 4.000 m rifle shot gained +15 on the unlinked target, fell to 0 during its unrelated interlock, returned to +15 on load, fell to 0 on unload and returned to +15 after both still-visible helpers withdrew. The original engine distance classifier remains unknown. https://github.com/kylebrussell/mxo-hd/pull/1070#issuecomment-7126140134",
+      "checks": {
+        "source-parity": {
+          "source": "Shipped tempmods.py toggles firing-into-melee and short-range penalties. combat_modifiers.py defines the weapon-class additions and opponent-count branch.",
+          "runtime": "The supported caller uses the server's 3 m melee reach and a live opponent snapshot at each shot. Loading 148 suppresses the penalty branches while retaining the positive long-range class modifier.",
+          "test": "SharpshooterLivePairMode and stock PR1070 verify the real linked/unlinked transition, with the same positions and weapon throughout. Earlier stock checks cover the range boundary, weapon control and close-combat attack and defence."
+        }
+      }
+    }
+  }
+}
