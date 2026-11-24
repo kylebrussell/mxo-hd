@@ -33,7 +33,12 @@ namespace hds
             bool karateGrandmaster = (armor || ability == 532 || ability == 534 || ability == 536) &&
                 Allowed(caller, MartialFixedDamageMode, "karate-grandmaster");
             bool machinegunFist = (armor || ability == 261) && Allowed(caller, MartialFixedDamageMode, "machinegun-fist");
-            if (!starter && !kungFu && !karate && !aikido && !grandmaster && !karateGrandmaster && !machinegunFist)
+            bool aikidoGrandmaster = (armor || ability == 407 || ability == 411 || ability == 412) &&
+                Allowed(caller, MartialFixedDamageMode, "aikido-grandmaster");
+            bool zen = (armor || ability == 869 || ability == 870) && Allowed(caller, MartialFixedDamageMode, "zen-master");
+            bool duelist = (armor || ability == 501 || ability == 502) && Allowed(caller, MartialFixedDamageMode, "duelist");
+            if (!starter && !kungFu && !karate && !aikido && !grandmaster && !karateGrandmaster && !machinegunFist &&
+                !aikidoGrandmaster && !zen && !duelist)
                 return "Martial preparation requires the matching disposable fixture.";
             var handler = CombatManager.GetHandler(caller);
             var dummy = handler.CurrentNpcTarget;
@@ -43,12 +48,12 @@ namespace hds
                 return "Select the fixture Melee Dummy and enter Close Combat first.";
             if (armor)
             {
-                ResetDummyEffects(dummy, 180);
+                ResetDummyEffects(dummy, duelist ? (ushort)181 : (ushort)180);
                 return "Martial starter dummy resistance +75.";
             }
-            if (ability == 138 || ability == 273 || ability == 296 || ability == 427)
+            if (ability == 138 || ability == 273 || ability == 296 || ability == 427 || ability == 411 || ability == 412 || ability == 869)
                 CombatDepthOffBalance.Apply(TimedEffects.ForMob(dummy), 60, caller, selected);
-            if (ability == 259 || ability == 430 || ability == 532)
+            if (ability == 259 || ability == 430 || ability == 532 || ability == 501)
                 CombatDepthDaze.Apply(TimedEffects.ForMob(dummy), 60, caller, selected);
             if (ability == 262 || ability == 265 || ability == 536)
                 CombatDepthStagger.Apply(TimedEffects.ForMob(dummy), 60, caller, selected);
