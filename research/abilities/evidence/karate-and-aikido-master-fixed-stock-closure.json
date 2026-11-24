@@ -1,0 +1,64 @@
+{
+  "abilities": {
+    "265": {
+      "note": "Stock PASS at 058f8916. Named move 5940 landed for 93 in Speed and Power and 76 against +75 physical resistance. QA supplied one exchange win and any required state. The original retail tactic dispatch remains unmeasured. https://github.com/kylebrussell/mxo-hd/pull/1087#issuecomment-7133859755",
+      "checks": {
+        "source-parity": {
+          "source": "The shipped GOB has fixed physical endpoints 68/68. Ordinary shipped combat damage excludes specials and the separate tactic helper lacks a recovered binding to this move.",
+          "runtime": "The supported landed-special damage policy uses authored 68, style influence and type-0 resistance.",
+          "test": "KarateMasterFixedDamageMode checks the exact stock request, named landed motion, both tactics and +75 resistance. PR1087 repeats all nine casts in the real client."
+        }
+      }
+    },
+    "266": {
+      "note": "Stock PASS at 058f8916. Named move 5936 landed for 38 in Speed and Power and 31 against +75 physical resistance. QA supplied one exchange win and any required state. The original retail tactic dispatch remains unmeasured. https://github.com/kylebrussell/mxo-hd/pull/1087#issuecomment-7133859755",
+      "checks": {
+        "source-parity": {
+          "source": "The shipped GOB has fixed physical endpoints 28/28. Ordinary shipped combat damage excludes specials and the separate tactic helper lacks a recovered binding to this move.",
+          "runtime": "The supported landed-special damage policy uses authored 28, style influence and type-0 resistance.",
+          "test": "KarateMasterFixedDamageMode checks the exact stock request, named landed motion, both tactics and +75 resistance. PR1087 repeats all nine casts in the real client."
+        }
+      }
+    },
+    "267": {
+      "note": "Stock PASS at 058f8916. Named move 5937 landed for 28 in Speed and Power and 23 against +75 physical resistance. QA supplied one exchange win and any required state. The original retail tactic dispatch remains unmeasured. https://github.com/kylebrussell/mxo-hd/pull/1087#issuecomment-7133859755",
+      "checks": {
+        "source-parity": {
+          "source": "The shipped GOB has fixed physical endpoints 21/21. Ordinary shipped combat damage excludes specials and the separate tactic helper lacks a recovered binding to this move.",
+          "runtime": "The supported landed-special damage policy uses authored 21, style influence and type-0 resistance.",
+          "test": "KarateMasterFixedDamageMode checks the exact stock request, named landed motion, both tactics and +75 resistance. PR1087 repeats all nine casts in the real client."
+        }
+      }
+    },
+    "273": {
+      "note": "Stock PASS at dfbdf2aa. Named move 779/780 landed for 75 in Speed and Power and 61 against +75 physical resistance. QA supplied one exchange win and any required state. The original retail tactic dispatch remains unmeasured. https://github.com/kylebrussell/mxo-hd/pull/1088#issuecomment-7134006697",
+      "checks": {
+        "source-parity": {
+          "source": "The shipped GOB has fixed physical endpoints 56/56. Ordinary shipped combat damage excludes specials and the separate tactic helper lacks a recovered binding to this move.",
+          "runtime": "The supported landed-special damage policy uses authored 56, style influence and type-0 resistance.",
+          "test": "AikidoMasterFixedDamageMode checks the exact stock request, named landed motion, both tactics and +75 resistance. PR1088 repeats all nine casts in the real client."
+        }
+      }
+    },
+    "274": {
+      "note": "Stock PASS at dfbdf2aa. Named move 803/804 landed for 40 in Speed and Power and 32 against +75 physical resistance. QA supplied one exchange win and any required state. The original retail tactic dispatch remains unmeasured. https://github.com/kylebrussell/mxo-hd/pull/1088#issuecomment-7134006697",
+      "checks": {
+        "source-parity": {
+          "source": "The shipped GOB has fixed physical endpoints 30/30. Ordinary shipped combat damage excludes specials and the separate tactic helper lacks a recovered binding to this move.",
+          "runtime": "The supported landed-special damage policy uses authored 30, style influence and type-0 resistance.",
+          "test": "AikidoMasterFixedDamageMode checks the exact stock request, named landed motion, both tactics and +75 resistance. PR1088 repeats all nine casts in the real client."
+        }
+      }
+    },
+    "296": {
+      "note": "Stock PASS at dfbdf2aa. Named move 741 landed for 502 in Speed and Power and 413 against +75 physical resistance. QA supplied one exchange win and any required state. The original retail tactic dispatch remains unmeasured. https://github.com/kylebrussell/mxo-hd/pull/1088#issuecomment-7134006697",
+      "checks": {
+        "source-parity": {
+          "source": "The shipped GOB has fixed physical endpoints 375/375. Ordinary shipped combat damage excludes specials and the separate tactic helper lacks a recovered binding to this move.",
+          "runtime": "The supported landed-special damage policy uses authored 375, style influence and type-0 resistance.",
+          "test": "AikidoMasterFixedDamageMode checks the exact stock request, named landed motion, both tactics and +75 resistance. PR1088 repeats all nine casts in the real client."
+        }
+      }
+    }
+  }
+}
