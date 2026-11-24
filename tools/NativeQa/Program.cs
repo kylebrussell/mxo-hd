@@ -400,6 +400,8 @@ try
                     await NativeQa.Modes.StarterPathogenistAuraResistanceMode.ApplyResistanceAsync(actor);
                 else if (fixtureMode is NativeQa.Modes.AikidoGrandmasterControlsMode && action == "aikido-control")
                     result = await NativeQa.Modes.AikidoGrandmasterControlsMode.ObserveAsync(actor, server, q.GetProperty("ability").GetUInt16());
+                else if (fixtureMode is NativeQa.Modes.ZenMasterRecipientMode && action == "zen-recipient")
+                    result = await NativeQa.Modes.ZenMasterRecipientMode.CheckRecipientAsync(actor, server, q.GetProperty("ability").GetUInt16());
                 else if (fixtureMode is NativeQa.Modes.KiBurstRecipientsMode && action == "ki-withdraw")
                     result = await NativeQa.Modes.KiBurstRecipientsMode.CheckWithdrawAsync(actor, server);
                 else if (fixtureMode is NativeQa.Modes.ProxyMasterSelectedViralMode && action == "enrage-retarget")

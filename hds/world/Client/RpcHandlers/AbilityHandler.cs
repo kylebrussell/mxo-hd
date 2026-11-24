@@ -617,7 +617,13 @@ namespace hds
                 }
             }
 
-            bool existingInterlockPath = AbilityID == AwakenedPowerShot.Id || AbilityID == 197 || AbilityID == 198 || AbilityID == 105 ||
+            bool zenInterlock = AbilityID == ZenMasterSpecials.SweepTheFloor || AbilityID == ZenMasterSpecials.SpinningFlower;
+            if (zenInterlock && !AbilityPassives.IsLoaded(Store.currentClient, AbilityID))
+            {
+                Deny(AbilityID, "Load this ability before using it.", AbilityRefusals.NotLoaded, sendServerText: false);
+                return;
+            }
+            bool existingInterlockPath = zenInterlock || AbilityID == AwakenedPowerShot.Id || AbilityID == 197 || AbilityID == 198 || AbilityID == 105 ||
                 AbilityID == 145 || checkedInterlockSelection || AbilityID == MartialArtsStarterAdmission.GuardBreaker || CombatSpecials.IsExileWeapon(AbilityID);
             bool martialInterlock = definition?.Number("Ability/CastWhenUsed") == 3 &&
                 definition.Number("Ability/CombatSpecialMove") == 1 &&
@@ -629,7 +635,7 @@ namespace hds
                     _ => false
                 });
             uint stateMask = AbilityID == 197 ? 2u :
-                martialInterlock || coderInterlock || pistolSlide || slidingVolley || instantDualPistol ? (uint)definition.Number("Ability/CastRequiredStates") : 0u;
+                martialInterlock || zenInterlock || coderInterlock || pistolSlide || slidingVolley || instantDualPistol ? (uint)definition.Number("Ability/CastRequiredStates") : 0u;
             ushort requiredState = stateMask switch
             {
                 2 => TempMods.DazeAbility,
