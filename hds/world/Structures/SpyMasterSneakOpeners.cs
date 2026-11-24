@@ -38,7 +38,18 @@ namespace hds
                 refusalReason = AbilityRefusals.MustBeOutsideCombat;
                 return true;
             }
-            if (!AbilityTargets.HasLiveAttackSelection(client, targetViewId, targetSpawnId))
+            bool freedom = AbilityCatalog.Canonical(abilityId) == FreedomToJoints;
+            if (freedom && CombatStyles.Active(client) != CombatStyles.SpyStyle)
+            {
+                refusalReason = AbilityRefusals.WrongStyle;
+                return true;
+            }
+            if (freedom && (PvpFlag.FlagsOf(client) & Stealth.StealthedFlag) == 0)
+            {
+                refusalReason = AbilityRefusals.CasterStateRequired;
+                return true;
+            }
+            if (!AbilityTargets.HasLiveAttackSelection(client, targetViewId, targetSpawnId, requireOpponent: freedom))
             {
                 refusalReason = AbilityRefusals.InvalidTarget;
                 return true;
@@ -56,6 +67,11 @@ namespace hds
             if (range > 0 && CombatCalculator.CalculateDistanceMetres(client.playerInstance.Position.getValue(), x, y, z) > range)
             {
                 refusalReason = AbilityRefusals.TargetOutOfRange;
+                return true;
+            }
+            if (freedom && !AbilityTargets.HasSelectionSight(client, AbilityCatalog.Find(abilityId), targetViewId))
+            {
+                refusalReason = AbilityRefusals.TargetNotInSight;
                 return true;
             }
             return false;

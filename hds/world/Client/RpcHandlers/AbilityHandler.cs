@@ -542,7 +542,9 @@ namespace hds
                     thrownTargetSpawn = spawn ?? (ushort?)Store.currentClient.viewMan.getViewById(currentTargetViewId)?.spawnId;
                 if (SpyAbilityRegistry.TryRefuse(Store.currentClient, AbilityID, currentTargetViewId, thrownTargetSpawn ?? spawn, out uint refusalReason))
                 {
-                    Store.currentClient.messageQueue.addRpcMessage(AbilityRefusals.Encode(new AbilityRefusals.Record(AbilityID, refusalReason)));
+                    uint requiredStates = refusalReason == AbilityRefusals.CasterStateRequired &&
+                        AbilityCatalog.Canonical(AbilityID) == SpyMasterSneakOpeners.FreedomToJoints ? Stealth.StealthedFlag : 0u;
+                    Store.currentClient.messageQueue.addRpcMessage(AbilityRefusals.Encode(new AbilityRefusals.Record(AbilityID, refusalReason, states: requiredStates)));
                     Store.currentClient.FlushQueue();
                     Output.WriteDebugLog("[ABILITY] Denied " + AbilityID + ": native refusal " + refusalReason);
                     return;
