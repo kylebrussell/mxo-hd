@@ -1,0 +1,44 @@
+{
+  "abilities": {
+    "331": {
+      "note": "Stock PASS at de404716. Logic Cannon 2.0 paid 26 IS, cast for 8.17 s, hit the selected enemy for 42, and hit the protected recipient for 34 under +75 Viral Resistance. Empty, ally and distant selection refused without debit or timer. The original Corrupted record at proxy_020 lines 49133–49138 carries different signed damage values, and the original conversion is unknown. https://github.com/kylebrussell/mxo-hd/pull/1077#issuecomment-7128312522",
+      "checks": {
+        "damage": {
+          "source": "GOB 331 has one instant fixed viral health component of 29.",
+          "runtime": "The authored value replaces the legacy random fallback with zero CSV endpoints. Current +46 influence produces raw 42, and the actual recipient's +75 yields 34.",
+          "test": "LogicCannonTwoUsesItsAuthoredViralBaseWithoutLegacyDamageEndpoints covers the fixed value. Stock PR1077 verifies both actual damage values."
+        },
+        "source-parity": {
+          "source": "The single authored fixed component and the retained original selected-target cast are available. The archival Corrupted hit does not establish a general conversion.",
+          "runtime": "The supported route uses the authored component, the original visible hostile and ordinary typed mitigation at landing.",
+          "test": "HackerHarmfulCodeTiersMode replays the retained 331 request exactly except for its rebound target. Stock PR1077 verifies current selected delivery and separate recipient mitigation."
+        },
+        "behavior-tests": {
+          "source": "GOB 331 supplies the selected hostile, Hacker Style, out-of-combat admission, eight-second cast and own/shared 15-second reuse.",
+          "runtime": "Admission checks precede payment. Completion reuses the locked visible target, ordinary viral contest, fixed health component and typed mitigation.",
+          "test": "HackerHarmfulCodeTiersMode and stock PR1077 cover refusal and both selected hits. The headless replay also verifies the 15-second timer bytes for the parent and family."
+        }
+      }
+    },
+    "466": {
+      "note": "Stock PASS at ea9b9077. QAEnemy pool 617 ticked 103 five times. The independently rolled QAFar pool 604 at 5.00 m ticked 101 raw, 83 final while +75 Viral Resistance was active. The 5.01 m hostile and in-radius ally were excluded. Moving the original selected enemy during the synchronized cast spent 20 IS but produced no pool. The current model retains the 424–444 archive band; the original conversion from authored 97 remains unknown. https://github.com/kylebrussell/mxo-hd/pull/1076#issuecomment-7128905208",
+      "checks": {
+        "damage": {
+          "source": "Retained 424–444 effective DOT band and the shipped 2.5 s ViralDOT update, together with the typed resistance curve.",
+          "runtime": "Each recipient rolls a pool independently, scales with current caster influence and takes five mitigated viral ticks before the 15 s expiration.",
+          "test": "HackerPlagueZoneTwoMode checks pool bounds and all five damage records, on both a neutral and a protected target. Stock PR1076 confirms 103 on the neutral target and raw101/final83 on the protected edge."
+        },
+        "targeting": {
+          "source": "GOB 466 defines a hostile selected anchor, a 5 m splash and viral damage admission.",
+          "runtime": "The original live target supplies the center at landing, and enemies in area are independently contested and receive the effect only on a hit.",
+          "test": "PR1076 verifies range refusal, exact 5.00/5.01 inclusion, ally exclusion and live original-target fizzle. Earlier native PR316 shows an actual deflection with no DOT."
+        },
+        "behavior-tests": {
+          "source": "The retained full selected activation and GOB area/cadence are independently decoded.",
+          "runtime": "Selection, debit and timer use the ordinary cast path. Landing revalidates sight, range and original spawn before independent recipient contests and timed expiry.",
+          "test": "HackerPlagueZoneTwoMode verifies full exact replay, admission and fizzle, own reuse, the recipient ledger and both expirations. Native PR1076 confirms the mitigation and original-target fizzle."
+        }
+      }
+    }
+  }
+}
