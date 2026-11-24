@@ -16,6 +16,27 @@ namespace hds
         public const string RifleEscapeWinMode = "MXO_RIFLE_ESCAPE_WIN_QA";
         public const string PistolWhipLossMode = "MXO_PISTOL_WHIP_LOSS_QA";
         public const int DummyPhysicalResistance = 75;
+        public const string MartialTacticMode = "MXO_MARTIAL_TACTIC_DAMAGE_QA";
+
+        internal static string PrepareMartialDummy(WorldClient caller, ushort ability, bool armor)
+        {
+            if (!Allowed(caller, MartialTacticMode))
+                return "Martial starter preparation requires the disposable fixture.";
+            var handler = CombatManager.GetHandler(caller);
+            var dummy = handler.CurrentNpcTarget;
+            ushort selected = caller.playerData.currentSelectedTargetViewId;
+            if (dummy == null || dummy.getIsDead() || dummy.getName() != "Melee Dummy" ||
+                selected <= 2 || AbilityTargets.FindMob(caller, selected, out _) != dummy)
+                return "Select the fixture Melee Dummy and enter Close Combat first.";
+            if (armor)
+            {
+                ResetDummyEffects(dummy, 180);
+                return "Martial starter dummy resistance +75.";
+            }
+            if (ability == 138) CombatDepthOffBalance.Apply(TimedEffects.ForMob(dummy), 60, caller, selected);
+            handler.ArmMartialFixtureWin(dummy, ability);
+            return $"Martial starter fixture armed {ability}.";
+        }
 
         private static bool Allowed(WorldClient caller, string mode) =>
             Environment.GetEnvironmentVariable(mode) == "1" &&
