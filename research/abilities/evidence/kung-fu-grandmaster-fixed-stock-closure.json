@@ -1,0 +1,44 @@
+{
+  "abilities": {
+    "427": {
+      "note": "Stock PASS at 55db924a. Move 8086 landed for 124 in Speed and Power and 102 against +75 physical resistance. QA supplied one exchange win and any required target state. The original retail tactic-helper dispatch remains unmeasured. https://github.com/kylebrussell/mxo-hd/pull/1089#issuecomment-7133066361",
+      "checks": {
+        "source-parity": {
+          "source": "The shipped GOB has fixed instant physical endpoints 91/91. The ordinary combat script excludes landed specials and the separate tactic helper has no recovered binding to this move.",
+          "runtime": "The supported named-special damage path uses the authored 91 base, style influence and type-0 target resistance.",
+          "test": "KungFuGrandmasterFixedDamageMode checks the exact stock input, named landed motion, both tactics and +75 resistance. PR1089 native QA reproduced all twelve casts."
+        }
+      }
+    },
+    "428": {
+      "note": "Stock PASS at 55db924a. Move 8084 landed for 34 in Speed and Power and 27 against +75 physical resistance. QA supplied one exchange win and any required target state. The original retail tactic-helper dispatch remains unmeasured. https://github.com/kylebrussell/mxo-hd/pull/1089#issuecomment-7133066361",
+      "checks": {
+        "source-parity": {
+          "source": "The shipped GOB has fixed instant physical endpoints 25/25. The ordinary combat script excludes landed specials and the separate tactic helper has no recovered binding to this move.",
+          "runtime": "The supported named-special damage path uses the authored 25 base, style influence and type-0 target resistance.",
+          "test": "KungFuGrandmasterFixedDamageMode checks the exact stock input, named landed motion, both tactics and +75 resistance. PR1089 native QA reproduced all twelve casts."
+        }
+      }
+    },
+    "429": {
+      "note": "Stock PASS at 55db924a. Move 8083 landed for 63 in Speed and Power and 51 against +75 physical resistance. QA supplied one exchange win and any required target state. The original retail tactic-helper dispatch remains unmeasured. https://github.com/kylebrussell/mxo-hd/pull/1089#issuecomment-7133066361",
+      "checks": {
+        "source-parity": {
+          "source": "The shipped GOB has fixed instant physical endpoints 46/46. The ordinary combat script excludes landed specials and the separate tactic helper has no recovered binding to this move.",
+          "runtime": "The supported named-special damage path uses the authored 46 base, style influence and type-0 target resistance.",
+          "test": "KungFuGrandmasterFixedDamageMode checks the exact stock input, named landed motion, both tactics and +75 resistance. PR1089 native QA reproduced all twelve casts."
+        }
+      }
+    },
+    "430": {
+      "note": "Stock PASS at 55db924a. Move 8080 landed for 146 in Speed and Power and 120 against +75 physical resistance. QA supplied one exchange win and any required target state. The original retail tactic-helper dispatch remains unmeasured. https://github.com/kylebrussell/mxo-hd/pull/1089#issuecomment-7133066361",
+      "checks": {
+        "source-parity": {
+          "source": "The shipped GOB has fixed instant physical endpoints 107/107. The ordinary combat script excludes landed specials and the separate tactic helper has no recovered binding to this move.",
+          "runtime": "The supported named-special damage path uses the authored 107 base, style influence and type-0 target resistance.",
+          "test": "KungFuGrandmasterFixedDamageMode checks the exact stock input, named landed motion, both tactics and +75 resistance. PR1089 native QA reproduced all twelve casts."
+        }
+      }
+    }
+  }
+}
