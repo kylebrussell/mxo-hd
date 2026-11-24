@@ -1,0 +1,34 @@
+{
+  "abilities": {
+    "259": {
+      "note": "Stock PASS at 81b06963. 259 landed via move 8089 for 95 in Speed and Power, and 78 against +75 physical resistance. The isolated fixture armed the exchange and any necessary target state. Ordinary control procs remained natural. The original tactic-dispatch caller remains unmeasured. https://github.com/kylebrussell/mxo-hd/pull/1085#issuecomment-7132533427",
+      "checks": {
+        "source-parity": {
+          "source": "The current GOB has fixed instant physical endpoints 71/71. Shipped ordinary combat damage excludes the special-move branch, and the separate tactic multiplier helper has no recovered binding to this row.",
+          "runtime": "The supported landed-special policy applies the authored 71 base, learned style influence, and physical resistance.",
+          "test": "KungFuMasterTacticDamageMode uses the retained complete stock request and verifies both tactics, the fixed damage and the resistance stage. PR1085 reproduced all three in the stock client."
+        }
+      }
+    },
+    "260": {
+      "note": "Stock PASS at 81b06963. 260 landed via move 8082 for 32 in Speed and Power, and 26 against +75 physical resistance. The isolated fixture armed the exchange and any necessary target state. Ordinary control procs remained natural. The original tactic-dispatch caller remains unmeasured. https://github.com/kylebrussell/mxo-hd/pull/1085#issuecomment-7132533427",
+      "checks": {
+        "source-parity": {
+          "source": "The current GOB has fixed instant physical endpoints 24/24. Shipped ordinary combat damage excludes the special-move branch, and the separate tactic multiplier helper has no recovered binding to this row.",
+          "runtime": "The supported landed-special policy applies the authored 24 base, learned style influence, and physical resistance.",
+          "test": "KungFuMasterTacticDamageMode uses the retained complete stock request and verifies both tactics, the fixed damage and the resistance stage. PR1085 reproduced all three in the stock client."
+        }
+      }
+    },
+    "262": {
+      "note": "Stock PASS at 81b06963. 262 landed via move 8085 for 145 in Speed and Power, and 119 against +75 physical resistance. The isolated fixture armed the exchange and any necessary target state. Ordinary control procs remained natural. The original tactic-dispatch caller remains unmeasured. https://github.com/kylebrussell/mxo-hd/pull/1085#issuecomment-7132533427",
+      "checks": {
+        "source-parity": {
+          "source": "The current GOB has fixed instant physical endpoints 108/108. Shipped ordinary combat damage excludes the special-move branch, and the separate tactic multiplier helper has no recovered binding to this row.",
+          "runtime": "The supported landed-special policy applies the authored 108 base, learned style influence, and physical resistance.",
+          "test": "KungFuMasterTacticDamageMode uses the retained complete stock request and verifies both tactics, the fixed damage and the resistance stage. PR1085 reproduced all three in the stock client."
+        }
+      }
+    }
+  }
+}

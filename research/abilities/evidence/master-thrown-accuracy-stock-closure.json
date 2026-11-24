@@ -1,0 +1,24 @@
+{
+  "abilities": {
+    "278": {
+      "note": "Stock PASS at dde73935. In one live fight source 278 added and removed 1145 +15, shifting the actual queued TF4 Leg Sweep input 71 to 78 and back to 71. Spy Style direct 1032 stayed +66. The client run did not directly re-observe the 1121 grant, which is covered separately. The original retail coefficient remains unmeasured. https://github.com/kylebrussell/mxo-hd/pull/1086#issuecomment-7132667012",
+      "checks": {
+        "source-parity": {
+          "source": "The shipped primary 1032 links 1145, and this passive supplies +15 at the tested rank. The stock program selects primary 1032 for test function 4.",
+          "runtime": "The supported linked policy truncates once after summing separately from the direct style score. Existing modifier producers and the grant lifecycle are independent.",
+          "test": "MasterThrownAccuracyMode validates the exact retained stock request, five live contest values, own reuse and both passive records. PR1086 confirms the same live inputs under natural outcomes."
+        }
+      }
+    },
+    "338": {
+      "note": "Stock PASS at dde73935. In one live fight source 338 added and removed 1145 +5, shifting the actual queued TF4 Leg Sweep input 78 to 81 and back to 78. Spy Style direct 1032 stayed +66. The client run did not directly re-observe the 1121 grant, which is covered separately. The original retail coefficient remains unmeasured. https://github.com/kylebrussell/mxo-hd/pull/1086#issuecomment-7132667012",
+      "checks": {
+        "source-parity": {
+          "source": "The shipped primary 1032 links 1145, and this passive supplies +5 at the tested rank. The stock program selects primary 1032 for test function 4.",
+          "runtime": "The supported linked policy truncates once after summing separately from the direct style score. Existing modifier producers and the grant lifecycle are independent.",
+          "test": "MasterThrownAccuracyMode validates the exact retained stock request, five live contest values, own reuse and both passive records. PR1086 confirms the same live inputs under natural outcomes."
+        }
+      }
+    }
+  }
+}
