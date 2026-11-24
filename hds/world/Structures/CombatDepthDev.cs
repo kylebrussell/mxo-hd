@@ -29,6 +29,8 @@ namespace hds
             if (command == "rb" && args.Length == 1) return CombatFixtureWeapons.ArmRifleEscapeWin(caller);
             if (command == "ma" && args.Length == 2 && ushort.TryParse(args[1], out var martial))
                 return CombatFixtureWeapons.PrepareMartialDummy(caller, martial, armor: false);
+            if (command == "aw" && args.Length == 2 && ushort.TryParse(args[1], out var aikido))
+                return CombatFixtureWeapons.ArmAikidoControlWin(caller, aikido);
             if (command == "ma75" && args.Length == 1)
                 return CombatFixtureWeapons.PrepareMartialDummy(caller, 0, armor: true);
             if (command == "beltblind" && args.Length == 1) return InvisibilityBeltQa.BlindWatcher(caller);
