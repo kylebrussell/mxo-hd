@@ -48,9 +48,26 @@ namespace hds
                 reason = AbilityRefusals.TargetOutOfRange;
                 return true;
             }
-            if (!AbilityTargets.HasSelectionSight(caster, AbilityCatalog.Find(Id), targetViewId))
+            var template = AbilityCatalog.Find(Id);
+            if (!AbilityTargets.HasSelectionSight(caster, template, targetViewId))
             {
                 reason = AbilityRefusals.TargetNotInSight;
+                return true;
+            }
+            var (x, _, z) = CombatSight.Position(caster);
+            var mob = AbilityTargets.FindMob(caster, targetViewId, out _);
+            var player = mob == null ? PvpCombat.PlayerInView(caster, targetViewId) : null;
+            if (mob == null && player == null)
+            {
+                reason = AbilityRefusals.InvalidTarget;
+                return true;
+            }
+            var (tx, _, tz) = mob == null ? CombatSight.Position(player) : (mob.getXPos(), mob.getYPos(), mob.getZPos());
+            byte yaw = mob == null ? player.playerInstance.YawInterval.getValue()[0] : (byte)mob.getRotation();
+            double angle = template.Number("Ability/CastOutsideTargetFOVAngle");
+            if (angle > 0 && Stealth.InFrustum(tx, tz, yaw, x, z, angle))
+            {
+                reason = AbilityRefusals.InvalidTarget;
                 return true;
             }
             return false;
