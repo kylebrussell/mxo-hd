@@ -118,8 +118,8 @@ public class OrdinaryWithdrawalInputTests
     {
         Assert.False(WithdrawalInput.Ordinary(true,false,Move(ability),true));var c=Actor();Stat(c,1005,500);Stat(c,1045,100);
         var move = Move(ability);
-        int shippedVanishBonus = ability == 368 ? 30 : 0;
-        Assert.Equal(InterlockInitiative.Attack(c, move) + shippedVanishBonus,
+        int shippedSpecialBonus = ability switch { 368 => 30, 453 => 11, _ => 0 };
+        Assert.Equal(InterlockInitiative.Attack(c, move) + shippedSpecialBonus,
             WithdrawalInput.Attack(c, move, ordinary: false));
     }
     [Fact] public void OnlyCurrentNonopeningOrdinaryRequestSelectsTypedInput()

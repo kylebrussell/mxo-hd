@@ -11,8 +11,14 @@ namespace hds
             if (!ordinary)
             {
                 int attack = InterlockInitiative.Attack(actor, queued);
-                if (queued?.getAbilityID() == Stealth.VanishAbility)
-                    attack += (int)AbilityCatalog.Find(Stealth.VanishAbility).Number("Ability/TacticBonus");
+                ushort ability = queued?.getAbilityID() ?? 0;
+                if (ability == Stealth.VanishAbility || CombatSpecials.IsRifleEscape(ability))
+                {
+                    int authored = (int)AbilityCatalog.Find(ability).Number("Ability/TacticBonus");
+                    if (ability == CombatSpecials.RifleButtSmash)
+                        Output.WriteDebugLog($"[RIFLE ESCAPE TACTIC OURS] ability={ability} base={attack} bonus={authored} total={attack + authored}");
+                    attack += authored;
+                }
                 return attack;
             }
             int direct = AbilityStats.Player(actor, 1005);
