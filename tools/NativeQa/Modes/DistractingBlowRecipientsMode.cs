@@ -45,7 +45,7 @@ public class DistractingBlowRecipientsMode : NativeQaMode
         extraQaMetadata: new() { ["ScopedStockRows"] = "1128", ["NativeCloseableRows"] = verifyWithdrawal ? 1 : 0 },
         readyMessages: verifyWithdrawal ? new[]
         {
-            "Verified NAV HOME faces QAEnemy's back 2 m east. Page 2 slots 1 Spy, 2 Sneak, 3 Distracting Blow, 4 Withdraw. At HOME /target QAEnemy, radial Close Combat, press slot 4. Check [WITHDRAW INPUT OURS] CSR_Tester direct=26 input=28 bonus1045=10. If still in combat use ?cd stop. Return to HOME from the printed chunks if Withdraw displaced you.",
+            "Verified NAV HOME faces QAEnemy's back 2 m east. Page 2 slots 1 Spy, 2 Sneak, 3 Distracting Blow, 4 Withdraw. Start with the cast on a fresh helper. An opening baseline fight turns QAEnemy toward CSR and prevents Distracting Blow. Measure baseline Withdraw after the buff expires.",
             "Select Spy and Sneak at HOME. For the frontal refusal, use the printed FRONT teleport chunks and /target QAEnemy. Tap slot 3. Expect a local facing gate or invalid target and no debit. At BLOCK and FAR, retarget and try 3 for sight or range refusal without debit. Return to HOME with printed chunks, reselect QAEnemy and Sneak if dropped. Select Spy again if needed.",
             "At HOME press 3. Expect a 2 s cast, 35 IS, 77 damage and source1129 stat1005 +50 for 12 s. On add, immediately use radial Close Combat on QAEnemy and press slot 4. Expect direct=76 input=83 bonus1045=10. A win is unnecessary. Wait for the 1129 removal.",
             "After removal, use ?cd stop if still in combat, open another Close Combat and use slot 4 again. Expect direct=26 input=28 bonus1045=10. No RNG aid. Printed stand teleports and ?cd stop are disposable geometry and cleanup aids."
@@ -91,12 +91,6 @@ public class DistractingBlowRecipientsMode : NativeQaMode
         await PvpOpponentsFixture.EnterAsync(caster);
         NativeQaReadiness.RequireNoAmbientAggro(server, caster);
         uint target = await HandleAsync(caster, enemy);
-        if (verifyWithdrawal)
-        {
-            await MeasureWithdrawAsync(26, 28);
-            await MoveAsync(home);
-            target = await HandleAsync(caster, enemy);
-        }
         caster.SendRpc(AwakenedStockStealthSpeedMode.SpyUse);
         await caster.WaitForViewUpdateAsync(2, "02 80 80 80 80 80 10 58 04 00 00");
         await RefusedAsync(caster, Blow, Request(target), AbilityRefusals.CasterStateRequired);
