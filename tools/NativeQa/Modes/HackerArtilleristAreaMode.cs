@@ -163,7 +163,7 @@ public class HackerArtilleristAreaMode : NativeQaMode
         int resistAt = edge.World.RpcSnapshot().Count;
         await StarterPathogenistAuraResistanceMode.ApplyResistanceAsync(edge, Resistance);
         await CastSamplesAsync("protected", resisted: true);
-        await SetTacticAsync("Speed", StockSpeed);
+        if (samples.Any(sample => sample.Id == 337)) await SetTacticAsync("Speed", StockSpeed);
         await edge.WaitUntilAsync(() => edge.World.RpcSnapshot().Skip(resistAt).Any(frame =>
             StockAbilityProfile.Bonus(frame, EmptyMind, ViralResistance, Resistance, 20, true)),
             "Empty Mind expires before the recovery sample", TimeSpan.FromSeconds(23));
