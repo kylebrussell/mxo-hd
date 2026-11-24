@@ -925,6 +925,10 @@ public class AbilityHostileTests
         {
             AbilityAuras.Start(caster, 485);
             Assert.True(AbilityAuras.IsOn(caster, 485));
+            Assert.Contains(caster.messageQueue.RPCMessagesQueue.Cast<SequencedMessage>(), packet =>
+                packet.content.AsSpan(1).SequenceEqual(AbilityBuffs.BuildExclusive(696, true)));
+            Assert.Contains(caster.messageQueue.RPCMessagesQueue.Cast<SequencedMessage>(), packet =>
+                packet.content.AsSpan(1).SequenceEqual(AbilityCooldowns.BuildTimer(696, AbilityCooldowns.OwnTimer, 10, true)));
             Assert.Equal(30, AbilityHandler.CurrentInnerStrength(caster));
             AbilityAuras.Tick(caster, 485, 1);
             Assert.Equal(15, AbilityHandler.CurrentInnerStrength(caster));
@@ -932,6 +936,14 @@ public class AbilityHostileTests
             Assert.Equal(0, AbilityHandler.CurrentInnerStrength(caster));
             AbilityAuras.Tick(caster, 485, 1);
             Assert.False(AbilityAuras.IsOn(caster, 485));
+            byte[] childOff = AbilityBuffs.BuildExclusive(696, false);
+            Assert.DoesNotContain(caster.messageQueue.RPCMessagesQueue.Cast<SequencedMessage>(), packet =>
+                packet.content.AsSpan(1).SequenceEqual(childOff));
+            caster.playerData.lifeGeneration++;
+            AbilityAuras.Clear(caster, announce: true);
+            AbilityAuras.Clear(caster, announce: true);
+            Assert.Single(caster.messageQueue.RPCMessagesQueue.Cast<SequencedMessage>(), packet =>
+                packet.content.AsSpan(1).SequenceEqual(childOff));
         }
         finally
         {

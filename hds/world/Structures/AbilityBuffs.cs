@@ -190,8 +190,9 @@ namespace hds
                 Character=Data.getCharID();district=Data.getDistrictId();World=Data.worldGeneration;Life=Data.lifeGeneration;
                 Transport=client.TransportFence?.Capture() ?? -1;
             }
-            internal bool ScopeCurrent => ReferenceEquals(Client.playerData,Data) && ReferenceEquals(Client.playerInstance,Player) &&
-                Data.getCharID()==Character && Data.getDistrictId()==district && Data.worldGeneration==World && Data.lifeGeneration==Life &&
+            internal bool ScopeCurrent => WorldCurrent && Data.lifeGeneration==Life;
+            internal bool WorldCurrent => ReferenceEquals(Client.playerData,Data) && ReferenceEquals(Client.playerInstance,Player) &&
+                Data.getCharID()==Character && Data.getDistrictId()==district && Data.worldGeneration==World &&
                 Client.TransportFence!=null && Client.TransportFence.IsCurrent(Transport) && Client.Alive && Data.getOnWorld() &&
                 !Data.worldChangePending && !Data.waitForRPCShutDown;
             internal bool Current => !Cancelled && ScopeCurrent;

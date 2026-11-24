@@ -23,11 +23,13 @@ namespace hds
     {
         public const uint DrainDeactivated = 0xc60020b4;
         internal const ushort CombatAuraTwo = 485;
+        private const ushort CombatAuraTwoChild = 696;
 
         private sealed class State
         {
             public readonly Dictionary<ushort, Activation> On = new Dictionary<ushort, Activation>();
             public int Generation;
+            internal AbilityBuffs.DrainLifetime CombatAuraTwoPresentation;
         }
 
         private sealed class Activation
@@ -129,8 +131,18 @@ namespace hds
                 state.Generation = generation;
                 activation = new Activation(id, generation, lifetime);
                 state.On[id] = activation;
+                client.messageQueue.AddWorldBoundRpc(AbilityBuffs.BuildExclusive(id, true), lifetime.World, lifetime.Transport);
+                if (id == CombatAuraTwo)
+                {
+                    // proxy_024 13884–13887: the owner indicator and its timer precede the linked parent records.
+                    if (state.CombatAuraTwoPresentation?.WorldCurrent != true)
+                        client.messageQueue.AddWorldBoundRpc(AbilityBuffs.BuildExclusive(CombatAuraTwoChild, true),
+                            lifetime.World, lifetime.Transport);
+                    state.CombatAuraTwoPresentation = lifetime;
+                    AbilityCooldowns.StartCaptured(client, CombatAuraTwoChild, TimeUtils.GetSimTimeSeconds(), lifetime.Data,
+                        lifetime.Player, lifetime.World, lifetime.Life, lifetime.Transport);
+                }
             }
-            client.messageQueue.AddWorldBoundRpc(AbilityBuffs.BuildExclusive(id, true), lifetime.World, lifetime.Transport);
             SendParentRecords(client, id, activation, false);
             var aura = Callback(id, "ApplyAuraEffect");
             uint onSelf = (uint)AbilityCatalog.Find(id).Modifiers.Where(m => m.Number("WhenEnabled", -1) == 2)
@@ -320,8 +332,23 @@ namespace hds
         {
             if (!states.TryGetValue(client, out var state)) return;
             KeyValuePair<ushort, Activation>[] pending;
-            lock (state) pending = state.On.ToArray();
+            bool clearChild = false;
+            lock (state)
+            {
+                pending = state.On.ToArray();
+                var child = state.CombatAuraTwoPresentation;
+                state.CombatAuraTwoPresentation = null;
+                // The five-second modifier expiry and parent shortfall leave the owner indicator alone.
+                // The retained combat cleanup clears this indicator with the other exclusive records.
+                if (announce && child?.WorldCurrent == true)
+                {
+                    client.messageQueue.AddWorldBoundRpc(AbilityBuffs.BuildExclusive(CombatAuraTwoChild, false),
+                        child.World, child.Transport);
+                    clearChild = true;
+                }
+            }
             foreach (var entry in pending) Stop(client, entry.Key, entry.Value.Generation, announce);
+            if (clearChild) client.FlushQueue();
         }
     }
 }
