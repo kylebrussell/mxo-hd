@@ -258,6 +258,9 @@ namespace hds
                 _ => 0
             };
             bool protectedGunSpecial = CombatSpecials.ProtectsTimedGunCast(AbilityID);
+            // The retained Execution request has one extra byte in the trailer. The selection handle stays at offset 2.
+            bool timedGunHasSpawn = packet.Length == 41 ||
+                (AbilityID == CombatSpecials.DualPistolExecution && packet.Length == 42);
             object gunSpecialFight = null;
             uint? gunSpecialOpponent = null;
             if (protectedGunSpecial)
@@ -283,7 +286,7 @@ namespace hds
                 gunSpecialFight = combat.ActiveInterlockIdentity;
                 if (gunSpecialFight != null)
                 {
-                    ushort? requestSpawn = packet.Length == 41 ? (ushort?)BitConverter.ToUInt16(packet, 4) : null;
+                    ushort? requestSpawn = timedGunHasSpawn ? (ushort?)BitConverter.ToUInt16(packet, 4) : null;
                     gunSpecialOpponent = combat.PowerShotOpponent(currentTargetViewId, requestSpawn);
                     if (!gunSpecialOpponent.HasValue)
                     {
@@ -346,7 +349,7 @@ namespace hds
             {
                 var shooter = Store.currentClient;
                 gunTargetSpawn = (ushort?)shooter.viewMan.getViewById(currentTargetViewId)?.spawnId;
-                ushort? requestedSpawn = packet.Length == 41 ? BitConverter.ToUInt16(packet, 4) : gunTargetSpawn;
+                ushort? requestedSpawn = timedGunHasSpawn ? BitConverter.ToUInt16(packet, 4) : gunTargetSpawn;
                 if (!gunTargetSpawn.HasValue ||
                     !AbilityTargets.HasLiveAttackSelection(shooter, currentTargetViewId, requestedSpawn, requireOpponent: true) ||
                     (pistolInterlock != null && !CombatManager.GetHandler(shooter).PowerShotOpponent(currentTargetViewId, requestedSpawn).HasValue))
