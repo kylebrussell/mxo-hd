@@ -35,13 +35,13 @@ public sealed class KiBurstRecipientsMode : NativeQaMode
             ["MXO_PVP_MAX_SAFE_LEVEL"] = "15", [AreaTargetDiagnostics.Variable] = "1",
             [MartialBlindEnrageAreaQa.KiBurstMode] = "1"
         },
-        extraQaMetadata: new() { ["ScopedStockRows"] = "406", ["NativeCloseableRows"] = 0 },
+        extraQaMetadata: new() { ["ScopedStockRows"] = "406", ["NativeCloseableRows"] = 1 },
         readyMessages: new[]
         {
-            "Stay at printed HOME. CSR faces QAEnemy at 1.2 m, QAFriend is inside 4 m and QAFar is at 5 m. All are live helpers. No teleport or interlock.",
-            "Page 2 slot 1 Aikido. Select /target QAFar, then slot 2 Ki Burst. Expect a 1 s cast, 70 IS, and 15 s own / 5 s family 688 reuse. Burst uses CSR as its centre despite the selected distant player.",
-            "Expect AREA-QA QAEnemy included, QAFriend pvp-NotOpponent, QAFar radius. Only QAEnemy takes Ki Burst damage. Expect [MODIFIER] char=6114 source=406 stat=93 add 0 for 15 s, then the matching remove. No helper command.",
-            "QA guarantees only the disposable 406 Enrage roll on QAEnemy. The pass covers area targeting and recipient-state delivery and expiry, with other Enrage behavior tracked separately."
+            "Stay at HOME facing QAEnemy. /target QAEnemy, right-click Close Combat, then reselect Aikido on page 2 slot 1. No teleport.",
+            """Start {"actor":"QAEnemy","action":"ki-withdraw"} in the background while the fight is active. It waits for your cast, so press Ki Burst slot 2 immediately.""",
+            "Expect 70 IS, a 1 s cast, damage 31 and [MODIFIER] char=6114 source=406 stat=93 add 0 for 15 s. The helper submits ordinary Withdraw during Enrage, waits for the exact paired state removal and localized release, then submits Withdraw again. Expect the first request suppressed and the second accepted for an ordinary round attempt. The win or loss of that attempt is outside the pass criteria.",
+            "QA guarantees the Enrage proc on the disposable player witness only. The helper uses the ordinary Withdraw frame twice and never forces an exchange result."
         });
 
     public override async Task<byte[]> AfterStartAsync(NativeQaBootstrapContext context)
@@ -68,40 +68,57 @@ public sealed class KiBurstRecipientsMode : NativeQaMode
         NativeQaReadiness.RequireNoAmbientAggro(server, caster);
         foreach (var s in Stands) await caster.WaitForViewNamedAsync(s.Name);
 
-        var far = await caster.WaitForViewNamedAsync("QAFar");
+        var target = await caster.WaitForViewNamedAsync("QAEnemy");
         var enemy = context.Helpers["QAEnemy"];
-        var friend = context.Helpers["QAFriend"];
-        var farHelper = context.Helpers["QAFar"];
+        uint targetHandle = DuelPackets.Handle(target.ViewId, target.SpawnId);
+        string hex = WireFormat.ToHex(BitConverter.GetBytes(targetHandle));
+        caster.World.SendRpcs(StarterHackerControlTargetMode.WithHandle(PistolSlideMode.StockSelfDefense, targetHandle),
+            WireFormat.FromHex($"40 {hex} 01 6b"));
+        await caster.WaitForRpcAsync($"46 {hex} 01");
         caster.SendRpc(MartialArtsStarterAdmissionMode.StockAikido);
         await caster.WaitForViewUpdateAsync(2, "02 80 80 80 80 80 10 65 00 00 00");
-        caster.SendRpc($"81 51 {WireFormat.ToHex(BitConverter.GetBytes(DuelPackets.Handle(far.ViewId, far.SpawnId)))}");
-        int logStart = server.DebugLog().Length, from = caster.World.RpcSnapshot().Count;
-        int enemyFrom = enemy.World.RpcSnapshot().Count, friendFrom = friend.World.RpcSnapshot().Count, farFrom = farHelper.World.RpcSnapshot().Count;
+        int from = caster.World.RpcSnapshot().Count;
+        int enemyFrom = enemy.World.RpcSnapshot().Count;
+        Task proof = CheckWithdrawAsync(enemy, server);
         caster.SendRpc(StockBurst);
         await EvidenceRetestWire.CastBarAsync(caster, Burst, 1);
         await EvidenceRetestWire.TimerAsync(caster, from, Burst, AbilityCooldowns.OwnTimer, 15);
         await EvidenceRetestWire.TimerAsync(caster, from, 688, AbilityCooldowns.GroupTimer, 5);
         byte[] damage = AbilityMessages.Damage(false, Burst, caster.Handle, enemy.Handle, 31, 0);
-        await ObserveAsync(enemy, enemyFrom, r => r.Bytes.AsSpan().SequenceEqual(damage), "Only the inside hostile receives the 31 damage hit");
-        var add = await ObserveAsync(enemy, enemyFrom, r => Bonus(r, Burst, TempMods.EnrageAbility, 0, 15, false), "QAEnemy receives 15 s Enrage");
-        ManageBonusRecord.TryDecode(add.Bytes, out var record);
-        Check.That(record != null, "Decode the original Enrage record");
-        await enemy.WaitUntilAsync(() => enemy.World.RpcSnapshot().Skip(enemyFrom).Any(r =>
-            ManageBonusRecord.TryDecode(r.Bytes, out var removal) && removal == record! with { AddRemoveType = 1 }),
-            "The matching Enrage record expires", TimeSpan.FromSeconds(20));
-
-        string[] ledger = server.DebugLog()[logStart..].Split('\n');
-        Check.That(Has("QAEnemy", "included") && Has("QAFriend", "pvp-NotOpponent") && Has("QAFar", "radius"),
-            "Ki Burst includes only the in-range hostile, independently of selection");
-        foreach (var (witness, cursor) in new[] { (friend, friendFrom), (farHelper, farFrom) })
-        {
-            Check.That(!witness.World.RpcSnapshot().Skip(cursor).Any(r => Bonus(r, Burst, TempMods.EnrageAbility, 0, 15, false)),
-                $"{witness.Handle} receives no Enrage");
-        }
-        Console.WriteLine("KI BURST RECIPIENTS PASS: exact stock cast, radius and PvP split, timed Enrage add/remove.");
+        await ObserveAsync(enemy, enemyFrom, r => r.Bytes.AsSpan().SequenceEqual(damage), "Ki Burst hits the interlock opponent");
+        await proof;
+        Check.Equal(0, caster.World.Problems.Count + enemy.World.Problems.Count, "Clean retained stock framing");
         return Array.Empty<byte>();
+    }
 
-        bool Has(string name, string reason) => ledger.Any(line => line.Contains("[AREA-QA]", StringComparison.Ordinal) &&
-            line.Contains($"candidate={name} ", StringComparison.Ordinal) && line.Contains($"reason={reason}", StringComparison.Ordinal));
+    internal static async Task CheckWithdrawAsync(HeadlessPlayer enemy, ServerInstance server)
+    {
+        Check.Equal(6114u, enemy.CharId, "Ki Burst recipient helper");
+        int from = enemy.World.RpcSnapshot().Count;
+        RpcRecord? add = null;
+        await enemy.WaitUntilAsync(() => (add = enemy.World.RpcSnapshot().Skip(from)
+                .FirstOrDefault(r => Bonus(r, Burst, TempMods.EnrageAbility, 0, 15, false))) != null,
+            "Ki Burst applies 15 s Enrage to QAEnemy", TimeSpan.FromSeconds(25));
+        Check.That(ManageBonusRecord.TryDecode(add!.Bytes, out var record) && record != null, "Decode the original Enrage record");
+        int blockedAt = server.DebugLog().Length;
+        enemy.SkipReceived();
+        enemy.SendRpc("44 01");
+        enemy.SendRpc("81 48");
+        await enemy.WaitForRpcAsync("81 49", HeadlessPlayer.DefaultTimeout);
+        Check.That(!server.DebugLog()[blockedAt..].Contains("[COMBAT] Leave combat requested", StringComparison.Ordinal),
+            "Ordinary Withdraw suppressed while Ki Burst Enrage is active");
+        byte[] release = AbilityMessages.StateEnd(TempMods.EnrageAbility, enemy.Handle);
+        await enemy.WaitUntilAsync(() =>
+        {
+            var received = enemy.World.RpcSnapshot().Skip(from).ToArray();
+            return received.Any(r => ManageBonusRecord.TryDecode(r.Bytes, out var remove) &&
+                    remove == record! with { AddRemoveType = 1 }) &&
+                received.Any(r => r.Bytes.AsSpan().SequenceEqual(release));
+        }, "Ki Burst sends the matched state removal and localized release", TimeSpan.FromSeconds(20));
+        int acceptedAt = server.DebugLog().Length;
+        enemy.SendRpc("44 01");
+        await enemy.WaitUntilAsync(() => server.DebugLog()[acceptedAt..].Contains("[COMBAT] Leave combat requested", StringComparison.Ordinal),
+            "Ordinary Withdraw accepted after Ki Burst Enrage ends", HeadlessPlayer.DefaultTimeout);
+        Console.WriteLine("KI BURST WITHDRAW PASS: 15 s Enrage blocks ordinary Withdraw, matched release restores admission.");
     }
 }
