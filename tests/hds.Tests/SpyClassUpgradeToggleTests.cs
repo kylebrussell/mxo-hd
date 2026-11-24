@@ -98,6 +98,30 @@ public class SpyClassUpgradeToggleTests
     }
 
     [Fact]
+    public void DisguiseOwnerPercentageStacksWithDirectSneakSpeedAndTracksReload()
+    {
+        var actor = Client(50);
+        var parent = ((ushort)120, (ushort)50);
+        Assert.Equal(1050, AbilityCatalog.IdOf((uint)AbilityCatalog.Find(877).Number("AbilityAttributeLink/AttributeLink")));
+        Assert.Equal(1, AbilityCatalog.Find(1050).Number("Ability/ValueType"));
+        AbilityPassives.SetLoaded(actor, new[] { parent });
+
+        var sneak = Stealth.Begin(actor, Stealth.Defs[1111], 50);
+        Assert.Equal(.25f, Scale());
+        Assert.True(AbilityBuffs.Apply(actor, 1115));
+        Assert.Equal(.35f, Scale(), 5);
+        AbilityPassives.SetLoaded(actor, Array.Empty<(ushort, ushort)>());
+        Assert.Equal(.10f, Scale());
+        AbilityPassives.SetLoaded(actor, new[] { parent });
+        Assert.Equal(.35f, Scale(), 5);
+        Assert.Same(sneak, Stealth.Current(actor));
+        Stealth.Cleared(actor);
+        Assert.Equal(0f, Scale());
+
+        float Scale() => BitConverter.ToSingle(actor.playerInstance.MovementScale.getValue());
+    }
+
+    [Fact]
     public void InfiltratorUpgradeFeedsDisguiseLeaseAndBothCombatInputs()
     {
         var actor = Client(50);

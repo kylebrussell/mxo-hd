@@ -55,7 +55,7 @@ public class InvisibilityDurationTests
         Assert.True(AbilityBuffs.Apply(actor, 1117));
         Assert.Equal(0f, Scale());
         Assert.NotNull(Stealth.Begin(actor, Stealth.Defs[1111], 50));
-        Assert.Equal(0f, Scale());
+        Assert.Equal(.25f, Scale()); // The loaded Disguise parent supplies the Sneak baseline, independent of Shadow.
         Stealth.Cleared(actor);
 
         var belt = Stealth.Begin(actor, Stealth.Defs[1116], 50);
