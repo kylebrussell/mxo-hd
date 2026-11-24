@@ -37,6 +37,19 @@ public class MultifightingInterlockTests : IDisposable
     [InlineData(0,0,0)] [InlineData(1,0,0)] [InlineData(2,-10,0)] [InlineData(3,-15,-5)] [InlineData(4,-20,-10)]
     public void LiteralRecoveredMathWithExplicitOursThreshold(int count,int off,int on)
     {Assert.Equal(off,MultifightingInterlock.Penalty(count,false));Assert.Equal(on,MultifightingInterlock.Penalty(count,true));}
+    [Theory]
+    [InlineData("attack")]
+    [InlineData("defence")]
+    public void TwoDirectOpponentsHaveNoPenaltyWithMultiFightingLoaded(string role)
+    {
+        var (fight, sides) = Group();
+        var defender = sides[0];
+        Assert.Equal(90, fight.MultifightingInput(defender, 100, role, fight.CaptureMultifighting()));
+        AbilityPassives.SetLoaded(defender.Client, new[] { ((ushort)140, (ushort)19) });
+        Assert.Equal(0, MultifightingInterlock.Penalty(2, true));
+        Assert.Equal(100, fight.MultifightingInput(defender, 100, role, fight.CaptureMultifighting()));
+    }
+
     [Fact]
     public void CurrentDirectLinksAndActualLoadedMembershipApplyOnceToBothInputRoles()
     {

@@ -35,9 +35,9 @@ public sealed class CrowdAndRifleBoundariesMode : NativeQaMode
         extraQaMetadata: new() { ["ScopedStockRows"] = "140,148", ["NativeCloseableRows"] = 0, ["MemoryUsed"] = Loadout.Sum(AbilityMemory.Cost) },
         readyMessages: new[]
         {
-            "CSR starts with Rifles equipped on verified outdoor HOME. No movement or bag. /target QAEnemy, use radial Fire!, then ?cd stop after one shot. Leave 140/148 unloaded. The rifle starts at 2.99 m; both other players remain close but unlinked.",
-            "Use the printed QAEnemy helper teleports to 2.99, 3.00 and 3.01 m. Re-target QAEnemy and take one Fire! shot per stand with ?cd stop between. Expect [SHARPSHOOTER OURS] opponents1, metres2.990/3.000/3.010, modifier -15/-15/+15. Then ?qaload 148 and repeat, now 0/0/+15 and countSampledFalse.",
-            """Stop Fire!, send the printed QAEnemy CLOSE teleport (1.20 m), then {"actor":"QAEnemy","action":"melee","target":"CSR_Tester"}. QAOther stands in melee range but does not fight yet. No second opponent in the first rounds. Send {"actor":"QAOther","action":"melee","target":"CSR_Tester"} and wait for the two direct links. Expect [MULTIFIGHTING OURS] opponents2 loadedFalse penalty-10 for both inputs. Type ?qaload 140: both now -5. QAFriend remains nearby and unlinked throughout.""",
+            "CSR starts with Rifles equipped on verified outdoor HOME. No movement or bag. /target QAEnemy, then Actions > Weapons > Automatic Rifle on the Free Fire button. Click again if the first click only readies the stance. Use ?cd stop after one shot. Leave 140/148 unloaded. The rifle starts at 2.99 m; both other players remain close but unlinked.",
+            "Use the printed QAEnemy helper teleports to 2.99, 3.00 and 3.01 m. Re-target QAEnemy and fire once with the Free Fire button per stand with ?cd stop between. Expect [SHARPSHOOTER OURS] opponents1, metres2.990/3.000/3.010, modifier -15/-15/+15. Then ?qaload 148 and repeat, now 0/0/+15 and countSampledFalse.",
+            """Stop Fire!, send the printed QAEnemy CLOSE teleport (1.20 m), then {"actor":"QAEnemy","action":"melee","target":"CSR_Tester"}. QAOther stands in melee range but does not fight yet. No second opponent in the first rounds. Send {"actor":"QAOther","action":"melee","target":"CSR_Tester"} and wait for the two direct links. Expect [MULTIFIGHTING OURS] opponents2 loadedFalse penalty-10 for both inputs. Type ?qaload 140: both now 0 with exactly two direct opponents; the shipped rule starts its remaining -5 penalty at three. QAFriend remains nearby and unlinked throughout.""",
             "This is a native boundary and direct-link check of current policy. Exact retail CombatMultiOnOneCount and ranged caller binding remain unverified; do not mark either row done from these packets alone."
         });
 
@@ -74,7 +74,27 @@ public sealed class CrowdAndRifleBoundariesMode : NativeQaMode
         await SampleAsync(17299, "2.990", -15);
         await SampleAsync(17300, "3.000", -15);
         await SampleAsync(17301, "3.010", 15);
+        await InvisibilityBeltWatcherMode.WarpAsync(enemy, 17120, Y, Z, 192, inside: false);
+        int crowd = server.DebugLog().Length;
+        foreach (var opponent in new[] { enemy, context.Helpers["QAOther"] })
+        {
+            var view = await opponent.WaitForViewNamedAsync(actor.Handle);
+            string handle = WireFormat.ToHex(BitConverter.GetBytes(DuelPackets.Handle(view.ViewId, view.SpawnId)));
+            opponent.SendRpc($"40 {handle} 01 6b");
+            await opponent.WaitForRpcAsync($"46 {handle} 01");
+        }
+        await CrowdAsync(crowd, false, -10);
+        crowd = server.DebugLog().Length;
+        await StockAbilityProfile.ChangeLoadoutAsync(actor, owned, new[] { Multi }, load: true);
+        await CrowdAsync(crowd, true, 0);
         return Array.Empty<byte>();
+
+        Task CrowdAsync(int cursor, bool loaded, int penalty) => actor.WaitUntilAsync(() =>
+        {
+            string log = server.DebugLog()[cursor..];
+            string prefix = $"[MULTIFIGHTING OURS] {actor.Handle} opponents2 loaded{loaded} penalty{penalty}";
+            return log.Contains(prefix + " attack", StringComparison.Ordinal) && log.Contains(prefix + " defence", StringComparison.Ordinal);
+        }, "Exactly two direct attackers with an unlinked witness", TimeSpan.FromSeconds(16));
 
         async Task SampleAsync(int x, string distance, int expected)
         {
