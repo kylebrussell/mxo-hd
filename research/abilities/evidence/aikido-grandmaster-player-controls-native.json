@@ -1,0 +1,49 @@
+{
+  "abilities": {
+    "407": {
+      "note": "Native verified Powerless 4.4 s in this fixture, ordinary Cheap Shot refused before release and landed after retry. QA supplied one exchange win, and 411/412 guaranteed the fixture's landed modifiers. Ordinary retry outcomes were unforced. https://github.com/kylebrussell/mxo-hd/pull/1117#issuecomment-7143141287",
+      "checks": {
+        "controls": {
+          "source": "Shipped 407 includes Powerless on the landed original opponent. Its ordinary action gate is shared with the original control type.",
+          "runtime": "The current cast adds state 96 and linked state removal. The existing control gates govern action admission before and after that state.",
+          "test": "AikidoGrandmasterControlsMode verifies exact stock input, paired release and ordinary Cheap Shot refused before release and landed after retry. Native confirmed the same helper ledgers and ordinary retry. https://github.com/kylebrussell/mxo-hd/pull/1117#issuecomment-7143141287"
+        },
+        "behavior-tests": {
+          "source": "Shipped fixed physical damage, Aikido interlock opponent and authored landed modifiers for 407.",
+          "runtime": "The original opponent, state, cost and cooldown gates bind the named move, typed damage and timed effects to the admitted exchange.",
+          "test": "KarateAikidoGrandmasterSpecialsTests checks damage base, cost, cooldown, gates and stored modifiers. Stock fixed damage and resistance, active opponent admission, named moves, and control release cover the supported behavior. https://github.com/kylebrussell/mxo-hd/pull/1101#issuecomment-7136728111 https://github.com/kylebrussell/mxo-hd/pull/1113#issuecomment-7141030601 https://github.com/kylebrussell/mxo-hd/pull/1117#issuecomment-7143141287"
+        }
+      }
+    },
+    "411": {
+      "note": "Native verified Enrage 15 s, ordinary Withdraw suppressed before release and admitted after retry. QA supplied one exchange win, and 411/412 guaranteed the fixture's landed modifiers. Ordinary retry outcomes were unforced. https://github.com/kylebrussell/mxo-hd/pull/1117#issuecomment-7143141287",
+      "checks": {
+        "controls": {
+          "source": "Shipped 411 includes Enrage on the landed original opponent. Its ordinary action gate is shared with the original control type.",
+          "runtime": "The current cast adds recipient state 93 and caster melee resistance +40, each with a matched 15 s removal. The existing control gates govern action admission before and after that state.",
+          "test": "AikidoGrandmasterControlsMode verifies exact stock input, paired release and ordinary Withdraw suppressed before release and admitted after retry. Native confirmed the same helper ledgers and ordinary retry. https://github.com/kylebrussell/mxo-hd/pull/1117#issuecomment-7143141287"
+        },
+        "behavior-tests": {
+          "source": "Shipped fixed physical damage, Aikido interlock opponent and authored landed modifiers for 411.",
+          "runtime": "The original opponent, state, cost and cooldown gates bind the named move, typed damage and timed effects to the admitted exchange.",
+          "test": "KarateAikidoGrandmasterSpecialsTests checks damage base, cost, cooldown, gates and stored modifiers. Stock fixed damage and resistance, active opponent admission, named moves, and control release cover the supported behavior. https://github.com/kylebrussell/mxo-hd/pull/1101#issuecomment-7136728111 https://github.com/kylebrussell/mxo-hd/pull/1113#issuecomment-7141030601 https://github.com/kylebrussell/mxo-hd/pull/1117#issuecomment-7143141287"
+        }
+      }
+    },
+    "412": {
+      "note": "Native verified Enrage 6 s, ordinary Withdraw suppressed before release and admitted after retry. QA supplied one exchange win, and 411/412 guaranteed the fixture's landed modifiers. Ordinary retry outcomes were unforced. https://github.com/kylebrussell/mxo-hd/pull/1117#issuecomment-7143141287",
+      "checks": {
+        "controls": {
+          "source": "Shipped 412 includes Enrage on the landed original opponent. Its ordinary action gate is shared with the original control type.",
+          "runtime": "The current cast adds recipient state 93 plus -140 melee and -100 ballistic resistance, with matched 6 s and 12 s removals. The existing control gates govern action admission before and after that state.",
+          "test": "AikidoGrandmasterControlsMode verifies exact stock input, paired release and ordinary Withdraw suppressed before release and admitted after retry. Native confirmed the same helper ledgers and ordinary retry. https://github.com/kylebrussell/mxo-hd/pull/1117#issuecomment-7143141287"
+        },
+        "behavior-tests": {
+          "source": "Shipped fixed physical damage, Aikido interlock opponent and authored landed modifiers for 412.",
+          "runtime": "The original opponent, state, cost and cooldown gates bind the named move, typed damage and timed effects to the admitted exchange.",
+          "test": "KarateAikidoGrandmasterSpecialsTests checks damage base, cost, cooldown, gates and stored modifiers. Stock fixed damage and resistance, active opponent admission, named moves, and control release cover the supported behavior. https://github.com/kylebrussell/mxo-hd/pull/1101#issuecomment-7136728111 https://github.com/kylebrussell/mxo-hd/pull/1113#issuecomment-7141030601 https://github.com/kylebrussell/mxo-hd/pull/1117#issuecomment-7143141287"
+        }
+      }
+    }
+  }
+}

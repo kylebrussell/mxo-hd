@@ -1,0 +1,19 @@
+{
+  "abilities": {
+    "453": {
+      "note": "Stock saw TF6 fallback input 0 plus shipped +11 before the comparison aid, then move 11356, seven damage and ordinary withdrawal. The live roll adds level and tactic scaling separately. The original retail tacticalValue producer remains unobserved. https://github.com/kylebrussell/mxo-hd/pull/1115#issuecomment-7143221885",
+      "checks": {
+        "source-parity": {
+          "source": "The shipped Rifle Butt Smash uses TestFunction 6 and authors TacticBonus 11. Its special path stays separate from the ordinary Withdraw 1005/1045 input.",
+          "runtime": "The special withdrawal contest adds the authored 11 exactly once before adding level and tactic factors, while retaining the established TF6 fallback.",
+          "test": "OrdinaryWithdrawalInputTests compares the same unmodified TF6 input with the sourced 11 and independently exercises the ordinary fence. Stock confirmed base 0, bonus 11, total 11 before the winner aid. https://github.com/kylebrussell/mxo-hd/pull/1115#issuecomment-7143221885"
+        },
+        "behavior-tests": {
+          "source": "The shipped 453 is a live rifle interlock escape with fixed base 6, named rifle withdrawal move and qualification by style and weapon.",
+          "runtime": "The original opponent and weapon gates select TF6 before the ordinary roll. Only a winning escape emits 11356, deals the typed hit and releases both sides.",
+          "test": "OrdinaryWithdrawalInputTests verifies the typed path fence, AbilityRefusalFeedbackTests checks live target and win/loss/tie. Native witnessed unassisted losses and tie, live success and armored damage, restored movement and the exact tactical input before the scripted comparison aid. https://github.com/kylebrussell/mxo-hd/pull/982#issuecomment-7107445297 https://github.com/kylebrussell/mxo-hd/pull/1115#issuecomment-7143221885"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,34 @@
+{
+  "abilities": {
+    "142": {
+      "note": "Stock selected Spy Style from the full loadout, enabled Sneak at the close NAV stand, and sent its ordinary object request immediately. Client displayed the Sneak release and the rule's localized outcome. https://github.com/kylebrussell/mxo-hd/pull/1111#issuecomment-7142948057",
+      "checks": {
+        "stealth-detection": {
+          "source": "The shipped DoorPickLock calls BreakExclusiveAbility only after the loaded ability and tool guards. Its paired client rule has no Sneak admission predicate.",
+          "runtime": "An admitted ordinary interaction ends the active Sneak using the normal exclusive state and presentation path. An unloaded or tool refusal preserves Sneak.",
+          "test": "SpyObjectStealthMode replays both unloaded and admitted paths at verified stands. Native recorded OBJECT-USE followed by 1111 off and the expected text. https://github.com/kylebrussell/mxo-hd/pull/1111#issuecomment-7142948057"
+        },
+        "behavior-tests": {
+          "source": "The shipped DoorPickLock requires the correct loaded utility and ordinary tool. The locked cabinet immediately unlocks on success.",
+          "runtime": "The ordinary radial request runs the resource checks and updates the tracked object's state following the authored rule outcome.",
+          "test": "UtilityAbilityTests and StarterSpyUtilitiesTests check the input/tool guards and authored object results. Exact retained headless checks accepted and unloaded Sneak paths, and stock records the visible state and localized feedback. https://github.com/kylebrussell/mxo-hd/pull/1111#issuecomment-7142948057"
+        }
+      }
+    },
+    "218": {
+      "note": "Stock selected Spy Style from the full loadout, enabled Sneak at the close NAV stand, and sent its ordinary object request immediately. Client displayed the Sneak release and the rule's localized outcome. https://github.com/kylebrussell/mxo-hd/pull/1111#issuecomment-7142948057",
+      "checks": {
+        "stealth-detection": {
+          "source": "The shipped SecurityPBXDisable calls BreakExclusiveAbility only after the loaded ability and tool guards. Its paired client rule has no Sneak admission predicate.",
+          "runtime": "An admitted ordinary interaction ends the active Sneak using the normal exclusive state and presentation path. An unloaded or tool refusal preserves Sneak.",
+          "test": "SpyObjectStealthMode replays both unloaded and admitted paths at verified stands. Native recorded OBJECT-USE followed by 1111 off and the expected text. https://github.com/kylebrussell/mxo-hd/pull/1111#issuecomment-7142948057"
+        },
+        "behavior-tests": {
+          "source": "The shipped SecurityPBXDisable requires the correct loaded utility and ordinary tool. The armed desk follows the ordinary contest result.",
+          "runtime": "The ordinary radial request runs the resource checks and updates the tracked object's state following the authored rule outcome.",
+          "test": "UtilityAbilityTests and StarterSpyUtilitiesTests check the input/tool guards and authored object results. Exact retained headless checks accepted and unloaded Sneak paths, and stock records the visible state and localized feedback. https://github.com/kylebrussell/mxo-hd/pull/1111#issuecomment-7142948057"
+        }
+      }
+    }
+  }
+}
