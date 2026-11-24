@@ -327,6 +327,8 @@ try
                     await NativeQa.Modes.EscapeAndEvasionMode.RevealAsync(actor);
                 else if (fixtureMode is NativeQa.Modes.DeadlyShotMode && action == "deadly-shot-armor")
                     await NativeQa.Modes.PistolSlideMode.ApplyArmorAsync(actor);
+                else if (fixtureMode is NativeQa.Modes.ZenTechniqueViralDefenseMode && action == "zen-viral")
+                    result = await NativeQa.Modes.ZenTechniqueViralDefenseMode.CastProbeAsync(actor, server);
                 else if (fixtureMode is NativeQa.Modes.SniperShotMode && action == "sniper-armor")
                     await NativeQa.Modes.PistolSlideMode.ApplyArmorAsync(actor);
                 else if (fixtureMode is NativeQa.Modes.CripplingShotMode && action == "crippling-speed-and-armor")
