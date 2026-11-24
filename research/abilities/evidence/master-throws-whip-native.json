@@ -1,0 +1,42 @@
+{
+  "abilities": {
+    "340": {
+      "checks": {
+        "targeting": {
+          "source": "The shipped hostile throw uses a live enemy with a 16 m selector and preserves the original target.",
+          "runtime": "The guarded cast checks opponent, sight and range before charging and rechecks that view/spawn on completion.",
+          "test": "MasterThrowRecipientMode replays the stock 340 packet for targetless, allied, blocked, far and legal attempts. Stock confirmed 24/24/9/34 without costs or reuse and landed at HOME. https://github.com/kylebrussell/mxo-hd/pull/1109#issuecomment-7139703497"
+        },
+        "behavior-tests": {
+          "source": "The shipped throw uses a fixed damage base, two separate 20% sibling effects and an initialization-only Stagger predicate.",
+          "runtime": "The admitted cast applies typed damage and Powerless without new immunity only if Staggered.",
+          "test": "MasterKnifeThrowerBatchTests checks fixed value and reuse. OperativeBatchTwoTests checks independent sibling draws. MasterThrowRecipientMode exercises original player target and matched state removal, with stock geometry, fixed damage and both state branches. https://github.com/kylebrussell/mxo-hd/pull/1105#issuecomment-7138264599 https://github.com/kylebrussell/mxo-hd/pull/1109#issuecomment-7139703497"
+        }
+      }
+    },
+    "347": {
+      "checks": {
+        "targeting": {
+          "source": "The shipped hostile throw uses a live enemy with a 16 m selector and preserves the original target.",
+          "runtime": "The guarded cast checks opponent, sight and range before charging and rechecks that view/spawn on completion.",
+          "test": "MasterThrowRecipientMode replays the stock 347 packet for targetless, allied, blocked, far and legal attempts. Stock confirmed 24/24/9/34 without costs or reuse and landed at HOME. https://github.com/kylebrussell/mxo-hd/pull/1109#issuecomment-7139703497"
+        },
+        "behavior-tests": {
+          "source": "The shipped throw uses a fixed damage base, two separate 20% sibling effects and a terminal Daze predicate.",
+          "runtime": "The admitted cast applies typed damage and Stun with independent immunity only if Dazed at marker termination.",
+          "test": "MasterKnifeThrowerBatchTests checks fixed value and reuse. OperativeBatchTwoTests checks independent sibling draws. MasterThrowRecipientMode exercises original player target and matched state removal, with stock geometry, fixed damage and both state branches. https://github.com/kylebrussell/mxo-hd/pull/1105#issuecomment-7138264599 https://github.com/kylebrussell/mxo-hd/pull/1109#issuecomment-7139703497"
+        }
+      }
+    },
+    "501": {
+      "note": "Native 501 hit 129 with move 287, debited 30 IS and paired Blind 90 at 9.576 s with linked stat 163 −30. Native logs showed both removals. The headless packet assertion captured localized release; native chat scrolled past it. https://github.com/kylebrussell/mxo-hd/pull/1108#issuecomment-7139444449",
+      "checks": {
+        "controls": {
+          "source": "The shipped hit installs Blind plus its standard Tactics link. The older live-style replay observed scaled 9.576 s; the original 10.08 s archival recipient used a separate profile.",
+          "runtime": "The landed ordinary special publishes the scaled recipient state, linked penalty and paired removals. A lost exchange publishes neither.",
+          "test": "Native gates at rest and without Daze, then shows the paired Blind records and removal. Exact retained headless confirms the release packet. Earlier native ordinary loss remains valid. https://github.com/kylebrussell/mxo-hd/pull/1108#issuecomment-7139444449"
+        }
+      }
+    }
+  }
+}
