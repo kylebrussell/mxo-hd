@@ -87,7 +87,7 @@ namespace hds
 
             bool selectedBufferInterference = AbilityID == 481 || AbilityID == 488;
             bool selectedAdvancedViral = AbilityID == 331 || AbilityID == 415 || AbilityID == 478;
-            bool selectedHackerCast = AbilityID == 238 || AbilityID == 311 || AbilityID == 312 || AbilityID == 313 || AbilityID == 333 ||
+            bool selectedHackerCast = AbilityID == 329 || AbilityID == 238 || AbilityID == 311 || AbilityID == 312 || AbilityID == 313 || AbilityID == 333 ||
                 selectedBufferInterference || selectedAdvancedViral;
             // These selected abilities bind a live enemy before the cast, including the centre of any splash.
             bool selectedViralField = AbilityID == 343 || AbilityID == 361 || AbilityID == 401 || AbilityID == 402 ||
