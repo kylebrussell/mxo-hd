@@ -43,7 +43,7 @@ public class WriteCodeModeTests
             var plan=NativeQaModes.Find(mode).Plan;
             Assert.Equal(mode=="write-code",plan.ExtraQaMetadata.TryGetValue("WriteCodeQa",out var writer)&&writer.GetBoolean());
             Assert.Equal(mode=="ignored-actions",plan.GmCharacter110);
-            Assert.Equal(mode is "health-callbacks" or "zen-master" or "ability-parity-awakened-resistance-and-health" or "ability-parity-starter-hacker-reactive-code",plan.FixedCallbackRolls);
+            Assert.Equal(mode is "health-callbacks" or "zen-master" or "zen-master-capped-restore" or "ability-parity-awakened-resistance-and-health" or "ability-parity-starter-hacker-reactive-code",plan.FixedCallbackRolls);
             const string holdHealthKey = "MXO_DESPERATION_QA_HOLD_HEALTH";
             bool originalHold = mode is "desperation" or "desperation-initiative" or "ability-sweep-hacker" or
                 "ability-parity-awakened-resistance-threshold";
@@ -60,7 +60,7 @@ public class WriteCodeModeTests
                 "ability-parity-starter-guardian-support" or "ability-parity-starter-hacker-defensive-passives" or
                 "ability-parity-patch-daemon2-lifecycle" or "ability-parity-emergency-repairs-two-cap" or
                 "ability-parity-gunslinger-scattershot-initiative" or "ability-parity-specialist-duelist-grants" or
-                "ability-parity-aikido-grandmaster-enrage";
+                "ability-parity-aikido-grandmaster-enrage" or "zen-master-capped-restore";
             bool holdHealth = originalHold || groupedHold && plan.EnvironmentOverrides.GetValueOrDefault(holdHealthKey) == "1";
             Assert.Equal(holdHealth ? "1" : "", NativeQaFixturePlan.EnvironmentFor(mode)[holdHealthKey]);
             if (holdHealth) Assert.True(plan.DevCommands);
