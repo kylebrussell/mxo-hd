@@ -20,6 +20,40 @@ public class AbilityRefusalFeedbackTests:IDisposable
     }
 
     [Theory]
+    [InlineData(false, false, false, AbilityRefusals.InvalidTarget)]
+    [InlineData(true, true, false, AbilityRefusals.InvalidTarget)]
+    [InlineData(true, false, true, AbilityRefusals.TargetOutOfRange)]
+    [InlineData(true, false, false, AbilityRefusals.TargetNotInSight)]
+    public void WoundingThrowChecksOpponentSpawnRangeAndSight(bool hostile, bool stale, bool far, uint reason)
+    {
+        string root = AppContext.BaseDirectory;
+        while (!File.Exists(Path.Combine(root, "data", "sector_properties.csv")))
+            root = Path.GetDirectoryName(root)!;
+        SectorProperties.Load(Path.Combine(root, "data", "sector_properties.csv"));
+        NavMesh.UseDirectory(Path.Combine(root, "data", "navmesh"));
+
+        var caster = Client();
+        var target = Client();
+        caster.playerData.setEntityId(110);
+        target.playerData.setCharID(111);
+        target.playerData.setEntityId(111);
+        caster.playerData.pvpFlag = target.playerData.pvpFlag = true;
+        caster.playerInstance.OrganizationID.setValue((byte)1);
+        target.playerInstance.OrganizationID.setValue((byte)(hostile ? 2 : 1));
+        caster.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(21750, 1095, 16150));
+        target.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(far ? 20149 : 22350, 1095, 16150));
+        WorldServer.Clients.Add("caster", caster);
+        WorldServer.Clients.Add("target", target);
+        var view = caster.viewMan.addView(111, 12);
+        view.viewCreated = true;
+        view.spawnId = 9;
+
+        Assert.True(ThrownDotAdmission.TryRefuse(caster, CombatSpecials.WoundingThrow, view.ViewID,
+            (ushort)(stale ? 8 : 9), out uint refused));
+        Assert.Equal(reason, refused);
+    }
+
+    [Theory]
     [InlineData(238, "empty", AbilityRefusals.InvalidTarget)]
     [InlineData(238, "far", AbilityRefusals.TargetOutOfRange)]
     [InlineData(238, "changed", 0u)]
