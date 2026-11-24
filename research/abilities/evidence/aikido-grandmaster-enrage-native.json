@@ -1,0 +1,24 @@
+{
+  "abilities": {
+    "410": {
+      "checks": {
+        "stats": {
+          "source": "The shipped 410 parent publishes its authored modifier values. Enraged state 93 has no linked-duration field.",
+          "runtime": "AbilityPassives publishes the owner records, independently of the state 93 recipient term.",
+          "test": "Stock 1046 +1, 1068 +2, 1143 +5 and 1144 +5 added/removed/restored; every landed 145 Enrage lasted 10 s. At seeded 100 HP, stock Desperation paid 10 IS and added 1044 +106 for 20 s. https://github.com/kylebrussell/mxo-hd/pull/1061#issuecomment-7123334390"
+        },
+        "consumer": {
+          "source": "The shipped duration-state link is absent for state 93. The other authored stats reach their established live consumers.",
+          "runtime": "The 1046 Initiative Bonus feeds the real Desperation snapshot. Melee defense and resistance use the established stat inputs.",
+          "test": "Stock 1046 +1, 1068 +2, 1143 +5 and 1144 +5 added/removed/restored; every landed 145 Enrage lasted 10 s. At seeded 100 HP, stock Desperation paid 10 IS and added 1044 +106 for 20 s. https://github.com/kylebrussell/mxo-hd/pull/1061#issuecomment-7123334390"
+        },
+        "behavior-tests": {
+          "source": "Ordinary Archive changes the loaded owner passives, and Overhand Smash authors a 10 s landed Enrage.",
+          "runtime": "The fixture reuses the stock 145 request and cycles the owner through ordinary Archive.",
+          "test": "Exact-head headless and stock Archive stages show three independent 10 s add/removals. MartialArtistParityTests isolates the other combat inputs. The retained stock Desperation packet also confirms the actual +106 snapshot and headless verifies grant and 90 s reuse. https://github.com/kylebrussell/mxo-hd/pull/1061#issuecomment-7123334390"
+        }
+      },
+      "note": "Native fb8afa6f. The original retail server behavior outside the shipped state-link map is undocumented. https://github.com/kylebrussell/mxo-hd/pull/1061#issuecomment-7123334390"
+    }
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "abilities": {
+    "531": {
+      "checks": {
+        "stats": {
+          "source": "The shipped 531 parent publishes its authored modifier values. Enraged state 93 has no linked-duration field.",
+          "runtime": "AbilityPassives publishes the owner records, independently of the state 93 recipient term.",
+          "test": "Stock 995 +10, 1030 +12, 1068 +5, 1142 +6, and 1144 +5 added, removed, and restored. Overhand Smash damage tracked 10/9/10. Landed 145 Enrage stayed at 10 s with matching removals. https://github.com/kylebrussell/mxo-hd/pull/1062#issuecomment-7123765716"
+        },
+        "consumer": {
+          "source": "The shipped duration-state link is absent for state 93. The other authored stats reach their established live consumers.",
+          "runtime": "The linked Stun, typed Viral defense, melee damage and melee resistance use the already-tested inputs.",
+          "test": "Stock 995 +10, 1030 +12, 1068 +5, 1142 +6, and 1144 +5 added, removed, and restored. Overhand Smash damage tracked 10/9/10. Landed 145 Enrage stayed at 10 s with matching removals. https://github.com/kylebrussell/mxo-hd/pull/1062#issuecomment-7123765716"
+        },
+        "behavior-tests": {
+          "source": "Ordinary Archive changes the loaded owner passives, and Overhand Smash authors a 10 s landed Enrage.",
+          "runtime": "The fixture reuses the stock 145 request and cycles the owner through ordinary Archive.",
+          "test": "Exact-head headless and stock Archive stages show three independent 10 s add/removals. MartialArtistParityTests isolates the other combat inputs. https://github.com/kylebrussell/mxo-hd/pull/1062#issuecomment-7123765716"
+        }
+      },
+      "note": "Native a8ba54aa. The original retail server behavior outside the shipped state-link map is undocumented. https://github.com/kylebrussell/mxo-hd/pull/1062#issuecomment-7123765716"
+    }
+  }
+}
