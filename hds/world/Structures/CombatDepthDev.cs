@@ -33,6 +33,7 @@ namespace hds
                 return CombatFixtureWeapons.PrepareMartialDummy(caller, 0, armor: true);
             if (command == "beltblind" && args.Length == 1) return InvisibilityBeltQa.BlindWatcher(caller);
             if (command == "vw" && args.Length == 1) return CombatFixtureWeapons.ArmVanishWin(caller);
+            if (command == "pww" && args.Length == 1) return CombatFixtureWeapons.ArmPistolWhipWin(caller);
             if (command == "pw" && args.Length == 1) return CombatFixtureWeapons.ArmPistolWhipLoss(caller);
             if ((command == "a0" || command == "a75") && args.Length == 1 &&
                 Environment.GetEnvironmentVariable("MXO_KI_AREA_QA") == "1")

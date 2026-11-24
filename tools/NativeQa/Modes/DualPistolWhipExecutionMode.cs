@@ -10,6 +10,8 @@ public sealed class DualPistolWhipExecutionMode : NativeQaMode
 {
     private const ushort Handguns = CombatStyles.Handguns, Whip = CombatSpecials.PistolWhip,
         Execution = CombatSpecials.DualPistolExecution;
+    // First state-eligible stock 501 from PR995.
+    private const string StockWhip = "80b9f501040002000000000000000000000000000000000000000000f5010000006b0000086b0000000000";
     private const int Level = 46, CasterX = 21550, EnemyX = 21750, Y = 1095, Z = 16150;
     private static readonly ushort[] Loadout = DisablingShotMode.Closure(2, 17, Handguns, Whip, Execution);
 
@@ -33,15 +35,14 @@ public sealed class DualPistolWhipExecutionMode : NativeQaMode
         {
             ["MXO_AGGRO"] = "0", ["MXO_MOB_WANDER"] = "0", ["MXO_PVP_SERVER"] = "1", ["MXO_PVP_MAX_SAFE_LEVEL"] = "15",
             ["MXO_SIMULACRUM_QA_HOLD_IS"] = "1", [CombatFixtureWeapons.DisengageMode] = "1",
-            [CombatFixtureWeapons.PistolWhipLossMode] = "1"
-        }, extraQaMetadata: new() { ["ScopedStockRows"] = "501,502", ["NativeCloseableRows"] = 0 },
+            [CombatFixtureWeapons.PistolWhipWinMode] = "1"
+        }, extraQaMetadata: new() { ["ScopedStockRows"] = "501", ["NativeCloseableRows"] = 0 },
         readyMessages: new[]
         {
             $"Level {Level}, {Loadout.Sum(AbilityMemory.Cost)}/{AbilityMemory.ForLevel(Level)} memory. Dual handguns 2496 in hand. CSR ({CasterX},{Y},{Z}) faces QAEnemy ({EnemyX},{Y},{Z}) on clear outdoor NAV. Page 2 Handguns / Pistol Whip / Dual Pistol Execution. If needed use /target QAEnemy and strafe once.",
-            "Select Handguns and QAEnemy, then try Pistol Whip at rest. Expect a local restriction or an invalid-target refusal with no debit. Open Close Combat on QAEnemy and reselect Handguns after the opening round. Try Pistol Whip while QAEnemy is clear of Daze. Expect a local restriction or 80 ba with required state 2.",
-            "Apply ?cd daze 30 to the selected QAEnemy. Use Pistol Whip. Save its first complete request, instant queue with 30 IS, own 10 s and group689 5 s. A landed round at the normal 140-unit sent pose uses animation 287. For the loss retest, use ?cd pw before pressing slot 2. Expect one [PISTOL WHIP QA] 501 loss consumed line, an ordinary QAEnemy win with no 287 or 501 hit/Blind, and the fight still active. Verify the 30 IS and 10/5 s reuse still apply. The prior 287 and 502 checks carry.",
-            "With the same live opponent and active Handguns, use Dual Pistol Execution after family reuse. Save its first complete request, 4 s cast bar, 35 IS, own 10 s and group689 5 s. The cast queues only after four seconds and does not hit between rounds. A landed exchange at the 140-unit pose uses 9532. A normal miss uses ordinary exchange animation. Note observed damage and control effects as evidence only.",
-            "Use ?cd stop and wait until combat has cleared. After own reuse, keep QAEnemy selected, return to Handguns and use Dual Pistol Execution again. Its four-second at-rest cast may land directly without a queued move. The supplied choreography proof does not settle the historical damage magnitude."
+            "Stay at the verified return stand and /target QAEnemy. Use Handguns slot 1. At rest press Pistol Whip slot 2: expect a local combat restriction or invalid target with no debit. Open right-click Close Combat and reselect Handguns.",
+            "Without Daze, slot 2 stays gated. Then type ?cd daze 30, ?cd pww and press slot 2. Expect 30 IS, 10/5 s reuse, named move 287, damage 129 and [PISTOL WHIP QA] 501 win consumed. QA supplies Daze and one exchange win only.",
+            "Capture QAEnemy source 501 Blind state 90 for 9.576 s, linked Combat Tactics 163 -30, matched removals and localized release; carry the previously observed ordinary-loss branch. Slot 3 is not part of this retest."
         });
 
     public override async Task<byte[]> AfterStartAsync(NativeQaBootstrapContext context)
@@ -53,7 +54,8 @@ public sealed class DualPistolWhipExecutionMode : NativeQaMode
         var start = StarterConcealedShotTargetingMode.Stand(CasterX, Z);
         _ = StarterConcealedShotTargetingMode.Stand(EnemyX, Z);
         Check.That(NavMesh.HasSightPath(1, CasterX, Y, Z, EnemyX, Y, Z), "Whip/Execution equal-floor clear sight");
-        Console.WriteLine($"Dual-pistol return stand {start.Command}");
+        string[] stand = start.Command.Split(' ');
+        Console.WriteLine($"READY HOME type '{string.Join(' ', stand[..3])}', then ' {string.Join(' ', stand[3..7])}', then ' {stand[7]} {stand[8]}'; press Enter once.");
 
         var enemy = await HeadlessPlayer.LoginAsync(context.Address, "QAEnemy", "QAEnemy", stockCharacterLoad: true);
         context.Helpers.Add(enemy.Handle, enemy);
@@ -68,8 +70,8 @@ public sealed class DualPistolWhipExecutionMode : NativeQaMode
         await CombatFixtureLoadout.VerifyWeaponAtLoginAsync(caster, CombatFixtureWeapons.DualHandguns);
         DisablingShotMode.CheckStand(caster, CasterX);
         NativeQaReadiness.RequireNoAmbientAggro(server, caster);
-        caster.SendChat("?cd pw");
-        await caster.WaitForTextAsync("Pistol Whip loss aid requires the active interlock with QAEnemy.");
+        caster.SendChat("?cd pww");
+        await caster.WaitForTextAsync("Pistol Whip win aid requires the active interlock with QAEnemy.");
         var target = await caster.WaitForViewNamedAsync(enemy.Handle);
         uint targetHandle = DuelPackets.Handle(target.ViewId, target.SpawnId);
         string handle = WireFormat.ToHex(BitConverter.GetBytes(targetHandle));
@@ -82,10 +84,40 @@ public sealed class DualPistolWhipExecutionMode : NativeQaMode
         await ObserveAsync(caster, cursor, rpc => ManageBonusRecord.TryDecode(rpc.Bytes, out var record) &&
             record is { SourceId: Handguns, TargetId: 171, AddRemoveType: 0 } && record.SignedValue > 0,
             "Retained Handguns selects the active dual pistol style");
-        caster.SendChat("?cd pw");
-        await caster.WaitForTextAsync("Next Pistol Whip against QAEnemy is armed for one ordinary loss.");
+        caster.SendRpc($"81 51 {handle}");
+        caster.SendChat("?cd daze 30");
+        await caster.WaitForTextAsync("Daze fixture applied 884/199 to QAEnemy");
+        caster.SendChat("?cd pww");
+        await caster.WaitForTextAsync("Next Pistol Whip against QAEnemy is armed for one ordinary win.");
+        int targetAt = enemy.World.RpcSnapshot().Count;
+        int castAt = caster.World.RpcSnapshot().Count;
+        int logAt = server.DebugLog().Length;
+        caster.SendRpc(WithHandle(StockWhip, targetHandle));
+        await EvidenceRetestWire.TimerAsync(caster, castAt, Whip, AbilityCooldowns.OwnTimer, 10);
+        await EvidenceRetestWire.TimerAsync(caster, castAt, 689, AbilityCooldowns.GroupTimer, 5);
+        var blind = await ObserveAsync(enemy, targetAt, r => ManageBonusRecord.TryDecode(r.Bytes, out var v) &&
+            v is { SourceId: Whip, TargetId: TempMods.BlindAbility, AddRemoveType: 0 },
+            "Eligible Pistol Whip adds recipient Blind");
+        ManageBonusRecord.TryDecode(blind.Bytes, out var record);
+        Check.That(record != null && Math.Abs(record.Duration - 9.576f) < .001f, "Rank-46 recipient Blind lasts 9.576 s");
+        var linked = await ObserveAsync(enemy, targetAt, r => Bonus(r, TempMods.BlindAbility, TempMods.CombatTacticsAbility, -30, 0, false),
+            "Blind links Combat Tactics -30");
+        ManageBonusRecord.TryDecode(linked.Bytes, out var linkedRecord);
+        await enemy.WaitUntilAsync(() =>
+        {
+            var frames = enemy.World.RpcSnapshot().Skip(targetAt).ToArray();
+            return frames.Any(r => Removal(r, record!)) && frames.Any(r => Removal(r, linkedRecord!)) &&
+                frames.Any(r => r.Bytes.AsSpan().SequenceEqual(AbilityMessages.StateEnd(TempMods.BlindAbility, enemy.Handle)));
+        }, "Matched Blind and linked removals with localized release", TimeSpan.FromSeconds(15));
+        string result = server.DebugLog()[logAt..];
+        Check.That(result.Contains("[PISTOL WHIP QA] 501 win consumed", StringComparison.Ordinal) &&
+            result.Contains("animation 287 (Pistol Whip)", StringComparison.Ordinal) &&
+            result.Contains("PistolWhipAbility lands on QAEnemy for 129", StringComparison.Ordinal),
+            "The one scoped win uses the named 287 and ordinary live damage");
+        static bool Removal(RpcRecord frame, ManageBonusRecord source) =>
+            ManageBonusRecord.TryDecode(frame.Bytes, out var removed) && removed == source with { AddRemoveType = 1 };
         Check.Equal(0, caster.World.Problems.Count + enemy.World.Problems.Count, "Clean retained stock framing");
-        Console.WriteLine("DUAL PISTOL WHIP/EXECUTION BOOTSTRAP PASS: verified stands, legal loadout and held dual handguns; exact retained Close Combat and Handguns only.");
+        Console.WriteLine("PISTOL WHIP BLIND PASS: exact retained 501, paired recipient Blind and Tactics adds/removals and release.");
         return Array.Empty<byte>();
     }
 }
