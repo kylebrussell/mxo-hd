@@ -163,7 +163,12 @@ namespace hds
                     world!=source.playerData.worldGeneration || life!=source.playerData.lifeGeneration || source.playerData.isDead || source.playerData.duelDeath) return;
                 before=AbilityHandler.CurrentInnerStrength(source);
                 inner=(ushort)Math.Min(AbilityHandler.MaxInnerStrength(source),before+(int)modifier.Number("MinValue"));
-                source.playerInstance.InnerStrengthAvailable.setValue(inner);
+                if (inner != before) source.playerInstance.InnerStrengthAvailable.setValue(inner);
+            }
+            if (inner == before)
+            {
+                Output.WriteDebugLog("[HEALTH-EFFECT] 871->872 skips restore at cap " + inner);
+                return;
             }
             new ServerPackets().sendISCurrent(source,inner);
             uint line=(uint)modifier.Number("ActivationStringOnSelf");

@@ -87,6 +87,10 @@ public class AbilityHealthCallbackTests
             AbilityHealthCallbacks.HealthChanged(c,0,true);Assert.Equal(190,AbilityHandler.CurrentInnerStrength(c));
             c.playerInstance.InnerStrengthAvailable.setValue((ushort)198);
             PvpCombat.Damage(c,1);Assert.Equal(200,AbilityHandler.CurrentInnerStrength(c));
+            int restoredRpcCount = c.messageQueue.RPCMessagesQueue.Count;
+            PvpCombat.Damage(c, 1);
+            Assert.Equal(200, AbilityHandler.CurrentInnerStrength(c));
+            Assert.Equal(restoredRpcCount, c.messageQueue.RPCMessagesQueue.Count);
             AbilityPassives.SetLoaded(c,Array.Empty<(ushort,ushort)>());
             c.playerInstance.InnerStrengthAvailable.setValue((ushort)180);
             AbilityHealthCallbacks.Reapply(c,872);PvpCombat.Damage(c,1);
