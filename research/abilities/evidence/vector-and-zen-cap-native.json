@@ -1,0 +1,29 @@
+{
+  "abilities": {
+    "355": {
+      "checks": {
+        "controls": {
+          "source": "Captured player Vector effects use Powerless 8.94 s, Virus Defense -60 for 30 s and independent 8 s Control Immunity. The authored base values are 6 s and -35; the original conversion is undocumented.",
+          "runtime": "The player recipient is ineligible to use abilities until state 96 expires. Immunity prevents a separate Stun during its lease. The defense record persists until its own expiry.",
+          "test": "Stock PR1065 verifies both controls, denied Hyper-Speed without a debit, both natural removals, 40 IS after recovery and independent defense expiry. https://github.com/kylebrussell/mxo-hd/pull/1065#issuecomment-7124163950"
+        },
+        "behavior-tests": {
+          "source": "GOB 355 supplies a normal targeted two-second cast and separately authored control, defense and immunity records; the retained effective values are captured.",
+          "runtime": "The normal handler checks selected target, style, range and sight, then resolves the Viral contest and separately applies the retained recipient effects.",
+          "test": "VectorPlayerPowerlessMode uses exact retained 355, 315 and 12 and exercises actual refusal, mitigation, independent terms and recovery. Prior PR997 verifies the stock caster path, 35 IS and 60 s reuse. PR1065 supplies stock recipient behavior. https://github.com/kylebrussell/mxo-hd/pull/1065#issuecomment-7124163950 https://github.com/kylebrussell/mxo-hd/pull/997#issuecomment-7105881233"
+        }
+      },
+      "note": "Stock f1e04c72 proves the recipient lifecycle; the authored-to-capture conversion remains open. https://github.com/kylebrussell/mxo-hd/pull/1065#issuecomment-7124163950"
+    },
+    "872": {
+      "checks": {
+        "source-parity": {
+          "source": "The shipped 871 health-change hook reapplies the internal 872 modifier, whose authored effect is +5 IS with a restore notification and FX. The original retail zero-amount presentation is undocumented.",
+          "runtime": "A positive applied delta emits the existing restore message and FX. When the resource is already at maximum, the callback produces no restore presentation. The level-99 parent remains unavailable under ordinary progression.",
+          "test": "Stock PR1064 restores +5 and a cap-clipped +2 with the authored message and FX. An actual capped health event logs the skip and shows no zero line or FX. Unloading 871 stops the listener. Unit and exact bootstrap also verify the capped message is absent. https://github.com/kylebrussell/mxo-hd/pull/1064#issuecomment-7124054183"
+        }
+      },
+      "note": "Stock b95c4786 validates selected behavior for the unrecoverable retail cap case. https://github.com/kylebrussell/mxo-hd/pull/1064#issuecomment-7124054183"
+    }
+  }
+}
