@@ -1,0 +1,74 @@
+{
+  "abilities": {
+    "261": {
+      "note": "Stock PASS at a5eabc63. 31 in Speed and Power, 25 against +75 physical resistance. The fixture arms one winning exchange. The original retail tactic dispatch remains unmeasured. https://github.com/kylebrussell/mxo-hd/pull/1092#issuecomment-7134525985",
+      "checks": {
+        "source-parity": {
+          "source": "Shipped GOB has fixed type-0 instant physical damage endpoints 23/23. The shipped ordinary hit calculation excludes named special wins.",
+          "runtime": "The supported damage path uses base 23, applicable influence and type-0 target resistance.",
+          "test": "MachinegunFistFixedDamageMode checks the exact retained stock frame and the applied damage in both tactics plus resistance. PR1092 reproduced the result in the stock client."
+        }
+      }
+    },
+    "268": {
+      "note": "Stock PASS at 7a4ecebd. 2 in Speed and Power, 1 against +75 physical resistance. Both -60 accuracy records lasted 12 s. The reset replaced the dummy but CSR drifted outside 3 m. Returning to HOME yielded the resisted hit. https://github.com/kylebrussell/mxo-hd/pull/1093#issuecomment-7134664226",
+      "checks": {
+        "source-parity": {
+          "source": "Shipped GOB has fixed type-0 instant physical damage endpoints 2/2. Selector 4 is a direct caster-centred area cast.",
+          "runtime": "The supported damage path uses base 2, applicable influence and type-0 target resistance.",
+          "test": "SwirlingKiFixedDamageMode checks the exact retained stock frame and the applied damage in both tactics plus resistance. PR1093 reproduced the result in the stock client."
+        }
+      }
+    },
+    "532": {
+      "note": "Stock PASS at edc8df11. 104 in Speed and Power, 85 against +75 physical resistance. The fixture arms one winning exchange. The original retail tactic dispatch remains unmeasured. https://github.com/kylebrussell/mxo-hd/pull/1094#issuecomment-7134423499",
+      "checks": {
+        "source-parity": {
+          "source": "Shipped GOB has fixed type-0 instant physical damage endpoints 73/73. The shipped ordinary hit calculation excludes named special wins.",
+          "runtime": "The supported damage path uses base 73, applicable influence and type-0 target resistance.",
+          "test": "KarateGrandmasterFixedDamageMode checks the exact retained stock frame and the applied damage in both tactics plus resistance. PR1094 reproduced the result in the stock client."
+        },
+        "choreography": {
+          "source": "Shipped ILDB maps the move to 5934 Karate MachGunKick long.",
+          "runtime": "The resolved named move carries the matching combat-view animation and special-win exchange flag 0x100.",
+          "test": "KarateGrandmasterFixedDamageMode checks the exact retained stock frame and the applied damage in both tactics plus resistance. PR1094 reproduced the result in the stock client. PR1094 resolves 5934 Karate MachGunKick long."
+        },
+        "behavior-tests": {
+          "source": "Shipped named special 532 includes the stored prerequisites, fixed damage and terminal Stun route.",
+          "runtime": "The held opponent and style gate select the normal queue. The landed hit and control each use their ordinary executor.",
+          "test": "KarateGrandmasterFixedDamageMode verifies live queued presentation, own reuse and exact damage. KarateGrandmasterResistanceTests covers the stored profile and timing, the admission matrix checks the target and required state, and PR579 verifies player Stun, immunity, refusal and recovery. https://github.com/kylebrussell/mxo-hd/pull/579#issuecomment-7053026058"
+        }
+      }
+    },
+    "534": {
+      "note": "Stock PASS at edc8df11. 44 in Speed and Power, 36 against +75 physical resistance. The fixture arms one winning exchange. The original retail tactic dispatch remains unmeasured. https://github.com/kylebrussell/mxo-hd/pull/1094#issuecomment-7134423499",
+      "checks": {
+        "source-parity": {
+          "source": "Shipped GOB has fixed type-0 instant physical damage endpoints 31/31. The shipped ordinary hit calculation excludes named special wins.",
+          "runtime": "The supported damage path uses base 31, applicable influence and type-0 target resistance.",
+          "test": "KarateGrandmasterFixedDamageMode checks the exact retained stock frame and the applied damage in both tactics plus resistance. PR1094 reproduced the result in the stock client."
+        },
+        "choreography": {
+          "source": "Shipped ILDB maps the move to the matching named Wrist Throw variant in 755–757.",
+          "runtime": "The resolved named move carries the matching combat-view animation and special-win exchange flag 0x100.",
+          "test": "KarateGrandmasterFixedDamageMode checks the exact retained stock frame and the applied damage in both tactics plus resistance. PR1094 reproduced the result in the stock client. PR1094 resolves the matching named Wrist Throw variant in 755–757."
+        },
+        "behavior-tests": {
+          "source": "Shipped named special 534 includes the stored prerequisites, fixed damage and terminal Stun route.",
+          "runtime": "The held opponent and style gate select the normal queue. The landed hit and control each use their ordinary executor.",
+          "test": "KarateGrandmasterFixedDamageMode verifies live queued presentation, own reuse and exact damage. KarateGrandmasterResistanceTests covers the stored profile and timing, the admission matrix checks the target and required state, and PR579 verifies player Stun, immunity, refusal and recovery. https://github.com/kylebrussell/mxo-hd/pull/579#issuecomment-7053026058"
+        }
+      }
+    },
+    "536": {
+      "note": "Stock PASS at edc8df11. 191 in Speed and Power, 157 against +75 physical resistance. The fixture arms one winning exchange. The original retail tactic dispatch remains unmeasured. https://github.com/kylebrussell/mxo-hd/pull/1094#issuecomment-7134423499",
+      "checks": {
+        "source-parity": {
+          "source": "Shipped GOB has fixed type-0 instant physical damage endpoints 134/134. The shipped ordinary hit calculation excludes named special wins.",
+          "runtime": "The supported damage path uses base 134, applicable influence and type-0 target resistance.",
+          "test": "KarateGrandmasterFixedDamageMode checks the exact retained stock frame and the applied damage in both tactics plus resistance. PR1094 reproduced the result in the stock client."
+        }
+      }
+    }
+  }
+}
