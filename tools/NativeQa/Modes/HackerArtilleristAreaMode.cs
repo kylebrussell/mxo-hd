@@ -83,7 +83,7 @@ public class HackerArtilleristAreaMode : NativeQaMode
         return new[]
         {
             $"Legal level-{Level} Artillerist profile at {Loaded.Sum(AbilityMemory.Cost)}/{AbilityMemory.ForLevel(Level)} memory. Stay on READY HOME facing QAEnemy at 5 m. If displaced, type the printed warp in chunks of up to 16 characters into the same chat line before Enter. No NPC selection.",
-            $$"""Place QAFar at the {{sample.Radius}}.00 m edge with {"actor":"QAFar","action":"move","x":{{X}},"y":{{Y}},"z":{{edge}}}. Put QAOther 1 unit farther via the same move action, z={{edge + 1}}. Page 2 slot 1 Hacker Style, then /target QAEnemy. Knock-on targets: QAFar in, QAOther and QAFriend out.""",
+            $$"""Place QAFar at the {{sample.Radius}}.00 m edge with {"actor":"QAFar","action":"move","x":{{X}},"y":{{Y}},"z":{{edge}}}. Put QAOther 1 unit farther via the same move action, z={{edge + 1}}. Page 2 slot 1 Hacker Style, then /target QAEnemy. Splash targets: QAFar in, QAOther and QAFriend out.""",
             $"Slot 2 uses {sample.Id}, 4 s, {sample.Cost} IS, 2 s own and group {sample.Group}. With Speed and no resistance, record [ARTILLERIST-DAMAGE] base, influence=30, influenced and raw. Only QAEnemy and QAFar lose HP. Stock damage uses the archived comparison band, with the original authored-to-archived conversion still undocumented.",
             $$"""Send {"actor":"QAFar","action":"aura-resist"}. Wait for stat157 +45 on QAFar. Repeat slot 2 after reuse. {{tactic}} Only QAFar shows [TYPED-RESISTANCE OURS] with type2 total45. Compare that raw subtotal with the traced calculation and the final HP loss. After 157 expires, select Speed and repeat to verify both recipients are neutral.""",
             "The disposable fixture fixes the Viral hit contest and holds CSR's IS regeneration. Damage draws, tactic effects, resistance, geometry, costs and reuse use ordinary rules."
@@ -226,18 +226,19 @@ public class HackerArtilleristAreaMode : NativeQaMode
                             frame => expected.ContainsKey(Convert.ToHexString(frame.Bytes)), $"{sample.Id} {stage} damage on {helper.Handle}");
                         int raw = expected[Convert.ToHexString(hit.Bytes)];
                         int final = protectedEdge ? DamageAfterResistance(raw) : raw;
-                        var trace = Regex.Matches(server.DebugLog()[logAt..],
-                            $@"\[ARTILLERIST-DAMAGE\] ability={sample.Id} base=(\d+) influence=30 tactic={(power ? "Power" : "Speed")} influenced=(\d+) raw={raw}");
-                        Check.That(trace.Cast<Match>().Any(match =>
+                        var trace = new Regex(
+                            $@"\[ARTILLERIST-DAMAGE\] ability={sample.Id} base=(\d+) influence=30 tactic={(power ? "Power" : "Speed")} influenced=(\d+) raw={raw}\b");
+                        await actor.WaitUntilAsync(() => trace.Matches(server.DebugLog()[logAt..]).Cast<Match>().Any(match =>
                         {
                             int sampled = int.Parse(match.Groups[1].Value);
                             int influenced = int.Parse(match.Groups[2].Value);
                             return influenced == (int)(sampled * (double)1.3f) &&
                                 raw == (power ? influenced * 6 / 5 : influenced);
-                        }), "The raw hit comes from the logged base, influence and ordinary tactic");
+                        }), "The raw hit comes from the logged base, influence and ordinary tactic", HeadlessPlayer.DefaultTimeout);
                         if (protectedEdge)
-                            Check.That(server.DebugLog()[logAt..].Contains($"[TYPED-RESISTANCE OURS] {sample.Id} type2 total{Resistance} raw{raw} final{final}", StringComparison.Ordinal),
-                                "The authoritative typed stage agrees with the reported resisted damage");
+                            await actor.WaitUntilAsync(() => server.DebugLog()[logAt..].Contains(
+                                $"[TYPED-RESISTANCE OURS] {sample.Id} type2 total{Resistance} raw{raw} final{final}", StringComparison.Ordinal),
+                                "The authoritative typed stage agrees with the reported resisted damage", HeadlessPlayer.DefaultTimeout);
                         Console.WriteLine($"ARTILLERIST DAMAGE {stage}: {sample.Id} {helper.Handle} {(power ? "Power" : "Speed")} raw={raw} final={final} resisted={raw - final}");
                     }
                     else
