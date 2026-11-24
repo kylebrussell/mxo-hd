@@ -1,0 +1,99 @@
+{
+  "abilities": {
+    "386": {
+      "note": "Stock admission and live Powerless passed. The successful rear opener consumed Sneak, paid 60 IS and hit the player for 1527. The recipient received a matched state 96 add/remove at 7.6 seconds from the authored 8 seconds. Move 19600 was not named. The exact front-facing predicate and broader repertoire remain open. https://github.com/kylebrussell/mxo-hd/pull/1121#issuecomment-7144783316",
+      "checks": {
+        "controls": {
+          "source": "GOB 386 applies an eight-second Powerless state to the landed recipient.",
+          "runtime": "The normal received state uses the player duration policy, pairs the original modifier with its matching removal, and emits linked Powerless release.",
+          "test": "FreedomToJointsMode verifies the same 7.6 s live state add and removal plus its release notice from the retained request. Stock confirmed the player modifier pair. https://github.com/kylebrussell/mxo-hd/pull/1121#issuecomment-7144783316"
+        },
+        "targeting": {
+          "source": "GOB 386 requires Spy Style, Stealthed and a live hostile target. Its shipped target is the selected opponent within 6 m.",
+          "runtime": "The current admission protects active Sneak and cost while checking the correct style, state, target, range and sight before a legal rear opener.",
+          "test": "Retained stock replay covers the no-style, no-Sneak, missing target, ally, wall and range cases. Exact-head native confirmed local pre-Sneak and wall blocks, server ally and range refusals without cost, and the successful rear player hit. This evidence is scoped to the observed geometry and does not resolve the exact front angle. https://github.com/kylebrussell/mxo-hd/pull/1121#issuecomment-7144783316"
+        },
+        "script": {
+          "source": "In ability/spy/sneaks.py, SneakAttackFreeJoints_Test only delegates to BaseSneakAttackTestFn. That callback sets SUCCESS unconditionally and does not consume a contest input.",
+          "runtime": "The admitted request resolves the ordinary instant opener. The server applies its selected-target and Stealthed guards separately without adding a test-function contest.",
+          "test": "The retained request replay and exact-head stock native run use a legal rear approach and reach the damage and Powerless path without a forced roll or an extra contest. This checks the shipped callback, independent of the authored front-angle gate and presentation. https://github.com/kylebrussell/mxo-hd/pull/1121#issuecomment-7144783316"
+        }
+      }
+    },
+    "505": {
+      "note": "Rank-50 Sniper Shot native measured 57 in Speed, 57 in Power, and 54 against +20 Ballistic Resistance. https://github.com/kylebrussell/mxo-hd/pull/1119#issuecomment-7144378607 Historical 1660 with 182 absorbed still lacks a complete caster and target profile. This credit verifies the current typed model across rank and resistance. Historical magnitude and complete behavior-tests remain open.",
+      "checks": {
+        "damage": {
+          "source": "Shipped 505 has fixed 47/47 Ballistic damage. The retained public Proxy 003 damage establishes an unresolved historical magnitude with unknown combat inputs.",
+          "runtime": "The current damage consumes rank-scaled Rifles and its ordinary linked Ballistic bonuses, then target Ballistic Resistance. Free cast tactic does not alter this sample.",
+          "test": "The stock rank-26 replay measured 52/47. Rank-50 headless and stock runs measured 57/57/54 while holding the rifle and target constant and applying +20 after the two tactic samples. https://github.com/kylebrussell/mxo-hd/pull/1119#issuecomment-7144378607 https://github.com/kylebrussell/mxo-hd/pull/1100#issuecomment-7136282761"
+        }
+      }
+    },
+    "860": {
+      "note": "Technique is tested with the shipped L99 diagnostic gate and ability rank 50. Loads publish Aikido Damage +99 and Viral Defense +198. Native confirmed matched retirements, Aikido strike 28 to 49, and a defense input of 47/245/47. This evidence covers the shipped modifiers and the existing style-specific and Viral consumers. https://github.com/kylebrussell/mxo-hd/pull/477 https://github.com/kylebrussell/mxo-hd/pull/1116#issuecomment-7143859352 https://github.com/kylebrussell/mxo-hd/pull/1122#issuecomment-7144566711",
+      "checks": {
+        "stats": {
+          "source": "GOB 860 has two loaded passive modifiers using ValueFunction 3. Stat 572 is Aikido Damage. Stat 183 is Viral Defense with authored ValueScale 2.0.",
+          "runtime": "The normal Archive load publishes the two rank-resolved records and unload removes both before either can affect a contest.",
+          "test": "The prior stock Archive and Status run and both new retained stock fixtures verify +99 and +198 on the L99 profile. Exact-head native verified matching adds and removals in both fixtures. https://github.com/kylebrussell/mxo-hd/pull/477 https://github.com/kylebrussell/mxo-hd/pull/1116#issuecomment-7143859352 https://github.com/kylebrussell/mxo-hd/pull/1122#issuecomment-7144566711"
+        },
+        "consumer": {
+          "source": "Stat 572 is dedicated to Aikido damage. Stat 183 is the ordinary Viral Defense input.",
+          "runtime": "ScaleAbilityDamage adds 572 to a physical special requiring active Aikido. Player Viral Defense goes to the ordinary free-cast contest and typed special defense.",
+          "test": "ZenMasterSpecialsTests covers matching and unrelated styles plus typed Viral defense. Native 407 struck for 28 without Technique and 49 with it. Native Static Blast defense input moved 47/245/47 on the same player. https://github.com/kylebrussell/mxo-hd/pull/1116#issuecomment-7143859352 https://github.com/kylebrussell/mxo-hd/pull/1122#issuecomment-7144566711"
+        },
+        "source-parity": {
+          "source": "The shipped modifiers identify separate Aikido Damage and Viral Defense stats. Their recorded values and scope support the existing style-specific influence and typed defense policy.",
+          "runtime": "Aikido physical specials use a dedicated influence and Viral Defense changes the contest input without changing caster attack or unrelated physical stats.",
+          "test": "The controlled stock unload/load comparisons establish both shipped modifiers and their runtime consumers. The two Viral draws stayed fixed. The result leaves the shared historical contest formula outside this row-level credit. https://github.com/kylebrussell/mxo-hd/pull/1116#issuecomment-7143859352 https://github.com/kylebrussell/mxo-hd/pull/1122#issuecomment-7144566711"
+        },
+        "behavior-tests": {
+          "source": "GOB 860 provides two loaded modifiers and a diagnostic L99 prerequisite.",
+          "runtime": "Ordinary Archive routing applies and drops Technique. The existing combat paths read matching stats without a separate activated ability.",
+          "test": "ZenMasterSpecialsTests and both NativeQa bootstraps verify the expected values, same-style damage, exclusion of unrelated styles, and an unchanged viral attack with reversible target defense. Native independently confirmed both runtime paths. https://github.com/kylebrussell/mxo-hd/pull/477 https://github.com/kylebrussell/mxo-hd/pull/1116#issuecomment-7143859352 https://github.com/kylebrussell/mxo-hd/pull/1122#issuecomment-7144566711"
+        }
+      }
+    },
+    "869": {
+      "note": "Native proved the Off Balance gate, Disarm add/removal, blocked ordinary Free Fire and its recovered shot on the same living player. The fixture supplied one exchange win and forced the modifier roll. https://github.com/kylebrussell/mxo-hd/pull/1120#issuecomment-7144483822",
+      "checks": {
+        "controls": {
+          "source": "Shipped 869 has Disarmed state 231 for 20 seconds and a 25% landed proc.",
+          "runtime": "A landed Disarm suppresses ordinary Free Fire, stays active after the fight ends and releases at matched expiry.",
+          "test": "Exact stock recipient replay and native testing observed one matching add/remove, separately logged suppression during the state, then a recovered hit. https://github.com/kylebrussell/mxo-hd/pull/1120#issuecomment-7144483822"
+        },
+        "targeting": {
+          "source": "GOB requires CastWhenUsed 3, a selected current interlock opponent and Off Balance.",
+          "runtime": "Strict interlock validates the original opponent and its live spawn and effect state before queuing or spending IS.",
+          "test": "Native blocked the button at rest and without Off Balance, then landed on QAEnemy after preparation. The stock headless replay also rejected a stale opponent spawn before cost or reuse. https://github.com/kylebrussell/mxo-hd/pull/1120#issuecomment-7144483822"
+        },
+        "behavior-tests": {
+          "source": "Shipped interlock, Off Balance, 312 fixed physical damage, 40 IS, 10 s own reuse and Disarm properties.",
+          "runtime": "The same queued ability drives the valid exchange, typed damage and timed effect. Disarm uses the original landed recipient.",
+          "test": "ZenMasterSpecialsTests verifies base, cost, cooldown and modifiers. Stock NPC damage and mitigation and stock PvP recipient admission and Disarm outcomes were checked in separate runs. https://github.com/kylebrussell/mxo-hd/pull/1097#issuecomment-7136057806 https://github.com/kylebrussell/mxo-hd/pull/1120#issuecomment-7144483822"
+        }
+      }
+    },
+    "870": {
+      "note": "Native proved linked Powerless release, a separately timed -10 Tactics modifier and blocked/recovered ordinary Cheap Shot. The fixture supplied one exchange win and forced the modifier roll. https://github.com/kylebrussell/mxo-hd/pull/1120#issuecomment-7144483822",
+      "checks": {
+        "controls": {
+          "source": "The GOB has landed Powerless and a separately timed -10 Combat Tactics modifier. Existing live data uses 24.6 seconds for Powerless and 15 seconds for Tactics.",
+          "runtime": "Both modifier records retain independent lifetimes and Powerless gates ordinary recipient abilities through its matched release.",
+          "test": "Native and retained replay verified separate adds and removals, a blocked ordinary Cheap Shot, linked release and a recovered hit. https://github.com/kylebrussell/mxo-hd/pull/1120#issuecomment-7144483822"
+        },
+        "targeting": {
+          "source": "GOB requires CastWhenUsed 3 and a selected current interlock opponent.",
+          "runtime": "Strict interlock validates the original opponent and its live spawn before queuing or spending.",
+          "test": "Native gated the stock button at rest and landed on QAEnemy in the exchange. The stock headless replay also rejected a stale opponent spawn before cost or reuse. https://github.com/kylebrussell/mxo-hd/pull/1120#issuecomment-7144483822"
+        },
+        "behavior-tests": {
+          "source": "Shipped fixed physical damage, interlock, cost, reuse and landed effects.",
+          "runtime": "The admitted exchange drives typed damage and the exact independent effects, including the ordinary recipient gate.",
+          "test": "ZenMasterSpecialsTests verifies base, cost, cooldown and modifiers. Stock NPC damage and mitigation plus stock PvP recipient targeting, both effect removals and ordinary recovery cover the modeled path. https://github.com/kylebrussell/mxo-hd/pull/1097#issuecomment-7136057806 https://github.com/kylebrussell/mxo-hd/pull/1120#issuecomment-7144483822"
+        }
+      }
+    }
+  }
+}
