@@ -31,6 +31,16 @@ public class TypedAbilityResistanceTests
         Assert.Equal(2,Assert.Single(TimedEffects.Instantiate(effect,new Random(1)).Where(m=>m.Proc==TempMods.Proc.Dot)).DamageType);
     }
     [Fact]
+    public void LogicCannonTwoUsesItsAuthoredViralBaseWithoutLegacyDamageEndpoints()
+    {
+        var ability = new AbilityItem();
+        ability.setAbilityID(331);
+        Assert.Equal(2, TypedAbilityResistance.StoredType(331));
+        Assert.Equal(29, AbilityHandler.AbilityDamage(ability, new Random(1)));
+        Assert.Equal(29, AbilityHandler.AbilityDamage(ability, new Random(5)));
+    }
+
+    [Fact]
     public void RealBuffsAffectOnlyTheirTypeAndRemovalRestoresExactRawDamage()
     {
         var source=Client();var target=Client();
