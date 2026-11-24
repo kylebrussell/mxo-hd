@@ -501,7 +501,7 @@ namespace hds
         internal bool ApplyPistolWhipLoss(Side caster, Side opponent, ushort? ability,
             ref ushort attack, ushort opposingDefence, ref ushort opposingAttack, ushort defence)
         {
-            if (ability != CombatSpecials.PistolWhip || defence == ushort.MaxValue ||
+            if (ability != CombatSpecials.PistolWhip || CombatFixtureWeapons.AllowsPistolWhipWin(caster.Client) || defence == ushort.MaxValue ||
                 opponent.Client.playerData.combatTactic == CombatTactic.Block ||
                 ControlActions.Incapacitated(TimedEffects.ForPlayer(opponent.Client).Effects) ||
                 !ConsumeRoundAid(caster, opponent, CombatSpecials.PistolWhip)) return false;
@@ -510,6 +510,19 @@ namespace hds
             attack = Math.Min(attack, opposingDefence);
             opposingAttack = Math.Max(opposingAttack, (ushort)(defence + 1));
             Output.WriteDebugLog($"[PISTOL WHIP QA] 501 loss consumed for CSR_Tester against QAEnemy: {originalAttack}/{originalOpposingAttack} -> {attack}/{opposingAttack}");
+            return true;
+        }
+
+        private bool ApplyPistolWhipWin(Side caster, Side opponent, ushort? ability,
+            ref ushort attack, ushort opposingDefence, ref ushort opposingAttack, ushort defence)
+        {
+            if (ability != CombatSpecials.PistolWhip || opposingDefence == ushort.MaxValue ||
+                !CombatFixtureWeapons.AllowsPistolWhipWin(caster.Client) ||
+                !ConsumeRoundAid(caster, opponent, CombatSpecials.PistolWhip)) return false;
+
+            attack = Math.Max(attack, (ushort)(opposingDefence + 1));
+            opposingAttack = Math.Min(opposingAttack, defence);
+            Output.WriteDebugLog("[PISTOL WHIP QA] 501 win consumed for CSR_Tester against QAEnemy.");
             return true;
         }
 
@@ -787,6 +800,16 @@ namespace hds
                     {
                         nHit = false;
                         pHit = true;
+                    }
+                    else if (nAbility == null && ApplyPistolWhipWin(p, n, pAbility?.getAbilityID(), ref pAttack, nDefense, ref nAttack, pDefense))
+                    {
+                        pHit = true;
+                        nHit = false;
+                    }
+                    else if (pAbility == null && ApplyPistolWhipWin(n, p, nAbility?.getAbilityID(), ref nAttack, pDefense, ref pAttack, nDefense))
+                    {
+                        nHit = true;
+                        pHit = false;
                     }
                 }
 

@@ -15,6 +15,7 @@ namespace hds
         public const string VanishWinMode = "MXO_VANISH_WIN_QA";
         public const string RifleEscapeWinMode = "MXO_RIFLE_ESCAPE_WIN_QA";
         public const string PistolWhipLossMode = "MXO_PISTOL_WHIP_LOSS_QA";
+        public const string PistolWhipWinMode = "MXO_PISTOL_WHIP_WIN_QA";
         public const int DummyPhysicalResistance = 75;
         public const string MartialTacticMode = "MXO_MARTIAL_TACTIC_DAMAGE_QA";
         public const string KungFuTacticMode = "MXO_KUNG_FU_TACTIC_DAMAGE_QA";
@@ -117,7 +118,7 @@ namespace hds
         {
             CombatSpecials.RifleButtSmash => Allowed(caller, RifleEscapeWinMode),
             Stealth.VanishAbility => Allowed(caller, VanishWinMode),
-            CombatSpecials.PistolWhip => Allowed(caller, PistolWhipLossMode),
+            CombatSpecials.PistolWhip => Allowed(caller, PistolWhipLossMode) || AllowsPistolWhipWin(caller),
             _ => false
         };
 
@@ -141,14 +142,25 @@ namespace hds
                 : "Vanish win aid requires the active interlock with QAEnemy.";
         }
 
+        internal static bool AllowsPistolWhipWin(WorldClient caller) => Allowed(caller, PistolWhipWinMode);
+
         internal static string ArmPistolWhipLoss(WorldClient caller)
         {
-            if (!RoundAidAllowed(caller, CombatSpecials.PistolWhip))
+            if (!Allowed(caller, PistolWhipLossMode))
                 return "Pistol Whip loss aid requires the disposable dual-pistol fixture.";
             return CombatManager.GetHandler(caller).ActiveInterlockIdentity is PvpFight fight &&
                 fight.ArmRoundAid(caller, CombatSpecials.PistolWhip)
                 ? "Next Pistol Whip against QAEnemy is armed for one ordinary loss."
                 : "Pistol Whip loss aid requires the active interlock with QAEnemy.";
+        }
+
+        internal static string ArmPistolWhipWin(WorldClient caller)
+        {
+            if (!AllowsPistolWhipWin(caller)) return "Pistol Whip win aid requires the disposable Blind fixture.";
+            return CombatManager.GetHandler(caller).ActiveInterlockIdentity is PvpFight fight &&
+                fight.ArmRoundAid(caller, CombatSpecials.PistolWhip)
+                ? "Next Pistol Whip against QAEnemy is armed for one ordinary win."
+                : "Pistol Whip win aid requires the active interlock with QAEnemy.";
         }
 
         internal static string ResetDummy(WorldClient caller, bool addPhysicalResistance = false, ushort resistanceStat = 0)
