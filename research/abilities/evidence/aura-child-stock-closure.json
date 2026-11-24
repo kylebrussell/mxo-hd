@@ -1,0 +1,24 @@
+{
+  "abilities": {
+    "693": {
+      "note": "Stock PASS at 9378f612. At character level 50 and loaded rank 30, source 693 added and removed +23 melee and +47 viral for five seconds. PR908 provides the same rank at character level 30 (+14/+28). No single caster level under the shipped scales produces the archival +37/+99 pair. The archival contribution inputs remain unknown. https://github.com/kylebrussell/mxo-hd/pull/1079#issuecomment-7130126450",
+      "checks": {
+        "source-parity": {
+          "source": "Shipped GOB 693 uses the caster-level function with distinct binary32 scales .48 and .96. The retained owner child timer is independently decoded.",
+          "runtime": "The supported caster-level model uses the authored fields. The owner child and its independent reuse follow the existing refresh and expiry lifecycle.",
+          "test": "DeflectVirusCasterLevelMode checks the exact authored pair, proves that the archival pair cannot follow from one caster level, and verifies independent reuse with the retained activation and dismissal. Stock PR1079 confirms the pair, refresh and expiry."
+        }
+      }
+    },
+    "696": {
+      "note": "Stock PASS at 81b8c60c. The owner timer and both +25 five-second records appear. Paid refreshes retain the indicator and do not restart the timer. The third upkeep falls nine IS short; the final modifier pair expires independently. The equal authored scales cannot produce the archival +37/+39 from one caster level. The archive inputs remain unknown. https://github.com/kylebrussell/mxo-hd/pull/1080#issuecomment-7129377814",
+      "checks": {
+        "source-parity": {
+          "source": "GOB 696 has equal caster-level scales and ten-second own reuse. Retained proxy_024 at lines 13884–13887, 14107–14126 and 14304–14320 establishes the independent owner timer versus the statistical refresh.",
+          "runtime": "The current authored statistical pair is independent of the owner 696 indicator and its single ten-second timer. The owner indicator retires on grouped same-world cleanup.",
+          "test": "CombatAuraTwoMode asserts the exact owner timer, ordering and both statistical records. The cleanup unit check covers death after the life generation changes. Stock PR1080 verifies the current pair, paid refreshes and independent retirement."
+        }
+      }
+    }
+  }
+}
