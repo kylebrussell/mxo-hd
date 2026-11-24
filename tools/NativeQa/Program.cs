@@ -400,6 +400,8 @@ try
                 else if (fixtureMode is NativeQa.Modes.LogicBlastThreeTargetMode && action == "aura-resist")
                     await NativeQa.Modes.StarterPathogenistAuraResistanceMode.ApplyResistanceAsync(actor,
                         NativeQa.Modes.LogicBlastThreeTargetMode.Resistance);
+                else if (fixtureMode is NativeQa.Modes.CodeInfectionStockLedgerMode && action == "aura-resist")
+                    await NativeQa.Modes.StarterPathogenistAuraResistanceMode.ApplyResistanceAsync(actor);
                 else if (fixtureMode is NativeQa.Modes.HackerHarmfulCodeTiersMode && action == "aura-resist")
                     await NativeQa.Modes.StarterPathogenistAuraResistanceMode.ApplyResistanceAsync(actor,
                         NativeQa.Modes.HackerHarmfulCodeTiersMode.Resistance);
