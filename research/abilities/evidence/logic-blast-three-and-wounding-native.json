@@ -1,0 +1,43 @@
+{
+  "families": {
+    "logic-blast-three-stock": {
+      "representative": 329,
+      "result": "pass",
+      "head": "2bf61b79",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/1038#issuecomment-7118018204",
+      "scope": "Stock selected single-target cast shows hit FX, two 11 IS debits, a neutral hit of 828, and raw 634 to final 521 under +75 recipient Viral Resistance. Empty, allied, 20.01 m distant and solid-wall targets are denied before server cost. The disposable fixture forces cast-contest success only. The ordinary timers were decoded in the retained-request headless replay."
+    }
+  },
+  "abilities": {
+    "281": {
+      "note": "PR1039 stock observed an ordinary 2 s cast in Close Combat with no named move or special round. The shipped successful-interlock presentation remains unresolved. https://github.com/kylebrussell/mxo-hd/pull/1039#issuecomment-7117655050",
+      "checks": {
+        "targeting": {
+          "source": "GOB 281 requires a selected enemy within 16 m and uses a two-second cast.",
+          "runtime": "ThrownDotAdmission refuses stale, allied, out-of-range and occluded selections before any cost and rechecks the original spawn before landing.",
+          "test": "AbilityRefusalFeedbackTests.WoundingThrowChecksOpponentSpawnRangeAndSight exercises all four guard branches. Stock PR1039 saw 24/24/34/9 without cost, zero initial damage, total 10 ticks of 8, and type7 raw8 final6 with +75 on the selected dummy. https://github.com/kylebrussell/mxo-hd/pull/1039#issuecomment-7117655050"
+        }
+      }
+    },
+    "329": {
+      "family": "logic-blast-three-stock",
+      "checks": {
+        "damage": {
+          "source": "GOB 329 has a 51-point authored Viral modifier; the retained retail traces give the implemented 367–619 band and hit FX. The original authored-to-archived conversion is unestablished.",
+          "runtime": "The capture-calibrated roll goes through AbilityStats.ScaleAbilityDamage and TypedAbilityResistance. With +51 fixture influence (style +27 and linked 1031 bonuses +15/+3/+1/+5), the resulting neutral range is 554–934 before mitigation.",
+          "test": "Exact-head fixture logs verify the effective loaded contributions. The stock neutral 828 is consistent with base 549 and resisted raw 634 with base 420; level-50 +75 mitigation reduces 634 to 521. The headless replay independently asserts the live typed resistance quotient. The QA contest input changes hit admission, with ordinary damage rolls. https://github.com/kylebrussell/mxo-hd/pull/1038#issuecomment-7118018204"
+        },
+        "targeting": {
+          "source": "GOB 329 identifies a selected hostile, Hacker Style, 20 m and TestFunction 2.",
+          "runtime": "AbilityHandler rejects invalid, stale, allied, out-of-range and sight-blocked selections before the cast and retains the admitted hostile spawn through completion. Ordinary selected routing applies the Viral contest once.",
+          "test": "The retained proxy_003 stock request was rebound only to live view and spawn. The headless replay covers each refusal and both landings. The stock client shows the four negative controls and only the selected recipient's positive hit. Local execution text can precede the server refusal. https://github.com/kylebrussell/mxo-hd/pull/1038#issuecomment-7118018204"
+        },
+        "behavior-tests": {
+          "source": "GOB 329 sets 11 IS, 2 seconds casting and 4 seconds own plus family 682 reuse.",
+          "runtime": "The accepted ordinary cast spends 11 IS, uses the existing hostile Viral path and publishes both timers.",
+          "test": "LogicBlastThreeTargetMode verifies the 2 s cast and exact 4/4 s wire timers on the retained request, plus selected damage, resistance and no-target, stale, ally, range and wall refusal controls. Exact-head native verifies both debits and hit FX with a fixture-fixed hit contest. https://github.com/kylebrussell/mxo-hd/pull/1038#issuecomment-7118018204"
+        }
+      }
+    }
+  }
+}
