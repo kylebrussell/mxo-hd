@@ -19,26 +19,50 @@ public abstract class EnrageDurationArchiveMode : NativeQaMode
         StarterSoldierResistanceMode.Samples.Single(sample => sample.Id == Smash);
     private readonly ushort parent;
     private readonly (ushort Stat, int Value)[] stats;
+    private const ushort Desperation = 1149;
+    private const int InitiativeHealth = 300, MaxHealth = 30000;
     private readonly bool withdraw;
+    private readonly ushort grant;
+    private readonly bool initiative;
     private readonly ushort[] loadout;
 
-    protected EnrageDurationArchiveMode(ushort parent, (ushort Stat, int Value)[] stats, bool withdraw)
+    protected EnrageDurationArchiveMode(ushort parent, (ushort Stat, int Value)[] stats, bool withdraw,
+        ushort grant = 0, bool initiative = false, string? previousEvidence = null)
     {
         this.parent = parent;
         this.stats = stats;
         this.withdraw = withdraw;
-        loadout = DisablingShotMode.Closure(2, 17, Karate, Smash, CombatStyles.SpyStyle, parent);
+        this.grant = grant;
+        this.initiative = initiative;
+        ushort[] roots = { 2, 17, Karate, Smash, CombatStyles.SpyStyle, parent };
+        loadout = DisablingShotMode.Closure(initiative ? roots.Append(Desperation).ToArray() : roots);
+        int enrageBonus = stats.Single(stat => stat.Stat == 1068).Value;
+        var environment = new Dictionary<string, string>
+        {
+            ["MXO_AGGRO"] = "0", ["MXO_MOB_WANDER"] = "0",
+            ["MXO_PVP_SERVER"] = "1", ["MXO_PVP_MAX_SAFE_LEVEL"] = "15",
+            [StarterInterlockControlQa.Mode] = "1", [CombatFixtureWeapons.DisengageMode] = "1"
+        };
         var messages = new List<string>
         {
             $"Level 50, {loadout.Sum(AbilityMemory.Cost)}/100 memory. CSR faces QAEnemy 2 m ahead on verified outdoor NAV. Stay on READY HOME unless displaced. If needed, type the printed warp in chunks of 16 characters into the same chat line, then press Enter once.",
             "Page 2 Karate, Overhand Smash and Withdraw. /target QAEnemy, right-click Close Combat, select Karate again, and press slot 2. The disposable aid forces only the state branch of a landed 145. Retry a miss after 12 s. The level-16 helper is an admission and hit-rate control.",
-            $"For each of the loaded, unloaded (?qaunload {parent}) and reloaded (?qaload {parent}) passes, expect source={parent} stat=1068 +5 at entry, removal and restoration. A landed 145 must produce [MODIFIER] char=6114 source=145 stat=93 for 10 s and one matching removal. Stop the current fight with ?cd stop after the stage. Wait out reuse before another attempt.",
+            $"For each of the loaded, unloaded (?qaunload {parent}) and reloaded (?qaload {parent}) passes, expect source={parent} stat=1068 +{enrageBonus} at entry, removal and restoration. A landed 145 must produce [MODIFIER] char=6114 source=145 stat=93 for 10 s and one matching removal. Stop the current fight with ?cd stop after the stage. Wait out reuse before another attempt.",
             "The shipped state 93 has no duration-stat link. A stable 10 s Enrage with 1068 present and absent is the expected result. No rifle or Free Fire is involved."
         };
         if (withdraw)
             messages.Add("After each Enrage expires, press stock Withdraw before stopping the fight. Check [WITHDRAW INPUT OURS] with the direct input and bonus1045=10/0/10. With 384 active the initial records also show 1045 +10 and 995 +15. Existing native 388 establishes the 8 to 9.2 s linked Stun.");
-        else
+        else if (previousEvidence != null)
+            messages.Add(previousEvidence);
+        else if (!initiative)
             messages.Add("Existing native PR478 establishes the 1041 +25 control: 282 landed 12.5 s Blind from the 10 s input. Here the 1041 and 1068 add/remove/add must travel together.");
+        if (initiative)
+        {
+            environment["MXO_DESPERATION_QA_HOLD_HEALTH"] = "1";
+            messages.Add($"Check grant {grant} and source={parent}: 1046 +1, 1068 +2, 1143 +5, 1144 +5 on entry, unload and reload.");
+            int expected = InitiativeSnapshot(loadout);
+            messages.Add($"After the final fight ends and with {parent} loaded, type ?health {InitiativeHealth} then press Desperation (page 2 slot 3). The disposable fixture holds regeneration only. Expect source={Desperation} stat=1044 +{expected} for 20 s, 10 IS and 90 s reuse at {InitiativeHealth}/{MaxHealth} HP. The 1046 records already verified in the three Archive stages feed this snapshot.");
+        }
         Plan = new(loadout, X, Home, Array.Empty<string>(),
             new[] { $"DELETE FROM inventory WHERE charId IN (110,6114) AND slot={CombatFixtureWeapons.HandSlot}" },
             new[]
@@ -50,14 +74,8 @@ public abstract class EnrageDurationArchiveMode : NativeQaMode
                 $"INSERT INTO char_abilities(char_id,slot,ability_id,level,is_loaded) VALUES (6114,400,{AbilityMessages.AbilityGameObject(2)},16,1),(6114,401,{AbilityMessages.AbilityGameObject(17)},16,1)",
                 $"UPDATE char_abilities SET level={Level} WHERE char_id=110"
             },
-            DevCommands: true, hotbarAbilities: new[] { Karate, Smash }, hotbarWithdraw: true,
-            testMobFixture: "martial-player-controls.csv",
-            environmentOverrides: new()
-            {
-                ["MXO_AGGRO"] = "0", ["MXO_MOB_WANDER"] = "0",
-                ["MXO_PVP_SERVER"] = "1", ["MXO_PVP_MAX_SAFE_LEVEL"] = "15",
-                [StarterInterlockControlQa.Mode] = "1", [CombatFixtureWeapons.DisengageMode] = "1"
-            },
+            DevCommands: true, hotbarAbilities: initiative ? new[] { Karate, Smash, Desperation } : new[] { Karate, Smash },
+            hotbarWithdraw: true, testMobFixture: "martial-player-controls.csv", environmentOverrides: environment,
             readyMessages: messages.ToArray(),
             extraQaMetadata: new()
             {
@@ -99,15 +117,24 @@ public abstract class EnrageDurationArchiveMode : NativeQaMode
         int on = await StockAbilityProfile.ChangeLoadoutAsync(actor, rows, new[] { parent }, load: true);
         await VerifyRecordsAsync(on, remove: false);
         await MeasureAsync(loaded: true);
+        if (initiative)
+        {
+            actor.SendChat($"?health {InitiativeHealth}");
+            actor.SendChat("?health");
+            await actor.WaitForTextAsync($"Current health: {InitiativeHealth}");
+            int cast = actor.World.RpcSnapshot().Count;
+            actor.SendRpc(StarterInitiativeBatchMode.StockCast);
+            await StockAbilityProfile.ObserveAsync(actor, cast, frame =>
+                StockAbilityProfile.Bonus(frame, Desperation, 1044, InitiativeSnapshot(loadout), 20, false), "Desperation live Initiative Bonus snapshot");
+            await EvidenceRetestWire.TimerAsync(actor, cast, Desperation, AbilityCooldowns.OwnTimer, 90);
+        }
         Check.Equal(0, actor.World.Problems.Count + enemy.World.Problems.Count, "Archive control and interlock traffic frame cleanly");
         return Array.Empty<byte>();
 
         async Task VerifyRecordsAsync(int at, bool remove)
         {
-            foreach (var (stat, value) in stats)
-                await StockAbilityProfile.ObserveAsync(actor, at,
-                    frame => StockAbilityProfile.Bonus(frame, parent, stat, value, 0, remove),
-                    $"Archive source={parent} stat={stat} remove={remove}");
+            await StockAbilityProfile.CheckPassivesAsync(actor, new List<object>(),
+                new[] { (parent, grant, stats) }, at, remove);
         }
 
         async Task MeasureAsync(bool loaded)
@@ -154,5 +181,12 @@ public abstract class EnrageDurationArchiveMode : NativeQaMode
                 await StockAbilityProfile.ObserveAsync(actor, stopped,
                     rpc => rpc.Bytes is [0x46, ..] && rpc.Bytes.Length >= 6 && rpc.Bytes[5] == 0, "Interlock stopped before Archive");
         }
+    }
+
+    private static int InitiativeSnapshot(IEnumerable<ushort> ids)
+    {
+        int bonus = ids.SelectMany(AbilityPassives.Modifiers).Where(modifier => modifier.Target == 1046)
+            .Sum(modifier => AbilityValues.TryValue(modifier, Level, Level, out int value) ? value : 0);
+        return AbilityDesperation.Snapshot(InitiativeHealth, MaxHealth, bonus);
     }
 }
