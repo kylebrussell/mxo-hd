@@ -30,12 +30,12 @@ public sealed class RifleButtSmashMode : NativeQaMode
             ["MXO_AGGRO"] = "0", ["MXO_MOB_WANDER"] = "0", ["MXO_PVP_SERVER"] = "1", ["MXO_PVP_MAX_SAFE_LEVEL"] = "15",
             ["MXO_SIMULACRUM_QA_HOLD_IS"] = "1", [CombatFixtureWeapons.DisengageMode] = "1",
             [CombatFixtureWeapons.RifleEscapeWinMode] = "1"
-        }, extraQaMetadata: new() { ["ScopedStockRows"] = "453", ["NativeCloseableRows"] = 0 }, readyMessages: new[]
+        }, extraQaMetadata: new() { ["ScopedStockRows"] = "453", ["NativeCloseableRows"] = 1 }, readyMessages: new[]
         {
             $"Level {Level}, {Loadout.Sum(AbilityMemory.Cost)}/{AbilityMemory.ForLevel(Level)} legal memory, rifle 692 in hand. Verified outdoor NAV CSR ({X},{Y},{Z}) faces QAEnemy ({X},{Y},{EnemyZ}). Stay on the stands. Open page 2, Rifles / Rifle Butt Smash.",
-            "Select Rifles and /target QAEnemy, then try slot 2 at rest. Expect local suppression or reason24 with no cost. Use QAEnemy's right-click Close Combat (double-click starts Free Fire), wait for round 0 and reselect Rifles. Use slot 2 and retain the first complete stock 453 request. Expect no cast bar, 40 IS, 60 s own and 5 s group689. Do not use ordinary Withdraw during the 453 attempt.",
-            "For the win retest, after selecting Rifles and with QAEnemy still in interlock, type ?cd rb before slot 2. Expect one [RIFLE ESCAPE QA] 453 win consumed line. Then expect 0x100, Rifle RifleButt 11356, 7 Ballistic, and [PVP] CSR_Tester withdraws. Strafe after teardown to check normal movement. The prior native run already covered unassisted losses and a tie.",
-            """After a success and own reuse, use {"actor":"QAEnemy","action":"rifle-butt-armor"} for source1061 stat181 +20. If needed after a failed roll, end that interlock with ?cd stop before the next stage. Stay on the same pair. Repeat with right-click Close Combat, slot 1, ?cd rb and then slot 2. Expect [TYPED-RESISTANCE OURS] 453 type1 total20 raw7 final6, the same 11356, and withdrawal when the roll wins. No Confuse modifier."""
+            "Stay at HOME. /target QAEnemy, right-click Close Combat (double-click starts Free Fire), then reselect Rifles on page 2 slot 1. Double-click Speed in Actions > Awakened.",
+            "Type ?cd rb then slot 2. Before the QA adjustment, expect [RIFLE ESCAPE TACTIC OURS] ability=453 base=N bonus=11 total=N+11. The ordinary [WITHDRAW INPUT OURS] line should not apply to the 453 attempt. Save the complete first 453 request.",
+            "Expect 40 IS, 60 s own/5 s group689 reuse, move 11356 and 7 damage on QAEnemy, followed by ordinary withdrawal and movement unlock. The QA aid changes only the win comparison after both rolls, so the tactical ledger is the unadjusted input. No helper action. The earlier native armor, loss and tie results carry."
         });
 
     public override async Task<byte[]> AfterStartAsync(NativeQaBootstrapContext context)
@@ -47,6 +47,9 @@ public sealed class RifleButtSmashMode : NativeQaMode
             Check.That(NavMesh.Locate(1, X, Y, z, out var stand) && !stand.indoors && stand.floorY + 95 == Y &&
                 NavMesh.HasSightPath(1, X, Y, Z, X, Y, z), $"Verified outdoor stand ({X},{Y},{z})");
 
+        Console.WriteLine($"READY HOME {InvisibilityBeltWatcherMode.Warp(X, Y, Z, 0, inside: false)}");
+        Console.WriteLine($"READY QAEnemy {InvisibilityBeltWatcherMode.Warp(X, Y, EnemyZ, 128, inside: false)}");
+        Check.Equal(11, (int)AbilityCatalog.Find(Shot).Number("Ability/TacticBonus"), "Shipped Rifle Butt Smash tactical input");
         var server = context.ActualServer!;
         var enemy = await HeadlessPlayer.LoginAsync(context.Address, "QAEnemy", "QAEnemy", stockCharacterLoad: true);
         context.Helpers.Add(enemy.Handle, enemy);
