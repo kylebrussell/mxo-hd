@@ -376,6 +376,9 @@ namespace hds
                         stanceScale += upgrade.Modifiers.Where(modifier =>
                             modifier.Kind == KindStat && modifier.Stat == stat).Sum(modifier => modifier.Value) / 100f;
             }
+            // GOB 877 links the ordinary Sneak channel to the owner percentage 1050.
+            if (stealth?.Def.Ability == Stealth.SneakGrantAbility)
+                stanceScale += AbilityStats.Player(client, SneakOwnerMovementBonusStat) / 100f;
             if (buff == null) return stanceScale;
             if (stat == RunMovementStat) return buff.MovementScale;
             Modifier modifier = Array.Find(buff.Modifiers, entry => entry.Stat == stat);
@@ -400,6 +403,7 @@ namespace hds
         }
 
         private const ushort CrashAbility = 396, BottleneckField = 402;
+        internal const ushort SneakOwnerMovementBonusStat = 1050;
         private const ushort InfiltratorUpgrade = 1115;
         private static bool UsesStanceMovement(ushort id) => id == InfiltratorUpgrade || id == AbilityShadowPresentation.Child;
 

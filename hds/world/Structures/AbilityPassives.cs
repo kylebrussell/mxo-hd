@@ -113,6 +113,8 @@ namespace hds
             var rows=loaded.ToArray();
             State state = client.playerData.passives;
             var pet = CoderPets.Of(client);
+            bool sneaking = !newWorld && Stealth.IsOn(client, Stealth.SneakGrantAbility);
+            int previousSneakPace = sneaking ? Total(client, AbilityBuffs.SneakOwnerMovementBonusStat) : 0;
             bool deactivateSummon;
             bool lostConcealment;
             bool lostShadowGrant;
@@ -189,6 +191,9 @@ namespace hds
             DaemonBoost.LoadoutChanged(client);
             AbilityAuras.LoadoutChanged(client);
             AbilityGrantRegistration.LoadedChanged(client);
+            if (sneaking && Stealth.IsOn(client, Stealth.SneakGrantAbility) &&
+                previousSneakPace != Total(client, AbilityBuffs.SneakOwnerMovementBonusStat))
+                AbilityBuffs.PresentCurrentMovementScale(client);
         }
 
         /// <summary>Recomputes totals and records. A style switch (CombatStyles.Select) orders them as retail did when Hacker
