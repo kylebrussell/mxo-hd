@@ -1,10 +1,11 @@
+using System.Text.RegularExpressions;
 using hds;
 using HeadlessClient;
 using MxoHd.PacketResearch;
 
 namespace NativeQa.Modes;
 
-public sealed class HackerArtilleristAreaMode : NativeQaMode
+public class HackerArtilleristAreaMode : NativeQaMode
 {
     private const int Level = 30, X = 17000, Y = 495, Z = 6400, Centre = 6900, Refusal = 8001, StartingIs = 600;
     internal const int Resistance = 45;
@@ -12,10 +13,11 @@ public sealed class HackerArtilleristAreaMode : NativeQaMode
     // Stock 42 payloads from actions_combat_marketplace_abilitychangecoder.log lines 11161 and 12676.
     private const string StockSpeed = "42000000000000", StockPower = "42010000000000";
     // Complete stock use requests from actions_combat.log, lines 13247–48 and 13499–500.
-    private static readonly (ushort Id, string Capture, int Radius, int Cost, ushort Group, int DamageMin, int DamageMax)[] Samples =
+    private sealed record Sample(ushort Id, string Capture, int Radius, int Cost, ushort Group, int DamageMin, int DamageMax);
+    private static readonly Sample[] AllSamples =
     {
-        (336, "80b950010a00a100000000000000000000000000000000000000000050010000006b0000086b0000000000", 3, 13, 682, 345, 419),
-        (337, "80b951010a00a100000000000000000000000000000000000000000051010000006b0000086b0000000000", 5, 17, 683, 367, 449)
+        new(336, "80b950010a00a100000000000000000000000000000000000000000050010000006b0000086b0000000000", 3, 13, 682, 345, 419),
+        new(337, "80b951010a00a100000000000000000000000000000000000000000051010000006b0000086b0000000000", 5, 17, 683, 367, 449)
     };
     private static readonly ushort[] Loaded = StockAbilityProfile.Profile(2, 17, Style, 336, 337).Order().ToArray();
     private static readonly ushort[] ResistLoadout = StockAbilityProfile.Profile(2, 17, EmptyMind).Order().ToArray();
@@ -25,8 +27,19 @@ public sealed class HackerArtilleristAreaMode : NativeQaMode
         ("QAFar", 6112, X, Centre + 301, 2), ("QAFriend", 6111, X + 100, Centre, 1)
     };
 
+    private readonly Sample[] samples;
     public override string Name => "ability-parity-hacker-artillerist-area";
-    public override NativeQaModePlan Plan { get; } = new(Loaded, X, Z, Array.Empty<string>(), Array.Empty<string>(), new[]
+    public override NativeQaModePlan Plan { get; }
+
+    public HackerArtilleristAreaMode() : this(0) { }
+
+    protected HackerArtilleristAreaMode(ushort ability)
+    {
+        samples = ability == 0 ? AllSamples : new[] { AllSamples.Single(sample => sample.Id == ability) };
+        Plan = BuildPlan(ability);
+    }
+
+    private NativeQaModePlan BuildPlan(ushort ability) => new(Loaded, X, Z, Array.Empty<string>(), Array.Empty<string>(), new[]
     {
         PvpOpponentsFixture.NativeSql,
         $"UPDATE characters SET level={Level},exp={PlayerProgression.ExperienceForLevel(Level)} WHERE charId IN (110,6111,6112,6113,6114)",
@@ -37,15 +50,21 @@ public sealed class HackerArtilleristAreaMode : NativeQaMode
             string.Join(",", ResistLoadout.Select((id, slot) => $"(6112,{slot},{AbilityMessages.AbilityGameObject(id)},{Level},1)"))
     }.Concat(Stands.Select(stand =>
         $"UPDATE characters SET x={stand.X},y={Y},z={stand.Z},alignment={stand.Organization},healthC=5000,healthM=5000 WHERE charId={stand.Id}")).ToArray(),
-        DevCommands: true, hotbarAbilities: new ushort[] { Style, 336, 337 }, testMobFixture: "martial-player-controls.csv",
+        DevCommands: true, hotbarAbilities: samples.Select(sample => sample.Id).Prepend(Style).ToArray(), testMobFixture: "martial-player-controls.csv",
         environmentOverrides: new()
         {
             ["MXO_AGGRO"] = "0", ["MXO_MOB_WANDER"] = "0", ["MXO_PVP_SERVER"] = "1", ["MXO_PVP_MAX_SAFE_LEVEL"] = "15",
             ["MXO_SIMULACRUM_QA_HOLD_IS"] = "1", ["MXO_FREECAST_VIRAL_QA"] = "1",
             ["MXO_FREECAST_VIRAL_QA_ATTACK15"] = "32766", ["MXO_FREECAST_VIRAL_QA_DEFENSE15"] = "0",
             [AreaTargetDiagnostics.Variable] = "1"
-        }, extraQaMetadata: new() { ["ScopedStockRows"] = "336,337", ["NativeCloseableRows"] = 0, ["MemoryUsed"] = Loaded.Sum(AbilityMemory.Cost) },
-        readyMessages: new[]
+        }, extraQaMetadata: new()
+        {
+            ["ScopedStockRows"] = string.Join(",", samples.Select(sample => sample.Id)),
+            ["NativeCloseableRows"] = ability == 0 ? 0 : 1, ["MemoryUsed"] = Loaded.Sum(AbilityMemory.Cost)
+        },
+        readyMessages: ability == 0 ? LegacyMessages() : DamageMessages(samples[0]));
+
+    private static string[] LegacyMessages() => new[]
         {
             $"Level {Level}, complete Artillerist profile at {Loaded.Sum(AbilityMemory.Cost)}/{AbilityMemory.ForLevel(Level)} memory. Verified outdoor NAV CSR ({X},{Y},{Z}) faces QAEnemy ({X},{Y},{Centre}) at 5 m. Friendly QAFriend is 1 m from QAEnemy. Initially hostile QAOther ({X},{Y},{Refusal}) is 16.01 m from CSR.",
             "Select Hacker Style in page 2 slot 1. Try slots 2 and 3 with no target, then on /target QAFriend and /target QAOther. If sent, the stock request is refused with 24 or 34 before cast, debit or reuse. Return to /target QAEnemy.",
@@ -53,19 +72,36 @@ public sealed class HackerArtilleristAreaMode : NativeQaMode
             "Move QAFar/QAOther the same way to z7400/z7401. Keep QAEnemy selected and press slot 3 (337). Expect 4 s cast, 17 IS (587→570) and 2 s own/shared 683. [PVP] damages QAEnemy and QAFar at 5.00 m only. Neither cast changes maximum vitals or starts an interlock.",
             "Dedicated Code cuts the 14/18 base costs by 9 percent. With +30 Viral Damage from Style and the loaded profile, the current capture-calibrated model gives 345–419 for 336 and 367–449 for 337 on Speed. The historical level-50 capture reported pre-resistance damage 260/280 and 300/360.",
             """For the typed resistance check, leave QAEnemy selected with the 5 m stands. Send {"actor":"QAFar","action":"aura-resist"} and confirm source 8 stat 157 +45 for 20 s. Start 337, then click the stock Power tactic during the four-second cast. The selected target receives 440–538 before resistance. Only QAFar has [TYPED-RESISTANCE OURS] 337 type2 total45 and reduced damage. After the matching source 8 removal, switch to Speed and cast again; both targets receive an unmitigated Speed roll. Record this control separately from the historical base-damage calculation."""
-        });
+        };
+
+    private static string[] DamageMessages(Sample sample)
+    {
+        int edge = Centre + sample.Radius * 100;
+        string tactic = sample.Id == 337
+            ? "For the resisted cast only, click stock Power during the cast. Expect the traced raw subtotal to be floor(influenced × 1.2)."
+            : "Keep the Speed tactic throughout.";
+        return new[]
+        {
+            $"Legal level-{Level} Artillerist profile at {Loaded.Sum(AbilityMemory.Cost)}/{AbilityMemory.ForLevel(Level)} memory. Stay on READY HOME facing QAEnemy at 5 m. If displaced, type the printed warp in chunks of up to 16 characters into the same chat line before Enter. No NPC selection.",
+            $$"""Place QAFar at the {{sample.Radius}}.00 m edge with {"actor":"QAFar","action":"move","x":{{X}},"y":{{Y}},"z":{{edge}}}. Put QAOther 1 unit farther via the same move action, z={{edge + 1}}. Page 2 slot 1 Hacker Style, then /target QAEnemy. Knock-on targets: QAFar in, QAOther and QAFriend out.""",
+            $"Slot 2 uses {sample.Id}, 4 s, {sample.Cost} IS, 2 s own and group {sample.Group}. With Speed and no resistance, record [ARTILLERIST-DAMAGE] base, influence=30, influenced and raw. Only QAEnemy and QAFar lose HP. Stock damage uses the archived comparison band, with the original authored-to-archived conversion still undocumented.",
+            $$"""Send {"actor":"QAFar","action":"aura-resist"}. Wait for stat157 +45 on QAFar. Repeat slot 2 after reuse. {{tactic}} Only QAFar shows [TYPED-RESISTANCE OURS] with type2 total45. Compare that raw subtotal with the traced calculation and the final HP loss. After 157 expires, select Speed and repeat to verify both recipients are neutral.""",
+            "The disposable fixture fixes the Viral hit contest and holds CSR's IS regeneration. Damage draws, tactic effects, resistance, geometry, costs and reuse use ordinary rules."
+        };
+    }
 
     public override async Task<byte[]> AfterStartAsync(NativeQaBootstrapContext context)
     {
         string root = context.RepositoryRoot ?? throw new InvalidOperationException("Artillerist area requires repository NAV data.");
         SectorProperties.Load(Path.Combine(root, "data", "sector_properties.csv"));
         NavMesh.UseDirectory(Path.Combine(root, "data", "navmesh"));
-        var edges = Samples.SelectMany(sample => new[] { (X, Centre + sample.Radius * 100), (X, Centre + sample.Radius * 100 + 1) });
+        var edges = samples.SelectMany(sample => new[] { (X, Centre + sample.Radius * 100), (X, Centre + sample.Radius * 100 + 1) });
         foreach (var (x, z) in Stands.Select(stand => (stand.X, stand.Z)).Concat(edges).Append((X, Z)))
             Check.That(NavMesh.Locate(1, x, Y, z, out var at) && !at.indoors && at.floorY + 95 == Y &&
                 NavMesh.HasSightPath(1, X, Y, Z, x, Y, z) && NavMesh.HasSightPath(1, X, Y, Centre, x, Y, z),
                 $"Visible outdoor NAV stand ({x},{Y},{z})");
 
+        Console.WriteLine($"READY HOME {InvisibilityBeltWatcherMode.Warp(X, Y, Z, 0, inside: false)}");
         var server = context.ActualServer ?? throw new InvalidOperationException("Artillerist area needs a disposable server.");
         foreach (var stand in Stands)
         {
@@ -90,7 +126,7 @@ public sealed class HackerArtilleristAreaMode : NativeQaMode
                 $"{stand.Name} is on its documented NAV stand");
         }
 
-        ushort[] tested = Samples.Select(sample => sample.Id).ToArray();
+        ushort[] tested = samples.Select(sample => sample.Id).ToArray();
         await StockAbilityProfile.ChangeLoadoutAsync(actor, archive, tested, load: false);
         await StockAbilityProfile.ChangeLoadoutAsync(actor, archive, tested, load: true);
         int styleAt = actor.World.RpcSnapshot().Count;
@@ -107,7 +143,7 @@ public sealed class HackerArtilleristAreaMode : NativeQaMode
         var enemy = await actor.WaitForViewNamedAsync("QAEnemy");
         var ally = await actor.WaitForViewNamedAsync("QAFriend");
         var farSelection = await actor.WaitForViewNamedAsync("QAOther");
-        foreach (var sample in Samples)
+        foreach (var sample in samples)
         {
             await StarterHackerViralDamageMode.VerifyInvalidTargets(actor, sample.Id, sample.Capture, enemy, ally);
             int cursor = actor.World.RpcSnapshot().Count;
@@ -135,7 +171,7 @@ public sealed class HackerArtilleristAreaMode : NativeQaMode
 
         await MoveAsync("QAFar", Centre + 300);
         var fizzleWitnesses = context.Helpers.Values.ToDictionary(helper => helper, helper => helper.World.RpcSnapshot().Count);
-        var fizzle = Samples[0];
+        var fizzle = samples[0];
         int fizzleAt = actor.World.RpcSnapshot().Count;
         actor.SendRpc(StarterHackerControlTargetMode.WithHandle(fizzle.Capture, Handle(enemy)));
         await EvidenceRetestWire.CastBarAsync(actor, fizzle.Id, 4);
@@ -151,12 +187,12 @@ public sealed class HackerArtilleristAreaMode : NativeQaMode
         }
 
         Check.Equal(0, actor.World.Problems.Count + context.Helpers.Values.Sum(helper => helper.World.Problems.Count), "Artillerist framing");
-        Console.WriteLine("ARTILLERIST BOOTSTRAP PASS: exact 336/337 captures, Archive, splash edges and per-recipient Empty Mind add, mitigation and expiry.");
+        Console.WriteLine($"ARTILLERIST BOOTSTRAP PASS: exact {string.Join(",", tested)} captures, Archive, splash edges and per-recipient Empty Mind add, mitigation and expiry.");
         return Array.Empty<byte>();
 
         async Task CastSamplesAsync(string stage, bool resisted)
         {
-            foreach (var sample in Samples)
+            foreach (var sample in samples)
             {
                 await MoveAsync("QAFar", Centre + sample.Radius * 100);
                 await MoveAsync("QAOther", Centre + sample.Radius * 100 + 1);
@@ -190,6 +226,15 @@ public sealed class HackerArtilleristAreaMode : NativeQaMode
                             frame => expected.ContainsKey(Convert.ToHexString(frame.Bytes)), $"{sample.Id} {stage} damage on {helper.Handle}");
                         int raw = expected[Convert.ToHexString(hit.Bytes)];
                         int final = protectedEdge ? DamageAfterResistance(raw) : raw;
+                        var trace = Regex.Matches(server.DebugLog()[logAt..],
+                            $@"\[ARTILLERIST-DAMAGE\] ability={sample.Id} base=(\d+) influence=30 tactic={(power ? "Power" : "Speed")} influenced=(\d+) raw={raw}");
+                        Check.That(trace.Cast<Match>().Any(match =>
+                        {
+                            int sampled = int.Parse(match.Groups[1].Value);
+                            int influenced = int.Parse(match.Groups[2].Value);
+                            return influenced == (int)(sampled * (double)1.3f) &&
+                                raw == (power ? influenced * 6 / 5 : influenced);
+                        }), "The raw hit comes from the logged base, influence and ordinary tactic");
                         if (protectedEdge)
                             Check.That(server.DebugLog()[logAt..].Contains($"[TYPED-RESISTANCE OURS] {sample.Id} type2 total{Resistance} raw{raw} final{final}", StringComparison.Ordinal),
                                 "The authoritative typed stage agrees with the reported resisted damage");
