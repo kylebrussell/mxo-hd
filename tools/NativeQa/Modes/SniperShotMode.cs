@@ -14,6 +14,8 @@ public sealed class SniperShotMode : NativeQaMode
         Baseline = CombatSpecials.ConcealedShot, Shot = CombatSpecials.SniperShot;
     // PR330 stock Rifle style capture as reused in GunStyleOpeningBatchMode.
     private const string RiflesFrame = "80b99300040002000000000000000000000000000000000000000000d557377c20000000086b0000000000";
+    // Successful stock 505 on QAEnemy (PR888 PacketLog line 3247).
+    private const string SniperFrame = "80b9f9010400020000000000000000000000000000000000000000001060bd0001000000086b0000000000";
     private static readonly ushort[] Loadout = new ushort[] { 2, 17, Rifles, 503, Baseline, Shot }
         .SelectMany(id => AbilityPrerequisites.Current.Closure(id).Keys.Append(id)).Distinct().Order().ToArray();
     private static readonly ushort[] EnemyLoadout = DisablingShotMode.Closure(2, 17, 154);
@@ -40,14 +42,10 @@ public sealed class SniperShotMode : NativeQaMode
         }, extraQaMetadata: new() { ["ScopedStockRows"] = "505", ["NativeCloseableRows"] = 0 },
         readyMessages: new[]
         {
-            $"Level {Level}, legal {Memory}/{AbilityMemory.ForLevel(Level)} memory and a rifle equipped. " +
-                $"CSR PICK ({X},{Y},{Z}) faces QAEnemy ({TargetX},{Y},{Z}), outside ambient effects. Page 2 Rifles/Concealment/Sniper Shot/Concealed Shot.",
-            "Select Rifles and QAEnemy at PICK. Try slot 3 while exposed. Expect a local Concealment refusal or reason 23 if it sends. Then activate slot 2. " +
-                "Keep the selection without Escape. Try 505 from the printed BLOCK then the printed FAR. Expect sight/range refusal or reason 9/34, with no shot debit, cast or timer.",
-            "Return to PICK. Keep 1137 active and press slot 3. Capture the complete direct stock 505 request. Expect 1137 off at cast start, 60 IS (480 to 420), " +
-                "6 s bar, 52 neutral Ballistic damage (base 47 with Rifles +8 and +2 each from Firearms Expert and Concealment's parent), and 45 s own reuse. A completed roll may apply Stun for 4 s. The helper PacketLog should show the 505 marker retiring before Stun 102, linked Combat Tactics 163 -20, and the separate 4 s immunity 734/681.",
-            """After reuse, send {"actor":"QAEnemy","action":"sniper-armor"} and confirm source1061 stat181 +20. While still outside combat, activate Concealment and repeat at PICK. Expect [TYPED-RESISTANCE OURS] 505 type1 total20 raw52 final47. Retry after reuse if neither cast rolled Stun; its ordinary chance is 50%. Record the normal cast/release presentation and verify no interlock round is opened.""",
-            "Slot 4 is the retained Concealed Shot control. Capture stock frames and visible presentation on 505 itself."
+            $"Rank {Level}, {Memory}/{AbilityMemory.ForLevel(Level)} memory, rifle equipped. Stay at PICK with QAEnemy in front. /target QAEnemy, then Rifles slot 1. No teleport or interlock.",
+            "Use slot 2 Concealment before each shot. Slot 4 Concealed Shot lands 24 for 45 IS. Slot 3 Sniper Shot lands 52 for 60 IS. Both drop Concealment at cast start, take 6 s and have 45 s own reuse. Wait 15 s between Concealment activations.",
+            """After both neutral hits, send {"actor":"QAEnemy","action":"sniper-armor"} once and wait for [MODIFIER] source=1061 stat=181 +20. This helper action completes immediately and does not wait for your cast.""",
+            "After the corresponding reuse, repeat both concealed shots. Expect type1 total20 raw24 final21 and raw52 final47. Stay at PICK. No RNG aid. Earlier stock range, sight and Sniper Stun evidence carries."
         });
 
     public override async Task<byte[]> AfterStartAsync(NativeQaBootstrapContext context)
@@ -89,22 +87,47 @@ public sealed class SniperShotMode : NativeQaMode
         await ObserveAsync(actor, 0, rpc => Bonus(rpc, 125, 1139, 2, 0, false), "Loaded Firearms Expert gives +2 linked Ballistic Damage");
         await ObserveAsync(actor, 0, rpc => Bonus(rpc, 503, 1139, 2, 0, false), "Loaded Concealment parent gives +2 linked Ballistic Damage");
         actor.SendRpc($"81 51 {WireFormat.ToHex(BitConverter.GetBytes(handle))}");
-        int concealAt = actor.World.RpcSnapshot().Count;
-        actor.SendRpc(ConcealFrame);
-        await EvidenceRetestWire.CastBarAsync(actor, Conceal, 2);
-        byte[] on = AbilityBuffs.BuildExclusive(Conceal, true), off = AbilityBuffs.BuildExclusive(Conceal, false);
-        await ObserveAsync(actor, concealAt, rpc => rpc.Bytes.AsSpan().SequenceEqual(on), "Captured Concealment becomes active");
-
-        // 505 has no complete archive frame. Use the previously captured 504 path as the real protocol control.
-        int castAt = actor.World.RpcSnapshot().Count, targetAt = enemy.World.RpcSnapshot().Count;
-        actor.SendRpc(WithHandle(ShotFrame, handle));
-        await ObserveAsync(actor, castAt, rpc => rpc.Bytes.AsSpan().SequenceEqual(off), "Captured 504 consumes Concealment");
-        await EvidenceRetestWire.CastBarAsync(actor, Baseline, 6);
-        byte[] damage = AbilityMessages.Damage(false, Baseline, actor.Handle, enemy.Handle, 24, 0);
-        await ObserveAsync(enemy, targetAt, rpc => rpc.Bytes.AsSpan().SequenceEqual(damage), "Captured 504 baseline lands for 24");
-        await EvidenceRetestWire.TimerAsync(actor, castAt, Baseline, AbilityCooldowns.OwnTimer, 45);
+        foreach (var row in new[] { (Baseline, 22), (Shot, 47) })
+        {
+            var health = AbilityCatalog.Find(row.Item1)!.Modifiers.Single(m => m.Target == 108 && m.Number("DamageType", -1) == 1);
+            Check.Equal(row.Item2, (int)health.Number("MinValue"), $"Fixed GOB min {row.Item1}");
+            Check.Equal(row.Item2, (int)health.Number("MaxValue"), $"Fixed GOB max {row.Item1}");
+        }
+        int baselineAt = await CastAsync(Baseline, ShotFrame, 24);
+        await Task.Delay(TimeSpan.FromSeconds(15));
+        int sniperAt = await CastAsync(Shot, SniperFrame, 52);
         await PistolSlideMode.ApplyArmorAsync(enemy);
-        Check.Equal(0, actor.World.Problems.Count + enemy.World.Problems.Count, "Sniper stock control framing");
+        await WaitOwnAsync(Baseline, baselineAt);
+        await CastAsync(Baseline, ShotFrame, 21, resisted: 3);
+        await Task.Delay(TimeSpan.FromSeconds(15));
+        await WaitOwnAsync(Shot, sniperAt);
+        await CastAsync(Shot, SniperFrame, 47, resisted: 5);
+        Check.Equal(0, actor.World.Problems.Count + enemy.World.Problems.Count, "Sniper stock framing");
+        Console.WriteLine("SNIPER FIXED DAMAGE BOOTSTRAP PASS: both retained stock shots, exact neutral and armored damage.");
         return Array.Empty<byte>();
+
+        async Task<int> CastAsync(ushort id, string frame, int expected, int resisted = 0)
+        {
+            int conceal = actor.World.RpcSnapshot().Count;
+            actor.SendRpc(ConcealFrame);
+            await EvidenceRetestWire.CastBarAsync(actor, Conceal, 2);
+            byte[] on = AbilityBuffs.BuildExclusive(Conceal, true), off = AbilityBuffs.BuildExclusive(Conceal, false);
+            await ObserveAsync(actor, conceal, rpc => rpc.Bytes.AsSpan().SequenceEqual(on), "Captured Concealment becomes active");
+            int from = actor.World.RpcSnapshot().Count, targetAt = enemy.World.RpcSnapshot().Count;
+            actor.SendRpc(WithHandle(frame, handle));
+            await ObserveAsync(actor, from, rpc => rpc.Bytes.AsSpan().SequenceEqual(off), $"Captured {id} consumes Concealment");
+            await EvidenceRetestWire.CastBarAsync(actor, id, 6);
+            byte[] damage = AbilityMessages.Damage(false, id, actor.Handle, enemy.Handle, expected, resisted);
+            await ObserveAsync(enemy, targetAt, rpc => rpc.Bytes.AsSpan().SequenceEqual(damage), $"Captured {id} lands for {expected}");
+            await EvidenceRetestWire.TimerAsync(actor, from, id, AbilityCooldowns.OwnTimer, 45);
+            return from;
+        }
+
+        async Task WaitOwnAsync(ushort id, int from)
+        {
+            var end = BytePattern.Parse($"80 bd 01 {EvidenceRetestWire.Le(id)} 04 00 00 34 42 00");
+            await actor.WaitUntilAsync(() => actor.World.RpcSnapshot().Skip(from).Any(f => end.IsMatch(f.Bytes)),
+                $"Natural 45 s reuse of {id}", TimeSpan.FromSeconds(49));
+        }
     }
 }
