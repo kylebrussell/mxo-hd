@@ -96,6 +96,9 @@ public class DistractingBlowTests
         Assert.True(DistractingBlow.RetainsStealthDuringCast(1128));
 
         Assert.True(DistractingBlow.TryRefuse(caster, 1128, 0, null, out uint reason));
+        Assert.Equal(AbilityRefusals.CasterStateRequired, reason);
+        caster.playerData.conditionStateFlags |= Stealth.StealthedFlag;
+        Assert.True(DistractingBlow.TryRefuse(caster, 1128, 0, null, out reason));
         Assert.Equal(AbilityRefusals.InvalidTarget, reason);
     }
 }

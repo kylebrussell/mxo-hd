@@ -256,7 +256,7 @@ namespace hds
             ConditionalThrownDamage.Npc(client,mob,targetViewId,abilityId,fx,conditionalFence);
             GhostStrikeCallbacks.Accepted(ghostStrike);
             CombatSpecials.Landed(client, abilityId);
-            SpyAbilityRegistry.Landed(client, abilityId);
+            SpyAbilityRegistry.Landed(client, abilityId, mob.getEntityId());
             Output.WriteDebugLog("[ABILITY] " + abilityId + " lands on view " + targetViewId + " for " + damage);
             return true;
         }

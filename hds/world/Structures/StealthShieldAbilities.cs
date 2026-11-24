@@ -21,7 +21,7 @@ namespace hds
         });
         public static bool IsTool(uint goid)=>tools.Value.Contains(goid);
         private sealed class Session { internal int Action; internal Motion Motion; }
-        private sealed class Motion { internal int Token,World,Life;internal ulong Target;internal byte Counter,PreviousStance;internal double Until; internal readonly Dictionary<WorldClient,(uint Actor,uint Target)> Sent=new Dictionary<WorldClient,(uint Actor,uint Target)>(); }
+        private sealed class Motion { internal int Token,World,Life;internal ulong Target;internal ushort Ability;internal byte Counter,PreviousStance;internal double Until; internal readonly Dictionary<WorldClient,(uint Actor,uint Target)> Sent=new Dictionary<WorldClient,(uint Actor,uint Target)>(); }
         private static readonly ConditionalWeakTable<WorldClient,Session> sessions=new ConditionalWeakTable<WorldClient,Session>();
         private static Session Of(WorldClient c)=>sessions.GetValue(c,_=>new Session());
         public sealed class Cast
@@ -103,7 +103,7 @@ namespace hds
             PvpFlag.OnFightStarts(caster,target!=null);
             if(id==BullDog)
             {
-                PlayThrow(caster,target?.playerData.getEntityId()??mob.getEntityId(),cast);
+                PlayThrow(caster,target?.playerData.getEntityId()??mob.getEntityId(),id);
                 var effect=new TempMods.Effect{Ability=id,Mods=new[]{new TempMods.Mod{Kind=TempMods.KindLinked,Target=NullTarget,
                     MinValue=10,MaxValue=10,Seconds=.5f,Proc=TempMods.Proc.Terminal}}};
                 TimedEffects.Apply(subject,effect,now,caster,TimedEffects.PlayerName(caster),targetView,configure:m=>m.OnExpired=(s,a)=>
@@ -153,18 +153,22 @@ namespace hds
             // Target kind1 resolves a receiver-local view/spawn handle (62671a21..55); bit0x40 would name a GOID.
             bytes.AddRange(new byte[]{1,0x20,counter,1,Aggro,KnifeThrow});bytes.AddRange(BitConverter.GetBytes(ability));bytes.AddRange(BitConverter.GetBytes(target));return bytes.ToArray();
         }
-        private static void PlayThrow(WorldClient caster,ulong target,Cast cast)
+        internal static void PlayThrow(WorldClient caster,ulong target,ushort ability)
         {
-            var state=Of(caster);var motion=new Motion{Token=state.Action,World=cast.World,Life=cast.Life,Target=target,
+            if (target == 0 || caster.viewMan == null) return;
+            var state=Of(caster);var motion=new Motion{Token=state.Action,World=caster.playerData.worldGeneration,
+                Life=caster.playerData.lifeGeneration,Target=target,Ability=ability,
                 Counter=++caster.playerData.emoteCounter,PreviousStance=caster.playerData.stance,Until=TimeUtils.GetSimTimeSeconds()+MotionSeconds};
             state.Motion=motion;
             var ownTarget=caster.viewMan.FindViewForEntity(target);
-            if(ownTarget?.viewCreated==true)caster.messageQueue.addObjectMessage(BuildThrow(true,motion.Counter,BullDog,DuelPackets.Handle(ownTarget.ViewID,ownTarget.spawnId)),false);
+            if(ownTarget?.viewCreated==true)caster.messageQueue.addObjectMessage(BuildThrow(true,motion.Counter,motion.Ability,DuelPackets.Handle(ownTarget.ViewID,ownTarget.spawnId)),false);
             foreach(var observer in SocialHandler.OnlineWhere(c=>c!=caster&&c.playerData.getDistrictId()==caster.playerData.getDistrictId()))
             {var actor=observer.viewMan.FindViewForEntity(caster.playerData.getEntityId());if(actor?.viewCreated==true)SendMotion(observer,caster,actor.ViewID,motion);}
             DelayedActions.AfterFor(caster,MotionSeconds,()=>
             {
-                if(!Live(caster,cast)||state.Motion!=motion)return;state.Motion=null;
+                if(!caster.Alive || caster.playerData.isDead || caster.playerData.duelDeath ||
+                    caster.playerData.worldGeneration!=motion.World || caster.playerData.lifeGeneration!=motion.Life || state.Motion!=motion)return;
+                state.Motion=null;
                 ResetMotion(caster,motion.PreviousStance);
             });
         }
@@ -177,7 +181,7 @@ namespace hds
             uint actorHandle=DuelPackets.Handle(actor,actorView.spawnId);
             uint targetHandle=DuelPackets.Handle(target.ViewID,target.spawnId);
             lock(motion.Sent){if(motion.Sent.TryGetValue(observer,out var sent)&&sent==(actorHandle,targetHandle))return;motion.Sent[observer]=(actorHandle,targetHandle);}
-            observer.messageQueue.addObjectMessage(WorldServer.BuildViewUpdate(actor,BuildThrow(false,motion.Counter,BullDog,DuelPackets.Handle(target.ViewID,target.spawnId))),false);observer.FlushQueue();
+            observer.messageQueue.addObjectMessage(WorldServer.BuildViewUpdate(actor,BuildThrow(false,motion.Counter,motion.Ability,DuelPackets.Handle(target.ViewID,target.spawnId))),false);observer.FlushQueue();
         }
         private static void ResetMotion(WorldClient caster,byte stance)
         {

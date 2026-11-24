@@ -25,7 +25,7 @@ namespace hds
             return false;
         }
 
-        void OnLanded(WorldClient caster, ushort abilityId) { }
+        void OnLanded(WorldClient caster, ushort abilityId, ulong targetEntity) { }
     }
 
     /// <summary>
@@ -82,13 +82,13 @@ namespace hds
             return false;
         }
 
-        public static void Landed(WorldClient caster, ushort abilityId)
+        public static void Landed(WorldClient caster, ushort abilityId, ulong targetEntity = 0)
         {
             ushort canonical = AbilityCatalog.Canonical(abilityId);
             if (!TryGet(canonical, out var handler)) return;
             if (handler.RetainsStealthDuringCast(canonical))
                 Stealth.BreakForAction(caster, "landed ability " + canonical);
-            handler.OnLanded(caster, canonical);
+            handler.OnLanded(caster, canonical, targetEntity);
         }
     }
 }
