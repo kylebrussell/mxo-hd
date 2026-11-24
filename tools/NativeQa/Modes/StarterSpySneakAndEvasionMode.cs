@@ -57,7 +57,7 @@ public sealed class StarterSpySneakAndEvasionMode : NativeQaMode
         {
             ["MXO_AGGRO"] = "0",
             ["MXO_MOB_WANDER"] = "0",
-            ["MXO_PVP_SERVER"] = "1"
+            ["MXO_PVP_SERVER"] = "1", ["MXO_DISABLE_EVASION_QA"] = "land"
         },
         readyMessages: new[]
         {
