@@ -1,0 +1,203 @@
+{
+  "abilities": {
+    "340": {
+      "note": "Native fixed-damage verification. https://github.com/kylebrussell/mxo-hd/pull/1099#issuecomment-7136558966",
+      "checks": {
+        "damage": {
+          "source": "The shipped GOB records fixed thrown endpoints 80/80.",
+          "runtime": "The authored base reaches the live damage scale and thrown mitigation.",
+          "test": "MasterKnifeThrowerFixedDamageMode replays the stock request. Stock measured 123 unarmored and 101 against +75 matching resistance. https://github.com/kylebrussell/mxo-hd/pull/1099#issuecomment-7136558966"
+        },
+        "source-parity": {
+          "source": "The shipped GOB records fixed thrown endpoints 80/80. This credit concerns the fixed damage policy.",
+          "runtime": "The authored base reaches the live damage scale and thrown mitigation.",
+          "test": "MasterKnifeThrowerFixedDamageMode replays the stock request. Stock measured 123 unarmored and 101 against +75 matching resistance. https://github.com/kylebrussell/mxo-hd/pull/1099#issuecomment-7136558966"
+        }
+      }
+    },
+    "347": {
+      "note": "Native fixed-damage verification. https://github.com/kylebrussell/mxo-hd/pull/1099#issuecomment-7136558966",
+      "checks": {
+        "damage": {
+          "source": "The shipped GOB records fixed thrown endpoints 57/57.",
+          "runtime": "The authored base reaches the live damage scale and thrown mitigation.",
+          "test": "MasterKnifeThrowerFixedDamageMode replays the stock request. Stock measured 87 unarmored and 71 against +75 matching resistance. https://github.com/kylebrussell/mxo-hd/pull/1099#issuecomment-7136558966"
+        },
+        "source-parity": {
+          "source": "The shipped GOB records fixed thrown endpoints 57/57. This credit concerns the fixed damage policy.",
+          "runtime": "The authored base reaches the live damage scale and thrown mitigation.",
+          "test": "MasterKnifeThrowerFixedDamageMode replays the stock request. Stock measured 87 unarmored and 71 against +75 matching resistance. https://github.com/kylebrussell/mxo-hd/pull/1099#issuecomment-7136558966"
+        }
+      }
+    },
+    "386": {
+      "note": "Native fixed-damage verification. https://github.com/kylebrussell/mxo-hd/pull/1099#issuecomment-7136558966 Sneak activation and consumption were observed. The log did not show move 19600.",
+      "checks": {
+        "damage": {
+          "source": "The shipped GOB records fixed thrown endpoints 92/92.",
+          "runtime": "The authored base reaches the Sneak scripted bonus, then the live damage scale and thrown mitigation.",
+          "test": "MasterKnifeThrowerFixedDamageMode replays the stock request. Stock measured 1527 unarmored and 1256 against +75 matching resistance. https://github.com/kylebrussell/mxo-hd/pull/1099#issuecomment-7136558966"
+        },
+        "source-parity": {
+          "source": "The shipped GOB records fixed thrown endpoints 92/92. This credit concerns the fixed damage policy.",
+          "runtime": "The authored base reaches the Sneak scripted bonus, then the live damage scale and thrown mitigation.",
+          "test": "MasterKnifeThrowerFixedDamageMode replays the stock request. Stock measured 1527 unarmored and 1256 against +75 matching resistance. https://github.com/kylebrussell/mxo-hd/pull/1099#issuecomment-7136558966"
+        }
+      }
+    },
+    "406": {
+      "note": "Native fixed-damage verification. https://github.com/kylebrussell/mxo-hd/pull/1101#issuecomment-7136728111",
+      "checks": {
+        "damage": {
+          "source": "The shipped GOB records fixed physical endpoints 23/23.",
+          "runtime": "The authored base reaches the live damage scale and physical mitigation.",
+          "test": "AikidoGrandmasterFixedDamageMode replays the stock request. Stock measured 31 unarmored and 25 against +75 matching resistance. https://github.com/kylebrussell/mxo-hd/pull/1101#issuecomment-7136728111"
+        },
+        "source-parity": {
+          "source": "The shipped GOB records fixed physical endpoints 23/23. This credit concerns the fixed damage policy.",
+          "runtime": "The authored base reaches the live damage scale and physical mitigation.",
+          "test": "AikidoGrandmasterFixedDamageMode replays the stock request. Stock measured 31 unarmored and 25 against +75 matching resistance. https://github.com/kylebrussell/mxo-hd/pull/1101#issuecomment-7136728111"
+        }
+      }
+    },
+    "407": {
+      "note": "Native fixed-damage verification. https://github.com/kylebrussell/mxo-hd/pull/1101#issuecomment-7136728111",
+      "checks": {
+        "damage": {
+          "source": "The shipped GOB records fixed physical endpoints 21/21.",
+          "runtime": "The authored base reaches the live damage scale and physical mitigation.",
+          "test": "AikidoGrandmasterFixedDamageMode replays the stock request. Stock measured 28 unarmored and 23 against +75 matching resistance. https://github.com/kylebrussell/mxo-hd/pull/1101#issuecomment-7136728111"
+        },
+        "source-parity": {
+          "source": "The shipped GOB records fixed physical endpoints 21/21. This credit concerns the fixed damage policy.",
+          "runtime": "The authored base reaches the live damage scale and physical mitigation.",
+          "test": "AikidoGrandmasterFixedDamageMode replays the stock request. Stock measured 28 unarmored and 23 against +75 matching resistance. https://github.com/kylebrussell/mxo-hd/pull/1101#issuecomment-7136728111"
+        },
+        "choreography": {
+          "source": "The stock ILDB maps the landed named Aikido special.",
+          "runtime": "An admitted and won exchange routes to the named move.",
+          "test": "Native saw result 0x100 and the named move (827). An exchange win was armed by the disposable fixture. https://github.com/kylebrussell/mxo-hd/pull/1101#issuecomment-7136728111"
+        }
+      }
+    },
+    "411": {
+      "note": "Native fixed-damage verification. https://github.com/kylebrussell/mxo-hd/pull/1101#issuecomment-7136728111",
+      "checks": {
+        "damage": {
+          "source": "The shipped GOB records fixed physical endpoints 96/96.",
+          "runtime": "The authored base reaches the live damage scale and physical mitigation.",
+          "test": "AikidoGrandmasterFixedDamageMode replays the stock request. Stock measured 129 unarmored and 106 against +75 matching resistance. https://github.com/kylebrussell/mxo-hd/pull/1101#issuecomment-7136728111"
+        },
+        "source-parity": {
+          "source": "The shipped GOB records fixed physical endpoints 96/96. This credit concerns the fixed damage policy.",
+          "runtime": "The authored base reaches the live damage scale and physical mitigation.",
+          "test": "AikidoGrandmasterFixedDamageMode replays the stock request. Stock measured 129 unarmored and 106 against +75 matching resistance. https://github.com/kylebrussell/mxo-hd/pull/1101#issuecomment-7136728111"
+        },
+        "choreography": {
+          "source": "The stock ILDB maps the landed named Aikido special.",
+          "runtime": "An admitted and won exchange routes to the named move.",
+          "test": "Native saw result 0x100 and the named move (735). An exchange win was armed by the disposable fixture. https://github.com/kylebrussell/mxo-hd/pull/1101#issuecomment-7136728111"
+        }
+      }
+    },
+    "412": {
+      "note": "Native fixed-damage verification. https://github.com/kylebrussell/mxo-hd/pull/1101#issuecomment-7136728111",
+      "checks": {
+        "damage": {
+          "source": "The shipped GOB records fixed physical endpoints 113/113.",
+          "runtime": "The authored base reaches the live damage scale and physical mitigation.",
+          "test": "AikidoGrandmasterFixedDamageMode replays the stock request. Stock measured 152 unarmored and 125 against +75 matching resistance. https://github.com/kylebrussell/mxo-hd/pull/1101#issuecomment-7136728111"
+        },
+        "source-parity": {
+          "source": "The shipped GOB records fixed physical endpoints 113/113. This credit concerns the fixed damage policy.",
+          "runtime": "The authored base reaches the live damage scale and physical mitigation.",
+          "test": "AikidoGrandmasterFixedDamageMode replays the stock request. Stock measured 152 unarmored and 125 against +75 matching resistance. https://github.com/kylebrussell/mxo-hd/pull/1101#issuecomment-7136728111"
+        },
+        "choreography": {
+          "source": "The stock ILDB maps the landed named Aikido special.",
+          "runtime": "An admitted and won exchange routes to the named move.",
+          "test": "Native saw result 0x100 and the named move (751). An exchange win was armed by the disposable fixture. https://github.com/kylebrussell/mxo-hd/pull/1101#issuecomment-7136728111"
+        }
+      }
+    },
+    "501": {
+      "note": "Native fixed-damage verification. https://github.com/kylebrussell/mxo-hd/pull/1098#issuecomment-7136401760",
+      "checks": {
+        "damage": {
+          "source": "The shipped GOB records fixed ballistic endpoints 109/109.",
+          "runtime": "The authored base reaches the live damage scale and ballistic mitigation.",
+          "test": "DuelistFixedDamageMode replays the stock request. Stock measured 129 unarmored and 104 against +75 matching resistance. https://github.com/kylebrussell/mxo-hd/pull/1098#issuecomment-7136401760"
+        },
+        "source-parity": {
+          "source": "The shipped GOB records fixed ballistic endpoints 109/109. This credit concerns the fixed damage policy.",
+          "runtime": "The authored base reaches the live damage scale and ballistic mitigation.",
+          "test": "DuelistFixedDamageMode replays the stock request. Stock measured 129 unarmored and 104 against +75 matching resistance. https://github.com/kylebrussell/mxo-hd/pull/1098#issuecomment-7136401760"
+        }
+      }
+    },
+    "502": {
+      "note": "Native fixed-damage verification. https://github.com/kylebrussell/mxo-hd/pull/1098#issuecomment-7136401760",
+      "checks": {
+        "damage": {
+          "source": "The shipped GOB records fixed ballistic endpoints 45/45.",
+          "runtime": "The authored base reaches the live damage scale and ballistic mitigation.",
+          "test": "DuelistFixedDamageMode replays the stock request. Stock measured 53 unarmored and 42 against +75 matching resistance. https://github.com/kylebrussell/mxo-hd/pull/1098#issuecomment-7136401760"
+        },
+        "source-parity": {
+          "source": "The shipped GOB records fixed ballistic endpoints 45/45. This credit concerns the fixed damage policy.",
+          "runtime": "The authored base reaches the live damage scale and ballistic mitigation.",
+          "test": "DuelistFixedDamageMode replays the stock request. Stock measured 53 unarmored and 42 against +75 matching resistance. https://github.com/kylebrussell/mxo-hd/pull/1098#issuecomment-7136401760"
+        }
+      }
+    },
+    "504": {
+      "note": "Native fixed-damage verification. https://github.com/kylebrussell/mxo-hd/pull/1100#issuecomment-7136282761",
+      "checks": {
+        "damage": {
+          "source": "The shipped GOB records fixed ballistic endpoints 22/22.",
+          "runtime": "The authored base reaches the live damage scale and ballistic mitigation.",
+          "test": "SniperShotMode replays the stock request. Stock measured 24 unarmored and 21 against +20 matching resistance. https://github.com/kylebrussell/mxo-hd/pull/1100#issuecomment-7136282761"
+        },
+        "source-parity": {
+          "source": "The shipped GOB records fixed ballistic endpoints 22/22. This credit concerns the fixed damage policy.",
+          "runtime": "The authored base reaches the live damage scale and ballistic mitigation.",
+          "test": "SniperShotMode replays the stock request. Stock measured 24 unarmored and 21 against +20 matching resistance. https://github.com/kylebrussell/mxo-hd/pull/1100#issuecomment-7136282761"
+        }
+      }
+    },
+    "505": {
+      "note": "SniperShotMode replays the stock request. Stock measured 52 unarmored and 47 against +20 matching resistance. https://github.com/kylebrussell/mxo-hd/pull/1100#issuecomment-7136282761 The archived original damage of 1660 with 182 absorbed leaves damage scaling and source-parity open.",
+      "checks": {}
+    },
+    "869": {
+      "note": "Native fixed-damage verification. https://github.com/kylebrussell/mxo-hd/pull/1097#issuecomment-7136057806 The natural Disarm proc did not occur during the three casts.",
+      "checks": {
+        "damage": {
+          "source": "The shipped GOB records fixed physical endpoints 312/312.",
+          "runtime": "The authored base reaches the live damage scale and physical mitigation.",
+          "test": "ZenMasterFixedDamageMode replays the stock request. Stock measured 402 unarmored and 365 against +75 matching resistance. https://github.com/kylebrussell/mxo-hd/pull/1097#issuecomment-7136057806"
+        },
+        "source-parity": {
+          "source": "The shipped GOB records fixed physical endpoints 312/312. This credit concerns the fixed damage policy.",
+          "runtime": "The authored base reaches the live damage scale and physical mitigation.",
+          "test": "ZenMasterFixedDamageMode replays the stock request. Stock measured 402 unarmored and 365 against +75 matching resistance. https://github.com/kylebrussell/mxo-hd/pull/1097#issuecomment-7136057806"
+        }
+      }
+    },
+    "870": {
+      "note": "Native fixed-damage verification. https://github.com/kylebrussell/mxo-hd/pull/1097#issuecomment-7136057806",
+      "checks": {
+        "damage": {
+          "source": "The shipped GOB records fixed physical endpoints 325/325.",
+          "runtime": "The authored base reaches the live damage scale and physical mitigation.",
+          "test": "ZenMasterFixedDamageMode replays the stock request. Stock measured 419 unarmored and 380 against +75 matching resistance. https://github.com/kylebrussell/mxo-hd/pull/1097#issuecomment-7136057806"
+        },
+        "source-parity": {
+          "source": "The shipped GOB records fixed physical endpoints 325/325. This credit concerns the fixed damage policy.",
+          "runtime": "The authored base reaches the live damage scale and physical mitigation.",
+          "test": "ZenMasterFixedDamageMode replays the stock request. Stock measured 419 unarmored and 380 against +75 matching resistance. https://github.com/kylebrussell/mxo-hd/pull/1097#issuecomment-7136057806"
+        }
+      }
+    }
+  }
+}
