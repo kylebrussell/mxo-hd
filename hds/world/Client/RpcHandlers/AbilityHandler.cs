@@ -533,17 +533,18 @@ namespace hds
                 return;
             }
 
+            bool distractingBlow = AbilityID == DistractingBlow.Id;
             string abilityName = CoderPets.DisplayName(AbilityID) ?? currentAbility.getAbilityName();
             Output.WriteDebugLog("[ABILITY] " + AbilityID + " (" + abilityName + ") on view " + currentTargetViewId);
 
             {
                 ushort? spawn = packet.Length == 41 ? (ushort?)BitConverter.ToUInt16(packet, 4) : null;
-                if (poisonKnife || woundingThrow || guardedKnifeThrow)
+                if (poisonKnife || woundingThrow || guardedKnifeThrow || distractingBlow)
                     thrownTargetSpawn = spawn ?? (ushort?)Store.currentClient.viewMan.getViewById(currentTargetViewId)?.spawnId;
                 if (SpyAbilityRegistry.TryRefuse(Store.currentClient, AbilityID, currentTargetViewId, thrownTargetSpawn ?? spawn, out uint refusalReason))
                 {
                     uint requiredStates = refusalReason == AbilityRefusals.CasterStateRequired &&
-                        (AbilityCatalog.Canonical(AbilityID) == SpyMasterSneakOpeners.FreedomToJoints || AbilityCatalog.Canonical(AbilityID) == DistractingBlow.Id) ? Stealth.StealthedFlag : 0u;
+                        (AbilityID == SpyMasterSneakOpeners.FreedomToJoints || distractingBlow) ? Stealth.StealthedFlag : 0u;
                     Store.currentClient.messageQueue.addRpcMessage(AbilityRefusals.Encode(new AbilityRefusals.Record(AbilityID, refusalReason, states: requiredStates)));
                     Store.currentClient.FlushQueue();
                     Output.WriteDebugLog("[ABILITY] Denied " + AbilityID + ": native refusal " + refusalReason);
@@ -1329,6 +1330,12 @@ namespace hds
                 MasterKnifeThrowerBatch.TryRefuse(client, AbilityID, currentTargetViewId, thrownTargetSpawn, out _)))
             {
                 Output.WriteDebugLog($"[ABILITY] {AbilityID} fizzles: the selected opponent changed, left range or left sight");
+                return;
+            }
+            if (distractingBlow && (!AbilityPassives.IsLoaded(client, AbilityID) || !thrownTargetSpawn.HasValue ||
+                DistractingBlow.TryRefuse(client, AbilityID, currentTargetViewId, thrownTargetSpawn, out _)))
+            {
+                Output.WriteDebugLog("[ABILITY] 1128 fizzles: the loaded cast, stealth or selected target no longer qualifies");
                 return;
             }
             if (sniperShot)
