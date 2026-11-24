@@ -31,8 +31,9 @@ namespace hds
             if (command == "beltblind" && args.Length == 1) return InvisibilityBeltQa.BlindWatcher(caller);
             if (command == "vw" && args.Length == 1) return CombatFixtureWeapons.ArmVanishWin(caller);
             if (command == "pw" && args.Length == 1) return CombatFixtureWeapons.ArmPistolWhipLoss(caller);
-            if (command == "a75" && args.Length == 1 && Environment.GetEnvironmentVariable("MXO_KI_AREA_QA") == "1")
-                return CombatFixtureWeapons.ResetDummy(caller, addPhysicalResistance: true);
+            if ((command == "a0" || command == "a75") && args.Length == 1 &&
+                Environment.GetEnvironmentVariable("MXO_KI_AREA_QA") == "1")
+                return CombatFixtureWeapons.ResetDummy(caller, addPhysicalResistance: command == "a75");
             if (command == "fixture-reset-ballistic-resisted") return CombatFixtureWeapons.ResetDummy(caller, resistanceStat: 181);
             if (command == "fixture-reset") return CombatFixtureWeapons.ResetDummy(caller);
             if (command == "fixture-reset-resisted") return CombatFixtureWeapons.ResetDummy(caller, addPhysicalResistance: true);
