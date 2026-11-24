@@ -118,6 +118,7 @@ namespace hds
             bool lostShadowGrant;
             bool hadImprovedSneak;
             bool writeCodeAdded;
+            int previousInvisibilityPace = Total(client, AbilityBuffs.InvisibilityMovementBonusStat);
             lock (state)
             {
                 state.Generation++;
@@ -179,6 +180,9 @@ namespace hds
                 CraftingSession.Check(client);
             }
             Refresh(client, !newWorld);
+            if (!newWorld && Stealth.Current(client)?.Def.Ability == Stealth.InvisibilityGrantAbility &&
+                previousInvisibilityPace != Total(client, AbilityBuffs.InvisibilityMovementBonusStat))
+                AbilityBuffs.PresentCurrentMovementScale(client);
             EvasionShield.LoadoutChanged(client);
             AbilityDesperation.LoadoutChanged(client);
             ProxyTechnician.LoadoutChanged(client);

@@ -358,6 +358,9 @@ namespace hds
                 ? stealth.Mods.Where(modifier => modifier.Stat == SneakMovementStat).Sum(modifier => modifier.Value) / 100f
                 : 0f;
             ushort stat = MovementStatFor(stealth);
+            // GOB 878 links to the owner percentage 1051. A stock Belt uses this channel.
+            if (stealth?.Def.Ability == Stealth.InvisibilityGrantAbility)
+                stanceScale += AbilityStats.Player(client, InvisibilityMovementBonusStat) / 100f;
             ushort movementUpgrade = stat switch
             {
                 SneakMovementStat => InfiltratorUpgrade,
@@ -400,6 +403,7 @@ namespace hds
         private const ushort InfiltratorUpgrade = 1115;
         private static bool UsesStanceMovement(ushort id) => id == InfiltratorUpgrade || id == AbilityShadowPresentation.Child;
 
+        internal const ushort InvisibilityMovementBonusStat = 1051;
         private const ushort RunMovementStat = 115, SneakMovementStat = 877, InvisibleMovementStat = 878;
 
         private static bool UsesStanceMovementChannel(ushort source) => source == CrashAbility || source == BottleneckField ||
