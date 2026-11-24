@@ -21,6 +21,9 @@ namespace hds
             if (command == "foundations-viral") return CombatFoundationsQa.Setup(caller, "viral");
             if (command == "foundations-viral-peer") return CombatFoundationsQa.Setup(caller, "viral-peer");
             if (command == "cip") return CombatFoundationsQa.Setup(caller, "code-infection");
+            if ((command == "k0" || command == "k75") && args.Length == 1 &&
+                Environment.GetEnvironmentVariable("MXO_KNIFE_FIXED_DAMAGE_QA") == "1")
+                return CombatFixtureWeapons.ResetDummy(caller, resistanceStat: command == "k75" ? (ushort)1033 : (ushort)0);
             if (command == "fixture-weapon" || command == "w") return CombatFixtureWeapons.Set(caller, args.Length == 2 ? args[1] : "");
             if (command == "fixture-disengage" || command == "stop") return CombatFixtureWeapons.Disengage(caller);
             if (command == "rb" && args.Length == 1) return CombatFixtureWeapons.ArmRifleEscapeWin(caller);
