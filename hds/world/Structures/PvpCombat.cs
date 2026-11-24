@@ -462,7 +462,7 @@ namespace hds
             // victim and their watchers; the caster's execution animation is a separate view update.
             ServerPackets.SendPlayerAbilityEffect(target, fx);
             CombatSpecials.Landed(caster, abilityId);
-            SpyAbilityRegistry.Landed(caster, abilityId);
+            SpyAbilityRegistry.Landed(caster, abilityId, target.playerData.getEntityId());
             if (Damage(target, damage))
             {
                 Defeated(target, caster);

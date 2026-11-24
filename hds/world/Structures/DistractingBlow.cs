@@ -28,9 +28,29 @@ namespace hds
                 reason = AbilityRefusals.MustBeOutsideCombat;
                 return true;
             }
-            if (!AbilityTargets.HasLiveAttackSelection(caster, targetViewId, spawn))
+            if (CombatStyles.Active(caster) != CombatStyles.SpyStyle)
+            {
+                reason = AbilityRefusals.WrongStyle;
+                return true;
+            }
+            if ((PvpFlag.FlagsOf(caster) & Stealth.StealthedFlag) == 0)
+            {
+                reason = AbilityRefusals.CasterStateRequired;
+                return true;
+            }
+            if (!AbilityTargets.HasLiveAttackSelection(caster, targetViewId, spawn, requireOpponent: true))
             {
                 reason = AbilityRefusals.InvalidTarget;
+                return true;
+            }
+            if (!AbilityTargets.WithinSelectionRange(caster, Id, targetViewId))
+            {
+                reason = AbilityRefusals.TargetOutOfRange;
+                return true;
+            }
+            if (!AbilityTargets.HasSelectionSight(caster, AbilityCatalog.Find(Id), targetViewId))
+            {
+                reason = AbilityRefusals.TargetNotInSight;
                 return true;
             }
             return false;
@@ -136,9 +156,11 @@ namespace hds
         }
         public bool TryResolveDamage(AbilityCatalog.Entry source, int characterLevel, Random random, out ushort damage) =>
             DistractingBlow.TryResolveDamage(source, characterLevel, out damage);
-        public void OnLanded(WorldClient caster, ushort abilityId)
+        public void OnLanded(WorldClient caster, ushort abilityId, ulong targetEntity)
         {
-            if (abilityId == DistractingBlow.Id) DistractingBlow.Landed(caster);
+            if (abilityId != DistractingBlow.Id) return;
+            StealthShieldAbilities.PlayThrow(caster, targetEntity, abilityId);
+            DistractingBlow.Landed(caster);
         }
     }
 }
