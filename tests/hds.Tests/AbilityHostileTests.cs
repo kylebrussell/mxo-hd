@@ -13,6 +13,47 @@ public class AbilityHostileWorldCollection { }
 public class AbilityHostileTests
 {
     [Fact]
+    public void ProxyMasterSweepsOnlyTheRecipientOnInitAndEveryTenSeconds()
+    {
+        var subject = TimedEffects.ForMob(new Mob());
+        var witness = TimedEffects.ForMob(new Mob());
+        Assert.True(TempMods.TryGet(86, out var debuff));
+        Assert.True(AbilityHostile.Cleansable(86));
+        double now = TimeUtils.GetSimTimeSeconds();
+        var previous = AbilityHostile.PulseRandom;
+        try
+        {
+            AbilityHostile.PulseRandom = new FixedSweepRoll();
+            TimedEffects.Apply(subject, debuff, now);
+            TimedEffects.Apply(witness, debuff, now);
+            Assert.True(AbilityHostile.ApplySweepToSubject(null, subject, 1107));
+            Assert.DoesNotContain(subject.Effects.Snapshot(), mod => mod.Parent == 86);
+            Assert.Contains(witness.Effects.Snapshot(), mod => mod.Parent == 86);
+            var pulse = Assert.Single(subject.Effects.Snapshot(), mod => mod.Parent == 1107);
+            Assert.Equal((710, 10, 600f, 10d), ((int)pulse.Target, pulse.Value, pulse.Seconds, pulse.Interval));
+            TimedEffects.Apply(subject, debuff, pulse.Start + .1);
+            TimedEffects.RunDue(pulse.Start + 9.9);
+            Assert.Contains(subject.Effects.Snapshot(), mod => mod.Parent == 86);
+            TimedEffects.RunDue(pulse.Start + 10.1);
+            Assert.DoesNotContain(subject.Effects.Snapshot(), mod => mod.Parent == 86);
+            Assert.Contains(witness.Effects.Snapshot(), mod => mod.Parent == 86);
+        }
+        finally
+        {
+            AbilityHostile.PulseRandom = previous;
+            TimedEffects.RemoveParent(subject, 1107);
+            TimedEffects.RemoveParent(subject, 86);
+            TimedEffects.RemoveParent(witness, 86);
+        }
+    }
+
+    private sealed class FixedSweepRoll : Random
+    {
+        public override int Next(int maxValue) => 0;
+    }
+
+
+    [Fact]
     public void CodeConversionUsesTheThirtyPercentBoundaryOncePerHealthChange()
     {
         var caster = Client();
