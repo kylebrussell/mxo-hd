@@ -1,0 +1,87 @@
+{
+  "families": {
+    "ravager-stock-472": {
+      "representative": 472,
+      "result": "pass",
+      "head": "9367a886",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/1040#issuecomment-7118796047",
+      "scope": "Native selected cast and complete ledger: 11 IS, modifier +1016 and 11 × 85; six resisted ticks for 69 and five for 85 after removal. Empty, allied, distant and wall-blocked selections refused without spending. Damage was isolated to the selected recipient. The gated fixture fixes the cast contest only."
+    },
+    "ravager-stock-474": {
+      "representative": 474,
+      "result": "pass",
+      "head": "9367a886",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/1040#issuecomment-7118796047",
+      "scope": "Native selected cast and complete ledger: 13 IS, modifier +1231 and 11 × 103; resisted recast modifier +1248, three ticks for 85 and eight for 104 after resistance ends. Empty, allied, distant and wall-blocked selections refused without spending. Damage was isolated to the selected recipient. The gated fixture fixes the cast contest only."
+    },
+    "ravager-stock-475": {
+      "representative": 475,
+      "result": "pass",
+      "head": "f24c5e47",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/1041#issuecomment-7118310946",
+      "scope": "Native selected cast and complete ledger: 24 IS, modifier +886, 11 × 74 on the primary and the 5.00 m recipient; six resisted ticks for 60 and five at 74 after removal. Empty, allied, distant and wall-blocked selections refused without spending. Target-centered splash excluded the 5.01 m hostile and nearby ally. The gated fixture fixes the cast contest only."
+    }
+  },
+  "abilities": {
+    "472": {
+      "family": "ravager-stock-472",
+      "checks": {
+        "damage": {
+          "source": "GOB 472 stores typed ViralDOT at 2.5 s intervals for 30 s; shipped tempmods.py ViralDOT rounds each tick. The server uses the retained capture-calibrated pool. The authored-to-archived pool conversion remains unknown.",
+          "runtime": "TimedEffects scales the application once by the caster's +42 fixture Viral influence and applies the recipient's live typed resistance on every tick.",
+          "test": "HackerBatchB3ParityTests checks the cadence, exact damage mutation, live resistance and expiry. Stock: 11 IS, modifier +1016 and 11 × 85; six resisted ticks for 69 and five for 85 after removal. https://github.com/kylebrussell/mxo-hd/pull/1040#issuecomment-7118796047"
+        },
+        "targeting": {
+          "source": "GOB 472 uses the 14 m selected hostile route and requires sight.",
+          "runtime": "AbilityHandler binds the selected live opposing spawn at admission, checks selection range and LOS before charge, and rejects a changed original target at completion.",
+          "test": "Stock empty, ally, range and solid wall refusals preserved cast, IS and reuse. Only the selected opponent received the effect. https://github.com/kylebrussell/mxo-hd/pull/1040#issuecomment-7118796047"
+        },
+        "behavior-tests": {
+          "source": "The shipped template records 2 s cast, 12 s own and 4 s shared 702 reuse.",
+          "runtime": "The standard Viral cast and normal cooldown machinery run after selected-hostile admission. The existing +5% cost bonus uses truncation. TempMods schedules the effect and matched removal.",
+          "test": "HackerBatchB3ParityTests verifies eleven ticks and no extra expiry-boundary tick. The disposable fixture verified stock style, NAV and live resistance setup; native verified the actual debit, the initial zero damage, all periodic ticks and matched removal. Native QA did not separately time the reuse. https://github.com/kylebrussell/mxo-hd/pull/1040#issuecomment-7118796047"
+        }
+      }
+    },
+    "474": {
+      "family": "ravager-stock-474",
+      "checks": {
+        "damage": {
+          "source": "GOB 474 stores typed ViralDOT at 2.5 s intervals for 30 s; shipped tempmods.py ViralDOT rounds each tick. The server uses the retained capture-calibrated pool. The authored-to-archived pool conversion remains unknown.",
+          "runtime": "TimedEffects scales the application once by the caster's +42 fixture Viral influence and applies the recipient's live typed resistance on every tick.",
+          "test": "HackerBatchB3ParityTests checks the cadence, exact damage mutation, live resistance and expiry. Stock: 13 IS, modifier +1231 and 11 × 103; resisted recast modifier +1248, three ticks for 85 and eight for 104 after resistance ends. https://github.com/kylebrussell/mxo-hd/pull/1040#issuecomment-7118796047"
+        },
+        "targeting": {
+          "source": "GOB 474 uses the 14 m selected hostile route and requires sight.",
+          "runtime": "AbilityHandler binds the selected live opposing spawn at admission, checks selection range and LOS before charge, and rejects a changed original target at completion.",
+          "test": "Stock empty, ally, range and solid wall refusals preserved cast, IS and reuse. Only the selected opponent received the effect. https://github.com/kylebrussell/mxo-hd/pull/1040#issuecomment-7118796047"
+        },
+        "behavior-tests": {
+          "source": "The shipped template records 2 s cast, 12 s own and 4 s shared 702 reuse.",
+          "runtime": "The standard Viral cast and normal cooldown machinery run after selected-hostile admission. The existing +5% cost bonus uses truncation. TempMods schedules the effect and matched removal.",
+          "test": "HackerBatchB3ParityTests verifies eleven ticks and no extra expiry-boundary tick. The disposable fixture verified stock style, NAV and live resistance setup; native verified the actual debit, the initial zero damage, all periodic ticks and matched removal. Native QA did not separately time the reuse. https://github.com/kylebrussell/mxo-hd/pull/1040#issuecomment-7118796047"
+        }
+      }
+    },
+    "475": {
+      "family": "ravager-stock-475",
+      "checks": {
+        "damage": {
+          "source": "GOB 475 stores typed ViralDOT at 2.5 s intervals for 30 s; shipped tempmods.py ViralDOT rounds each tick. The server uses the retained capture-calibrated pool. The authored-to-archived pool conversion remains unknown.",
+          "runtime": "TimedEffects scales the application once by the caster's +42 fixture Viral influence and applies the recipient's live typed resistance on every tick.",
+          "test": "HackerBatchB3ParityTests checks the cadence, exact damage mutation, live resistance and expiry. Stock: 24 IS, modifier +886, 11 × 74 on the primary and the 5.00 m recipient; six resisted ticks for 60 and five at 74 after removal. https://github.com/kylebrussell/mxo-hd/pull/1041#issuecomment-7118310946"
+        },
+        "targeting": {
+          "source": "GOB 475 uses the 14 m selected hostile route and requires sight. Its selector 3 expands 5 m from the admitted primary.",
+          "runtime": "AbilityHandler binds the selected live opposing spawn at admission, checks selection range and LOS before charge, and rejects a changed original target at completion. Area uses the original primary coordinates and separately checks the recipients.",
+          "test": "Stock empty, ally, range and solid wall refusals preserved cast, IS and reuse. Only the selected primary and the exact 5 m hostile got the DOT; ally and 5.01 m hostile were excluded. https://github.com/kylebrussell/mxo-hd/pull/1041#issuecomment-7118310946"
+        },
+        "behavior-tests": {
+          "source": "The shipped template records 25 base IS, 2 s cast and 12 s reuse.",
+          "runtime": "The standard Viral cast and normal cooldown machinery run after selected-hostile admission. The existing +5% cost bonus uses truncation. TempMods schedules the effect and matched removal.",
+          "test": "HackerBatchB3ParityTests verifies eleven ticks and no extra expiry-boundary tick. The disposable fixture verified stock style, NAV and live resistance setup; native verified the actual debit, the initial zero damage, all periodic ticks and matched removal. Native QA did not separately time the reuse. https://github.com/kylebrussell/mxo-hd/pull/1041#issuecomment-7118310946"
+        }
+      }
+    }
+  }
+}
