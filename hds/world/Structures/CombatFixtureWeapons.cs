@@ -18,12 +18,20 @@ namespace hds
         public const int DummyPhysicalResistance = 75;
         public const string MartialTacticMode = "MXO_MARTIAL_TACTIC_DAMAGE_QA";
         public const string KungFuTacticMode = "MXO_KUNG_FU_TACTIC_DAMAGE_QA";
+        public const string MartialFixedDamageMode = "MXO_MARTIAL_FIXED_DAMAGE_QA";
 
         internal static string PrepareMartialDummy(WorldClient caller, ushort ability, bool armor)
         {
             bool starter = (armor || ability == 138 || ability == 139) && Allowed(caller, MartialTacticMode);
             bool kungFu = (armor || ability == 259 || ability == 260 || ability == 262) && Allowed(caller, KungFuTacticMode);
-            if (!starter && !kungFu) return "Martial preparation requires the matching disposable fixture.";
+            bool karate = (armor || ability == 265 || ability == 266 || ability == 267) &&
+                Allowed(caller, MartialFixedDamageMode, "karate");
+            bool aikido = (armor || ability == 273 || ability == 274 || ability == 296) &&
+                Allowed(caller, MartialFixedDamageMode, "aikido");
+            bool grandmaster = (armor || ability == 427 || ability == 428 || ability == 429 || ability == 430) &&
+                Allowed(caller, MartialFixedDamageMode, "kungfu-grandmaster");
+            if (!starter && !kungFu && !karate && !aikido && !grandmaster)
+                return "Martial preparation requires the matching disposable fixture.";
             var handler = CombatManager.GetHandler(caller);
             var dummy = handler.CurrentNpcTarget;
             ushort selected = caller.playerData.currentSelectedTargetViewId;
@@ -35,15 +43,18 @@ namespace hds
                 ResetDummyEffects(dummy, 180);
                 return "Martial starter dummy resistance +75.";
             }
-            if (ability == 138) CombatDepthOffBalance.Apply(TimedEffects.ForMob(dummy), 60, caller, selected);
-            if (ability == 259) CombatDepthDaze.Apply(TimedEffects.ForMob(dummy), 60, caller, selected);
-            if (ability == 262) CombatDepthStagger.Apply(TimedEffects.ForMob(dummy), 60, caller, selected);
+            if (ability == 138 || ability == 273 || ability == 296 || ability == 427)
+                CombatDepthOffBalance.Apply(TimedEffects.ForMob(dummy), 60, caller, selected);
+            if (ability == 259 || ability == 430)
+                CombatDepthDaze.Apply(TimedEffects.ForMob(dummy), 60, caller, selected);
+            if (ability == 262 || ability == 265)
+                CombatDepthStagger.Apply(TimedEffects.ForMob(dummy), 60, caller, selected);
             handler.ArmMartialFixtureWin(dummy, ability);
             return $"Martial starter fixture armed {ability}.";
         }
 
-        private static bool Allowed(WorldClient caller, string mode) =>
-            Environment.GetEnvironmentVariable(mode) == "1" &&
+        private static bool Allowed(WorldClient caller, string mode, string value = "1") =>
+            Environment.GetEnvironmentVariable(mode) == value &&
             caller.playerData.getCharID() == 110 &&
             QaLoadout.Allowed(Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS"),
                 Store.config?.dbParams?.DatabaseName, caller.playerData.getCharID(),
