@@ -1133,7 +1133,13 @@ namespace hds
         /// </summary>
         public void ProcessRangeCombatRequest(ref byte[] packet)
         {
-            if (!ControlActions.CanUseWeapons(TimedEffects.ForPlayer(client).Effects)) return;
+            var effects = TimedEffects.ForPlayer(client).Effects;
+            if (!ControlActions.CanUseWeapons(effects))
+            {
+                if (effects.HasAt(TempMods.DisarmedAbility, TimeUtils.GetSimTimeSeconds()))
+                    Output.WriteDebugLog($"[DISARM] Free Fire suppressed char={client.playerData.getCharID()} actor={PvpFlag.Name(client)} state=231");
+                return;
+            }
 #if DEBUG
             Output.WriteRpcLog($"[COMBAT] Range combat rpc len={packet.Length} data={StringUtils.bytesToString_NS(packet)}");
 #endif

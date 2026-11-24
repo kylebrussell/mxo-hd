@@ -519,12 +519,13 @@ namespace hds
             if (!ability.HasValue || opposingDefence == ushort.MaxValue) return false;
             ushort id = ability.Value;
             bool whip = id == CombatSpecials.PistolWhip && CombatFixtureWeapons.AllowsPistolWhipWin(caster.Client);
-            if ((!whip && !CombatFixtureWeapons.AllowsAikidoControlWin(caster.Client, id)) ||
+            bool zen = CombatFixtureWeapons.AllowsZenControlWin(caster.Client, id);
+            if ((!whip && !zen && !CombatFixtureWeapons.AllowsAikidoControlWin(caster.Client, id)) ||
                 !ConsumeRoundAid(caster, opponent, id)) return false;
 
             attack = Math.Max(attack, (ushort)(opposingDefence + 1));
             opposingAttack = Math.Min(opposingAttack, defence);
-            string tag = whip ? "PISTOL WHIP QA" : "AIKIDO CONTROL QA";
+            string tag = whip ? "PISTOL WHIP QA" : zen ? "ZEN CONTROL QA" : "AIKIDO CONTROL QA";
             Output.WriteDebugLog($"[{tag}] {id} win consumed for CSR_Tester against QAEnemy.");
             return true;
         }

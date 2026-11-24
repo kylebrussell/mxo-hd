@@ -17,6 +17,7 @@ namespace hds
         public const string PistolWhipLossMode = "MXO_PISTOL_WHIP_LOSS_QA";
         public const string PistolWhipWinMode = "MXO_PISTOL_WHIP_WIN_QA";
         public const string AikidoControlsMode = "MXO_AIKIDO_GM_CONTROLS_QA";
+        public const string ZenControlsMode = "MXO_ZEN_CONTROLS_QA";
         public const int DummyPhysicalResistance = 75;
         public const string MartialTacticMode = "MXO_MARTIAL_TACTIC_DAMAGE_QA";
         public const string KungFuTacticMode = "MXO_KUNG_FU_TACTIC_DAMAGE_QA";
@@ -120,7 +121,7 @@ namespace hds
             CombatSpecials.RifleButtSmash => Allowed(caller, RifleEscapeWinMode),
             Stealth.VanishAbility => Allowed(caller, VanishWinMode),
             CombatSpecials.PistolWhip => Allowed(caller, PistolWhipLossMode) || AllowsPistolWhipWin(caller),
-            _ => AllowsAikidoControlWin(caller, ability)
+            _ => AllowsAikidoControlWin(caller, ability) || AllowsZenControlWin(caller, ability)
         };
 
         internal static bool AllowsAikidoControlWin(WorldClient caller, ushort ability) =>
@@ -133,6 +134,18 @@ namespace hds
                 fight.ArmRoundAid(caller, ability)
                 ? $"Next Aikido {ability} against QAEnemy is armed."
                 : "Aikido win aid requires active interlock with QAEnemy.";
+        }
+
+        internal static bool AllowsZenControlWin(WorldClient caller, ushort ability) =>
+            ZenMasterSpecials.Handles(ability) && Allowed(caller, ZenControlsMode);
+
+        internal static string ArmZenControlWin(WorldClient caller, ushort ability)
+        {
+            if (!AllowsZenControlWin(caller, ability)) return "Zen win aid requires the disposable recipient fixture.";
+            return CombatManager.GetHandler(caller).ActiveInterlockIdentity is PvpFight fight &&
+                fight.ArmRoundAid(caller, ability)
+                ? $"Next Zen {ability} against QAEnemy is armed."
+                : "Zen win aid requires active interlock with QAEnemy.";
         }
 
         internal static string ArmRifleEscapeWin(WorldClient caller)
