@@ -1541,6 +1541,8 @@ namespace hds
                 CombatSpecials.PistolBarrage => 1,
                 CombatSpecials.DualPistolPointBlank => 1,
                 CombatSpecials.DualPistolDash => 1,
+                CombatSpecials.PistolWhip => 1,
+                CombatSpecials.DualPistolExecution => 1,
                 CombatSpecials.FullAuto => 1,
                 CombatSpecials.FullAutoRedux => 1,
                 CombatSpecials.ControlledBurst => 1,
