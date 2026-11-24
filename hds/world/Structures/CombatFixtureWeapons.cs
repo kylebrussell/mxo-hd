@@ -16,6 +16,7 @@ namespace hds
         public const string RifleEscapeWinMode = "MXO_RIFLE_ESCAPE_WIN_QA";
         public const string PistolWhipLossMode = "MXO_PISTOL_WHIP_LOSS_QA";
         public const string PistolWhipWinMode = "MXO_PISTOL_WHIP_WIN_QA";
+        public const string AikidoControlsMode = "MXO_AIKIDO_GM_CONTROLS_QA";
         public const int DummyPhysicalResistance = 75;
         public const string MartialTacticMode = "MXO_MARTIAL_TACTIC_DAMAGE_QA";
         public const string KungFuTacticMode = "MXO_KUNG_FU_TACTIC_DAMAGE_QA";
@@ -119,8 +120,20 @@ namespace hds
             CombatSpecials.RifleButtSmash => Allowed(caller, RifleEscapeWinMode),
             Stealth.VanishAbility => Allowed(caller, VanishWinMode),
             CombatSpecials.PistolWhip => Allowed(caller, PistolWhipLossMode) || AllowsPistolWhipWin(caller),
-            _ => false
+            _ => AllowsAikidoControlWin(caller, ability)
         };
+
+        internal static bool AllowsAikidoControlWin(WorldClient caller, ushort ability) =>
+            (ability == 407 || ability == 411 || ability == 412) && Allowed(caller, AikidoControlsMode);
+
+        internal static string ArmAikidoControlWin(WorldClient caller, ushort ability)
+        {
+            if (!AllowsAikidoControlWin(caller, ability)) return "Aikido win aid requires the disposable recipient fixture.";
+            return CombatManager.GetHandler(caller).ActiveInterlockIdentity is PvpFight fight &&
+                fight.ArmRoundAid(caller, ability)
+                ? $"Next Aikido {ability} against QAEnemy is armed."
+                : "Aikido win aid requires active interlock with QAEnemy.";
+        }
 
         internal static string ArmRifleEscapeWin(WorldClient caller)
         {

@@ -35,7 +35,8 @@ namespace hds
         /// </summary>
         internal static Random ProcRandom(WorldClient caster, WorldClient recipient, ushort ability) =>
             recipient != null && recipient.playerData.getCharID() == 6114 && ((FixedAbilityIds.Contains(ability) && Allowed(caster, Mode)) ||
-                (ability == MartialArtsRemainingSpecials.KiBurst && Allowed(caster, KiBurstMode)))
+                (ability == MartialArtsRemainingSpecials.KiBurst && Allowed(caster, KiBurstMode)) ||
+                ((ability == 411 || ability == 412) && CombatFixtureWeapons.AllowsAikidoControlWin(caster, ability)))
                 ? alwaysProc
                 : null;
     }

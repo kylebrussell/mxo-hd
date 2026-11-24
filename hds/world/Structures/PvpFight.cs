@@ -513,16 +513,19 @@ namespace hds
             return true;
         }
 
-        private bool ApplyPistolWhipWin(Side caster, Side opponent, ushort? ability,
+        private bool ApplyFixtureSpecialWin(Side caster, Side opponent, ushort? ability,
             ref ushort attack, ushort opposingDefence, ref ushort opposingAttack, ushort defence)
         {
-            if (ability != CombatSpecials.PistolWhip || opposingDefence == ushort.MaxValue ||
-                !CombatFixtureWeapons.AllowsPistolWhipWin(caster.Client) ||
-                !ConsumeRoundAid(caster, opponent, CombatSpecials.PistolWhip)) return false;
+            if (!ability.HasValue || opposingDefence == ushort.MaxValue) return false;
+            ushort id = ability.Value;
+            bool whip = id == CombatSpecials.PistolWhip && CombatFixtureWeapons.AllowsPistolWhipWin(caster.Client);
+            if ((!whip && !CombatFixtureWeapons.AllowsAikidoControlWin(caster.Client, id)) ||
+                !ConsumeRoundAid(caster, opponent, id)) return false;
 
             attack = Math.Max(attack, (ushort)(opposingDefence + 1));
             opposingAttack = Math.Min(opposingAttack, defence);
-            Output.WriteDebugLog("[PISTOL WHIP QA] 501 win consumed for CSR_Tester against QAEnemy.");
+            string tag = whip ? "PISTOL WHIP QA" : "AIKIDO CONTROL QA";
+            Output.WriteDebugLog($"[{tag}] {id} win consumed for CSR_Tester against QAEnemy.");
             return true;
         }
 
@@ -801,12 +804,12 @@ namespace hds
                         nHit = false;
                         pHit = true;
                     }
-                    else if (nAbility == null && ApplyPistolWhipWin(p, n, pAbility?.getAbilityID(), ref pAttack, nDefense, ref nAttack, pDefense))
+                    else if (nAbility == null && ApplyFixtureSpecialWin(p, n, pAbility?.getAbilityID(), ref pAttack, nDefense, ref nAttack, pDefense))
                     {
                         pHit = true;
                         nHit = false;
                     }
-                    else if (pAbility == null && ApplyPistolWhipWin(n, p, nAbility?.getAbilityID(), ref nAttack, pDefense, ref pAttack, nDefense))
+                    else if (pAbility == null && ApplyFixtureSpecialWin(n, p, nAbility?.getAbilityID(), ref nAttack, pDefense, ref pAttack, nDefense))
                     {
                         nHit = true;
                         pHit = false;
