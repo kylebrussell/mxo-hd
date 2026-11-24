@@ -232,6 +232,12 @@ try
                     if (action == "cast" && fixtureMode is NativeQa.Modes.StarterControlDeflectMode)
                         result = await NativeQa.Modes.StarterControlDeflectMode.SendControlAsync(
                             actor, q.GetProperty("target").GetString()!, q.GetProperty("ability").GetUInt16());
+                    else if (action == "cast" && fixtureMode is NativeQa.Modes.CombatInsightMode)
+                    {
+                        if (actor.Handle != "QAEnemy" || q.GetProperty("target").GetString() != actor.Handle)
+                            throw new InvalidOperationException("Use QAEnemy for the Combat Insight self-cast.");
+                        NativeQa.Modes.CombatInsightMode.SendShield(actor, q.GetProperty("ability").GetUInt16());
+                    }
                     else if (action == "cast" && fixtureMode is NativeQa.Modes.StarterMovementDebuffReadbackMode)
                         result = await NativeQa.Modes.StarterMovementDebuffReadbackMode.SendSampleAsync(
                             actor, q.GetProperty("target").GetString()!, q.GetProperty("ability").GetUInt16());
