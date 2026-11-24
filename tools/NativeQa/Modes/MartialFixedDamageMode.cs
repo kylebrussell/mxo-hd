@@ -45,7 +45,7 @@ public abstract class MartialFixedDamageMode : NativeQaMode
                 "Stay at READY HOME facing the isolated 30,000 HP dummy 3 m north. If behind your camera, strafe and turn to single-click it. Right-click Close Combat and reselect the style (page 2 slot 1).",
                 $"Double-click Speed in Actions > Awakened. Arm each cast with its command and use these page 2 slots: {string.Join("; ", moves.Select((m, i) => $"{i + 2} with ?cd ma {m.Id} ({m.Id})"))}. Wait 5 s family reuse between casts. Expect result 0x100 and damage {string.Join("/", moves.Select(m => m.Neutral))}.",
                 "Double-click Power and repeat the same order after each move's own reuse. The damage stays the same.",
-                $"Still in Power, enter ?cd ma75 once, then repeat that sequence. Expect [TYPED-RESISTANCE OURS] type0 total75 and damage {string.Join("/", moves.Select(m => m.Resisted))}. Named animations in slot order: {string.Join("/", moves.Select(m => m.Animation))}.",
+                $"Still in Power, enter ?cd ma75 once, then repeat that sequence. Expect [TYPED-RESISTANCE OURS] type0 total75 and damage {string.Join("/", moves.Select(m => m.Resisted))}. Reference animations in slot order: {string.Join("/", moves.Select(m => m.Animation))}.",
                 "QA arms one win for the stated move, may supply its required state and gives the final +75 resistance. Damage and secondary proc rolls follow the ordinary path. No helpers or Escape."
             }.Concat(controls).ToArray());
     }
@@ -115,13 +115,14 @@ public abstract class MartialFixedDamageMode : NativeQaMode
                 actor.SendRpc(WithHandle(MartialInterlockAdmissionMode.StockRequest(move.Id)));
                 await EvidenceRetestWire.TimerAsync(actor, from, move.Id, AbilityCooldowns.OwnTimer, move.Reuse);
                 int damage = armored ? move.Resisted : move.Neutral;
+                string animation = CombatAnimations.All.First(m => m.Id == move.Animation).Name.Split(" vs ")[0];
                 await actor.WaitUntilAsync(() =>
                 {
                     string tail = server.DebugLog()[log..];
                     var round = Regex.Match(tail, $@"\[COMBAT\] Round (\d+): {tactic} \(.*result 0x100, player {AbilityCatalog.Find(move.Id)!.Name} lands");
                     return round.Success &&
                         Regex.IsMatch(tail, $@"\[ABILITY\] {move.Id} lands on view {dummy.ViewId} for {damage}\b") &&
-                        tail.Contains($"[COMBAT-VIEW] Round {round.Groups[1].Value}: animation {move.Animation} ", StringComparison.Ordinal) &&
+                        Regex.IsMatch(tail, $@"\[COMBAT-VIEW\] Round {round.Groups[1].Value}: animation \d+ \({Regex.Escape(animation)}(?: vs [^)]*)?\)") &&
                         (!armored || tail.Contains($"[TYPED-RESISTANCE OURS] {move.Id} type0 total75 raw{move.Neutral} final{damage}", StringComparison.Ordinal));
                 }, $"Landed {move.Id} for {damage} in {tactic}", HeadlessPlayer.DefaultTimeout);
                 // Sky-High Sidekick lowers physical resistance on landing for 12 seconds. It is last in each pass.
