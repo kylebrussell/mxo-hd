@@ -1,0 +1,24 @@
+{
+  "abilities": {
+    "138": {
+      "note": "Stock PASS at 2d1066a6. A successful Kung-Fu exchange used move 5951. At a fixed profile both Speed and Power hit for 47, and +75 physical resistance reduced the same 47 to 38. Both neutral hits applied 1009 -10 for 15 s. The original dispatch of the independent tactic helper remains unmeasured. https://github.com/kylebrussell/mxo-hd/pull/1082#issuecomment-7132013124",
+      "checks": {
+        "source-parity": {
+          "source": "Current GOB fixed instant physical endpoints are both 36. The shipped ordinary combat damage branch excludes specials. The separate tactic helper has no recovered binding to this GOB.",
+          "runtime": "The supported landed-special policy applies authored 36, style influence and target physical resistance. No extra tactic factor is inferred.",
+          "test": "MartialStarterTacticDamageMode replays the retained stock request in both tactics and the typed resistance control. PR1082 confirms the same landed exchange, exact damage and debuff with the stock client."
+        }
+      }
+    },
+    "139": {
+      "note": "Stock PASS at 2d1066a6. A successful Aikido exchange used move 738. At a fixed profile Power and Speed hit for 15, and +75 physical resistance reduced the same 15 to 12. Both neutral hits applied caster 1009/1010 +10 for 12 s. The original dispatch of the independent tactic helper remains unmeasured. https://github.com/kylebrussell/mxo-hd/pull/1082#issuecomment-7132013124",
+      "checks": {
+        "source-parity": {
+          "source": "Current GOB fixed instant physical endpoints are both 12. The shipped ordinary combat damage branch excludes specials. The separate tactic helper has no recovered binding to this GOB.",
+          "runtime": "The supported landed-special policy applies authored 12, style influence and target physical resistance. No extra tactic factor is inferred.",
+          "test": "MartialStarterTacticDamageMode replays the retained stock request in both tactics and the typed resistance control. PR1082 confirms the same landed exchange, exact damage and caster defenses with the stock client."
+        }
+      }
+    }
+  }
+}

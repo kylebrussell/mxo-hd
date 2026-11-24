@@ -1,0 +1,14 @@
+{
+  "abilities": {
+    "164": {
+      "note": "Stock PASS at e5ea70e5. With Spy Style direct 1032 held at +66, one live PvP interlock measured Leg Sweep input 66, 71 after loading 164, and 66 after unloading it. The linked 1145 +10, damage 1028 +10 and defense 1027 +10 records were added and removed together. The original retained retail coefficient remains unmeasured. https://github.com/kylebrussell/mxo-hd/pull/1083#issuecomment-7131301001",
+      "checks": {
+        "source-parity": {
+          "source": "The shipped primary 1032 stat links 1145. The shipped 164 modifier uses the .2 learned-level rule. The retained stock program selects primary 1032 for test function 4.",
+          "runtime": "The supported level-percent policy applies the linked passive independently of the direct style score, once per queued thrown contest.",
+          "test": "ThrownAccuracyConsumerTests isolate the coefficient and caps. ThrownAccuracyMode uses the retained stock Leg Sweep request, exact kind-6 queue and modifier lifecycle. PR1083 confirms the live contest input round trip with ordinary rolls."
+        }
+      }
+    }
+  }
+}
