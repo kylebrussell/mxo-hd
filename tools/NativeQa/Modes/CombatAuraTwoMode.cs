@@ -23,13 +23,14 @@ public sealed class CombatAuraTwoMode : NativeQaMode
             ["MXO_AGGRO"] = "0", ["MXO_MOB_WANDER"] = "0", ["MXO_SIMULACRUM_QA_HOLD_IS"] = "1"
         }, extraQaMetadata: new()
         {
-            ["ScopedStockRows"] = "485", ["NativeCloseableRows"] = 1, ["MemoryUsed"] = Loadout.Sum(AbilityMemory.Cost)
+            ["ScopedStockRows"] = "696", ["NativeCloseableRows"] = 1, ["MemoryUsed"] = Loadout.Sum(AbilityMemory.Cost)
         }, readyMessages: new[]
         {
             $"CSR starts at ({X},{Y},{Z}) on clear outdoor NAV. Level 50, {Loadout.Sum(AbilityMemory.Cost)}/100 with prerequisites. Page 2 slot 1 is Combat Aura 2.0. No target or helper is needed.",
-            "Press slot 1 once and stay still. Expect [ABILITY-COST] paid=15 IS=51->36, parent 485 on, and the 696 modifiers now and at each paid upkeep. Watch IS step to 21, then 6. The third upkeep attempt is nine IS short, so it ends the aura without another debit or pulse.",
-            "Save that packet group. Expect two linked parent removes, the 15 s own timer, the final drain-record remove, exclusive off, then localized 81 67 token c60020b4. The last admitted 696 pair expires on its own lifetime. This check credits the parent lifetime; the archived child damage magnitude remains separate.",
-            "No [PVP] action or Health change is expected. Trying the shortcut during the 15 s reuse cannot restart it. At 6 IS after reuse, a new activation cannot pay its 15 IS cost."
+            "Press slot 1 once and stay still. Expect [ABILITY-COST] paid=15 IS=51->36. Parent 485 exclusive on, then owner 696 exclusive on and its independent 10 s timer precede the linked parent records. [MODIFIER] source=696 stat=171 and 159 each add +25 for 5 s at the authored L50 scale.",
+            "First paid refresh at 5 s and second at 10 s cost 15 each. Expect the same pair to remove and reapply. At 10 s the 696 timer clears once while the parent still pulses. No child timer restart or exclusive cycle.",
+            "At 6 IS the next upkeep ends the parent. Expect two linked parent removals, 15 s parent reuse, drain removal, parent exclusive off and the shortfall message. The final +25/+25 pair expires independently. Save PacketLog for the owner timer and DebugLog for the amounts.",
+            "The single retained +37/+39 pair cannot follow from two equal authored scales with any one caster level. This mode verifies the shipped +25/+25 pair and reproduces the captured owner presentation independently. Setup seeds legal abilities and holds IS regeneration."
         });
 
     public override async Task<byte[]> AfterStartAsync(NativeQaBootstrapContext context)
@@ -39,6 +40,7 @@ public sealed class CombatAuraTwoMode : NativeQaMode
         NavMesh.UseDirectory(Path.Combine(root, "data", "navmesh"));
         Check.That(NavMesh.Locate(1, X, Y, Z, out var floor) && !floor.indoors && floor.floorY + 95 == Y,
             "Combat Aura 2.0 starts on verified outdoor NAV");
+        Console.WriteLine($"READY HOME {InvisibilityBeltWatcherMode.Warp(X, Y, Z, 0, inside: false)}");
         if (context.StockProbe is not { } actor) return Array.Empty<byte>();
 
         await actor.EnterWorldAsync();
@@ -53,7 +55,30 @@ public sealed class CombatAuraTwoMode : NativeQaMode
         await actor.WaitForRpcAsync("80 bd 05 e5 01 00 00 00 00 00 01");
         await actor.WaitForRpcAsync("81 67 ?? ?? ?? ?? b4 20 00 c6", TimeSpan.FromSeconds(20));
 
+        byte[] childStart = AbilityCooldowns.BuildTimer(Pulse, AbilityCooldowns.OwnTimer, 10, true);
+        byte[] childEnd = AbilityCooldowns.BuildTimer(Pulse, AbilityCooldowns.OwnTimer, 10, false);
+        byte[] childOn = AbilityBuffs.BuildExclusive(Pulse, true);
+        byte[] childOff = AbilityBuffs.BuildExclusive(Pulse, false);
+        await StockAbilityProfile.ObserveAsync(actor, start, frame => frame.Bytes.AsSpan().SequenceEqual(childEnd), "Child timer clears independently");
         byte[][] records = actor.World.RpcSnapshot().Skip(start).Select(frame => frame.Bytes).ToArray();
+        int parentOn = Array.FindIndex(records, packet => packet.AsSpan().SequenceEqual(AbilityBuffs.BuildExclusive(Aura, true)));
+        int ownerOn = Array.FindIndex(records, packet => packet.AsSpan().SequenceEqual(childOn));
+        int timerOn = Array.FindIndex(records, packet => packet.AsSpan().SequenceEqual(childStart));
+        int timerOff = Array.FindIndex(records, packet => packet.AsSpan().SequenceEqual(childEnd));
+        int firstModifier = Array.FindIndex(records, packet => ManageBonusRecord.TryDecode(packet, out var record) && record!.SourceId == Pulse);
+        Check.That(parentOn >= 0 && parentOn < ownerOn && ownerOn < timerOn && timerOn < firstModifier && firstModifier < timerOff,
+            "Captured owner order: parent and child exclusive on, then own timer before the child modifiers");
+        Check.Equal(1, records.Count(packet => packet.AsSpan().SequenceEqual(childStart)), "Paid pulses do not restart own reuse");
+        Check.Equal(1, records.Count(packet => packet.AsSpan().SequenceEqual(childOn)), "Paid pulses do not republish the child exclusive");
+        Check.Equal(0, records.Count(packet => packet.AsSpan().SequenceEqual(childOff)), "Shortfall preserves the separate owner indicator");
+        foreach (ushort stat in new ushort[] { 159, 171 })
+        {
+            await actor.WaitUntilAsync(() => actor.World.RpcSnapshot().Skip(start).Count(frame =>
+                StockAbilityProfile.Bonus(frame, Pulse, stat, 25, 5, true)) == 3, $"All three child stat {stat} applications remove", HeadlessPlayer.DefaultTimeout);
+            Check.Equal(3, records.Count(packet => ManageBonusRecord.TryDecode(packet, out var modifier) && modifier!.SourceId == Pulse &&
+                modifier.TargetId == stat && modifier.AddRemoveType == 0 && modifier.SignedValue == 25 && modifier.Duration == 5),
+                $"Three authored +25 modifiers at stat {stat}");
+        }
         int carrier = Array.FindIndex(records, packet => ParentRemoval(packet, 710));
         int marker = Array.FindIndex(records, packet => ParentRemoval(packet, 0));
         int reuse = Array.FindIndex(records, packet => packet.AsSpan().SequenceEqual(WireFormat.FromHex("80 bd 01 e5 01 04 00 00 70 41 01")));
@@ -69,7 +94,7 @@ public sealed class CombatAuraTwoMode : NativeQaMode
         var balances = actor.World.ViewSnapshot().Skip(viewStart).SelectMany(AbilityParityCoderSweepMode.InnerStrengthUpdates).ToArray();
         Check.That(balances.Contains((ushort)36) && balances.Contains((ushort)21) && balances.Contains((ushort)6),
             "The stock owner receives the activation debit and two full upkeep debits");
-        Console.WriteLine("COMBAT AURA TWO BOOTSTRAP PASS: exact stock activation, two paid upkeeps and retained shortfall order.");
+        Console.WriteLine("COMBAT AURA TWO BOOTSTRAP PASS: owner child timer, authored modifier lifecycle, two paid upkeeps and retained shortfall order.");
         return Array.Empty<byte>();
     }
 
