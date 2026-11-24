@@ -26,6 +26,43 @@ public class AbilityCastInterruptTests : IDisposable
         return AbilityCastInterrupts.Begin(c,id,4);
     }
     private sealed class Roll85:Random {public override int Next(int minimum,int maximum)=>85;}
+    private sealed class Roll84 : Random
+    {
+        public override int Next(int minimum, int maximum) => 84;
+    }
+
+    [Fact]
+    public void UpgradeMasterChangesAnInjectedInterruptibleCastAtTheActualDamageCallback()
+    {
+        const ushort upgradeMaster = 425, grant = 1096, interruptibleCast = 360;
+        var caster = Client();
+        ushort[] profile = new NativeQa.Modes.TraumaSurgeonSupportMode().Plan.Abilities.ToArray();
+        Assert.True(profile.Sum(AbilityMemory.Cost) <= AbilityMemory.ForLevel(50));
+        Assert.DoesNotContain(interruptibleCast, profile);
+        Assert.True(AbilityCastInterrupts.KnownInterruptible(interruptibleCast));
+
+        CheckOutcome(profile, 20, survives: true);
+        CheckOutcome(profile.Where(id => id != upgradeMaster), 15, survives: false);
+        CheckOutcome(profile, 20, survives: true);
+
+        void CheckOutcome(IEnumerable<ushort> abilities, int concentration, bool survives)
+        {
+            AbilityPassives.SetLoaded(caster, abilities.Select(id => (id, (ushort)50)));
+            Assert.Equal(survives, AbilityPassives.IsLoaded(caster, grant));
+            Assert.Equal(concentration, AbilityStats.Influence(caster, 564));
+
+            // Exercise the consumer in isolation. The native legal support profile cannot also load 360.
+            var cast = Begin(caster, interruptibleCast);
+            int before = caster.messageQueue.RPCMessagesQueue.Count;
+            AbilityCastInterrupts.OnDamage(caster, 80, new Roll84());
+            int effects = 0;
+            Assert.Equal(survives, AbilityCastInterrupts.Complete(cast, () => effects++));
+            Assert.Equal(survives ? 1 : 0, effects);
+            Assert.Equal(!survives, caster.messageQueue.RPCMessagesQueue.Cast<SequencedMessage>().Skip(before)
+                .Any(message => message.content.Skip(1).SequenceEqual(AbilityCastInterrupts.CancelPacket(interruptibleCast, 2))));
+        }
+    }
+
     [Theory]
     [InlineData(1,1000,0,75)]
     [InlineData(999,1000,0,75)]

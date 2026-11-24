@@ -1,0 +1,13 @@
+{
+  "abilities": {
+    "425": {
+      "checks": {
+        "behavior-tests": {
+          "source": "GOB 425 has a passive +5 Concentration Bonus (1090), linked to direct Concentration 564, and loaded grant 1096.",
+          "runtime": "AbilityPassives applies and removes the linked input and grant. AbilityCastInterrupts.OnDamage uses the effective Concentration to decide whether the current eligible cast emits 80 ad or lands.",
+          "test": "UpgradeMasterChangesAnInjectedInterruptibleCastAtTheActualDamageCallback drives the real damage handler at fixed roll 84. Legal support loadout loaded/unloaded/reloaded yields effective 20/15/20, survival/cancel/survival, and the exact cancel packet on loss. The interruptible cast is injected into the isolated test, outside the legal native support loadout. Stock PR962 proves source 425 +5 removal/restoration and the matching 1096 grant round-trip. https://github.com/kylebrussell/mxo-hd/pull/962#issuecomment-7098908912"
+        }
+      }
+    }
+  }
+}
