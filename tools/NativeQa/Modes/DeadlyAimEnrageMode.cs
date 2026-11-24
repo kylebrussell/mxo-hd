@@ -27,7 +27,7 @@ public abstract class EnrageDurationArchiveMode : NativeQaMode
     private readonly ushort[] loadout;
 
     protected EnrageDurationArchiveMode(ushort parent, (ushort Stat, int Value)[] stats, bool withdraw,
-        ushort grant = 0, bool initiative = false, string? previousEvidence = null)
+        ushort grant = 0, bool initiative = false, string? previousEvidence = null, int nativeCloseableRows = 1)
     {
         this.parent = parent;
         this.stats = stats;
@@ -79,7 +79,7 @@ public abstract class EnrageDurationArchiveMode : NativeQaMode
             readyMessages: messages.ToArray(),
             extraQaMetadata: new()
             {
-                ["ScopedStockRows"] = parent.ToString(), ["NativeCloseableRows"] = 1, ["MemoryUsed"] = loadout.Sum(AbilityMemory.Cost)
+                ["ScopedStockRows"] = parent.ToString(), ["NativeCloseableRows"] = nativeCloseableRows, ["MemoryUsed"] = loadout.Sum(AbilityMemory.Cost)
             });
     }
 
