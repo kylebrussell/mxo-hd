@@ -30,7 +30,10 @@ namespace hds
                 Allowed(caller, MartialFixedDamageMode, "aikido");
             bool grandmaster = (armor || ability == 427 || ability == 428 || ability == 429 || ability == 430) &&
                 Allowed(caller, MartialFixedDamageMode, "kungfu-grandmaster");
-            if (!starter && !kungFu && !karate && !aikido && !grandmaster)
+            bool karateGrandmaster = (armor || ability == 532 || ability == 534 || ability == 536) &&
+                Allowed(caller, MartialFixedDamageMode, "karate-grandmaster");
+            bool machinegunFist = (armor || ability == 261) && Allowed(caller, MartialFixedDamageMode, "machinegun-fist");
+            if (!starter && !kungFu && !karate && !aikido && !grandmaster && !karateGrandmaster && !machinegunFist)
                 return "Martial preparation requires the matching disposable fixture.";
             var handler = CombatManager.GetHandler(caller);
             var dummy = handler.CurrentNpcTarget;
@@ -45,9 +48,9 @@ namespace hds
             }
             if (ability == 138 || ability == 273 || ability == 296 || ability == 427)
                 CombatDepthOffBalance.Apply(TimedEffects.ForMob(dummy), 60, caller, selected);
-            if (ability == 259 || ability == 430)
+            if (ability == 259 || ability == 430 || ability == 532)
                 CombatDepthDaze.Apply(TimedEffects.ForMob(dummy), 60, caller, selected);
-            if (ability == 262 || ability == 265)
+            if (ability == 262 || ability == 265 || ability == 536)
                 CombatDepthStagger.Apply(TimedEffects.ForMob(dummy), 60, caller, selected);
             handler.ArmMartialFixtureWin(dummy, ability);
             return $"Martial starter fixture armed {ability}.";
