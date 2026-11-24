@@ -54,6 +54,18 @@ public class SpyMasterSneakOpenersTests
         Assert.Equal(SpyStyle, CombatStyles.RequiredStyle(ability));
 
         var client = Client();
+        if (ability == FreedomToJoints)
+        {
+            Assert.True(SpyAbilityRegistry.TryRefuse(client, ability, 0, null, out uint wrongStyle));
+            Assert.Equal(AbilityRefusals.WrongStyle, wrongStyle);
+
+            AbilityPassives.SetLoaded(client, new[] { (SpyStyle, (ushort)FixtureRank) });
+            CombatStyles.Select(client, SpyStyle);
+            Assert.True(SpyAbilityRegistry.TryRefuse(client, ability, 0, null, out uint noSneak));
+            Assert.Equal(AbilityRefusals.CasterStateRequired, noSneak);
+
+            client.playerData.conditionStateFlags |= Stealth.StealthedFlag;
+        }
         Assert.True(SpyAbilityRegistry.TryRefuse(client, ability, 0, null, out uint reason));
         Assert.Equal(AbilityRefusals.InvalidTarget, reason);
     }
