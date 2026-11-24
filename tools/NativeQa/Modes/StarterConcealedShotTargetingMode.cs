@@ -34,13 +34,14 @@ public sealed class StarterConcealedShotTargetingMode : NativeQaMode
         {
             ["MXO_AGGRO"] = "0", ["MXO_MOB_WANDER"] = "0", ["MXO_PVP_SERVER"] = "1", ["MXO_PVP_MAX_SAFE_LEVEL"] = "6",
             ["MXO_SIMULACRUM_QA_HOLD_IS"] = "1", [StarterInterlockControlQa.ConcealedShotMode] = "1"
-        }, extraQaMetadata: new() { ["ScopedStockRows"] = "504,1137", ["NativeCloseableRows"] = 0 },
+        }, extraQaMetadata: new() { ["ScopedStockRows"] = "504,1137", ["NativeCloseableRows"] = 1 },
         readyMessages: new[]
         {
-            $"Level {Level}, 42/49 legal memory and rifle equipped. CSR PICK ({PickX},{Y},{Z}) faces QAEnemy ({TargetX},{Y},{Z}) from behind. Page 2 Rifles, 1137, 504. Use slot 1 and target QAEnemy. Keep the selection without Escape.",
-            $"Stay at PICK. Use slot 2 and wait for 1137 on, then use slot 3 once. Expect [STEALTH] 1137 off at cast start, 45 IS ({ConcealedIs} to {ConcealedIs - 45}), a 6 s bar, 23 damage on the unarmored target, and 45 s own reuse. No [PVP] round.",
-            "This disposable fixture forces the 504 marker after a hit on QAEnemy. Expect source 504 marker value 4 for 0.1 s, then Stun 102 for 4 s, linked Combat Tactics 163 -20 for the same lifetime, and immunity 734/681 for 4 s. The linked wire record uses source 102 with duration 0. Capture the Stun and immunity notices and the matching add/remove records from QAEnemy.",
-            "The retained bootstrap separately covers the BLOCK and FAR refusals. Armor piercing and historical damage scaling remain open."
+            $"Level {Level}, 42/49 legal memory, rifle equipped. CSR faces QAEnemy from PICK ({PickX},{Y},{Z}). Page 2 Rifles / Concealment / Concealed Shot. Use slot 1 and /target QAEnemy. No teleport for this first check.",
+            "With QAEnemy selected, press slot 3 before Concealment. Expect a local Concealed restriction or the server caster-state refusal. No 45 IS debit or damage.",
+            "Use slot 2, wait for 1137 on, then use the printed BLOCK teleport. /target QAEnemy and press slot 3. Expect sight refusal 9 if the request reaches the server. Repeat at FAR for range refusal 34. Local refusals are also useful: record the exact client text and whether a 504 request appeared. Neither attempt should drop Concealment, debit 45 IS or start the 45 s timer.",
+            $"Return to printed PICK, /target QAEnemy and use slot 3 with 1137 active. If it expired during setup, wait for Concealment's own reuse and activate again. Expect 1137 off at cast start, 45 IS ({ConcealedIs} to {ConcealedIs - 45}), 6 s bar, 23 damage and 45 s own reuse. No interlock round.",
+            "QA fixes only the landed 504 marker roll. Expect QAEnemy source 504 marker value 4 for 0.1 s, then Stun 102 and linked Combat Tactics 163 -20, plus independent immunity 734/681. Capture their matched removals at 4 s. Enter the teleport commands in the printed chunks with one final Enter. No helper action."
         });
 
     public override async Task<byte[]> AfterStartAsync(NativeQaBootstrapContext context)
@@ -54,9 +55,9 @@ public sealed class StarterConcealedShotTargetingMode : NativeQaMode
         Check.That(NavMesh.HasSightPath(1, PickX, Y, Z, TargetX, Y, Z) &&
             !NavMesh.HasSightPath(1, BlockedX, Y, Z, TargetX, Y, Z), "The near and blocked stands distinguish sight inside 30 m");
         var far = FindFarStand();
-        Console.WriteLine($"PICK {pick.Command}");
-        Console.WriteLine($"BLOCK {blocked.Command}");
-        Console.WriteLine($"FAR {far.Command} (over 30 m, clear sight)");
+        PrintStand("PICK", pick);
+        PrintStand("BLOCK", blocked);
+        PrintStand("FAR (>30 m, clear sight)", far);
 
         var enemy = await HeadlessPlayer.LoginAsync(context.Address, "QAEnemy", "QAEnemy", stockCharacterLoad: true);
         context.Helpers.Add(enemy.Handle, enemy);
@@ -76,6 +77,7 @@ public sealed class StarterConcealedShotTargetingMode : NativeQaMode
         byte[] shot = WithHandle(ShotFrame, handle);
         await StarterFixedDamageMode.SelectStyle(actor, self, Rifles, 171);
         actor.SendRpc($"81 51 {WireFormat.ToHex(BitConverter.GetBytes(handle))}");
+        await RefusedAsync(actor, Shot, shot, AbilityRefusals.CasterStateRequired);
         int activated = actor.World.RpcSnapshot().Count;
         actor.SendRpc(ConcealFrame);
         await EvidenceRetestWire.CastBarAsync(actor, Conceal, 2);
@@ -137,6 +139,12 @@ public sealed class StarterConcealedShotTargetingMode : NativeQaMode
             actor.SendChat(location.Command);
             await actor.WaitForTextAsync(location.Confirmation);
         }
+    }
+
+    private static void PrintStand(string name, Teleport stand)
+    {
+        string[] words = stand.Command.Split(' ');
+        Console.WriteLine($"READY {name} type '{string.Join(' ', words[..3])}', then ' {words[3]} {words[4]} {words[5]} {words[6]}', then ' {words[7]} {words[8]}'; press Enter once.");
     }
 
     internal static Teleport Stand(int x, int z)
