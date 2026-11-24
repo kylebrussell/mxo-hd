@@ -1,0 +1,35 @@
+{
+  "abilities": {
+    "336": {
+      "note": "Logic Bomb 1.0 stock pass at 93e7e05c: 13 IS, 3.00 m included and 3.01 m and ally excluded. The calibrated 266–323 base with +30 Viral Damage produced separate recipient rolls; fresh +45 Viral Resistance reduced QAFar from raw 374 to 309 and expiry returned it to neutral. This proves the retained archive-calibrated model; the original conversion from authored fixed 14 remains unknown. https://github.com/kylebrussell/mxo-hd/pull/1067#issuecomment-7125046736",
+      "checks": {
+        "damage": {
+          "source": "Retained retail damage band and shipped viral contest ordering.",
+          "runtime": "Roll 266–323 at level 30, apply caster influence and tactic at landing, then resolve the recipient's own viral mitigation.",
+          "test": "HackerArtilleristAreaMode verifies the full damage ledger before, during and after typed resistance and the stock run confirms the exact model."
+        },
+        "behavior-tests": {
+          "source": "Shipped GOB cast metadata and archived selected-spawn requests.",
+          "runtime": "Ordinary selected viral field admission, cast completion, cooldown, and recipient contests.",
+          "test": "HackerArtilleristAreaMode replays the captured selected-spawn request, including admission, fizzle, 4 s cast and own/shared cooldown, radius and per-recipient damage. Native PR1067 confirms the ledger and area against the stock client."
+        }
+      }
+    },
+    "337": {
+      "note": "Code Nuke 2.0 stock pass at bd74470f: 17 IS, 5.00 m included and 5.01 m and ally excluded. With Power selected while casting, the primary took 471 and fresh +45 Viral Resistance reduced only QAFar from raw 496 to 410. Switching back to Speed after expiry returned both targets to neutral. The retained 283–346 calibrated base and ordering are verified; conversion from authored fixed 17 remains unknown. https://github.com/kylebrussell/mxo-hd/pull/1068#issuecomment-7125174205",
+      "checks": {
+        "damage": {
+          "source": "Retained retail base band and 300 Speed / 360 Power differential agree with the shipped 1.2 Power multiplier.",
+          "runtime": "Roll 283–346 at level 30, apply caster influence and the active landing tactic, and apply typed recipient mitigation last.",
+          "test": "HackerArtilleristAreaMode verifies the live tactic change during the cast and each damage stage. Stock PR1068 confirms the unmitigated and protected recipients and expiry control."
+        },
+        "behavior-tests": {
+          "source": "Shipped GOB cast metadata and archived selected-spawn requests.",
+          "runtime": "Ordinary selected viral field admission, cast completion, cooldown, and recipient contests.",
+          "test": "HackerArtilleristAreaMode exercises captured request admission, cast and own/shared reuse, selected area and controlled damage ledger. Native PR1068 confirms the stock aim, inclusion and tactic switch."
+        }
+      }
+    }
+  }
+}
+
