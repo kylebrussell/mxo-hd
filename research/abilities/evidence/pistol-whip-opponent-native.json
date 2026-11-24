@@ -1,0 +1,19 @@
+{
+  "abilities": {
+    "501": {
+      "note": "PR1112 stock kept QAEnemy selected on commands and world clicks aimed at QAOther during the same fight. The headless wire captures instead exercise explicit unrelated and stale handles to verify the server fence. https://github.com/kylebrussell/mxo-hd/pull/1112#issuecomment-7140928281",
+      "checks": {
+        "targeting": {
+          "source": "GOB 501 requires the current Dazed interlock opponent, Handguns and dual handguns.",
+          "runtime": "The ordinary cast binds the live opponent, current fight and weapon before debit or reuse.",
+          "test": "Stock locked selection to QAEnemy on attempts to switch, then admitted the same-opponent strike. The retained replay rejects a separately Dazed hostile and stale spawn before debit. The earlier retained ordinary losing exchange stays on that opponent. https://github.com/kylebrussell/mxo-hd/pull/1112#issuecomment-7140928281"
+        },
+        "behavior-tests": {
+          "source": "Shipped 501 has fixed ballistic base 109 and Blind 8 s before duration influence, with the standard linked Tactics penalty.",
+          "runtime": "The valid exchange picks the original opponent and renders the named 287 on hit, with a scaled Blind add/remove. Ordinary loss retains the exchange without the special effect.",
+          "test": "TypedAbilityResistanceTests verifies base and mitigation. Stock validated the at-rest and Daze gates, selection lock, both useful exchange branches, and scaled Blind/penalty removal. Retained headless also verifies the ordinary release line and exact bad handles. https://github.com/kylebrussell/mxo-hd/pull/1098#issuecomment-7136401760 https://github.com/kylebrussell/mxo-hd/pull/1108#issuecomment-7139444449 https://github.com/kylebrussell/mxo-hd/pull/1112#issuecomment-7140928281"
+        }
+      }
+    }
+  }
+}

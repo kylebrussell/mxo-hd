@@ -1,0 +1,19 @@
+{
+  "abilities": {
+    "406": {
+      "note": "Native 3576ccfc proved that ordinary Withdraw reached the server during the 15 s Ki Burst Enrage and was suppressed. Paired release restored admission and QAEnemy left on an ordinary chance roll. The fixture guarantees only the Enrage proc and sends two stock Withdraw requests. https://github.com/kylebrussell/mxo-hd/pull/1107#issuecomment-7140839457",
+      "checks": {
+        "controls": {
+          "source": "Ki Burst uses the authored 15-second Enrage. EnrageInit blocks ordinary withdrawal while the state is live.",
+          "runtime": "The recipient publishes the paired Enrage records, denies Withdraw during the state, then sends the paired release and restores normal withdrawal admission.",
+          "test": "KiBurstRecipientsMode requires the explicit server suppression trace before expiry and release records before retry. Native saw add, suppression, removal and a successful ordinary withdrawal. https://github.com/kylebrussell/mxo-hd/pull/1107#issuecomment-7140839457"
+        },
+        "behavior-tests": {
+          "source": "Shipped 406 has fixed physical base 23, caster-centred hostile selector 4 and an independent 20% Enrage modifier for 15 seconds.",
+          "runtime": "The normal area cast uses the authored base, typed physical resistance and same-floor hostile/radius checks. The Enrage gate applies only to the live recipient and retires with the exact receipt records.",
+          "test": "MartialArtsRemainingSpecialsTests checks damage, cost, reuse and the 20% value. Stock fixed damage and armor, recipient radius and ally exclusions, and required suppression and release cover the remaining behavior. https://github.com/kylebrussell/mxo-hd/pull/1101#issuecomment-7136728111 https://github.com/kylebrussell/mxo-hd/pull/1104#issuecomment-7138069241 https://github.com/kylebrussell/mxo-hd/pull/1107#issuecomment-7140839457"
+        }
+      }
+    }
+  }
+}
