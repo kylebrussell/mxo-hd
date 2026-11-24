@@ -224,6 +224,8 @@ try
                 object result = "sent";
                 if (q.TryGetProperty("delayMs", out var delay)) await Task.Delay(Math.Clamp(delay.GetInt32(), 0, 30000));
                 if (action == "chat") actor.SendChat(q.GetProperty("text").GetString()!);
+                else if (action == "vector-lifecycle" && fixtureMode is NativeQa.Modes.VectorPlayerPowerlessMode)
+                    result = await NativeQa.Modes.VectorPlayerPowerlessMode.RunAsync(actor, helpers["QAOther"], server);
                 else if (action == "cast" || action == "ranged" || action == "melee")
                 {
                     var target = await actor.WaitForViewNamedAsync(q.GetProperty("target").GetString()!);
