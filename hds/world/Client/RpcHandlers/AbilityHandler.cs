@@ -96,7 +96,8 @@ namespace hds
             bool enrage = AbilityID == 588;
             bool selectedCoderViral = AbilityID == 595 || AbilityID == 597 || AbilityID == 598;
             bool selectedDestroyerField = AbilityID == 462 || AbilityID == 467 || AbilityID == 468 || AbilityID == 1088;
-            bool selectedViralAttack = enrage || AbilityID == 53 || (AbilityID >= 57 && AbilityID <= 60) ||
+            bool selectedCodeInfection = AbilityID == 472 || AbilityID == 474;
+            bool selectedViralAttack = enrage || selectedCodeInfection || AbilityID == 53 || (AbilityID >= 57 && AbilityID <= 60) ||
                 AbilityID == 350 || AbilityID == 351 || AbilityID == 353 ||
                 AbilityID == 392 || AbilityID == 394 || AbilityID == 395 || AbilityID == 396 ||
                 selectedViralField || selectedCoderViral || selectedArtilleristArea;
@@ -402,7 +403,8 @@ namespace hds
                     (ushort?)Store.currentClient.viewMan.getViewById(currentTargetViewId)?.spawnId)
                 : null;
             var definition = AbilityCatalog.Find(AbilityID);
-            if (starterTargetedControl && !AbilityTargets.HasSelectionSight(Store.currentClient, definition, currentTargetViewId))
+            if ((starterTargetedControl || selectedCodeInfection) &&
+                !AbilityTargets.HasSelectionSight(Store.currentClient, definition, currentTargetViewId))
             {
                 Deny(AbilityID, "The target is not in sight.", AbilityRefusals.TargetNotInSight, sendServerText: false);
                 return;
