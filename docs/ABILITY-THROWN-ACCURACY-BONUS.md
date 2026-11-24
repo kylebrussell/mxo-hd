@@ -8,12 +8,10 @@ Case/mode `thrown-accuracy-bonus` uses ordinary Spy Style 1112 and one paid queu
 
 ## One-pass native checklist
 
-1. Use disposable CSR110 mode `thrown-accuracy-bonus`. All parents are owned/loaded; 164 starts unloaded. QAEnemy logs in normally and selects normal Block. No GM, fixed roll or stat injection.
-2. Use Actions to select Spy Style 1112, then ordinary Close Combat on QAEnemy. Queue Actions >Spy >Leg Sweep 134. Keep current actual records/logs: TF4/direct 1032 input 66. A miss is allowed; inspect normal queue/animation and actual input, not predicted damage.
-3. Withdraw both normally (helper `stop` request), wait for teardown and the real 12s ability reuse. Use ordinary Hardline/LA to load only Weak Points 164 with parents unchanged. Return and repeat: existing 1145 record 10, typed input 71. Unload only 164 and repeat input 66.
-4. Optional existing `?combatdepth specialattack134` reports read-only paired seeded diagnostics; it does not alter live RNG and cannot replace the real queued proof. NPC queued path is unit/source covered unless separately observed; free-cast throwing accuracy is not claimed.
-5. Stop on unrelated transport/client or ownership failure. Native client/visible success is a separate check; no native pass is implied by headless proof.
-
+1. Start `thrown-accuracy-bonus`. CSR stands at the printed outdoor HOME facing QAEnemy 1.2 m away. No teleport is needed. Page 2 contains Spy Style and Leg Sweep. The headless helper has already selected ordinary Block.
+2. Type `/target QAEnemy` and use right-click Close Combat. After entry, reselect Spy Style from slot 1. Confirm the direct 1032 modifier is 66. With 164 archived, press slot 2 and confirm the actual queued special uses input 66. Keep the first 134 request.
+3. Stay in the fight and type `?qaload 164`. Confirm the 1145 +10 modifier and, after Leg Sweep's 12 s reuse, press slot 2 for input 71. Type `?qaunload 164`, confirm removal and wait for reuse to press slot 2 for input 66 again.
+4. All combat rolls are natural. The pass criteria are the three live interlock inputs and the normal add/removal of the linked modifier. The coefficient is a supported server policy derived from the linked-stat conventions. The original server coefficient remains unmeasured.
 ## Source qualification
 
 Source `7faa638c` on master `9782c8f0`: 71 focused Release tests passed, including actual producer values, separate caps/negative/Blind paths, paired unchanged RNG consumption, full normal reload prerequisites and exact queued-record framing. Earlier zero-test fixture compilation errors and 70/1 test setup failure are retained; the latter incorrectly queried state 90 as a producer, corrected to captured Pistol Whip 501. Runtime policy stayed unchanged. Both actual Debug/Release NativeQa builds, plans/build-info, exact-one discovery and conditional audit output passed. No local full suite by root's direction; final CI supplies the complete-checkout suite. All four hardlink properties true, no new worktree/data materialization or generated snapshot commit.
