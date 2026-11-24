@@ -1,0 +1,7 @@
+{
+  "abilities": {
+    "120": {
+      "note": "PR1045 ab5ea1c8 proves normal Withdraw uses 1045 and the matched records add/remove/restore: input 81/65/81 from direct 65 and linked 25/0/25. The exact bootstrap observed 1114 membership. Stock matched Sneak at 300.3 loaded versus 300.0 unloaded, and independent 877 +12 raised it to 335.0 u/s. The 1050 owner movement linkage and the grouped stat check therefore remain open. https://github.com/kylebrussell/mxo-hd/pull/1045#issuecomment-7119257115"
+    }
+  }
+}
