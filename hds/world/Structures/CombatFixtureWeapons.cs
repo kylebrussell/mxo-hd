@@ -17,11 +17,13 @@ namespace hds
         public const string PistolWhipLossMode = "MXO_PISTOL_WHIP_LOSS_QA";
         public const int DummyPhysicalResistance = 75;
         public const string MartialTacticMode = "MXO_MARTIAL_TACTIC_DAMAGE_QA";
+        public const string KungFuTacticMode = "MXO_KUNG_FU_TACTIC_DAMAGE_QA";
 
         internal static string PrepareMartialDummy(WorldClient caller, ushort ability, bool armor)
         {
-            if (!Allowed(caller, MartialTacticMode))
-                return "Martial starter preparation requires the disposable fixture.";
+            bool starter = (armor || ability == 138 || ability == 139) && Allowed(caller, MartialTacticMode);
+            bool kungFu = (armor || ability == 259 || ability == 260 || ability == 262) && Allowed(caller, KungFuTacticMode);
+            if (!starter && !kungFu) return "Martial preparation requires the matching disposable fixture.";
             var handler = CombatManager.GetHandler(caller);
             var dummy = handler.CurrentNpcTarget;
             ushort selected = caller.playerData.currentSelectedTargetViewId;
@@ -34,6 +36,8 @@ namespace hds
                 return "Martial starter dummy resistance +75.";
             }
             if (ability == 138) CombatDepthOffBalance.Apply(TimedEffects.ForMob(dummy), 60, caller, selected);
+            if (ability == 259) CombatDepthDaze.Apply(TimedEffects.ForMob(dummy), 60, caller, selected);
+            if (ability == 262) CombatDepthStagger.Apply(TimedEffects.ForMob(dummy), 60, caller, selected);
             handler.ArmMartialFixtureWin(dummy, ability);
             return $"Martial starter fixture armed {ability}.";
         }

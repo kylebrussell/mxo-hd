@@ -35,6 +35,8 @@ public abstract class MartialInterlockAdmissionMode : NativeQaMode
         new(536, 8, "80b9180204000200000000000000000000000000000000000000000018020000006b0000086b0000000000"),
     };
 
+    internal static string StockRequest(ushort id) => Captures.Single(sample => sample.Id == id).Request;
+
     private readonly ushort style;
     private readonly Sample[] samples;
     public override string Name { get; }

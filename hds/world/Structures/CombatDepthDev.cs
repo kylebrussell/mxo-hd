@@ -24,7 +24,7 @@ namespace hds
             if (command == "fixture-weapon" || command == "w") return CombatFixtureWeapons.Set(caller, args.Length == 2 ? args[1] : "");
             if (command == "fixture-disengage" || command == "stop") return CombatFixtureWeapons.Disengage(caller);
             if (command == "rb" && args.Length == 1) return CombatFixtureWeapons.ArmRifleEscapeWin(caller);
-            if (command == "ma" && args.Length == 2 && ushort.TryParse(args[1], out var martial) && (martial == 138 || martial == 139))
+            if (command == "ma" && args.Length == 2 && ushort.TryParse(args[1], out var martial))
                 return CombatFixtureWeapons.PrepareMartialDummy(caller, martial, armor: false);
             if (command == "ma75" && args.Length == 1)
                 return CombatFixtureWeapons.PrepareMartialDummy(caller, 0, armor: true);
