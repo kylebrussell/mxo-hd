@@ -41,7 +41,11 @@ namespace hds
             int type = modifier != null ? (int)modifier.Number("DamageType") : CombatSpecials.ExileDamageType(ability);
             if (modifier == null && type < 0 && TempMods.TryGet(ability, out var effect) && effect.Virus)
                 type = 2;
-            ushort influenced = ScaleTypedAbilityDamage(caster, type, amount, out int influence);
+            // Stat 572 is a dedicated flat influence stat, like 159. Keep it on actual Aikido physical specials,
+            // separate from general melee, other styles and the raw damage constructor.
+            int aikido = type == 0 && CombatStyles.RequiredStyle(ability) == CombatStyles.Aikido &&
+                CombatStyles.Active(caster) == CombatStyles.Aikido ? Player(caster, 572) : 0;
+            ushort influenced = ScaleTypedAbilityDamage(caster, type, amount, out int influence, aikido);
             if (ability != 336 && ability != 337) return influenced;
             // Retained Code Nuke 2.0 hits separate at Speed 300 and Power 360 before target mitigation.
             CombatTactic tactic = caster.playerData.combatTactic;
@@ -56,10 +60,10 @@ namespace hds
         internal static ushort ScaleTypedAbilityDamage(WorldClient caster, int type, int amount) =>
             ScaleTypedAbilityDamage(caster, type, amount, out _);
 
-        private static ushort ScaleTypedAbilityDamage(WorldClient caster, int type, int amount, out int influence)
+        private static ushort ScaleTypedAbilityDamage(WorldClient caster, int type, int amount, out int influence, int styleInfluence = 0)
         {
             ushort stat = type == 0 ? (ushort)159 : type == 1 ? (ushort)171 : type == 2 ? (ushort)172 : type == 7 ? (ushort)1034 : (ushort)0;
-            influence = stat == 0 ? 0 : Influence(caster, stat);
+            influence = (stat == 0 ? 0 : Influence(caster, stat)) + styleInfluence;
             float factor = (float)Math.Max(0, 1 + influence / 100.0);
             return (ushort)Math.Clamp((int)(amount * (double)factor), 0, ushort.MaxValue);
         }

@@ -23,6 +23,7 @@ static string Consumer(ushort stat) => stat switch
     1032 => "OURS queued-special direct thrown accuracy (native UI selector inference)",
     959 or 1009 or 1010 or 1027 or 1143 => "combat defence",
     1011 or 1029 or 1030 => "typed combat-special defence in interlock",
+    572 => "OURS style-scoped physical Aikido special damage influence",
     183 => "typed combat-special defence and PARTIAL modeled free-cast viral defence (NPC neutral tactic)",
     342 => "PARTIAL modeled primary TF2 free-cast viral attack; native base/link totals unresolved",
     1145 when typeof(AbilityStats).GetMethod("ThrownAccuracy") != null => "OURS level-scaled percent to queued TF4 thrown accuracy, once; direct1032 separate; native coefficient unresolved",

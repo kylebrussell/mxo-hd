@@ -53,6 +53,30 @@ public class ZenMasterSpecialsTests
     }
 
     [Fact]
+    public void TechniqueAffectsOnlyAikidoSpecialDamageAndAddsItsViralDefense()
+    {
+        const ushort reversal = 407, aikido = 101;
+        var client = Client();
+        var profile = NativeQa.NativeQaModes.Find("ability-parity-zen-technique-aikido").Plan.Abilities
+            .Where(id => id != Technique).Select(id => (id, (ushort)FixtureRank)).ToArray();
+        var viral = new AbilityItem();
+        viral.setAbilityID(330);
+
+        AbilityPassives.SetLoaded(client, profile);
+        CombatStyles.Select(client, aikido);
+        int baselineDefense = AbilityStats.SpecialDefense(client, viral);
+        ushort unstyledZen = AbilityStats.ScaleAbilityDamage(client, SpinningFlower, 325);
+        Assert.Equal((ushort)28, AbilityStats.ScaleAbilityDamage(client, reversal, 21));
+
+        AbilityPassives.SetLoaded(client, profile.Append((Technique, (ushort)FixtureRank)));
+        Assert.Equal((ushort)49, AbilityStats.ScaleAbilityDamage(client, reversal, 21));
+        Assert.Equal(unstyledZen, AbilityStats.ScaleAbilityDamage(client, SpinningFlower, 325));
+        Assert.Equal(baselineDefense + 198, AbilityStats.SpecialDefense(client, viral));
+        CombatStyles.Select(client, 17);
+        Assert.Equal((ushort)27, AbilityStats.ScaleAbilityDamage(client, reversal, 21));
+    }
+
+    [Fact]
     public void FullLevel99ClosureMemoryScaledDamagesAndTechniquePassiveAreExact()
     {
         var plan = NativeQa.NativeQaModes.Find("ability-parity-zen-master-specials").Plan;
