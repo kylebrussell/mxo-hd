@@ -1,0 +1,34 @@
+{
+  "families": {
+    "trauma-surgeon-parent-radius": {
+      "representative": 439,
+      "result": "pass",
+      "head": "0bdc607d",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/1054#issuecomment-7122197463",
+      "scope": "Restore Group charged 18 IS per stock cast. Source 439 stat 1054 +5 removed/re-added at 56/61 memory, with matching 1093 grant transitions in retained-wire checks. CSR and QAFriend at 8.60 m healed for 28 throughout the parent-only stages and after dismissal."
+    }
+  },
+  "abilities": {
+    "439": {
+      "family": "trauma-surgeon-parent-radius",
+      "checks": {
+        "stats": {
+          "source": "GOB 439 grants 1093 and authors passive stat 1054. The granted upgrade independently authors a direct radius modifier.",
+          "runtime": "AbilityPassives publishes the passive and grant across ordinary entry and Archive transitions. The passive and direct totals remain distinct.",
+          "test": "Restore Group charged 18 IS per stock cast. Source 439 stat 1054 +5 removed/re-added at 56/61 memory, with matching 1093 grant transitions in retained-wire checks. CSR and QAFriend at 8.60 m healed for 28 throughout the parent-only stages and after dismissal. https://github.com/kylebrussell/mxo-hd/pull/1054#issuecomment-7122197463"
+        },
+        "consumer": {
+          "source": "The recovered caster-radius selector reads direct stat 127. The linked owner scale is omitted from the shipped 127 template.",
+          "runtime": "Parent-only radius remains 8.68 m. The 1093 direct upgrade changes it to 9.38 m; dismissal restores the base.",
+          "test": "The full stock 1093 request was captured. 20 IS and its direct stat 127 +10 expanded the heal: QAFar at 8.70 m healed for 30, QAOther at 9.50 m never healed. No fixed rolls. https://github.com/kylebrussell/mxo-hd/pull/1054#issuecomment-7122197463"
+        },
+        "behavior-tests": {
+          "source": "The shipped parent is a loaded passive with a zero-rank grant; the direct buff is a separate action.",
+          "runtime": "Same-region and valid recipient checks continue to run on every cast at the resulting radius.",
+          "test": "The disposable retained-stock replay verifies normal Archive, grant wire transitions, unchanged loaded/unloaded/reloaded recipient sets and the direct-upgrade comparison in combination with the native run. https://github.com/kylebrussell/mxo-hd/pull/1054#issuecomment-7122197463"
+        }
+      },
+      "note": "The original retail server's passive coefficient remains undocumented."
+    }
+  }
+}

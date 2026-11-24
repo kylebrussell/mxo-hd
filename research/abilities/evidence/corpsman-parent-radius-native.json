@@ -1,0 +1,34 @@
+{
+  "families": {
+    "corpsman-parent-radius": {
+      "representative": 369,
+      "result": "pass",
+      "head": "a57563b2",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/1055#issuecomment-7122129435",
+      "scope": "Restore Group charged 18 IS per stock cast. Source 369 stat 1054 +1 removed/re-added at 43/46 memory, with matching 1092 grant transitions in retained-wire checks. QAFriend at 8.60 m healed 27 throughout the parent-only stages and after dismissal."
+    }
+  },
+  "abilities": {
+    "369": {
+      "family": "corpsman-parent-radius",
+      "checks": {
+        "stats": {
+          "source": "GOB 369 grants 1092 and authors passive stat 1054. The granted upgrade independently authors a direct radius modifier.",
+          "runtime": "AbilityPassives publishes the passive and grant across ordinary entry and Archive transitions. The passive and direct totals remain distinct.",
+          "test": "Restore Group charged 18 IS per stock cast. Source 369 stat 1054 +1 removed/re-added at 43/46 memory, with matching 1092 grant transitions in retained-wire checks. QAFriend at 8.60 m healed 27 throughout the parent-only stages and after dismissal. https://github.com/kylebrussell/mxo-hd/pull/1055#issuecomment-7122129435"
+        },
+        "consumer": {
+          "source": "The recovered caster-radius selector reads direct stat 127. The linked owner scale is omitted from the shipped 127 template.",
+          "runtime": "Parent-only radius remains 8.68 m. The 1092 direct upgrade changes it to 9.38 m; dismissal restores the base.",
+          "test": "QAFar at 8.70 m healed for 28 only under 1092's direct stat 127 +10. QAOther at 9.50 m was excluded throughout. No fixed rolls. https://github.com/kylebrussell/mxo-hd/pull/1055#issuecomment-7122129435"
+        },
+        "behavior-tests": {
+          "source": "The shipped parent is a loaded passive with a zero-rank grant; the direct buff is a separate action.",
+          "runtime": "Same-region and valid recipient checks continue to run on every cast at the resulting radius.",
+          "test": "The disposable retained-stock replay verifies normal Archive, grant wire transitions, unchanged loaded/unloaded/reloaded recipient sets and the direct-upgrade comparison in combination with the native run. https://github.com/kylebrussell/mxo-hd/pull/1055#issuecomment-7122129435"
+        }
+      },
+      "note": "The original retail server's passive coefficient remains undocumented."
+    }
+  }
+}
