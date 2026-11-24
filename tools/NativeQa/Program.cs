@@ -409,6 +409,10 @@ try
                 else if (fixtureMode is NativeQa.Modes.HackerHarmfulCodeTiersMode && action == "aura-resist")
                     await NativeQa.Modes.StarterPathogenistAuraResistanceMode.ApplyResistanceAsync(actor,
                         NativeQa.Modes.HackerHarmfulCodeTiersMode.Resistance);
+                else if (fixtureMode is NativeQa.Modes.HackerPlagueZoneTwoMode && action == "aura-resist")
+                    await NativeQa.Modes.StarterPathogenistAuraResistanceMode.ApplyResistanceAsync(actor);
+                else if (fixtureMode is NativeQa.Modes.HackerPlagueZoneTwoMode && action == "plague-exit")
+                    await NativeQa.Modes.HackerPlagueZoneTwoMode.ExitAfterCastAsync(actor, server);
                 else if (fixtureMode is NativeQa.Modes.InfectAreaTwoStockMode && action == "aura-resist")
                     await NativeQa.Modes.StarterPathogenistAuraResistanceMode.ApplyResistanceAsync(actor);
                 else if (fixtureMode is NativeQa.Modes.HackerInfectAndBottleneckMode && action == "aura-resist")

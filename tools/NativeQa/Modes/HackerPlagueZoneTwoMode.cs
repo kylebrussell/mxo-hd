@@ -8,14 +8,16 @@ public sealed class HackerPlagueZoneTwoMode : NativeQaMode
 {
     private const int Level = 50, X = 17000, Y = 495, CasterZ = 6400, AnchorZ = 6600, FarZ = 8001;
     private const ushort Plague = 466, DamageOverTime = 1157;
+    private const int Resistance = 75;
+    private static readonly ushort[] Defender = StockAbilityProfile.Profile(2, 17, 8).Order().ToArray();
     // abilities_use_plague_zone_2_0_at_corrupted.log.txt, lines 53–55. Rebind only the live target handle.
     private const string StockUse = "80b9d20106002e0000000000000000000000000000000000000000002000000074f212002a6b0000000000";
     private static readonly ushort[] Abilities = StockAbilityProfile.Profile(2, 17, CombatStyles.HackerStyle, Plague).Order().ToArray();
     private static readonly (string Name, int Character, int X, int Z, int Organization)[] Stands =
     {
         ("QAEnemy", 6114, X, AnchorZ, 2),
-        ("QAOther", 6113, X, 7100, 2),
-        ("QAFar", 6112, X, 7101, 2),
+        ("QAOther", 6113, X, 7101, 2),
+        ("QAFar", 6112, X, 7100, 2),
         ("QAFriend", 6111, X + 100, AnchorZ, 1)
     };
 
@@ -27,7 +29,9 @@ public sealed class HackerPlagueZoneTwoMode : NativeQaMode
         {
             $"UPDATE characters SET level={Level},exp={PlayerProgression.ExperienceForLevel(Level)},x={X},y={Y},z={CasterZ}," +
                 $"rotation={MobAggro.YawTowards(X, CasterZ, X, AnchorZ)},innerStrC=700,innerStrM=900,alignment=1,pvpflag=0 WHERE charId=110",
-            "DELETE FROM char_abilities WHERE char_id IN (6111,6112,6113,6114)"
+            "DELETE FROM char_abilities WHERE char_id IN (6111,6112,6113,6114)",
+            "INSERT INTO char_abilities(char_id,slot,ability_id,level,is_loaded) VALUES " + string.Join(",", Defender.Select((id, slot) =>
+                $"(6112,{400 + slot},{AbilityMessages.AbilityGameObject(id)},{Level},1)"))
         }.Concat(Stands.Select(stand =>
             $"UPDATE characters SET level={Level},exp={PlayerProgression.ExperienceForLevel(Level)},x={stand.X},y={Y},z={stand.Z}," +
             $"alignment={stand.Organization},pvpflag=0,healthC=1500,healthM=1500 WHERE charId={stand.Character}")).ToArray(),
@@ -39,15 +43,16 @@ public sealed class HackerPlagueZoneTwoMode : NativeQaMode
             ["MXO_FREECAST_VIRAL_QA_ATTACK15"] = "32766", ["MXO_FREECAST_VIRAL_QA_DEFENSE15"] = "0",
             [AreaTargetDiagnostics.Variable] = "1"
         },
-        extraQaMetadata: new() { ["ScopedStockRows"] = "466", ["NativeCloseableRows"] = 0 },
+        extraQaMetadata: new() { ["ScopedStockRows"] = "466", ["NativeCloseableRows"] = 1 },
         readyMessages: new[]
         {
-            $"Level {Level}, {Abilities.Sum(AbilityMemory.Cost)}/{AbilityMemory.ForLevel(Level)} memory. Verified outdoor NAV CSR ({X},{Y},{CasterZ}) faces QAEnemy ({X},{Y},{AnchorZ}) at 2 m. QAOther ({X},{Y},7100) is at 5.00 m from QAEnemy; QAFar ({X},{Y},7101) is at 5.01 m. QAFriend ({X + 100},{Y},{AnchorZ}) is in-radius and allied. All are clear of WinterFrost's ice.",
+            $"Level {Level}, {Abilities.Sum(AbilityMemory.Cost)}/{AbilityMemory.ForLevel(Level)} memory. Verified outdoor NAV CSR ({X},{Y},{CasterZ}) faces QAEnemy ({X},{Y},{AnchorZ}) at 2 m. QAFar ({X},{Y},7100) is at 5.00 m from QAEnemy; QAOther ({X},{Y},7101) is at 5.01 m. QAFriend ({X + 100},{Y},{AnchorZ}) is in-radius and allied. All are clear of WinterFrost's ice.",
             "Select Hacker Style on page 2 slot 1. With no target and then with /target QAFriend, try Plague Zone 2.0 on slot 2. If sent, expect reason 24, no cast bar, IS debit, reuse or damage.",
             $$"""Move QAEnemy to 16.01 m using the helper move with x={{X}}, y={{Y}}, z={{FarZ}}. /target QAEnemy and try slot 2. Expect a local range block or reason 34 and no cost, cast bar or reuse. Move QAEnemy back to z={{AnchorZ}} and reselect it. The helper action is {"actor":"QAEnemy","action":"move","x":{{X}},"y":{{Y}},"z":{{FarZ}}}, with only z changed for the return.""",
-            "Press slot 2 with QAEnemy selected and retain the full first landed stock 80 b9 d2 01 request. Optional after the cast bar appears: /target QAFar; the splash must stay centred on QAEnemy.",
-            "Expect a 2 s cast, [ABILITY-COST] ability=466 paid=20 IS=700->680 and 12 s own reuse. [MODIFIER] source=466 stat=1157 adds a 15 s pool to QAEnemy and QAOther only. Record each pool separately. Expect five [EFFECTS] ticks per recipient, each raw equal to the pool divided by six rounded to the nearest integer, and matching removals at 15 s. There is no sixth tick or interlock.",
-            "These damage records describe the current server policy. Shipped base 97 and historical effective pools 424/444 do not resolve the original scaling."
+            """Before the positive cast, select QAEnemy and send {"actor":"QAFar","action":"aura-resist"}. Wait for [MODIFIER] char=6112 source=8 stat=157 +75 for 20 s, then cast slot 2 immediately. 2 s, 20 IS, 12 s reuse. The selected QAEnemy and QAFar get separate 466/1157 pools for 15 s. QAOther and QAFriend stay clear.""",
+            "Expect 602–630 total from the archived band after +42 influence, five ticks and matching removals. Neutral QAEnemy takes its own pool divided by six, rounded nearest. QAFar's [TYPED-RESISTANCE OURS] 466 type2 total75 uses its own rounded raw tick (for example 103 to 84). Retain the actual pool, raw and final values.",
+            """Stay at HOME. After the DOT expires, keep QAEnemy selected and send {"actor":"QAEnemy","action":"plague-exit"}. Once the helper console says PLAGUE EXIT ARMED, press slot 2. The helper waits for the admitted cast, then moves the original target to the verified 16.01 m stand during the bar. Expect 20 IS, 12 s reuse, [ABILITY] 466 fizzles and no new DOT on anyone.""",
+            "Aids are seeded profiles and HP, fixed disposable hit draws, fixed IS regeneration and the synchronized helper movement. The 424–444 capture-calibrated pool feeds normal influence and typed mitigation. The shipped 97 and original conversion remain distinct."
         });
 
     public override async Task<byte[]> AfterStartAsync(NativeQaBootstrapContext context)
@@ -62,6 +67,11 @@ public sealed class HackerPlagueZoneTwoMode : NativeQaMode
             Check.That(NavMesh.HasSightPath(1, X, Y, AnchorZ, x, Y, z) &&
                 NavMesh.HasSightPath(1, X, Y, CasterZ, x, Y, z), $"Open sight to ({x},{Y},{z}) from caster and anchor");
         }
+
+        Console.WriteLine($"READY HOME {InvisibilityBeltWatcherMode.Warp(X, Y, CasterZ, 0, inside: false)}");
+        Console.WriteLine($"READY EXIT {InvisibilityBeltWatcherMode.Warp(X, Y, FarZ, 128, inside: false)}");
+        foreach (var stand in Stands)
+            Console.WriteLine($"READY {stand.Name} {InvisibilityBeltWatcherMode.Warp(stand.X, Y, stand.Z, 128, inside: false)}");
 
         var server = context.ActualServer!;
         foreach (var stand in Stands)
@@ -97,6 +107,8 @@ public sealed class HackerPlagueZoneTwoMode : NativeQaMode
         await StarterHackerControlTargetMode.RefusedAsync(caster, Plague, Request(anchor), AbilityRefusals.TargetOutOfRange);
         await MoveAnchorAsync(AnchorZ);
 
+        var protectedPlayer = context.Helpers["QAFar"];
+        await StarterPathogenistAuraResistanceMode.ApplyResistanceAsync(protectedPlayer, Resistance);
         int logAt = server.DebugLog().Length;
         int castAt = caster.World.RpcSnapshot().Count;
         var witnesses = context.Helpers.Values.Select(helper => (Player: helper, Cursor: helper.World.RpcSnapshot().Count)).ToArray();
@@ -106,9 +118,9 @@ public sealed class HackerPlagueZoneTwoMode : NativeQaMode
         Select("QAFar");
         await EvidenceRetestWire.TimerAsync(caster, castAt, Plague, AbilityCooldowns.OwnTimer, 12);
 
-        await Task.WhenAll(witnesses.Where(witness => witness.Player.Handle is anchor or "QAOther")
-            .Select(witness => CheckDotAsync(caster, witness.Player, witness.Cursor)));
-        foreach (var (player, cursor) in witnesses.Where(witness => witness.Player.Handle is "QAFar" or "QAFriend"))
+        await Task.WhenAll(witnesses.Where(witness => witness.Player.Handle is anchor or "QAFar")
+            .Select(witness => CheckDotAsync(caster, witness.Player, witness.Cursor, witness.Player == protectedPlayer ? Resistance : 0)));
+        foreach (var (player, cursor) in witnesses.Where(witness => witness.Player.Handle is "QAOther" or "QAFriend"))
             Check.That(!player.World.RpcSnapshot().Skip(cursor).Any(frame => Bonus(frame, false) || Bonus(frame, true) ||
                 TransmitCodeFixture.Damage(frame.Bytes, Plague, caster.Handle, player.Handle, out _, out _)),
                 $"{player.Handle} receives no 466 modifier or damage");
@@ -118,10 +130,11 @@ public sealed class HackerPlagueZoneTwoMode : NativeQaMode
         castAt = caster.World.RpcSnapshot().Count;
         int[] fizzleCursors = witnesses.Select(witness => witness.Player.World.RpcSnapshot().Count).ToArray();
         Select(anchor);
+        var leaving = ExitAfterCastAsync(context.Helpers[anchor], server);
         caster.SendRpc(Request(anchor));
         await StockAbilityProfile.ObserveAsync(caster, castAt, frame => frame.Bytes is [0x80, 0xac, 0xd2, 0x01, ..],
             "Fresh 466 cast bar for the lost anchor");
-        await MoveAnchorAsync(FarZ);
+        await leaving;
         Select("QAFar");
         await caster.WaitUntilAsync(() => server.DebugLog()[fizzleAt..].Contains("[ABILITY] 466 fizzles: the selected viral target changed or left range"),
             "Original target leaving range fizzles even with another hostile selected", HeadlessPlayer.DefaultTimeout);
@@ -152,15 +165,27 @@ public sealed class HackerPlagueZoneTwoMode : NativeQaMode
         }
     }
 
+    internal static async Task ExitAfterCastAsync(HeadlessPlayer anchor, ServerInstance server)
+    {
+        if (anchor.Handle != "QAEnemy" || anchor.CharId != 6114)
+            throw new InvalidOperationException("Use QAEnemy for the Plague Zone exit.");
+        int cursor = server.DebugLog().Length;
+        Console.WriteLine("PLAGUE EXIT ARMED: cast slot 2 on QAEnemy now.");
+        await anchor.WaitUntilAsync(() => server.DebugLog()[cursor..].Contains("[ABILITY-COST] char=110 ability=466 paid=20", StringComparison.Ordinal),
+            "The next ordinary Plague Zone request is admitted", TimeSpan.FromSeconds(30));
+        byte[] position = new[] { (float)X, (float)Y, (float)FarZ }.SelectMany(BitConverter.GetBytes).ToArray();
+        anchor.World.SendViewList(Convert.FromHexString("02000108").Concat(position).Concat(new byte[] { 0, 0 }).ToArray());
+    }
+
     private static bool Bonus(RpcRecord frame, bool remove) =>
         ManageBonusRecord.TryDecode(frame.Bytes, out var record) &&
         record!.SourceId == Plague && record.TargetId == DamageOverTime && record.AddRemoveType == (remove ? 1 : 0);
 
-    private static async Task CheckDotAsync(HeadlessPlayer caster, HeadlessPlayer recipient, int cursor)
+    private static async Task CheckDotAsync(HeadlessPlayer caster, HeadlessPlayer recipient, int cursor, int resistance)
     {
         var add = await StockAbilityProfile.ObserveAsync(recipient, cursor, frame => Bonus(frame, false), $"{recipient.Handle} receives 466/1157");
-        Check.That(ManageBonusRecord.TryDecode(add.Bytes, out var record) && record!.Duration == 15 && record.SignedValue > 0,
-            $"{recipient.Handle} has a positive 15-second DOT pool");
+        Check.That(ManageBonusRecord.TryDecode(add.Bytes, out var record) && record!.Duration == 15 && record.SignedValue is >= 602 and <= 630,
+            $"{recipient.Handle} has a 15-second pool in the archived 424–444 band after +42 influence");
         await recipient.WaitUntilAsync(() => recipient.World.RpcSnapshot().Skip(cursor).Any(frame => Bonus(frame, true) &&
             ManageBonusRecord.TryDecode(frame.Bytes, out var removal) && removal!.RecordId == record!.RecordId),
             $"{recipient.Handle} removes the matching 466/1157 record", TimeSpan.FromSeconds(19));
@@ -169,12 +194,14 @@ public sealed class HackerPlagueZoneTwoMode : NativeQaMode
         var ticks = recipient.World.RpcSnapshot().Skip(cursor).Where(frame =>
             TransmitCodeFixture.Damage(frame.Bytes, Plague, caster.Handle, recipient.Handle, out _, out _)).ToArray();
         Check.Equal(5, ticks.Length, $"{recipient.Handle} takes five ticks before removal");
+        // At equal level, +75 changes the normalized retention from 1.270 to 1.045.
+        int final = resistance == 0 ? expected : (int)Math.Floor(expected * 1045.0 / 1270.0);
         foreach (var tick in ticks)
         {
             TransmitCodeFixture.Damage(tick.Bytes, Plague, caster.Handle, recipient.Handle, out int damage, out int resisted);
             Check.Equal(expected, damage + resisted, $"{recipient.Handle} raw tick follows its applied pool");
-            Check.Equal(expected, damage, $"{recipient.Handle} unresisted tick");
+            Check.Equal(final, damage, $"{recipient.Handle} typed tick");
         }
-        Console.WriteLine($"PLAGUE ZONE TWO DOT {recipient.Handle}: pool={record.SignedValue} 15s ticks=5 raw={expected} matching removal.");
+        Console.WriteLine($"PLAGUE ZONE TWO DOT {recipient.Handle}: pool={record.SignedValue} 15s ticks=5 raw={expected} final={final} matching removal.");
     }
 }
