@@ -20,7 +20,7 @@ public abstract class EnrageDurationArchiveMode : NativeQaMode
     private readonly ushort parent;
     private readonly (ushort Stat, int Value)[] stats;
     private const ushort Desperation = 1149;
-    private const int InitiativeHealth = 300, MaxHealth = 30000;
+    private const int InitiativeHealth = 100, MaxHealth = 30000;
     private readonly bool withdraw;
     private readonly ushort grant;
     private readonly bool initiative;
@@ -61,7 +61,7 @@ public abstract class EnrageDurationArchiveMode : NativeQaMode
             environment["MXO_DESPERATION_QA_HOLD_HEALTH"] = "1";
             messages.Add($"Check grant {grant} and source={parent}: 1046 +1, 1068 +2, 1143 +5, 1144 +5 on entry, unload and reload.");
             int expected = InitiativeSnapshot(loadout);
-            messages.Add($"After the final fight ends and with {parent} loaded, type ?health {InitiativeHealth} then press Desperation (page 2 slot 3). The disposable fixture holds regeneration only. Expect source={Desperation} stat=1044 +{expected} for 20 s, 10 IS and 90 s reuse at {InitiativeHealth}/{MaxHealth} HP. The 1046 records already verified in the three Archive stages feed this snapshot.");
+            messages.Add($"After the final fight ends and with {parent} loaded, type ?health {InitiativeHealth} then press Desperation (page 2 slot 3). The disposable fixture holds regeneration only. Expect source={Desperation} stat=1044 +{expected} for 20 s, 10 IS and 90 s reuse at {InitiativeHealth} current HP. The 1046 records already verified in the three Archive stages feed this snapshot.");
         }
         Plan = new(loadout, X, Home, Array.Empty<string>(),
             new[] { $"DELETE FROM inventory WHERE charId IN (110,6114) AND slot={CombatFixtureWeapons.HandSlot}" },
@@ -122,10 +122,14 @@ public abstract class EnrageDurationArchiveMode : NativeQaMode
             actor.SendChat($"?health {InitiativeHealth}");
             actor.SendChat("?health");
             await actor.WaitForTextAsync($"Current health: {InitiativeHealth}");
+            var self = actor.World.CreationSnapshot().Last(view => view.ViewId == 2);
+            ushort maxHealth = BitConverter.ToUInt16(self.Attributes["MaxHealth"]);
+            int expected = InitiativeSnapshot(loadout, maxHealth);
+            Console.WriteLine($"Desperation fixture HP {InitiativeHealth}/{maxHealth}, expected +{expected} Initiative.");
             int cast = actor.World.RpcSnapshot().Count;
             actor.SendRpc(StarterInitiativeBatchMode.StockCast);
             await StockAbilityProfile.ObserveAsync(actor, cast, frame =>
-                StockAbilityProfile.Bonus(frame, Desperation, 1044, InitiativeSnapshot(loadout), 20, false), "Desperation live Initiative Bonus snapshot");
+                StockAbilityProfile.Bonus(frame, Desperation, 1044, expected, 20, false), "Desperation live Initiative Bonus snapshot");
             await EvidenceRetestWire.TimerAsync(actor, cast, Desperation, AbilityCooldowns.OwnTimer, 90);
         }
         Check.Equal(0, actor.World.Problems.Count + enemy.World.Problems.Count, "Archive control and interlock traffic frame cleanly");
@@ -183,10 +187,10 @@ public abstract class EnrageDurationArchiveMode : NativeQaMode
         }
     }
 
-    private static int InitiativeSnapshot(IEnumerable<ushort> ids)
+    private static int InitiativeSnapshot(IEnumerable<ushort> ids, int maximum = MaxHealth)
     {
         int bonus = ids.SelectMany(AbilityPassives.Modifiers).Where(modifier => modifier.Target == 1046)
             .Sum(modifier => AbilityValues.TryValue(modifier, Level, Level, out int value) ? value : 0);
-        return AbilityDesperation.Snapshot(InitiativeHealth, MaxHealth, bonus);
+        return AbilityDesperation.Snapshot(InitiativeHealth, maximum, bonus);
     }
 }
