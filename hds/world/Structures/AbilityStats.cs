@@ -41,17 +41,26 @@ namespace hds
             int type = modifier != null ? (int)modifier.Number("DamageType") : CombatSpecials.ExileDamageType(ability);
             if (modifier == null && type < 0 && TempMods.TryGet(ability, out var effect) && effect.Virus)
                 type = 2;
-            ushort influenced = ScaleTypedAbilityDamage(caster, type, amount);
+            ushort influenced = ScaleTypedAbilityDamage(caster, type, amount, out int influence);
+            if (ability != 336 && ability != 337) return influenced;
             // Retained Code Nuke 2.0 hits separate at Speed 300 and Power 360 before target mitigation.
-            if (ability == 337 && caster.playerData.combatTactic == CombatTactic.Power)
-                return (ushort)Math.Min(ushort.MaxValue, (int)(influenced * (double)CombatCalculator.TacticDamageMultiplier(CombatTactic.Power)));
-            return influenced;
+            CombatTactic tactic = caster.playerData.combatTactic;
+            ushort damage = ability == 337 && tactic == CombatTactic.Power
+                ? (ushort)Math.Min(ushort.MaxValue, (int)(influenced * (double)CombatCalculator.TacticDamageMultiplier(CombatTactic.Power)))
+                : influenced;
+            if (AreaTargetDiagnostics.Enabled)
+                AreaTargetDiagnostics.Write($"[ARTILLERIST-DAMAGE] ability={ability} base={amount} influence={influence} tactic={tactic} influenced={influenced} raw={damage}");
+            return damage;
         }
 
-        internal static ushort ScaleTypedAbilityDamage(WorldClient caster, int type, int amount)
+        internal static ushort ScaleTypedAbilityDamage(WorldClient caster, int type, int amount) =>
+            ScaleTypedAbilityDamage(caster, type, amount, out _);
+
+        private static ushort ScaleTypedAbilityDamage(WorldClient caster, int type, int amount, out int influence)
         {
             ushort stat = type == 0 ? (ushort)159 : type == 1 ? (ushort)171 : type == 2 ? (ushort)172 : type == 7 ? (ushort)1034 : (ushort)0;
-            float factor = stat == 0 ? 1 : (float)Math.Max(0, 1 + Influence(caster, stat) / 100.0);
+            influence = stat == 0 ? 0 : Influence(caster, stat);
+            float factor = (float)Math.Max(0, 1 + influence / 100.0);
             return (ushort)Math.Clamp((int)(amount * (double)factor), 0, ushort.MaxValue);
         }
         public static int Attack(WorldClient client, bool ranged) => Player(client, 163) + Player(client, ranged ? (UInt16)524 : (UInt16)522) +
