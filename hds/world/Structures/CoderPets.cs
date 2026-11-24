@@ -61,13 +61,14 @@ namespace hds
         public const UInt16 PowerBoost = 25;
         public const UInt16 AbsorbSimulacra = 607;
         internal const UInt16 ProxyMasterDiscipline = 599, ProxyMasterGrant = 1107;
-        private static readonly Lazy<(int CostReduction, int RegenBonus, double Duration)> proxyMasterResources =
-            new Lazy<(int CostReduction, int RegenBonus, double Duration)>(() =>
+        private static readonly Lazy<(int CostReduction, int RegenBonus, int HealthRegenBonus, double Duration)> proxyMasterResources =
+            new Lazy<(int CostReduction, int RegenBonus, int HealthRegenBonus, double Duration)>(() =>
         {
             var modifiers = AbilityCatalog.Find(ProxyMasterGrant).Modifiers.ToArray();
             var cost = modifiers.Single(mod => mod.Target == 117);
             var regen = modifiers.Single(mod => mod.Target == 114);
-            return ((int)cost.Number("MinValue"), (int)regen.Number("MinValue"), cost.Number("Duration"));
+            var health = modifiers.Single(mod => mod.Target == 112);
+            return ((int)cost.Number("MinValue"), (int)regen.Number("MinValue"), (int)health.Number("MinValue"), cost.Number("Duration"));
         });
         public const UInt16 DrainCode = 19, FortifySimulacra = 20, DetonateProxy = 34, StopProxyEffect = 1109, ChargeSimulacra = 603;
         public static readonly UInt16[] Repairs = { 30, 31, 587, 596, 615 };
@@ -114,6 +115,7 @@ namespace hds
             internal double ProxyMasterUntil;
             // OURS: retail pet sheet IS/cost/regen values are not established. A real bounded pool makes 603 meaningful.
             public double InnerStrength = 100, MaxInnerStrength = 100, LastResourceTick;
+            internal double ProxyMasterHealingFraction;
             public int FortifyResistance;
             public double PowerBoostUntil;
             internal int PowerForceCombat;
@@ -138,6 +140,7 @@ namespace hds
         public const double AttackPeriodSeconds = 3.0;
         public const string FortifyExpiryQa = "MXO_PET_FORTIFY_EXPIRY_QA";
         public const string ChargeRangeQa = "MXO_PET_CHARGE_RANGE_QA";
+        public const string ProxyMasterSweepQa = "MXO_PROXY_MASTER_SWEEP_QA";
         public const string ProxyMasterMeterQa = "MXO_PROXY_MASTER_METER_QA";
         public const string DrainDamageQa = "MXO_SIMULACRUM_QA_DRAIN_DAMAGE";
         public const string RifleProxyQa = "MXO_SIMULACRUM_QA_RIFLE";
@@ -262,9 +265,33 @@ namespace hds
             double mastered = Math.Max(0, Math.Min(now, pet.ProxyMasterUntil) - pet.LastResourceTick);
             double gained = elapsed * 2 + charged;
             if (mastered > 0)
+            {
                 gained += mastered * 2 * proxyMasterResources.Value.RegenBonus / 100;
+                RegenerateProxyMasterHealth(pet, mastered);
+            }
             pet.InnerStrength = Math.Min(pet.MaxInnerStrength, pet.InnerStrength + gained);
             pet.LastResourceTick = Math.Max(now, pet.LastResourceTick);
+        }
+
+        private static void RegenerateProxyMasterHealth(Pet pet, double seconds)
+        {
+            var mob = pet.Mob;
+            if (pet.Gone || mob == null || mob.getIsDead() || mob.getHealthC() == 0 || mob.getHealthC() >= mob.getHealthM())
+            {
+                pet.ProxyMasterHealingFraction = 0;
+                return;
+            }
+
+            // Apply only the authored bonus. Reuse the common maximum-health rate without giving unbuffed pets
+            // a new passive heal. No separate baseline for a retail simulacrum has been recovered.
+            double combatRate = mob.CombatantCount > 0 || pet.Target != null ? CombatCalculator.FIGHT_REGEN_FACTOR : 1;
+            pet.ProxyMasterHealingFraction += seconds * mob.getHealthM() * HealthRegen.FractionPerSecond *
+                combatRate * proxyMasterResources.Value.HealthRegenBonus / 100;
+            int whole = (int)pet.ProxyMasterHealingFraction;
+            if (whole == 0) return;
+            pet.ProxyMasterHealingFraction -= whole;
+            HealPetLocked(pet, whole, 0);
+            if (mob.getHealthC() >= mob.getHealthM()) pet.ProxyMasterHealingFraction = 0;
         }
 
         public static bool SpendAction(Pet pet, double now)
@@ -287,6 +314,7 @@ namespace hds
         {
             // Settle all old intervals before starting or refreshing this pet's generation.
             Regenerate(pet, now);
+            if (now >= pet.ProxyMasterUntil) pet.ProxyMasterHealingFraction = 0;
             pet.ProxyMasterUntil = now + proxyMasterResources.Value.Duration;
         }
 
@@ -596,6 +624,7 @@ namespace hds
             if (pet.Gone) return;
             ReleaseClosePair(pet);
             pet.Gone = true;
+            TimedEffects.RemoveParent(TimedEffects.ForMob(pet.Mob), ProxyMasterGrant);
             RemoveWindow(pet);
             if (fx != 0 && !pet.Mob.getIsDead()) SendHit(pet, fx);
             lock (WorldServer.mobs.SyncRoot) WorldServer.mobs.Remove(pet.Mob);
@@ -616,6 +645,7 @@ namespace hds
             if (pet.Gone || !pet.Mob.TryClaimDeath()) return;
             ReleaseClosePair(pet);
             pet.Mob.setHealthC(0);
+            TimedEffects.RemoveParent(TimedEffects.ForMob(pet.Mob), ProxyMasterGrant);
             RemoveWindow(pet);
             // Keep lethal impact and default death FX in one ordered view list.
             if (impactFx != 0 && impactFx != DeathFx)
@@ -1000,9 +1030,10 @@ namespace hds
             {
                 ApplyProxyMasterResources(pet, now);
                 SendHit(pet, FirstFx(entry));
-                var (reduction, regen, duration) = proxyMasterResources.Value;
+                AbilityHostile.ApplySweepToSubject(caster, TimedEffects.ForMob(pet.Mob), id);
+                var (reduction, regen, healthRegen, duration) = proxyMasterResources.Value;
                 Output.WriteDebugLog($"[PET] Proxy Master (1107) owner={caster.playerData.getCharID()} pet={pet.SimulacraId} " +
-                    $"costReduction={reduction}% regenIncrease={regen}% duration={duration}");
+                    $"costReduction={reduction}% regenIncrease={regen}% duration={duration} healthRegenIncrease={healthRegen}%");
             }
             else if (id == DetonateProxy)
             {
@@ -1135,7 +1166,7 @@ namespace hds
             var pak = new PacketContent();
             pak.AddByteArray(Mob.BuildHitUpdate(pet.Mob.getHealthC(), fx, ++pet.Counter));
             Store.world?.SendViewUpdateToClientsWhoHasMobSpawned(pak, pet.Mob);
-            if (!pet.Mob.getIsDead()) SendWindow(pet, false);
+            if (pet.Owner != null && !pet.Mob.getIsDead()) SendWindow(pet, false);
         }
 
         /// <summary>NPC view MaxHealth (update attribute 16) and Health (27): 04 80 80 84 &lt;max u16&gt; 40 &lt;health u16&gt;.</summary>
@@ -1431,6 +1462,26 @@ namespace hds
                     if (exhausted == null) return "No simulacrum.";
                     lock (exhausted) { exhausted.InnerStrength = 0; exhausted.LastResourceTick = TimeUtils.GetSimTimeSeconds(); }
                     return "Simulacrum IS exhausted (dev fixture).";
+                case "master-wound":
+                    if (Environment.GetEnvironmentVariable(ProxyMasterSweepQa) != "1" ||
+                        (client.playerData.getCharID() != 110 && client.playerData.getCharID() != 6111) ||
+                        !QaLoadout.Allowed(Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS"),
+                            Store.config?.dbParams?.DatabaseName, client.playerData.getCharID(),
+                            client.playerData.getOnWorld() && !client.playerData.worldChangePending,
+                            client.playerData.isDead || client.playerData.duelDeath))
+                        return "Proxy Master wound preparation is available only in its disposable fixture.";
+                    Pet wounded = Of(client);
+                    if (wounded == null) return "No simulacrum.";
+                    lock (wounded)
+                    {
+                        if (wounded.Gone || wounded.Mob.getIsDead()) return "No simulacrum.";
+                        wounded.Mob.setHealthC((ushort)Math.Max(1, wounded.Mob.getHealthM() / 2));
+                        SendHit(wounded, 0);
+                        // Use the actual hostile Slow record, with no caster/aggro side effects from setup.
+                        if (!TempMods.TryGet(86, out var slow)) return "Fixture Slow definition is missing.";
+                        TimedEffects.Apply(TimedEffects.ForMob(wounded.Mob), slow, TimeUtils.GetSimTimeSeconds());
+                        return $"Proxy Master wound ready: owner={client.playerData.getCharID()} pet={wounded.SimulacraId} HP={wounded.Mob.getHealthC()}/{wounded.Mob.getHealthM()}, Slow 86.";
+                    }
                 case "meter":
                     if (Environment.GetEnvironmentVariable(ProxyMasterMeterQa) != "1" ||
                         !QaLoadout.Allowed(Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS"),
@@ -1443,7 +1494,7 @@ namespace hds
                     lock (measured)
                     {
                         if (measured.Gone || measured.Mob.getIsDead()) return "No simulacrum.";
-                        string sample = FormattableString.Invariant($"[PET METER] owner={client.playerData.getCharID()} pet={measured.SimulacraId} tick={measured.LastResourceTick:F3} IS={measured.InnerStrength:F3} cost={ActionCost(measured, measured.LastResourceTick):F2}");
+                        string sample = FormattableString.Invariant($"[PET METER] owner={client.playerData.getCharID()} pet={measured.SimulacraId} tick={measured.LastResourceTick:F3} IS={measured.InnerStrength:F3} cost={ActionCost(measured, measured.LastResourceTick):F2} HP={measured.Mob.getHealthC()}/{measured.Mob.getHealthM()}");
                         Output.WriteDebugLog(sample);
                         return sample;
                     }

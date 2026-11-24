@@ -364,10 +364,35 @@ public class CoderPetTests
     }
 
     [Fact]
-    public void ProxyMasterUsesThePetBudgetAndSettlesExactExpiryWithoutTouchingHealth()
+    public void ProxyMasterHealthBonusUsesElapsedTimeAndStopsAtTheSameExpiry()
+    {
+        var pet = ResourcePet();
+        var control = ResourcePet();
+        pet.Mob.setHealthM(337);
+        pet.Mob.setHealthC(150);
+        control.Mob.setHealthC(150);
+        pet.LastResourceTick = control.LastResourceTick = 10;
+        CoderPets.ApplyProxyMasterResources(pet, 10);
+
+        CoderPets.Regenerate(pet, 14);
+        CoderPets.Regenerate(control, 14);
+        Assert.Equal(156, pet.Mob.getHealthC());
+        Assert.Equal(150, control.Mob.getHealthC());
+        Assert.Equal(337, pet.Mob.getHealthM());
+
+        pet.LastResourceTick = 609;
+        CoderPets.Regenerate(pet, 612);
+        Assert.Equal(158, pet.Mob.getHealthC());
+        CoderPets.Regenerate(pet, 620);
+        Assert.Equal(158, pet.Mob.getHealthC());
+    }
+
+    [Fact]
+    public void ProxyMasterUsesThePetBudgetAndSettlesExactExpiry()
     {
         var pet = ResourcePet();
         var other = ResourcePet();
+        pet.Mob.setHealthC(pet.Mob.getHealthM());
         pet.InnerStrength = other.InnerStrength = 7.5;
         pet.LastResourceTick = other.LastResourceTick = 10;
 
@@ -379,7 +404,7 @@ public class CoderPetTests
         CoderPets.Regenerate(other, 11);
         Assert.Equal(3, pet.InnerStrength);
         Assert.Equal(9.5, other.InnerStrength);
-        Assert.Equal(337, pet.Mob.getHealthC());
+        Assert.Equal(1950, pet.Mob.getHealthC());
 
         Assert.Equal(610, pet.ProxyMasterUntil);
         pet.InnerStrength = 7.5;

@@ -285,18 +285,20 @@ namespace hds
         /// Puts a sweep on a friendly player: a pulse tempmod (kind 0x09, as DeflectVirus1's proc record) for the stored
         /// Duration, every UpdateFuncInterval. Sweeps of the same StackingType replace each other.
         /// </summary>
-        public static bool ApplySweep(WorldClient caster, WorldClient target, ushort id)
+        public static bool ApplySweep(WorldClient caster, WorldClient target, ushort id) =>
+            ApplySweepToSubject(caster, TimedEffects.ForPlayer(target), id);
+
+        internal static bool ApplySweepToSubject(WorldClient caster, TimedEffects.Subject subject, ushort id)
         {
             if (id == 868)
             {
                 // Purity's one init callback, not a persistent periodic sweep.
-                Pulse(TimedEffects.ForPlayer(target),new TimedEffects.Active { Parent=id, Value=25 });
+                Pulse(subject,new TimedEffects.Active { Parent=id, Value=25 });
                 return true;
             }
             var m = SweepMod(id);
             bool indefinite = AbilityBuffs.HasClassSweep(id) && m?.Number("DurationType", -1) == 2;
             if (m == null || !indefinite && !Timed(m)) return false;
-            var subject = TimedEffects.ForPlayer(target);
             double stacking = AbilityCatalog.Find(id).Number("Ability/StackingType");
             foreach (ushort other in subject.Effects.Snapshot().Select(a => a.Parent).Distinct().ToList())
                 if (other != id && IsSweep(other) && AbilityCatalog.Find(other)?.Number("Ability/StackingType") == stacking)
@@ -308,7 +310,7 @@ namespace hds
                 sweepChance = Math.Clamp(value + (caster == null ? 0 : AbilityStats.Player(caster, 1052)), 0, 100);
             var effect = new TempMods.Effect { Ability = AbilityCatalog.Canonical(id), Mods = new[] { new TempMods.Mod
             {
-                Kind = TempMods.KindFx, Target = indefinite && m.Target != 0 ? m.Target : AbilityCatalog.Canonical(id),
+                Kind = TempMods.KindFx, Target = (indefinite || subject is MobEffects) && m.Target != 0 ? m.Target : AbilityCatalog.Canonical(id),
                 MinValue = value, MaxValue = value, Seconds = indefinite ? float.PositiveInfinity : (float)m.Number("Duration"),
                 Proc = TempMods.Proc.Pulse, Interval = m.Number("UpdateFuncInterval", 5)
             } } };
@@ -339,7 +341,12 @@ namespace hds
                 if (!TimedEffects.RemoveParent(subject, parent)) continue;
                 string target = client != null ? name : subject is MobEffects mob ? mob.Mob.getName() : subject.GetType().Name;
                 if (live) (removedLog ?? Output.WriteDebugLog)("[SWEEP] " + pulse.Parent + " removed " + parent + " from " + target);
-                if (client == null) continue;
+                if (client == null)
+                {
+                    if (live && subject is MobEffects petSubject && CoderPets.OfMob(petSubject.Mob) is { } pet)
+                        CoderPets.ShowAuraEffect(pet, AntiviralSweepFx);
+                    continue;
+                }
                 client.messageQueue.addRpcMessage(AbilityMessages.AboutAbility(RemoveDebuffTarget, false, pulse.Parent, name, name,
                     unchecked((int)AbilityMessages.AbilityGameObject(parent))));
                 ServerPackets.SendPlayerAbilityEffect(client, AntiviralSweepFx);
