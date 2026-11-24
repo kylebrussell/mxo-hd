@@ -13,6 +13,7 @@ public sealed class DualPistolWhipExecutionMode : NativeQaMode
     // First state-eligible stock 501 from PR995.
     private const string StockWhip = "80b9f501040002000000000000000000000000000000000000000000f5010000006b0000086b0000000000";
     private const int Level = 46, CasterX = 21550, EnemyX = 21750, Y = 1095, Z = 16150;
+    private const int OtherX = 21650, OtherZ = 16250;
     private static readonly ushort[] Loadout = DisablingShotMode.Closure(2, 17, Handguns, Whip, Execution);
 
     public override string Name => "ability-parity-dual-pistol-whip-execution";
@@ -30,19 +31,21 @@ public sealed class DualPistolWhipExecutionMode : NativeQaMode
                 "healthC=12000,healthM=12000,innerStrC=900,innerStrM=900 WHERE charId IN (110,6114)",
             $"UPDATE characters SET x={CasterX},rotation={MobAggro.YawTowards(CasterX, Z, EnemyX, Z)} WHERE charId=110",
             $"UPDATE characters SET x={EnemyX},rotation={MobAggro.YawTowards(EnemyX, Z, CasterX, Z)} WHERE charId=6114",
+            $"UPDATE characters SET x={OtherX},y={Y},z={OtherZ},level={Level}," +
+                $"exp={PlayerProgression.ExperienceForLevel(Level)},alignment=2 WHERE charId=6113",
             $"UPDATE char_abilities SET level={Level} WHERE char_id=110"
         }, DevCommands: true, hotbarAbilities: new[] { Handguns, Whip, Execution }, environmentOverrides: new()
         {
             ["MXO_AGGRO"] = "0", ["MXO_MOB_WANDER"] = "0", ["MXO_PVP_SERVER"] = "1", ["MXO_PVP_MAX_SAFE_LEVEL"] = "15",
             ["MXO_SIMULACRUM_QA_HOLD_IS"] = "1", [CombatFixtureWeapons.DisengageMode] = "1",
             [CombatFixtureWeapons.PistolWhipWinMode] = "1"
-        }, extraQaMetadata: new() { ["ScopedStockRows"] = "501", ["NativeCloseableRows"] = 0 },
+        }, extraQaMetadata: new() { ["ScopedStockRows"] = "501", ["NativeCloseableRows"] = 1 },
         readyMessages: new[]
         {
             $"Level {Level}, {Loadout.Sum(AbilityMemory.Cost)}/{AbilityMemory.ForLevel(Level)} memory. Dual handguns 2496 in hand. CSR ({CasterX},{Y},{Z}) faces QAEnemy ({EnemyX},{Y},{Z}) on clear outdoor NAV. Page 2 Handguns / Pistol Whip / Dual Pistol Execution. If needed use /target QAEnemy and strafe once.",
-            "Stay at the verified return stand and /target QAEnemy. Use Handguns slot 1. At rest press Pistol Whip slot 2: expect a local combat restriction or invalid target with no debit. Open right-click Close Combat and reselect Handguns.",
-            "Without Daze, slot 2 stays gated. Then type ?cd daze 30, ?cd pww and press slot 2. Expect 30 IS, 10/5 s reuse, named move 287, damage 129 and [PISTOL WHIP QA] 501 win consumed. QA supplies Daze and one exchange win only.",
-            "Capture QAEnemy source 501 Blind state 90 for 9.576 s, linked Combat Tactics 163 -30, matched removals and localized release; carry the previously observed ordinary-loss branch. Slot 3 is not part of this retest."
+            "No teleport. /target QAEnemy, open radial Close Combat, then reselect Handguns with page 2 slot 1.",
+            "Type /target QAOther. If the client locks selection to QAEnemy, record the local refusal and skip the off-target button. If QAOther is selected, type ?cd daze 30 and press slot 2. Expect stock refusal 24 or suppression, no IS, timer or landed 501. Keep the same fight.",
+            "Now /target QAEnemy, ?cd daze 30, ?cd pww and press slot 2. Expect the accepted same-opponent cast: 30 IS, 10/5 s reuse, animation 287, damage 129 and source 501 state 90 for 9.576 s. QA supplies Daze and one exchange win only. The earlier stock ordinary-loss outcome carries."
         });
 
     public override async Task<byte[]> AfterStartAsync(NativeQaBootstrapContext context)
@@ -53,6 +56,8 @@ public sealed class DualPistolWhipExecutionMode : NativeQaMode
         var server = context.ActualServer!;
         var start = StarterConcealedShotTargetingMode.Stand(CasterX, Z);
         _ = StarterConcealedShotTargetingMode.Stand(EnemyX, Z);
+        Console.WriteLine($"READY QAOther {InvisibilityBeltWatcherMode.Warp(OtherX, Y, OtherZ, 192, inside: false)}");
+        Check.That(NavMesh.HasSightPath(1, CasterX, Y, Z, OtherX, Y, OtherZ), "The nearby non-opponent is in clear sight");
         Check.That(NavMesh.HasSightPath(1, CasterX, Y, Z, EnemyX, Y, Z), "Whip/Execution equal-floor clear sight");
         string[] stand = start.Command.Split(' ');
         Console.WriteLine($"READY HOME type '{string.Join(' ', stand[..3])}', then ' {string.Join(' ', stand[3..7])}', then ' {stand[7]} {stand[8]}'; press Enter once.");
@@ -63,6 +68,10 @@ public sealed class DualPistolWhipExecutionMode : NativeQaMode
         enemy.SendRpc("42 00 00 00 00 00 00"); // Retained stock Speed, also used by the recipient-control sweep.
         DisablingShotMode.CheckStand(enemy, EnemyX);
         NativeQaReadiness.RequireNoAmbientAggro(server, enemy);
+        var bystander = await HeadlessPlayer.LoginAsync(context.Address, "QAOther", "QAOther", stockCharacterLoad: true);
+        context.Helpers.Add(bystander.Handle, bystander);
+        await PvpOpponentsFixture.EnterAsync(bystander);
+        NativeQaReadiness.RequireNoAmbientAggro(server, bystander);
         if (context.StockProbe is not { } caster) return Array.Empty<byte>();
 
         DisablingShotMode.CheckProfile(caster, Loadout, Level);
@@ -84,6 +93,13 @@ public sealed class DualPistolWhipExecutionMode : NativeQaMode
         await ObserveAsync(caster, cursor, rpc => ManageBonusRecord.TryDecode(rpc.Bytes, out var record) &&
             record is { SourceId: Handguns, TargetId: 171, AddRemoveType: 0 } && record.SignedValue > 0,
             "Retained Handguns selects the active dual pistol style");
+        var other = await caster.WaitForViewNamedAsync(bystander.Handle);
+        uint otherHandle = DuelPackets.Handle(other.ViewId, other.SpawnId);
+        caster.SendRpc($"81 51 {WireFormat.ToHex(BitConverter.GetBytes(otherHandle))}");
+        caster.SendChat("?cd daze 30");
+        await caster.WaitForTextAsync("Daze fixture applied 884/199 to QAOther");
+        await RefusedAsync(caster, Whip, WithHandle(StockWhip, otherHandle));
+        await RefusedAsync(caster, Whip, WithHandle(StockWhip, targetHandle ^ 0x10000));
         caster.SendRpc($"81 51 {handle}");
         caster.SendChat("?cd daze 30");
         await caster.WaitForTextAsync("Daze fixture applied 884/199 to QAEnemy");
