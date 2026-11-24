@@ -43,7 +43,7 @@ namespace hds
                 }
             }
             bool selectedArtilleristArea = AbilityID == 336 || AbilityID == 337;
-            bool selectedDespoilerOrPlagueZone = AbilityID == 399 || AbilityID == 400 || AbilityID == 404 || AbilityID == 466;
+            bool selectedViralAreaCast = AbilityID == 475 || AbilityID == 399 || AbilityID == 400 || AbilityID == 404 || AbilityID == 466;
 
             bool starterTargetedControl = AbilityID == 43 || AbilityID == 48;
             bool needsLoadout = starterTargetedControl || AbilityID == 69 || AbilityID == AbilityAuras.CombatAuraTwo;
@@ -101,7 +101,7 @@ namespace hds
                 AbilityID == 392 || AbilityID == 394 || AbilityID == 395 || AbilityID == 396 ||
                 selectedViralField || selectedCoderViral || selectedArtilleristArea;
             ushort? lockedDamageTargetSpawn = null;
-            bool selectedHostileCast = selectedViralAttack || selectedDespoilerOrPlagueZone || selectedHackerCast || selectedDestroyerField;
+            bool selectedHostileCast = selectedViralAttack || selectedViralAreaCast || selectedHackerCast || selectedDestroyerField;
             if (selectedHostileCast)
             {
                 var caster = Store.currentClient;
@@ -461,7 +461,7 @@ namespace hds
                 return;
             }
 
-            if (selectedDespoilerOrPlagueZone || selectedArtilleristArea)
+            if (selectedViralAreaCast || selectedArtilleristArea)
             {
                 var caster = Store.currentClient;
                 if (!AbilityTargets.HasSelectionSight(caster, definition, currentTargetViewId))
