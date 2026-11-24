@@ -16,6 +16,12 @@ public sealed class SpyObjectStealthMode : NativeQaMode
 
     private const byte Level = 50, Rank = 50;
     private const int GroundY = 495, CasterX = 17000, CasterZ = 2300;
+    private static readonly Pose LockUse = new(CasterX, CasterZ, 0), LockProp = new(CasterX, 2420, 0);
+    private static readonly Pose DeskUse = new(17360, CasterZ, 64), DeskProp = new(17500, CasterZ, 64);
+    private sealed record Pose(int X, int Z, byte Yaw)
+    {
+        internal string Command => InvisibilityBeltWatcherMode.Warp(X, GroundY, Z, Yaw, inside: false);
+    }
 
     private static readonly ushort[] Roots = { 2, 17, 151, OpenLocks, DisableSecurityDevices };
     private static readonly ushort[] Loadout = Roots
@@ -45,10 +51,10 @@ public sealed class SpyObjectStealthMode : NativeQaMode
         },
         readyMessages: new[]
         {
-            "Stay at verified HOME. No teleport. Bag slots 1 and 2 carry the ordinary tools. Page 2 slot 2 is Sneak. Spawn each object first, strafe once to see it, then use Sneak. No helper or forced contest.",
-            "Type '?objstate 326' then ' 0x836' and press Enter once. Strafe off the cabinet, Sneak slot 2, then radial Pick Lock. Expect [STEALTH] 1111 off (picked a lock), Pick Lock Success and UnlockedState.",
-            "Type '?objstate 377' then ' 0x839' and press Enter once. Strafe off the desk, Sneak slot 2 after its reuse, then radial Use / Disable Security Devices. Expect [STEALTH] 1111 off (used a security device), resolved contest and matching object state.",
-            "Headless also verifies the same interactions after the relevant ability is unloaded: both actions leave Sneak active. Earlier native tool and rule coverage carries."
+            "Bag slots 1/2 hold the stock tools. Page 2 slot 2 is Sneak. Use the printed prop and approach stands; all teleports are before Sneak. Enter each printed command in chunks with one final Enter.",
+            "Warp to LOCK PROP. Type '?objstate 326' then ' 0x836' and press Enter. Warp to LOCK USE, 1.20 m from the cabinet facing it. Stay on the stand, press Sneak slot 2, then radial Pick Lock. Expect OBJECT-USE, 1111 off (picked a lock), Success and UnlockedState.",
+            "Warp to DESK PROP. Type '?objstate 377' then ' 0x839' and press Enter. Warp to DESK USE, 1.40 m from the desk facing it. Stay there, press Sneak slot 2, then radial Use. Expect OBJECT-USE, 1111 off (used a security device), resolved contest and matching state.",
+            "No strafe or auto-approach is needed. If the stock client keeps the request pending even at the close stand, record the coordinates and whether stock sent 80 c7. Keep that separate from the server transition check."
         },
         extraQaMetadata: new()
         {
@@ -63,26 +69,29 @@ public sealed class SpyObjectStealthMode : NativeQaMode
         string root = context.RepositoryRoot!;
         SectorProperties.Load(Path.Combine(root, "data", "sector_properties.csv"));
         NavMesh.UseDirectory(Path.Combine(root, "data", "navmesh"));
-        Console.WriteLine($"READY HOME {InvisibilityBeltWatcherMode.Warp(CasterX, GroundY, CasterZ, 0, inside: false)}");
+        PrintPair("LOCK", LockProp, LockUse);
+        PrintPair("DESK", DeskProp, DeskUse);
         if (context.StockProbe is not { } actor) return Array.Empty<byte>();
         var server = context.ActualServer!;
         await actor.EnterWorldAsync();
         NativeQaReadiness.RequireNoAmbientAggro(server, actor);
         DisablingShotMode.CheckProfile(actor, Loadout, Level);
-        await CheckRule(OpenLocks, FilingCabinetGoid, "0x836", 8, "[UTILITY] Pick Lock", "picked a lock");
+        await CheckRule(OpenLocks, FilingCabinetGoid, "0x836", 8, "[UTILITY] Pick Lock", "picked a lock", LockProp, LockUse);
         await CheckRule(DisableSecurityDevices, SecurityDeskGoid, "0x839", 1,
-            "[UTILITY] Disable Security Devices", "used a security device");
+            "[UTILITY] Disable Security Devices", "used a security device", DeskProp, DeskUse);
         Console.WriteLine("SPY UTILITY SNEAK PASS: both ordinary rules preserve Sneak on refusal and end it on admission.");
         return Array.Empty<byte>();
 
-        async Task CheckRule(ushort ability, ushort goid, string state, byte use, string marker, string reason)
+        async Task CheckRule(ushort ability, ushort goid, string state, byte use, string marker, string reason, Pose placement, Pose useStand)
         {
             actor.SkipReceived();
             actor.SendChat($"?qaunload {ability}");
             await actor.WaitForRpcAsync($"80 b3 {EvidenceRetestWire.Le(ability)}");
+            await Move(placement);
             int cursor = actor.World.CreationSnapshot().Count;
             actor.SendChat($"?objstate {goid} {state}");
             var prop = await WaitNewCreationAsync(cursor, $"Object {goid} ready");
+            await Move(useStand);
             int enabledAt = actor.World.RpcSnapshot().Count;
             actor.SendRpc(AwakenedStockStealthSpeedMode.SneakUse);
             byte[] on = AbilityBuffs.BuildExclusive(1111, true), off = AbilityBuffs.BuildExclusive(1111, false);
@@ -107,6 +116,13 @@ public sealed class SpyObjectStealthMode : NativeQaMode
                 await Task.Delay(TimeSpan.FromSeconds(cooldown.Seconds + .25));
         }
 
+        async Task Move(Pose pose)
+        {
+            actor.SkipReceived();
+            actor.SendChat(pose.Command);
+            await actor.WaitForTextAsync("Teleported to");
+        }
+
         async Task<ViewCreation> WaitNewCreationAsync(int fromIndex, string description)
         {
             await actor.WaitUntilAsync(() => actor.World.CreationSnapshot().Count > fromIndex,
@@ -122,6 +138,19 @@ public sealed class SpyObjectStealthMode : NativeQaMode
             BitConverter.GetBytes(spawnId).CopyTo(rpc, 4);
             rpc[6] = use;
             return rpc;
+        }
+    }
+    private static void PrintPair(string name, Pose prop, Pose stand)
+    {
+        Check.That(NavMesh.HasSightPath(1, prop.X, GroundY, prop.Z, stand.X, GroundY, stand.Z),
+            $"{name} has clear NAV sight at its within-use stand");
+        Print($"{name} PROP", prop);
+        Print($"{name} USE", stand);
+
+        static void Print(string label, Pose pose)
+        {
+            string[] words = pose.Command.Split(' ');
+            Console.WriteLine($"READY {label} type '{string.Join(' ', words[..3])}', then ' {string.Join(' ', words[3..7])}', then ' {words[7]} {words[8]}'; press Enter once.");
         }
     }
 }
