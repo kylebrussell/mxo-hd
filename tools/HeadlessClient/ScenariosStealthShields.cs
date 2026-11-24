@@ -49,15 +49,14 @@ public static partial class Scenarios
     }
     private static async Task StealthShieldSuppression(ScenarioContext context)
     {
-        var caster=await context.AddPlayerAsync(new CharacterSeed("ShieldSpy"){Level=50,Organization=1,InnerStrength=1000,MaxInnerStrength=1000,Items=new[]{(1,531u,1),(40,460u,1)}});
+        var caster=await context.AddPlayerAsync(new CharacterSeed("ShieldSpy"){Level=50,Organization=1,InnerStrength=1000,MaxInnerStrength=1000,Items=new[]{(1,531u,1)}});
         var victim=await context.AddPlayerAsync(new CharacterSeed("ShieldVictim"){X=17120,Level=50,Organization=2,Health=5000,MaxHealth=5000});
         await context.Database.ExecuteAsync($"DELETE FROM char_abilities WHERE char_id IN ({caster.CharId},{victim.CharId})");
         await LoadAbilitiesAsync(context,caster,1110,1125,1116);await LoadAbilitiesAsync(context,victim,217);
         await caster.EnterWorldAsync();await victim.EnterWorldAsync();
         victim.SendChat("?pvpflag on");await victim.WaitForViewUpdateAsync(2,OwnPvpFlagOn);
         Cast(victim,217);var original=await victim.WaitForRpcAsync(ModPattern(217,624));
-        // Retained stock Invisibility Belt request with its real bag slot 40.
-        caster.SendRpc("80b95c0400000000000000000000000000000000000000000000000064f11a0090b7433d08280000000000");
+        caster.SendChat("?stealth invis");
         await caster.WaitForRpcAsync(ModPattern(1116,115));
         var target=await caster.WaitForViewNamedAsync(victim.Handle);Cast(caster,1125,target.ViewId);
         var debuff=await victim.WaitForRpcAsync(ModPattern(1125,710));
