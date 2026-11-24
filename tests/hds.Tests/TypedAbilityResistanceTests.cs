@@ -40,6 +40,18 @@ public class TypedAbilityResistanceTests
         Assert.Equal(29, AbilityHandler.AbilityDamage(ability, new Random(5)));
     }
 
+    [Theory]
+    [InlineData(501, 109)]
+    [InlineData(502, 45)]
+    public void DuelistSpecialsUseTheFixedBallisticGobs(ushort id, ushort expected)
+    {
+        var move = new AbilityItem();
+        move.setAbilityID(id);
+        Assert.Equal(1, TypedAbilityResistance.StoredType(id));
+        Assert.Equal(expected, AbilityHandler.AbilityDamage(move, new Random(1)));
+        Assert.Equal(expected, AbilityHandler.AbilityDamage(move, new Random(5)));
+    }
+
     [Fact]
     public void RealBuffsAffectOnlyTheirTypeAndRemovalRestoresExactRawDamage()
     {
