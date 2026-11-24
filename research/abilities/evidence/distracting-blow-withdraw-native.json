@@ -1,0 +1,24 @@
+{
+  "abilities": {
+    "1128": {
+      "note": "Stock confirmed cast-first operation. Opening Close Combat first turns QAEnemy toward CSR. Native front and wall refusals cost nothing. FAR was blocked locally; the retained headless replay reaches server reason 34. https://github.com/kylebrussell/mxo-hd/pull/1129#issuecomment-7146723041",
+      "checks": {
+        "targeting": {
+          "source": "The shipped selected hostile is within 4 m, Stealthed in Spy Style, outside combat and outside the authored 50-degree target-facing cone.",
+          "runtime": "The normal selected cast rechecks its original opponent and spawn, range, sight, style, loaded state and facing before damage or aura.",
+          "test": "DistractingBlowWithdrawalMode verifies full geometry and no admission debit. Native confirmed front reason 24, solid-wall reason 9, FAR local refusal and a rear player hit for 77. https://github.com/kylebrussell/mxo-hd/pull/1129#issuecomment-7146723041"
+        },
+        "source-parity": {
+          "source": "Shipped 1128 has a capped level-scaled Thrown modifier and activates 1129; 1129 adds 50 to direct Contested Withdraw 1005 for 12 seconds.",
+          "runtime": "The existing ordinary Withdraw reads 1005 and applies the linked 1045 percentage. Target-specific motion, native damage and the scoped ally aura use their normal callbacks.",
+          "test": "Native damage/resistance coverage is joined by the exact ordinary Withdraw differential: direct 26/76/26, effective input 28/83/28 with unchanged +10 linked bonus. https://github.com/kylebrussell/mxo-hd/pull/1125#issuecomment-7145992386 https://github.com/kylebrussell/mxo-hd/pull/1129#issuecomment-7146723041"
+        },
+        "behavior-tests": {
+          "source": "Shipped cast, cost, own/family reuse, targeted animation, selected opponent restrictions and the authored ally Withdraw aura.",
+          "runtime": "A valid cast retains Sneak to landing, then breaks it, applies a single selected hit and publishes the target-local motion and temporary records. The ordinary Withdraw consumer reads only active bonuses.",
+          "test": "DistractingBlowTests checks source scaling, modifiers and timers. Retained integration replays cover recipient includes/excludes, negative geometry and input A/B. Exact native confirms both callbacks, all three Withdraw input values and the refusal scope. https://github.com/kylebrussell/mxo-hd/pull/1125#issuecomment-7145992386 https://github.com/kylebrussell/mxo-hd/pull/1129#issuecomment-7146723041"
+        }
+      }
+    }
+  }
+}
