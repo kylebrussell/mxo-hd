@@ -3,9 +3,9 @@
     "proxy-master-stock-recipient": {
       "representative": 1107,
       "result": "pass",
-      "head": "20112438f48aeda29a1cc5d25486012566afe835",
-      "native": "https://github.com/kylebrussell/mxo-hd/pull/1003#issuecomment-7108209660",
-      "scope": "Stock 1107 used the visible selected owned Proxy. The two-second cast spent 190 IS and started 15-second own reuse. The same pet changed from 2.00 to 3.00 IS/s and cost 10.00 to 7.50. Archive unload removed the action and parent bonus while the already landed effect persisted. Deactivate and resummon produced a new pet ID with baseline cost 10.00."
+      "head": "fa73c302",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/1051#issuecomment-7120753093",
+      "scope": "Stock 1107 used the visible selected owned Proxy. The two-second cast spent 190 IS and started 15-second own reuse. The same pet changed from 2.00 to 3.00 IS/s and cost 10.00 to 7.50. Archive unload removed the action and parent bonus while the already landed effect persisted. Deactivate and resummon produced a new pet ID with baseline cost 10.00. PR1051 also observed immediate and 10 s condition sweeps and about 0.5% max HP/s on the owned pet while the friendly control stayed flat."
     }
   },
   "abilities": {
@@ -21,7 +21,24 @@
     },
     "1107": {
       "family": "proxy-master-stock-recipient",
-      "note": "PR1003 verifies the ordinary stock use and measures the real pet resource clock before and after the grant. The source +50% regeneration and −25% cost apply to the same pet. Stock Archive unload and reload affect the grant without removing its landed effect; the replacement starts at baseline. Pet HP regeneration, NegativeConditionSweepPulse, full stats and the original retail baseline remain open. https://github.com/kylebrussell/mxo-hd/pull/1003#issuecomment-7108209660"
+      "checks": {
+        "stats": {
+          "source": "The 1107 GOB authors pet cost reduction 25%, IS and HP regen +50%, and the 10% sweep marker for 600 s.",
+          "runtime": "CoderPets applies the percentages to the selected pet’s action cost and elapsed resource clock. The HP bonus uses the common maximum-HP rate.",
+          "test": "ProxyMasterUsesThePetBudgetAndSettlesExactExpiry and ProxyMasterHealthBonusUsesElapsedTimeAndStopsAtTheSameExpiry check resource clocks and exact expiry. Stock PR1051 measures cost 10→7.5, IS 2→3/s, HP +0.5% max/s and an unchanged max. https://github.com/kylebrussell/mxo-hd/pull/1051#issuecomment-7120753093"
+        },
+        "script": {
+          "source": "NegativeConditionSweepPulse calls for an initial sweep and a ten-second interval with authored 10% chance.",
+          "runtime": "The pet effects ledger applies the shared sweep to the selected owned recipient. Cleanup is tied to that pet.",
+          "test": "ProxyMasterSweepsOnlyTheRecipientOnInitAndEveryTenSeconds verifies the interval and recipient rule. Stock PR1051 measures the immediate and approximately 10 s sweeps after a real Slow, with the friendly pet excluded. The fixture fixes only sweep chance. https://github.com/kylebrussell/mxo-hd/pull/1051#issuecomment-7120753093"
+        },
+        "behavior-tests": {
+          "source": "The rank-zero 599 grant authors a two-second selected pet cast with 15 s own reuse, resource modifiers and the recurring sweep.",
+          "runtime": "The same owned pet must stay eligible through landing. The effect remains on that instance across parent Archive changes and ends on expiry or pet removal.",
+          "test": "ProxyMasterRecipientMode replays the retained stock setup. The focused tests cover resource clock, interval, expiry and scope. PR1003 verifies the exact cast and reuse interval and stock Archive behavior. PR1051 records the first stock request in the updated fixture, 190 IS, owned-only HP and sweep, and unaffected replacement. https://github.com/kylebrussell/mxo-hd/pull/1003#issuecomment-7108209660 https://github.com/kylebrussell/mxo-hd/pull/1051#issuecomment-7120753093"
+        }
+      },
+      "note": "PR1003 and PR1051 verify Proxy Master on the same owned pet. The historical absolute unmastered pet health-regeneration baseline remains unknown. The authored +50% bonus uses the common 1% maximum-health baseline and is verified at +0.5% max/s in the stock fixture. https://github.com/kylebrussell/mxo-hd/pull/1051#issuecomment-7120753093"
     }
   }
 }

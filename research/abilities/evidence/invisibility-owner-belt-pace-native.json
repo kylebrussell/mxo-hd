@@ -1,0 +1,33 @@
+{
+  "families": {
+    "invisibility-owner-belt-pace": {
+      "representative": 175,
+      "result": "pass",
+      "head": "195819f4",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/1049#issuecomment-7120345490",
+      "scope": "The stock Belt measured 395.2 and 450.1 units/s at rank 20 and rank 50 (ratio 1.139). Movement percentages were 0.10 and 0.25, then 0.22 and 0.37 when combined with Hyper-Speed. Turning Belt off restored normal Hyper-Speed at 0.45."
+    }
+  },
+  "abilities": {
+    "175": {
+      "family": "invisibility-owner-belt-pace",
+      "checks": {
+        "stats": {
+          "source": "Invisibility 175 grants 1116 and authors passive 878, whose AbilityAttributeLink points to percent-valued stat 1051.",
+          "runtime": "The learned total is 10 at rank 20 and 25 at rank 50.",
+          "test": "BeltConsumesTheLearnedOwnerPercentageAndUpdatesOnArchiveChange checks the shipped link and value type and isolates both ranks. PR1049 observed the corresponding movement percentages in the stock client. https://github.com/kylebrussell/mxo-hd/pull/1049#issuecomment-7120345490"
+        },
+        "consumer": {
+          "source": "The 878 link feeds queued movement speed while the 1116 Invisibility Belt is active.",
+          "runtime": "AbilityBuffs projects the learned 1051 owner percentage in the Belt movement channel. AbilityPassives republishes it on Archive changes while the Belt is active.",
+          "test": "PR1049 measures 395.2 to 450.1 units/s in the Belt pose, 442.7 and 492.2 with Hyper-Speed, and the normal 0.45 scale after ending the Belt. https://github.com/kylebrussell/mxo-hd/pull/1049#issuecomment-7120345490"
+        },
+        "behavior-tests": {
+          "source": "Shipped 175 grant membership and the 878 to 1051 link apply during the issued 1116 Belt ability.",
+          "runtime": "Loadout changes replace only the linked movement contribution while the Belt remains active. Ending Belt removes the contribution, and Speed stacks separately.",
+          "test": "BeltConsumesTheLearnedOwnerPercentageAndUpdatesOnArchiveChange verifies both ranks, removal/reload during the same Belt instance and return to baseline after ending. ShadowUpgradeUsesTheDirectInvisibleMovementChannelAndRestoresItWithoutChangingLifetime checks independent Shadow and Hyper-Speed stacking. The retained membership replay covers issued 1116. Stock PR1049 independently checks movement and cleanup. https://github.com/kylebrussell/mxo-hd/pull/1049#issuecomment-7120345490"
+        }
+      }
+    }
+  }
+}
