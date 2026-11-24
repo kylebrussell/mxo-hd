@@ -57,6 +57,7 @@ public class MartialArtistParityTests
     [Theory]
     [InlineData(405, 124, 2, 0, 6, 4.4f, 4)]
     [InlineData(531, 130, 0, 11, 12, 4, 4.4f)]
+    [InlineData(410, 123, 2, 11, 0, 4, 4)]
     public void FocusPassivesFeedTypedContestDamageAndLinkedControls(ushort id, int damage, int defense,
         int resistance, int viralBonus, float powerless, float stun)
     {
