@@ -36,14 +36,11 @@ Use NativeQa mode `ability-parity-starter-evade-npc-entry` for the stock check. 
 
 Discovered case/mode: `combat-insight-engagement`. The normal wire case owns2/17/49/77/113/217 before Margin. It normally unloads113 for the baseline, normally reloads the same owned row, and observes actual1048 add/remove records and durable load flags. The target casts217 and49 normally. Ordinary42 selects Power/Grab; ordinary40 requests entry. Paired normal44 withdrawal ends admitted fights. No buff/state injection, flag/dev command or fixed roll is used. The fixture uses the existing hostile-server level50 entry profile; this setting and seeded levels/loadout are aids.
 
-The headless memory request uses the normal80ae handler; the native control must use Hardline/Loading Area UI. The runtime only changes new player engagement against current217. No general evasion, PvE, shield-damage or retail-chance proof is claimed. Audit labels are conditional on the actual consumer's presence and remain `partial`, never complete parity. No generated coverage snapshot is committed.
+The retained headless case predates full prerequisite seeding. Its 100/110 threshold remains a historical server-policy comparison. The current NativeQa mode loads every ordinary prerequisite. Execute Program adds +5 Evade Interlock Bonus to the helper, so the live baseline is 115.
 
-## One-pass native checklist
+## Native checklist
 
-1. Use mode `combat-insight-engagement`, CSR110 only. QAEnemy has normally cast217 during fixture startup; verify its visible shield/state. Native113 begins owned but unloaded. Choose Power, select QAEnemy and request ordinary interlock: expect force100/evade110 refusal and no combat round. Capture the client's refusal wording.
-2. Use ordinary Hardline/Loading Area memory UI to load owned Combat Insight113. Return normally to the same helper; verify sourced113→1048+10. With Power, request entry:110==110 admits. Inspect normal combat presentation. Withdraw, and issue helper request `{"actor":"QAEnemy","action":"stop"}` so both ordinary withdrawal intents end the fight.
-3. Request the helper's ordinary self-cast: `{"actor":"QAEnemy","action":"cast","target":"QAEnemy","ability":49}`. Verify its actual49→520+25/600s record and normal cast/cost. Keep217 on. Power+113 should now refuse110<135.
-4. Select Grab normally. The next request should admit220>=135. End with paired ordinary withdrawal again. Optionally unload113 at a Hardline and confirm its sourced removal. No cooldown reset or RNG control.
+Use the console plan for `combat-insight-engagement`. With Power, 113 changes force from 100 to 110 and the equal-level shield damage from 35 to 38. Both attempts are resisted at evade 115. Grab raises force to 220 and starts an ordinary round without a shield debit. After paired withdrawal, return to Power and have the helper cast Gaussian Blur while Evade remains active. Evade reaches 141, and the last resisted request depletes the shield. Blur remains present and the next Power entry starts an ordinary fight with the shield gone. The fixture uses seeded profiles, ordinary helper self-casts, and disposable Archive load/unload for 113. The original entry formula remains unresolved.
 
 ## Qualified results
 
