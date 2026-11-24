@@ -299,6 +299,8 @@ namespace hds
             if (rule == RuleDoorPickLock)
             {
                 PickResult result = PickLock(Level(client, OpenLocks), ToolFor(client, OpenLocks) != 0);
+                if (result == PickResult.Success)
+                    Stealth.BreakForAction(client, "picked a lock");
                 ToCaster(client, PickLockMessage(result), OpenLocks);
                 Output.WriteDebugLog("[UTILITY] Pick Lock on " + goid + ": " + result);
                 if (result == PickResult.Success)
@@ -317,8 +319,12 @@ namespace hds
 
             if (rule == RuleSecurityPbxDisable && mission == null)
             {
+                int ability = Level(client, DisableSecurityDevices);
+                bool hasTool = ToolFor(client, DisableSecurityDevices) != 0;
+                if (ability > 0 && hasTool)
+                    Stealth.BreakForAction(client, "used a security device");
                 int difficulty = SecurityDifficulty(goid);
-                byte result = SecurityDisable(Level(client, DisableSecurityDevices), ToolFor(client, DisableSecurityDevices) != 0,
+                byte result = SecurityDisable(ability, hasTool,
                     Level(client, SecuritySystems), difficulty, Roll(), out string chat);
                 new ServerPackets().sendSystemChatMessage(client, chat, "SYSTEM");
                 Output.WriteDebugLog("[UTILITY] Disable Security Devices on " + goid + ": result " + result + " (" + chat + ")");
