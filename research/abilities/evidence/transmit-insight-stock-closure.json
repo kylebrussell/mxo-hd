@@ -1,0 +1,24 @@
+{
+  "abilities": {
+    "113": {
+      "note": "Stock PASS at 420024e9. Force 100→110 on loading 1048 +10; equal-level shield damage 35→38 while both Power attempts were resisted at evade 115. Grab admitted at force 220 without a shield debit. Gaussian Blur raised evade to 141; the final resisted attempt depleted the shield. With Blur still present the next ordinary Power entry succeeded without a gate. The original entry-score normalization remains unknown. https://github.com/kylebrussell/mxo-hd/pull/1074#issuecomment-7127890207",
+      "checks": {
+        "source-parity": {
+          "source": "Shipped GOB 113 evaluates Force Combat Bonus at scale 0.2. combat_calculations.py GetShieldDamageValue uses the active bonus and two character levels. The original entry formula is unavailable.",
+          "runtime": "The supported entry check compares live tactics and evade scores only for an active Evade shield. Force Combat Bonus scales the force score and feeds the independently sourced shield damage on a refusal.",
+          "test": "Native CombatInsightMode and stock PR1074 verify 100/110 force, 35/38 shield damage, an ordinary admitted Grab, Blur-only entry after depletion and a normal unload."
+        }
+      }
+    },
+    "593": {
+      "note": "Stock PASS at c4c34775. One Poison Knife lease supplies 2/1/2 damage across normal defender Archive load/unload, and both +10 records appear and remove without recasting. PR1005 supplies the complementary direct viral damage path. The original retail bonus-to-points coefficient remains unknown. https://github.com/kylebrussell/mxo-hd/pull/1073#issuecomment-7127233721",
+      "checks": {
+        "source-parity": {
+          "source": "Shipped 593 uses function 2 at scale 0.2 for typed thrown and viral resistance bonuses; the two attributes link separately to their matching resistance channels.",
+          "runtime": "The supported level-normalized conversion evaluates each loaded bonus on the recipient at damage time. At level 50 each +10 contributes 22 points to its own channel.",
+          "test": "TransmitCodeThrownMode and stock PR1073 consume type 7 on a single ongoing Poison Knife lease. TransmitCodeMode and stock PR1005 verify the separate type 2 direct viral hit and restoration."
+        }
+      }
+    }
+  }
+}
