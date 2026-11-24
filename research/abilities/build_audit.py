@@ -247,7 +247,7 @@ def server(i):
     if i == 244:
         return 'IS 30; 2s cast; reuse 10s / group 689 5s; fixed Ballistic base 18 with influence and resistance; dual handgun direct or +15 queued Handguns cast; 40% landed Powerless for8s with linked timer; 9534 at the authored close pose, 9519 medium fallback, ordinary exchange on miss; [evidence](GUNMAN-PARITY-2.md)'
     if i == 1107:
-        return 'rank-zero grant from loaded599; 200 base IS, 2s cast and 15s reuse; same owned visible pet within16m through landing; pet action cost -25% and IS regen +50% for600s; pet HP regen and periodic NegativeConditionSweepPulse unimplemented; [evidence](https://github.com/kylebrussell/mxo-hd/pull/891)'
+        return 'rank-zero grant from loaded599; 200 base IS, 2s cast and 15s reuse; same owned visible pet within16m through landing; pet action cost -25% and IS regen +50% for600s; pet HP regen +50% on common rate and immediate/10s NegativeConditionSweepPulse on the selected pet; [evidence](https://github.com/kylebrussell/mxo-hd/pull/1051#issuecomment-7120753093)'
     if i == 442:
         return '30 IS; loaded Rifles and an equipped rifle required to start at rest; Ballistic Accuracy +20 consumed by ordinary rifle shots; 30 IS every5s; manual off or shortfall removes the bonus and starts 15s own reuse; [evidence](GUNMAN-PARITY-2.md)'
     if i == 436:

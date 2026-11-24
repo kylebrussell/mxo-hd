@@ -1,7 +1,24 @@
 {
   "abilities": {
     "120": {
-      "note": "PR1045 ab5ea1c8 proves normal Withdraw uses 1045 and the matched records add/remove/restore: input 81/65/81 from direct 65 and linked 25/0/25. The exact bootstrap observed 1114 membership. Stock matched Sneak at 300.3 loaded versus 300.0 unloaded, and independent 877 +12 raised it to 335.0 u/s. The 1050 owner movement linkage and the grouped stat check therefore remain open. https://github.com/kylebrussell/mxo-hd/pull/1045#issuecomment-7119257115"
+      "checks": {
+        "stats": {
+          "source": "GOB 120 authors 1045 and 1050 on the learned rank and grants 1114. The shared direct Sneak pace stat 877 links to 1050.",
+          "runtime": "The learned rank-50 values are +25 on both owner stats. The ordinary Withdraw path applies 1045 as a percentage of direct contested Withdraw points, and ordinary Sneak consumes 1050 in its linked movement channel.",
+          "test": "PR1045 reports paired add/remove/restore for both records and stock Withdraw inputs 81/65/81. PR1052 ties the same record lifecycle to visible Sneak pace. https://github.com/kylebrussell/mxo-hd/pull/1045#issuecomment-7119257115 https://github.com/kylebrussell/mxo-hd/pull/1052#issuecomment-7120872582"
+        },
+        "consumer": {
+          "source": "The shipped 877 attribute link names percent-valued 1050.",
+          "runtime": "AbilityBuffs adds the owner bonus to ordinary Sneak only, and AbilityPassives republishes it on Archive changes while Sneak stays active.",
+          "test": "PR1052 verifies stock scale .25/0/.25 and speeds 375.4/300.0/375.3 units/s in one activation. With Hyper-Speed the separate .12 becomes .37 on reload, and ending Sneak returns Hyper-Speed to .45. https://github.com/kylebrussell/mxo-hd/pull/1052#issuecomment-7120872582"
+        },
+        "behavior-tests": {
+          "source": "GOB 120 issues ranked Disguise 1114 and authors two function-2 loaded stats.",
+          "runtime": "The focus is membership and duration for the grant, a contested Withdraw input percentage, and a live ordinary Sneak pace percentage.",
+          "test": "The retained DisguiseParentWithdrawMode bootstrap covers the stock Withdraw and membership path. DisguiseOwnerPercentageStacksWithDirectSneakSpeedAndTracksReload covers the live link and archive lifecycle. PR435 verifies the rank-22 mask term and unload refusal, PR1045 the normal Withdraw readback, and PR1052 the movement link and Hyper-Speed stacking. https://github.com/kylebrussell/mxo-hd/pull/435 https://github.com/kylebrussell/mxo-hd/pull/1045#issuecomment-7119257115 https://github.com/kylebrussell/mxo-hd/pull/1052#issuecomment-7120872582"
+        }
+      },
+      "note": "PR1045 measured original Sneak with 1050 published but not consumed. PR1052 implements the shipped owner link and replaces that null result with a 1.251× stock pace at rank 50. The rank-50 Withdraw coefficient matches the implemented percentage for direct 65. Retail rounding across the full Withdraw range and separate Actions registration remain unverified. https://github.com/kylebrussell/mxo-hd/pull/1052#issuecomment-7120872582"
     }
   }
 }
