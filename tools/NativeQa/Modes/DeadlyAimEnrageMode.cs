@@ -125,8 +125,11 @@ public abstract class EnrageDurationArchiveMode : NativeQaMode
             for (int attempt = 0; attempt < 6; attempt++)
             {
                 int start = actor.World.RpcSnapshot().Count;
+                var clock = System.Diagnostics.Stopwatch.StartNew();
                 actor.SendRpc(StarterHackerControlTargetMode.WithHandle(Sample.StockUse, selection));
-                await EvidenceRetestWire.TimerAsync(actor, start, Smash, AbilityCooldowns.OwnTimer, Reuse, ended: true);
+                await EvidenceRetestWire.TimerAsync(actor, start, Smash, AbilityCooldowns.OwnTimer, Reuse);
+                var remaining = TimeSpan.FromSeconds(Reuse + 0.5) - clock.Elapsed;
+                if (remaining > TimeSpan.Zero) await Task.Delay(remaining);
                 if (enemy.World.RpcSnapshot().Skip(recipient).Any(frame => IsState(frame, false))) break;
             }
             var added = await StockAbilityProfile.ObserveAsync(enemy, recipient, frame => IsState(frame, false), "Landed Enrage still has the shipped 10 s duration");
