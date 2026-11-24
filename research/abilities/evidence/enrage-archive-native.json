@@ -1,0 +1,39 @@
+{
+  "abilities": {
+    "339": {
+      "checks": {
+        "consumer": {
+          "source": "The shipped Enrage state 93 has no AbilityAttributeLink. The caster's authored 1068 record is distinct from Blind 1041 and Stun 995.",
+          "runtime": "AbilityControlDurations follows authored state links; 145's Enrage term has no owner 1068 contribution.",
+          "test": "Owner 1041 +25 and 1068 +5 round-trip. Overhand Smash uses an unchanged 10 s Enrage term and matching removal through all three Archive states. The separate linked Blind term was 12.5 s in PR478. https://github.com/kylebrussell/mxo-hd/pull/1058#issuecomment-7122522221"
+        },
+        "behavior-tests": {
+          "source": "The shipped passive records use their respective authored destinations; 145 authors the independent 10 s Enrage term.",
+          "runtime": "Ordinary Archive updates the owner records, and retained native 145 requests publish and retire the actual recipient state. The QA aid fixes only the proc branch.",
+          "test": "The retained full style/145/Archive replay checks records and term in all states. Owner 1041 +25 and 1068 +5 round-trip. Overhand Smash uses an unchanged 10 s Enrage term and matching removal through all three Archive states. The separate linked Blind term was 12.5 s in PR478. https://github.com/kylebrussell/mxo-hd/pull/1058#issuecomment-7122522221"
+        }
+      },
+      "note": "No recovered original server consumer beyond the shipped state-link map. New stock check: 7a3a6931 https://github.com/kylebrussell/mxo-hd/pull/1058#issuecomment-7122522221"
+    },
+    "384": {
+      "checks": {
+        "consumer": {
+          "source": "The shipped Enrage state 93 has no AbilityAttributeLink. The caster's authored 1068 record is distinct from Blind 1041 and Stun 995.",
+          "runtime": "AbilityControlDurations follows authored state links; 145's Enrage term has no owner 1068 contribution.",
+          "test": "Owner 995 +15, 1045 +10 and 1068 +5 round-trip. Enrage stays 10 s across all three states. At direct Withdraw 72, the input is 79/72/79. The separate linked Stun term was 9.2 s in PR480. https://github.com/kylebrussell/mxo-hd/pull/1059#issuecomment-7122597878"
+        },
+        "behavior-tests": {
+          "source": "The shipped passive records use their respective authored destinations; 145 authors the independent 10 s Enrage term.",
+          "runtime": "Ordinary Archive updates the owner records, and retained native 145 requests publish and retire the actual recipient state. The QA aid fixes only the proc branch.",
+          "test": "The retained full style/145/Archive replay checks records and term in all states. Owner 995 +15, 1045 +10 and 1068 +5 round-trip. Enrage stays 10 s across all three states. At direct Withdraw 72, the input is 79/72/79. The separate linked Stun term was 9.2 s in PR480. https://github.com/kylebrussell/mxo-hd/pull/1059#issuecomment-7122597878"
+        },
+        "stats": {
+          "source": "GOB 384 authors separate 1045, 995 and 1068 scalars. Stun links to 995 and ordinary Withdraw uses 1045.",
+          "runtime": "At rank 50 these publish +10/+15/+5. The linked Stun and ordinary Withdraw consume their corresponding record.",
+          "test": "Owner 995 +15, 1045 +10 and 1068 +5 round-trip. Enrage stays 10 s across all three states. At direct Withdraw 72, the input is 79/72/79. The separate linked Stun term was 9.2 s in PR480. https://github.com/kylebrussell/mxo-hd/pull/1059#issuecomment-7122597878 Existing stock Stun evidence: https://github.com/kylebrussell/mxo-hd/pull/480"
+        }
+      },
+      "note": "No recovered original server consumer beyond the shipped state-link map. New stock check: 345c9e8b https://github.com/kylebrussell/mxo-hd/pull/1059#issuecomment-7122597878"
+    }
+  }
+}
