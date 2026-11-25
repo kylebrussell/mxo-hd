@@ -9,6 +9,7 @@ public class StarterControlDeflectMode : NativeQaMode
     private static readonly ushort[] CasterAbilities = StockAbilityProfile.Profile(2, 17, Style, Blind, Pacify, Stun).Order().ToArray();
     private readonly ushort passive;
     private readonly (ushort Stat, int Value)[] bonuses;
+    private readonly float loadedStun;
     private const int X = 17000, Y = 495, Home = 6400, Enemy = 6600;
 
     private sealed record Sample(ushort Ability, ushort State, float Duration, int Immunity, string Capture);
@@ -22,12 +23,14 @@ public class StarterControlDeflectMode : NativeQaMode
     public override string Name => "ability-parity-starter-deflect-controls";
     public override NativeQaModePlan Plan { get; }
 
-    public StarterControlDeflectMode() : this(Deflect, new (ushort, int)[] { (1047, 10) }) { }
+    public StarterControlDeflectMode() : this(Deflect, new (ushort, int)[] { (1047, 10) }, loadedStun: 6.615f) { }
 
-    protected StarterControlDeflectMode(ushort passive, (ushort Stat, int Value)[] bonuses)
+    protected StarterControlDeflectMode(ushort passive, (ushort Stat, int Value)[] bonuses, float loadedStun)
     {
         this.passive = passive;
         this.bonuses = bonuses;
+        this.loadedStun = loadedStun;
+        string records = string.Join(", ", bonuses.Select(bonus => $"stat{bonus.Stat} +{bonus.Value}"));
         bool deflect = passive == Deflect;
         var abilities = DisablingShotMode.Closure(2, 17, passive);
         var sql = new List<string>
@@ -59,9 +62,9 @@ public class StarterControlDeflectMode : NativeQaMode
                 """Have QAEnemy cast 43 (Blind), 48 (Pacify), then 315 (Stun) using {"actor":"QAEnemy","action":"cast","target":"CSR_Tester","ability":43} with the documented ability changed each time. Wait for removal and all immunity to expire after each cast. The helper uses the recorded stock requests, with only the live handle changed.""",
             } : new[]
             {
-                $"Verified open HOME ({X},{Y},{Home}) faces QAEnemy ({X},{Y},{Enemy}). No initial teleport or selection. Remain at rest. Check source498 stat1047 +5, stat1042 +10, stat1143 +10 and stat1140 +5.",
-                """Request {"actor":"QAEnemy","action":"cast","target":"CSR_Tester","ability":315}. It sends retained stock Stun. Expect state 102 at 6.9825 s and separate 734/681 immunity at 14 s. Wait for both removals before repeating. The QA aid fixes only the helper's Viral contest draws.""",
-                "Type ?qaunload 498 and expect matching removes for all four stats. Repeat the same Stun for 7.35 s with 14 s immunity. After both removals use ?qaload 498 and repeat for 6.9825 s and 14 s. Original Determination scaling and the other live stat consumers remain open."
+                $"Verified open HOME ({X},{Y},{Home}) faces QAEnemy ({X},{Y},{Enemy}). No initial teleport or selection. Remain at rest. Confirm source{passive} {records}.",
+                $$"""Request {"actor":"QAEnemy","action":"cast","target":"CSR_Tester","ability":315}. It sends retained stock Stun. Expect state 102 at {{loadedStun}} s and separate 734/681 immunity at 14 s. Wait for both removals. The QA aid fixes only the helper's Viral contest draws.""",
+                $"Type ?qaunload {passive} and check the matching removes. Repeat the same Stun for 7.35 s with 14 s immunity. After both removals use ?qaload {passive} and repeat for {loadedStun} s and 14 s. Original Determination scaling and other live stat consumers remain open."
             });
     }
 
@@ -91,7 +94,7 @@ public class StarterControlDeflectMode : NativeQaMode
             foreach (var sample in Samples)
                 await CheckCastAsync(caster, defender, sample);
         else
-            await CheckCastAsync(caster, defender, Samples[^1] with { Duration = 6.9825f });
+            await CheckCastAsync(caster, defender, Samples[^1] with { Duration = loadedStun });
 
         int cursor = await StockAbilityProfile.ChangeLoadoutAsync(defender, archive, new[] { passive }, load: false);
         await VerifyRecordsAsync(cursor, true);
@@ -100,8 +103,8 @@ public class StarterControlDeflectMode : NativeQaMode
         {
             cursor = await StockAbilityProfile.ChangeLoadoutAsync(defender, archive, new[] { passive }, load: true);
             await VerifyRecordsAsync(cursor, false);
-            await CheckCastAsync(caster, defender, Samples[^1] with { Duration = 6.9825f });
-            Console.WriteLine("HANDGUN ARTISTRY PASS: 6.9825/7.35/6.9825 s Stun with independent 14 s immunity.");
+            await CheckCastAsync(caster, defender, Samples[^1] with { Duration = loadedStun });
+            Console.WriteLine($"DETERMINATION PASS {passive}: {loadedStun}/7.35/{loadedStun} s Stun with independent 14 s immunity.");
         }
         Check.Equal(0, defender.World.Problems.Count + caster.World.Problems.Count, "Deflect control replay framing");
         return Array.Empty<byte>();
