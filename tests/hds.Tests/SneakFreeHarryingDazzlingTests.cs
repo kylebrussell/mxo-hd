@@ -67,6 +67,8 @@ public class SneakFreeHarryingDazzlingTests
     [Theory]
     [InlineData(Harrying)]
     [InlineData(Dazzling)]
+    [InlineData(SpySneakOpeners.WeakeningBlow)]
+    [InlineData(SpyMasterSneakOpeners.WardingBlow)]
     public void SneakFreeThrowAdmissionEnforcesStyleStealthOpponentFacingSightRangeAndCombat(ushort ability)
     {
         string dir = AppContext.BaseDirectory;

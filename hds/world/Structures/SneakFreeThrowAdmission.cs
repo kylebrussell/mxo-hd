@@ -14,7 +14,8 @@ namespace hds
             ushort id = AbilityCatalog.Canonical(abilityId);
             return id == HarryingAttackDamage.Id || id == DazzlingThrowDamage.Id ||
                 id == SpySneakOpeners.LegThrow || id == SpyMasterSneakOpeners.InfuriatingAssault ||
-                id == SpyMasterSneakOpeners.StaggeringThrow;
+                id == SpyMasterSneakOpeners.StaggeringThrow ||
+                id == SpySneakOpeners.WeakeningBlow || id == SpyMasterSneakOpeners.WardingBlow;
         }
 
         public static bool TryRefuse(WorldClient caster, ushort abilityId, ushort targetViewId, ushort? spawn, out uint reason)

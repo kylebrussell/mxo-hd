@@ -33,7 +33,8 @@ namespace hds
             refusalReason = 0;
             ushort id = AbilityCatalog.Canonical(abilityId);
             if (!Handles(id)) return false;
-            if (id == LegThrow)
+            // SneakFree throws: Spy Style, Stealthed, rear 50-degree approach, range and sight.
+            if (id == LegThrow || id == WeakeningBlow)
                 return SneakFreeThrowAdmission.TryRefuse(client, id, targetViewId, targetSpawnId, out refusalReason);
             if (CombatManager.GetHandler(client).isCombatRunning)
             {
@@ -81,9 +82,11 @@ namespace hds
             SpySneakOpeners.TryRefuse(client, abilityId, targetViewId, targetSpawnId, out refusalReason);
         public bool TryResolveDamage(AbilityCatalog.Entry source, int characterLevel, Random random, out ushort damage) =>
             SpySneakOpeners.TryResolve(source, characterLevel, out damage);
+        // The SneakFree*_Subject callbacks play the targeted knife throw on the selected opponent.
         public void OnLanded(WorldClient caster, ushort abilityId, ulong targetEntity)
         {
-            if (AbilityCatalog.Canonical(abilityId) == SpySneakOpeners.LegThrow)
+            ushort id = AbilityCatalog.Canonical(abilityId);
+            if (id == SpySneakOpeners.LegThrow || id == SpySneakOpeners.WeakeningBlow)
                 StealthShieldAbilities.PlayThrow(caster, targetEntity, abilityId);
         }
     }
