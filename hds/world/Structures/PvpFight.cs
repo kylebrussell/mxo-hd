@@ -125,6 +125,20 @@ namespace hds
 
         public Side SideOf(WorldClient client) { lock (sync) return members.LastOrDefault(s => s.Client == client); }
 
+        /// <summary>Dev probe only: one extra presentation round naming this side's ability, with no outcome or damage.</summary>
+        internal bool ProbeRound(WorldClient client, ushort ability, bool landed)
+        {
+            Side own, other;
+            lock (sync)
+            {
+                own = members.LastOrDefault(s => s.Present && s.Client == client);
+                other = own?.Other;
+            }
+            if (own == null || other == null || presentation == null) return false;
+            presentation.RoundPair(own.Slot, other.Slot, true, CombatRules.SpecialMove, CombatTactic.Speed, CombatTactic.Speed, 0, 0, false, ability, landed);
+            return true;
+        }
+
         public bool ChangeTarget(WorldClient client, WorldClient target, byte[] request)
         {
             lock (sync)

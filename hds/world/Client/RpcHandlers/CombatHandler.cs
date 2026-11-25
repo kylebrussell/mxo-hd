@@ -25,6 +25,8 @@ namespace hds
         /// Active combat session for this handler instance.
         /// </summary>
         private CombatSession currentSession;
+        /// <summary>Dev probe only: the active NPC interlock's shared presentation.</summary>
+        internal CombatPresentation NpcPresentation => currentSession != null && currentSession.IsActive ? currentSession.Presentation : null;
         private (CombatSession Fight, Mob Dummy, ushort Ability) martialFixtureWin;
 
         internal void ArmMartialFixtureWin(Mob dummy, ushort ability) => martialFixtureWin = (currentSession, dummy, ability);
