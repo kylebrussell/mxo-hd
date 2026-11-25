@@ -100,7 +100,7 @@ namespace hds
             {427,"Triple_Front_Kick"},{428,"Suicidal_Butterfly"},
             {429,"Extrteme_Falling_Kick"},{430,"Wooden_Dummy_Drill"},
             {534,"AikidoAbility ArmBarToKotoG"},{535,"Beserker Attack"},{536,"Foot Sweep Ki Punch"},
-            {282,"Blinding Throw SR"},{1135,"Paralyzing Throw SR"}
+            {CombatSpecials.WoundingThrow,"Knife Throw SR"},{282,"Blinding Throw SR"},{1135,"Paralyzing Throw SR"}
         };
         public static IEnumerable<ushort> MappedSpecials => specialNames.Keys.Concat(boundSpecials.Value.Select(group => group.Key));
         public static Move Special(ushort ability, bool landed, CombatTactic targetTactic, char targetStyle = 'S',

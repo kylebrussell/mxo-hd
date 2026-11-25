@@ -43,8 +43,11 @@ namespace hds
         }
 
         /// <summary>The completed cast may become the next interlock move (requires the stored Spy Style stance).</summary>
-        public static bool CanQueue(WorldClient caster, ushort abilityId) =>
-            Handles(abilityId) && CombatStyles.CanUse(caster, AbilityCatalog.Canonical(abilityId));
+        public static bool CanQueue(WorldClient caster, ushort abilityId)
+        {
+            ushort id = AbilityCatalog.Canonical(abilityId);
+            return (Handles(id) || id == CombatSpecials.WoundingThrow) && CombatStyles.CanUse(caster, id);
+        }
     }
 
     internal sealed class SpyTimedThrowsHandler : ISpyAbilityHandler

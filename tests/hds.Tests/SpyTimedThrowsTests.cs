@@ -123,9 +123,9 @@ public class SpyTimedThrowsTests : IDisposable
 
         // Other timed casts still never resolve as a queued interlock move.
         var other = new AbilityItem();
-        other.setAbilityID(281);
+        other.setAbilityID(CombatSpecials.PoisonKnife);
         other.setCastingTime(2f);
-        Assert.False(SpyTimedThrows.CanQueue(caster, 281));
+        Assert.False(SpyTimedThrows.CanQueue(caster, CombatSpecials.PoisonKnife));
         Assert.False(CombatAnimations.CanResolveQueuedAbility(caster, other));
     }
 
