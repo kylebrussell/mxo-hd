@@ -100,6 +100,11 @@ namespace hds
         /// The damage slots follow the health updates: the tutorial's <c>04 00 00 00 15 00 fb ff</c> took 4 off the player
         /// and 21 off the NPC. <c>won</c> is retail's winnerSlot: 1 when the player wins the round by <see cref="CombatRules.Resolve"/>.
         /// </summary>
+        /// <summary>A round's damage slot as applied: never negative, saturated to the field. CombatRules' finishing-move swap
+        /// can put the killer's negative absorbed amount in a damage field (retail's luizoe Unknown capture shows -1 there);
+        /// health only ever loses max(0, damage), and the stock client prints an unsigned negative as "you take 65xxx".</summary>
+        public static UInt16 WireDamage(int damage) => (UInt16)Math.Clamp(damage, 0, UInt16.MaxValue);
+
         public static byte[] BuildRoundResult(UInt16 round, bool won, Move player, Move npc, UInt32 target, UInt32 result,
             UInt16 damageToPlayer, Int16 playerModifier, UInt16 damageToTarget, Int16 targetModifier, UInt32 simMs,
             Int32 combatResult = 0, byte opponentFlag = 0)
