@@ -1,0 +1,85 @@
+{
+  "abilities": {
+    "286": {
+      "checks": {
+        "choreography": {
+          "source": "Shipped 286 is a CombatSpecialMove instant sneak opener; the ILDB \"Sneak Attacks\" group names its move 19593 (Twist Throw) and \"Failed Sneak v <style>\" variants.",
+          "runtime": "SneakOpenerRound presents an at-rest landing as one Close Combat exchange naming that move to the caster, a player target and observers (observer-style combat view: spawn, initialize, round, final, delete), with no fight, then restores each fighter's pose. Inside an interlock the queued opener already presents as that fight's round.",
+          "test": "CombatStyleTests.AtRestSneakOpenerRoundNamesItsSneakAttackMoveOrTheFailedSneakControl and AfterTheExchangeObserversGetTheFightersServerYawAndPosition; the ability-parity-sneak-opener-rounds bootstrap. Stock PR1194 native rerun at 29f3898a: the client played the full-body Twist Throw move (19593) with the close-combat camera on the at-rest opener, \"does 528 damage\", no Close Combat request or combat round, and the target kept its own facing afterwards. The PR1191 probe first showed this round record (variant a) plays the named move while an at-rest animation block (variant b) does not. https://github.com/kylebrussell/mxo-hd/pull/1191#issuecomment-7166175374 https://github.com/kylebrussell/mxo-hd/pull/1194#issuecomment-7167661159"
+        }
+      }
+    },
+    "288": {
+      "checks": {
+        "choreography": {
+          "source": "Shipped 288 is a CombatSpecialMove instant sneak opener; the ILDB \"Sneak Attacks\" group names its move 19594 (Topsy Turvy) and \"Failed Sneak v <style>\" variants.",
+          "runtime": "SneakOpenerRound presents an at-rest landing as one Close Combat exchange naming that move to the caster, a player target and observers (observer-style combat view: spawn, initialize, round, final, delete), with no fight, then restores each fighter's pose. Inside an interlock the queued opener already presents as that fight's round.",
+          "test": "CombatStyleTests.AtRestSneakOpenerRoundNamesItsSneakAttackMoveOrTheFailedSneakControl and AfterTheExchangeObserversGetTheFightersServerYawAndPosition; the ability-parity-sneak-opener-rounds bootstrap. Stock PR1194 native rerun at 29f3898a: the client played the full-body Topsy Turvy move (19594) with the close-combat camera on the at-rest opener, \"does 1128 damage\", no Close Combat request or combat round, and the target kept its own facing afterwards. The PR1191 probe first showed this round record (variant a) plays the named move while an at-rest animation block (variant b) does not. https://github.com/kylebrussell/mxo-hd/pull/1191#issuecomment-7166175374 https://github.com/kylebrussell/mxo-hd/pull/1194#issuecomment-7167661159"
+        }
+      }
+    },
+    "289": {
+      "checks": {
+        "choreography": {
+          "source": "Shipped 289 is a CombatSpecialMove instant sneak opener; the ILDB \"Sneak Attacks\" group names its move 19590 (Punt) and \"Failed Sneak v <style>\" variants.",
+          "runtime": "SneakOpenerRound presents an at-rest landing as one Close Combat exchange naming that move to the caster, a player target and observers (observer-style combat view: spawn, initialize, round, final, delete), with no fight, then restores each fighter's pose. Inside an interlock the queued opener already presents as that fight's round.",
+          "test": "CombatStyleTests.AtRestSneakOpenerRoundNamesItsSneakAttackMoveOrTheFailedSneakControl and AfterTheExchangeObserversGetTheFightersServerYawAndPosition; the ability-parity-sneak-opener-rounds bootstrap. Stock PR1194 native rerun at 29f3898a: the client played the full-body Punt move (19590) with the close-combat camera on the at-rest opener, \"does 1070 damage\", no Close Combat request or combat round, and the target kept its own facing afterwards. The PR1191 probe first showed this round record (variant a) plays the named move while an at-rest animation block (variant b) does not. https://github.com/kylebrussell/mxo-hd/pull/1191#issuecomment-7166175374 https://github.com/kylebrussell/mxo-hd/pull/1194#issuecomment-7167661159"
+        }
+      }
+    },
+    "385": {
+      "checks": {
+        "choreography": {
+          "source": "Shipped 385 is a CombatSpecialMove instant sneak opener; the ILDB \"Sneak Attacks\" group names its move 19592 (Diving Frankensteiner) and \"Failed Sneak v <style>\" variants.",
+          "runtime": "SneakOpenerRound presents an at-rest landing as one Close Combat exchange naming that move to the caster, a player target and observers (observer-style combat view: spawn, initialize, round, final, delete), with no fight, then restores each fighter's pose. Inside an interlock the queued opener already presents as that fight's round.",
+          "test": "CombatStyleTests.AtRestSneakOpenerRoundNamesItsSneakAttackMoveOrTheFailedSneakControl and AfterTheExchangeObserversGetTheFightersServerYawAndPosition; the ability-parity-sneak-opener-rounds bootstrap. Stock PR1194 native rerun at 29f3898a: the client played the full-body Diving Frankensteiner move (19592) with the close-combat camera on the at-rest opener, \"does 1235 damage\", no Close Combat request or combat round, and the target kept its own facing afterwards. The PR1191 probe first showed this round record (variant a) plays the named move while an at-rest animation block (variant b) does not. https://github.com/kylebrussell/mxo-hd/pull/1191#issuecomment-7166175374 https://github.com/kylebrussell/mxo-hd/pull/1194#issuecomment-7167661159"
+        }
+      }
+    },
+    "387": {
+      "checks": {
+        "choreography": {
+          "source": "Shipped 387 is a CombatSpecialMove instant sneak opener; the ILDB \"Sneak Attacks\" group names its move 19591 (Running Bulldog) and \"Failed Sneak v <style>\" variants.",
+          "runtime": "SneakOpenerRound presents an at-rest landing as one Close Combat exchange naming that move to the caster, a player target and observers (observer-style combat view: spawn, initialize, round, final, delete), with no fight, then restores each fighter's pose. Inside an interlock the queued opener already presents as that fight's round.",
+          "test": "CombatStyleTests.AtRestSneakOpenerRoundNamesItsSneakAttackMoveOrTheFailedSneakControl and AfterTheExchangeObserversGetTheFightersServerYawAndPosition; the ability-parity-sneak-opener-rounds bootstrap. Stock PR1194 native rerun at 29f3898a: the client played the full-body Running Bulldog move (19591) with the close-combat camera on the at-rest opener, \"does 1424 damage\", no Close Combat request or combat round, and the target kept its own facing afterwards. The PR1191 probe first showed this round record (variant a) plays the named move while an at-rest animation block (variant b) does not. https://github.com/kylebrussell/mxo-hd/pull/1191#issuecomment-7166175374 https://github.com/kylebrussell/mxo-hd/pull/1194#issuecomment-7167661159"
+        }
+      }
+    },
+    "388": {
+      "checks": {
+        "choreography": {
+          "source": "Shipped 388 is a CombatSpecialMove instant sneak opener; the ILDB \"Sneak Attacks\" group names its move 19595 (Reverse Pulldown) and \"Failed Sneak v <style>\" variants.",
+          "runtime": "SneakOpenerRound presents an at-rest landing as one Close Combat exchange naming that move to the caster, a player target and observers (observer-style combat view: spawn, initialize, round, final, delete), with no fight, then restores each fighter's pose. Inside an interlock the queued opener already presents as that fight's round.",
+          "test": "CombatStyleTests.AtRestSneakOpenerRoundNamesItsSneakAttackMoveOrTheFailedSneakControl and AfterTheExchangeObserversGetTheFightersServerYawAndPosition; the ability-parity-sneak-opener-rounds bootstrap. Stock PR1194 native rerun at 29f3898a: the client played the full-body Reverse Pulldown move (19595) with the close-combat camera on the at-rest opener, \"does 1745 damage\", no Close Combat request or combat round, and the target kept its own facing afterwards. The PR1191 probe first showed this round record (variant a) plays the named move while an at-rest animation block (variant b) does not. https://github.com/kylebrussell/mxo-hd/pull/1191#issuecomment-7166175374 https://github.com/kylebrussell/mxo-hd/pull/1194#issuecomment-7167661159"
+        }
+      }
+    },
+    "152": {
+      "checks": {
+        "choreography": {
+          "source": "Shipped 152 is a CombatSpecialMove instant sneak opener; the ILDB \"Sneak Attacks\" group names its move 19599 (Backsweep) and \"Failed Sneak v <style>\" variants.",
+          "runtime": "SneakOpenerRound presents an at-rest landing as one Close Combat exchange naming that move to the caster, a player target and observers (observer-style combat view: spawn, initialize, round, final, delete), with no fight, then restores each fighter's pose. Inside an interlock the queued opener already presents as that fight's round.",
+          "test": "CombatStyleTests.AtRestSneakOpenerRoundNamesItsSneakAttackMoveOrTheFailedSneakControl and AfterTheExchangeObserversGetTheFightersServerYawAndPosition; the ability-parity-sneak-opener-rounds bootstrap. Same landing code and presentation as the six openers observed in the PR1194 native rerun (all six played their named moves); Backsweep 19599 is selected by the same Sneak Attacks mapping and pinned by the unit test. Not individually cast in that rerun. https://github.com/kylebrussell/mxo-hd/pull/1191#issuecomment-7166175374 https://github.com/kylebrussell/mxo-hd/pull/1194#issuecomment-7167661159"
+        }
+      }
+    },
+    "386": {
+      "checks": {
+        "choreography": {
+          "source": "Shipped 386 is a CombatSpecialMove instant sneak opener; the ILDB \"Sneak Attacks\" group names its move 19600 (Freedom to Joints) and \"Failed Sneak v <style>\" variants.",
+          "runtime": "SneakOpenerRound presents an at-rest landing as one Close Combat exchange naming that move to the caster, a player target and observers (observer-style combat view: spawn, initialize, round, final, delete), with no fight, then restores each fighter's pose. Inside an interlock the queued opener already presents as that fight's round.",
+          "test": "CombatStyleTests.AtRestSneakOpenerRoundNamesItsSneakAttackMoveOrTheFailedSneakControl and AfterTheExchangeObserversGetTheFightersServerYawAndPosition; the ability-parity-sneak-opener-rounds bootstrap. Same landing code and presentation as the six openers observed in the PR1194 native rerun (all six played their named moves); Freedom to Joints 19600 is selected by the same Sneak Attacks mapping and pinned by the unit test. Not individually cast in that rerun. https://github.com/kylebrussell/mxo-hd/pull/1191#issuecomment-7166175374 https://github.com/kylebrussell/mxo-hd/pull/1194#issuecomment-7167661159"
+        }
+      }
+    },
+    "153": {
+      "checks": {
+        "choreography": {
+          "source": "Shipped 153 is a CombatSpecialMove instant sneak opener; the ILDB \"Sneak Attacks\" group names its move 19598 (Drop Kick) and \"Failed Sneak v <style>\" variants.",
+          "runtime": "SneakOpenerRound presents an at-rest landing as one Close Combat exchange naming that move to the caster, a player target and observers (observer-style combat view: spawn, initialize, round, final, delete), with no fight, then restores each fighter's pose. Inside an interlock the queued opener already presents as that fight's round.",
+          "test": "CombatStyleTests.AtRestSneakOpenerRoundNamesItsSneakAttackMoveOrTheFailedSneakControl and AfterTheExchangeObserversGetTheFightersServerYawAndPosition; the ability-parity-sneak-opener-rounds bootstrap. Same landing code and presentation as the six openers observed in the PR1194 native rerun (all six played their named moves); Drop Kick 19598 is selected by the same Sneak Attacks mapping and pinned by the unit test. Not individually cast in that rerun. https://github.com/kylebrussell/mxo-hd/pull/1191#issuecomment-7166175374 https://github.com/kylebrussell/mxo-hd/pull/1194#issuecomment-7167661159"
+        }
+      }
+    }
+  }
+}
