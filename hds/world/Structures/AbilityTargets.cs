@@ -258,6 +258,7 @@ namespace hds
             CombatSpecials.Landed(client, abilityId);
             SpyAbilityRegistry.Landed(client, abilityId, mob.getEntityId());
             SneakOpenerRound.Present(client, null, mob, abilityId);
+            AtRestSpecialMotion.Landed(client, abilityId, mob.getEntityId());
             Output.WriteDebugLog("[ABILITY] " + abilityId + " lands on view " + targetViewId + " for " + damage);
             return true;
         }
