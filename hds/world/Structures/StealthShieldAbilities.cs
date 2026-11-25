@@ -162,7 +162,8 @@ namespace hds
                 Counter=++caster.playerData.emoteCounter,PreviousStance=caster.playerData.stance,Action=action,Until=TimeUtils.GetSimTimeSeconds()+MotionSeconds};
             state.Motion=motion;
             var ownTarget=caster.viewMan.FindViewForEntity(target);
-            if(ownTarget?.viewCreated==true)caster.messageQueue.addObjectMessage(BuildThrow(true,motion.Counter,motion.Ability,DuelPackets.Handle(ownTarget.ViewID,ownTarget.spawnId),motion.Action),false);
+            // Flush now: the own motion used to wait for the caster's next flush (seconds later after 454's stun records).
+            if(ownTarget?.viewCreated==true){caster.messageQueue.addObjectMessage(BuildThrow(true,motion.Counter,motion.Ability,DuelPackets.Handle(ownTarget.ViewID,ownTarget.spawnId),motion.Action),false);caster.FlushQueue();}
             foreach(var observer in SocialHandler.OnlineWhere(c=>c!=caster&&c.playerData.getDistrictId()==caster.playerData.getDistrictId()))
             {var actor=observer.viewMan.FindViewForEntity(caster.playerData.getEntityId());if(actor?.viewCreated==true)SendMotion(observer,caster,actor.ViewID,motion);}
             DelayedActions.AfterFor(caster,MotionSeconds,()=>
