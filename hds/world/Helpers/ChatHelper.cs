@@ -478,6 +478,7 @@ namespace hds
                 if(command.Equals("?sneakproc"))new ServerPackets().sendSystemChatMessage(Store.currentClient,SneakFreeControlsQa.Dev(Store.currentClient,commands.Skip(1).ToArray()),"BROADCAST");
                 if(command.Equals("?pistolproc"))new ServerPackets().sendSystemChatMessage(Store.currentClient,DualPistolExecutionQa.Dev(Store.currentClient,commands.Skip(1).ToArray()),"BROADCAST");
                 if(command.Equals("?deadlyproc"))new ServerPackets().sendSystemChatMessage(Store.currentClient,DeadlyThrowProcsQa.Dev(Store.currentClient,commands.Skip(1).ToArray()),"BROADCAST");
+                if(command.Equals("?traproll"))new ServerPackets().sendSystemChatMessage(Store.currentClient,DisarmTrapsQa.Dev(Store.currentClient,commands.Skip(1).ToArray()),"BROADCAST");
 
                 if (command.Equals("?combatdepth") || command.Equals("?cd"))
                     new ServerPackets().sendSystemChatMessage(Store.currentClient,
