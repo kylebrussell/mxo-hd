@@ -1,0 +1,142 @@
+{
+  "abilities": {
+    "282": {
+      "note": "PR1148 native QA at 1dc6499f: 2.0 s cast, 25 IS, no direct hit, Blind 90 for 10 s, ThrownDOT 5 ticks of 6 (4 under +75 Thrown), refusals without debit, the interlock win played 291 (Blinding Throw SR), Off Balance gave the +33 conditional hit and Daze gave none. The first DOT tick removed 1135's root and 519 together. Historical scaling remains open. https://github.com/kylebrussell/mxo-hd/pull/1148#issuecomment-7152409802",
+      "checks": {
+        "targeting": {
+          "source": "Shipped 282 is a Spy Style 2 s timed special against a selected hostile within its stored range and sight.",
+          "runtime": "SpyTimedThrows binds the selected opponent, range and sight before cost and through the cast.",
+          "test": "SpyTimedThrowsTests.SelectedOpponentRangeAndSightAreCheckedBeforeCost and AssassinTimedThrowsMode. PR1148 native QA refused no target, QAFriend, WALL and FAR without IS, cast or timer. https://github.com/kylebrussell/mxo-hd/pull/1148#issuecomment-7152409802"
+        },
+        "script": {
+          "source": "Shipped 282 initializers DealDamageIfOffBalance and ThrownDOT add a conditional hit on an Off Balance target and a periodic thrown DOT.",
+          "runtime": "The conditional initializer adds its hit only for an Off Balance recipient; ThrownDOT ticks through typed thrown resistance.",
+          "test": "SpyTimedThrowsTests and AssassinTimedThrowsMode. PR1148 native QA: '?cd offbalance 30' gave [CONDITIONAL-THROW] 282 value24 raw33 final33, Daze gave no conditional line, and the DOT ticked 5 x 6 (raw6 final4 resisted). https://github.com/kylebrussell/mxo-hd/pull/1148#issuecomment-7152409802"
+        },
+        "choreography": {
+          "source": "Shipped 282 is a CombatSpecialMove with a named ILDB success move.",
+          "runtime": "A completed in-fight cast becomes the next move; a won exchange plays 291 (Blinding Throw SR) and a loss keeps the ordinary exchange.",
+          "test": "SpyTimedThrowsTests.ALandedQueuedThrowPlaysItsNamedMoveAndAMissKeepsTheOrdinaryExchange. PR1148 native QA saw the win play animation 291 with Blind and DOT on the dummy. https://github.com/kylebrussell/mxo-hd/pull/1148#issuecomment-7152409802"
+        }
+      }
+    },
+    "1135": {
+      "note": "PR1148 native QA at 1dc6499f: 2.0 s cast, 30 IS, 41 thrown, Rooted 99 and 519 -20 for 8 s, 41 -> 33 under +75 Thrown, refusals without debit and the interlock win played 292 (Paralyzing Throw SR). 282's first DOT tick broke the root about 1.85 s early. Stat consumers and historical scaling remain open. https://github.com/kylebrussell/mxo-hd/pull/1148#issuecomment-7152409802",
+      "checks": {
+        "damage": {
+          "source": "Shipped 1135 stores a fixed thrown base before influence and typed resistance.",
+          "runtime": "SpyTimedThrows resolves the sourced base through ordinary thrown influence and typed resistance.",
+          "test": "SpyTimedThrowsTests.BothThrowsUseTheirOwnHandlerAndKeepTheirSourcedDamage. PR1148 native QA measured 41 neutral and [TYPED-RESISTANCE OURS] 1135 type7 total75 raw41 final33. https://github.com/kylebrussell/mxo-hd/pull/1148#issuecomment-7152409802"
+        },
+        "targeting": {
+          "source": "Shipped 1135 is a Spy Style 2 s timed special against a selected hostile within its stored range and sight.",
+          "runtime": "SpyTimedThrows binds the selected opponent, range and sight before cost and through the cast.",
+          "test": "SpyTimedThrowsTests.SelectedOpponentRangeAndSightAreCheckedBeforeCost and AssassinTimedThrowsMode. PR1148 native QA refused no target, QAFriend, WALL and FAR without IS, cast or timer. https://github.com/kylebrussell/mxo-hd/pull/1148#issuecomment-7152409802"
+        },
+        "choreography": {
+          "source": "Shipped 1135 is a CombatSpecialMove with a named ILDB success move.",
+          "runtime": "A completed in-fight cast becomes the next move and a won exchange plays 292 (Paralyzing Throw SR).",
+          "test": "SpyTimedThrowsTests.ALandedQueuedThrowPlaysItsNamedMoveAndAMissKeepsTheOrdinaryExchange. PR1148 native QA saw '[MARTIAL STARTER QA] one exchange win 1135', then animation 292 with hit, root and 519 on the dummy. https://github.com/kylebrussell/mxo-hd/pull/1148#issuecomment-7152409802"
+        }
+      }
+    },
+    "1133": {
+      "note": "PR1151 native QA at b9d0f88d: 35 IS, Sneak kept through the 2 s cast and broken on landing, 157 thrown, 181/180 -45 for 8 s with removals, 157 -> 129 under +75 Thrown, and all refusals without debit. https://github.com/kylebrussell/mxo-hd/pull/1151#issuecomment-7152938524",
+      "checks": {
+        "damage": {
+          "source": "Shipped 1133 stores VF3 level-scaled thrown damage (113 at level 50).",
+          "runtime": "SpyAbilityRegistry resolves the shipped level-scaled base through ordinary thrown influence and typed resistance.",
+          "test": "SneakFreeWeakeningWardingTests and SpySneakOpenersTests. PR1151 native QA measured 157 neutral and [TYPED-RESISTANCE OURS] 1133 type7 total75 raw157 final129. https://github.com/kylebrussell/mxo-hd/pull/1151#issuecomment-7152938524"
+        },
+        "targeting": {
+          "source": "Shipped 1133 stores CastWhenUsed 1, the Spy Style stance, a Stealthed caster (0x02000000), CastOutsideTargetFOVAngle 50, a 6 m selector and a 2 s cast.",
+          "runtime": "SneakFreeThrowAdmission enforces outside combat, Spy Style, Stealthed, a live hostile selection, range, sight and the rear 50-degree cone before debit, and rechecks them at cast completion.",
+          "test": "SneakFreeWeakeningWardingTests, SneakFreeHarryingDazzlingTests and SneakFreeWeakeningWardingMode cover every refusal. PR1151 native QA refused no Sneak (local), QAFriend (24), FRONT (24), BLOCK (stock local sight gate) and FAR (34) without debit, then landed from behind. https://github.com/kylebrussell/mxo-hd/pull/1151#issuecomment-7152938524"
+        },
+        "script": {
+          "source": "Shipped SneakFreeWeakeningThrow_Subject plays the targeted knife throw on the selected opponent, and the rear opener breaks Sneak on landing.",
+          "runtime": "SneakFreeThrowAdmission keeps Sneak through the cast, StealthShieldAbilities.PlayThrow plays the targeted motion on landing, and the landing ends Sneak.",
+          "test": "SneakFreeWeakeningWardingMode verifies the targeted motion pattern for caster and observer. PR1151 native QA saw '[STEALTH] CSR_Tester 1111 off (landed ability 1133)' and 'You stop sneaking'. https://github.com/kylebrussell/mxo-hd/pull/1151#issuecomment-7152938524"
+        }
+      }
+    },
+    "1134": {
+      "note": "PR1151 native QA at b9d0f88d: 45 IS, 195 thrown, 524/522 -30 for 8 s with removals, and all refusals without debit. The resisted dummy step was not observed natively: the fresh dummy turns to face the CSR, so the front-cone gate refused it with 24. The headless bootstrap measured raw195 final160 on the same path. https://github.com/kylebrussell/mxo-hd/pull/1151#issuecomment-7152938524",
+      "checks": {
+        "targeting": {
+          "source": "Shipped 1134 stores CastWhenUsed 1, the Spy Style stance, a Stealthed caster (0x02000000), CastOutsideTargetFOVAngle 50, a 4 m selector and a 2 s cast.",
+          "runtime": "SneakFreeThrowAdmission enforces outside combat, Spy Style, Stealthed, a live hostile selection, range, sight and the rear 50-degree cone before debit, and rechecks them at cast completion.",
+          "test": "SneakFreeWeakeningWardingTests, SneakFreeHarryingDazzlingTests and SneakFreeWeakeningWardingMode cover every refusal. PR1151 native QA refused no Sneak (local), QAFriend (24), FRONT (24), BLOCK (stock local sight gate) and FAR (34) without debit, then landed from behind. https://github.com/kylebrussell/mxo-hd/pull/1151#issuecomment-7152938524"
+        },
+        "script": {
+          "source": "Shipped SneakFreeWardingBlow_Subject plays the targeted knife throw on the selected opponent, and the rear opener breaks Sneak on landing.",
+          "runtime": "SneakFreeThrowAdmission keeps Sneak through the cast, StealthShieldAbilities.PlayThrow plays the targeted motion on landing, and the landing ends Sneak.",
+          "test": "SneakFreeWeakeningWardingMode verifies the targeted motion pattern for caster and observer. PR1151 native QA saw '[STEALTH] CSR_Tester 1111 off (landed ability 1134)' and 'You stop sneaking'. https://github.com/kylebrussell/mxo-hd/pull/1151#issuecomment-7152938524"
+        }
+      }
+    },
+    "286": {
+      "note": "PR1155 native QA at 4790eaa2: instant, 50 IS, 38 s own, 528 thrown, 528 -> 434 under +75 Thrown, no interlock. The visible move was only the hit spark; the ILDB move id is not confirmed. https://github.com/kylebrussell/mxo-hd/pull/1155#issuecomment-7153063952",
+      "checks": {
+        "targeting": {
+          "source": "Shipped 286 stores CastWhenUsed 1, the Spy Style stance, a Stealthed caster, CastOutsideTargetFOVAngle 50 and a 6 m selector; ability/spy/sneaks.py SneakAttackSpinThrow_Test depends on the target's Position, Orientation and IsInCombat.",
+          "runtime": "SneakFreeThrowAdmission.TryRefuseInstantOpener applies the shared rear-opener gate (outside combat, Spy Style, Stealthed, live hostile, 6 m, sight, outside the 50-degree cone) before cost.",
+          "test": "SneakAttackOpenerAdmissionTests covers rear, front, wall, range, ally, stale and combat cases, and the AssassinSneakAttacksMode bootstrap covers the same refusals. PR1155 native QA: no Sneak local, QAFriend 24, FRONT 24, BLOCK local sight gate, FAR 34, Close Combat local and wrong style 13, all without debit; the rear opener landed with no interlock. https://github.com/kylebrussell/mxo-hd/pull/1155#issuecomment-7153063952"
+        },
+        "damage": {
+          "source": "Shipped 286 stores a fixed thrown base plus the stealth-started scripted bonus.",
+          "runtime": "SpySneakOpeners resolves the base and bonus through ordinary thrown influence and typed resistance.",
+          "test": "SpySneakOpenersTests. PR1155 native QA measured 528 neutral and [TYPED-RESISTANCE OURS] 286 type7 total75 raw528 final434. https://github.com/kylebrussell/mxo-hd/pull/1155#issuecomment-7153063952"
+        }
+      }
+    },
+    "288": {
+      "note": "PR1155 native QA at 4790eaa2: instant, 60 IS, 38 s own, 1128 thrown, Confuse 91 for 12.5 s with removal, no interlock. ILDB move id not confirmed. https://github.com/kylebrussell/mxo-hd/pull/1155#issuecomment-7153063952",
+      "checks": {
+        "targeting": {
+          "source": "Shipped 288 stores CastWhenUsed 1, the Spy Style stance, a Stealthed caster, CastOutsideTargetFOVAngle 50 and a 6 m selector; ability/spy/sneaks.py SneakAttackTopsyTurvy_Test depends on the target's Position, Orientation and IsInCombat.",
+          "runtime": "SneakFreeThrowAdmission.TryRefuseInstantOpener applies the shared rear-opener gate (outside combat, Spy Style, Stealthed, live hostile, 6 m, sight, outside the 50-degree cone) before cost.",
+          "test": "SneakAttackOpenerAdmissionTests covers rear, front, wall, range, ally, stale and combat cases, and the AssassinSneakAttacksMode bootstrap covers the same refusals. PR1155 native QA: no Sneak local, QAFriend 24, FRONT 24, BLOCK local sight gate, FAR 34, Close Combat local and wrong style 13, all without debit; the rear opener landed with no interlock. https://github.com/kylebrussell/mxo-hd/pull/1155#issuecomment-7153063952"
+        },
+        "controls": {
+          "source": "Shipped 288 applies a 10 s Confuse state to the landed recipient.",
+          "runtime": "The received state uses the player duration policy and pairs the add with its matching removal.",
+          "test": "SpySneakOpenersTests and AssassinSneakAttacksMode. PR1155 native QA saw state 91 Confuse 12.5 s added and removed on QAEnemy. https://github.com/kylebrussell/mxo-hd/pull/1155#issuecomment-7153063952"
+        }
+      }
+    },
+    "289": {
+      "note": "PR1155 native QA at 4790eaa2: instant, 40 IS, 38 s own, 1070 thrown, no interlock. ILDB move id not confirmed. https://github.com/kylebrussell/mxo-hd/pull/1155#issuecomment-7153063952",
+      "checks": {
+        "targeting": {
+          "source": "Shipped 289 stores CastWhenUsed 1, the Spy Style stance, a Stealthed caster, CastOutsideTargetFOVAngle 50 and a 6 m selector; ability/spy/sneaks.py SneakAttackPunt_Test depends on the target's Position, Orientation and IsInCombat.",
+          "runtime": "SneakFreeThrowAdmission.TryRefuseInstantOpener applies the shared rear-opener gate (outside combat, Spy Style, Stealthed, live hostile, 6 m, sight, outside the 50-degree cone) before cost.",
+          "test": "SneakAttackOpenerAdmissionTests covers rear, front, wall, range, ally, stale and combat cases, and the AssassinSneakAttacksMode bootstrap covers the same refusals. PR1155 native QA: no Sneak local, QAFriend 24, FRONT 24, BLOCK local sight gate, FAR 34, Close Combat local and wrong style 13, all without debit; the rear opener landed with no interlock. https://github.com/kylebrussell/mxo-hd/pull/1155#issuecomment-7153063952"
+        }
+      }
+    },
+    "388": {
+      "note": "PR1155 native QA at 4790eaa2: instant, 60 IS, 60 s own, 1745 thrown, Stun 102 for 9.2 s with removal and the 681 immunity for 16 s ('immune to stun and pacify for 16 seconds'), no interlock. ILDB move id not confirmed. https://github.com/kylebrussell/mxo-hd/pull/1155#issuecomment-7153063952",
+      "checks": {
+        "targeting": {
+          "source": "Shipped 388 stores CastWhenUsed 1, the Spy Style stance, a Stealthed caster, CastOutsideTargetFOVAngle 50 and a 6 m selector; ability/spy/sneaks.py SneakAttackRevBullDog_Test depends on the target's Position, Orientation and IsInCombat.",
+          "runtime": "SneakFreeThrowAdmission.TryRefuseInstantOpener applies the shared rear-opener gate (outside combat, Spy Style, Stealthed, live hostile, 6 m, sight, outside the 50-degree cone) before cost.",
+          "test": "SneakAttackOpenerAdmissionTests covers rear, front, wall, range, ally, stale and combat cases, and the AssassinSneakAttacksMode bootstrap covers the same refusals. PR1155 native QA: no Sneak local, QAFriend 24, FRONT 24, BLOCK local sight gate, FAR 34, Close Combat local and wrong style 13, all without debit; the rear opener landed with no interlock. https://github.com/kylebrussell/mxo-hd/pull/1155#issuecomment-7153063952"
+        }
+      }
+    },
+    "454": {
+      "note": "PR1161 pins the fixed Ballistic base 61 and stored cast terms. The shipped generic_free_attacks.AbilityRangeFreeAttack implies an at-rest ranged hit/deflect contest for TestFunction 1, which no rifle opener implements yet; that targeting decision is family-wide. Historical magnitude and the named move remain open. https://github.com/kylebrussell/mxo-hd/pull/1161 https://github.com/kylebrussell/mxo-hd/pull/1006#issuecomment-7108874265",
+      "checks": {
+        "damage": {
+          "source": "Current player GOB 454 stores one instant Ballistic health modifier, fixed 61, with incomplete legacy CSV endpoints 4..0.",
+          "runtime": "AbilityHandler resolves the authored fixed base through ordinary Ballistic influence and typed resistance.",
+          "test": "SniperParityTests.SniperAndDeadlyShotsUseTheirFixedBallisticBasesAndStoredCastTerms pins 61 independent of the draw. PR1006 stock measured 73 neutral and 69 with +20 Ballistic resistance. https://github.com/kylebrussell/mxo-hd/pull/1006#issuecomment-7108874265"
+        }
+      }
+    },
+    "505": {
+      "note": "PR1161 pins the fixed Ballistic base 47 (legacy CSV endpoints 4..0) and stored cast terms, and fixes the ability-parity-sniper-shot Stun flake. The archived 1660 hit with 182 absorbed still lacks a caster/target profile. https://github.com/kylebrussell/mxo-hd/pull/1161"
+    }
+  }
+}
