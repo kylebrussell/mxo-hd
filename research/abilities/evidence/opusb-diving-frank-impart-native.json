@@ -1,0 +1,27 @@
+{
+  "abilities": {
+    "385": {
+      "note": "PR1171 native QA at 79640bcc: instant, 80 IS, Sneak off, 1146 thrown on QAEnemy, no interlock, QAFriend/FRONT 24, BLOCK stock local sight gate, FAR 34, and 1146 -> 942 under +75 Thrown on the post-reset rear dummy. The visible move was only the hit spark, so the ILDB 19592 binding stays open. https://github.com/kylebrussell/mxo-hd/pull/1171#issuecomment-7163492570",
+      "checks": {
+        "targeting": {
+          "source": "Shipped 385 stores CastWhenUsed 1, the Spy Style stance, a Stealthed caster, CastOutsideTargetFOVAngle 50 and a 6 m selector.",
+          "runtime": "SpyInstantSneakOpenerAdmission enforces outside combat, Spy Style, Stealthed, a live hostile selection, 6 m, sight and the rear 50-degree cone before cost.",
+          "test": "SpyInstantSneakOpenersTests covers rear, front, wall, range, ally and stale cases for 385. PR1171 native QA refused QAFriend and FRONT with 24, BLOCK by the stock local sight gate and FAR with 34, without debit. https://github.com/kylebrussell/mxo-hd/pull/1171#issuecomment-7163492570"
+        },
+        "script": {
+          "source": "ability/spy/sneaks.py SneakAttackDivingFrank_Test delegates to BaseSneakAttackTestFn, which depends on the target's Position, Orientation and IsInCombat.",
+          "runtime": "SpyMasterSneakOpeners routes 385 through the shared instant rear-opener gate, which applies the same position, facing and combat dependencies.",
+          "test": "SpyInstantSneakOpenersTests and DivingFrankensteinerMode. PR1171 native QA landed the rear opener and refused the frontal stand. https://github.com/kylebrussell/mxo-hd/pull/1171#issuecomment-7163492570"
+        },
+        "damage": {
+          "source": "Shipped 385 stores fixed thrown endpoints 164/164 and the stealth-started +725 opener bonus.",
+          "runtime": "SpyMasterSneakOpeners resolves the base and bonus through ordinary thrown influence and typed resistance.",
+          "test": "SpyInstantSneakOpenersTests pins the level-50 totals. PR1171 native QA measured 1146 neutral and [TYPED-RESISTANCE OURS] 385 type7 total75 raw1146 final942. https://github.com/kylebrussell/mxo-hd/pull/1171#issuecomment-7163492570"
+        }
+      }
+    },
+    "366": {
+      "note": "PR1181 native QA at c506f655 (QA-loaded at level 50): 100 IS, 1.5 s cast, 10 s reuse, 629 kInvisible 120 s on QAFriend, and the server refusals for already invisible, self and 34 out of range. The stored level-99 load prerequisite makes the row inaccessible at retail levels. https://github.com/kylebrussell/mxo-hd/pull/1181#issuecomment-7164105472"
+    }
+  }
+}

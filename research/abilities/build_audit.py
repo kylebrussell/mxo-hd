@@ -260,6 +260,8 @@ def server(i):
         return "COSMETIC:20s health/InitiativeBonus snapshot1044; IS10/reuse90/buffer10; expiry/death/unload cleanup; no recovered combat consumer; [source boundary](DESPERATION.md)"
     if i == 7:
         return 'stored character level 99 prerequisite enforced on load; inaccessible at retail levels 1–50; purchase/upload remain possible; no vulnerability effect claimed; [evidence](DETECT-VULNERABILITY.md)'
+    if i == 366:
+        return 'stored character level 99 load prerequisite; inaccessible at retail levels 1–50; QA-loaded cast verified in stock: self, already-invisible and 8 m range refusals, 100 IS, 1.5s cast and 629 kInvisible 120s on the selected friendly player; [native](https://github.com/kylebrussell/mxo-hd/pull/1181#issuecomment-7164105472)'
     if i == 13:
         return 'stored level 99 selected-load prerequisite with no parent or grant path in the shipped ability catalog; seeded damage, periodic FX and IS drain verified; [evidence](ABILITY-AWAKENED-COMBAT-ACTIVES.md#hyper-strength-access)'
     if i in DATA_MINING:
@@ -346,6 +348,8 @@ def server(i):
         parts.append('Static Field pulse: caster-centred 6 m hostile selector; each eligible recipient rolls the stored viral test before one-point damage and typed resistance')
     elif i == 454:
         parts.append('current player path uses the stored fixed ballistic damage; NPC capture path is separate')
+    elif i == 385:
+        parts.append('stored fixed thrown base 164 plus the stealth-started +725 opener bonus before influence and typed resistance; stock 1146 neutral / 942 under +75 Thrown at level 50; historical magnitude unresolved')
     elif i == 505:
         parts.append('stored fixed ballistic base 47 (legacy CSV endpoints 4..0) before influence and typed resistance; stock 52 neutral / 47 under +20 Ballistic, rank-50 57/57/54; archived 1660 with 182 absorbed lacks a caster/target profile, so historical magnitude unresolved')
     elif i == 153:
@@ -558,7 +562,7 @@ def server(i):
 
 
 def status(i):
-    if i in (7, 13, 871, 947, 948):
+    if i in (7, 13, 366, 871, 947, 948):
         return 'inaccessible'
     if i in DATA_MINING:
         return DATA_MINING[i][1]
