@@ -5,18 +5,19 @@ namespace hds
 {
     /// <summary>
     /// Shipped GOB thrown damage bases and target/combat-state admission for Knife Thrower / Cutthroat / Assassin throws:
-    /// Neuro-Dart (141: CastWhenUsed=1 outside-combat DOT/debuff), Blinding Throw (282: CastWhenUsed=2 live-enemy DOT/Blind),
+    /// Neuro-Dart (141: CastWhenUsed=1 outside-combat DOT/debuff),
     /// Throat Cutting Throw (340: CastWhenUsed=2 fixed thrown base 80), and Subduing Throw (347: CastWhenUsed=1 fixed thrown base 57).
+    /// Blinding Throw (282) is admitted by <see cref="SpyTimedThrows"/>.
     /// </summary>
     public static class MasterKnifeThrowerBatch
     {
-        public const ushort NeuroDart = 141, BlindingThrow = 282, ThroatCuttingThrow = 340, SubduingThrow = 347;
-        public static readonly ushort[] Abilities = { NeuroDart, BlindingThrow, ThroatCuttingThrow, SubduingThrow };
+        public const ushort NeuroDart = 141, ThroatCuttingThrow = 340, SubduingThrow = 347;
+        public static readonly ushort[] Abilities = { NeuroDart, ThroatCuttingThrow, SubduingThrow };
 
         public static bool Handles(ushort abilityId)
         {
             ushort id = AbilityCatalog.Canonical(abilityId);
-            return id == NeuroDart || id == BlindingThrow || id == ThroatCuttingThrow || id == SubduingThrow;
+            return id == NeuroDart || id == ThroatCuttingThrow || id == SubduingThrow;
         }
 
         public static bool UsesGuardedCast(ushort id) => id == NeuroDart || id == ThroatCuttingThrow || id == SubduingThrow;

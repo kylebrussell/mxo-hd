@@ -28,7 +28,8 @@ namespace hds
             UInt16 currentTargetViewId = reader.ReadUInt16(1);
             bool poisonKnife = AbilityID == CombatSpecials.PoisonKnife;
             bool woundingThrow = AbilityID == CombatSpecials.WoundingThrow;
-            bool guardedKnifeThrow = MasterKnifeThrowerBatch.UsesGuardedCast(AbilityID) || AbilityID == CombatSpecials.SeverArtery;
+            bool guardedKnifeThrow = MasterKnifeThrowerBatch.UsesGuardedCast(AbilityID) || AbilityID == CombatSpecials.SeverArtery ||
+                SpyTimedThrows.Handles(AbilityID);
             ushort? thrownTargetSpawn = null;
             bool dualSmgCone = CombatSpecials.IsDualSmgConeOpener(AbilityID);
             ushort? coneSpawn = null;
@@ -1455,7 +1456,8 @@ namespace hds
                 UInt16 targetView = hostileView;
                 // Instant abilities and reviewed gun specials on the current interlock opponent become the next
                 // move after their cast completes (RPC 47 kind 6, followed by the next round's RPC 45).
-                bool queueWithRound = ability.getCastingTime() <= 0 || CombatAnimations.CanQueueGunCast(client, AbilityID);
+                bool queueWithRound = ability.getCastingTime() <= 0 || CombatAnimations.CanQueueGunCast(client, AbilityID) ||
+                    SpyTimedThrows.CanQueue(client, AbilityID);
                 if (!queueWithRound || !CombatManager.GetHandler(client).QueueRoundAbility(ability, targetView, sneakOpener))
                 {
                     if (ControlActions.CanUseAbilities(client)) AbilityTargets.Land(client, ability, engageFoes?.PrimaryView??targetView, sneakOpener, AbilityCastOrigin.NormalFreeCast,engageFoes:engageFoes,reverseBulldog:reverseBulldog,ghostStrike:ghostStrike);
