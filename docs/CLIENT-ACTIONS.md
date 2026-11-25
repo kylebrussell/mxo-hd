@@ -222,7 +222,7 @@ The phone's Email window, `/mail`, and mail the server sends (retail forwarded l
 | `81 16` | Collector exchange (ItemSetIndex, Prizes) | D | handled | medium |
 | `81 17` | `00 00 00 00 00`. Guess: closing the collector | C 1 | handled: exact native close clears active collector | low |
 | `81 1f` | Loot: take all, the container window's only take button (event `CTAl`, 0x62085060) | D, C 39 | handled | high |
-| `81 1b` | Loot one item (ListID u32, ObjectID u32, InstanceData u32; size 0x0e). The class exists but client.dll never sends it: nothing calls its constructors (0x621d36b0, 0x621d3770) or refers to them | D | not sent by this client | none |
+| `81 1b` | Loot one item (ListID u32, ObjectID u32, InstanceData u32; size 0x0e). The class exists but client.dll never sends it: nothing calls its constructors (0x621d36b0, 0x621d3770) or refers to them | D | not sent by this client; handled (OURS) for clients that send it: one matching corpse item, answered with `81 20` | none for stock |
 | `81 1d` | No fields (take the information; the server's `81 1e` InfoAmount answers). Its sender (0x621d4ff0) is never called, jumped to or pointed at | D | not sent by this client | none |
 | `81 1a` | No fields, `viewcontainer.cpp`: closing the loot window. Server `81 1a` also closes it (retail `loot.txt:420`; client dispatcher `62179a05`) | D, C 40, U 33 | handled: close active loot selection, preserve unclaimed corpse contents | low |
 | `81 21` | Slot u8: a bag item dropped onto the open container window (the drop handler's target 15, 0x620a045b, from the window's `MLUp`); the server's `81 22` (ObjectID, InstanceData, Status) answers. Guess: putting an item into a mission container | D | handled: nearby open mission Put container; `81 22` result; generic storage remains missing | low |
@@ -374,7 +374,7 @@ Server `81 20` lists **claimed item identities to remove**, not the remaining it
 
 ## Looting single items
 
-The 7.6005 client can't take one item from a corpse or container. Its container window (`viewcontainer.cpp`) handles three events: `CTAl` (Take All: `81 1f`), `CCls` (close: `81 1a`) and `MLUp` (a bag item dropped onto the window: `81 21 <slot>`). The single-item request `81 1b` and the take-the-information request `81 1d` are compiled in, but nothing in client.dll constructs or sends them: their constructors and senders have no calls, jumps, or pointers in code or data. So there is nothing to implement for them, and the server keeps Take All as the only way to loot.
+The 7.6005 client can't take one item from a corpse or container. Its container window (`viewcontainer.cpp`) handles three events: `CTAl` (Take All: `81 1f`), `CCls` (close: `81 1a`) and `MLUp` (a bag item dropped onto the window: `81 21 <slot>`). The single-item request `81 1b` and the take-the-information request `81 1d` are compiled in, but nothing in client.dll constructs or sends them: their constructors and senders have no calls, jumps, or pointers in code or data. The stock client therefore loots only through Take All. For other clients (the browser client) the server also accepts `81 1b` (`NpcLoot.TryTakeOne`, OURS): ObjectID is read as the item's GOID and InstanceData as the window row's leading u32, whose `0x08` top byte marks the mission item. One matching item is granted if it fits and answered with the same `81 20` claimed identity Take All uses; the corpse's Information stays for Take All, as `81 1d` is unhandled.
 
 ## Chat rooms in detail
 

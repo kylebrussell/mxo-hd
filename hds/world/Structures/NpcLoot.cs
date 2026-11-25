@@ -182,6 +182,57 @@ namespace hds
             return true;
         }
 
+        /// <summary>
+        /// 81 1b "loot one item" (ListID u32, ObjectID u32, InstanceData u32). client.dll 7.6005 compiles the record but never
+        /// sends it (docs/CLIENT-ACTIONS.md), so this is OURS for clients that do: ObjectID is the item's GOID and
+        /// InstanceData the window row's leading u32 (flag 0x08 in its top byte marks the mission item). One matching item
+        /// is granted if it fits and answered with the same 81 20 claimed identity as Take All; Info stays for Take All.
+        /// </summary>
+        public static bool TryTakeOne(WorldClient client, UInt32 goid, UInt32 instanceData)
+        {
+            lock(client.playerData.missionSync)
+            {
+                Mob source;
+                lock(client.playerData.loot)source=client.playerData.loot.Current?.Source;
+                if(client.playerData.missionProgress!=null&&source!=null&&client.playerData.missionMobs.Contains(source))
+                    return MissionPersistence.Mutate(client,()=>TryTakeOneCore(client,goid,instanceData));
+            }
+            return TryTakeOneCore(client,goid,instanceData);
+        }
+        private static bool TryTakeOneCore(WorldClient client, UInt32 goid, UInt32 instanceData)
+        {
+            Mob emptied = null;
+            lock (client.playerData.loot)
+            {
+                if (!client.playerData.loot.WindowOpen) return false;
+                NpcLootCache.Corpse corpse = client.playerData.loot.Current;
+                var claimed = new List<(byte[] Data, UInt32 Item)>();
+                if (corpse != null)
+                {
+                    bool missionRow = (instanceData >> 24) == 0x08;
+                    if (missionRow && corpse.MissionItem != 0 && corpse.MissionItem == goid)
+                    {
+                        if (MissionRuntime.OnMissionItemLooted(client, corpse.MissionItem))
+                        {
+                            claimed.Add((new byte[] { 0, 0, 0, 0x08 }, corpse.MissionItem));
+                            corpse.MissionItem = 0;
+                        }
+                    }
+                    else if (!missionRow)
+                    {
+                        claimed.AddRange(ClaimOne(corpse.Items, goid, item => GiveItems(client, new List<UInt32> { item }).Count == 1));
+                    }
+                    if (claimed.Count > 0 && corpse.Items.Count == 0 && corpse.MissionItem == 0 && corpse.Info == 0)
+                        emptied = corpse.Source;
+                }
+                Output.WriteDebugLog("[LOOT] Take one " + goid + " instance " + instanceData.ToString("x8") + ": " +
+                                     (claimed.Count > 0 ? "granted" : "not granted"));
+                new ServerPackets().SendLootAccepted(client, claimed.ToArray());
+            }
+            if (emptied != null) TutorialMission.Of(client)?.OnCorpseLooted(emptied);
+            return true;
+        }
+
         /// <summary>Removes each granted item immediately, so a later failure cannot grant it again on retry.</summary>
         private static List<(byte[] Data, UInt32 Item)> GiveItems(WorldClient client, List<UInt32> items) =>
             ClaimItems(items, goid =>
@@ -193,6 +244,19 @@ namespace hds
                 Output.WriteDebugLog("[LOOT] Item " + goid + " into slot " + slot);
                 return slot != 0;
             });
+
+        /// <summary>Grants one copy of <paramref name="goid"/> from the corpse and removes only that copy.</summary>
+        internal static List<(byte[] Data, UInt32 Item)> ClaimOne(List<UInt32> items, UInt32 goid, Func<UInt32,bool> give)
+        {
+            var claimed = new List<(byte[] Data, UInt32 Item)>();
+            int index = items.IndexOf(goid);
+            if (index >= 0 && give(goid))
+            {
+                items.RemoveAt(index);
+                claimed.Add((new byte[4], goid));
+            }
+            return claimed;
+        }
 
         internal static List<(byte[] Data, UInt32 Item)> ClaimItems(List<UInt32> items, Func<UInt32,bool> give)
         {
