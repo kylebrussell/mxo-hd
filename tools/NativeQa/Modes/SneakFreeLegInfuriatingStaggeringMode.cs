@@ -185,9 +185,9 @@ public sealed class SneakFreeLegInfuriatingStaggeringMode : NativeQaMode
         }
 
         async Task WaitFamily691EndAsync(int fromRpc) =>
-            await ObserveAsync(caster, fromRpc,
-                f => BytePattern.Parse($"80 bd 01 b3 02 {AbilityCooldowns.GroupTimer:x2} 00 00 70 41 00").IsMatch(f.Bytes),
-                "Family 691 15 s reuse finishes before next rear throw");
+            await caster.WaitUntilAsync(() => caster.World.RpcSnapshot().Skip(fromRpc)
+                .Any(f => BytePattern.Parse($"80 bd 01 b3 02 {AbilityCooldowns.GroupTimer:x2} 00 00 70 41 00").IsMatch(f.Bytes)),
+                "Family 691 15 s reuse finishes before next rear throw", TimeSpan.FromSeconds(18));
 
         async Task SneakAsync()
         {
