@@ -1,4 +1,13 @@
 {
+  "families": {
+    "metadata-only-discipline-load-stock": {
+      "representative": 397,
+      "result": "pass",
+      "head": "d0821347",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/1185#issuecomment-7165079263",
+      "scope": "Stock mode ability-parity-metadata-rows. At login the only record among the seven rows was source 75 stat 1055 +25, and the stock Status Bonuses tab listed Debuff Area Radius Bonus +65%, a total that includes that +25. No record came from 18, 397, 537, 538, 539 or 1199. ?qaunload and ?qaload of 397, 1199 and 539 were each acknowledged (Unloaded/Loaded 1 abilities; memory 52 to 53 for 397 and 539, unchanged at 53 for the cost-0 1199) with no [MODIFIER] record added or removed and no Bonuses change."
+    }
+  },
   "abilities": {
     "18": {
       "family": "metadata-only-discipline-load-stock",
@@ -130,5 +139,5 @@
       }
     }
   },
-  "note": "docs/ABILITY-COSMETIC-ROWS.md. Family metadata-only-discipline-load-stock (representative 397) is added only after a native PASS of NativeQa mode ability-parity-metadata-rows."
+  "note": "docs/ABILITY-COSMETIC-ROWS.md. Native family from the PR1185 stock run of NativeQa mode ability-parity-metadata-rows."
 }
