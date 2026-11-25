@@ -295,9 +295,9 @@ namespace hds
             { 126, E(126, Stat(524, -34, -18, 10)) },
             // Wounding Shot, old_world Vector 83347: 14 over 10 s
             { 253, E(253, Dot(14, 14, 10)) },
-            // Pistol Execution, proxy_020 140397: MeleeCombatTactics -34 for 8 s (Rajko ZombiesPortingEtc 5615 had
-            // RangedDefenseTactics -44 instead)
-            { 502, E(502, Stat(522, -34, 8)) },
+            // Pistol Execution, proxy_020 140397: MeleeCombatTactics -34 for 8 s; Rajko ZombiesPortingEtc 5615:
+            // RangedDefenseTactics -44 for 8 s. Player applications use the authored catalog values (-27 / -31 at 40% each).
+            { 502, E(502, Stat(522, -34, 8), Stat(1010, -44, 8)) },
             // Deadly Shot, Vector 31513: captured four-second stun.
             { CombatSpecials.DeadlyShot, E(CombatSpecials.DeadlyShot, State(StunAbility, 4)) },
             // Warboy ProxyM2_m2_packets_5 28162 records 21.12 s from a Cypherite SMG Specialist.
@@ -341,7 +341,7 @@ namespace hds
             // CombatSpecials) their stored ThrownDOT and timed debuffs
             Effect source = AbilityHostile.Merge(AbilityCatalog.Controls(id), AbilityHostile.Catalog(id));
             // These captured values were applied by NPC casters. Player applications use the authored values.
-            bool npcCapture = id == 126 || id == 248 || id == CombatSpecials.PinningFire ||
+            bool npcCapture = id == 126 || id == 248 || id == 502 || id == CombatSpecials.PinningFire ||
                 id == CombatSpecials.CripplingShot || id == CombatSpecials.DeadlyShot || id == AbilityHostile.FreezeArea2;
             if ((!npcCaster && npcCapture) || !Retail.TryGetValue(id, out var captured))
             {
