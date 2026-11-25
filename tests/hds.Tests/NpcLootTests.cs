@@ -52,6 +52,21 @@ public class NpcLootTests
     }
 
     [Fact]
+    public void TakingOneItemClaimsOnlyThatCopyAndRetainsItWhenItDoesNotFit()
+    {
+        var items = new List<uint> { 7332, 2399, 7332 };
+        Assert.Empty(NpcLoot.ClaimOne(items, 7332, _ => false));          // full bag: nothing claimed or removed
+        Assert.Equal(new uint[] { 7332, 2399, 7332 }, items);
+        Assert.Empty(NpcLoot.ClaimOne(items, 1111, _ => throw new Exception("Not in the corpse")));
+        var one = Assert.Single(NpcLoot.ClaimOne(items, 7332, _ => true));
+        Assert.Equal(7332u, one.Item);
+        Assert.Equal(new byte[4], one.Data);
+        Assert.Equal(new uint[] { 2399, 7332 }, items);                     // the other copy stays for a later take
+        Assert.Equal("81200c000000000000000000010000000000a41c0000",
+            Hex(ServerPackets.BuildLootAccepted(new[] { one })));
+    }
+
+    [Fact]
     public void AnotherCorpseRecreatesTheClientsLocallyClosedCachedWindow()
     {
         var client=new HeadlessClient.CorpseLootWindowState();

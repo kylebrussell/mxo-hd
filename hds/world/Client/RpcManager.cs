@@ -34,6 +34,10 @@ namespace hds{
                 case 0xc6: ClientActionsHandler.Pill(Store.currentClient, rpcData); break;
                 case 0xf6: UtilityAbilities.RequestHackConstruct(Store.currentClient, rpcData); break;
                 case 0x117: ClientActionsHandler.CloseCollector(Store.currentClient, rpcData); break;
+                case 0x11b: // 81 1b loot one item (ListID, ObjectID, InstanceData); the stock client never sends it
+                    if (rpcData.Length >= 12)
+                        NpcLoot.TryTakeOne(Store.currentClient, BitConverter.ToUInt32(rpcData, 4), BitConverter.ToUInt32(rpcData, 8));
+                    break;
                 case 0x141: ClientActionsHandler.CloseElevator(Store.currentClient, rpcData); break;
                 case 0x157: case 0x159: case 0x15b:
                     ClientActionsHandler.Snoop(Store.currentClient, header, rpcData); break;
