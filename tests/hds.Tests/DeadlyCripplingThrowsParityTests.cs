@@ -5,6 +5,7 @@ using hds.shared;
 
 namespace hds.Tests;
 
+[Collection("AbilityParityWorld")]
 public class DeadlyCripplingThrowsParityTests
 {
     private const ushort DeadlyThrow = DeadlyThrowDamage.Id;               // 279
