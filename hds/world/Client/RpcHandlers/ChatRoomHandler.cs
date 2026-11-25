@@ -327,7 +327,11 @@ namespace hds
             byte[] line = ChatRoomPackets.RoomLine(client.playerData.getCharID(), me, chatRoom.Name, text);
             foreach (string occupant in Rooms.OccupantsOf(chatRoom.Name))
             {
-                Send(occupant, line);
+                WorldClient listener = SocialHandler.FindOnlineByHandle(occupant);
+                if (!IgnoreFilter.Ignores(listener, me))
+                {
+                    SocialHandler.Send(listener, line);
+                }
             }
 
             return true;

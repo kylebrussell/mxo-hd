@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
@@ -21,6 +22,7 @@ namespace hds
         public const UInt32 Listed = 0x8e00003d;                  // LTOBJSRV_CONTACT_LIST_SETUP_PLAYER_IGNORED (at login; a guess)
         public const UInt32 NoSuchPlayer = 0x0e000041;            // LTOBJSRV_SOECHAT_DESTAVATARDOESNTEXIST
         public const UInt32 NotIgnored = 0x0e000058;              // LTOBJSRV_SOECHAT_IGNORENOTFOUND
+        public const UInt32 Ignoring = 0x0e000054;                // LTOBJSRV_SOECHAT_IGNORING (23rd name: 0x3d + index)
 
         private static byte[] Record(byte opcode, string name, UInt32 status)
         {
@@ -131,6 +133,42 @@ namespace hds
         }
     }
 
+    /// <summary>
+    /// Server-side ignore: the online players' stored lists, kept in memory so delivery never queries the database.
+    /// The stock client also hides ignored lines itself. client.dll's chat result table has LTOBJSRV_SOECHAT_IGNORING,
+    /// so the original chat service answered a tell to a player who ignored the sender with that code.
+    /// </summary>
+    public static class IgnoreFilter
+    {
+        private static readonly ConcurrentDictionary<UInt32, HashSet<string>> lists = new ConcurrentDictionary<UInt32, HashSet<string>>();
+
+        internal static void Load(UInt32 charId, IEnumerable<string> handles) =>
+            lists[charId] = new HashSet<string>(handles ?? Array.Empty<string>(), StringComparer.OrdinalIgnoreCase);
+
+        internal static void Add(UInt32 charId, string handle)
+        {
+            var list = lists.GetOrAdd(charId, _ => new HashSet<string>(StringComparer.OrdinalIgnoreCase));
+            lock (list) list.Add(handle);
+        }
+
+        internal static void Remove(UInt32 charId, string handle)
+        {
+            if (!lists.TryGetValue(charId, out var list)) return;
+            lock (list) list.Remove(handle);
+        }
+
+        /// <summary>Whether the receiver ignores the sender's handle.</summary>
+        public static bool Ignores(WorldClient receiver, string senderHandle)
+        {
+            if (receiver?.playerData == null || string.IsNullOrEmpty(senderHandle) ||
+                !lists.TryGetValue(receiver.playerData.getCharID(), out var list)) return false;
+            lock (list) return list.Contains(senderHandle);
+        }
+
+        public static bool Ignores(WorldClient receiver, WorldClient sender) =>
+            sender != null && Ignores(receiver, SocialHandler.HandleOf(sender));
+    }
+
     public class IgnoreListHandler
     {
         internal static IgnoreListDb Db = new IgnoreListDb();
@@ -157,6 +195,7 @@ namespace hds
                 return;
             }
             Db.Add(client.playerData.getCharID(), known);
+            IgnoreFilter.Add(client.playerData.getCharID(), known);
             SocialHandler.Send(client, IgnoreListPackets.BuildAdded(Prefix + known, IgnoreListPackets.Success));
         }
 
@@ -169,21 +208,26 @@ namespace hds
             }
             string handle = MailPackets.HandleOf(name);
             bool removed = Db.Remove(client.playerData.getCharID(), handle);
+            IgnoreFilter.Remove(client.playerData.getCharID(), handle);
             SocialHandler.Send(client, IgnoreListPackets.BuildRemoved(name, removed ? IgnoreListPackets.Success : IgnoreListPackets.NotIgnored));
         }
 
         /// <summary>At world entry, after the friend list: the stored ignores, so the client filters them again.</summary>
         public static void SendList(WorldClient client)
         {
+            UInt32 charId = client.playerData.getCharID();
             try
             {
-                foreach (string handle in Db.List(client.playerData.getCharID()))
+                List<string> handles = Db.List(charId);
+                IgnoreFilter.Load(charId, handles);
+                foreach (string handle in handles)
                 {
                     client.messageQueue.addRpcMessage(IgnoreListPackets.BuildAdded(Prefix + handle, IgnoreListPackets.Listed));
                 }
             }
             catch (Exception e)
             {
+                IgnoreFilter.Load(charId, null);
                 Output.WriteDebugLog("[IGNORE] Could not load the ignore list: " + e.Message);
             }
         }

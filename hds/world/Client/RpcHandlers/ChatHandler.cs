@@ -70,6 +70,12 @@ namespace hds
             // The handle carries the "SOE+MXO+<server>+" prefix; whatever the server name, the handle follows the last '+'.
             string cleanHandle = receiverHandleServerString.Substring(receiverHandleServerString.LastIndexOf('+') + 1);
             WorldClient receiver = SocialHandler.FindOnlineByHandle(cleanHandle);
+            if (receiver != null && IgnoreFilter.Ignores(receiver, Store.currentClient))
+            {
+                // The chat service refused a tell to a player who ignores the sender (LTOBJSRV_SOECHAT_IGNORING).
+                SocialHandler.Send(Store.currentClient, SocialPackets.TellResult(chatCounter, IgnoreListPackets.Ignoring));
+                return;
+            }
             if (receiver != null)
             {
                 string sender = ChatAddress.Of(SocialHandler.HandleOf(Store.currentClient));

@@ -278,6 +278,16 @@ namespace hds
             return new byte[] {0x2c, counter, status, 0x00, 0x00, ResultFlag(status)};
         }
 
+        /// <summary>2c &lt;counter&gt; &lt;status u32&gt;: a tell answered with a full chat-service status code.</summary>
+        public static byte[] TellResult(byte counter, UInt32 status)
+        {
+            byte[] record = new byte[6];
+            record[0] = 0x2c;
+            record[1] = counter;
+            BitConverter.GetBytes(status).CopyTo(record, 2);
+            return record;
+        }
+
         /// <summary>80 de 05 00 00 &lt;sized handle&gt;: a friend came online.</summary>
         public static byte[] FriendOnline(string handleWithPrefix)
         {

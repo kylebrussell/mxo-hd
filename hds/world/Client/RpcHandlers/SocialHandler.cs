@@ -1302,6 +1302,7 @@ namespace hds
                     return false;
             }
 
+            recipients.RemoveAll(c => IgnoreFilter.Ignores(c, sender));
             SendToAll(recipients, SocialPackets.ChatMessage(channel, charId, HandleOf(sender), text));
             Output.WriteDebugLog("[SOCIAL] Chat channel 0x" + channel.ToString("x2") + " from " + HandleOf(sender) +
                                  " to " + recipients.Count + " member(s)");
