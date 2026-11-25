@@ -1,0 +1,27 @@
+{
+  "abilities": {
+    "153": {
+      "checks": {
+        "targeting": {
+          "source": "GOB 153 stores SelectionRange 6 m, CastOutsideTargetFOVAngle 50 degrees, Spy Style and Stealthed, outside combat, hostile target.",
+          "runtime": "SneakFreeThrowAdmission enforces style, Stealthed, hostile/stale target, 50-degree rear cone, sight, 6 m range and outside-combat before IS debit or reuse.",
+          "test": "Stock PR1196 verified all five 153 Drop Kick own refusals before reuse with 0 IS and no timer (no Sneak local refusal, QAFriend -> 24, FRONT -> 24, BLOCK local sight refusal, FAR -> 34), then a clean rear landing on QAEnemy (280 dmg, Sneak off, zero QAFriend records). DropKickParityTests and DropKickInfuriatingClosureTests. https://github.com/kylebrussell/mxo-hd/pull/1196#issuecomment-7167546998"
+        },
+        "script": {
+          "source": "ability/spy/sneaks.py SneakAttackDropKick_Test delegates to BaseSneakAttackTestFn, depending on the target's Position, Orientation and IsInCombat.",
+          "runtime": "The shared instant rear-opener gate enforces the same position, orientation, sight, range and outside-combat checks before cost.",
+          "test": "Stock PR1196 verified 153's own pre-Sneak, friend, FRONT, BLOCK and FAR refusals with 0 IS and clean rear landing (280 dmg); DropKickParityTests covers rear, front, wall, range, ally, stale and combat cases. https://github.com/kylebrussell/mxo-hd/pull/1196#issuecomment-7167546998"
+        }
+      }
+    },
+    "1130": {
+      "checks": {
+        "damage": {
+          "source": "GOB 1130 stores VF3 level-scaled thrown base 17..132 (131 at level 50).",
+          "runtime": "AbilityHandler resolves the stored VF3 base through ordinary Thrown influence and TypedAbilityResistance applies the target's typed Thrown resistance.",
+          "test": "Stock PR1149 measured 201 neutral at +54% Thrown influence; stock PR1196 on the +75 Thrown rear dummy measured '[TYPED-RESISTANCE OURS] 1130 type7 total75 raw182 final149' (40 IS, 2 s cast holding Sneak, Sneak off on landing, Enraged 93 4 s added and cleanly removed). GeminiLaneClosureTests and DropKickInfuriatingClosureTests reproduce both. https://github.com/kylebrussell/mxo-hd/pull/1149#issuecomment-7152736957 https://github.com/kylebrussell/mxo-hd/pull/1196#issuecomment-7167546998"
+        }
+      }
+    }
+  }
+}
