@@ -227,6 +227,34 @@ public class CombatRulesTests
         Assert.Contains("0100000201010f", hex);
     }
 
+    [Theory]
+    [InlineData(-43, 0)]
+    [InlineData(-1, 0)]
+    [InlineData(0, 0)]
+    [InlineData(28, 28)]
+    [InlineData(70000, 65535)]
+    public void RoundDamageSlotsCarryTheAppliedAmount(int damage, int wire)
+    {
+        Assert.Equal((ushort)wire, CombatInterlock.WireDamage(damage));
+        Assert.Equal(Math.Max(0, Math.Min(damage, 65535)), CombatInterlock.WireDamage(damage));
+    }
+
+    [Fact]
+    public void ASwappedNegativeFinishingFieldIsNotSentAs65xxx()
+    {
+        // The finishing-move swap moves the killer's absorbed amount into its damage field. With -43 absorbed the
+        // player's field is -43; health loses max(0, -43) = 0, and RPC 45 now says 0 rather than 65493.
+        var o = Round(F(CombatTactic.Power, true, 21, -5), F(CombatTactic.Speed, true, 13, -43, health: 21));
+        Assert.Equal(-43, o.DamageToPlayer);
+        var move = new CombatInterlock.Move { Seq = 1, Tactic = CombatTactic.Power };
+        var npc = new CombatInterlock.Move { Seq = 2, Tactic = CombatTactic.Speed };
+        byte[] built = CombatInterlock.BuildRoundResult(4, o.PlayerWins, move, npc, 0x00f00007, o.Flags,
+            CombatInterlock.WireDamage(o.DamageToPlayer), (short)o.PlayerAbsorbed, CombatInterlock.WireDamage(o.DamageToNpc),
+            (short)o.NpcAbsorbed, 0);
+        Assert.Equal(0, BitConverter.ToUInt16(built, 69));
+        Assert.Equal(21, BitConverter.ToUInt16(built, 73));
+    }
+
     [Fact]
     public void WithdrawalRoundCarriesTheMargin()
     {

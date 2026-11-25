@@ -410,8 +410,9 @@ namespace hds
                 playerFirst, opening, attemptsWithdrawal, escapeMove);
             bool abilityLands = outcome.SpecialMoveLands;
             // A finishing move can leave a damage field at -1 (retail's swap); nobody is healed by it
-            UInt16 damageToNpc = (UInt16)Math.Max(0, outcome.DamageToNpc);
-            UInt16 damageToPlayer = (UInt16)Math.Max(0, outcome.DamageToPlayer);
+            // RPC 45 carries the same clamped amounts that are applied: a swapped negative field would read as 65xxx.
+            UInt16 damageToNpc = CombatInterlock.WireDamage(outcome.DamageToNpc);
+            UInt16 damageToPlayer = CombatInterlock.WireDamage(outcome.DamageToPlayer);
 
             // Records of the round the moves belong to. Retail's move value is the attack roll and its first number the
             // defense roll: with them, attack > the other's defense matches retail's hits in 692 of 725 rounds.
@@ -430,8 +431,8 @@ namespace hds
             session.NpcMove.First = opening; // retail's opening round had 0 in the NPC move's ability field too
 
             player.messageQueue.addRpcMessage(CombatInterlock.BuildRoundResult(session.RoundRecord, outcome.PlayerWins, decided, session.NpcMove,
-                session.TargetViewSpawnId, outcome.Flags, (UInt16)outcome.DamageToPlayer, (Int16)outcome.PlayerAbsorbed,
-                (UInt16)outcome.DamageToNpc, (Int16)outcome.NpcAbsorbed, CombatStartTime(),
+                session.TargetViewSpawnId, outcome.Flags, damageToPlayer, (Int16)outcome.PlayerAbsorbed,
+                damageToNpc, (Int16)outcome.NpcAbsorbed, CombatStartTime(),
                 attemptsWithdrawal && !opening ? playerAttack - npcAttack : 0));
             session.RoundRecord++;
             session.Presentation?.Round(outcome.PlayerWins, outcome.Flags, playerTactic, npcTactic,

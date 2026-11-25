@@ -928,7 +928,7 @@ namespace hds
                 client.messageQueue.addRpcMessage(CombatInterlock.BuildRoundState(CombatInterlock.KindNewRound, own, next));
             }
             client.messageQueue.addRpcMessage(CombatInterlock.BuildRoundResult(side.RoundRecord, won, own, theirs, roundOpponent, flags,
-                (UInt16)damageToSelf, (Int16)selfAbsorbed, (UInt16)damageToOpponent, (Int16)opponentAbsorbed, CombatHandler.CombatStartTime(),
+                CombatInterlock.WireDamage(damageToSelf), (Int16)selfAbsorbed, CombatInterlock.WireDamage(damageToOpponent), (Int16)opponentAbsorbed, CombatHandler.CombatStartTime(),
                 combatResult, theirs.Flag));
             side.RoundRecord++;
             if (opening)
