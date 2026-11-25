@@ -141,6 +141,7 @@ public sealed class SneakOpenerRoundsMode : NativeQaMode
             }
             first = false;
             int casterRpc = caster.World.RpcSnapshot().Count, enemyRpc = enemy.World.RpcSnapshot().Count, logFrom = server.DebugLog().Length;
+            int viewsBefore = caster.World.ViewSnapshot().Count;
             caster.SendRpc($"81 51 {WireFormat.ToHex(BitConverter.GetBytes(target))}");
             caster.SendRpc(Request(row.Id, target));
             await caster.WaitUntilAsync(() => landed.IsMatch(server.DebugLog()[logFrom..]), $"{row.Id} lands on QAEnemy", TimeSpan.FromSeconds(8));
@@ -148,6 +149,10 @@ public sealed class SneakOpenerRoundsMode : NativeQaMode
             await caster.WaitUntilAsync(() => server.DebugLog()[logFrom..].Contains($"[SNEAK-OPENER-ROUND] {row.Id} landed move {round.Id} ({round.Name})", StringComparison.Ordinal) &&
                 server.DebugLog()[logFrom..].Contains($"animation {round.Id} ({round.Name})", StringComparison.Ordinal),
                 $"{row.Id} presents its {round.Name} exchange", TimeSpan.FromSeconds(8));
+            // After the exchange the caster's view of QAEnemy gets QAEnemy's real server yaw (64, east) and position again.
+            byte[] facing = PvpFight.BuildFacing(64, EnemyX, Y, Z);
+            await caster.WaitUntilAsync(() => caster.World.ViewSnapshot().Skip(viewsBefore).Any(v => v.AsSpan().IndexOf(facing) >= 0),
+                $"{row.Id} restores QAEnemy's facing after the exchange", TimeSpan.FromSeconds(round.DurationMs / 1000.0 + 4));
             int hit = int.Parse(landed.Match(server.DebugLog()[logFrom..]).Groups[1].Value);
             hits[row.Id] = hit;
             await ObserveAsync(enemy, enemyRpc,

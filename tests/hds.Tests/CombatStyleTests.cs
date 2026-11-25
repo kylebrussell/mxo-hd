@@ -403,6 +403,24 @@ public class CombatStyleTests
     }
 
     [Theory]
+    [InlineData((byte)64)]
+    [InlineData((byte)192)]
+    [InlineData((byte)0)]
+    public void AfterTheExchangeObserversGetTheFightersServerYawAndPosition(byte yaw)
+    {
+        var target = ReadyPresentationFighter(8032, 21750, 1095, 16150);
+        target.playerInstance.YawInterval.setValue(yaw);
+        byte[] record = SneakOpenerRound.FacingRecord(target);
+        Assert.Equal(new byte[] { 0x01, 0x0c, yaw }, record[..3]);
+        Assert.Equal(21750f, BitConverter.ToSingle(record, 3));
+        Assert.Equal(1095f, BitConverter.ToSingle(record, 7));
+        Assert.Equal(16150f, BitConverter.ToSingle(record, 11));
+        Assert.Equal(15, record.Length);
+        Assert.Equal(PvpFight.BuildFacing(yaw, 21750, 1095, 16150), record);
+    }
+
+
+    [Theory]
     [InlineData((ushort)286, 19593u)]
     [InlineData((ushort)288, 19594u)]
     [InlineData((ushort)289, 19590u)]

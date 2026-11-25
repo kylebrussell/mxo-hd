@@ -73,7 +73,33 @@ namespace hds
             {
                 presentation.HideFighters();
                 lock (WorldServer.gameServerEntities) WorldServer.gameServerEntities.Remove(handler);
+                // The exchange turned the fighters toward each other on every screen. Re-send each one's real pose: the
+                // stock client otherwise keeps the target facing the caster, and a later rear opener is refused locally.
+                RestorePose(caster);
+                if (target != null) RestorePose(target);
+                if (mob != null && !mob.getIsDead()) mob.updateAnimation((byte)Mob.Animations.STAND);
             });
+        }
+
+        /// <summary>Other views: the moving-player state part with the server's own yaw and position (PvpFight.BuildFacing).</summary>
+        internal static byte[] FacingRecord(WorldClient player)
+        {
+            double x = 0, y = 0, z = 0;
+            NumericalUtils.LtVector3dToDoubles(player.playerInstance.Position.getValue(), ref x, ref y, ref z);
+            return PvpFight.BuildFacing(player.playerInstance.YawInterval.getValue()[0], (float)x, (float)y, (float)z);
+        }
+
+        private static void RestorePose(WorldClient player)
+        {
+            if (!player.Alive || !player.playerData.getOnWorld() || player.playerData.isDead) return;
+            PvpFlag.ToWatchers(player, FacingRecord(player));
+            // Own view: the stock-verified stance reset at the current position (StealthShieldAbilities.ResetMotion).
+            double x = 0, y = 0, z = 0;
+            NumericalUtils.LtVector3dToDoubles(player.playerInstance.Position.getValue(), ref x, ref y, ref z);
+            byte counter = ++player.playerData.emoteCounter;
+            player.messageQueue.addObjectMessage(DeathPresentation.Build(true, counter, player.playerData.stance, 0, DeathPresentation.NoAbility,
+                (float)x, (float)y, (float)z, CombatHandler.CombatStartTime()), false);
+            player.FlushQueue();
         }
     }
 }
