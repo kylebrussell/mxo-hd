@@ -16,17 +16,7 @@ namespace hds
         {
             reason = 0;
             if (AbilityCatalog.Canonical(abilityId) != Id) return false;
-            if (CombatManager.GetHandler(caster).isCombatRunning)
-            {
-                reason = AbilityRefusals.MustBeOutsideCombat;
-                return true;
-            }
-            if (!AbilityTargets.HasLiveAttackSelection(caster, targetViewId, spawn))
-            {
-                reason = AbilityRefusals.InvalidTarget;
-                return true;
-            }
-            return false;
+            return SpyInstantSneakOpenerAdmission.TryRefuse(caster, abilityId, targetViewId, spawn, out reason);
         }
 
         public static bool TryResolve(AbilityCatalog.Entry source, out ushort damage)
@@ -50,5 +40,14 @@ namespace hds
             damage = (ushort)amount;
             return true;
         }
+    }
+
+    internal sealed class BullDogHandler : ISpyAbilityHandler
+    {
+        public ushort[] AbilityIds => new[] { BullDogDamage.Id };
+        public bool TryRefuse(WorldClient client, ushort abilityId, ushort targetViewId, ushort? targetSpawnId, out uint refusalReason) =>
+            BullDogDamage.TryRefuse(client, abilityId, targetViewId, targetSpawnId, out refusalReason);
+        public bool TryResolveDamage(AbilityCatalog.Entry source, int characterLevel, Random random, out ushort damage) =>
+            BullDogDamage.TryResolve(source, out damage);
     }
 }

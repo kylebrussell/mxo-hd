@@ -11,18 +11,7 @@ namespace hds
         {
             refusalReason = 0;
             if (AbilityCatalog.Canonical(abilityId) != SpinningBacksweep) return false;
-            var combat = CombatManager.GetHandler(client);
-            if (combat.isCombatRunning || combat.HasActiveInterlock)
-            {
-                refusalReason = AbilityRefusals.MustBeOutsideCombat;
-                return true;
-            }
-            if (!AbilityTargets.HasLiveAttackSelection(client, targetViewId, targetSpawnId, requireOpponent: true))
-            {
-                refusalReason = AbilityRefusals.InvalidTarget;
-                return true;
-            }
-            return false;
+            return SpyInstantSneakOpenerAdmission.TryRefuse(client, abilityId, targetViewId, targetSpawnId, out refusalReason);
         }
     }
 

@@ -15,17 +15,7 @@ namespace hds
         {
             refusalReason = 0;
             if (AbilityCatalog.Canonical(abilityId) != Suplex) return false;
-            if (CombatManager.GetHandler(client).isCombatRunning)
-            {
-                refusalReason = AbilityRefusals.MustBeOutsideCombat;
-                return true;
-            }
-            if (!AbilityTargets.HasLiveAttackSelection(client, targetViewId, targetSpawnId))
-            {
-                refusalReason = AbilityRefusals.InvalidTarget;
-                return true;
-            }
-            return false;
+            return SpyInstantSneakOpenerAdmission.TryRefuse(client, abilityId, targetViewId, targetSpawnId, out refusalReason);
         }
 
         public static bool TryResolve(AbilityCatalog.Entry source, int characterLevel, out ushort damage)
