@@ -56,6 +56,43 @@ public class SniperParityTests
     }
 
     [Theory]
+    [InlineData(505, 47, 60, 45f, 0, 0f, 30, 6f)]
+    [InlineData(454, 61, 45, 10f, 689, 5f, 20, 2f)]
+    public void SniperAndDeadlyShotsUseTheirFixedBallisticBasesAndStoredCastTerms(ushort id, int damage, int cost,
+        float own, int group, float groupSeconds, int range, float cast)
+    {
+        string root = AppContext.BaseDirectory;
+        while (!File.Exists(Path.Combine(root, "hds.sln")))
+            root = Path.GetDirectoryName(root)!;
+        string[] row = File.ReadLines(Path.Combine(root, "data", "abilityIDs.csv"))
+            .Single(line => line.StartsWith(id + ";", StringComparison.Ordinal)).Split(';');
+        var item = new AbilityItem();
+        item.setAbilityID(id);
+        item.setValueFrom(short.Parse(row[9]));
+        item.setValueTo(ushort.Parse(row[10]));
+
+        // The legacy CSV endpoints (4..0) are incomplete, so the single authored instant Ballistic health modifier wins.
+        Assert.True(item.getValueTo() < item.getValueFrom());
+        Assert.Equal(1, TypedAbilityResistance.StoredType(id));
+        Assert.Null(CombatSpecials.Damage(id, null));
+        foreach (int seed in new[] { 1, 2, 987 })
+            Assert.Equal(damage, AbilityHandler.AbilityDamage(item, new Random(seed)));
+
+        var entry = AbilityCatalog.Find(id)!;
+        Assert.Equal(cost, AbilityCosts.Cost(id));
+        Assert.True(AbilityCooldowns.TryGet(id, out var cd));
+        Assert.Equal(own, cd.Seconds);
+        Assert.Equal(group, cd.Group);
+        Assert.Equal(groupSeconds, cd.GroupSeconds);
+        Assert.Equal(range, entry.Number("Ability/SelectionRange"));
+        Assert.Equal(cast, entry.Number("Ability/CastingTime"));
+        Assert.Equal(1, entry.Number("Ability/CastWhenUsed"));
+        Assert.Equal(1, entry.Number("Ability/TestFunction"));
+        Assert.Equal(CombatStyles.Rifles, CombatStyles.RequiredStyle(id));
+        Assert.True(AbilityConditionalControls.HasCapturedStunStack(id));
+    }
+
+    [Theory]
     [InlineData(504, .30f, .10f)]
     [InlineData(505, .50f, .01f)]
     public void ConcealedAndSniperShotsUseTheirOwnDelayedStunProbabilities(ushort id, float chance, float delay)
