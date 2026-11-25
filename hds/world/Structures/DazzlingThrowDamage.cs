@@ -17,18 +17,8 @@ namespace hds
         public static bool TryRefuse(WorldClient caster, ushort abilityId, ushort targetViewId, ushort? spawn, out uint reason)
         {
             reason = 0;
-            if (AbilityCatalog.Canonical(abilityId) != Id) return false;
-            if (CombatManager.GetHandler(caster).isCombatRunning)
-            {
-                reason = AbilityRefusals.MustBeOutsideCombat;
-                return true;
-            }
-            if (!AbilityTargets.HasLiveAttackSelection(caster, targetViewId, spawn))
-            {
-                reason = AbilityRefusals.InvalidTarget;
-                return true;
-            }
-            return false;
+            return AbilityCatalog.Canonical(abilityId) == Id &&
+                   SneakFreeThrowAdmission.TryRefuse(caster, Id, targetViewId, spawn, out reason);
         }
 
         public static bool TryResolve(AbilityCatalog.Entry source, out ushort damage)
@@ -62,5 +52,10 @@ namespace hds
             DazzlingThrowDamage.TryRefuse(client, abilityId, targetViewId, targetSpawnId, out refusalReason);
         public bool TryResolveDamage(AbilityCatalog.Entry source, int characterLevel, Random random, out ushort damage) =>
             DazzlingThrowDamage.TryResolve(source, out damage);
+        public void OnLanded(WorldClient caster, ushort abilityId, ulong targetEntity)
+        {
+            if (abilityId != DazzlingThrowDamage.Id) return;
+            StealthShieldAbilities.PlayThrow(caster, targetEntity, abilityId);
+        }
     }
 }
