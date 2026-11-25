@@ -704,7 +704,7 @@ namespace hds
             WorldClient recallRecipient = null;
             if (AbilityID == UtilityAbilities.DisarmTraps)
             {
-                uint? disarmRefusal = UtilityAbilities.DisarmRefusal(Store.currentClient, out bool toolMissing);
+                uint? disarmRefusal = UtilityAbilities.DisarmRefusal(Store.currentClient, currentTargetViewId, out bool toolMissing);
                 if (toolMissing)
                 {
                     Store.currentClient.messageQueue.addRpcMessage(DuelPackets.BuildSystemString(UtilityAbilities.ToolFail));
