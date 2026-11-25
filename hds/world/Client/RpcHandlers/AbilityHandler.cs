@@ -551,7 +551,8 @@ namespace hds
                 {
                     uint requiredStates = refusalReason == AbilityRefusals.CasterStateRequired &&
                         (AbilityID == SpyMasterSneakOpeners.FreedomToJoints || sneakFreeThrow ||
-                         SneakFreeThrowAdmission.GatesInstantOpener(AbilityID) || SpyInstantSneakOpenerAdmission.Handles(AbilityID)) ? Stealth.StealthedFlag : 0u;
+                         SneakFreeThrowAdmission.GatesInstantOpener(AbilityID) || SpyInstantSneakOpenerAdmission.Handles(AbilityID) ||
+                         AbilityID == StealthShieldAbilities.BullDog) ? Stealth.StealthedFlag : 0u;
                     Store.currentClient.messageQueue.addRpcMessage(AbilityRefusals.Encode(new AbilityRefusals.Record(AbilityID, refusalReason, states: requiredStates)));
                     Store.currentClient.FlushQueue();
                     Output.WriteDebugLog("[ABILITY] Denied " + AbilityID + ": native refusal " + refusalReason);
