@@ -12,7 +12,7 @@ public class TransmitCodeMode : NativeQaMode
     private readonly ushort passive;
     private readonly (ushort Stat, int Value)[] bonuses;
     private readonly ushort[] defenderAbilities;
-    private readonly int bonusPercent, resistancePoints, reducedDamage;
+    private readonly int baselinePercent, baselinePoints, baselineDamage, bonusPercent, resistancePoints, reducedDamage;
     private static readonly ushort[] AttackerAbilities = StockAbilityProfile.Profile(2, 17, CombatStyles.HackerStyle, Incoming)
         .Order().ToArray();
     private static readonly int AttackerMemory = AttackerAbilities.Sum(AbilityMemory.Cost);
@@ -22,16 +22,21 @@ public class TransmitCodeMode : NativeQaMode
 
     public TransmitCodeMode() : this(593, new (ushort, int)[] { (1146, 10), (1148, 10) }, reducedDamage: 606) { }
 
-    protected TransmitCodeMode(ushort passive, (ushort Stat, int Value)[] bonuses, int reducedDamage)
+    protected TransmitCodeMode(ushort passive, (ushort Stat, int Value)[] bonuses, int reducedDamage,
+        int baselinePercent = 0, int baselineDamage = RawDamage)
     {
         this.passive = passive;
         this.bonuses = bonuses;
         defenderAbilities = DisablingShotMode.Closure(17, passive);
         int defenderMemory = defenderAbilities.Sum(AbilityMemory.Cost);
-        bonusPercent = bonuses.Single(bonus => bonus.Stat == 1148).Value;
+        this.baselinePercent = baselinePercent;
+        baselinePoints = (4 * Level + 20) * baselinePercent / 100;
+        this.baselineDamage = baselineDamage;
+        bonusPercent = baselinePercent + bonuses.Single(bonus => bonus.Stat == 1148).Value;
         resistancePoints = (4 * Level + 20) * bonusPercent / 100;
         this.reducedDamage = reducedDamage;
         string records = string.Join(", ", bonuses.Select(bonus => $"stat={bonus.Stat} +{bonus.Value}"));
+        int baseResisted = RawDamage - baselineDamage;
         Plan = new(defenderAbilities, X, Z, Array.Empty<string>(),
             new[] { $"UPDATE char_abilities SET is_loaded=0 WHERE char_id=110 AND ability_id={AbilityMessages.AbilityGameObject(passive)}" },
             new[]
@@ -58,9 +63,9 @@ public class TransmitCodeMode : NativeQaMode
             readyMessages: new[]
             {
                 $"Level {Level}. CSR has {defenderMemory - AbilityMemory.Cost(passive)} memory loaded and {defenderMemory}/100 with passive {passive}. QAEnemy uses a legal {AttackerMemory}/100 profile. Verified outdoor NAV CSR ({X},{Y},{Z}) faces QAEnemy ({X},{Y},{EnemyZ}) at 2 m. No ?tp or NPC selection is required. If an NPC appears behind CSR, strafe, turn the camera and single-click the name you intend to select.",
-                """Stay at spawn and keep tactics fixed. Request {"actor":"QAEnemy","action":"cast","ability":330,"target":"CSR_Tester"}. This sends the complete retained stock 330 with its live target handle. Expect 2 s cast, 13 IS on the helper, a 4 s reuse and 640 damage with zero resisted. Wait 6 s after each helper request before repeating.""",
+                $"Stay at spawn and keep tactics fixed. Request {{\"actor\":\"QAEnemy\",\"action\":\"cast\",\"ability\":330,\"target\":\"CSR_Tester\"}}. This sends the complete retained stock 330 with its live target handle. Expect 2 s cast, 13 IS on the helper, a 4 s reuse and {baselineDamage} damage with {baseResisted} resisted. Wait 6 s after each helper request before repeating.",
                 $"Type ?qaload {passive}. This disposable command submits the normal Archive load. Expect [MODIFIER] char=110 source={passive} add duration=0s for {records}. Repeat the helper cast. Expect [RESISTANCE-BONUS OURS] type2 level50 percent{bonusPercent} points{resistancePoints} base0 total{resistancePoints}, then [TYPED-RESISTANCE OURS] 330 type2 total{resistancePoints} raw640 final{reducedDamage}, {RawDamage - reducedDamage} resisted.",
-                $"Type ?qaunload {passive} and check the matching removals. The third identical request returns to 640 damage, zero resisted. No [PVP] round. This verifies the current resistance consumer. The historical retail coefficient remains open."
+                $"Type ?qaunload {passive} and check the matching removals. The third identical request returns to {baselineDamage} damage, {baseResisted} resisted. No [PVP] round. This verifies the current resistance consumer. The historical retail coefficient remains open."
             });
     }
 
@@ -95,14 +100,14 @@ public class TransmitCodeMode : NativeQaMode
         Check.That(!defender.World.RpcSnapshot().Any(frame => bonuses.Any(bonus =>
             StockAbilityProfile.Bonus(frame, passive, bonus.Stat, bonus.Value, 0, false))), "Unloaded passive publishes no bonuses");
 
-        await HitAsync(RawDamage, 0);
+        await HitAsync(baselineDamage, RawDamage - baselineDamage, baselinePoints);
         await SetPassiveAsync(true);
-        await HitAsync(reducedDamage, RawDamage - reducedDamage);
+        await HitAsync(reducedDamage, RawDamage - reducedDamage, resistancePoints);
         await SetPassiveAsync(false);
-        await HitAsync(RawDamage, 0);
+        await HitAsync(baselineDamage, RawDamage - baselineDamage, baselinePoints);
 
         Check.Equal(0, enemy.World.Problems.Count + defender.World.Problems.Count, "Both stock wire sessions decode cleanly");
-        Console.WriteLine($"VIRAL RESISTANCE PASS {passive}: retained 330 hits 640/0, {reducedDamage}/{RawDamage - reducedDamage}, 640/0. Archive prerequisites are unchanged.");
+        Console.WriteLine($"VIRAL RESISTANCE PASS {passive}: retained 330 hits {baselineDamage}/{RawDamage - baselineDamage}, {reducedDamage}/{RawDamage - reducedDamage}, {baselineDamage}/{RawDamage - baselineDamage}. Archive prerequisites are unchanged.");
         return Array.Empty<byte>();
 
         async Task SetPassiveAsync(bool load)
@@ -118,7 +123,7 @@ public class TransmitCodeMode : NativeQaMode
             Check.Equal(parents, await database.ExecuteAsync(parentQuery), "Prerequisite Archive rows are unchanged");
         }
 
-        async Task HitAsync(int damage, int resisted)
+        async Task HitAsync(int damage, int resisted, int expectedPoints)
         {
             int casts = enemy.World.RpcSnapshot().Count, damageAt = defender.World.RpcSnapshot().Count, logAt = server.DebugLog().Length;
             await StarterTransmitVirusMode.SendProbeAsync(enemy, defender.Handle, Incoming);
@@ -133,7 +138,7 @@ public class TransmitCodeMode : NativeQaMode
             string log = server.DebugLog()[logAt..];
             Check.That(log.Contains("[ABILITY-COST] char=6114 ability=330 paid=13"), "The helper pays the ordinary 330 cost");
             if (resisted > 0)
-                Check.That(log.Contains($"[TYPED-RESISTANCE OURS] 330 type2 total{resistancePoints} raw640 final{reducedDamage}"), "One typed conversion feeds the same incoming hit");
+                Check.That(log.Contains($"[TYPED-RESISTANCE OURS] 330 type2 total{expectedPoints} raw640 final{damage}"), "One typed conversion feeds the same incoming hit");
         }
     }
 
