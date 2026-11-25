@@ -23,7 +23,29 @@ namespace hds
             reason = 0;
             ushort id = AbilityCatalog.Canonical(abilityId);
             if (!Handles(id)) return false;
+            return Gate(caster, id, targetViewId, spawn, out reason);
+        }
 
+        /// <summary>Instant Assassin sneak attacks that store the same rear-opener gate (CastWhenUsed1, Spy Style,
+        /// Stealthed caster, CastOutsideTargetFOVAngle50, 6 m): Spin Throw, Topsy Turvy, Punt and Reverse Bull Dog.
+        /// Their SneakAttack*_Test depends on the target's position, orientation and IsInCombat.</summary>
+        public static bool GatesInstantOpener(ushort abilityId)
+        {
+            ushort id = AbilityCatalog.Canonical(abilityId);
+            return id == SpySneakOpeners.SpinThrow || id == SpySneakOpeners.TopsyTurvy || id == SpySneakOpeners.Punt ||
+                id == SpyShadowAssassinBatch.ReverseBullDog;
+        }
+
+        public static bool TryRefuseInstantOpener(WorldClient caster, ushort abilityId, ushort targetViewId, ushort? spawn, out uint reason)
+        {
+            reason = 0;
+            ushort id = AbilityCatalog.Canonical(abilityId);
+            return GatesInstantOpener(id) && Gate(caster, id, targetViewId, spawn, out reason);
+        }
+
+        private static bool Gate(WorldClient caster, ushort id, ushort targetViewId, ushort? spawn, out uint reason)
+        {
+            reason = 0;
             var combat = CombatManager.GetHandler(caster);
             if (combat.isCombatRunning || combat.HasActiveInterlock)
             {

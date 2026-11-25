@@ -47,6 +47,17 @@ public class SpyShadowAssassinBatchTests
         Assert.Equal(SpyStyle, CombatStyles.RequiredStyle(ability));
 
         var client = Client();
+        if (SneakFreeThrowAdmission.GatesInstantOpener(ability))
+        {
+            // Shared rear-opener gate: Spy Style, then Stealthed, before the selected opponent.
+            Assert.True(SpyAbilityRegistry.TryRefuse(client, ability, 0, null, out uint wrongStyle));
+            Assert.Equal(AbilityRefusals.WrongStyle, wrongStyle);
+            AbilityPassives.SetLoaded(client, new[] { (SpyStyle, (ushort)50) });
+            CombatStyles.Select(client, SpyStyle);
+            Assert.True(SpyAbilityRegistry.TryRefuse(client, ability, 0, null, out uint noSneak));
+            Assert.Equal(AbilityRefusals.CasterStateRequired, noSneak);
+            client.playerData.conditionStateFlags |= Stealth.StealthedFlag;
+        }
         Assert.True(SpyAbilityRegistry.TryRefuse(client, ability, 0, null, out uint reason));
         Assert.Equal(AbilityRefusals.InvalidTarget, reason);
     }

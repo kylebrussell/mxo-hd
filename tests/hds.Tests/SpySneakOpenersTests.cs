@@ -55,7 +55,7 @@ public class SpySneakOpenersTests
         Assert.Equal(SpyStyle, CombatStyles.RequiredStyle(ability));
 
         var client = Client();
-        if (ability == LegThrow || ability == WeakeningBlow)
+        if (ability == LegThrow || ability == WeakeningBlow || SneakFreeThrowAdmission.GatesInstantOpener(ability))
         {
             Assert.True(SpyAbilityRegistry.TryRefuse(client, ability, 0, null, out uint wrongStyle));
             Assert.Equal(AbilityRefusals.WrongStyle, wrongStyle);
