@@ -159,6 +159,16 @@ namespace hds
         {
             if ((flags & CombatRules.OpportunityAttack) != 0)
                 return All.First(m => m.Id == ((flags & CombatRules.Draw) != 0 ? 8198u : 9062u));
+            if ((flags & CombatRules.Withdraw) != 0)
+            {
+                const string group = "Withdraw:Sideroll Withdrawal";
+                // The shipped export currently includes only Self-Defense Sideroll poses.
+                // Preserve the tactic where available, then fall back to the authored Speed variant.
+                string pose = "Withdraw Sideroll " + firstStyle + Suffix(first);
+                return All.FirstOrDefault(move => move.Group == group && move.Name == pose) ??
+                    All.FirstOrDefault(move => move.Group == group && move.Name == "Withdraw Sideroll S" + Suffix(first)) ??
+                    All.First(move => move.Group == group && move.Name == "Withdraw Sideroll SS");
+            }
             uint result = flags & (CombatRules.AttackerHits | CombatRules.NoHits | CombatRules.BothHit | CombatRules.FinishingMove);
             if ((result & (CombatRules.AttackerHits | CombatRules.BothHit)) == 0) result = CombatRules.NoHits;
             string prefix = $"{firstStyle}{Suffix(first)} vs {secondStyle}{Suffix(second)}:";

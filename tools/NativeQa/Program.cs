@@ -451,6 +451,8 @@ try
                     await NativeQa.Modes.HackerBufferOverflowMode.SendFirewallAsync(actor, helpers["QAEnemy"]);
                 else if (fixtureMode is NativeQa.Modes.TransmitCodeThrownMode && action == "transmit-code")
                     await NativeQa.Modes.TransmitCodeThrownMode.SetPassiveAsync(actor, q.GetProperty("loaded").GetBoolean());
+                else if (fixtureMode is NativeQa.Modes.WithdrawSiderollMode && action == "withdraw-pair")
+                    NativeQa.Modes.WithdrawSiderollMode.RequestHelperWithdrawal(actor);
                 else if (action == "stop") actor.SendRpc("44 00");
                 else if (fixtureMode is NativeQa.Modes.AdvancedDualSmgConeMode && action == "advanced-cone-armor")
                     await NativeQa.Modes.PistolSlideMode.ApplyArmorAsync(actor);
