@@ -49,7 +49,15 @@ public class SuplexDamageTests
     {
         var client = Client(27);
         client.playerData.setCharID(28701);
+        Assert.True(SuplexDamage.TryRefuse(client, Suplex, 0, null, out uint styleReason));
+        Assert.Equal(AbilityRefusals.WrongStyle, styleReason);
 
+        AbilityPassives.SetLoaded(client, new (ushort, ushort)[] { (SpyStyle, 27) });
+        CombatStyles.Select(client, SpyStyle);
+        Assert.True(SuplexDamage.TryRefuse(client, Suplex, 0, null, out uint stealthReason));
+        Assert.Equal(AbilityRefusals.CasterStateRequired, stealthReason);
+
+        client.playerData.conditionStateFlags = Stealth.StealthedFlag;
         Assert.True(SuplexDamage.TryRefuse(client, Suplex, 0, null, out uint emptyReason));
         Assert.Equal(AbilityRefusals.InvalidTarget, emptyReason);
 

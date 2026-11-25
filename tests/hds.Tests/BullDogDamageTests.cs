@@ -73,9 +73,18 @@ public class BullDogDamageTests
     }
 
     [Fact]
-    public void BullDogAdmissionRejectsEmptySelectionWithNativeInvalidTarget()
+    public void BullDogAdmissionRejectsMissingStyleStealthAndEmptySelection()
     {
         var caster = Client(19);
+        Assert.True(BullDogDamage.TryRefuse(caster, 387, 0, null, out uint styleReason));
+        Assert.Equal(AbilityRefusals.WrongStyle, styleReason);
+
+        AbilityPassives.SetLoaded(caster, new (ushort, ushort)[] { (1112, 19) });
+        CombatStyles.Select(caster, 1112);
+        Assert.True(BullDogDamage.TryRefuse(caster, 387, 0, null, out uint stealthReason));
+        Assert.Equal(AbilityRefusals.CasterStateRequired, stealthReason);
+
+        caster.playerData.conditionStateFlags = Stealth.StealthedFlag;
         Assert.True(BullDogDamage.TryRefuse(caster, 387, 0, null, out uint reason));
         Assert.Equal(AbilityRefusals.InvalidTarget, reason);
     }

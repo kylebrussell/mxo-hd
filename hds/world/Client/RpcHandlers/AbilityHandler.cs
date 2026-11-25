@@ -551,7 +551,7 @@ namespace hds
                 {
                     uint requiredStates = refusalReason == AbilityRefusals.CasterStateRequired &&
                         (AbilityID == SpyMasterSneakOpeners.FreedomToJoints || sneakFreeThrow ||
-                         SneakFreeThrowAdmission.GatesInstantOpener(AbilityID)) ? Stealth.StealthedFlag : 0u;
+                         SneakFreeThrowAdmission.GatesInstantOpener(AbilityID) || SpyInstantSneakOpenerAdmission.Handles(AbilityID)) ? Stealth.StealthedFlag : 0u;
                     Store.currentClient.messageQueue.addRpcMessage(AbilityRefusals.Encode(new AbilityRefusals.Record(AbilityID, refusalReason, states: requiredStates)));
                     Store.currentClient.FlushQueue();
                     Output.WriteDebugLog("[ABILITY] Denied " + AbilityID + ": native refusal " + refusalReason);
@@ -821,16 +821,7 @@ namespace hds
                 }
             }
 
-            {
-                ushort? spawn = packet.Length == 41 ? (ushort?)BitConverter.ToUInt16(packet, 4) : null;
-                if (BullDogDamage.TryRefuse(Store.currentClient, AbilityID, currentTargetViewId, spawn, out uint refusalReason))
-                {
-                    Store.currentClient.messageQueue.addRpcMessage(AbilityRefusals.Encode(new AbilityRefusals.Record(AbilityID, refusalReason)));
-                    Store.currentClient.FlushQueue();
-                    Output.WriteDebugLog("[ABILITY] Denied " + AbilityID + ": native refusal " + refusalReason);
-                    return;
-                }
-            }
+
 
             // The client sends a double-clicked ability twice in a row; count it once.
             ClientData data = Store.currentClient.playerData;
