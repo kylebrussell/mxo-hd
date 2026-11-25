@@ -53,7 +53,7 @@ public class InvisibilityDurationTests
         Stealth.Cleared(actor);
 
         Assert.True(AbilityBuffs.Apply(actor, 1117));
-        Assert.Equal(0f, Scale());
+        Assert.Equal(.10f, Scale()); // The loaded Sneak parent supplies the ordinary Run baseline (stat 998), independent of Shadow.
         Assert.NotNull(Stealth.Begin(actor, Stealth.Defs[1111], 50));
         Assert.Equal(.25f, Scale()); // The loaded Disguise parent supplies the Sneak baseline, independent of Shadow.
         Stealth.Cleared(actor);

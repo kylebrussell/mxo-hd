@@ -42,6 +42,7 @@ static string Consumer(ushort stat) => stat switch
     127 => "UBF0 caster area radius percent (group support and friendly944)",
     575 => "Determination duration mitigation (known target totals)",
     1047 when typeof(AbilityCatalog).Assembly.GetType("hds.DeflectCode") != null => "OURS positive percent shortening of new known hostile controls after raw575, total33% floor; retail coefficient unresolved",
+    998 => "Linked owner percentage of ordinary run MovementScale (GOB 115 -> 998); retail coefficient unverified",
     995 or 1039 or 1040 or 1041 or 1042 or 1043 => "control duration",
     530 or 652 or 653 or 654 or 655 or 656 or 706 or 707 => "crafting",
     649 or 956 => "ordinary CBB Code Writer contest or Info debit, including reviewed apparel, weapon and tool recipes; [evidence](WRITE-CODE.md)",

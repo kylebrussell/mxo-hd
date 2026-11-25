@@ -92,6 +92,7 @@ namespace hds
             MissionPersistence.WorldEntry(Store.currentClient);
             if (DeathPresentation.IsCorpse(Store.currentClient)) DeathPresentation.Corpse(Store.currentClient);
             AbilityPassives.Refresh(Store.currentClient);
+            AbilityBuffs.PresentCurrentMovementScale(Store.currentClient);
             if (DeathPenalty.Current(Store.currentClient) < 1) DeathPenalty.Send(Store.currentClient);
             if (Store.currentClient.playerData.pvpFlag)
             {
