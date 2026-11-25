@@ -388,7 +388,15 @@ namespace hds
             client.FlushQueue();
         }
 
-        public void sendPlayerAnimation(WorldClient client, String hexAnimation)
+        public void sendPlayerAnimation(WorldClient client, String hexAnimation) => SendObject(client, BuildPlayerAnimation(hexAnimation));
+
+        private static void SendObject(WorldClient client, byte[] message)
+        {
+            client.messageQueue.addObjectMessage(message, false);
+            client.FlushQueue();
+        }
+
+        internal static byte[] BuildPlayerAnimation(String hexAnimation)
         {
             // See animations.txt - hex animation is the first Id
             // Some samples:
@@ -420,9 +428,9 @@ namespace hds
             pak.AddFloat(yPos,1);
             pak.AddFloat(zPos,1);
             pak.AddByteArray(new byte[] {0x20, 0x9f, 0x1e, 0x20});
-            pak.AddUint16(0, 1);
-            client.messageQueue.addObjectMessage(pak.ReturnFinalPacket(), false);
-            client.FlushQueue();
+            // Retail own-view animation updates (02 00 01|03 28 ...) end the 0x28 group with the u32 sim time; no trailing
+            // 00 00 follows (e.g. community-intake 20260608T130150Z: 02 00 03 28 06 40 19 29 0f 14 00 10 <pos> <sim ms> <next group>).
+            return pak.ReturnFinalPacket();
         }
 
         public void sendPlayerAttributes(WorldClient client)
