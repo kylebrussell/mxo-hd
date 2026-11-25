@@ -1,0 +1,173 @@
+{
+  "families": {
+    "emp-blast-1025": {
+      "representative": 1025,
+      "result": "pass",
+      "head": "006334b99e2edd2d6b1483679dd870c91e403837",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/1178#issuecomment-7166902958",
+      "scope": "Stock PR1178 verified EMCP Blast 1025 at rest (20 IS, 1 s cast, 30 s reuse): unweakened damage=0 on near dummy only, weakened 6000->1000 at 3 m with 12 m Far Dummy and QAFriend excluded, Close Combat local refusal with 0 IS, and killing blast (1000->0, XP and corpse) after ?cd stop. Production grant owners and item consumption remain open under source-parity."
+    }
+  },
+  "abilities": {
+    "119": {
+      "checks": {
+        "stealth-detection": {
+          "source": "ability/spy/misc.py DisarmTraps_Test checks directObject.DetectTrapFX before the contest and critically fails with ID_CLIENT_ABILITY_TRAP_DISARM_CRITICAL_FAILURE if the trap is undetected; Detect Traps is a separate unshipped utility.",
+          "runtime": "UtilityAbilities.DisarmTrap enforces the DetectTrapFX visibility gate before EvalContest (undetected traps always critically fail and transition to TriggeredState 0x83b).",
+          "test": "Stock PR1154 step 1 (?traproll 99, ?trapobj 1416 hidden) logged 'Disarm Traps on 1416 in 0x839: Critical (detected=False, roll=99)' and printed 'Trap went off while being disarmed!', while detected rolls 10/30/50 produced Critical/Failed/Disarmed. Stock PR1173 verified the selected-object disarm and post-disarm InvalidTarget refusal with 0 IS. GeminiLaneClosureTests.DisarmTraps119EnforcesDetectTrapVisibilityGateAndContestThresholds and DisarmTrapsParityTests. https://github.com/kylebrussell/mxo-hd/pull/1154#issuecomment-7153160448 https://github.com/kylebrussell/mxo-hd/pull/1173#issuecomment-7162583010"
+        }
+      }
+    },
+    "149": {
+      "checks": {
+        "source-parity": {
+          "source": "GOB 149 stores 10 IS, Sixth Sense Detection (stat 646, VF2 scale 4.0 -> +200 at rank 50, +40 at rank 10), radius 8 (1500 units in SixthSense_Subject), SixthSense_Test against the shipped 0/50 Stealth threshold, and 10 s radar ping display.",
+          "runtime": "AbilityPassives publishes stat 646; SixthSense.Land scans authorized live entities within 1500 3D units, emits CastFx 0x7a000003, TargetFx 0x7a000004 on hits, target scan/result notices, and 10 s 80 c5 pings under the server's PvP/neutral relationship policy.",
+          "test": "Stock PR1172 verified 10 IS, CastFx 0x7a000003, resist roll 5 (detected=0 resisted=2), detect roll 20 (detected=2 resisted=0, TargetFx 0x7a000004, QAFar at 16 m excluded), stock count lines, and Close Combat refusal. GeminiLaneClosureTests.SixthSense149PublishesRankScaledDetectionRadiusThresholdAndCost and SixthSenseParityTests. https://github.com/kylebrussell/mxo-hd/pull/1172#issuecomment-7162487672"
+        },
+        "behavior-tests": {
+          "source": "Shipped 149 lists Sixth Sense Detection (VF2 scale 4.0) while enabled, SixthSense_Subject and SixthSense_Test.",
+          "runtime": "Each shipped modifier, radius exclusion, threshold comparison, FX emission and combat gate has executable coverage.",
+          "test": "GeminiLaneClosureTests.SixthSense149PublishesRankScaledDetectionRadiusThresholdAndCost, SixthSenseParityTests and stock PR1172. https://github.com/kylebrussell/mxo-hd/pull/1172#issuecomment-7162487672"
+        }
+      }
+    },
+    "151": {
+      "checks": {
+        "stats": {
+          "source": "GOB 151 grants Sneak (1111) and stores learned-rank VF2 bonuses while enabled: Movement Speed Bonus 998 (scale 0.2 -> +10), Ballistic Defense Bonus 1027 (0.1 -> +5), Melee Defense Bonus 1143 (0.1 -> +5), and Determination Bonus 1047 (0.1 -> +5).",
+          "runtime": "AbilityPassives publishes all four records and grant 1111; AbilityBuffs.MovementScaleFor consumes 998 on the ordinary Run channel (GOB 115) while excluding Sneak gait; AbilityStats.Defense consumes 1027/1143; DeflectCode consumes 1047; unloading restores every consumer.",
+          "test": "Stock PR1175 verified all four records and grant 1111 at login/unload/reload, live run speed 1.093x -> 1.000x -> 1.090x, and Hyper-Speed stack 1.543x -> 1.444x -> 1.093x. GeminiLaneClosureTests.Sneak151FeedsMovementSpeedDefensesDeterminationGrantAndIsolatesSneakGait and SneakMovementSpeedBonusTests verify all four consumers and Sneak-gait isolation (0.00f while sneaking). https://github.com/kylebrussell/mxo-hd/pull/1175#issuecomment-7162711798"
+        },
+        "source-parity": {
+          "source": "Movement Speed Bonus 998 links to GOB 115 (Run) and Determination Bonus 1047 links to raw Determination 575; retail owner coefficients are unarchived.",
+          "runtime": "AbilityBuffs applies 998 as the owner percentage of ordinary run MovementScale (matching 1050/1051 on 120/175) and DeflectCode applies 1047 under the shared server policy already closed for 23/233/491/498.",
+          "test": "Stock PR1175 measured live 1.093x / 1.000x / 1.090x run pace and 1.543x / 1.444x / 1.093x Hyper-Speed composition; GeminiLaneClosureTests.Sneak151FeedsMovementSpeedDefensesDeterminationGrantAndIsolatesSneakGait pins every consumer and unload restoration. https://github.com/kylebrussell/mxo-hd/pull/1175#issuecomment-7162711798"
+        },
+        "behavior-tests": {
+          "source": "151 is a loaded passive granting Sneak (1111) with four while-enabled bonuses.",
+          "runtime": "Grant membership and all four stat consumers activate on load/login and restore cleanly on unload.",
+          "test": "GeminiLaneClosureTests.Sneak151FeedsMovementSpeedDefensesDeterminationGrantAndIsolatesSneakGait, SneakMovementSpeedBonusTests and stock PR1175. https://github.com/kylebrussell/mxo-hd/pull/1175#issuecomment-7162711798"
+        }
+      }
+    },
+    "152": {
+      "checks": {
+        "source-parity": {
+          "source": "Shipped 152 stores fixed thrown base 28 and the +75 stealth-started opener bonus from ability/spy/sneaks.py.",
+          "runtime": "AbilityHandler resolves the stored base plus the stealth-started opener bonus through ordinary Thrown influence and typed Thrown resistance; no invented coefficient is added.",
+          "test": "Stock PR1158 measured 20 IS, 158 neutral on QAEnemy and '[TYPED-RESISTANCE OURS] 152 type7 total75 raw158 final130' on the +75 Thrown dummy; GeminiLaneClosureTests.SpyLaneCombatRowsReproduceStoredTermsAndStockMeasuredLevel50Hits reproduces both. https://github.com/kylebrussell/mxo-hd/pull/1158#issuecomment-7156199034"
+        },
+        "behavior-tests": {
+          "source": "Shipped 152 lists a 6 m instant rear opener (20 IS, 30 s / grp 691 15 s) with fixed thrown base 28 and SneakAttackSpinBack_Test.",
+          "runtime": "SpyInstantSneakOpenerAdmission gates rear/stealth/sight/range/combat before cost; AbilityHandler resolves the hit through ordinary influence and typed resistance.",
+          "test": "GeminiLaneClosureTests.SpyLaneCombatRowsReproduceStoredTermsAndStockMeasuredLevel50Hits, SpyInstantSneakOpenersTests and stock PR1158 (refusals 23/24/24/local/34, 158 neutral, 130 resisted). https://github.com/kylebrussell/mxo-hd/pull/1158#issuecomment-7156199034"
+        }
+      }
+    },
+    "153": {
+      "checks": {
+        "source-parity": {
+          "source": "Shipped 153 stores fixed thrown base 52 and the +150 stealth-started opener bonus from ability/spy/sneaks.py.",
+          "runtime": "AbilityHandler resolves the stored base plus the stealth-started opener bonus through ordinary Thrown influence and typed Thrown resistance.",
+          "test": "Stock PR1170 measured 20 IS, 311 neutral on QAEnemy and 'raw311 final255' on the +75 Thrown dummy; GeminiLaneClosureTests.SpyLaneCombatRowsReproduceStoredTermsAndStockMeasuredLevel50Hits reproduces both. https://github.com/kylebrussell/mxo-hd/pull/1170#issuecomment-7162408226"
+        },
+        "behavior-tests": {
+          "source": "Shipped 153 lists a 6 m instant rear opener (20 IS, 30 s / grp 691 15 s) with fixed thrown base 52 and SneakAttackDropKick_Test.",
+          "runtime": "SpyInstantSneakOpenerAdmission gates rear/stealth/sight/range/combat before cost; AbilityHandler resolves the hit through ordinary influence and typed resistance.",
+          "test": "GeminiLaneClosureTests.SpyLaneCombatRowsReproduceStoredTermsAndStockMeasuredLevel50Hits, DropKickParityTests and stock PR1170 (311 neutral, 255 resisted). https://github.com/kylebrussell/mxo-hd/pull/1170#issuecomment-7162408226"
+        }
+      }
+    },
+    "365": {
+      "checks": {
+        "source-parity": {
+          "source": "Shipped 365 stores fixed thrown base 29, 60 IS, 1.5 s cast, 10 m range, GhostStrike_Subject and GhostStrike_Test (Invisibility Belt restore callback).",
+          "runtime": "GhostStrikeAdmission guards target/sight/range through cast; AbilityHandler resolves fixed base 29 through ordinary Thrown influence and typed Thrown resistance; the belt callback restores original invisibility expiry on qualifying rolls.",
+          "test": "Stock PR1156 verified 60 IS, 1.5 s cast, refusals 24/24/9/34 with 0 IS, 37 neutral on QAEnemy and '[TYPED-RESISTANCE OURS] 365 type7 total75 raw37 final30' on the +75 Thrown dummy; GeminiLaneClosureTests.SpyLaneCombatRowsReproduceStoredTermsAndStockMeasuredLevel50Hits and GhostStrikeParityTests reproduce both. https://github.com/kylebrussell/mxo-hd/pull/1156#issuecomment-7155938420"
+        },
+        "behavior-tests": {
+          "source": "Shipped 365 lists fixed thrown base 29, GhostStrike_Subject and GhostStrike_Test.",
+          "runtime": "Admission, cost, cast guard, targeted throw, typed damage and Invisibility Belt callback execute as stored.",
+          "test": "GeminiLaneClosureTests.SpyLaneCombatRowsReproduceStoredTermsAndStockMeasuredLevel50Hits, GhostStrikeParityTests and stock PR1156. https://github.com/kylebrussell/mxo-hd/pull/1156#issuecomment-7155938420"
+        }
+      }
+    },
+    "547": {
+      "checks": {
+        "script": {
+          "source": "ability/general.py HolyWaterAttack_DirectObject deals 10x damage when target has NPCKilledOnlyByHolyWaterAbility (432), removes Zombie Virus grants (1235, 1238, 1236, 1237, 432), deactivates all 24 RSICap* abilities (1388, 1445..1467) and calls revertToRSI().",
+          "runtime": "CombatSpecials.PlayerDamage scales infected targets 10x (100 raw -> 111 with L19 Self Defense); HolyWaterCure.LandedOnPlayer removes the grants, deactivates active RSICap* abilities and reverts RSI on self and observers.",
+          "test": "Stock PR1177 verified at-rest combat-only refusal, '?holywater infect 2 rsicap' -> 111 dmg and '[HOLY-WATER-CURE] ... ability=547 removed=1235,1236,432 rsiCaps=1388 revertedRsi=true', then uninfected repeat -> 11 dmg. HolyWaterCureTests and GeminiLaneClosureTests.HolyWater547And1023ResolveExactUninfectedAndInfectedPlayerDamage. https://github.com/kylebrussell/mxo-hd/pull/1177#issuecomment-7162944950"
+        },
+        "behavior-tests": {
+          "source": "Shipped 547 lists HolyWaterAttack_DirectObject with 20 IS in close combat.",
+          "runtime": "Combat-only admission, 20 IS cost, 10x vs 1x infected damage, Zombie Virus grant removal, RSICap deactivation and RSI revert all execute as scripted.",
+          "test": "HolyWaterCureTests (17 tests), GeminiLaneClosureTests.HolyWater547And1023ResolveExactUninfectedAndInfectedPlayerDamage and stock PR1177. https://github.com/kylebrussell/mxo-hd/pull/1177#issuecomment-7162944950"
+        }
+      }
+    },
+    "1023": {
+      "checks": {
+        "script": {
+          "source": "ability/general.py HolyWaterPlusAttack_DirectObject deals 75x damage when target has NPCKilledOnlyByHolyWaterAbility (432), removes Zombie Virus grants (1235, 1238, 1236, 1237, 432) and calls revertToRSI() while preserving RSICap* abilities.",
+          "runtime": "CombatSpecials.PlayerDamage scales infected targets 75x (750 raw -> 832 with L19 Self Defense); HolyWaterCure.LandedOnPlayer removes grants and reverts RSI without touching RSICap*.",
+          "test": "Stock PR1177 verified '?holywater infect 3 rsicap' -> 832 dmg and '[HOLY-WATER-CURE] ... ability=1023 removed=1238,1237,432 rsiCaps=none revertedRsi=true', then uninfected repeat -> 11 dmg. HolyWaterCureTests and GeminiLaneClosureTests.HolyWater547And1023ResolveExactUninfectedAndInfectedPlayerDamage. https://github.com/kylebrussell/mxo-hd/pull/1177#issuecomment-7162944950"
+        },
+        "behavior-tests": {
+          "source": "Shipped 1023 lists HolyWaterPlusAttack_DirectObject with 20 IS in close combat.",
+          "runtime": "Combat-only admission, 20 IS cost, 75x vs 1x infected damage, Zombie Virus grant removal, RSICap preservation and RSI revert all execute as scripted.",
+          "test": "HolyWaterCureTests (17 tests), GeminiLaneClosureTests.HolyWater547And1023ResolveExactUninfectedAndInfectedPlayerDamage and stock PR1177. https://github.com/kylebrussell/mxo-hd/pull/1177#issuecomment-7162944950"
+        }
+      }
+    },
+    "1025": {
+      "family": "emp-blast-1025",
+      "checks": {
+        "area": {
+          "source": "GOB 1025 stores caster-centered RadiusOfEffect 10 m with hostile-only targeting.",
+          "runtime": "AbilityEmpBlast enumerates live hostile NPCs within 10 m of the caster, excluding farther targets and friendlies.",
+          "test": "Stock PR1178 hit Melee Dummy at 3 m (6000->1000, then 1000->0) while excluding Far Dummy at 12 m and QAFriend at 1.5 m; AbilityEmpBlastTests and EmpBlastParityMode. https://github.com/kylebrussell/mxo-hd/pull/1178#issuecomment-7166902958"
+        },
+        "targeting": {
+          "source": "GOB 1025 requires loaded EMCP Blast outside combat (CastWhenUsed=1) and hostile recipients within 10 m.",
+          "runtime": "AbilityHandler and AbilityEmpBlast refuse unloaded and in-combat casts (MustBeOutsideCombat 21) before cost, re-check at cast landing, and apply EMPBlast_DirectObject only to eligible hostiles.",
+          "test": "Stock PR1178 refused slot 1 in Close Combat ('EMCP Blast cannot be used during combat.') with 0 IS, then killed the weakened dummy after ?cd stop; AbilityEmpBlastTests verifies NotLoaded (10), MustBeOutsideCombat (21) and landing re-checks. https://github.com/kylebrussell/mxo-hd/pull/1178#issuecomment-7166902958"
+        },
+        "behavior-tests": {
+          "source": "Shipped 1025 lists 1 s cast, 30 s reuse, 10 m radius, outside-combat gate and EMPBlast_DirectObject (0 unweakened, 5000 weakened).",
+          "runtime": "Admission gates, 1 s cast, caster pulse FX 0x28000a43, 30 s reuse, radius filtering and 0/5000 EMP damage execute as implemented.",
+          "test": "AbilityEmpBlastTests and stock PR1178 (unweakened 0, weakened 5000, 30 s reuse notice, in-combat refusal with 0 IS, kill with XP and corpse). https://github.com/kylebrussell/mxo-hd/pull/1178#issuecomment-7166902958"
+        }
+      }
+    },
+    "1130": {
+      "checks": {
+        "source-parity": {
+          "source": "Shipped 1130 stores VF3 level-scaled thrown base 17..132 (131 at level 50), 40 IS, 45 s own / 15 s grp 691, 2 s cast, 4 m rear range and Enraged 93 for 4 s.",
+          "runtime": "SneakFreeThrowAdmission holds Sneak through the 2 s cast and breaks it on landing; AbilityHandler resolves the stored VF3 base through ordinary Thrown influence and typed Thrown resistance and applies Enraged 93 for 4 s.",
+          "test": "Stock PR1149 verified refusals (pre-Sneak local, friend/FRONT 24, BLOCK local, FAR 34), 40 IS, 2 s cast holding Sneak, 201 neutral Thrown damage and Enraged 93 for 4 s with removal; GeminiLaneClosureTests.SpyLaneCombatRowsReproduceStoredTermsAndStockMeasuredLevel50Hits reproduces 201 neutral and 165 under +75 Thrown. https://github.com/kylebrussell/mxo-hd/pull/1149#issuecomment-7152736957"
+        },
+        "behavior-tests": {
+          "source": "Shipped 1130 lists VF3 thrown hit 17..132, Enraged 4 s and SneakFreeInfuriatingAssault_Subject.",
+          "runtime": "Rear stealth admission, cast-held Sneak break, targeted throw, typed damage and 4 s Enraged execute as stored.",
+          "test": "GeminiLaneClosureTests.SpyLaneCombatRowsReproduceStoredTermsAndStockMeasuredLevel50Hits, SneakFreeLegInfuriatingStaggeringTests and stock PR1149. https://github.com/kylebrussell/mxo-hd/pull/1149#issuecomment-7152736957"
+        }
+      }
+    },
+    "1131": {
+      "checks": {
+        "source-parity": {
+          "source": "Shipped 1131 stores VF3 level-scaled thrown base 24..154 (154 at level 50), 25 IS, 45 s own / 15 s grp 691, 2 s cast, 6 m rear range and 50% Off-Balance 200 for 12 s.",
+          "runtime": "SneakFreeThrowAdmission holds Sneak through the 2 s cast and breaks it on landing; AbilityHandler resolves the stored VF3 base through ordinary Thrown influence and typed Thrown resistance and applies 50% Off-Balance for 12 s.",
+          "test": "Stock PR1149 verified refusals, 25 IS, 2 s cast, 237 neutral and Off-Balance 200 for 12 s with removal; stock PR1170 verified '[TYPED-RESISTANCE OURS] 1131 type7 total75 raw237 final195'. GeminiLaneClosureTests.SpyLaneCombatRowsReproduceStoredTermsAndStockMeasuredLevel50Hits reproduces both. https://github.com/kylebrussell/mxo-hd/pull/1149#issuecomment-7152736957 https://github.com/kylebrussell/mxo-hd/pull/1170#issuecomment-7162408226"
+        },
+        "behavior-tests": {
+          "source": "Shipped 1131 lists VF3 thrown hit 24..154, 50% Off-Balance 12 s and SneakFreeLegThrow_Subject.",
+          "runtime": "Rear stealth admission, cast-held Sneak break, targeted throw, typed damage and 50% Off-Balance execute as stored.",
+          "test": "GeminiLaneClosureTests.SpyLaneCombatRowsReproduceStoredTermsAndStockMeasuredLevel50Hits, SneakFreeLegInfuriatingStaggeringTests and stock PR1149/PR1170. https://github.com/kylebrussell/mxo-hd/pull/1149#issuecomment-7152736957 https://github.com/kylebrussell/mxo-hd/pull/1170#issuecomment-7162408226"
+        }
+      }
+    }
+  }
+}

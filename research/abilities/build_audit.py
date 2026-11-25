@@ -248,8 +248,10 @@ LANE_THROWN_DAMAGE = {
     288: 'stored fixed thrown base 37 plus the stealth-started +775 opener bonus before influence and typed resistance; stock 1128 neutral at level 50',
     289: 'stored VF3 thrown base (min 20, scale 3) plus the stealth-started +600 opener bonus before influence and typed resistance; stock 1070 neutral at level 50',
     385: 'stored fixed thrown base 164 plus the stealth-started +725 opener bonus before influence and typed resistance; stock 1146 neutral / 942 under +75 Thrown at level 50',
+    365: 'stored fixed thrown base 29 before influence and typed resistance; stock 37 neutral / 30 under +75 Thrown at level 50',
     387: 'stored fixed thrown base 75 plus the stealth-started +950 opener bonus before influence and typed resistance; stock 1578 neutral at level 50',
     388: 'stored fixed thrown base 56 plus the stealth-started +1200 opener bonus before influence and typed resistance; stock 1745 neutral at level 50',
+    1130: 'stored VF3 level-scaled thrown base (131 at level 50) before influence and typed resistance; stock rank-50 throw 201 neutral',
     1133: 'stored VF3 level-scaled thrown base (113 at level 50) before influence and typed resistance; stock 157 neutral / 129 under +75 Thrown',
     1134: 'stored VF3 level-scaled thrown base (141 at level 50) before influence and typed resistance; stock 195 neutral / 160 under +75 Thrown',
 }
@@ -343,7 +345,7 @@ def server(i):
     elif i == 134:
         parts.append('stored fixed thrown base 13 before typed influence and resistance; stock Spy interlock landed 14; wider damage and targeting unresolved')
     elif i == 152:
-        parts.append('stored fixed thrown base 28 when legacy endpoints are incomplete; stealth opener trigger still unresolved')
+        parts.append('stored fixed thrown base 28 plus the stealth-started +75 opener bonus before influence and typed resistance; stock rear opener 158 neutral / 130 under +75 Thrown at level 50')
     elif i == 145:
         parts.append('stored fixed physical base 7 before typed influence and resistance; current live interlock opponent only; retail scaling unresolved')
     elif i == 605:
