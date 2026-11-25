@@ -29,8 +29,8 @@ namespace hds
             bool poisonKnife = AbilityID == CombatSpecials.PoisonKnife;
             bool woundingThrow = AbilityID == CombatSpecials.WoundingThrow;
             bool guardedKnifeThrow = MasterKnifeThrowerBatch.UsesGuardedCast(AbilityID) ||
-                KnifeThrowerThrowsAdmission.Handles(AbilityID) || AbilityID == CombatSpecials.SeverArtery ||
-                SpyTimedThrows.Handles(AbilityID);
+                KnifeThrowerThrowsAdmission.Handles(AbilityID) || GhostStrikeAdmission.Handles(AbilityID) ||
+                AbilityID == CombatSpecials.SeverArtery || SpyTimedThrows.Handles(AbilityID);
             ushort? thrownTargetSpawn = null;
             bool dualSmgCone = CombatSpecials.IsDualSmgConeOpener(AbilityID);
             ushort? coneSpawn = null;
