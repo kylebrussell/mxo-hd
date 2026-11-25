@@ -9,16 +9,40 @@ namespace hds
         public const ushort Ability = 1025, Weakness = 1026;
         public static ushort Damage(Mob target) => target != null && target.HasAbility(Weakness) ? (ushort)5000 : (ushort)0;
 
+        public static bool TryRefuse(WorldClient caster, out uint reason)
+        {
+            reason = 0;
+            if (caster?.playerData == null || !AbilityPassives.IsLoaded(caster, Ability))
+            {
+                reason = AbilityRefusals.NotLoaded;
+                return true;
+            }
+            var combat = CombatManager.GetHandler(caster);
+            if (combat != null && (combat.isCombatRunning || combat.HasActiveInterlock))
+            {
+                reason = AbilityRefusals.MustBeOutsideCombat;
+                return true;
+            }
+            return false;
+        }
+
         // CastDirectObjects4 is the existing caster-centred hostile selector (also Reactive Code942).
         public static void Land(WorldClient caster)
         {
+            if (TryRefuse(caster, out _))
+            {
+                Output.WriteDebugLog("[EMP] 1025 fizzles: unloaded or in combat at landing");
+                return;
+            }
             double x=0,y=0,z=0;
             NumericalUtils.LtVector3dToDoubles(caster.playerInstance.Position.getValue(),ref x,ref y,ref z);
             var template=AbilityCatalog.Find(Ability);
+            uint fx = (uint)template.Number("Ability/ExecutionFX");
+            if (fx != 0) ServerPackets.SendPlayerAbilityEffect(caster, fx);
             foreach(var (mob,view) in AbilityHostile.MobsInArea(caster,x,y,z,template.Number("Ability/RadiusOfEffect")))
             {
                 ushort damage=Damage(mob); // Neutral fixed script damage: no generic roll/influence/typed resistance.
-                if(damage > 0) CombatManager.GetHandler(caster).ApplyAbilityToNpc(mob,view,damage,(uint)template.Number("Ability/ExecutionFX"));
+                if(damage > 0) CombatManager.GetHandler(caster).ApplyAbilityToNpc(mob,view,damage,fx);
                 Output.WriteDebugLog("[EMP] " + view + " damage=" + damage + " hp=" + mob.getHealthC());
             }
             // Player subjects cannot own this NPC-only marker: the script's ordinary branch is zero.
