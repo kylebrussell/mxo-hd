@@ -4,49 +4,65 @@ using MxoHd.PacketResearch;
 
 namespace NativeQa.Modes;
 
-public sealed class TransmitCodeMode : NativeQaMode
+public class TransmitCodeMode : NativeQaMode
 {
     private const int Level = 50, X = 17000, Y = 495, Z = 6400, EnemyZ = 6600;
-    private const ushort Transmit = 593, Incoming = 330;
-    private const int RawDamage = 640, ReducedDamage = 606;
-    private static readonly ushort[] DefenderAbilities = TransmitCodeFixture.DefenderAbilities;
+    private const ushort Incoming = 330;
+    private const int RawDamage = 640;
+    private readonly ushort passive;
+    private readonly (ushort Stat, int Value)[] bonuses;
+    private readonly ushort[] defenderAbilities;
+    private readonly int bonusPercent, resistancePoints, reducedDamage;
     private static readonly ushort[] AttackerAbilities = StockAbilityProfile.Profile(2, 17, CombatStyles.HackerStyle, Incoming)
         .Order().ToArray();
-    private static readonly int DefenderMemory = DefenderAbilities.Sum(AbilityMemory.Cost);
     private static readonly int AttackerMemory = AttackerAbilities.Sum(AbilityMemory.Cost);
-    private static readonly ushort[] BonusStats = { 1146, 1148 };
 
     public override string Name => "transmit-code-resistance";
+    public override NativeQaModePlan Plan { get; }
 
-    public override NativeQaModePlan Plan { get; } = new(DefenderAbilities, X, Z, Array.Empty<string>(),
-        new[] { $"UPDATE char_abilities SET is_loaded=0 WHERE char_id=110 AND ability_id={AbilityMessages.AbilityGameObject(Transmit)}" },
-        new[]
-        {
-            PvpOpponentsFixture.NativeSql,
-            $"UPDATE characters SET x={X},y={Y},z={Z},rotation={MobAggro.YawTowards(X,Z,X,EnemyZ)} WHERE charId=110",
-            $"UPDATE characters SET x={X},y={Y},z={EnemyZ},rotation={MobAggro.YawTowards(X,EnemyZ,X,Z)} WHERE charId=6114",
-            "DELETE FROM char_abilities WHERE char_id=6114",
-            "INSERT INTO char_abilities(char_id,slot,ability_id,level,is_loaded) VALUES " + string.Join(",",
-                AttackerAbilities.Select((id, slot) => $"(6114,{400 + slot},{AbilityMessages.AbilityGameObject(id)},{Level},1)"))
-        },
-        DevCommands: true, environmentOverrides: new()
-        {
-            ["MXO_AGGRO"] = "0", ["MXO_MOB_WANDER"] = "0", ["MXO_PVP_SERVER"] = "1", ["MXO_PVP_MAX_SAFE_LEVEL"] = "15",
-            ["MXO_FREECAST_VIRAL_QA"] = "1", ["MXO_FREECAST_VIRAL_QA_ATTACK15"] = "32766", ["MXO_FREECAST_VIRAL_QA_DEFENSE15"] = "0"
-        },
-        extraQaMetadata: new()
-        {
-            ["ScopedStockRows"] = "593", ["NativeCloseableRows"] = 0, ["Native593InitiallyLoaded"] = false,
-            ["DefenderMemoryLoaded"] = DefenderMemory - AbilityMemory.Cost(Transmit), ["DefenderMemoryWith593"] = DefenderMemory,
-            ["AttackerMemory"] = AttackerMemory, ["TransmitCodePolicy"] = "OURS level-normalized 1146/1148 bonus points"
-        },
-        readyMessages: new[]
-        {
-            $"Level {Level}. CSR has {DefenderMemory - AbilityMemory.Cost(Transmit)} memory loaded and {DefenderMemory}/100 with Transmit Code. QAEnemy uses a legal {AttackerMemory}/100 profile. Verified outdoor NAV CSR ({X},{Y},{Z}) faces QAEnemy ({X},{Y},{EnemyZ}) at 2 m. No ?tp or NPC selection is required. If an NPC appears behind CSR, strafe, turn the camera and single-click the name you intend to select.",
-            """Stay at spawn and keep tactics fixed. Request {"actor":"QAEnemy","action":"cast","ability":330,"target":"CSR_Tester"}. This sends the complete retained stock 330 with its live target handle. Expect 2 s cast, 13 IS on the helper, a 4 s reuse and 640 damage with zero resisted. Wait 6 s after each helper request before repeating.""",
-            "Type ?qaload 593. This disposable command submits the normal owned Archive load. Expect [MODIFIER] char=110 source=593 stat=1146 and 1148 add value=+10 duration=0s. Repeat the same helper cast. Expect [RESISTANCE-BONUS OURS] type2 level50 percent10 points22 base0 total22, then [TYPED-RESISTANCE OURS] 330 type2 total22 raw640 final606 and 34 resisted.",
-            "Type ?qaunload 593 and check both +10 removals. The third identical helper request returns to 640 damage, zero resisted. No parent loadout change, max [VITALS] change or [PVP] round. The fixture verifies the current consumer policy. Retail magnitude and a stock thrown/DOT comparison remain open."
-        });
+    public TransmitCodeMode() : this(593, new (ushort, int)[] { (1146, 10), (1148, 10) }, reducedDamage: 606) { }
+
+    protected TransmitCodeMode(ushort passive, (ushort Stat, int Value)[] bonuses, int reducedDamage)
+    {
+        this.passive = passive;
+        this.bonuses = bonuses;
+        defenderAbilities = DisablingShotMode.Closure(17, passive);
+        int defenderMemory = defenderAbilities.Sum(AbilityMemory.Cost);
+        bonusPercent = bonuses.Single(bonus => bonus.Stat == 1148).Value;
+        resistancePoints = (4 * Level + 20) * bonusPercent / 100;
+        this.reducedDamage = reducedDamage;
+        string records = string.Join(", ", bonuses.Select(bonus => $"stat={bonus.Stat} +{bonus.Value}"));
+        Plan = new(defenderAbilities, X, Z, Array.Empty<string>(),
+            new[] { $"UPDATE char_abilities SET is_loaded=0 WHERE char_id=110 AND ability_id={AbilityMessages.AbilityGameObject(passive)}" },
+            new[]
+            {
+                PvpOpponentsFixture.NativeSql,
+                $"UPDATE characters SET x={X},y={Y},z={Z},rotation={MobAggro.YawTowards(X,Z,X,EnemyZ)} WHERE charId=110",
+                $"UPDATE characters SET x={X},y={Y},z={EnemyZ},rotation={MobAggro.YawTowards(X,EnemyZ,X,Z)} WHERE charId=6114",
+                $"UPDATE char_abilities SET level={Level} WHERE char_id=110",
+                "DELETE FROM char_abilities WHERE char_id=6114",
+                "INSERT INTO char_abilities(char_id,slot,ability_id,level,is_loaded) VALUES " + string.Join(",",
+                    AttackerAbilities.Select((id, slot) => $"(6114,{400 + slot},{AbilityMessages.AbilityGameObject(id)},{Level},1)"))
+            },
+            DevCommands: true, hotbarAbilities: passive == 593 ? null : new ushort[] { 17 }, environmentOverrides: new()
+            {
+                ["MXO_AGGRO"] = "0", ["MXO_MOB_WANDER"] = "0", ["MXO_PVP_SERVER"] = "1", ["MXO_PVP_MAX_SAFE_LEVEL"] = "15",
+                ["MXO_FREECAST_VIRAL_QA"] = "1", ["MXO_FREECAST_VIRAL_QA_ATTACK15"] = "32766", ["MXO_FREECAST_VIRAL_QA_DEFENSE15"] = "0"
+            },
+            extraQaMetadata: new()
+            {
+                ["ScopedStockRows"] = passive.ToString(), ["NativeCloseableRows"] = 0, [$"Native{passive}InitiallyLoaded"] = false,
+                ["DefenderMemoryLoaded"] = defenderMemory - AbilityMemory.Cost(passive), [$"DefenderMemoryWith{passive}"] = defenderMemory,
+                ["AttackerMemory"] = AttackerMemory, ["TransmitCodePolicy"] = "OURS level-normalized typed resistance bonus points"
+            },
+            readyMessages: new[]
+            {
+                $"Level {Level}. CSR has {defenderMemory - AbilityMemory.Cost(passive)} memory loaded and {defenderMemory}/100 with passive {passive}. QAEnemy uses a legal {AttackerMemory}/100 profile. Verified outdoor NAV CSR ({X},{Y},{Z}) faces QAEnemy ({X},{Y},{EnemyZ}) at 2 m. No ?tp or NPC selection is required. If an NPC appears behind CSR, strafe, turn the camera and single-click the name you intend to select.",
+                """Stay at spawn and keep tactics fixed. Request {"actor":"QAEnemy","action":"cast","ability":330,"target":"CSR_Tester"}. This sends the complete retained stock 330 with its live target handle. Expect 2 s cast, 13 IS on the helper, a 4 s reuse and 640 damage with zero resisted. Wait 6 s after each helper request before repeating.""",
+                $"Type ?qaload {passive}. This disposable command submits the normal Archive load. Expect [MODIFIER] char=110 source={passive} add duration=0s for {records}. Repeat the helper cast. Expect [RESISTANCE-BONUS OURS] type2 level50 percent{bonusPercent} points{resistancePoints} base0 total{resistancePoints}, then [TYPED-RESISTANCE OURS] 330 type2 total{resistancePoints} raw640 final{reducedDamage}, {RawDamage - reducedDamage} resisted.",
+                $"Type ?qaunload {passive} and check the matching removals. The third identical request returns to 640 damage, zero resisted. No [PVP] round. This verifies the current resistance consumer. The historical retail coefficient remains open."
+            });
+    }
 
     public override async Task<byte[]> AfterStartAsync(NativeQaBootstrapContext context)
     {
@@ -66,36 +82,36 @@ public sealed class TransmitCodeMode : NativeQaMode
         enemy.SendRpc(StarterHackerViralSightMode.StockStyle);
         await enemy.WaitForViewUpdateAsync(2, "02 80 80 80 80 80 10 ee 03 00 00");
         if (context.StockProbe is not { } defender) return Array.Empty<byte>();
-        CheckArchive(defender, DefenderAbilities.Where(id => id != Transmit).ToArray(), DefenderAbilities);
+        CheckArchive(defender, defenderAbilities.Where(id => id != passive).ToArray(), defenderAbilities);
         await PvpOpponentsFixture.EnterAsync(defender);
         NativeQaReadiness.RequireNoAmbientAggro(server, defender);
 
         var archive = ReadArchive(defender, 7);
         var database = context.OwnedDatabase!;
-        uint descriptor = AbilityMessages.AbilityGameObject(Transmit);
+        uint descriptor = AbilityMessages.AbilityGameObject(passive);
         string parentQuery = $"SELECT slot,ability_id,level,is_loaded FROM char_abilities WHERE char_id={defender.CharId} " +
             $"AND ability_id<>{descriptor} ORDER BY slot,id";
         string parents = await database.ExecuteAsync(parentQuery);
-        Check.That(!defender.World.RpcSnapshot().Any(frame => BonusStats.Any(stat =>
-            StockAbilityProfile.Bonus(frame, Transmit, stat, 10, 0, false))), "Unloaded Transmit Code publishes no bonuses");
+        Check.That(!defender.World.RpcSnapshot().Any(frame => bonuses.Any(bonus =>
+            StockAbilityProfile.Bonus(frame, passive, bonus.Stat, bonus.Value, 0, false))), "Unloaded passive publishes no bonuses");
 
         await HitAsync(RawDamage, 0);
         await SetPassiveAsync(true);
-        await HitAsync(ReducedDamage, RawDamage - ReducedDamage);
+        await HitAsync(reducedDamage, RawDamage - reducedDamage);
         await SetPassiveAsync(false);
         await HitAsync(RawDamage, 0);
 
         Check.Equal(0, enemy.World.Problems.Count + defender.World.Problems.Count, "Both stock wire sessions decode cleanly");
-        Console.WriteLine("TRANSMIT CODE PASS: exact retained 330 hits 640/0, 606/34, 640/0, with both owned Archive bonus records and unchanged prerequisites.");
+        Console.WriteLine($"VIRAL RESISTANCE PASS {passive}: retained 330 hits 640/0, {reducedDamage}/{RawDamage - reducedDamage}, 640/0. Archive prerequisites are unchanged.");
         return Array.Empty<byte>();
 
         async Task SetPassiveAsync(bool load)
         {
-            int cursor = await StockAbilityProfile.ChangeLoadoutAsync(defender, archive, new[] { Transmit }, load);
-            foreach (ushort stat in BonusStats)
+            int cursor = await StockAbilityProfile.ChangeLoadoutAsync(defender, archive, new[] { passive }, load);
+            foreach (var (stat, value) in bonuses)
                 await StockAbilityProfile.ObserveAsync(defender, cursor,
-                    frame => StockAbilityProfile.Bonus(frame, Transmit, stat, 10, 0, !load),
-                    $"Archive publishes 593/{stat}, loaded={load}");
+                    frame => StockAbilityProfile.Bonus(frame, passive, stat, value, 0, !load),
+                    $"Archive publishes {passive}/{stat}, loaded={load}");
             Check.Equal(load ? 1L : 0L,
                 await database.LongAsync($"SELECT is_loaded FROM char_abilities WHERE char_id={defender.CharId} AND ability_id={descriptor}"),
                 "Only the owned passive changes Archive membership");
@@ -117,7 +133,7 @@ public sealed class TransmitCodeMode : NativeQaMode
             string log = server.DebugLog()[logAt..];
             Check.That(log.Contains("[ABILITY-COST] char=6114 ability=330 paid=13"), "The helper pays the ordinary 330 cost");
             if (resisted > 0)
-                Check.That(log.Contains("[TYPED-RESISTANCE OURS] 330 type2 total22 raw640 final606"), "One typed conversion feeds the same incoming hit");
+                Check.That(log.Contains($"[TYPED-RESISTANCE OURS] 330 type2 total{resistancePoints} raw640 final{reducedDamage}"), "One typed conversion feeds the same incoming hit");
         }
     }
 
