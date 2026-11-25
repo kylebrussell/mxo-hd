@@ -1,0 +1,111 @@
+{
+  "families": {
+    "enhanced-potency-viral-stock": {
+      "representative": 422,
+      "result": "pass",
+      "head": "7a6adced",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/1146#issuecomment-7151978377"
+    },
+    "code-branching-viral-stock": {
+      "representative": 328,
+      "result": "pass",
+      "head": "348780de",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/1147#issuecomment-7152042620"
+    }
+  },
+  "abilities": {
+    "141": {
+      "note": "PR1143 native QA verified empty/ally (24), wall sight (9), range (34) and local in-combat refusals without debit, 20 IS cost, zero direct hit, all nine 15 s records (115 -57, 519 -20, 522 -15, 524 -15, 877 -85, 878 -72, 1009 -13, 1010 -21, 1157 +366) with matched removals, 5 ticks of 61 (305 cumulative on Melee Dummy) and 5 ticks of 50 (250 cumulative) under +75 Thrown Resistance, with no late tick and zero QAFriend records. Runtime consumption of the eight debuffed stats remains open. https://github.com/kylebrussell/mxo-hd/pull/1143#issuecomment-7151125965",
+      "checks": {
+        "damage": {
+          "source": "Shipped 141 Neuro-Dart deals no direct hit and delivers periodic ThrownDOT damage (captured payload 264 / stored total 9) scaled by caster Thrown influence and mitigated by target Thrown resistance.",
+          "runtime": "AbilityHandler resolves zero direct damage and TempMods executes each ThrownDOT tick through the typed thrown damage and resistance path.",
+          "test": "PR1143 native QA observed zero direct hit, 5 ticks of 61 (305 cumulative on non-regenerating Melee Dummy) neutral and 5 ticks of 50 (250 cumulative; [TYPED-RESISTANCE OURS] 141 type7 total75 raw61 final50) at +75 Thrown Resistance. NeuroDartParityTests and NeuroDartParityMode verify the same totals. https://github.com/kylebrussell/mxo-hd/pull/1143#issuecomment-7151125965"
+        },
+        "periodic": {
+          "source": "Shipped 141 runs ThrownDOT for 15.0 s on a stored 2.5 s tick interval and stops cleanly on parent removal.",
+          "runtime": "TempMods schedules the periodic ThrownDOT ticks from the active parent modifier and halts further ticks when the parent expires or is removed.",
+          "test": "PR1143 native QA recorded 5 ticks of 61 on QAEnemy and Melee Dummy, 5 ticks of 50 on the resisted dummy, nine matched removals at 15 s and zero late ticks. NeuroDartParityTests covers tick count, interval and clean expiry. https://github.com/kylebrussell/mxo-hd/pull/1143#issuecomment-7151125965"
+        },
+        "targeting": {
+          "source": "Shipped 141 is an outside-combat Spy Style cast requiring a live hostile opponent within 16 m and clear line of sight.",
+          "runtime": "NeuroDartAdmission enforces outside-combat, live opponent selection, 16 m range and sight before debit and rechecks the original spawn at cast completion.",
+          "test": "PR1143 native QA refused empty and ally selections (24), blocked wall sight (9), out-of-range dummy (34) and in-combat local gate without debit, and landed on the selected enemy only with zero ally records. NeuroDartParityTests covers stale spawn and cast-completion recheck. https://github.com/kylebrussell/mxo-hd/pull/1143#issuecomment-7151125965"
+        },
+        "script": {
+          "source": "Shipped ThrownDOT callback in tempmods.py drives the periodic thrown damage ticks for 141.",
+          "runtime": "TempMods executes the stored ThrownDOT tick callback on each interval using the captured payload and typed thrown resistance until parent removal.",
+          "test": "PR1143 native QA verified 5 neutral ticks of 61 and 5 resisted ticks of 50 with nine matched removals and no late tick. NeuroDartParityTests and NeuroDartParityMode exercise the full callback lifecycle. https://github.com/kylebrussell/mxo-hd/pull/1143#issuecomment-7151125965"
+        }
+      }
+    },
+    "328": {
+      "family": "code-branching-viral-stock",
+      "note": "Native five-record Archive A/B/A cycle verified 1143 +5, 1027 +5, 1142 +10, 996 +10 and 1148 +10 with matching removals over the ancestor 95 baseline (1148 +15%). Retained stock Logic Barrage 330 read 590/556/590 (15%/25%/15%, 33/55/33 OURS points). The retail coefficient and the other stat consumers remain open. https://github.com/kylebrussell/mxo-hd/pull/1147#issuecomment-7152042620"
+    },
+    "422": {
+      "family": "enhanced-potency-viral-stock",
+      "note": "Native four-record Archive A/B/A cycle verified 1139 +10, 1146 +5, 1148 +5 and 1142 +10 with matching removals. Retained stock Logic Barrage 330 read 640/623/640 (OURS level-normalized +5% = 11 points, 17 resisted). The retail coefficient and the other stat consumers remain open. https://github.com/kylebrussell/mxo-hd/pull/1146#issuecomment-7151978377"
+    },
+    "1127": {
+      "note": "PR1145 native QA verified Sneak-off local gate, ally (24), front (24), wall sight local gate and range (34) refusals without debit, 2.03 s rear cast holding Sneak until landing, 25 IS, 95 thrown damage at level 23, Sneak break on landing (1111 off), 12 s Staggered/Off-Balance/Dazed with matched removals and zero QAFriend records. Targeted throw-motion bytes and 45 s own reuse were not decoded in the native log and are verified by the exact headless bootstrap. https://github.com/kylebrussell/mxo-hd/pull/1145#issuecomment-7151460710",
+      "checks": {
+        "controls": {
+          "source": "Shipped 1127 applies independent 30% procs for Dazed (199), Off-Balance (200) and Staggered (201) for 12.0 s each.",
+          "runtime": "TempMods rolls each control independently on landing and publishes timed state records with duration scaling, immunity and expiry cleanup.",
+          "test": "PR1145 native QA verified source=1127 Staggered 201, Off-Balance 200 and Dazed 199 each lasting 12 s with matched removals and client state display. HarryingAttackTests and SneakFreeHarryingDazzlingTests verify independent probabilities and expiry. https://github.com/kylebrussell/mxo-hd/pull/1145#issuecomment-7151460710"
+        },
+        "targeting": {
+          "source": "Shipped 1127 requires active Stealth, Spy Style outside combat, and a selected hostile within range, clear sight and outside the target's 50-degree front facing cone.",
+          "runtime": "SneakFreeThrowAdmission enforces Stealth, style, outside-combat, live hostile selection, rear arc, range and sight before debit and rechecks the original spawn, sight and facing at cast completion.",
+          "test": "PR1145 native QA refused unstealthed (local), ally (24), front (24), wall sight (local) and far (34) without debit, then landed from behind with zero QAFriend records. SneakFreeHarryingDazzlingTests and SneakFreeHarryingDazzlingMode cover stale spawn and cast-completion recheck. https://github.com/kylebrussell/mxo-hd/pull/1145#issuecomment-7151460710"
+        },
+        "script": {
+          "source": "Shipped SneakFreeHarryingAttack_Subject executes the rear-stealthed throw, keeps Stealth until landing, breaks Stealth on impact and applies thrown damage and control procs.",
+          "runtime": "SneakFreeThrowAdmission and HarryingAttackDamage preserve Sneak through the 2 s cast, break Sneak on landing, emit targeted throw motion and resolve VF4 thrown damage plus the three 30% controls.",
+          "test": "PR1145 native QA verified 2.03 s cast holding Sneak, 95 thrown hit, 1111 off (landed ability 1127) and all three 12 s states. SneakFreeHarryingDazzlingMode verifies targeted throw motion and 45 s own / 15 s family 691 timers. https://github.com/kylebrussell/mxo-hd/pull/1145#issuecomment-7151460710"
+        },
+        "source-parity": {
+          "source": "Shipped 1127 stores VF4 level-scaled thrown damage (raw 16..76), 25 IS, 2 s cast, 45 s own / 15 s group 691 reuse and rear-stealthed admission.",
+          "runtime": "HarryingAttackDamage computes the shipped VF4 level-scaled thrown damage through ordinary influence and typed resistance, paired with SneakFreeThrowAdmission and stored timers.",
+          "test": "PR560 native QA verified 117 neutral vs 96 at +75 thrown resistance, and PR1145 native QA verified 25 IS, 2.03 s cast, 95 at level 23, rear gates and 12 s controls. https://github.com/kylebrussell/mxo-hd/pull/560 https://github.com/kylebrussell/mxo-hd/pull/1145#issuecomment-7151460710"
+        },
+        "behavior-tests": {
+          "source": "Shipped cast, cost, own/family reuse, rear stealth gates, Sneak break on landing, targeted throw motion, VF4 thrown damage and three 30% 12 s controls.",
+          "runtime": "A valid cast retains Sneak to landing, then breaks it, deals VF4 thrown damage with typed resistance, emits targeted throw motion and rolls the three 12 s states.",
+          "test": "HarryingAttackTests, SneakFreeHarryingDazzlingTests and exact headless SneakFreeHarryingDazzlingMode cover scaling, refusals, timers, motion and procs; PR560 and PR1145 native runs confirm resistance, gates, damage, Sneak break and all three 12 s states. https://github.com/kylebrussell/mxo-hd/pull/560 https://github.com/kylebrussell/mxo-hd/pull/1145#issuecomment-7151460710"
+        }
+      }
+    },
+    "1132": {
+      "note": "PR1145 native QA verified 2.05 s rear cast holding Sneak until landing, 35 IS, 53 thrown damage at level 23, Sneak break on landing (1111 off), 12 s Dazed (199) with matched removal and zero QAFriend records alongside the shared SneakFree rear-admission gates. Targeted throw-motion bytes and 45 s own reuse were not decoded in the native log and are verified by the exact headless bootstrap. https://github.com/kylebrussell/mxo-hd/pull/1145#issuecomment-7151460710",
+      "checks": {
+        "controls": {
+          "source": "Shipped 1132 applies a 50% proc for Dazed (199) for 12.0 s.",
+          "runtime": "TempMods rolls the 50% Dazed proc on landing and publishes the timed state record with duration scaling, immunity and expiry cleanup.",
+          "test": "PR1145 native QA verified source=1132 stat=199 Dazed lasting 12 s with matched removal. DazzlingThrowTests and SneakFreeHarryingDazzlingTests verify proc chance and expiry. https://github.com/kylebrussell/mxo-hd/pull/1145#issuecomment-7151460710"
+        },
+        "targeting": {
+          "source": "Shipped 1132 requires active Stealth, Spy Style outside combat, and a selected hostile within range, clear sight and outside the target's 50-degree front facing cone.",
+          "runtime": "SneakFreeThrowAdmission enforces Stealth, style, outside-combat, live hostile selection, rear arc, range and sight before debit and rechecks the original spawn, sight and facing at cast completion.",
+          "test": "PR1145 native QA verified the shared SneakFree gates without debit and landed 1132 from behind with zero QAFriend records. SneakFreeHarryingDazzlingTests and SneakFreeHarryingDazzlingMode cover all 1132 refusals including stale spawn and cast-completion recheck. https://github.com/kylebrussell/mxo-hd/pull/1145#issuecomment-7151460710"
+        },
+        "script": {
+          "source": "Shipped SneakFreeDazzlingThrow_Subject executes the rear-stealthed throw, keeps Stealth until landing, breaks Stealth on impact and applies fixed thrown damage plus 50% Dazed.",
+          "runtime": "SneakFreeThrowAdmission and DazzlingThrowDamage preserve Sneak through the 2 s cast, break Sneak on landing, emit targeted throw motion and resolve fixed base 43 thrown damage plus 50% Dazed.",
+          "test": "PR1145 native QA verified 2.05 s cast holding Sneak, 53 thrown hit, 1111 off (landed ability 1132) and 12 s Dazed. SneakFreeHarryingDazzlingMode verifies targeted throw motion and 45 s own / 15 s family 691 timers. https://github.com/kylebrussell/mxo-hd/pull/1145#issuecomment-7151460710"
+        },
+        "source-parity": {
+          "source": "Shipped 1132 stores fixed thrown base 43, 35 IS, 2 s cast, 45 s own / 15 s group 691 reuse and rear-stealthed admission.",
+          "runtime": "DazzlingThrowDamage resolves fixed base 43 through ordinary influence and typed resistance, paired with SneakFreeThrowAdmission and stored timers.",
+          "test": "PR560 native QA verified 66 neutral vs 54 at +75 thrown resistance, and PR1145 native QA verified 35 IS, 2.05 s cast, 53 at level 23, rear gates and 12 s Dazed. https://github.com/kylebrussell/mxo-hd/pull/560 https://github.com/kylebrussell/mxo-hd/pull/1145#issuecomment-7151460710"
+        },
+        "behavior-tests": {
+          "source": "Shipped cast, cost, own/family reuse, rear stealth gates, Sneak break on landing, targeted throw motion, fixed thrown base 43 and 50% 12 s Dazed.",
+          "runtime": "A valid cast retains Sneak to landing, then breaks it, deals fixed base 43 thrown damage with typed resistance, emits targeted throw motion and rolls 50% 12 s Dazed.",
+          "test": "DazzlingThrowTests, SneakFreeHarryingDazzlingTests and exact headless SneakFreeHarryingDazzlingMode cover base damage, refusals, timers, motion and proc; PR560 and PR1145 native runs confirm resistance, gates, damage, Sneak break and 12 s Dazed. https://github.com/kylebrussell/mxo-hd/pull/560 https://github.com/kylebrussell/mxo-hd/pull/1145#issuecomment-7151460710"
+        }
+      }
+    }
+  }
+}
