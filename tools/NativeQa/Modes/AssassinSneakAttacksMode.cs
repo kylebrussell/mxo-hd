@@ -131,9 +131,13 @@ public sealed class AssassinSneakAttacksMode : NativeQaMode
         bool first = true;
         foreach (var row in Rows)
         {
-            if (!first) await Task.Delay(TimeSpan.FromSeconds(15.25));
+            // Sneak from the refusal phase is still active for the first opener; each landing then consumes it.
+            if (!first)
+            {
+                await Task.Delay(TimeSpan.FromSeconds(15.25));
+                await SneakAsync();
+            }
             first = false;
-            await SneakAsync();
             int casterRpc = caster.World.RpcSnapshot().Count, enemyRpc = enemy.World.RpcSnapshot().Count, logFrom = server.DebugLog().Length;
             caster.SendRpc($"81 51 {WireFormat.ToHex(BitConverter.GetBytes(target))}");
             caster.SendRpc(Request(row.Id, target));
