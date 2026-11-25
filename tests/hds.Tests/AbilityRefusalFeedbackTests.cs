@@ -13,6 +13,8 @@ public class AbilityRefusalFeedbackTests:IDisposable
     readonly string[] keys={"MXO_ABILITY_REFUSAL_QA","MXO_DEV_COMMANDS","MXO_DB_NAME"};readonly string?[] oldEnv;
     public AbilityRefusalFeedbackTests()
     {
+        // These admission tests assert landed hits; the at-rest 130/454 ranged contest is fixed to a hit here.
+        PoisonKnifeContest.TestOutcome=true;
         oldLoader=loaderField.GetValue(null);oldEnv=keys.Select(Environment.GetEnvironmentVariable).ToArray();
         foreach(string key in keys)Environment.SetEnvironmentVariable(key,key=="MXO_DB_NAME"?"mxotest_misleading":"1");
         Store.config=new ServerConfig("unused");typeof(ServerConfig).GetField("_dbParams",BindingFlags.Instance|BindingFlags.NonPublic)!.SetValue(Store.config,new DbParams{DatabaseName="mxotest_refusal"});
@@ -257,7 +259,7 @@ public class AbilityRefusalFeedbackTests:IDisposable
 
         void PlaceEnemy(int x) => enemy.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(x, 1095, 16150));
     }
-    public void Dispose(){Store.currentClient=oldClient;Store.config=oldConfig;WorldServer.Clients=oldClients!;loaderField.SetValue(null,oldLoader);for(int i=0;i<keys.Length;i++)Environment.SetEnvironmentVariable(keys[i],oldEnv[i]);}
+    public void Dispose(){PoisonKnifeContest.TestOutcome=null;Store.currentClient=oldClient;Store.config=oldConfig;WorldServer.Clients=oldClients!;loaderField.SetValue(null,oldLoader);for(int i=0;i<keys.Length;i++)Environment.SetEnvironmentVariable(keys[i],oldEnv[i]);}
 
     [Fact]
     public void ArchivedDoctorGrantIsRefusedBeforeCostAndCannotBeUsedThroughAStaleShortcut()

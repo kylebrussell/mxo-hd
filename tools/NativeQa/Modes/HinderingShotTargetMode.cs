@@ -32,14 +32,16 @@ public sealed class HinderingShotTargetMode : NativeQaMode
         }, DevCommands: true, hotbarAbilities: new[] { Handguns, HinderingShot }, environmentOverrides: new()
         {
             ["MXO_AGGRO"] = "0", ["MXO_MOB_WANDER"] = "0", ["MXO_PVP_SERVER"] = "1", ["MXO_PVP_MAX_SAFE_LEVEL"] = SafeLevel.ToString(),
-            ["MXO_SIMULACRUM_QA_HOLD_IS"] = "1", [CombatFixtureWeapons.WeaponMode] = "1"
+            ["MXO_SIMULACRUM_QA_HOLD_IS"] = "1", [CombatFixtureWeapons.WeaponMode] = "1",
+            ["MXO_RANGED_CONTEST_QA"] = "1"
         },
         readyMessages: new[]
         {
             $"Level {Level}, rank {Rank}, {Loadout.Sum(AbilityMemory.Cost)}/{AbilityMemory.ForLevel(Level)} memory. Outdoor NAV CSR ({X},{Y},{Z}) faces QAEnemy ({X},{Y},{EnemyZ}). Page 2 slots 1 Handguns and 2 Hindering Shot. The single handgun 2565 starts equipped.",
             "Stay at rest and /target QAEnemy. Try slot 2 before selecting Handguns. If the client sends the cast, expect reason 13 with no debit or reuse. Select Handguns, use ?cd w rifle and try slot 2 again. Expect local refusal or reason 15 if sent, with no debit or reuse.",
             "Use ?cd w handgun, reselect Handguns and clear the target. With no selection expect local refusal or the visible live-target notice. Select /target QAEnemy, cast slot 2 and record the pistol motion and whether either actor enters interlock. Expect a two-second cast, 20 IS (200 to 180), 9 ballistic damage, 8 s own reuse and 5 s family 690.",
-            "QAEnemy receives [MODIFIER] source130 stats115/877/878 each -50 and stat519 -10; all four last eight seconds and remove together. An ordinary accepted cast in this mode has no queued special exchange."
+            "QAEnemy receives [MODIFIER] source130 stats115/877/878 each -50 and stat519 -10; all four last eight seconds and remove together. An ordinary accepted cast in this mode has no queued special exchange.",
+            "Ranged contest (generic_free_attacks.AbilityRangeFreeAttack, TestFunction 1): an unforced at-rest 130 rolls 524 vs 1010 and can deflect. Type ?rangedcontest hit before the positive cast above for its exact numbers. Then type ?rangedcontest deflect, wait out 130's 8 s reuse and cast again: the pistol motion still plays, QAEnemy takes no damage or modifiers, CSR sees 'QAEnemy deflected Hindering Shot.' and QAEnemy's combat log shows the deflection line. Type ?rangedcontest off."
         },
         extraQaMetadata: new() { ["ScopedStockRows"] = "130", ["NativeCloseableRows"] = 0,
             ["LoadedMemory"] = Loadout.Sum(AbilityMemory.Cost), ["MemoryCapacity"] = AbilityMemory.ForLevel(Level) });
@@ -84,6 +86,8 @@ public sealed class HinderingShotTargetMode : NativeQaMode
         ushort otherSpawn = unchecked((ushort)(target.SpawnId + 1));
         await Refused(caster, WithTarget(DuelPackets.Handle(target.ViewId, otherSpawn)), "stale spawn");
 
+        caster.SendChat("?rangedcontest hit");
+        await caster.WaitForTextAsync("Ranged contest hit.");
         int targetCursor = enemy.World.RpcSnapshot().Count, castCursor = caster.World.RpcSnapshot().Count;
         await StarterFixedDamageMode.Land(caster, enemy, target, HinderingShot, 9, 2, 8, CapturedShot);
         await EvidenceRetestWire.TimerAsync(caster, castCursor, 690, AbilityCooldowns.GroupTimer, 5);
@@ -92,6 +96,21 @@ public sealed class HinderingShotTargetMode : NativeQaMode
             ManageBonusRecord.TryDecode(rpc.Bytes, out var bonus) && bonus!.SourceId == HinderingShot &&
             bonus.TargetId == expected.Stat && bonus.SignedValue == expected.Value && bonus.Duration == 8 &&
             bonus.AddRemoveType == 0)), "All four selected-target Hindering Shot modifiers", HeadlessPlayer.DefaultTimeout);
+        // The ranged contest's deflection: the shot is fired (motion) but deals no damage or effects.
+        await Task.Delay(TimeSpan.FromSeconds(8.5));
+        caster.SendChat("?rangedcontest deflect");
+        await caster.WaitForTextAsync("Ranged contest deflect.");
+        int deflectLog = context.ActualServer!.DebugLog().Length, deflectCursor = enemy.World.RpcSnapshot().Count;
+        caster.SendRpc(WithTarget(handle));
+        await caster.WaitForTextAsync("QAEnemy deflected Hindering Shot.");
+        await caster.WaitUntilAsync(() => context.ActualServer!.DebugLog()[deflectLog..].Contains("[AT-REST-MOTION] 130 action 0x5d", StringComparison.Ordinal),
+            "Deflected 130 still plays the pistol motion", HeadlessPlayer.DefaultTimeout);
+        await Task.Delay(TimeSpan.FromSeconds(1));
+        Check.That(!enemy.World.RpcSnapshot().Skip(deflectCursor).Any(rpc => ManageBonusRecord.TryDecode(rpc.Bytes, out var bonus) &&
+            bonus!.SourceId == HinderingShot && bonus.AddRemoveType == 0), "A deflected 130 applies no modifiers");
+        caster.SendChat("?rangedcontest off");
+        await caster.WaitForTextAsync("Ranged contest off.");
+        Console.WriteLine("READY BOOTSTRAP 130 deflection: motion played, no damage or modifiers");
         Check.Equal(0, caster.World.Problems.Count + enemy.World.Problems.Count, "Stock request and response framing");
         Console.WriteLine("HINDERING SHOT PASS: wrong style and rifle refused before debit; fresh pistol/Handguns cast landed for 9 with four modifiers.");
         return Array.Empty<byte>();
