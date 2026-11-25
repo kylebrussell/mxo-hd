@@ -1,0 +1,123 @@
+{
+  "families": {
+    "disarm-traps-stock": {
+      "representative": 119,
+      "result": "pass",
+      "head": "33107796",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/1154#issuecomment-7153160448"
+    }
+  },
+  "abilities": {
+    "119": {
+      "family": "disarm-traps-stock",
+      "note": "PR1154 native QA at 33107796 (level 10 rank 10 Infiltrator, Wall Safe 1416): 10 IS, hidden roll 99 -> Critical ('Trap went off while being disarmed!'), detected roll 10 -> Critical, detected roll 30 -> Failed ('Trap was not disarmed successfully!'), detected roll 50 -> Disarmed (safe moved 0x839->0x83a, 'Trap was successfully disarmed!'), and in-combat slot 1 refused locally without debit. Open follow-ups: steps 1-4 used the ?trapobj disarm QA aid rather than stock selected-object hotbar activation, and repeating on the disarmed safe (NotTrapped) still debited 10 IS without a message; stealth-detection and behavior-tests remain open. https://github.com/kylebrussell/mxo-hd/pull/1154#issuecomment-7153160448",
+      "checks": {
+        "script": {
+          "source": "Shipped DisarmTraps_DirectObject and DisarmTraps_Test in ability/spy/misc.py check armed/detected trap state, run the disarm contest, update trap state and send the Disarmed, Failed or Critical Failure string to the caster.",
+          "runtime": "UtilityAbilities.DisarmTrap and ExecuteDisarmTraps enforce tool/loaded admission, trigger undetected traps, resolve the contest roll, advance the safe from TrappedState (0x839) to DisarmedState (0x83a) and emit the shipped caster lines.",
+          "test": "DisarmTrapsParityTests and DisarmTrapsParityMode cover hidden critical, detected critical, failed, disarmed and NotTrapped outcomes. PR1154 native QA observed all four active outcomes, the 0x839->0x83a state transition, all three client lines and local in-combat refusal (with ?trapobj disarm; NotTrapped 10 IS debit noted as open). https://github.com/kylebrussell/mxo-hd/pull/1154#issuecomment-7153160448"
+        }
+      }
+    },
+    "279": {
+      "note": "PR1150 native QA at 8bdb284a (level 25 Spy Style): 2.0 s cast, 18 IS, 40 Thrown, six records (877 -85, 519 -15, 878 -72, 115 -57 for 15 s; Dazed 199 and Staggered 201 for 8 s) with paired removals, early removal of 280 Rooted 99 and 519 -40 on landing, ?deadlyproc daze/stagger/none branches, Off Balance conditional hit ([CONDITIONAL-THROW] 279 value33 raw42 final42, none on Daze), and no-target/QAFriend (24), WALL (9) and FAR 17 m (34) refusals without debit. Stat consumers, interlock named move and historical scaling remain open. https://github.com/kylebrussell/mxo-hd/pull/1150#issuecomment-7152545237",
+      "checks": {
+        "controls": {
+          "source": "Shipped 279 rolls independent 8 s Dazed (199) and Staggered (201) procs on landing, adds conditional thrown damage against Off-Balance recipients, and its landing damage breaks active Rooted states.",
+          "runtime": "DeadlyThrowProcsQa and TempMods roll Dazed 199 and Staggered 201 independently for 8 s with matched removals, add DealDamageIfOffBalance only on Off-Balance targets, and break active Rooted+linked records on landing damage.",
+          "test": "DeadlyCripplingThrowParityTests and DeadlyCripplingThrowParityMode cover both procs, Off-Balance vs Daze and root break. PR1150 native QA verified both 8 s states with matched removals across both/daze/stagger/none presets, early removal of 280's root+519 pair, and Off-Balance +42 conditional hit vs none on Daze. https://github.com/kylebrussell/mxo-hd/pull/1150#issuecomment-7152545237"
+        },
+        "targeting": {
+          "source": "Shipped 279 is a Spy Style 2 s cast against a selected hostile within its stored range and line of sight.",
+          "runtime": "KnifeThrowerThrowsAdmission enforces live hostile selection, range and sight before cost and rechecks target validity at cast completion.",
+          "test": "DeadlyCripplingThrowParityTests and DeadlyCripplingThrowParityMode cover empty, ally, wall, far and stale-spawn refusals. PR1150 native QA refused no target (24), QAFriend (24), WALL+QAOther (9) and FAR 17 m (34) without IS, cast or timer. https://github.com/kylebrussell/mxo-hd/pull/1150#issuecomment-7152545237"
+        }
+      }
+    },
+    "280": {
+      "note": "PR1150 native QA at 8bdb284a (level 25 Spy Style): 2.0 s cast, 20 IS, 1 Thrown (does not break own root), Rooted 99 for 15.75 s and stat519 -40 for 15 s removed in pairs at natural expiry and together ~13 s early when 279 landed, zero QAFriend records, and no-target/QAFriend (24), WALL (9), FAR 17 m (34) and in-combat (local) refusals without debit. Stat consumers, choreography and historical scaling remain open. https://github.com/kylebrussell/mxo-hd/pull/1150#issuecomment-7152545237",
+      "checks": {
+        "controls": {
+          "source": "Shipped 280 applies Rooted (99) and its linked stat 519 (-40) for 15 s, survives its own 1-damage landing hit, and breaks both records together on subsequent landing damage.",
+          "runtime": "TempMods publishes paired Rooted 99 and stat 519 -40 records with player duration policy, preserves them through 280's own hit, and removes both together at natural expiry or on subsequent damage.",
+          "test": "DeadlyCripplingThrowParityTests and DeadlyCripplingThrowParityMode cover root retention, natural expiry and early break. PR1150 native QA observed Rooted 99 (15.75 s) and stat519 -40 (15 s) survive the 1-damage hit, expire in pairs naturally, and remove together when 279 landed. https://github.com/kylebrussell/mxo-hd/pull/1150#issuecomment-7152545237"
+        },
+        "targeting": {
+          "source": "Shipped 280 is an outside-combat Spy Style 2 s cast against a selected hostile within its stored range and line of sight.",
+          "runtime": "KnifeThrowerThrowsAdmission enforces outside-combat, live hostile selection, range and sight before cost and rechecks target validity at cast completion.",
+          "test": "DeadlyCripplingThrowParityTests and DeadlyCripplingThrowParityMode cover empty, ally, wall, far, in-combat and stale-spawn refusals. PR1150 native QA refused no target (24), QAFriend (24), WALL+QAOther (9), FAR 17 m (34) and Close Combat (local) without IS, cast or timer. https://github.com/kylebrussell/mxo-hd/pull/1150#issuecomment-7152545237"
+        }
+      }
+    },
+    "348": {
+      "note": "PR1149 native QA at 8e4b5590 (level 50 Spy Style): 2.0 s cast holding Sneak, 45 IS, 292 Thrown, State 201 Staggered 12 s removed at 12 s, Sneak break on landing (1111 off, 'You stop sneaking.'), throwing motion visible, zero QAFriend records, and no-Sneak (local), QAFriend (24), FRONT (24), BLOCK (local sight gate) and FAR (34) refusals without debit. Typed +75 Thrown Resistance was not tested in PR1149, so damage and source-parity remain open. https://github.com/kylebrussell/mxo-hd/pull/1149#issuecomment-7152736957",
+      "checks": {
+        "controls": {
+          "source": "Shipped 348 applies Staggered (201) for 12.0 s on landing.",
+          "runtime": "TempMods publishes the 12 s Staggered 201 state record on landing and removes it cleanly at expiry.",
+          "test": "SneakFreeLegInfuriatingStaggeringTests and SneakFreeLegInfuriatingStaggeringMode verify the Staggered record and removal. PR1149 native QA observed State 201 Staggered for 12 s removed at 12 s on QAEnemy. https://github.com/kylebrussell/mxo-hd/pull/1149#issuecomment-7152736957"
+        },
+        "targeting": {
+          "source": "Shipped 348 stores CastWhenUsed 1, Spy Style, Stealthed caster (0x02000000), CastOutsideTargetFOVAngle 50, stored selection range and a 2 s cast.",
+          "runtime": "SneakFreeThrowAdmission enforces outside-combat, Spy Style, Stealthed, live hostile selection, range, sight and the rear 50-degree cone before debit and rechecks them at cast completion.",
+          "test": "SneakFreeLegInfuriatingStaggeringTests and SneakFreeLegInfuriatingStaggeringMode cover every refusal. PR1149 native QA refused no Sneak (local), QAFriend (24), FRONT (24), BLOCK (local sight gate) and FAR (34) without debit, then landed from behind with zero QAFriend records. https://github.com/kylebrussell/mxo-hd/pull/1149#issuecomment-7152736957"
+        },
+        "script": {
+          "source": "Shipped StaggeringThrow_Subject plays the targeted knife throw on the selected opponent while retaining Sneak through the cast and breaking Sneak on landing.",
+          "runtime": "SneakFreeThrowAdmission preserves Sneak through the 2 s cast, SpyMasterSneakOpenersHandler plays the targeted throw motion via StealthShieldAbilities.PlayThrow, and landing ends Sneak (1111 off).",
+          "test": "SneakFreeLegInfuriatingStaggeringMode verifies targeted throw motion for caster and observer. PR1149 native QA observed Sneak retained across the 2.0 s cast, '[STEALTH] CSR_Tester 1111 off (landed ability 348)', 'You stop sneaking.' and a visible throwing motion. https://github.com/kylebrussell/mxo-hd/pull/1149#issuecomment-7152736957"
+        }
+      }
+    },
+    "502": {
+      "note": "PR1144 native QA at eda511b1 (level 46 dual handguns, Handguns 129, at rest on QAEnemy): 35 IS, 53 Ballistic, verified all four ?pistolproc branches (both: stat522 -27 8 s + stat1010 -31 8 s; 1010 only; 522 only; none) with matched removals, matching stock tooltip (40% Melee Accuracy -27 8 s, 40% Ballistic Defense -31 8 s, 35 IS, 10 s reuse). Runtime consumption of stats 522 and 1010 remains open. https://github.com/kylebrussell/mxo-hd/pull/1144#issuecomment-7152231540",
+      "checks": {
+        "proc": {
+          "source": "Shipped 502 stores two independent 40% debuff procs on hit: Melee Accuracy (522) -27 for 8 s and Ballistic Defense (1010) -31 for 8 s.",
+          "runtime": "TempMods evaluates each 40% proc independently on hit and publishes timed source-502 stat records with matched removals at 8 s.",
+          "test": "DualPistolExecutionProcTests and DualPistolExecutionProcsMode cover all four probability outcomes. PR1144 native QA verified ?pistolproc both (522 -27 + 1010 -31), 1010 only, 522 only and none with exact 8 s removals. https://github.com/kylebrussell/mxo-hd/pull/1144#issuecomment-7152231540"
+        }
+      }
+    },
+    "1130": {
+      "note": "PR1149 native QA at 8e4b5590 (level 50 Spy Style): 2.0 s cast holding Sneak, 40 IS, 201 Thrown, State 93 Enraged 4 s removed at expiry, Sneak break on landing (1111 off, 'You stop sneaking.'), throwing motion visible, zero QAFriend records, and no-Sneak (local), QAFriend (24), FRONT (24), BLOCK (local sight gate) and FAR (34) refusals without debit. Typed +75 Thrown Resistance was not tested in PR1149, so damage and source-parity remain open. https://github.com/kylebrussell/mxo-hd/pull/1149#issuecomment-7152736957",
+      "checks": {
+        "controls": {
+          "source": "Shipped 1130 applies Enraged (93) for 4.0 s on landing.",
+          "runtime": "TempMods publishes the 4 s Enraged 93 state record on landing and removes it cleanly at expiry.",
+          "test": "SneakFreeLegInfuriatingStaggeringTests and SneakFreeLegInfuriatingStaggeringMode verify the Enraged record and removal. PR1149 native QA observed State 93 Enraged for 4 s removed at expiry on QAEnemy. https://github.com/kylebrussell/mxo-hd/pull/1149#issuecomment-7152736957"
+        },
+        "targeting": {
+          "source": "Shipped 1130 stores CastWhenUsed 1, Spy Style, Stealthed caster (0x02000000), CastOutsideTargetFOVAngle 50, stored selection range and a 2 s cast.",
+          "runtime": "SneakFreeThrowAdmission enforces outside-combat, Spy Style, Stealthed, live hostile selection, range, sight and the rear 50-degree cone before debit and rechecks them at cast completion.",
+          "test": "SneakFreeLegInfuriatingStaggeringTests and SneakFreeLegInfuriatingStaggeringMode cover every refusal. PR1149 native QA refused no Sneak (local), QAFriend (24), FRONT (24), BLOCK (local sight gate) and FAR (34) without debit, then landed from behind with zero QAFriend records. https://github.com/kylebrussell/mxo-hd/pull/1149#issuecomment-7152736957"
+        },
+        "script": {
+          "source": "Shipped SneakFreeInfuriatingAssault_Subject plays the targeted knife throw on the selected opponent while retaining Sneak through the cast and breaking Sneak on landing.",
+          "runtime": "SneakFreeThrowAdmission preserves Sneak through the 2 s cast, SpyMasterSneakOpenersHandler plays the targeted throw motion via StealthShieldAbilities.PlayThrow, and landing ends Sneak (1111 off).",
+          "test": "SneakFreeLegInfuriatingStaggeringMode verifies targeted throw motion for caster and observer. PR1149 native QA observed Sneak retained across the 2.0 s cast, '[STEALTH] CSR_Tester 1111 off (landed ability 1130)', 'You stop sneaking.' and a visible throwing motion. https://github.com/kylebrussell/mxo-hd/pull/1149#issuecomment-7152736957"
+        }
+      }
+    },
+    "1131": {
+      "note": "PR1149 native QA at 8e4b5590 (level 50 Spy Style): 2.0 s cast holding Sneak, 25 IS, 237 Thrown, State 200 Off-Balance 12 s removed at 12 s, Sneak break on landing (1111 off, 'You stop sneaking.'), throwing motion visible, zero QAFriend records, and no-Sneak (local), QAFriend (24), FRONT (24), BLOCK (local sight gate) and FAR (34) refusals without debit. Typed +75 Thrown Resistance was not tested in PR1149, so damage and source-parity remain open. https://github.com/kylebrussell/mxo-hd/pull/1149#issuecomment-7152736957",
+      "checks": {
+        "controls": {
+          "source": "Shipped 1131 applies Off-Balance (200) for 12.0 s on landing.",
+          "runtime": "TempMods publishes the 12 s Off-Balance 200 state record on landing and removes it cleanly at expiry.",
+          "test": "SneakFreeLegInfuriatingStaggeringTests and SneakFreeLegInfuriatingStaggeringMode verify the Off-Balance record and removal. PR1149 native QA observed State 200 Off-Balance for 12 s removed at 12 s on QAEnemy. https://github.com/kylebrussell/mxo-hd/pull/1149#issuecomment-7152736957"
+        },
+        "targeting": {
+          "source": "Shipped 1131 stores CastWhenUsed 1, Spy Style, Stealthed caster (0x02000000), CastOutsideTargetFOVAngle 50, stored selection range and a 2 s cast.",
+          "runtime": "SneakFreeThrowAdmission enforces outside-combat, Spy Style, Stealthed, live hostile selection, range, sight and the rear 50-degree cone before debit and rechecks them at cast completion.",
+          "test": "SneakFreeLegInfuriatingStaggeringTests and SneakFreeLegInfuriatingStaggeringMode cover every refusal. PR1149 native QA refused no Sneak (local), QAFriend (24), FRONT (24), BLOCK (local sight gate) and FAR (34) without debit, then landed from behind with zero QAFriend records. https://github.com/kylebrussell/mxo-hd/pull/1149#issuecomment-7152736957"
+        },
+        "script": {
+          "source": "Shipped SneakFreeLegThrow_Subject plays the targeted knife throw on the selected opponent while retaining Sneak through the cast and breaking Sneak on landing.",
+          "runtime": "SneakFreeThrowAdmission preserves Sneak through the 2 s cast, SpySneakOpenersHandler plays the targeted throw motion via StealthShieldAbilities.PlayThrow, and landing ends Sneak (1111 off).",
+          "test": "SneakFreeLegInfuriatingStaggeringMode verifies targeted throw motion for caster and observer. PR1149 native QA observed Sneak retained across the 2.0 s cast, '[STEALTH] CSR_Tester 1111 off (landed ability 1131)', 'You stop sneaking.' and a visible throwing motion. https://github.com/kylebrussell/mxo-hd/pull/1149#issuecomment-7152736957"
+        }
+      }
+    }
+  }
+}
