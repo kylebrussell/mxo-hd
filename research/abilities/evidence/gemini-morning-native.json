@@ -1,0 +1,135 @@
+{
+  "families": {
+    "spy-bull-dog-1110": {
+      "representative": 1110,
+      "result": "pass",
+      "head": "de32596d",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/1160#issuecomment-7162239542",
+      "scope": "A rear cast on QAEnemy with Sneak on cost 10 IS, matching the tooltip. It broke Sneak ('You stop sneaking'), made no direct hit, published 710 +10 for 0.5 s, ticked once for 10 (5000->4990) and removed the record, with nothing on QAFriend. Without Sneak, against a friend, from the front, blocked and far, each cast was refused with no IS spent."
+    },
+    "sneak-movement-speed": {
+      "representative": 151,
+      "result": "pass",
+      "head": "55dfaab0",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/1175#issuecomment-7162711798",
+      "scope": "151's four records (998 +10, 1027 +5, 1143 +5, 1047 +5) were on CSR and QAFriend at login. The stock run speed was 1.093x with 151 loaded, 1.000x after ?qaunload and 1.090x after ?qaload. With Hyper-Speed it was 1.543x, then 1.444x after unloading 151 and 1.093x after dismissing Hyper-Speed. The Sneak-gait isolation was not checked natively."
+    }
+  },
+  "abilities": {
+    "281": {
+      "checks": {
+        "choreography": {
+          "source": "Wounding Throw 281 is a Spy Style special move with a stored ThrownDOT; the ILDB maps it to Knife Throw SR 290.",
+          "runtime": "CombatSpecials queues 281 under Spy Style as the next interlock move. A won exchange plays animation 290 and lands the ThrownDOT for 0 direct damage.",
+          "test": "Stock PR1159: 'WoundingThrowAbility is the next move', '[MARTIAL STARTER QA] one exchange win 281', then '[COMBAT-VIEW] Round 3: animation 290 (Knife Throw SR)' with Dot 1157 78 for 50 s on the dummy. WoundingThrowInterlockTests.WoundingThrowMapsToKnifeThrowSrAndQueuesUnderSpyStyle. ?cd ma is a disclosed aid. https://github.com/kylebrussell/mxo-hd/pull/1159#issuecomment-7161890867"
+        },
+        "behavior-tests": {
+          "source": "GOB 281 stores 20 IS, a live hostile selection and ThrownDOT raw total 61 over 50 s.",
+          "runtime": "The free cast and the interlock win both apply the stored DOT; typed Thrown resistance scales each tick.",
+          "test": "Stock PR1159: free cast 20 IS with stat 1157 +78 ticking 8 for 50 s; refusals 24/24/9/34 with no IS; the resisted tick raw 8 -> final 6 under +75 Thrown. WoundingThrowInterlockTests and SpyTimedThrowsTests. https://github.com/kylebrussell/mxo-hd/pull/1159#issuecomment-7161890867"
+        }
+      }
+    },
+    "1110": {
+      "family": "spy-bull-dog-1110",
+      "checks": {
+        "stats": {
+          "source": "GOB 1110 stores ISDrain Target 710 raw 10 for 0.5 s through NeutralDOT.",
+          "runtime": "The 710 record is published for 0.5 s and consumed as the terminal neutral health tick, then removed.",
+          "test": "Stock PR1160: 'source=1110 stat=710 +10' for 0.5 s, then '1110 ticks on QAEnemy for 10: 5000 -> 4990' and the record removed. SpyBullDog1110ParityTests. https://github.com/kylebrussell/mxo-hd/pull/1160#issuecomment-7162239542"
+        },
+        "script": {
+          "source": "SneakFreePrototype_Subject requires Stealth, a rear approach, 4 m range and sight; NeutralDOT applies the 710 payload.",
+          "runtime": "SneakFreeThrowAdmission refuses before cost on each gate, the cast breaks Sneak, and the terminal tick applies once.",
+          "test": "Stock PR1160: no Sneak was refused locally; QAFriend and FRONT returned 24, BLOCK was refused locally and FAR returned 34, all with no IS; the accepted rear cast broke Sneak and ticked 10 once. SpyBullDog1110ParityTests.SpyBullDog1110EnforcesRearStealth4mSightAndCombatAdmission. https://github.com/kylebrussell/mxo-hd/pull/1160#issuecomment-7162239542"
+        },
+        "behavior-tests": {
+          "source": "GOB 1110 stores 10 IS, 10 s reuse (group 691), Stealthed, range 4 and the 0.5 s NeutralDOT.",
+          "runtime": "Admission, cost, Sneak break and the single terminal tick execute as stored.",
+          "test": "SpyBullDog1110ParityTests.SpyBullDog1110EnforcesRearStealth4mSightAndCombatAdmission and the stock PR1160 pass (10 IS debit matching the tooltip). https://github.com/kylebrussell/mxo-hd/pull/1160#issuecomment-7162239542"
+        }
+      }
+    },
+    "153": {
+      "checks": {
+        "damage": {
+          "source": "GOB 153 stores a fixed thrown base 52; the shipped stealth-started opener adds the scripted +150.",
+          "runtime": "SpySneakOpeners resolves the stored base and the stealth bonus before typed influence and Thrown resistance.",
+          "test": "Stock PR1170 on the +75 Thrown dummy, with Sneak before each throw: 153 Drop Kick landed 311 on QAEnemy, and on the dummy 'raw311 final255'. These match the bootstrap values exactly. The resisted reset, ?cd stop and Spy Style reselection are disclosed QA aids. https://github.com/kylebrussell/mxo-hd/pull/1170#issuecomment-7162408226. DropKickParityTests."
+        }
+      }
+    },
+    "1131": {
+      "checks": {
+        "damage": {
+          "source": "GOB 1131 stores a function-3 thrown base 24..154.",
+          "runtime": "SpySneakOpeners resolves the stored learned-level base before typed influence and Thrown resistance.",
+          "test": "Stock PR1170 on the +75 Thrown dummy, with Sneak before each throw: '[TYPED-RESISTANCE OURS] 1131 type7 total75 raw237 final195'. These match the bootstrap values exactly. The resisted reset, ?cd stop and Spy Style reselection are disclosed QA aids. https://github.com/kylebrussell/mxo-hd/pull/1170#issuecomment-7162408226"
+        }
+      }
+    },
+    "348": {
+      "checks": {
+        "damage": {
+          "source": "GOB 348 stores a function-3 thrown base 35..191.",
+          "runtime": "SpyMasterSneakOpeners resolves the stored learned-level base before typed influence and Thrown resistance.",
+          "test": "Stock PR1170 on the +75 Thrown dummy, with Sneak before each throw: 'raw292 final240' for 348 Staggering Throw. These match the bootstrap values exactly. The resisted reset, ?cd stop and Spy Style reselection are disclosed QA aids. https://github.com/kylebrussell/mxo-hd/pull/1170#issuecomment-7162408226"
+        }
+      }
+    },
+    "149": {
+      "checks": {
+        "area": {
+          "source": "GOB 149 stores RadiusOfEffect 8 around the caster.",
+          "runtime": "The scan admits candidates inside the stored radius; QAFar at 16 m is outside it.",
+          "test": "Stock PR1172: the detect roll counted the 2 nearby hostiles and not QAFar at 16 m. SixthSenseParityTests.SixthSenseRank10SeparatesResistFromDetectAndFitsLevel16Memory. https://github.com/kylebrussell/mxo-hd/pull/1172#issuecomment-7162487672"
+        },
+        "stealth-detection": {
+          "source": "SixthSense_Test compares the caster's detection against each candidate's resistance.",
+          "runtime": "One roll per cast against detection 40 at rank 10 decides resisted or detected for every candidate.",
+          "test": "Stock PR1172: roll 5 gave detected=0 resisted=2; roll 20 gave detected=2 resisted=0. The client printed the stock count line both times. SixthSenseParityTests; ?sixthroll is a disclosed aid. https://github.com/kylebrussell/mxo-hd/pull/1172#issuecomment-7162487672"
+        },
+        "script": {
+          "source": "SixthSense_Subject is a self cast outside combat costing 10 IS; SixthSense_Test produces the detected count and FX.",
+          "runtime": "The cast sends castFx 0x7a000003 and, for each detection, targetFx 0x7a000004 with the count notice.",
+          "test": "Stock PR1172: 10 IS each cast; castFx 0x7a000003, plus targetFx 0x7a000004 on the detect roll; the stock client refused the cast in Close Combat ('cannot be used during combat') with no request and no IS. SixthSenseParityTests. Radar pings were not visually confirmed. https://github.com/kylebrussell/mxo-hd/pull/1172#issuecomment-7162487672"
+        }
+      }
+    },
+    "119": {
+      "checks": {
+        "behavior-tests": {
+          "source": "DisarmTraps_DirectObject and DisarmTraps_Test: a loaded Disarm Traps, outside combat, on a trapped object, with the stored contest.",
+          "runtime": "UtilityAbilities refuses non-trapped targets, missing loadout and combat before cost, then runs the contest and the Disarmed/Triggered/Failed outcomes on the selected object.",
+          "test": "Stock PR1173: the stock selected-object path disarmed the Wall Safe for 10 IS ('Trap was successfully disarmed!'); a second press on the disarmed safe was refused with no ABILITY-COST; Close Combat refused locally. The Critical/Failed outcomes passed natively on PR1154. DisarmTrapsParityTests. ?trapobj and ?traproll are disclosed aids. https://github.com/kylebrussell/mxo-hd/pull/1173#issuecomment-7162583010"
+        }
+      }
+    },
+    "151": {
+      "family": "sneak-movement-speed"
+    },
+    "141": {
+      "checks": {
+        "stats": {
+          "source": "GOB 141 stores Movement Speed, Sneak Movement and Invisibility Movement -50, accuracy -15, defence -13 and Force Combat -20 for 15 s.",
+          "runtime": "AbilityBuffs projects one signed movement channel for the target's current stance (115/877/878) to the owner and observers, and restores it on expiry. The ordinary accuracy, defence and Force Combat consumers read their own records.",
+          "test": "Stock PR1176: records 115 -57, 877 -85, 878 -72, 519 -20, 522/524 -15, 1009 -13 and 1010 -21, all removed at 15 s; the stock run pace was 258 against 600 (0.43x). KnifeMovementDebuffsTests covers the Sneak and Invisibility channels and NeuroDartPublishesCombatAccuracyDefenseAndForceCombatStatsIntoPlayerTotals. https://github.com/kylebrussell/mxo-hd/pull/1176#issuecomment-7162841579"
+        },
+        "behavior-tests": {
+          "source": "GOB 141 stores the 15 s slows, the accuracy, defence and Force Combat debuffs and a ThrownDOT.",
+          "runtime": "The debuff records, the movement projection and the DOT apply and expire together.",
+          "test": "Stock PR1176 recorded every debuff and the 1157 +406 DOT, all removed at 15 s, and the 0.43x pace. KnifeMovementDebuffsTests.KnifeSlowThrowsProjectPerStanceMovementChannelsComposeWithSpeedAndRestore and NeuroDartPublishesCombatAccuracyDefenseAndForceCombatStatsIntoPlayerTotals. https://github.com/kylebrussell/mxo-hd/pull/1176#issuecomment-7162841579"
+        }
+      }
+    },
+    "279": {
+      "checks": {
+        "stats": {
+          "source": "GOB 279 stores Movement Speed, Sneak Movement and Invisibility Movement -50 and Force Combat -15 for 15 s.",
+          "runtime": "AbilityBuffs projects the current stance's movement channel and restores it on expiry; Force Combat feeds the ordinary entry contest.",
+          "test": "Stock PR1176: records 115 -57, 877 -85, 878 -72 and 519 -15 for 15 s; the stock run pace was 257 against 600 (0.43x). KnifeMovementDebuffsTests.KnifeSlowThrowsProjectPerStanceMovementChannelsComposeWithSpeedAndRestore. https://github.com/kylebrussell/mxo-hd/pull/1176#issuecomment-7162841579"
+        }
+      }
+    }
+  }
+}

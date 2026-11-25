@@ -348,6 +348,12 @@ def server(i):
         parts.append('current player path uses the stored fixed ballistic damage; NPC capture path is separate')
     elif i == 505:
         parts.append('stored fixed ballistic base 47 (legacy CSV endpoints 4..0) before influence and typed resistance; stock 52 neutral / 47 under +20 Ballistic, rank-50 57/57/54; archived 1660 with 182 absorbed lacks a caster/target profile, so historical magnitude unresolved')
+    elif i == 153:
+        parts.append('stored fixed thrown base 52 (plus the stealth-started bonus) before typed influence and resistance; stock rear opener 311 neutral, 255 under +75 Thrown; wider damage scaling unresolved')
+    elif i == 1131:
+        parts.append('stored function-3 thrown base 24..154 before typed influence and resistance; stock rank-50 throw 237 before and 195 after +75 Thrown; wider damage scaling unresolved')
+    elif i == 348:
+        parts.append('stored function-3 thrown base 35..191 before typed influence and resistance; stock rank-50 throw 292 before and 240 after +75 Thrown; wider damage scaling unresolved')
     elif i == 453:
         parts.append('fixed ballistic base 6 on a won rifle withdrawal; stock 7 neutral and 6 armored; original +11 tactical input unresolved')
     elif r['direct_damage'] and not r.get('health_callback') and i not in PETS:
