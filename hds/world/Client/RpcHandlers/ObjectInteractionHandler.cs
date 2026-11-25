@@ -283,8 +283,7 @@ namespace hds
                     break;
 
                 case (int) objectTypesStatic.HUMAN_NPC:
-                    pak.sendSystemChatMessage(Store.currentClient,
-                        "Open Vendor Dialog for Object ID" + StringUtils.bytesToString_NS(objectID), "MODAL");
+                    Output.WriteDebugLog("[VENDOR] Use of static NPC " + StringUtils.bytesToString_NS(objectID));
                     this.processVendorOpen(ref objectID);
                     break;
 
