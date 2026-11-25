@@ -96,7 +96,7 @@ public sealed class DisarmTrapsParityMode : NativeQaMode
         Check.That(!server.DebugLog()[combatLog..].Contains("[ABILITY-COST] char=110 ability=119", StringComparison.Ordinal),
             "In-combat disarm refusal spends 0 IS");
         actor.SendChat("?cd stop");
-        await actor.WaitForTextAsync("Combat disengaged");
+        await actor.WaitForTextAsync("Fixture combat ended.");
 
         await ChatAsync("?traproll off", "Disarm Traps QA roll override cleared.");
         Check.Equal(0, actor.World.Problems.Count, "Clean stock framing for 119 Disarm Traps");
