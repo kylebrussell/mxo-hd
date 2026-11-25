@@ -84,12 +84,17 @@ public sealed class DisarmTrapsParityMode : NativeQaMode
         Check.That(!server.DebugLog()[logNotTrapped..].Contains("[ABILITY-COST] char=110 ability=119", StringComparison.Ordinal),
             "Untrapped/empty disarm refusals spend 0 IS");
 
-        // 5. Disengage aid works after entering Close Combat.
+        // 5. In-combat refusal + disengage aid works after entering Close Combat.
         var dummy = actor.World.CreationSnapshot().Last(v => v.Name == CombatFixtureLoadout.DummyName);
         uint dummyHandle = DuelPackets.Handle(dummy.ViewId, dummy.SpawnId);
+        int combatRpc = actor.World.RpcSnapshot().Count;
         actor.SendRpc($"81 51 {WireFormat.ToHex(BitConverter.GetBytes(dummyHandle))}");
-        actor.SendRpc($"80 b6 {WireFormat.ToHex(BitConverter.GetBytes(dummy.ViewId))} 00 00");
-        await actor.WaitUntilAsync(() => server.DebugLog().Contains("Melee Dummy", StringComparison.Ordinal), "Dummy fight starts", TimeSpan.FromSeconds(5));
+        actor.SendRpc($"40 {WireFormat.ToHex(BitConverter.GetBytes(dummyHandle))} 00 00 00 00 00 00 00");
+        await StockAbilityProfile.ObserveAsync(actor, combatRpc, p => p.Bytes is [0x46, ..], "Dummy close combat opens");
+        int combatLog = server.DebugLog().Length;
+        await StarterHackerControlTargetMode.RefusedAsync(actor, DisarmTraps, Request(safeHandle), AbilityRefusals.MustBeOutsideCombat);
+        Check.That(!server.DebugLog()[combatLog..].Contains("[ABILITY-COST] char=110 ability=119", StringComparison.Ordinal),
+            "In-combat disarm refusal spends 0 IS");
         actor.SendChat("?cd stop");
         await actor.WaitForTextAsync("Combat disengaged");
 
