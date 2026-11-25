@@ -1,0 +1,93 @@
+{
+  "families": {
+    "organization-e-health-effects": {
+      "representative": 1180,
+      "result": "pass",
+      "head": "92ebf6be",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/1153#issuecomment-7152808137",
+      "scope": "The stock client toggled System Control 1169, Retribution 1173 and Champion of Zion 1177 from the hotbar (25 IS each, 25 IS per 5 s drain). With fixed callback rolls, ?health damage reapplied 1180 (State 102 Stun 5 s on QAEnemy and the Melee Dummy, the stock stun and 10 s immunity lines, later triggers refused by immunity), 1182 (150 to QAEnemy and the dummy, 30000->29850, the stock 'Your Retribution does 150 damage' line) and 1181 (CSR 4060->4310 and IS +25; QAFriend IS +25 with its heal capped at full health; nothing on QAFar or QAEnemy). Toggle-off removed each record, the stock client refused reactivation on the 240 s reuse, and later damage produced no callback."
+    }
+  },
+  "abilities": {
+    "1180": {
+      "family": "organization-e-health-effects",
+      "checks": {
+        "controls": {
+          "source": "GOB 1180 applies Stun for 5 s with AddControlImmunityTimerVal 10 s; System Control's ApplyMachineEffectHealthChance reapplies it.",
+          "runtime": "AbilityHealthCallbacks reapplies 1180 on the 5% roll; TimedEffects applies State 102 for 5 s and the 10 s control-immunity window refuses a second stun.",
+          "test": "Stock PR1153: Stun 5 s on QAEnemy and the Melee Dummy removed at 5 s, the stock stun and immunity lines, and '[EFFECTS] 1180: control immunity, state refused' inside the window. OrganizationEffectTests.SystemControlStunsHostilesForFiveSecondsWithOneTenSecondImmunityWindow. https://github.com/kylebrussell/mxo-hd/pull/1153#issuecomment-7152808137"
+        },
+        "area": {
+          "source": "GOB 1180/1181/1182 store RadiusOfEffect 5 with the native default angle; tempmods.py 2621-2658 reapply them from the parent's health-change callback.",
+          "runtime": "The effect admits legal hostile players and NPCs within 5 m and in sight of the owner.",
+          "test": "Stock PR1153 stunned QAEnemy at 3 m and the dummy, excluding QAOther at 5.01 m by radius and QAFriend as not an opponent. OrganizationEffectTests.OrganizationEffectsDoNotAffectNpcsOutsideTheRadius. https://github.com/kylebrussell/mxo-hd/pull/1153#issuecomment-7152808137"
+        },
+        "script": {
+          "source": "tempmods.py AddControlImmunityTimerVal gives the stunned target 10 s of stun and pacify immunity.",
+          "runtime": "The immunity window is recorded per target on application and consulted by the next 1180 application.",
+          "test": "Stock PR1153 showed 'will be immune to stun and pacify for 10 seconds' and refused later stuns inside the window. OrganizationEffectTests.SystemControlStunsHostilesForFiveSecondsWithOneTenSecondImmunityWindow. https://github.com/kylebrussell/mxo-hd/pull/1153#issuecomment-7152808137"
+        },
+        "behavior-tests": {
+          "source": "System Control 1169 is a 25 IS toggle with a 25 IS/5 s drain and 240 s own and family-1178 reuse; a 5% roll on damage that leaves the owner below maximum health reapplies 1180.",
+          "runtime": "AbilityHealthCallbacks, the AbilityBuffs drain and AbilityCooldowns implement the parent; direct casts of 1180 are refused.",
+          "test": "OrganizationEffectTests.OrganizationParentsAreSourcedTogglesWithFivePercentHealthCallbacks, OrganizationCallbacksRollOnlyForDamageThatLeavesTheOwnerBelowMaximum and the stock PR1153 toggle, drain, effect, toggle-off and reuse pass. https://github.com/kylebrussell/mxo-hd/pull/1153#issuecomment-7152808137"
+        }
+      }
+    },
+    "1182": {
+      "family": "organization-e-health-effects",
+      "checks": {
+        "damage": {
+          "source": "GOB 1182 stores fixed neutral damage 150 with no caster scaling; Retribution's ApplyMervEffectHealthChance reapplies it.",
+          "runtime": "The effect deals neutral type 5 for a fixed 150 through ordinary NPC/PvP health handling, without a damage roll or influence.",
+          "test": "Stock PR1153: '1182 hits QAEnemy for 150' and the dummy 30000->29850, with the stock 'Your Retribution does 150 damage to QAEnemy.' line. OrganizationEffectTests.RetributionDealsFixedNeutralDamageOnlyToHostilesInsideFiveMetres. https://github.com/kylebrussell/mxo-hd/pull/1153#issuecomment-7152808137"
+        },
+        "area": {
+          "source": "GOB 1180/1181/1182 store RadiusOfEffect 5 with the native default angle; tempmods.py 2621-2658 reapply them from the parent's health-change callback.",
+          "runtime": "Legal hostile players and NPCs within 5 m and in sight are hit.",
+          "test": "Stock PR1153 hit QAEnemy and the dummy only. OrganizationEffectTests.RetributionDealsFixedNeutralDamageOnlyToHostilesInsideFiveMetres and OrganizationEffectsDoNotAffectNpcsOutsideTheRadius. https://github.com/kylebrussell/mxo-hd/pull/1153#issuecomment-7152808137"
+        },
+        "targeting": {
+          "source": "1182 is an internal effect centred on the owner, not a cast with a selected target.",
+          "runtime": "Direct casts of 1182 are refused; the callback admits targets by hostility, radius and line of sight.",
+          "test": "Stock PR1153 hit both hostiles in sight and nothing friendly. OrganizationEffectTests.RetributionDealsFixedNeutralDamageOnlyToHostilesInsideFiveMetres. https://github.com/kylebrussell/mxo-hd/pull/1153#issuecomment-7152808137"
+        },
+        "behavior-tests": {
+          "source": "Retribution 1173 is a 25 IS toggle with a 25 IS/5 s drain and 240 s own and family-1178 reuse; a 5% roll on damage that leaves the owner below maximum health reapplies 1182.",
+          "runtime": "The same parent machinery as System Control 1169.",
+          "test": "OrganizationEffectTests.OrganizationParentsAreSourcedTogglesWithFivePercentHealthCallbacks and the stock PR1153 run. https://github.com/kylebrussell/mxo-hd/pull/1153#issuecomment-7152808137"
+        }
+      }
+    },
+    "1181": {
+      "family": "organization-e-health-effects",
+      "checks": {
+        "damage": {
+          "source": "GOB 1181 stores NeutralHeal 250 with no healing influence and ZionRestoreIS +25.",
+          "runtime": "The effect heals a fixed 250, capped at maximum health, and restores 25 IS, capped at maximum IS.",
+          "test": "Stock PR1153: CSR 4060->4310 and IS 1895->1920; QAFriend IS 932->957 with its heal capped at full health. OrganizationEffectTests.ChampionOfZionHealsAndRestoresInnerStrengthForOwnerAndFriendsInsideFiveMetres. https://github.com/kylebrussell/mxo-hd/pull/1153#issuecomment-7152808137"
+        },
+        "area": {
+          "source": "GOB 1180/1181/1182 store RadiusOfEffect 5 with the native default angle; tempmods.py 2621-2658 reapply them from the parent's health-change callback.",
+          "runtime": "The owner and friendly players within 5 m and in sight are restored; friendly NPCs are not.",
+          "test": "Stock PR1153 restored CSR and QAFriend at 1.5 m and nothing on QAFar at 6 m or QAEnemy. OrganizationEffectTests.ChampionOfZionHealsAndRestoresInnerStrengthForOwnerAndFriendsInsideFiveMetres. https://github.com/kylebrussell/mxo-hd/pull/1153#issuecomment-7152808137"
+        },
+        "targeting": {
+          "source": "1181 is an internal effect with the CastDirectObjects 7 friendly-player policy.",
+          "runtime": "Direct casts of 1181 are refused; recipients are admitted by friendship, radius and line of sight.",
+          "test": "Stock PR1153 excluded the hostile and the out-of-range friend. OrganizationEffectTests.ChampionOfZionHealsAndRestoresInnerStrengthForOwnerAndFriendsInsideFiveMetres. https://github.com/kylebrussell/mxo-hd/pull/1153#issuecomment-7152808137"
+        },
+        "script": {
+          "source": "tempmods.py ZionRestoreIS restores 25 IS to each recipient.",
+          "runtime": "The restore is capped at maximum IS and applied once per effect.",
+          "test": "Stock PR1153 recorded +25 IS on CSR and on QAFriend. OrganizationEffectTests.ChampionOfZionHealsAndRestoresInnerStrengthForOwnerAndFriendsInsideFiveMetres. https://github.com/kylebrussell/mxo-hd/pull/1153#issuecomment-7152808137"
+        },
+        "behavior-tests": {
+          "source": "Champion of Zion 1177 is a 25 IS toggle with a 25 IS/5 s drain and 240 s own and family-1178 reuse; a 5% roll on damage that leaves the owner below maximum health reapplies 1181.",
+          "runtime": "Its own heal does not re-enter the health callback.",
+          "test": "OrganizationEffectTests.ZionToggleHealsTheOwnerThroughItsOwnDamageCallbackWithoutRecursion, OrganizationParentsAreSourcedTogglesWithFivePercentHealthCallbacks and the stock PR1153 run. https://github.com/kylebrussell/mxo-hd/pull/1153#issuecomment-7152808137"
+        }
+      }
+    }
+  }
+}
