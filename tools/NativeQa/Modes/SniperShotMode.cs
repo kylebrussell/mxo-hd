@@ -114,6 +114,7 @@ public class SniperShotMode : NativeQaMode
             actor.SendRpc("42 01 00 00 00 00 00"); // Stock Actions > Awakened Power.
             int powerAt = await CastAsync(Shot, SniperFrame, 57);
             await WaitOwnAsync(Shot, powerAt);
+            await StunClearedAsync();
             await PistolSlideMode.ApplyArmorAsync(enemy);
             await CastAsync(Shot, SniperFrame, 54, resisted: 3);
         }
@@ -122,6 +123,7 @@ public class SniperShotMode : NativeQaMode
             int baselineAt = await CastAsync(Baseline, ShotFrame, 24);
             await Task.Delay(TimeSpan.FromSeconds(15));
             int sniperAt = await CastAsync(Shot, SniperFrame, 52);
+            await StunClearedAsync();
             await PistolSlideMode.ApplyArmorAsync(enemy);
             await WaitOwnAsync(Baseline, baselineAt);
             await CastAsync(Baseline, ShotFrame, 21, resisted: 3);
@@ -151,6 +153,14 @@ public class SniperShotMode : NativeQaMode
             await EvidenceRetestWire.TimerAsync(actor, from, id, AbilityCooldowns.OwnTimer, 45);
             return from;
         }
+
+        // Concealed Shot (30%) and Sniper Shot (50%) can naturally Stun QAEnemy, which refuses its Soldier Upgrade.
+        async Task StunClearedAsync() =>
+            await enemy.WaitUntilAsync(() => !enemy.World.RpcSnapshot()
+                .Select(rpc => ManageBonusRecord.TryDecode(rpc.Bytes, out var record) ? record : null)
+                .Where(record => record is { TargetId: TempMods.StunAbility } && (record.SourceId == Baseline || record.SourceId == Shot))
+                .Select(record => record!.AddRemoveType == 0).LastOrDefault(),
+                "QAEnemy's natural concealed-shot Stun has expired", TimeSpan.FromSeconds(8));
 
         async Task WaitOwnAsync(ushort id, int from)
         {
