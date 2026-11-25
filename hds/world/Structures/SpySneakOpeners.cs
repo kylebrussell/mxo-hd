@@ -36,6 +36,8 @@ namespace hds
             // SneakFree throws: Spy Style, Stealthed, rear 50-degree approach, range and sight.
             if (id == LegThrow || id == WeakeningBlow)
                 return SneakFreeThrowAdmission.TryRefuse(client, id, targetViewId, targetSpawnId, out refusalReason);
+            if (SneakFreeThrowAdmission.GatesInstantOpener(id))
+                return SneakFreeThrowAdmission.TryRefuseInstantOpener(client, id, targetViewId, targetSpawnId, out refusalReason);
             if (CombatManager.GetHandler(client).isCombatRunning)
             {
                 refusalReason = AbilityRefusals.MustBeOutsideCombat;

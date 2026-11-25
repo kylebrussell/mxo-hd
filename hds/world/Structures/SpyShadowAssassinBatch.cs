@@ -25,6 +25,8 @@ namespace hds
             refusalReason = 0;
             ushort id = AbilityCatalog.Canonical(abilityId);
             if (!Handles(id)) return false;
+            if (id == ReverseBullDog)
+                return SneakFreeThrowAdmission.TryRefuseInstantOpener(client, id, targetViewId, targetSpawnId, out refusalReason);
 
             if (CombatManager.GetHandler(client).isCombatRunning)
             {
