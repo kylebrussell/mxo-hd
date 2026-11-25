@@ -29,6 +29,9 @@ namespace hds
         public const byte ChatCrew = 0x12;
         public const byte ChatFaction = 0x13;
         public const byte ChatTeam = 0x15;
+        /// <summary>Free-text emote: client.dll's /e, /em and /emote (string ids 2e00000c..e, case 0x62257495) build a
+        /// 28 with ChatType 0x20. It has no group routing, so ChatHandler relays it as a 2e of the same type, like area chat.</summary>
+        public const byte ChatEmote = 0x20;
 
         // Result codes. The client resolves 0x0d0000NN to its LTTRGS_ string table entry NN-1 (in client.dll order):
         // retail sent 0x0d00002e when an invite to a mission team was declined (entry 0x2d MTINVITEDECLINED) and
