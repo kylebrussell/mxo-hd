@@ -1,0 +1,23 @@
+{
+  "abilities": {
+    "405": {
+      "checks": {
+        "stats": {
+          "source": "GOB 405 stores six learned-rank VF2 bonuses while enabled: Viral Resistance 0.25 (+12), Viral Defense 0.125 (+6), Powerless Duration 0.2 (+10), Melee Damage 0.025 (+1), Melee Defense 0.1 (+5), and Enrage Duration 0.1 (+5).",
+          "runtime": "AbilityPassives publishes 1148/1030/1042/1142/1143/1068. TypedResistanceBonuses, AbilityStats.SpecialDefense, AbilityControlDurations, linked melee influence 159 and AbilityStats.Defense consume the first five; shipped Enraged state 93 has no duration-stat link so 1068 is published as a record only (already closed under consumer). Unloading restores every baseline.",
+          "test": "Stock PR1124 verified all six records cycle and Enraged 93 stays 10 s; stock PR1133 verified 1148 +12 -> +26 points reducing Logic Barrage 330 640/600/640; stock PR1142 verified 1042 +10 extending Powerless 6.6/6.0/6.6 s A/B/A. AikidoRedirectionClosureTests.AikidoRedirection405FeedsViralDefensePowerlessMeleeDamageDefenseAndViralResistance verifies all six records and every runtime consumer (+3 viral def, 10->11 s Powerless, 200->201 melee dmg, +2 melee def, +26 viral res -> 600, unchanged Enrage) and clean unload restoration. https://github.com/kylebrussell/mxo-hd/pull/1124#issuecomment-7145836354 https://github.com/kylebrussell/mxo-hd/pull/1133#issuecomment-7148261914 https://github.com/kylebrussell/mxo-hd/pull/1142#issuecomment-7150913434"
+        },
+        "source-parity": {
+          "source": "Viral Resistance Bonus 1148 is a percentage linked to raw Viral Resistance; the retail owner coefficient is unarchived.",
+          "runtime": "TypedResistanceBonuses converts the loaded percentage on the recipient at damage time with the shipped GetDamageReductionValue range: truncated (4 x level + 20) x percent / 100 points (+26 at level 50), added once to matching typed resistance — the same chosen level-normalised policy already closed for 95, 328, 422 and 593.",
+          "test": "Stock PR1133 Logic Barrage 330 read 640/600/640 (0/40/0 resisted, +26 points) across unload, load and unload; AikidoRedirectionClosureTests reproduces 26 points and 640 -> 600. https://github.com/kylebrussell/mxo-hd/pull/1133#issuecomment-7148261914"
+        },
+        "behavior-tests": {
+          "source": "405 is a loaded passive with six while-enabled bonuses.",
+          "runtime": "Five have live consumers and restore cleanly on unload; 1068 has no shipped linked state.",
+          "test": "AikidoRedirectionClosureTests.AikidoRedirection405FeedsViralDefensePowerlessMeleeDamageDefenseAndViralResistance and stock PR1124, PR1133 and PR1142. https://github.com/kylebrussell/mxo-hd/pull/1124#issuecomment-7145836354 https://github.com/kylebrussell/mxo-hd/pull/1133#issuecomment-7148261914 https://github.com/kylebrussell/mxo-hd/pull/1142#issuecomment-7150913434"
+        }
+      }
+    }
+  }
+}
