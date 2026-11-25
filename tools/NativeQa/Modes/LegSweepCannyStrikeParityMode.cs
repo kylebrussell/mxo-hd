@@ -32,6 +32,8 @@ public sealed class LegSweepCannyStrikeParityMode : NativeQaMode
         {
             ["MXO_AGGRO"] = "0", ["MXO_MOB_WANDER"] = "0",
             ["MXO_PVP_SERVER"] = "1", ["MXO_PVP_MAX_SAFE_LEVEL"] = "15",
+            [CombatFixtureWeapons.ResetMode] = "1",
+            [CombatFixtureWeapons.DisengageMode] = "1",
             ["MXO_SIMULACRUM_QA_HOLD_IS"] = "1",
             [CombatFixtureWeapons.MartialFixedDamageMode] = "spy-interlock"
         },
@@ -45,7 +47,7 @@ public sealed class LegSweepCannyStrikeParityMode : NativeQaMode
         {
             $"Level {Level}, {Loadout.Sum(AbilityMemory.Cost)}/{AbilityMemory.ForLevel(Level)} memory (+54% Thrown influence). Verified outdoor HOME ({X},{Y},{Z}) faces Melee Dummy 3 m north ({X},{Y},{DummyZ}) with QAEnemy 2 m west ({EnemyX},{Y},{Z}). Page 2: 1=Spy Style (1112), 2=Leg Sweep (134), 3=Canny Strike (295), 4=Withdraw. No initial tp needed.",
             "Step 1 (At-rest refusals — no IS debit or reuse): Select slot 1 (Spy Style), stay out of combat. Try slot 2 (134) and slot 3 (295) with Melee Dummy or empty target -> local gate or InvalidTarget (24) without debit.",
-            "Step 2 (NPC interlock — choreography 283, neutral & +75 Thrown resistance): Select Melee Dummy, right-click Close Combat, reselect slot 1 (Spy Style). Run '?cd ma 134' and press slot 2 (134 Leg Sweep): expect 12 IS, 12 s own / 5 s grp 687 reuse, result 0x100, ILDB move 283 (LegSweep), 20 Thrown dmg (fixed 13 + 54%), and Stat 1009 -15 (10 s). Run '?cd ma 295' and press slot 3 (295 Canny Strike): expect 70 IS, 30 s own reuse, result 0x100, and VF4 Thrown dmg 12..15 (base 8..10 + 54%). Run '?cd ma75' (+75 Thrown resistance on dummy), wait reuse, repeat '?cd ma 134' + slot 2 -> [TYPED-RESISTANCE OURS] 134 type7 total75 raw20 final16, and '?cd ma 295' + slot 3 -> [TYPED-RESISTANCE OURS] 295 type7 total75 (9..12). Withdraw (slot 4).",
+            "Step 2 (NPC interlock — choreography 283, neutral & +75 Thrown resistance): Select Melee Dummy, right-click Close Combat, reselect slot 1 (Spy Style). Run '?cd ma 134' and press slot 2 (134 Leg Sweep): expect 12 IS, 12 s own / 5 s grp 687 reuse, result 0x100, ILDB move 283 (LegSweep), 20 Thrown dmg (fixed 13 + 54%), and Stat 1009 -15 (10 s). Run '?cd ma 295' and press slot 3 (295 Canny Strike): expect 70 IS, 30 s own reuse, result 0x100, and VF4 Thrown dmg 12..15 (base 8..10 + 54%; 295 has no named ILDB move in combat_animations.json so ordinary Spy Style exchange plays). For +75 Thrown resistance either run '?cd ma75' in-place OR '?cd fixture-reset-thrown-resisted' (and '?cd stop' to exit combat, then reselect slot 1), wait reuse, repeat '?cd ma 134' + slot 2 -> [TYPED-RESISTANCE OURS] 134 type7 total75 raw20 final16, and '?cd ma 295' + slot 3 -> [TYPED-RESISTANCE OURS] 295 type7 total75 (9..12). Use '?cd stop' or slot 4 (Withdraw).",
             "Step 3 (Live player PvP interlock on QAEnemy): /target QAEnemy, right-click Close Combat, reselect slot 1 (Spy Style). Press slot 2 (134 Leg Sweep): expect ILDB move 283 (LegSweep), 20 Thrown dmg, and QAEnemy receiving source134 Stat 1009 -15 (10 s) + paired removal at ~10 s. Wait reuse if needed and press slot 3 (295 Canny Strike) to verify PvP interlock acceptance and VF4 Thrown damage (12..15)."
         });
 
@@ -107,9 +109,17 @@ public sealed class LegSweepCannyStrikeParityMode : NativeQaMode
         await Task.Delay(18000);
         await RunNpcSpecialAsync(CannyStrike, 9, 12, expectMove: null, resisted: true);
 
+        caster.SkipReceived();
+        caster.SendChat("?cd stop");
+        await caster.WaitForTextAsync("Fixture combat ended.");
+
+        caster.SkipReceived();
+        caster.SendChat("?cd fixture-reset-thrown-resisted");
+        await caster.WaitForTextAsync("Fixture reset:");
+
         Check.Equal(0, caster.World.Problems.Count + enemy.World.Problems.Count,
             "Clean stock framing for 134 and 295");
-        Console.WriteLine("LEG SWEEP + CANNY STRIKE PASS: refusals, move 283, fixed/VF4 damage, +75 Thrown resistance, and debuff verified.");
+        Console.WriteLine("LEG SWEEP + CANNY STRIKE PASS: refusals, move 283, fixed/VF4 damage, +75 Thrown resistance, stop/reset, and debuff verified.");
         return Array.Empty<byte>();
 
         async Task RunNpcSpecialAsync(ushort id, int minDmg, int maxDmg, int? expectMove, bool resisted)
