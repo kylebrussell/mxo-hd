@@ -23,16 +23,28 @@ namespace hds
         public static bool TryRefuse(WorldClient client, ushort abilityId, ushort targetViewId, ushort? targetSpawnId, out uint refusalReason)
         {
             refusalReason = 0;
-            if (!Handles(abilityId)) return false;
+            ushort id = AbilityCatalog.Canonical(abilityId);
+            if (!Handles(id)) return false;
 
             if (CombatManager.GetHandler(client).isCombatRunning)
             {
                 refusalReason = AbilityRefusals.MustBeOutsideCombat;
                 return true;
             }
-            if (!AbilityTargets.HasLiveAttackSelection(client, targetViewId, targetSpawnId))
+            bool severArtery = id == SeverArtery;
+            if (!AbilityTargets.HasLiveAttackSelection(client, targetViewId, targetSpawnId, requireOpponent: severArtery))
             {
                 refusalReason = AbilityRefusals.InvalidTarget;
+                return true;
+            }
+            if (severArtery && !AbilityTargets.WithinSelectionRange(client, id, targetViewId))
+            {
+                refusalReason = AbilityRefusals.TargetOutOfRange;
+                return true;
+            }
+            if (severArtery && !AbilityTargets.HasSelectionSight(client, AbilityCatalog.Find(id), targetViewId))
+            {
+                refusalReason = AbilityRefusals.TargetNotInSight;
                 return true;
             }
             return false;

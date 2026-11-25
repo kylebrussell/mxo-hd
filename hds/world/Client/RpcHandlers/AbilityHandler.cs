@@ -28,7 +28,7 @@ namespace hds
             UInt16 currentTargetViewId = reader.ReadUInt16(1);
             bool poisonKnife = AbilityID == CombatSpecials.PoisonKnife;
             bool woundingThrow = AbilityID == CombatSpecials.WoundingThrow;
-            bool guardedKnifeThrow = MasterKnifeThrowerBatch.UsesGuardedCast(AbilityID);
+            bool guardedKnifeThrow = MasterKnifeThrowerBatch.UsesGuardedCast(AbilityID) || AbilityID == CombatSpecials.SeverArtery;
             ushort? thrownTargetSpawn = null;
             bool dualSmgCone = CombatSpecials.IsDualSmgConeOpener(AbilityID);
             ushort? coneSpawn = null;
@@ -1330,7 +1330,7 @@ namespace hds
                 return;
             }
             if (guardedKnifeThrow && (!thrownTargetSpawn.HasValue ||
-                MasterKnifeThrowerBatch.TryRefuse(client, AbilityID, currentTargetViewId, thrownTargetSpawn, out _)))
+                SpyAbilityRegistry.TryRefuse(client, AbilityID, currentTargetViewId, thrownTargetSpawn, out _)))
             {
                 Output.WriteDebugLog($"[ABILITY] {AbilityID} fizzles: the selected opponent changed, left range or left sight");
                 return;
