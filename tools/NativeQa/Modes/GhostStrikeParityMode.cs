@@ -129,7 +129,7 @@ public sealed class GhostStrikeParityMode : NativeQaMode
 
         // Wait 10 s reuse, then test +75 Thrown resistance on Melee Dummy (37 -> 30).
         await caster.WaitUntilAsync(() => caster.World.RpcSnapshot().Skip(casterRpc)
-            .Any(f => BytePattern.Parse($"80 bd 00 6d 01 {AbilityCooldowns.OwnTimer:x2} 00 00 20 41 00").IsMatch(f.Bytes)),
+            .Any(f => BytePattern.Parse($"80 bd 01 6d 01 {AbilityCooldowns.OwnTimer:x2} 00 00 20 41 00").IsMatch(f.Bytes)),
             "365 10 s reuse completes", TimeSpan.FromSeconds(14));
 
         int creationsBefore = caster.World.CreationSnapshot().Count;
