@@ -426,7 +426,7 @@ namespace hds
             {
                 fx = CombatHandler.DefaultAbilityHitFx;
             }
-            damage = CombatSpecials.Damage(abilityId, null) ?? damage;
+            damage = CombatSpecials.PlayerDamage(abilityId, target) ?? damage;
             damage = AbilityStats.ScaleAbilityDamage(caster, abilityId, SneakAttacks.Add(damage, abilityId, sneakOpener));
             var conditionalFence=new ConditionalThrownDamage.Fence(caster,target);
             damage = PunishingBlows.Player(caster, target, damage);
@@ -465,6 +465,7 @@ namespace hds
             // victim and their watchers; the caster's execution animation is a separate view update.
             ServerPackets.SendPlayerAbilityEffect(target, fx);
             CombatSpecials.Landed(caster, abilityId);
+            HolyWaterCure.LandedOnPlayer(caster, target, abilityId);
             SpyAbilityRegistry.Landed(caster, abilityId, target.playerData.getEntityId());
             if (Damage(target, damage))
             {

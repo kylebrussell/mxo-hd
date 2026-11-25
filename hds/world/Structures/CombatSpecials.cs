@@ -253,6 +253,13 @@ namespace hds
             return Handles(id) ? (ushort)0 : (ushort?)null;
         }
 
+        /// <summary>Player-target damage override for Exile weapons (general.py checks NPCKilledOnlyByHolyWater on players too).</summary>
+        public static ushort? PlayerDamage(ushort id, WorldClient target)
+        {
+            if (IsExileWeapon(id)) return ExileDamage(id, HolyWaterCure.Weakness(target));
+            return Damage(id, null);
+        }
+
         /// <summary>After a move lands: the caster's buff, and Side Roll Escape's withdrawal.</summary>
         public static void Landed(WorldClient caster, ushort id)
         {

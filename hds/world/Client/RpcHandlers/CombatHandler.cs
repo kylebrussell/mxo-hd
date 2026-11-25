@@ -386,8 +386,10 @@ namespace hds
                     CombatTacticType.Normal, AbilityStats.Npc(mob, 1142), AbilityStats.Toughness(player, false));
                 playerFirst = CombatRules.PlayerAttacksFirst(playerTactic, npcTactic, opening, !npcOpenedFight, () => roundRng.Next(2) == 0);
             }
-            if (!opening && !attemptsWithdrawal && !playerStunned && ReferenceEquals(martialFixtureWin.Fight, session) &&
-                ReferenceEquals(martialFixtureWin.Dummy, mob) && ability?.getAbilityID() == martialFixtureWin.Ability)
+            if (!opening && !attemptsWithdrawal && !playerStunned &&
+                ((ReferenceEquals(martialFixtureWin.Fight, session) &&
+                  ReferenceEquals(martialFixtureWin.Dummy, mob) && ability?.getAbilityID() == martialFixtureWin.Ability) ||
+                 (ability != null && HolyWaterCure.AllowsNpcQaWin(player, ability.getAbilityID()))))
             {
                 martialFixtureWin = default;
                 playerHit = true;

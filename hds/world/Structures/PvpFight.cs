@@ -520,12 +520,13 @@ namespace hds
             ushort id = ability.Value;
             bool whip = id == CombatSpecials.PistolWhip && CombatFixtureWeapons.AllowsPistolWhipWin(caster.Client);
             bool zen = CombatFixtureWeapons.AllowsZenControlWin(caster.Client, id);
-            if ((!whip && !zen && !CombatFixtureWeapons.AllowsAikidoControlWin(caster.Client, id)) ||
-                !ConsumeRoundAid(caster, opponent, id)) return false;
+            bool holyWater = HolyWaterCure.AllowsQaWin(caster.Client, opponent.Client, id);
+            if (!holyWater && ((!whip && !zen && !CombatFixtureWeapons.AllowsAikidoControlWin(caster.Client, id)) ||
+                !ConsumeRoundAid(caster, opponent, id))) return false;
 
             attack = Math.Max(attack, (ushort)(opposingDefence + 1));
             opposingAttack = Math.Min(opposingAttack, defence);
-            string tag = whip ? "PISTOL WHIP QA" : zen ? "ZEN CONTROL QA" : "AIKIDO CONTROL QA";
+            string tag = holyWater ? "HOLY WATER QA" : whip ? "PISTOL WHIP QA" : zen ? "ZEN CONTROL QA" : "AIKIDO CONTROL QA";
             Output.WriteDebugLog($"[{tag}] {id} win consumed for CSR_Tester against QAEnemy.");
             return true;
         }
