@@ -1,0 +1,36 @@
+{
+  "families": {
+    "code-shield-accuracy-stock": {
+      "representative": 358,
+      "result": "pass",
+      "head": "519b1ae7",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/1135#issuecomment-7149167962"
+    },
+    "handgun-artistry-determination-stock": {
+      "representative": 498,
+      "result": "pass",
+      "head": "11e2d7b5",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/1136#issuecomment-7149238593"
+    }
+  },
+  "abilities": {
+    "341": {
+      "note": "The stock run observed a 4.1 s cast, 35 IS, 115/877/878 -50, 519 -10, 1157 +104 and 710 +10 with matching removals, plus Daze 199 for 10 s. An initial report of 13 DOT ticks was corrected to 11, all for 9 with no tick after parent removal and no ally effect. The recipient's ordinary health regeneration can restore the 9 HP between ticks. Independent resistance and the other active stat consumers remain open. https://github.com/kylebrussell/mxo-hd/pull/1137#issuecomment-7149316200 https://github.com/kylebrussell/mxo-hd/pull/1137#issuecomment-7149318140",
+      "checks": {
+        "targeting": {
+          "source": "Shipped Sever Artery is an outside-combat, selected enemy cast within 16 m and requires sight.",
+          "runtime": "The existing Spy handler checks a live hostile, range and sight before debit and rechecks the original view/spawn at completion.",
+          "test": "PR1137 stock request refused friendly, sight and range cases before debit (24, 9, 34) and landed on the selected enemy only. Focused SpyShadowAssassinBatch and SeverArtery tests passed. https://github.com/kylebrussell/mxo-hd/pull/1137#issuecomment-7149316200"
+        }
+      }
+    },
+    "358": {
+      "family": "code-shield-accuracy-stock",
+      "note": "Native three-record Archive cycle verified 1030 +11, 1042 +10 and 1147 +5. Matching normal Logic Blast casts read 64/63/64 with target defense 0. The other stat consumers remain open. https://github.com/kylebrussell/mxo-hd/pull/1135#issuecomment-7149167962"
+    },
+    "498": {
+      "family": "handgun-artistry-determination-stock",
+      "note": "Native 498 record cycle included 1047 +5, 1042 +10, 1143 +10 and 1140 +5. Identical normally admitted Stun casts yielded 6.9825/7.35/6.9825 s. Immunity remained 14 s. The final immunity add was observed and QA ended before its final removal. Other stat consumers remain open. https://github.com/kylebrussell/mxo-hd/pull/1136#issuecomment-7149238593"
+    }
+  }
+}
