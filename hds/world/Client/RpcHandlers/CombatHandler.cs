@@ -701,6 +701,13 @@ namespace hds
                 Output.WriteDebugLog("[COMBAT] Close combat aborted - target mob not found (or a simulacrum)");
                 return;
             }
+            // A fire batch is 41 + 40 for the same target. When its first shot killed the NPC, the ranged fight has
+            // already ended, so the trailing 40 would open a close-combat round against the corpse.
+            if (targetMob.getIsDead() || targetMob.getHealthC() == 0)
+            {
+                Output.WriteDebugLog("[COMBAT] Close combat ignored: " + targetMob.getName() + " is dead");
+                return;
+            }
             if (npcStarted && pvpFight == null && packet.Length > 4 && packet[4] != 0 &&
                 !CombatInsightEngagement.AllowsNpc(targetMob, client, targetViewWithSpawnId))
                 return;
