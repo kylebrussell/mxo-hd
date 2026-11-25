@@ -179,8 +179,8 @@ DATA_MINING = {
     345: ('direct stat177 existing captured+21/30s UDB0 target-centred NPC/PvP radius; native owner/UI formula, server landing policy follows74; linked75/1055 unresolved; [evidence](ABILITY-DEBUFF-RADIUS.md)', 'partial'),
     215: ('base215 search, separate cap5/cost5 and native activation ID; shared sourced search with mastery621; actual loaded tool prerequisites and handheld10s expiry; [docs/DATA-MINING.md](DATA-MINING.md)', 'partial'),
     44: ('shipped mission-accept roll and six cumulative flags; stock 80 c5 marker policy for objects, hostiles, locked doors, friendly NPCs, entrances and exits; same-floor pings and leader objective/hostile sharing; unload ends the reveal, with no restart on reload in the same mission; [docs/DATA-MINING.md](DATA-MINING.md)', 'partial'),
-    538: ('GOB prerequisite tier; retains loadout/dependency metadata, no separate Python callback or stored stat to execute; [docs/DATA-MINING.md](DATA-MINING.md)', 'cosmetic'),
-    539: ('GOB prerequisite tier; retains loadout/dependency metadata, no separate Python callback or stored stat to execute; tapping economy absent; [docs/DATA-MINING.md](DATA-MINING.md)', 'cosmetic'),
+    538: ('metadata only: GOB prerequisite tier of 537/539 (requires621@20); no modifier, grant, tool or script reader; the locator flag the scripts read is540; loading publishes no stat; [evidence](ABILITY-COSMETIC-ROWS.md)', 'partial'),
+    539: ('metadata only: GOB prerequisite tier (requires621@22 and538, no dependent); no modifier, grant, tool or script reader; the tap flag the scripts read is541; loading publishes no stat; [evidence](ABILITY-COSMETIC-ROWS.md)', 'partial'),
     540: ('goggles search flag highlights same-floor light luggables/carriers within 5 m through shipped luggable-aura FX; exact native white-glow path unverified; [docs/DATA-MINING.md](DATA-MINING.md)', 'partial'),
     541: ('handheld search pings nearest same-floor ground luggable through 80 c5 for its sourced10s activation; native waypoint record and distances beyond i8 ping range absent; [docs/DATA-MINING.md](DATA-MINING.md)', 'partial'),
     621: ('distinct215/base and621/mastery locator searches, real loaded tool prerequisites,10s handheld expiry, native 80 cd/cb/ce FX and own-ID 80 bd activation; tool/pickup/death/unload/zone cleanup; no sourced ambient coordinates or tapping economy; [docs/DATA-MINING.md](DATA-MINING.md)', 'partial'),
@@ -207,21 +207,25 @@ PETS = {
 PET_REPAIRS = {30, 31, 587, 596, 615}
 
 PASSIVE_LIMITS = {
-    18: 'discipline metadata; shipped CoderApplication documents seven temporary crafting bonuses; native caller and buff value open; [evidence](ABILITY-CODER-PARITY-1.md)',
-    35: 'ApplyAuraEffect pulses 697 on friendly simulacra; incoming viral casts on player pets are unsupported',
-    75: 'the direct stat177 radius consumer has no recovered link to bonus1055; [evidence](ABILITY-DEBUFF-RADIUS.md)',
-    161: 'shipped BaseSneakAttackTestFn returns success before any detection contest; the declared dependency alone does not read the stat',
-    165: 'TapDataNode_Subject delegates to native activateTapDataNode; no recovered tapping executor; [evidence](DATA-MINING.md)',
-    297: 'shipped Encrypt/Decrypt reads the learned Cryptography ability; executable support for the separate Decryption Skill total is unresolved',
-    397: 'discipline metadata; no stored stat or decoded gameplay callback',
-    512: 'Repair Skill is stored but no shipped Python reader or item repair executor is established',
+    18: 'metadata only: Coder tree container for24/27/30/36/37/970/1008; no modifier, grant or callback; loading publishes no stat; shipped CoderApplication has no caller in any script, GOB string or client string, so its seven crafting records are unreachable; [evidence](ABILITY-COSMETIC-ROWS.md)',
+    35: 'BLOCKED: shipped toggle pulses ApplyAuraEffect697 every5s (no IS drain) to friendly simulacra; no server Code Shaper aura executor, and no incoming viral attack reaches a player pet to consume Viral Defense; [evidence](ABILITY-COSMETIC-ROWS.md)',
+    75: 'record only: GOB177 links1055 with its own zero-filled owner coefficient, so1055 leaves every UDB0 radius unchanged (stock356 witness); [evidence](ABILITY-COSMETIC-ROWS.md)',
+    161: 'record only: 577 has no AttributeLink; shipped BaseSneakAttackTestFn sets SUCCESS without reading it, and sneak opener admission ignores the target total; [evidence](ABILITY-COSMETIC-ROWS.md)',
+    165: 'BLOCKED by the data-node tapping executor: TapDataNode_Subject/UpdateTapDataNode delegate to native activateTapDataNode/updateTapDataNode; access, yield and depletion rules are not shipped and no data node is placed; [evidence](ABILITY-COSMETIC-ROWS.md)',
+    297: 'BLOCKED: Decryption Skill709 has no reader; shipped Encrypt/DecryptCode (rules6003/6004) read learned297 x4, need Tool/Class4001 (Cryptography_Tool614 is4004) and a stored difficulty; no template uses either rule or stores either difficulty; [evidence](ABILITY-COSMETIC-ROWS.md)',
+    397: 'metadata only: no modifier, children, grant or callback (only NPCAssassin714 names it); loading publishes no stat; [evidence](ABILITY-COSMETIC-ROWS.md)',
+    512: 'BLOCKED: Repair Skill708 has no reader; shipped Repair rule1337 returns SUCCESS without ability, tool or skill; its only RepairUsable (HardlineJunctionBox7456) has no placement and no item stores durability; [evidence](ABILITY-COSMETIC-ROWS.md)',
     515: 'WriteCodeTest discount is applied to the supported ordinary Writer path; wider category/signal-boost behavior unresolved',
-    537: 'discipline prerequisite with no stored stat or decoded gameplay callback; [evidence](DATA-MINING.md)',
-    622: 'tap skill total and locator prerequisite are available; native tapping and yield are unresolved; [evidence](DATA-MINING.md)',
-    697: 'stored selector19 targets friendly simulacra; stat183 has no supported incoming viral cast path for player pets',
-    1199: 'organization discipline metadata; no stored stat or decoded gameplay callback',
+    537: 'metadata only: Data Miner tree container for538-541/621/622; no modifier, grant or callback; loading publishes no stat; [evidence](ABILITY-COSMETIC-ROWS.md)',
+    622: 'BLOCKED by the data-node tapping executor: stored AbilityID aliases165; native tapping, access and yield are unresolved and no data node is placed; [evidence](ABILITY-COSMETIC-ROWS.md)',
+    697: 'BLOCKED: shipped selector19 friendly simulacra within10m, Viral Defense183 caster level x0.96 for5s; no Code Shaper aura executor and no incoming viral path to player pets; [evidence](ABILITY-COSMETIC-ROWS.md)',
+    1199: 'metadata only: Organization tree container for1163-1198; no modifier, grant or callback; loading publishes no stat; [evidence](ABILITY-COSMETIC-ROWS.md)',
 }
 
+
+# Rows whose shipped data proves no executor of their own: tree containers, prerequisite tiers and stats whose only
+# shipped consumer is null. Their remaining evidence is tests plus a native load/record pass (ABILITY-COSMETIC-ROWS.md).
+METADATA_ONLY = {18, 75, 161, 397, 537, 1199}
 
 STOCK_VERIFIED_SUMMARIES = {
     362: '29 base IS, 2 s cast and 58 s reuse; selected hostile splash within 7 m of its centre; no damage; 12 s Blind with linked attack penalty and no immunity',
@@ -562,6 +566,8 @@ def status(i):
         return 'inaccessible'
     if i in DATA_MINING:
         return DATA_MINING[i][1]
+    if i in METADATA_ONLY:
+        return 'partial'
     r = coverage[i]
     if i == 52 and r.get('utility'):
         return 'partial'

@@ -9,7 +9,7 @@ class EngagementAuditStatusTests(unittest.TestCase):
         source = Path(__file__).with_name('build_audit.py').read_text(encoding='utf-8-sig')
         function = next(n for n in ast.parse(source).body if isinstance(n, ast.FunctionDef) and n.name == 'status')
         namespace = {
-            'DATA_MINING': {}, 'PETS': {}, 'fields': lambda _: {},
+            'DATA_MINING': {}, 'METADATA_ONLY': set(), 'PETS': {}, 'fields': lambda _: {},
             'abilities': {49: {'name': 'GaussianBlurAbility'}},
             'coverage': {49: {'buff_source': 'stored scripted', 'buff_stats': [{'stat': 520, 'consumer': consumer}],
                               'healing': False, 'direct_damage': False}},

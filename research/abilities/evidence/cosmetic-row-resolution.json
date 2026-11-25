@@ -1,0 +1,134 @@
+{
+  "abilities": {
+    "18": {
+      "family": "metadata-only-discipline-load-stock",
+      "checks": {
+        "consumer": {
+          "source": "GOB 18 stores no StatModifier, grant, TestFunction or CastingScript. It is the DisciplineBelongsTo parent of 24, 27, 30, 36, 37, 970 and 1008, and 23 and 276 require it. Shipped crafting_server.py CoderApplication(subject, invItem, buffValue) has no caller: no script, no string field in any of the 44,406 GOB templates and no client.dll string names it.",
+          "runtime": "AbilityPassives publishes nothing for 18 and AbilityProgression grants nothing. Its children load as their own rows, and the server invents no buffValue for the unreachable CoderApplication.",
+          "test": "CosmeticRowResolutionTests.MetadataOnlyRowsAuthorNoModifierGrantCallbackOrExecutor: the row has no modifier, grant, aura, buff, temp-mod, pet, utility, test, script or tool executor, and loading it changes none of the stats the catalog names. Native load and Archive check: NativeQa mode ability-parity-metadata-rows."
+        },
+        "behavior-tests": {
+          "source": "GOB 18 stores no StatModifier, grant, TestFunction or CastingScript. It is the DisciplineBelongsTo parent of 24, 27, 30, 36, 37, 970 and 1008, and 23 and 276 require it. Shipped crafting_server.py CoderApplication(subject, invItem, buffValue) has no caller: no script, no string field in any of the 44,406 GOB templates and no client.dll string names it.",
+          "runtime": "AbilityPassives publishes nothing for 18 and AbilityProgression grants nothing. Its children load as their own rows, and the server invents no buffValue for the unreachable CoderApplication.",
+          "test": "CosmeticRowResolutionTests.MetadataOnlyRowsAuthorNoModifierGrantCallbackOrExecutor: the row has no modifier, grant, aura, buff, temp-mod, pet, utility, test, script or tool executor, and loading it changes none of the stats the catalog names. Native load and Archive check: NativeQa mode ability-parity-metadata-rows. CoderDisciplineDoesNotReachTheShippedCoderApplicationCraftingBonuses pins every crafting total unchanged."
+        }
+      }
+    },
+    "397": {
+      "family": "metadata-only-discipline-load-stock",
+      "checks": {
+        "consumer": {
+          "source": "GOB 397 stores no modifier. Its only component 93 has AttributeLink 0. It has no DisciplineBelongsTo child or grant, the only template that names it is NPCAssassin 714, and no shipped script names GameMasterAbility.",
+          "runtime": "Loading 397 publishes no record and grants nothing.",
+          "test": "CosmeticRowResolutionTests.MetadataOnlyRowsAuthorNoModifierGrantCallbackOrExecutor: the row has no modifier, grant, aura, buff, temp-mod, pet, utility, test, script or tool executor, and loading it changes none of the stats the catalog names. Native load and Archive check: NativeQa mode ability-parity-metadata-rows."
+        },
+        "behavior-tests": {
+          "source": "GOB 397 stores no modifier. Its only component 93 has AttributeLink 0. It has no DisciplineBelongsTo child or grant, the only template that names it is NPCAssassin 714, and no shipped script names GameMasterAbility.",
+          "runtime": "Loading 397 publishes no record and grants nothing.",
+          "test": "CosmeticRowResolutionTests.MetadataOnlyRowsAuthorNoModifierGrantCallbackOrExecutor: the row has no modifier, grant, aura, buff, temp-mod, pet, utility, test, script or tool executor, and loading it changes none of the stats the catalog names. Native load and Archive check: NativeQa mode ability-parity-metadata-rows."
+        }
+      }
+    },
+    "537": {
+      "family": "metadata-only-discipline-load-stock",
+      "checks": {
+        "consumer": {
+          "source": "GOB 537 stores no modifier. It is the parent of 538 to 541, 621 and 622, and requires 621@30, 538 and 540. No shipped script names DataMinerAbility.",
+          "runtime": "Loading 537 publishes no record. The locate, luggable and tool executors belong to its children (215, 540, 541, 621).",
+          "test": "CosmeticRowResolutionTests.MetadataOnlyRowsAuthorNoModifierGrantCallbackOrExecutor: the row has no modifier, grant, aura, buff, temp-mod, pet, utility, test, script or tool executor, and loading it changes none of the stats the catalog names. Native load and Archive check: NativeQa mode ability-parity-metadata-rows."
+        },
+        "behavior-tests": {
+          "source": "GOB 537 stores no modifier. It is the parent of 538 to 541, 621 and 622, and requires 621@30, 538 and 540. No shipped script names DataMinerAbility.",
+          "runtime": "Loading 537 publishes no record. The locate, luggable and tool executors belong to its children (215, 540, 541, 621).",
+          "test": "CosmeticRowResolutionTests.MetadataOnlyRowsAuthorNoModifierGrantCallbackOrExecutor: the row has no modifier, grant, aura, buff, temp-mod, pet, utility, test, script or tool executor, and loading it changes none of the stats the catalog names. Native load and Archive check: NativeQa mode ability-parity-metadata-rows."
+        }
+      }
+    },
+    "538": {
+      "family": "metadata-only-discipline-load-stock",
+      "checks": {
+        "consumer": {
+          "source": "GOB 538 stores no modifier. It requires 621@20, and 537 and 539 require it. No tool names it. The goggles flag that misc.py and tempmods.py read is 540 AdvancedDataNodeGogglesAbility.",
+          "runtime": "Loading 538 publishes no record. Only its prerequisite role remains, through the ordinary loadout rules.",
+          "test": "CosmeticRowResolutionTests.MetadataOnlyRowsAuthorNoModifierGrantCallbackOrExecutor: the row has no modifier, grant, aura, buff, temp-mod, pet, utility, test, script or tool executor, and loading it changes none of the stats the catalog names. Native load and Archive check: NativeQa mode ability-parity-metadata-rows."
+        },
+        "behavior-tests": {
+          "source": "GOB 538 stores no modifier. It requires 621@20, and 537 and 539 require it. No tool names it. The goggles flag that misc.py and tempmods.py read is 540 AdvancedDataNodeGogglesAbility.",
+          "runtime": "Loading 538 publishes no record. Only its prerequisite role remains, through the ordinary loadout rules.",
+          "test": "CosmeticRowResolutionTests.MetadataOnlyRowsAuthorNoModifierGrantCallbackOrExecutor: the row has no modifier, grant, aura, buff, temp-mod, pet, utility, test, script or tool executor, and loading it changes none of the stats the catalog names. Native load and Archive check: NativeQa mode ability-parity-metadata-rows."
+        }
+      }
+    },
+    "539": {
+      "family": "metadata-only-discipline-load-stock",
+      "checks": {
+        "consumer": {
+          "source": "GOB 539 stores no modifier. It requires 621@22 and 538, and nothing depends on it. No tool names it. The tap flag that misc.py reads is 541 AdvancedDataTapAbility.",
+          "runtime": "Loading 539 publishes no record.",
+          "test": "CosmeticRowResolutionTests.MetadataOnlyRowsAuthorNoModifierGrantCallbackOrExecutor: the row has no modifier, grant, aura, buff, temp-mod, pet, utility, test, script or tool executor, and loading it changes none of the stats the catalog names. Native load and Archive check: NativeQa mode ability-parity-metadata-rows."
+        },
+        "behavior-tests": {
+          "source": "GOB 539 stores no modifier. It requires 621@22 and 538, and nothing depends on it. No tool names it. The tap flag that misc.py reads is 541 AdvancedDataTapAbility.",
+          "runtime": "Loading 539 publishes no record.",
+          "test": "CosmeticRowResolutionTests.MetadataOnlyRowsAuthorNoModifierGrantCallbackOrExecutor: the row has no modifier, grant, aura, buff, temp-mod, pet, utility, test, script or tool executor, and loading it changes none of the stats the catalog names. Native load and Archive check: NativeQa mode ability-parity-metadata-rows."
+        }
+      }
+    },
+    "1199": {
+      "family": "metadata-only-discipline-load-stock",
+      "checks": {
+        "consumer": {
+          "source": "GOB 1199 stores no modifier and has memory cost 0. It requires Awakened 2@1 and is the DisciplineBelongsTo parent of the organization abilities 1163 to 1198. TestOrgAbility runs on those children, not on 1199.",
+          "runtime": "Loading 1199 publishes no record. Organization effects run through their own rows (1180 to 1182, OrganizationEffectTests).",
+          "test": "CosmeticRowResolutionTests.MetadataOnlyRowsAuthorNoModifierGrantCallbackOrExecutor: the row has no modifier, grant, aura, buff, temp-mod, pet, utility, test, script or tool executor, and loading it changes none of the stats the catalog names. Native load and Archive check: NativeQa mode ability-parity-metadata-rows."
+        },
+        "behavior-tests": {
+          "source": "GOB 1199 stores no modifier and has memory cost 0. It requires Awakened 2@1 and is the DisciplineBelongsTo parent of the organization abilities 1163 to 1198. TestOrgAbility runs on those children, not on 1199.",
+          "runtime": "Loading 1199 publishes no record. Organization effects run through their own rows (1180 to 1182, OrganizationEffectTests).",
+          "test": "CosmeticRowResolutionTests.MetadataOnlyRowsAuthorNoModifierGrantCallbackOrExecutor: the row has no modifier, grant, aura, buff, temp-mod, pet, utility, test, script or tool executor, and loading it changes none of the stats the catalog names. Native load and Archive check: NativeQa mode ability-parity-metadata-rows."
+        }
+      }
+    },
+    "75": {
+      "family": "metadata-only-discipline-load-stock",
+      "checks": {
+        "stats": {
+          "source": "GOB 75 stores one while-enabled modifier: 1055 Debuff Area Radius Bonus, learned-level function 2 with scale 0.5, so +25 at 50. 1055 reaches the radius only through 177 AbilityAttributeLink. That link uses 177's own owner coefficient, which the native getter 622ffce0 zero-fills (ABILITY-DEBUFF-RADIUS.md, Initial linked-attribute default).",
+          "runtime": "AbilityPassives publishes the 1055 total and record. AbilityRadius.TargetMetres reads direct 177 only, so the UDB0 radius does not change.",
+          "test": "CosmeticRowResolutionTests.ResistInfectionPublishesOnly1055AndLeavesEveryDebuffRadiusUnchanged: the only change is 1055 +25, 177 stays 0, and the 333/38/60/97 radii are unchanged. AbilityPassiveTests.DirectDebuffRadiusUsesCaster177WhileUnproven75LinkStaysExcluded covers the same boundary. Stock witness for a loaded 1055 passive that leaves the radius unchanged: https://github.com/kylebrussell/mxo-hd/pull/1056#issuecomment-7121743549"
+        },
+        "consumer": {
+          "source": "GOB 75 stores one while-enabled modifier: 1055 Debuff Area Radius Bonus, learned-level function 2 with scale 0.5, so +25 at 50. 1055 reaches the radius only through 177 AbilityAttributeLink. That link uses 177's own owner coefficient, which the native getter 622ffce0 zero-fills (ABILITY-DEBUFF-RADIUS.md, Initial linked-attribute default).",
+          "runtime": "AbilityPassives publishes the 1055 total and record. AbilityRadius.TargetMetres reads direct 177 only, so the UDB0 radius does not change.",
+          "test": "CosmeticRowResolutionTests.ResistInfectionPublishesOnly1055AndLeavesEveryDebuffRadiusUnchanged: the only change is 1055 +25, 177 stays 0, and the 333/38/60/97 radii are unchanged. AbilityPassiveTests.DirectDebuffRadiusUsesCaster177WhileUnproven75LinkStaysExcluded covers the same boundary. Stock witness for a loaded 1055 passive that leaves the radius unchanged: https://github.com/kylebrussell/mxo-hd/pull/1056#issuecomment-7121743549"
+        },
+        "behavior-tests": {
+          "source": "GOB 75 stores one while-enabled modifier: 1055 Debuff Area Radius Bonus, learned-level function 2 with scale 0.5, so +25 at 50. 1055 reaches the radius only through 177 AbilityAttributeLink. That link uses 177's own owner coefficient, which the native getter 622ffce0 zero-fills (ABILITY-DEBUFF-RADIUS.md, Initial linked-attribute default).",
+          "runtime": "AbilityPassives publishes the 1055 total and record. AbilityRadius.TargetMetres reads direct 177 only, so the UDB0 radius does not change.",
+          "test": "CosmeticRowResolutionTests.ResistInfectionPublishesOnly1055AndLeavesEveryDebuffRadiusUnchanged: the only change is 1055 +25, 177 stays 0, and the 333/38/60/97 radii are unchanged. AbilityPassiveTests.DirectDebuffRadiusUsesCaster177WhileUnproven75LinkStaysExcluded covers the same boundary. Stock witness for a loaded 1055 passive that leaves the radius unchanged: https://github.com/kylebrussell/mxo-hd/pull/1056#issuecomment-7121743549"
+        }
+      }
+    },
+    "161": {
+      "checks": {
+        "stats": {
+          "source": "GOB 161 stores one while-enabled modifier: 577 Sneak Attack Detection, learned-level function 2 with scale 4.0 and rank cap 10, so +40. Template 577 has no AttributeLink. The only shipped reader is BaseSneakAttackDepAttr in ability/spy/sneaks.py. BaseSneakAttackTestFn declares that dependency but sets SUCCESS without reading it.",
+          "runtime": "AbilityPassives publishes the 577 total and record. No server path reads 577, and SpyAbilityRegistry sneak opener admission ignores the target total, as the shipped test does.",
+          "test": "CosmeticRowResolutionTests.UncannySensesPublishesOnlySneakAttackDetectionAtItsRankCap (only 577 +40, detection 204 unchanged) and SneakOpenerAdmissionIgnoresTheTargetsSneakAttackDetection (Suplex 287 and Diving Frankensteiner 385 rear admission succeeds with and without the target's 161). Stock removal and restoration of source 161's +40: https://github.com/kylebrussell/mxo-hd/pull/480"
+        },
+        "consumer": {
+          "source": "GOB 161 stores one while-enabled modifier: 577 Sneak Attack Detection, learned-level function 2 with scale 4.0 and rank cap 10, so +40. Template 577 has no AttributeLink. The only shipped reader is BaseSneakAttackDepAttr in ability/spy/sneaks.py. BaseSneakAttackTestFn declares that dependency but sets SUCCESS without reading it.",
+          "runtime": "AbilityPassives publishes the 577 total and record. No server path reads 577, and SpyAbilityRegistry sneak opener admission ignores the target total, as the shipped test does.",
+          "test": "CosmeticRowResolutionTests.UncannySensesPublishesOnlySneakAttackDetectionAtItsRankCap (only 577 +40, detection 204 unchanged) and SneakOpenerAdmissionIgnoresTheTargetsSneakAttackDetection (Suplex 287 and Diving Frankensteiner 385 rear admission succeeds with and without the target's 161). Stock removal and restoration of source 161's +40: https://github.com/kylebrussell/mxo-hd/pull/480"
+        },
+        "behavior-tests": {
+          "source": "GOB 161 stores one while-enabled modifier: 577 Sneak Attack Detection, learned-level function 2 with scale 4.0 and rank cap 10, so +40. Template 577 has no AttributeLink. The only shipped reader is BaseSneakAttackDepAttr in ability/spy/sneaks.py. BaseSneakAttackTestFn declares that dependency but sets SUCCESS without reading it.",
+          "runtime": "AbilityPassives publishes the 577 total and record. No server path reads 577, and SpyAbilityRegistry sneak opener admission ignores the target total, as the shipped test does.",
+          "test": "CosmeticRowResolutionTests.UncannySensesPublishesOnlySneakAttackDetectionAtItsRankCap (only 577 +40, detection 204 unchanged) and SneakOpenerAdmissionIgnoresTheTargetsSneakAttackDetection (Suplex 287 and Diving Frankensteiner 385 rear admission succeeds with and without the target's 161). Stock removal and restoration of source 161's +40: https://github.com/kylebrussell/mxo-hd/pull/480"
+        }
+      }
+    }
+  },
+  "note": "docs/ABILITY-COSMETIC-ROWS.md. Family metadata-only-discipline-load-stock (representative 397) is added only after a native PASS of NativeQa mode ability-parity-metadata-rows."
+}
