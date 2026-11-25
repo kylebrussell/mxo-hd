@@ -31,7 +31,15 @@ public class SpinningBacksweepTests
     {
         var client = Client(4);
         client.playerData.setCharID(15201);
+        Assert.True(SpyAbilityRegistry.TryRefuse(client, SpinningBacksweep, 0, null, out uint styleReason));
+        Assert.Equal(AbilityRefusals.WrongStyle, styleReason);
 
+        AbilityPassives.SetLoaded(client, new (ushort, ushort)[] { (SpyStyle, 4) });
+        CombatStyles.Select(client, SpyStyle);
+        Assert.True(SpyAbilityRegistry.TryRefuse(client, SpinningBacksweep, 0, null, out uint stealthReason));
+        Assert.Equal(AbilityRefusals.CasterStateRequired, stealthReason);
+
+        client.playerData.conditionStateFlags = Stealth.StealthedFlag;
         Assert.True(SpyAbilityRegistry.TryRefuse(client, SpinningBacksweep, 0, null, out uint emptyReason));
         Assert.Equal(AbilityRefusals.InvalidTarget, emptyReason);
 
