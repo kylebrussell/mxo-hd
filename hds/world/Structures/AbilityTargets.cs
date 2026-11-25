@@ -92,8 +92,12 @@ namespace hds
             double range = definition?.Number("Ability/SelectionRange") ?? 0;
             if (range > 0 && CombatCalculator.CalculateDistanceMetres(client.playerInstance.Position.getValue(),
                 primary.getXPos(), primary.getYPos(), primary.getZPos()) > range) return false;
-            if (PoisonKnifeContest.Applies(ability.getAbilityID(), origin) && !PoisonKnifeContest.Npc(client, primary))
+            if (PoisonKnifeContest.Applies(ability.getAbilityID(), origin) && !PoisonKnifeContest.Npc(client, primary, ability.getAbilityID()))
+            {
+                // A deflected shot is still fired: the at-rest motion plays, with no damage or effects.
+                AtRestSpecialMotion.Landed(client, ability.getAbilityID(), primary.getEntityId());
                 return true;
+            }
             var center = (primary.getXPos(), primary.getYPos(), primary.getZPos());
             LandOne(client, ability, targetViewId, sneakOpener, origin, engageFoes, reverseBulldog, ghostStrike);
             LandAround(client, ability, center, origin, engageFoes,

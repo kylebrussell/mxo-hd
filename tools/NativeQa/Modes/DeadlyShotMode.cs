@@ -32,14 +32,15 @@ public sealed class DeadlyShotMode : NativeQaMode
         {
             ["MXO_AGGRO"] = "0", ["MXO_MOB_WANDER"] = "0", ["MXO_PVP_SERVER"] = "1", ["MXO_PVP_MAX_SAFE_LEVEL"] = "15",
             ["MXO_SIMULACRUM_QA_HOLD_IS"] = "1", [CombatFixtureWeapons.DisengageMode] = "1",
-            [StarterInterlockControlQa.DeadlyShotMode] = "1"
+            [StarterInterlockControlQa.DeadlyShotMode] = "1", ["MXO_RANGED_CONTEST_QA"] = "1"
         }, extraQaMetadata: new() { ["ScopedStockRows"] = "454", ["NativeCloseableRows"] = 0 }, readyMessages: new[]
         {
             $"Level {Level}, {Loadout.Sum(AbilityMemory.Cost)}/{AbilityMemory.ForLevel(Level)} legal memory and rifle 692. CSR spawns at verified outdoor PICK ({PickX},{Y},{Z}) facing QAEnemy ({EnemyX},{Y},{Z}); no ?tp needed for the main casts. QAEnemy is a player. Use /target QAEnemy even if the camera faces away, and strafe once if the view needs refreshing. No NPC selection in this mode. Page 2 Rifles / Deadly Shot.",
             "Select Rifles and /target QAEnemy. For the admission control only, use the printed FAR and BLOCK ?tp stands and try slot 2. Expect local suppression or reasons 34/9, with no charge, cast or reuse. Return using the printed PICK ?tp before the positive cast.",
-            $"With QAEnemy selected at PICK and CSR out of combat, press slot 2. Save the first complete 80 b9 c6 01 request. Expect 45 IS (700 to 655), 2 s cast, 10 s own and 5 s family 689, {Neutral} Ballistic to QAEnemy, and no PvP round. Record the visible at-rest cast and release.",
+            $"Type ?rangedcontest hit first (the at-rest 454 now rolls the ranged contest 524 vs 1010). With QAEnemy selected at PICK and CSR out of combat, press slot 2. Save the first complete 80 b9 c6 01 request. Expect 45 IS (700 to 655), 2 s cast, 10 s own and 5 s family 689, {Neutral} Ballistic to QAEnemy, and no PvP round. Record the visible at-rest cast and release.",
             "This disposable mode forces only the shipped 10% Stun marker on 454 hitting QAEnemy. Look for the short 454 marker, 454/102 Stun for four seconds, linked 102/163 -20 and independent 734/681 for four seconds. Verify matching removals, no duplicate state, and QAEnemy recovers after expiry.",
             $$"""After reuse, send {"actor":"QAEnemy","action":"deadly-shot-armor"}. Verify source1061 stat181 +20. Stay at PICK and out of combat, select QAEnemy and repeat slot 2 for [TYPED-RESISTANCE OURS] 454 type1 total20 raw{{Neutral}} final{{Resisted}} and the same Stun teardown. Report the visible cast; archived ILDB 11359/11365/11366 do not identify a profile-specific interlock selector."""
+            ,"Deflection: type ?rangedcontest deflect, wait out the 10 s reuse, cast slot 2 at QAEnemy. The rifle Deadly Shot motion still plays, QAEnemy takes no damage, stun or immunity, CSR sees 'QAEnemy deflected Deadly Shot.' and QAEnemy's log shows the deflection line. Then ?rangedcontest off."
         });
 
     public override async Task<byte[]> AfterStartAsync(NativeQaBootstrapContext context)
