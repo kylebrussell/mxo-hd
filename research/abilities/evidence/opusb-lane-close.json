@@ -1,0 +1,213 @@
+{
+  "abilities": {
+    "282": {
+      "checks": {
+        "damage": {
+          "source": "Shipped 282 deals no direct hit: a stored ThrownDOT and, on an Off Balance recipient only, a stored on-use thrown initializer (value 45/24 at 50).",
+          "runtime": "The DOT and the conditional initializer each resolve through thrown influence and typed resistance.",
+          "test": "SpyTimedThrowsTests and ConditionalThrownDamageTests. PR1148 native QA: DOT 5 x 6 ticks, raw6 final4 under +75 Thrown, and [CONDITIONAL-THROW] 282 value24 raw33 final33 on Off Balance; Daze gave none. https://github.com/kylebrussell/mxo-hd/pull/1148#issuecomment-7152409802"
+        },
+        "source-parity": {
+          "source": "Shipped 282 stores the ThrownDOT total/interval, Blind 10 s and the DealDamageIfOffBalance initializer value.",
+          "runtime": "The server resolves exactly the stored values through the ordinary thrown influence and typed resistance path; no invented coefficient is added.",
+          "test": "Stock PR1148 measured the initializer as value24 raw33 final33 after influence, matching the server's ordering, and DOT ticks of 6 (4 resisted). https://github.com/kylebrussell/mxo-hd/pull/1148#issuecomment-7152409802"
+        },
+        "behavior-tests": {
+          "source": "Shipped 282 lists a 2 s timed Spy special, Blind, ThrownDOT, the Off Balance initializer and ILDB 291.",
+          "runtime": "Each listed behavior has an executor: admission before cost, stored cost and timers, the resolved hit through ordinary thrown influence and typed resistance, and the stored effect.",
+          "test": "ShadowAssassinLaneBehaviorTests.StoredTermsAndTheStockMeasuredLevel50HitAreReproduced reproduces the stored cost, own/family reuse, cast, selector, gate and the stock-measured level-50 hit with the same native-mode loadout; the row's admission and effect tests cover the rest. SpyTimedThrowsTests and AssassinTimedThrowsMode cover the queue, move 291 and refusals. https://github.com/kylebrussell/mxo-hd/pull/1148#issuecomment-7152409802"
+        }
+      }
+    },
+    "286": {
+      "checks": {
+        "script": {
+          "source": "ability/spy/sneaks.py SneakAttackSpinThrow_Test delegates to BaseSneakAttackTestFn, which depends on the target's Position, Orientation and IsInCombat.",
+          "runtime": "The shared instant rear-opener gate applies the same position, facing and combat dependencies before cost.",
+          "test": "SneakAttackOpenerAdmissionTests covers rear, front, wall, range, ally, stale and combat cases. PR1155 native QA refused QAFriend and FRONT with 24, BLOCK by the stock local sight gate, FAR with 34 and Close Combat locally, then landed from behind. https://github.com/kylebrussell/mxo-hd/pull/1155#issuecomment-7153063952"
+        },
+        "source-parity": {
+          "source": "Shipped 286 stores fixed thrown endpoints 80/80 and the +300 stealth opener bonus.",
+          "runtime": "The server resolves exactly the stored values through the ordinary thrown influence and typed resistance path; no invented coefficient is added.",
+          "test": "Stock PR1155 measured 528 neutral and 434 under +75 Thrown; the test reproduces both. https://github.com/kylebrussell/mxo-hd/pull/1155#issuecomment-7153063952"
+        },
+        "behavior-tests": {
+          "source": "Shipped 286 lists a 6 m instant rear opener with a stealth bonus.",
+          "runtime": "Each listed behavior has an executor: admission before cost, stored cost and timers, the resolved hit through ordinary thrown influence and typed resistance, and the stored effect.",
+          "test": "ShadowAssassinLaneBehaviorTests.StoredTermsAndTheStockMeasuredLevel50HitAreReproduced reproduces the stored cost, own/family reuse, cast, selector, gate and the stock-measured level-50 hit with the same native-mode loadout; the row's admission and effect tests cover the rest. https://github.com/kylebrussell/mxo-hd/pull/1155#issuecomment-7153063952"
+        }
+      }
+    },
+    "288": {
+      "checks": {
+        "damage": {
+          "source": "Shipped 288 stores fixed thrown endpoints 37/37 and the +775 stealth opener bonus.",
+          "runtime": "AbilityHandler resolves the stored base (plus any stored stealth bonus) through ordinary thrown influence; TypedAbilityResistance applies the target's thrown resistance.",
+          "test": "ShadowAssassinLaneBehaviorTests.StoredTermsAndTheStockMeasuredLevel50HitAreReproduced reproduces the stock 1128 neutral hit with the native-mode loadout; the shared typed path is measured natively under +75 Thrown on 286/385/1133. https://github.com/kylebrussell/mxo-hd/pull/1155#issuecomment-7153063952"
+        },
+        "script": {
+          "source": "ability/spy/sneaks.py SneakAttackTopsyTurvy_Test delegates to BaseSneakAttackTestFn, which depends on the target's Position, Orientation and IsInCombat.",
+          "runtime": "The shared instant rear-opener gate applies the same position, facing and combat dependencies before cost.",
+          "test": "SneakAttackOpenerAdmissionTests covers rear, front, wall, range, ally, stale and combat cases. PR1155 native QA refused QAFriend and FRONT with 24, BLOCK by the stock local sight gate, FAR with 34 and Close Combat locally, then landed from behind. https://github.com/kylebrussell/mxo-hd/pull/1155#issuecomment-7153063952"
+        },
+        "source-parity": {
+          "source": "Shipped 288 stores fixed thrown endpoints 37/37, the +775 stealth opener bonus and Confuse 10 s.",
+          "runtime": "The server resolves exactly the stored values through the ordinary thrown influence and typed resistance path; no invented coefficient is added.",
+          "test": "Stock PR1155 measured 1128 neutral and Confuse 91 for 12.5 s after the player duration policy. https://github.com/kylebrussell/mxo-hd/pull/1155#issuecomment-7153063952"
+        },
+        "behavior-tests": {
+          "source": "Shipped 288 lists a 6 m instant rear opener with a stealth bonus and Confuse.",
+          "runtime": "Each listed behavior has an executor: admission before cost, stored cost and timers, the resolved hit through ordinary thrown influence and typed resistance, and the stored effect.",
+          "test": "ShadowAssassinLaneBehaviorTests.StoredTermsAndTheStockMeasuredLevel50HitAreReproduced reproduces the stored cost, own/family reuse, cast, selector, gate and the stock-measured level-50 hit with the same native-mode loadout; the row's admission and effect tests cover the rest. https://github.com/kylebrussell/mxo-hd/pull/1155#issuecomment-7153063952"
+        }
+      }
+    },
+    "289": {
+      "checks": {
+        "damage": {
+          "source": "Shipped 289 stores a VF3 thrown base (min 20, scale 3) and the +600 stealth opener bonus.",
+          "runtime": "AbilityHandler resolves the stored base (plus any stored stealth bonus) through ordinary thrown influence; TypedAbilityResistance applies the target's thrown resistance.",
+          "test": "ShadowAssassinLaneBehaviorTests.StoredTermsAndTheStockMeasuredLevel50HitAreReproduced reproduces the stock 1070 neutral hit with the native-mode loadout; the shared typed path is measured natively under +75 Thrown on 286/385/1133. https://github.com/kylebrussell/mxo-hd/pull/1155#issuecomment-7153063952"
+        },
+        "script": {
+          "source": "ability/spy/sneaks.py SneakAttackPunt_Test delegates to BaseSneakAttackTestFn, which depends on the target's Position, Orientation and IsInCombat.",
+          "runtime": "The shared instant rear-opener gate applies the same position, facing and combat dependencies before cost.",
+          "test": "SneakAttackOpenerAdmissionTests covers rear, front, wall, range, ally, stale and combat cases. PR1155 native QA refused QAFriend and FRONT with 24, BLOCK by the stock local sight gate, FAR with 34 and Close Combat locally, then landed from behind. https://github.com/kylebrussell/mxo-hd/pull/1155#issuecomment-7153063952"
+        },
+        "source-parity": {
+          "source": "Shipped 289 stores a VF3 thrown base (min 20, scale 3) and the +600 stealth opener bonus.",
+          "runtime": "The server resolves exactly the stored values through the ordinary thrown influence and typed resistance path; no invented coefficient is added.",
+          "test": "Stock PR1155 measured 1070 neutral; the test reproduces it. https://github.com/kylebrussell/mxo-hd/pull/1155#issuecomment-7153063952"
+        },
+        "behavior-tests": {
+          "source": "Shipped 289 lists a 6 m instant rear opener with a stealth bonus.",
+          "runtime": "Each listed behavior has an executor: admission before cost, stored cost and timers, the resolved hit through ordinary thrown influence and typed resistance, and the stored effect.",
+          "test": "ShadowAssassinLaneBehaviorTests.StoredTermsAndTheStockMeasuredLevel50HitAreReproduced reproduces the stored cost, own/family reuse, cast, selector, gate and the stock-measured level-50 hit with the same native-mode loadout; the row's admission and effect tests cover the rest. https://github.com/kylebrussell/mxo-hd/pull/1155#issuecomment-7153063952"
+        }
+      }
+    },
+    "387": {
+      "checks": {
+        "damage": {
+          "source": "Shipped 387 stores fixed thrown endpoints 75/75 and the +950 stealth opener bonus.",
+          "runtime": "AbilityHandler resolves the stored base (plus any stored stealth bonus) through ordinary thrown influence; TypedAbilityResistance applies the target's thrown resistance.",
+          "test": "ShadowAssassinLaneBehaviorTests.StoredTermsAndTheStockMeasuredLevel50HitAreReproduced reproduces the stock 1578 neutral hit and its 1298 resisted value with the native-mode loadout; the shared typed path is measured natively under +75 Thrown on 286/385/1133. https://github.com/kylebrussell/mxo-hd/pull/1158#issuecomment-7156199034"
+        },
+        "source-parity": {
+          "source": "Shipped 387 stores fixed thrown endpoints 75/75 and the +950 stealth opener bonus.",
+          "runtime": "The server resolves exactly the stored values through the ordinary thrown influence and typed resistance path; no invented coefficient is added.",
+          "test": "Stock PR1158 measured 1578 neutral with the stock 37 IS tooltip; the test reproduces 1578 and 1298 under +75 Thrown. https://github.com/kylebrussell/mxo-hd/pull/1158#issuecomment-7156199034"
+        },
+        "behavior-tests": {
+          "source": "Shipped 387 lists a 6 m instant rear opener with a stealth bonus.",
+          "runtime": "Each listed behavior has an executor: admission before cost, stored cost and timers, the resolved hit through ordinary thrown influence and typed resistance, and the stored effect.",
+          "test": "ShadowAssassinLaneBehaviorTests.StoredTermsAndTheStockMeasuredLevel50HitAreReproduced reproduces the stored cost, own/family reuse, cast, selector, gate and the stock-measured level-50 hit with the same native-mode loadout; the row's admission and effect tests cover the rest. https://github.com/kylebrussell/mxo-hd/pull/1158#issuecomment-7156199034"
+        }
+      }
+    },
+    "388": {
+      "checks": {
+        "damage": {
+          "source": "Shipped 388 stores fixed thrown endpoints 56/56 and the +1200 stealth opener bonus.",
+          "runtime": "AbilityHandler resolves the stored base (plus any stored stealth bonus) through ordinary thrown influence; TypedAbilityResistance applies the target's thrown resistance.",
+          "test": "ShadowAssassinLaneBehaviorTests.StoredTermsAndTheStockMeasuredLevel50HitAreReproduced reproduces the stock 1745 neutral hit with the native-mode loadout; the shared typed path is measured natively under +75 Thrown on 286/385/1133. https://github.com/kylebrussell/mxo-hd/pull/1155#issuecomment-7153063952"
+        },
+        "script": {
+          "source": "ability/spy/sneaks.py SneakAttackRevBullDog_Test delegates to BaseSneakAttackTestFn; the landed record runs ApplyStunEffect (8) and AddControlImmunityTimerVal (16).",
+          "runtime": "The shared rear-opener gate runs before cost; the landed effect applies Stun 102 and writes the independent 681 immunity for 16 s.",
+          "test": "ShadowAssassinLaneBehaviorTests.ReverseBullDogKeepsItsStunCallbackAndIndependentImmunity and SneakAttackOpenerAdmissionTests. PR1155 native QA saw Stun 102 for 9.2 s with removal, [REVERSE-BULLDOG] state=681 seconds=16 callback=AddControlImmunityTimerVal, and the client's 16 s immunity notice. https://github.com/kylebrussell/mxo-hd/pull/1155#issuecomment-7153063952"
+        },
+        "stats": {
+          "source": "Shipped 388's third modifier targets the ISDrain Target carrier only to hold AddControlImmunityTimerVal's value 16.",
+          "runtime": "The carrier is consumed as the immunity timer: 681 for 16 s, independent of the Stun.",
+          "test": "PR1155 native QA observed the 681 16 s record and the client notice. https://github.com/kylebrussell/mxo-hd/pull/1155#issuecomment-7153063952"
+        },
+        "source-parity": {
+          "source": "Shipped 388 stores fixed thrown endpoints 56/56, the +1200 stealth opener bonus, Stun 8 and immunity 16.",
+          "runtime": "The server resolves exactly the stored values through the ordinary thrown influence and typed resistance path; no invented coefficient is added.",
+          "test": "Stock PR1155 measured 1745 neutral, Stun 9.2 s and 681 immunity 16 s. https://github.com/kylebrussell/mxo-hd/pull/1155#issuecomment-7153063952"
+        },
+        "behavior-tests": {
+          "source": "Shipped 388 lists a 6 m instant rear opener with a stealth bonus, Stun and control immunity.",
+          "runtime": "Each listed behavior has an executor: admission before cost, stored cost and timers, the resolved hit through ordinary thrown influence and typed resistance, and the stored effect.",
+          "test": "ShadowAssassinLaneBehaviorTests.StoredTermsAndTheStockMeasuredLevel50HitAreReproduced reproduces the stored cost, own/family reuse, cast, selector, gate and the stock-measured level-50 hit with the same native-mode loadout; the row's admission and effect tests cover the rest. https://github.com/kylebrussell/mxo-hd/pull/1155#issuecomment-7153063952"
+        }
+      }
+    },
+    "1110": {
+      "checks": {
+        "source-parity": {
+          "source": "Shipped 1110 stores one NeutralDOT modifier, raw 10 over 0.5 s, with no UpdateFuncInterval, and no direct hit.",
+          "runtime": "With no interval the server applies the stored raw 10 once when the 0.5 s record ends (no invented tick rate or base damage).",
+          "test": "ShadowAssassinLaneBehaviorTests.SpyBullDogStoresOneHalfSecondNeutralTerminalOfTen. Stock PR1160 measured no direct hit, the 0.5 s 710 +10 record, one tick of 10 (5000 -> 4990) and its removal. https://github.com/kylebrussell/mxo-hd/pull/1160#issuecomment-7162239542"
+        }
+      }
+    },
+    "1133": {
+      "checks": {
+        "source-parity": {
+          "source": "Shipped 1133 stores a VF3 level-scaled thrown base (113 at level 50) and two -45 8 s records.",
+          "runtime": "The server resolves exactly the stored values through the ordinary thrown influence and typed resistance path; no invented coefficient is added.",
+          "test": "Stock PR1151 measured 157 neutral and 129 under +75 Thrown, plus both 8 s records. https://github.com/kylebrussell/mxo-hd/pull/1151#issuecomment-7152938524"
+        },
+        "behavior-tests": {
+          "source": "Shipped 1133 lists a 2 s SneakFree rear throw, thrown damage and two 8 s debuffs.",
+          "runtime": "Each listed behavior has an executor: admission before cost, stored cost and timers, the resolved hit through ordinary thrown influence and typed resistance, and the stored effect.",
+          "test": "ShadowAssassinLaneBehaviorTests.StoredTermsAndTheStockMeasuredLevel50HitAreReproduced reproduces the stored cost, own/family reuse, cast, selector, gate and the stock-measured level-50 hit with the same native-mode loadout; the row's admission and effect tests cover the rest. https://github.com/kylebrussell/mxo-hd/pull/1151#issuecomment-7152938524"
+        }
+      }
+    },
+    "1134": {
+      "checks": {
+        "damage": {
+          "source": "Shipped 1134 stores a VF3 level-scaled thrown base (141 at level 50).",
+          "runtime": "AbilityHandler resolves the stored base (plus any stored stealth bonus) through ordinary thrown influence; TypedAbilityResistance applies the target's thrown resistance.",
+          "test": "ShadowAssassinLaneBehaviorTests.StoredTermsAndTheStockMeasuredLevel50HitAreReproduced reproduces the stock 195 neutral and 160 resisted hits with the native-mode loadout; the shared typed path is measured natively under +75 Thrown on 286/385/1133. https://github.com/kylebrussell/mxo-hd/pull/1165#issuecomment-7154367607"
+        },
+        "source-parity": {
+          "source": "Shipped 1134 stores a VF3 level-scaled thrown base (141 at level 50) and two -30 8 s records.",
+          "runtime": "The server resolves exactly the stored values through the ordinary thrown influence and typed resistance path; no invented coefficient is added.",
+          "test": "Stock PR1151 measured 195 neutral and PR1165 measured raw195 final160 under +75 Thrown, plus both 8 s records. https://github.com/kylebrussell/mxo-hd/pull/1165#issuecomment-7154367607"
+        },
+        "behavior-tests": {
+          "source": "Shipped 1134 lists a 2 s SneakFree rear throw, thrown damage and two 8 s debuffs.",
+          "runtime": "Each listed behavior has an executor: admission before cost, stored cost and timers, the resolved hit through ordinary thrown influence and typed resistance, and the stored effect.",
+          "test": "ShadowAssassinLaneBehaviorTests.StoredTermsAndTheStockMeasuredLevel50HitAreReproduced reproduces the stored cost, own/family reuse, cast, selector, gate and the stock-measured level-50 hit with the same native-mode loadout; the row's admission and effect tests cover the rest. https://github.com/kylebrussell/mxo-hd/pull/1165#issuecomment-7154367607"
+        }
+      }
+    },
+    "1135": {
+      "checks": {
+        "source-parity": {
+          "source": "Shipped 1135 stores a fixed thrown base, Rooted 8 s with break chance and a 519 -20 8 s record.",
+          "runtime": "The server resolves exactly the stored values through the ordinary thrown influence and typed resistance path; no invented coefficient is added.",
+          "test": "Stock PR1148 measured 41 neutral and raw41 final33 under +75 Thrown at level 50; the test reproduces both. https://github.com/kylebrussell/mxo-hd/pull/1148#issuecomment-7152409802"
+        },
+        "behavior-tests": {
+          "source": "Shipped 1135 lists a 2 s timed Spy special, thrown damage, Root, 519 -20 and ILDB 292.",
+          "runtime": "Each listed behavior has an executor: admission before cost, stored cost and timers, the resolved hit through ordinary thrown influence and typed resistance, and the stored effect.",
+          "test": "ShadowAssassinLaneBehaviorTests.StoredTermsAndTheStockMeasuredLevel50HitAreReproduced reproduces the stored cost, own/family reuse, cast, selector, gate and the stock-measured level-50 hit with the same native-mode loadout; the row's admission and effect tests cover the rest. https://github.com/kylebrussell/mxo-hd/pull/1148#issuecomment-7152409802"
+        },
+        "stats": {
+          "source": "Shipped 1135 stores ForceCombat 519 -20 for 8 s and a Deactivate carrier (ISDrain Target 710, -100, OnHealthReduceDeactivateChance) for 8 s beside Rooted.",
+          "runtime": "TimedEffects applies 519, which CombatInsightEngagement reads in the live Evade entry contest; the 710 carrier holds the damage-break chance that removes Rooted and 519 together.",
+          "test": "Existing 519 consumer tests (HackerBatchB2ParityTests.CodeFreeze41ChangesMovementAndItsForceCombatInput, CombatInsightEngagementTests). PR1148 native QA saw 519 -20 for 8 s beside Rooted, and the first 282 DOT tick removed the root record and 519 together about 1.85 s early. https://github.com/kylebrussell/mxo-hd/pull/1148#issuecomment-7152409802"
+        }
+      }
+    },
+    "385": {
+      "checks": {
+        "source-parity": {
+          "source": "Shipped 385 stores fixed thrown endpoints 164/164 and the +725 stealth opener bonus.",
+          "runtime": "The server resolves exactly the stored values through the ordinary thrown influence and typed resistance path; no invented coefficient is added.",
+          "test": "Stock PR1171 measured 1146 neutral and 942 under +75 Thrown; the test reproduces both. https://github.com/kylebrussell/mxo-hd/pull/1171#issuecomment-7163492570"
+        },
+        "behavior-tests": {
+          "source": "Shipped 385 lists a 6 m instant rear opener with a stealth bonus.",
+          "runtime": "Each listed behavior has an executor: admission before cost, stored cost and timers, the resolved hit through ordinary thrown influence and typed resistance, and the stored effect.",
+          "test": "ShadowAssassinLaneBehaviorTests.StoredTermsAndTheStockMeasuredLevel50HitAreReproduced reproduces the stored cost, own/family reuse, cast, selector, gate and the stock-measured level-50 hit with the same native-mode loadout; the row's admission and effect tests cover the rest. https://github.com/kylebrussell/mxo-hd/pull/1171#issuecomment-7163492570"
+        }
+      }
+    }
+  }
+}
