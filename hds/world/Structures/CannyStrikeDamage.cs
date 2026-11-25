@@ -16,7 +16,7 @@ namespace hds
             refusalReason = 0;
             if (AbilityCatalog.Canonical(abilityId) != CannyStrike) return false;
             var handler = CombatManager.GetHandler(client);
-            if (!handler.isCombatRunning || !handler.PowerShotOpponent(targetViewId, targetSpawnId).HasValue)
+            if (!handler.HasActiveInterlock || !handler.PowerShotOpponent(targetViewId, targetSpawnId).HasValue)
             {
                 refusalReason = AbilityRefusals.InvalidTarget;
                 return true;
