@@ -73,6 +73,9 @@ public class HarryingAttackTests
         Assert.Equal(15f, cd.GroupSeconds);
         Assert.True(HarryingAttackDamage.RetainsStealthDuringCast(1127));
 
+        Assert.True(HarryingAttackDamage.TryRefuse(caster, 1127, 0, null, out uint unstealthed));
+        Assert.Equal(AbilityRefusals.CasterStateRequired, unstealthed);
+        caster.playerData.conditionStateFlags = Stealth.StealthedFlag;
         Assert.True(HarryingAttackDamage.TryRefuse(caster, 1127, 0, null, out uint reason));
         Assert.Equal(AbilityRefusals.InvalidTarget, reason);
 

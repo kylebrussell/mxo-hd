@@ -475,6 +475,7 @@ namespace hds
 
                 if(command.Equals("?ghoststrike"))new ServerPackets().sendSystemChatMessage(Store.currentClient,GhostStrikeCallbacks.Dev(Store.currentClient,commands.Skip(1).ToArray()),"BROADCAST");
                 if(command.Equals("?severstate"))new ServerPackets().sendSystemChatMessage(Store.currentClient,AbilitySeverArteryStates.Dev(Store.currentClient,commands.Skip(1).ToArray()),"BROADCAST");
+                if(command.Equals("?sneakproc"))new ServerPackets().sendSystemChatMessage(Store.currentClient,SneakFreeControlsQa.Dev(Store.currentClient,commands.Skip(1).ToArray()),"BROADCAST");
 
                 if (command.Equals("?combatdepth") || command.Equals("?cd"))
                     new ServerPackets().sendSystemChatMessage(Store.currentClient,

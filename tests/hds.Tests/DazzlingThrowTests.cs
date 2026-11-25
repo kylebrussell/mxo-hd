@@ -67,6 +67,9 @@ public class DazzlingThrowTests
         Assert.Equal(15f, cd.GroupSeconds);
         Assert.True(DazzlingThrowDamage.RetainsStealthDuringCast(1132));
 
+        Assert.True(DazzlingThrowDamage.TryRefuse(caster, 1132, 0, null, out uint unstealthed));
+        Assert.Equal(AbilityRefusals.CasterStateRequired, unstealthed);
+        caster.playerData.conditionStateFlags = Stealth.StealthedFlag;
         Assert.True(DazzlingThrowDamage.TryRefuse(caster, 1132, 0, null, out uint reason));
         Assert.Equal(AbilityRefusals.InvalidTarget, reason);
 
