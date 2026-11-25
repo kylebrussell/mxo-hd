@@ -243,6 +243,18 @@ STOCK_VERIFIED_SUMMARIES = {
 }
 
 
+LANE_THROWN_DAMAGE = {
+    286: 'stored fixed thrown base 80 plus the stealth-started +300 opener bonus before influence and typed resistance; stock 528 neutral / 434 under +75 Thrown at level 50',
+    288: 'stored fixed thrown base 37 plus the stealth-started +775 opener bonus before influence and typed resistance; stock 1128 neutral at level 50',
+    289: 'stored VF3 thrown base (min 20, scale 3) plus the stealth-started +600 opener bonus before influence and typed resistance; stock 1070 neutral at level 50',
+    385: 'stored fixed thrown base 164 plus the stealth-started +725 opener bonus before influence and typed resistance; stock 1146 neutral / 942 under +75 Thrown at level 50',
+    387: 'stored fixed thrown base 75 plus the stealth-started +950 opener bonus before influence and typed resistance; stock 1578 neutral at level 50',
+    388: 'stored fixed thrown base 56 plus the stealth-started +1200 opener bonus before influence and typed resistance; stock 1745 neutral at level 50',
+    1133: 'stored VF3 level-scaled thrown base (113 at level 50) before influence and typed resistance; stock 157 neutral / 129 under +75 Thrown',
+    1134: 'stored VF3 level-scaled thrown base (141 at level 50) before influence and typed resistance; stock 195 neutral / 160 under +75 Thrown',
+}
+
+
 def server(i):
     if i in STOCK_VERIFIED_SUMMARIES:
         return STOCK_VERIFIED_SUMMARIES[i]
@@ -352,8 +364,8 @@ def server(i):
         parts.append('Static Field pulse: caster-centred 6 m hostile selector; each eligible recipient rolls the stored viral test before one-point damage and typed resistance')
     elif i == 454:
         parts.append('current player path uses the stored fixed ballistic damage; NPC capture path is separate')
-    elif i == 385:
-        parts.append('stored fixed thrown base 164 plus the stealth-started +725 opener bonus before influence and typed resistance; stock 1146 neutral / 942 under +75 Thrown at level 50; historical magnitude unresolved')
+    elif i in LANE_THROWN_DAMAGE:
+        parts.append(LANE_THROWN_DAMAGE[i])
     elif i == 505:
         parts.append('stored fixed ballistic base 47 (legacy CSV endpoints 4..0) before influence and typed resistance; stock 52 neutral / 47 under +20 Ballistic, rank-50 57/57/54; archived 1660 with 182 absorbed lacks a caster/target profile, so historical magnitude unresolved')
     elif i == 153:
