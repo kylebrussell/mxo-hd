@@ -645,7 +645,7 @@ def remaining_items(i, current_status, runtime_summary):
     if 'OURS' in runtime_summary or 'unresolved' in runtime_summary:
         open_items['source-parity'] = 'Resolve the inferred or unresolved behavior identified in the server column'
     if i == 52 and r.get('utility'):
-        open_items['source-parity'] = 'Verify Hack-specific cast progress and the stock rendering of the shipped Hack lines; recover Camillo’s movement, which no shipped script drives'
+        open_items['source-parity'] = 'Verify Hack-specific cast progress and the stock rendering of the shipped Hack lines, and recover Camillo’s movement, which no shipped script drives'
     if i == 86:
         open_items['source-parity'] = 'Verify that the signed movement adjustment slows the stock recipient and restores its prior speed on expiry'
     if i == 485:

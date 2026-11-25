@@ -1,0 +1,33 @@
+{
+  "families": {
+    "elusive-code-entry": {
+      "representative": 940,
+      "result": "pass",
+      "head": "61313e6b",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/1163#issuecomment-7153658336",
+      "scope": "Stock CSR at level 50 with 940 seeded loaded: Status records 520 +50 and 181 +25. With Evade Combat up, the QAEnemy entry logged force110 evade167 refused; after ?qaunload 940 both records were removed and the same entry logged evade115. ?qaload 940 showed the stock 'Your character level is too low to load that ability.' (stored ReqCharLevel 99) with no record. Ending Evade gave the 30 s reuse, and the next entry was admitted without the rule."
+    }
+  },
+  "abilities": {
+    "940": {
+      "family": "elusive-code-entry",
+      "checks": {
+        "stats": {
+          "source": "GOB 940 evaluates Combat Evasion 520 at function 3 scale 1.0 and Ballistic Damage Resistance 181 at scale 0.5 while loaded: +50 and +25 at level 50.",
+          "runtime": "AbilityPassives publishes both learned-level totals. CombatInsightEngagement reads 520 in the live Evade entry score; AbilityStats.Toughness adds 181 to ranged toughness only, which NPC and PvP gunfire consume.",
+          "test": "Stock PR1163: records +50/+25, and entry evade 167 loaded against 115 unloaded (floor((100+520)x(100+1049)/100)+10 with Execute Program's +5%). CombatInsightEngagementTests.ElusiveCodePassiveRaisesTheLiveEntryEvadeAndRangedToughnessOnlyWhileLoaded covers both consumers, including ranged-only toughness. https://github.com/kylebrussell/mxo-hd/pull/1163#issuecomment-7153658336"
+        },
+        "source-parity": {
+          "source": "The shipped stats are stored constants; the original retail entry formula is unarchived, as for Gaussian Blur 49 and Combat Insight 113.",
+          "runtime": "The chosen entry rule reads the defender's direct 520 only while its Evade generation is active; positive 520 never creates a gate alone.",
+          "test": "Stock PR1163 showed the passive changing the same entry 167->115, and the rule bypassed once Evade ended. CombatInsightEngagementTests.ElusiveCodePassiveRaisesTheLiveEntryEvadeAndRangedToughnessOnlyWhileLoaded. https://github.com/kylebrussell/mxo-hd/pull/1163#issuecomment-7153658336"
+        },
+        "behavior-tests": {
+          "source": "940 is a loaded passive with Combat Evasion and Ballistic Damage Resistance and a stored ReqCharLevel 99 load prerequisite.",
+          "runtime": "Seeded rows publish the passive; the ordinary loadout refuses a reload at level 50.",
+          "test": "CombatInsightEngagementTests.ElusiveCodePassiveRaisesTheLiveEntryEvadeAndRangedToughnessOnlyWhileLoaded, AbilityScaledBuffTests.HackerPassivesInstallLevelFiftyTotalsAndRemoveThemOnUnload and the stock PR1163 run including the level refusal. https://github.com/kylebrussell/mxo-hd/pull/1163#issuecomment-7153658336"
+        }
+      }
+    }
+  }
+}
