@@ -15,7 +15,7 @@ namespace NativeQa.Modes;
 public sealed class SneakFreeWeakeningWardingMode : NativeQaMode
 {
     private const int Level = 50, X = 21550, Y = 1095, Z = 16150, EnemyX = 21750;
-    private const int DummyX = 17000, DummyY = 495, DummyZ = 6700, RearZ = 6900;
+    private const int DummyX = 17000, DummyY = 495, DummyZ = 6700, RearZ = 6448, ResetHeading = 0;
     private const ushort Spy = CombatStyles.SpyStyle, Sneak = Stealth.SneakGrantAbility;
     private const ushort Weakening = SpySneakOpeners.WeakeningBlow, Warding = SpyMasterSneakOpeners.WardingBlow;
     private static readonly ushort[] Loadout = DisablingShotMode.Closure(2, 17, Spy, 151, Weakening, Warding);
@@ -53,7 +53,8 @@ public sealed class SneakFreeWeakeningWardingMode : NativeQaMode
             "Step 1 (cast first): select slot 1, press slot 2 (Sneak), /target QAEnemy, press slot 3. Save the first full 1133 request. Expect Sneak kept through the 2.0 s cast, 35 IS, Sneak off on landing, the targeted knife-throw motion, the thrown hit printed below, 45 s own / 15 s family 691 reuse, and two source1133 -45 records for 8 s (Melee and Ballistic Damage Resistance) with matching removals. Keep QAEnemy HP before/after.",
             "Step 2: after the 15 s family timer, Sneak again, press slot 4 (1134). Save the first full request. Expect 45 IS, the targeted motion, the hit printed below, 45 s own / 15 s 691, and two source1134 -30 records for 8 s (Melee and Ballistic Accuracy) with matching removals.",
             "Step 3 (refusals, no IS, cast or timer; wait out the 45 s reuse or expect a local gate): drop Sneak and press 3 -> 23 or local gate. Sneak, /target QAFriend -> 24. At the printed FRONT (inside QAEnemy's 50-degree cone) -> 24, BLOCK (solid wall) -> 9, FAR -> 34, each for slots 3 and 4.",
-            "Step 4 (+75 Thrown resistance): type the printed DUMMY chunks (2 m behind the Melee Dummy, which faces south), then the RESISTED chunks. Strafe, click the fresh dummy, Sneak, press slot 3 after its reuse -> [TYPED-RESISTANCE OURS] 1133 type7 total75 with the values printed below. The stock client re-requests Close Combat with the selected dummy as soon as a throw lands on it at rest (and about 12 s after ?cd stop), so ?cd stop is not enough: after 15 s type the RESISTED chunks again, click the fresh dummy, Sneak and press slot 4 -> the printed 1134 resisted values."
+            "Step 4 (+75 Thrown resistance): type the RESISTED chunks. The reset turns the fresh dummy north and teleports you 2.52 m behind it, facing it (the printed DUMMY stand); this dummy now holds that heading through Close Combat and retaliation, so do not walk around it. Strafe in place, click the fresh dummy, Sneak, press slot 3 after its reuse -> [TYPED-RESISTANCE OURS] 1133 type7 total75 with the values printed below.",
+            "Step 5 (1134 resisted re-check): the stock client re-requests Close Combat with the selected dummy as soon as the throw lands (and about 12 s after ?cd stop). After the 15 s family timer type the RESISTED chunks again (do not tp elsewhere), click the fresh dummy. If Close Combat opens, type ?cd stop; it drops Spy Style, so press slot 1 again. Then Sneak and press slot 4 -> [TYPED-RESISTANCE OURS] 1134 type7 total75 raw195 final160. Expect the server log line '[FIXTURE] Melee Dummy holds its reset heading 0' if the dummy is re-engaged."
         });
 
     public override async Task<byte[]> AfterStartAsync(NativeQaBootstrapContext context)
@@ -65,14 +66,15 @@ public sealed class SneakFreeWeakeningWardingMode : NativeQaMode
         var front = StarterConcealedShotTargetingMode.Stand(21850, 16200);
         var block = StarterConcealedShotTargetingMode.Stand(21950, Z);
         var far = StarterConcealedShotTargetingMode.FindFarStand();
-        var rear = DummyStand(DummyX, RearZ, facing: 128);
+        // A resisted reset turns the dummy to heading 0 (north) and teleports the caster here, 2.52 m behind it.
+        var rear = DummyStand(DummyX, RearZ, facing: 0);
 
         Check.That(NavMesh.HasSightPath(1, X, Y, Z, EnemyX, Y, Z), "Clear two-metre rear approach");
         Check.That(NavMesh.HasSightPath(1, 21850, Y, 16200, EnemyX, Y, Z) &&
             Stealth.InFrustum(EnemyX, Z, 64, 21850, 16200, 50), "Clear frontal stand inside QAEnemy's 50-deg cone");
         Check.That(!NavMesh.HasSightPath(1, 21950, Y, Z, EnemyX, Y, Z), "Solid wall blocks throw sight");
         Check.That(NavMesh.HasSightPath(1, DummyX, DummyY, RearZ, DummyX, DummyY, DummyZ) &&
-            !Stealth.InFrustum(DummyX, DummyZ, 128, DummyX, RearZ, 50), "Clear rear stand outside the dummy's 50-deg cone");
+            !Stealth.InFrustum(DummyX, DummyZ, ResetHeading, DummyX, RearZ, 50), "Clear rear stand outside the dummy's 50-deg cone");
         foreach (var row in Rows)
         {
             var source = AbilityCatalog.Find(row.Id);
@@ -172,12 +174,14 @@ public sealed class SneakFreeWeakeningWardingMode : NativeQaMode
 
         // +75 Thrown resistance on the rear of the stationary dummy, once each throw's own reuse has ended.
         await MoveAsync(rear.Command, rear.Confirmation);
+        // Let the pre-reset dummy view arrive first so the wait below only accepts the reset's fresh view.
+        await Task.Delay(TimeSpan.FromSeconds(3));
         int created = caster.World.CreationSnapshot().Count;
         caster.SendChat("?combatdepth fixture-reset-thrown-resisted");
         await caster.WaitForTextAsync("Fixture reset: Melee Dummy restored");
         await caster.WaitUntilAsync(() => caster.World.CreationSnapshot().Skip(created).Any(v => v.Name == CombatFixtureLoadout.DummyName),
             "A fresh resisted Melee Dummy", HeadlessPlayer.DefaultTimeout);
-        var dummy = caster.World.CreationSnapshot().Last(v => v.Name == CombatFixtureLoadout.DummyName);
+        var dummy = caster.World.CreationSnapshot().Skip(created).Last(v => v.Name == CombatFixtureLoadout.DummyName);
         uint dummyHandle = DuelPackets.Handle(dummy.ViewId, dummy.SpawnId);
         await Task.Delay(TimeSpan.FromSeconds(16));
         var resisted = new Regex(@"\[TYPED-RESISTANCE OURS\] (\d+) type7 total75 raw(\d+) final(\d+)");
@@ -192,8 +196,20 @@ public sealed class SneakFreeWeakeningWardingMode : NativeQaMode
                 await caster.WaitForTextAsync("Fixture reset: Melee Dummy restored");
                 await caster.WaitUntilAsync(() => caster.World.CreationSnapshot().Skip(reset).Any(v => v.Name == CombatFixtureLoadout.DummyName),
                     "A fresh resisted Melee Dummy", HeadlessPlayer.DefaultTimeout);
-                dummy = caster.World.CreationSnapshot().Last(v => v.Name == CombatFixtureLoadout.DummyName);
+                dummy = caster.World.CreationSnapshot().Skip(reset).Last(v => v.Name == CombatFixtureLoadout.DummyName);
                 dummyHandle = DuelPackets.Handle(dummy.ViewId, dummy.SpawnId);
+                // Replay the stock Close Combat re-request on the fresh dummy, then leave it the way native QA does:
+                // ?cd stop drops Spy Style, so reselect it. The dummy must still have its back to the caster.
+                int engageLog = server.DebugLog().Length;
+                caster.SendRpc($"81 51 {WireFormat.ToHex(BitConverter.GetBytes(dummyHandle))}");
+                caster.SendRpc($"40 {WireFormat.ToHex(BitConverter.GetBytes(dummyHandle))} 01 6b");
+                await caster.WaitUntilAsync(() => server.DebugLog()[engageLog..].Contains("[COMBAT] Close combat requested", StringComparison.Ordinal),
+                    "Replayed stock Close Combat re-request", HeadlessPlayer.DefaultTimeout);
+                await Task.Delay(TimeSpan.FromSeconds(3));
+                caster.SendChat("?cd stop");
+                await caster.WaitForTextAsync("Fixture combat ended.");
+                await Task.Delay(TimeSpan.FromSeconds(2));
+                caster.SendRpc(AwakenedStockStealthSpeedMode.SpyUse);
                 await Task.Delay(TimeSpan.FromSeconds(2));
             }
             await SneakAsync();

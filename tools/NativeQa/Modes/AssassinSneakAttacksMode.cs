@@ -16,7 +16,7 @@ namespace NativeQa.Modes;
 public sealed class AssassinSneakAttacksMode : NativeQaMode
 {
     private const int Level = 50, X = 21550, Y = 1095, Z = 16150, EnemyX = 21750;
-    private const int DummyX = 17000, DummyY = 495, DummyZ = 6700, RearZ = 6900;
+    private const int DummyX = 17000, DummyY = 495, DummyZ = 6700, RearZ = 6448, ResetHeading = 0;
     private const ushort Spy = CombatStyles.SpyStyle, Sneak = Stealth.SneakGrantAbility;
     private static readonly (ushort Id, int Cost, float Own, ushort State)[] Rows =
     {
@@ -57,8 +57,8 @@ public sealed class AssassinSneakAttacksMode : NativeQaMode
         {
             $"Level {Level}, {Loadout.Sum(AbilityMemory.Cost)}/{AbilityMemory.ForLevel(Level)} memory. Verified outdoor HOME ({X},{Y},{Z}) is 2 m behind QAEnemy ({EnemyX},{Y},{Z}, facing east); QAFriend observes. No initial tp. Page 2: 1=Spy Style, 2=Sneak, 3=Spin Throw (286), 4=Topsy Turvy (288), 5=Punt (289), 6=Reverse Bull Dog (388).",
             "Step 1 (cast first, one per 15 s family 691 window, Sneak before each): /target QAEnemy and press 3, 4, 5, 6 in turn. Save the first full request of each. Expect Sneak off, the IS cost, the stealth-started thrown hit printed below, own reuse 38/38/38/60 s, 288 Confuse and 388 Stun plus its 16 s 681 timer on QAEnemy, no interlock. Keep QAEnemy HP before/after and watch which move the client plays (shipped ILDB names 19593 Twist Throw, 19594 Topsy Turvy, 19590 Punt, 19595 Reverse Pulldown).",
-            "Step 2 (refusals, no IS, cast or timer; wait out reuse or expect a local gate): without Sneak -> 23; Sneak, /target QAFriend -> 24; printed FRONT (inside QAEnemy's 50-degree cone) -> 24; BLOCK (solid wall) -> 9; FAR -> 34; in Close Combat -> 21.",
-            "Step 3 (+75 Thrown resistance): type the printed DUMMY chunks (2 m behind the south-facing Melee Dummy) and the RESISTED chunks, strafe, click the fresh dummy, Sneak, press 3 after its reuse -> [TYPED-RESISTANCE OURS] 286 type7 total75 with the values printed below. The stock client re-requests Close Combat with the selected dummy as soon as the opener lands on it at rest (and about 12 s after ?cd stop); to repeat, type the RESISTED chunks again for a fresh dummy rather than relying on ?cd stop."
+            "Step 2 (refusals, no IS, cast or timer; wait out reuse or expect a local gate): without Sneak -> 23; Sneak, /target QAFriend -> 24; printed FRONT (inside QAEnemy's 50-degree cone) -> 24; BLOCK (solid wall) -> 9; FAR -> 34; in Close Combat -> 21 (leave with ?cd stop, which drops Spy Style: press slot 1 again).",
+            "Step 3 (+75 Thrown resistance): type the RESISTED chunks. The reset turns the fresh dummy north and teleports you 2.52 m behind it, facing it (the printed DUMMY stand); this dummy now holds that heading through Close Combat and retaliation, so do not walk around it. Strafe in place, click the fresh dummy, Sneak, press 3 after its reuse -> [TYPED-RESISTANCE OURS] 286 type7 total75 with the values printed below. The stock client re-requests Close Combat with the selected dummy as soon as the opener lands (and about 12 s after ?cd stop). ?cd stop also drops Spy Style, so press slot 1 again before the next opener; to repeat, type the RESISTED chunks again rather than walking to another stand."
         });
 
     public override async Task<byte[]> AfterStartAsync(NativeQaBootstrapContext context)
@@ -70,13 +70,14 @@ public sealed class AssassinSneakAttacksMode : NativeQaMode
         var front = StarterConcealedShotTargetingMode.Stand(21850, 16200);
         var block = StarterConcealedShotTargetingMode.Stand(21950, Z);
         var far = StarterConcealedShotTargetingMode.FindFarStand();
-        var rear = DummyStand(DummyX, RearZ, facing: 128);
+        // A resisted reset turns the dummy to heading 0 (north) and teleports the caster here, 2.52 m behind it.
+        var rear = DummyStand(DummyX, RearZ, facing: 0);
         Check.That(NavMesh.HasSightPath(1, X, Y, Z, EnemyX, Y, Z), "Clear two-metre rear approach");
         Check.That(NavMesh.HasSightPath(1, 21850, Y, 16200, EnemyX, Y, Z) &&
             Stealth.InFrustum(EnemyX, Z, 64, 21850, 16200, 50), "Clear frontal stand inside QAEnemy's 50-deg cone");
         Check.That(!NavMesh.HasSightPath(1, 21950, Y, Z, EnemyX, Y, Z), "Solid wall blocks sight");
         Check.That(NavMesh.HasSightPath(1, DummyX, DummyY, RearZ, DummyX, DummyY, DummyZ) &&
-            !Stealth.InFrustum(DummyX, DummyZ, 128, DummyX, RearZ, 50), "Clear rear stand outside the dummy's cone");
+            !Stealth.InFrustum(DummyX, DummyZ, ResetHeading, DummyX, RearZ, 50), "Clear rear stand outside the dummy's cone");
         foreach (var row in Rows)
         {
             var source = AbilityCatalog.Find(row.Id);

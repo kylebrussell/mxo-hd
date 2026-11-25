@@ -220,6 +220,9 @@ namespace hds
                 dummy.ResetForRespawn();
                 dummy.SetInCombat(false);
                 dummy.setRotation(0);
+                // The thrown-resisted rear-opener checks need the reset heading to survive the stock client's
+                // Close Combat re-request and the dummy's retaliation; other resets keep the ordinary turning.
+                dummy.HoldsFixtureHeading = resistanceStat == 1033;
                 MobMotion.ResetFixtureMotion(dummy);
                 ResetDummyEffects(dummy, resistanceStat);
                 // Give every viewer a standard new hostile creation with a fresh spawn ID after reset.
