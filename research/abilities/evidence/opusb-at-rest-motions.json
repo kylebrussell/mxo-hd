@@ -1,0 +1,49 @@
+{
+  "abilities": {
+    "279": {
+      "checks": {
+        "choreography": {
+          "source": "Shipped 279 is a CombatSpecialMove selected special. Deadly Throw has no ILDB move or script _Subject of its own; the shipped Spy throw scripts use Action_FreeAttackWeaponSMKnifeThrow.",
+          "runtime": "AtRestSpecialMotion plays the targeted free-attack motion record (StealthShieldAbilities.PlayThrow with the action byte) when the cast lands at rest; interlocked casts keep their round presentation.",
+          "test": "AtRestSpecialMotionTests pins the record bytes and action-table entry. Stock PR1200 native QA at 8bdc410a saw the targeted knife-throw swing (FreeAttackWeaponSMKnifeThrow 0x40) with no fight started. https://github.com/kylebrussell/mxo-hd/pull/1200#issuecomment-7169429641"
+        }
+      }
+    },
+    "280": {
+      "checks": {
+        "choreography": {
+          "source": "Shipped 280 is a CombatSpecialMove selected special. Crippling Throw has no ILDB move or script _Subject of its own; the shipped Spy throw scripts use Action_FreeAttackWeaponSMKnifeThrow.",
+          "runtime": "AtRestSpecialMotion plays the targeted free-attack motion record (StealthShieldAbilities.PlayThrow with the action byte) when the cast lands at rest; interlocked casts keep their round presentation.",
+          "test": "AtRestSpecialMotionTests pins the record bytes and action-table entry. Stock PR1200 native QA at 8bdc410a saw the targeted knife-throw swing (FreeAttackWeaponSMKnifeThrow 0x40) with no fight started. https://github.com/kylebrussell/mxo-hd/pull/1200#issuecomment-7169429641"
+        }
+      }
+    },
+    "130": {
+      "checks": {
+        "choreography": {
+          "source": "Shipped 130 is a CombatSpecialMove selected special. The client action list names FreeAttackWeaponSMPistolHinderingShot (0x5d) for this special.",
+          "runtime": "AtRestSpecialMotion plays the targeted free-attack motion record (StealthShieldAbilities.PlayThrow with the action byte) when the cast lands at rest; interlocked casts keep their round presentation.",
+          "test": "AtRestSpecialMotionTests pins the record bytes and action-table entry. Stock PR1200 native QA at 8bdc410a saw the crouched pistol fire (FreeAttackWeaponSMPistolHinderingShot 0x5d) with no fight started. https://github.com/kylebrussell/mxo-hd/pull/1200#issuecomment-7169429641"
+        }
+      }
+    },
+    "454": {
+      "checks": {
+        "choreography": {
+          "source": "Shipped 454 is a CombatSpecialMove selected special. The client action list names FreeAttackWeaponSMRifleDeadlyShot (0x60) for this special.",
+          "runtime": "AtRestSpecialMotion plays the targeted free-attack motion record (StealthShieldAbilities.PlayThrow with the action byte) when the cast lands at rest; interlocked casts keep their round presentation.",
+          "test": "AtRestSpecialMotionTests pins the record bytes and action-table entry. Stock PR1200 native QA at 8bdc410a saw the rifle raise and fire (FreeAttackWeaponSMRifleDeadlyShot 0x60) with no fight started. https://github.com/kylebrussell/mxo-hd/pull/1200#issuecomment-7169429641"
+        }
+      }
+    },
+    "287": {
+      "checks": {
+        "choreography": {
+          "source": "Shipped 287 is a CombatSpecialMove instant sneak opener; the ILDB \"Sneak Attacks\" group names its move 19597 (Suplex).",
+          "runtime": "SneakOpenerRound presents an at-rest landing as one Close Combat exchange naming 19597, with no fight, then restores each fighter's pose.",
+          "test": "CombatStyleTests.AtRestSneakOpenerRoundNamesItsSneakAttackMoveOrTheFailedSneakControl. Stock PR1200 native QA: the Suplex round flipped QAEnemy for 646 with no fight started; the same presentation was verified for six openers in PR1194. https://github.com/kylebrussell/mxo-hd/pull/1200#issuecomment-7169429641 https://github.com/kylebrussell/mxo-hd/pull/1194#issuecomment-7167661159"
+        }
+      }
+    }
+  }
+}
