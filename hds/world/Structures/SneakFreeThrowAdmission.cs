@@ -26,13 +26,14 @@ namespace hds
             return Gate(caster, id, targetViewId, spawn, out reason);
         }
 
-        /// <summary>Instant Assassin sneak attacks that store the same rear-opener gate (CastWhenUsed1, Spy Style,
-        /// Stealthed caster, CastOutsideTargetFOVAngle50, 6 m): Spin Throw, Topsy Turvy, Punt and Reverse Bull Dog.
+        /// <summary>Instant Spy/Cutthroat/Assassin sneak attacks that store the same rear-opener gate (CastWhenUsed1, Spy Style,
+        /// Stealthed caster, CastOutsideTargetFOVAngle50, 6 m): Drop Kick, Spin Throw, Topsy Turvy, Punt and Reverse Bull Dog.
         /// Their SneakAttack*_Test depends on the target's position, orientation and IsInCombat.</summary>
         public static bool GatesInstantOpener(ushort abilityId)
         {
             ushort id = AbilityCatalog.Canonical(abilityId);
-            return id == SpySneakOpeners.SpinThrow || id == SpySneakOpeners.TopsyTurvy || id == SpySneakOpeners.Punt ||
+            return id == SpySneakOpeners.DropKick || id == SpySneakOpeners.SpinThrow ||
+                id == SpySneakOpeners.TopsyTurvy || id == SpySneakOpeners.Punt ||
                 id == SpyShadowAssassinBatch.ReverseBullDog;
         }
 
