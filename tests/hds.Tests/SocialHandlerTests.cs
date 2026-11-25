@@ -70,6 +70,19 @@ public class SocialHandlerTests
     }
 
     [Fact]
+    public void FreeTextEmoteUsesItsOwnChatTypeAndTheAreaRelay()
+    {
+        // Stock /em waves: 28 ChatType 0x20, then the usual bShout/offset layout.
+        Assert.True(SocialRequests.TryParseChat(Rpc("28 20 00 08 00 00 00 00 06 00 77 61 76 65 73 00"), out var line));
+        Assert.Equal(SocialPackets.ChatEmote, line.Channel);
+        Assert.Equal("waves", line.Text);
+        var sender = (WorldClient)System.Runtime.CompilerServices.RuntimeHelpers.GetUninitializedObject(typeof(WorldClient));
+        sender.playerData = new ClientData();
+        // Not a crew, faction or team line: ChatHandler falls through to the area relay with the same type.
+        Assert.False(SocialHandler.TrySendGroupChat(sender, line.Channel, line.Text));
+    }
+
+    [Fact]
     public void ChatLongerThan255CharactersParses()
     {
         string text = new string('x', 300);

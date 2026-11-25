@@ -75,6 +75,7 @@ Remaining ignored requests now depend on unrecovered protocol purpose or backend
 | Request | Name / purpose | Evidence | Server today | Impact |
 |---|---|---|---|---|
 | `28` | Chat line (ChatType, bShout, Text, RoomName, ChatHandle). ChatType 18 would be a room line (`/room`, which the client doesn't register) | D, C 1052 | handled; room lines (new) go to everyone in the room, as `2e` type 18 | high |
+| `28` type `0x20` | Free-text emote: `/e`, `/em` and `/emote` (string ids `2e00000c`..`e`; command switch case `0x62257495` builds the `28` with ChatType `0x20`) | D | handled: no group routing, so it is relayed to other players as `2e` type `0x20`, like an area line | low |
 | `29` | Tell (TargetName, Text, bEchoOnly, ChatHandle) | D, C 81 | handled | high |
 | `30` | Emote (EmoteID, TargetID): every emote; an interactive one (`/hug` and 16 more) asks the target | D, C 24 | handled: the player's own view, and now other players' views (new); a paired one sends `31` to the target (new) | medium |
 | `32` | Answer to a two-person emote request (Result, EmoteID, Partner, WaitTime, IsRequester); the server's `31` asks | D, C 8 | handled (new): `32` to the requester, then its accepted animation | medium |
