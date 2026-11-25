@@ -53,7 +53,7 @@ public sealed class SneakFreeWeakeningWardingMode : NativeQaMode
             "Step 1 (cast first): select slot 1, press slot 2 (Sneak), /target QAEnemy, press slot 3. Save the first full 1133 request. Expect Sneak kept through the 2.0 s cast, 35 IS, Sneak off on landing, the targeted knife-throw motion, the thrown hit printed below, 45 s own / 15 s family 691 reuse, and two source1133 -45 records for 8 s (Melee and Ballistic Damage Resistance) with matching removals. Keep QAEnemy HP before/after.",
             "Step 2: after the 15 s family timer, Sneak again, press slot 4 (1134). Save the first full request. Expect 45 IS, the targeted motion, the hit printed below, 45 s own / 15 s 691, and two source1134 -30 records for 8 s (Melee and Ballistic Accuracy) with matching removals.",
             "Step 3 (refusals, no IS, cast or timer; wait out the 45 s reuse or expect a local gate): drop Sneak and press 3 -> 23 or local gate. Sneak, /target QAFriend -> 24. At the printed FRONT (inside QAEnemy's 50-degree cone) -> 24, BLOCK (solid wall) -> 9, FAR -> 34, each for slots 3 and 4.",
-            "Step 4 (+75 Thrown resistance): type the printed DUMMY chunks (2 m behind the Melee Dummy, which faces south), then the RESISTED chunks. Strafe, click the fresh dummy, Sneak, press slot 3 after its reuse -> [TYPED-RESISTANCE OURS] 1133 type7 total75 with the values printed below. Type ?cd stop; after 15 s, Sneak and press slot 4 -> the printed 1134 resisted values."
+            "Step 4 (+75 Thrown resistance): type the printed DUMMY chunks (2 m behind the Melee Dummy, which faces south), then the RESISTED chunks. Strafe, click the fresh dummy, Sneak, press slot 3 after its reuse -> [TYPED-RESISTANCE OURS] 1133 type7 total75 with the values printed below. The hit dummy retaliates into Close Combat: after 15 s type the RESISTED chunks again, click the fresh dummy, Sneak and press slot 4 -> the printed 1134 resisted values."
         });
 
     public override async Task<byte[]> AfterStartAsync(NativeQaBootstrapContext context)
@@ -185,10 +185,16 @@ public sealed class SneakFreeWeakeningWardingMode : NativeQaMode
         {
             if (row.Id == Warding)
             {
-                // A hit dummy may retaliate; the opener must start outside combat.
-                caster.SendChat("?cd stop");
-                await caster.WaitForTextAsync("Fixture combat ended.");
+                // The hit dummy retaliates into Close Combat; a fresh resisted dummy restores the outside-combat opener.
                 await Task.Delay(TimeSpan.FromSeconds(15.25));
+                int reset = caster.World.CreationSnapshot().Count;
+                caster.SendChat("?combatdepth fixture-reset-thrown-resisted");
+                await caster.WaitForTextAsync("Fixture reset: Melee Dummy restored");
+                await caster.WaitUntilAsync(() => caster.World.CreationSnapshot().Skip(reset).Any(v => v.Name == CombatFixtureLoadout.DummyName),
+                    "A fresh resisted Melee Dummy", HeadlessPlayer.DefaultTimeout);
+                dummy = caster.World.CreationSnapshot().Last(v => v.Name == CombatFixtureLoadout.DummyName);
+                dummyHandle = DuelPackets.Handle(dummy.ViewId, dummy.SpawnId);
+                await Task.Delay(TimeSpan.FromSeconds(2));
             }
             await SneakAsync();
             int logFrom = server.DebugLog().Length;
