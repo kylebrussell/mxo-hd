@@ -41,7 +41,8 @@ namespace hds
             bool zen = (armor || ability == 869 || ability == 870) && Allowed(caller, MartialFixedDamageMode, "zen-master");
             bool duelist = (armor || ability == 501 || ability == 502) && Allowed(caller, MartialFixedDamageMode, "duelist");
             // Timed Spy throws: the armed win only decides the queued exchange; the dummy's thrown resistance uses fixture-reset-thrown-resisted.
-            bool spyThrows = !armor && SpyTimedThrows.Handles(ability) && Allowed(caller, MartialFixedDamageMode, "spy-throws");
+            bool spyThrows = !armor && (SpyTimedThrows.Handles(ability) || ability == CombatSpecials.WoundingThrow) &&
+                Allowed(caller, MartialFixedDamageMode, "spy-throws");
             bool spyInterlock = (armor || ability == LegSweepAdmission.LegSweep || ability == CannyStrikeDamage.CannyStrike) &&
                 Allowed(caller, MartialFixedDamageMode, "spy-interlock");
             if (!starter && !kungFu && !karate && !aikido && !grandmaster && !karateGrandmaster && !machinegunFist &&
