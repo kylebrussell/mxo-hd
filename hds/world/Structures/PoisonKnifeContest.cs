@@ -52,8 +52,11 @@ namespace hds
             return $"Ranged contest {args[0]}.";
         }
 
+        /// <summary>Unit tests only: a fixed outcome for the 130/454 contest (never Poison Knife).</summary>
+        internal static bool? TestOutcome;
+
         internal static bool? ForcedResult(WorldClient caster, ushort ability) =>
-            ability != CombatSpecials.PoisonKnife && forced != 0 && RangedQaAllowed(caster) ? (bool?)(forced == 1) : null;
+            ability == CombatSpecials.PoisonKnife ? null : TestOutcome ?? (forced != 0 && RangedQaAllowed(caster) ? (bool?)(forced == 1) : null);
 
         private static bool Resolve(WorldClient caster, WorldClient recipient, string targetName, int defense, int consistency, int? tactic,
             ushort ability)
