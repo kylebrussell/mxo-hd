@@ -351,9 +351,9 @@ def server(i):
     elif i == 33:
         parts.append('stored fixed viral base 22 with incomplete legacy endpoints; 16 m live enemy selection before cost verified in stock client; full retail scaling unresolved')
     elif i == 279:
-        parts.append('stored function-3 thrown base with live enemy selection required; stock level-20 shot landed 37; wider damage and conditional ordering unresolved')
+        parts.append('stored function-3 thrown base 21 + trunc(level x 0.466667) (30 at 20, 44 at 50) with live enemy selection required; stock level-20 37, level-25 40 and level-50 67 neutral / 55 under +75 Thrown; historical magnitude and conditional ordering unresolved')
     elif i == 280:
-        parts.append('stored fixed thrown base 1 with live enemy selection required; stock landed 1 and rooted for 15.75s with Wicked Aim; wider targeting and breaks unresolved')
+        parts.append('stored fixed thrown base 1 with live enemy selection required; stock 1 neutral / 0 under +75 Thrown; Rooted 15.75s with Wicked Aim survives its own hit and the next landed damage (279) removes it with its 519 sibling')
     elif i == 1135:
         parts.append('stored fixed thrown base 30 before typed influence and resistance; stock landed 46 at +54% influence; wider damage scaling unresolved')
     elif i == 504:
@@ -370,6 +370,12 @@ def server(i):
         parts.append('stored fixed ballistic base 47 (legacy CSV endpoints 4..0) before influence and typed resistance; stock 52 neutral / 47 under +20 Ballistic, rank-50 57/57/54; archived 1660 with 182 absorbed lacks a caster/target profile, so historical magnitude unresolved')
     elif i == 153:
         parts.append('stored fixed thrown base 52 (plus the stealth-started bonus) before typed influence and resistance; stock rear opener 311 neutral, 255 under +75 Thrown; wider damage scaling unresolved')
+    elif i == 287:
+        parts.append('stored function-3 thrown base 17..120 (120 at 50) plus the stealth-started +300 opener bonus before influence and typed resistance; stock rear opener 646 neutral at level 50; historical magnitude unresolved')
+    elif i == 295:
+        parts.append('stored function-4 thrown base 8..10 (levels 22..50) on a won exchange against the live interlock opponent, before influence and typed resistance; stock 13 neutral / 10 under +75 Thrown at level 50; the stock client announces an escape attempt and plays an ordinary Spy Style exchange; historical magnitude unresolved')
+    elif i == 386:
+        parts.append('stored fixed thrown base 92 plus the stealth-started +900 opener bonus before influence and typed resistance; stock 1527 neutral / 1256 under +75 Thrown at level 50; historical magnitude unresolved')
     elif i == 1131:
         parts.append('stored function-3 thrown base 24..154 before typed influence and resistance; stock rank-50 throw 237 before and 195 after +75 Thrown; wider damage scaling unresolved')
     elif i == 348:

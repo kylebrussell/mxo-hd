@@ -1,0 +1,104 @@
+{
+  "abilities": {
+    "279": {
+      "note": "Stock runs: PR417 level-20 37; PR1150 level-25 40 with the six records, both proc branches, the root break and Off Balance +42; PR560 level-50 67 neutral / 55 resisted; PR1176 0.43x run pace. The in-combat special-move exchange and at-rest presentation remain open for the knife-thrower closure mode.",
+      "checks": {
+        "source-parity": {
+          "source": "GOB 279 stores one instant thrown health modifier with ValueFunction 3: 21 + trunc(level x binary32 0.466667), 30 at level 20, 32 at 25 and 44 at 50. A separate DealDamageIfOffBalance on-use initializer stores its own function-3 value (45 at level 50). The retail order of the base hit and the conditional component is unarchived.",
+          "runtime": "DeadlyThrowDamage resolves the stored base, which then takes the caster's ordinary Thrown influence and the target's typed Thrown resistance. ConditionalThrownDamage applies the Off Balance initializer as a separate thrown component after the base hit, through the same influence and resistance. That order is the chosen server policy.",
+          "test": "Stock level-20 37 (PR417), level-25 40 plus a separate '[CONDITIONAL-THROW] 279 ... value33 raw42 final42' hit only while Off Balance (PR1150), and level-50 67 neutral / 55 under +75 Thrown (PR560). StarterKnifeThrowerResistanceTests, DeadlyCripplingThrowsParityTests.Level25ClosureDamageAndRootDurationMatchParityModeExpectations, ConditionalThrownDamageTests and KnifeThrowerRowClosureTests.DeadlyThrowRuntimeEffectCarriesEveryShippedRecord. https://github.com/kylebrussell/mxo-hd/pull/1150#issuecomment-7152545237 https://github.com/kylebrussell/mxo-hd/pull/560 https://github.com/kylebrussell/mxo-hd/pull/417"
+        },
+        "behavior-tests": {
+          "source": "Shipped 279 lists Movement, Sneak Movement and Invisibility Movement -50 and Force Combat -15 for 15 s, the thrown hit, independent 20% Dazed and Staggered for 8 s, and DealDamageIfOffBalance.",
+          "runtime": "TempMods carries the captured 115 -57, 877 -85, 878 -72 and 519 -15 records, both 20% states and the conditional initializer. AbilityBuffs projects the stance's movement channel and CombatInsightEngagement consumes Force Combat.",
+          "test": "KnifeThrowerRowClosureTests.DeadlyThrowRuntimeEffectCarriesEveryShippedRecord and ForceCombatDebuffLowersTheAffectedPlayersEntryScoreUntilItsOwnExpiry(279), KnifeMovementDebuffsTests, OperativeParityTests.ShippedControlProbabilityAndLifetimeReachTheEffectHolder, DeadlyCripplingThrowsParityTests and ConditionalThrownDamageTests. Stock PR1150 and PR1176. https://github.com/kylebrussell/mxo-hd/pull/1150#issuecomment-7152545237 https://github.com/kylebrussell/mxo-hd/pull/1176#issuecomment-7162841579"
+        }
+      }
+    },
+    "280": {
+      "note": "Stock PR1150: 2.0 s cast, 20 IS, 1 Thrown, Rooted 15.75 s and 519 -40 15 s, kept through its own hit and removed when 279 landed. PR560: 1 -> 0 resisted. PR1176: no movement while rooted. The stock client refuses 280 in Close Combat itself.",
+      "checks": {
+        "stats": {
+          "source": "GOB 280 stores Force Combat 519 -40 for 15 s, and an ISDrain Target 710 -100 sibling that is the OnHealthReduceDeactivateChance payload of the Rooted state.",
+          "runtime": "TimedEffects publishes 519 -40, and CombatInsightEngagement reads it in the affected player's live entry score. AbilityCatalog.Controls turns the 710 -100 sibling into the root's protected first health change and 100% later break; it publishes no stat and spends no Inner Strength.",
+          "test": "KnifeThrowerRowClosureTests.ForceCombatDebuffLowersTheAffectedPlayersEntryScoreUntilItsOwnExpiry(280) shows force 110 -> 66 -> 110. CripplingThrowAndSeverArteryIsDrainCarriersNeverSpendTheRecipientsInnerStrength shows the first hit kept, the second breaking the root, and IS unchanged. OperativeParityTests.CripplingThrowFirstHealthChangeArmsItsRootBreak. Stock PR1150 saw 519 -40 and the root survive the 1-point hit, then break when 279 landed. https://github.com/kylebrussell/mxo-hd/pull/1150#issuecomment-7152545237"
+        },
+        "behavior-tests": {
+          "source": "Shipped 280 lists Rooted 15 s, the thrown hit 1, the ISDrain Target -100 payload, Force Combat -40 for 15 s and OnHealthReduceDeactivateChance.",
+          "runtime": "TempMods carries Rooted with its protected-first-change chance break and 519 -40; the fixed base 1 takes ordinary influence and typed resistance.",
+          "test": "KnifeThrowerRowClosureTests.CripplingThrowRuntimeEffectCarriesEveryShippedRecord, ForceCombatDebuffLowersTheAffectedPlayersEntryScoreUntilItsOwnExpiry(280) and CripplingThrowAndSeverArteryIsDrainCarriersNeverSpendTheRecipientsInnerStrength; KnifeMovementDebuffsTests.CripplingThrowRootOverridesMovementScaleToMinusOneHoldsFirstHitAndRestoresOnBreakOrExpiry; StarterKnifeThrowerResistanceTests; DeadlyCripplingThrowsParityTests. https://github.com/kylebrussell/mxo-hd/pull/1150#issuecomment-7152545237 https://github.com/kylebrussell/mxo-hd/pull/1176#issuecomment-7162841579"
+        }
+      }
+    },
+    "287": {
+      "checks": {
+        "source-parity": {
+          "source": "GOB 287 stores a function-3 thrown health modifier (17..120, 120 at level 50), replacing the incomplete 17/0 legacy CSV row. spy/sneaks.py supplies the +300 Suplex sneak constant; adding it to a stealth-started opener is the documented server policy.",
+          "runtime": "SuplexDamage resolves the stored base; SneakAttacks adds +300 only for a stealth-started opener; the total takes ordinary Thrown influence and typed Thrown resistance. The historical retail magnitude is unarchived.",
+          "test": "Stock PR1158 rear opener at level 50: 50 IS and 646 Thrown on QAEnemy, matching (120 + 300) x 1.54. SpyInstantSneakOpenersTests.InstantSneakOpenersEnforceRearAdmissionAndResolveExactLevel50Totals and KnifeThrowerRowClosureTests.Level50DamageTotalsMatchTheStockNeutralAndResistedMeasurements. https://github.com/kylebrussell/mxo-hd/pull/1158#issuecomment-7156199034"
+        },
+        "behavior-tests": {
+          "source": "Shipped 287 lists Dazed, Staggered and Off-Balance for 15 s, the thrown hit 17..120 and SneakAttackSuplex_Test.",
+          "runtime": "TempMods carries all three 15 s states; SpyInstantSneakOpenerAdmission applies the rear-opener test before cost; SuplexDamage and SneakAttacks resolve the hit.",
+          "test": "KnifeThrowerRowClosureTests.SuplexRuntimeEffectCarriesEveryShippedRecord and Level50DamageTotalsMatchTheStockNeutralAndResistedMeasurements, SpyInstantSneakOpenersTests and SpyBackRollAndStarterOpenersTests. Stock PR1158 saw all three states applied and removed at 15 s. https://github.com/kylebrussell/mxo-hd/pull/1158#issuecomment-7156199034"
+        }
+      }
+    },
+    "295": {
+      "checks": {
+        "source-parity": {
+          "source": "GOB 295 stores a function-4 thrown health modifier 8..10 scaled between levels 22 and 50, replacing the 0/0 legacy CSV row, and requires the Spy Style stance in close combat. combat_animations.json names no Canny Strike move.",
+          "runtime": "CannyStrikeDamage admits only the live interlock opponent and samples the native ValueFunction 4 Gaussian clamp. A won exchange lands the hit through ordinary Thrown influence and typed Thrown resistance, inside the ordinary Spy Style exchange. The historical retail magnitude is unarchived.",
+          "test": "Stock PR1152: outside-combat local refusal, 70 IS, 30 s reuse, 'one exchange win 295', 13 neutral and '[TYPED-RESISTANCE OURS] 295 type7 total75 raw13 final10'. The stock client printed 'You begin attempting to escape from Melee Dummy with a Canny Strike.' and played the ordinary exchange 20849. LegSweepCannyStrikeParityTests, OperativeBatchTwoTests.CannyStrikeStillUsesTheThrownDamageConsumerWithAnIndependentBase and KnifeThrowerRowClosureTests.CannyStrikeHasOnlyItsStoredLevelScaledThrownHit. https://github.com/kylebrussell/mxo-hd/pull/1152#issuecomment-7152623359 https://github.com/kylebrussell/mxo-hd/pull/1152#issuecomment-7156042672"
+        },
+        "behavior-tests": {
+          "source": "Shipped 295 lists only the thrown hit 8..10.",
+          "runtime": "CannyStrikeDamage resolves the stored function-4 range and the ordinary typed resistance consumes it; no tempmod is applied.",
+          "test": "KnifeThrowerRowClosureTests.CannyStrikeHasOnlyItsStoredLevelScaledThrownHit samples 200 level-50 draws inside 8..10, asserts the thrown type and 70 IS and that no tempmod exists. LegSweepCannyStrikeParityTests pins the level-50 13 / 10 closure values. https://github.com/kylebrussell/mxo-hd/pull/1152#issuecomment-7156042672"
+        }
+      }
+    },
+    "341": {
+      "checks": {
+        "damage": {
+          "source": "GOB 341 stores ThrownDOT total 68 over 30 s at a 2.5 s interval, with no direct hit.",
+          "runtime": "TimedEffects scales the stored total once with the caster's Thrown influence (104 at +54%), ticks DotTick(104, 30, 2.5) = 9 eleven times, and each tick takes the target's typed Thrown resistance.",
+          "test": "Stock PR1140 on the stationary dummy: Dot 1157 104 for 30 s and eleven ticks of 9 (30000 -> 29901); on the +75 Thrown dummy '[TYPED-RESISTANCE OURS] 341 type7 total75 raw9 final7' on each of eleven ticks of 7, with no tick after removal. KnifeThrowerRowClosureTests.Level50DamageTotalsMatchTheStockNeutralAndResistedMeasurements and OperativeBatchTwoTests.SeverArterySchedulesElevenTicksWithoutASecondTerminalTick. https://github.com/kylebrussell/mxo-hd/pull/1140#issuecomment-7150833990"
+        },
+        "stats": {
+          "source": "GOB 341 stores Movement Speed, Sneak Movement and Invisibility Movement -50 and Force Combat -10 for 30 s, and an ISDrain Target 710 value-10 carrier for RandomCombatStateChance.",
+          "runtime": "AbilityBuffs projects the current stance's movement channel and restores it on expiry; CombatInsightEngagement reads 519. AbilitySeverArteryStates consumes the 710 value as the 10 s state argument; it spends no Inner Strength.",
+          "test": "Stock PR1176: 115/877/878 -50 for 30 s and a 0.50x run pace (300.3 against 600). Stock PR1137 saw 519 -10 and 710 +10 with matched removals and a 10 s Daze from the callback. KnifeMovementDebuffsTests.KnifeSlowThrowsProjectPerStanceMovementChannelsComposeWithSpeedAndRestore(341), KnifeThrowerRowClosureTests.ForceCombatDebuffLowersTheAffectedPlayersEntryScoreUntilItsOwnExpiry(341) (110 -> 99 -> 110) and CripplingThrowAndSeverArteryIsDrainCarriersNeverSpendTheRecipientsInnerStrength, SeverArteryStateTests. https://github.com/kylebrussell/mxo-hd/pull/1176#issuecomment-7162841579 https://github.com/kylebrussell/mxo-hd/pull/1137#issuecomment-7149316200"
+        },
+        "behavior-tests": {
+          "source": "Shipped 341 lists ThrownDOT 68 over 30 s, the three movement penalties, ISDrain Target 10, Force Combat -10, RandomCombatStateChance and ThrownDOT.",
+          "runtime": "TempMods carries the DOT, four stat records and the SeverState marker; TimedEffects ticks the DOT and AbilitySeverArteryStates runs the initial and 2.5 s state checks.",
+          "test": "KnifeThrowerRowClosureTests.SeverArteryRuntimeEffectCarriesEveryShippedRecord and Level50DamageTotalsMatchTheStockNeutralAndResistedMeasurements, SeverArteryStateTests, OperativeBatchTwoTests.SeverArterySchedulesElevenTicksWithoutASecondTerminalTick, KnifeMovementDebuffsTests and SpyShadowAssassinBatchTests. Stock PR1137, PR1140 and PR1176. https://github.com/kylebrussell/mxo-hd/pull/1137#issuecomment-7149316200 https://github.com/kylebrussell/mxo-hd/pull/1140#issuecomment-7150833990"
+        }
+      }
+    },
+    "348": {
+      "checks": {
+        "source-parity": {
+          "source": "GOB 348 stores a function-3 thrown health modifier 35..191 (190 at level 50) and a 50% Staggered proc for 12 s.",
+          "runtime": "SpyMasterSneakOpeners resolves the stored learned-level base before ordinary Thrown influence and typed Thrown resistance. The historical retail magnitude is unarchived.",
+          "test": "Stock PR1149 rank-50 throw 292 neutral and PR1170 '[TYPED-RESISTANCE OURS] 348 ... raw292 final240' on the +75 Thrown dummy, matching 190 x 1.54. SneakFreeLegInfuriatingStaggeringTests and KnifeThrowerRowClosureTests.Level50DamageTotalsMatchTheStockNeutralAndResistedMeasurements. https://github.com/kylebrussell/mxo-hd/pull/1149#issuecomment-7152736957 https://github.com/kylebrussell/mxo-hd/pull/1170#issuecomment-7162408226"
+        },
+        "behavior-tests": {
+          "source": "Shipped 348 lists Staggered 12 s at 50%, the thrown hit 35..191 and StaggeringThrow_Subject.",
+          "runtime": "TempMods carries the 50% 12 s state; SneakFreeThrowAdmission and SpyMasterSneakOpenersHandler hold Sneak through the cast, resolve the hit and play the targeted throw.",
+          "test": "KnifeThrowerRowClosureTests.StaggeringThrowAndFreedomToJointsRuntimeEffectsCarryEveryShippedRecord and Level50DamageTotalsMatchTheStockNeutralAndResistedMeasurements, SneakFreeLegInfuriatingStaggeringTests, OperativeBatchTwoTests.ControlUsesSourcedDurationAndChance and SpyMasterSneakOpenersTests. Stock PR1149 and PR1170. https://github.com/kylebrussell/mxo-hd/pull/1149#issuecomment-7152736957 https://github.com/kylebrussell/mxo-hd/pull/1170#issuecomment-7162408226"
+        }
+      }
+    },
+    "386": {
+      "checks": {
+        "behavior-tests": {
+          "source": "Shipped 386 lists the thrown hit 92, Powerless 8 s and SneakAttackFreeJoints_Test.",
+          "runtime": "TempMods carries Powerless 8 s; SpyMasterSneakOpeners applies the opener gate and resolves 92 plus the +900 stealth-started bonus through ordinary influence and typed resistance.",
+          "test": "KnifeThrowerRowClosureTests.StaggeringThrowAndFreedomToJointsRuntimeEffectsCarryEveryShippedRecord and Level50DamageTotalsMatchTheStockNeutralAndResistedMeasurements (1527 / 1256), SpyMasterSneakOpenersTests. Stock PR1099 measured 1527 / 1256 and PR1121 the matched Powerless pair. https://github.com/kylebrussell/mxo-hd/pull/1099#issuecomment-7136558966 https://github.com/kylebrussell/mxo-hd/pull/1121#issuecomment-7144783316"
+        }
+      }
+    }
+  }
+}
