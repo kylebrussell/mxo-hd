@@ -76,6 +76,59 @@ public class JumpRecordTests
         Assert.False(flight.IsCurrent(10, data));
     }
 
+    static JumpRecords.Destination At(double x, double y, double z, ushort polygon = 0) =>
+        new(unchecked((ulong)BitConverter.DoubleToInt64Bits(x)), unchecked((ulong)BitConverter.DoubleToInt64Bits(y)),
+            unchecked((ulong)BitConverter.DoubleToInt64Bits(z)), 1250, 2, polygon);
+
+    [Fact]
+    public void LandingReportMatchesOnlyTheAcceptedDestinationNearTheDeadline()
+    {
+        var data = new ClientData();
+        data.setDistrictId(1);
+        const uint end = 100_000;
+        var flight = new JumpRecords.Flight(end, data, null, null, (20950, 495, 6400));
+        // Retail landing reports: 0 or 1 world unit off the destination, up to 1.054 s before JumpEndTime.
+        Assert.True(flight.IsLandingReport(At(20951, 495, 6400), end - 1054));
+        Assert.True(flight.IsLandingReport(At(20950, 495, 6399), end));
+        Assert.True(flight.IsLandingReport(At(20950, 495, 6400), end - (uint)JumpRecords.LandingReportLeadMilliseconds));
+        Assert.False(flight.IsLandingReport(At(20951, 495, 6400), end - (uint)JumpRecords.LandingReportLeadMilliseconds - 1));
+        Assert.False(flight.IsLandingReport(At(20951, 495, 6400), end + 1));
+        // Retail redirects near the deadline moved the target by 0.77 m or more.
+        Assert.False(flight.IsLandingReport(At(20953, 495, 6400), end - 100));
+        Assert.False(flight.IsLandingReport(At(20950, 498, 6400), end - 100));
+        Assert.False(flight.IsLandingReport(At(20950, 495, 6477), end - 100));
+        Assert.False(new JumpRecords.Flight(end, data, null).IsLandingReport(At(20950, 495, 6400), end - 100));
+    }
+
+    [Theory]
+    [InlineData(400, true)]
+    [InlineData(5000, false)]
+    public void LandingReportNearTheDeadlineGetsNoRedirectReply(int remainingMs, bool landing)
+    {
+        var oldClient = Store.currentClient; var oldWorld = Store.world;
+        try
+        {
+            var c = JumpClient(100);
+            Store.currentClient = c;
+            Store.world = (WorldServer)System.Runtime.CompilerServices.RuntimeHelpers.GetUninitializedObject(typeof(WorldServer));
+            c.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(20950, 495, 6400));
+            uint now = (uint)Math.Round(TimeUtils.GetSimTimeSeconds() * 1000.0);
+            c.playerData.PendingJump = new JumpRecords.Flight(now + (uint)remainingMs, c.playerData, null, null, (20950, 495, 6400));
+            byte[] cancel = JumpRecords.Encode(new JumpRecords.Cancel(At(20951, 495, 6400)))[2..];
+            new AbilityHandler().processHyperJumpCancel(ref cancel);
+            Assert.Null(c.playerData.PendingJump);
+            Assert.Empty(c.messageQueue.RPCMessagesQueue);
+            if (landing) Assert.Empty(c.messageQueue.ObjectMessagesQueue);
+            else Assert.Single(c.messageQueue.ObjectMessagesQueue);
+            double x = 0, y = 0, z = 0;
+            NumericalUtils.LtVector3dToDoubles(c.playerInstance.Position.getValue(), ref x, ref y, ref z);
+            Assert.Equal(landing ? 20950 : 20951, x);
+            Assert.Equal(495, y);
+            Assert.Equal(6400, z);
+        }
+        finally { Store.currentClient = oldClient; Store.world = oldWorld; }
+    }
+
     [Fact]
     public void FullPeakRedirectOriginFollowsTheActiveFlightAcrossClockWrap()
     {

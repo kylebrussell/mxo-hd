@@ -32,9 +32,11 @@ namespace hds
             private readonly int world, life;
             internal readonly Takeoff? InitialReport;
             internal readonly Route? FullPeakRoute;
+            private readonly (double X, double Y, double Z)? accepted;
             internal uint EndMilliseconds => endMs;
 
-            internal Flight(uint endMs, ClientData owner, Takeoff? initialReport, Route? fullPeakRoute = null)
+            internal Flight(uint endMs, ClientData owner, Takeoff? initialReport, Route? fullPeakRoute = null,
+                (double X, double Y, double Z)? acceptedDestination = null)
             {
                 this.endMs = endMs;
                 district = owner.getDistrictId();
@@ -42,12 +44,30 @@ namespace hds
                 life = owner.lifeGeneration;
                 InitialReport = initialReport;
                 FullPeakRoute = fullPeakRoute;
+                accepted = acceptedDestination;
             }
 
             internal bool IsCurrent(uint nowMs, ClientData owner) =>
                 unchecked((int)(endMs - nowMs)) >= 0 &&
                 district == owner.getDistrictId() && world == owner.worldGeneration && life == owner.lifeGeneration;
+
+            /// <summary>
+            /// Retail clients send 80 c4 at the accepted destination as they land. In the community captures 38 of the
+            /// 40 c4s within one world unit of the destination got no redirect reply. They arrived between 1.054 s before
+            /// and 0.848 s after JumpEndTime. A current flight only sees the part before the deadline. Later ones are
+            /// already ignored.
+            /// </summary>
+            internal bool IsLandingReport(Destination report, uint nowMs) =>
+                accepted is { } at && unchecked((int)(endMs - nowMs)) >= 0 && unchecked((int)(endMs - nowMs)) <= LandingReportLeadMilliseconds &&
+                Math.Abs(report.X - at.X) <= LandingReportTolerance && Math.Abs(report.Y - at.Y) <= LandingReportTolerance &&
+                Math.Abs(report.Z - at.Z) <= LandingReportTolerance;
         }
+
+        /// <summary>Earliest retail landing report seen is 1.054 s before JumpEndTime; allow a little network delay.</summary>
+        internal const int LandingReportLeadMilliseconds = 1250;
+
+        /// <summary>Retail landing reports sit 0 or 1 world unit from the accepted destination on each axis.</summary>
+        internal const double LandingReportTolerance = 2;
 
         internal readonly struct Route
         {

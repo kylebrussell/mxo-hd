@@ -67,6 +67,12 @@ The matched successful full-peak retail starts above have no immediate 80 c4 at 
 
 For the reproduced stock case, suppress a 80 c4 reply only within one second of a flag-1 full-peak start on mapped ground, in the same world/life, with the exact takeoff polygon and within four centimetres of the original XYZ. Keep the assigned destination and its one clock echo. Different coordinates, unmapped origin, a different polygon, or a later request retain the existing cancel path. The headless fixture replays both bundled and separate stock takeoff reports. The full snapshot also uses the shipped ordinary RSI selector when the server field has not been initialized.
 
+## Landing reports
+
+The community captures in `research/packet-dumps/community-intake` hold 95 client `80 c4` records after an accepted flag-1 start. 40 of them sit 0 or 1 world unit from the accepted destination on every axis. They arrived between 1.054 s before and 0.848 s after JumpEndTime. In 38 of those 40, no server packet echoed the C4 coordinates within two seconds, so they got no redirect reply. One of the other two got a flags-0x14 view to the same point. The other matched the destination exactly, and its coordinates reappeared only in an ordinary flags-4 update. The C4 records that got the airborne redirect described below are at least 0.77 m from the destination.
+
+The server therefore treats a C4 within 2 world units of the accepted destination, in the last 1.25 s of a current flight, as a landing report. It clears the pending flight and sends nothing. The stored position is already the destination. A landing report after the deadline was already ignored with the expired flight. Earlier C4 records, and any farther from the destination, keep the redirect path. `JumpRecordTests.LandingReportMatchesOnlyTheAcceptedDestinationNearTheDeadline` and `LandingReportNearTheDeadlineGetsNoRedirectReply` pin both sides.
+
 ## Active full-peak redirects
 
 In the Wan Chai proxy_026 pair, the initial end time is 90429206 ms. The C4 response has an airborne origin at (31487.092,115.519,16335.705), simulation time 90421345 ms, flags 0x14 and end time 90429095 ms. This keeps 7.750 s of the original 7.861 s remaining, even though the new horizontal destination is only 0.96 m from that origin. Niobe's CSEQ 181 response changes the destination with flags 0x12 and an end time 5 ms before the original deadline.
