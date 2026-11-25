@@ -54,9 +54,46 @@ namespace hds
         }
         
         
+        /// <summary>
+        /// Receives datagrams one at a time, in arrival order. A receive that completes synchronously is handled in this
+        /// loop rather than from its callback: under load (200 moving clients) every receive completed synchronously and
+        /// the callback-to-BeginReceiveFrom recursion overflowed the stack, ending the server process.
+        /// </summary>
+        private void ReceiveNext()
+        {
+            while (true)
+            {
+                // Queue each datagram before receiving another. Concurrent callbacks racing for processLock can reorder RPCs.
+                EndPoint nextClient = new IPEndPoint(IPAddress.Any, 0);
+                IAsyncResult iar;
+                try
+                {
+                    iar = socket.BeginReceiveFrom(buffer, 0, buffer.Length, SocketFlags.None, ref nextClient,
+                        finalReceiveFrom, socket);
+                }
+                catch (SocketException ex)
+                {
+                    Output.WriteLine("[WORLD] Receive failed: " + ex.SocketErrorCode + " " + ex.Message);
+                    return;
+                }
+                catch (ObjectDisposedException)
+                {
+                    return; // The socket closed while a receive was finishing.
+                }
+                if (!iar.CompletedSynchronously) return;
+                ProcessDatagram(iar);
+            }
+        }
+
         private void finalReceiveFrom(IAsyncResult iar)
         {
-            
+            if (iar.CompletedSynchronously) return; // ReceiveNext handles it without growing the stack
+            ProcessDatagram(iar);
+            ReceiveNext();
+        }
+
+        private void ProcessDatagram(IAsyncResult iar)
+        {
             Socket recvSocket = (Socket)iar.AsyncState;
             EndPoint Remote = new IPEndPoint(IPAddress.Any, 0);
             
@@ -106,25 +143,11 @@ namespace hds
                     }
                 }
             }
-            finally
+            catch (Exception ex)
             {
-                // Queue this datagram before receiving another. Concurrent callbacks racing for processLock can reorder RPCs.
-                EndPoint nextClient = new IPEndPoint(IPAddress.Any, 0);
-                try
-                {
-                    socket.BeginReceiveFrom(buffer, 0, buffer.Length, SocketFlags.None, ref nextClient,
-                        finalReceiveFrom, socket);
-                }
-                catch (SocketException ex)
-                {
-                    Output.WriteLine("[WORLD] Receive failed: " + ex.SocketErrorCode + " " + ex.Message);
-                }
-                catch (ObjectDisposedException)
-                {
-                    // The socket closed while this receive callback was finishing.
-                }
+                // One bad datagram must not stop the receive loop.
+                Output.WriteLine("[WORLD] Datagram handling failed: " + ex.GetType().Name + " " + ex.Message);
             }
-
         }
 
         
@@ -149,7 +172,7 @@ namespace hds
             EndPoint Remote = sender;
             try
             {
-                socket.BeginReceiveFrom(buffer, 0, buffer.Length, SocketFlags.None, ref Remote, new AsyncCallback(finalReceiveFrom), socket);
+                ReceiveNext();
             }catch(Exception ex)
             {
                 Output.WriteDebugLog("Exception Thrown ListenForAllClients " + ex.Message);
