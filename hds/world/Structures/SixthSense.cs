@@ -29,7 +29,7 @@ namespace hds
             return (x, y, z);
         }
 
-        internal static bool WithinRadius((double X, double Y, double Z) source, (double X, double Y, double Z) target)
+        public static bool WithinRadius((double X, double Y, double Z) source, (double X, double Y, double Z) target)
         {
             var (x, y, z) = (target.X - source.X, target.Y - source.Y, target.Z - source.Z);
             return x * x + y * y + z * z <= Radius * Radius;
@@ -41,9 +41,10 @@ namespace hds
             var origin = Position(caster);
             uint district = caster.playerData.getDistrictId();
             int detection = AbilityStats.Player(caster, Detection);
-            int roll = Random.Shared.Next(100);
+            int roll = SixthSenseQa.RollFor(caster) ?? Random.Shared.Next(100);
             string name = SocialHandler.HandleOf(caster);
             var pings = new List<DataMiningPackets.Ping>();
+            int detectedPlayers = 0, resistedPlayers = 0;
             ServerPackets.SendPlayerAbilityEffect(caster, CastFx);
 
             foreach (WorldClient target in SocialHandler.OnlineWhere(c => c != caster &&
@@ -59,8 +60,13 @@ namespace hds
                 if (target.playerData.worldGeneration != world || !target.TransportFence.IsCurrent(transport)) continue;
                 if (detected)
                 {
+                    detectedPlayers++;
                     byte relation = PvpCombat.Check(caster, target) == PvpRules.Verdict.Allowed ? Enemy : Neutral;
                     AddPing(point, relation);
+                }
+                else
+                {
+                    resistedPlayers++;
                 }
                 target.messageQueue.AddWorldBoundRpc(DuelPackets.BuildSystemString(ScanLine), world, transport);
                 target.messageQueue.AddWorldBoundRpc(AbilityMessages.AboutAbility(detected ? DiscoveryLine : ResistLine,
@@ -81,6 +87,7 @@ namespace hds
                 }
 
             if (pings.Count > 0) ServerPackets.SendPlayerAbilityEffect(caster, TargetFx);
+            Output.WriteDebugLog($"[SIXTH-SENSE] caster={name} roll={roll} detection={detection} detected={detectedPlayers} resisted={resistedPlayers} pings={pings.Count} castFx=0x{CastFx:x} targetFx={(pings.Count > 0 ? $"0x{TargetFx:x}" : "none")}");
             caster.messageQueue.AddWorldBoundRpc(DataMiningPackets.Map(pings, DisplaySeconds),
                 caster.playerData.worldGeneration, caster.TransportFence.Capture());
             caster.FlushQueue();
