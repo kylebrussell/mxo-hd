@@ -492,7 +492,7 @@ namespace hds
         public GameObject getCreationData()
         {
             if (pet != null) return CoderPets.BuildCreation(this);
-            var themob = new GameObjectDefinitions().Object599;
+            var themob = new AttributeClass3827("NPC_BASE", 599); // one object: building all ~40k definitions took ~88 ms per NPC view
             themob.DisableAllAttributes();
 
             themob.CharacterName.enable();
