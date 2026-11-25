@@ -243,6 +243,8 @@ STOCK_VERIFIED_SUMMARIES = {
 }
 
 
+SNEAK_OPENER_ROUNDS = {152: 19599, 153: 19598, 286: 19593, 288: 19594, 289: 19590, 385: 19592, 386: 19600, 387: 19591, 388: 19595}
+
 LANE_THROWN_DAMAGE = {
     286: 'stored fixed thrown base 80 plus the stealth-started +300 opener bonus before influence and typed resistance; stock 528 neutral / 434 under +75 Thrown at level 50',
     288: 'stored fixed thrown base 37 plus the stealth-started +775 opener bonus before influence and typed resistance; stock 1128 neutral at level 50',
@@ -543,7 +545,9 @@ def server(i):
         parts.append(f"special move: needs {name(r['special_move_style'])} (auto-switch when loaded)")
     if r.get('sneak_bonus'):
         parts.append(f"stealth-started opener +{r['sneak_bonus']} scripted bonus (trigger/addition policy; COMBAT-DEPTH.md)")
-    if r.get('special_animation') and i not in (453, 454, 501, 502):
+    if i in SNEAK_OPENER_ROUNDS:
+        parts.append(f'at rest: one Close Combat exchange naming ILDB {SNEAK_OPENER_ROUNDS[i]} through the combat view object, no fight entered, fighters\' pose restored after; [evidence](https://github.com/kylebrussell/mxo-hd/pull/1194)')
+    elif r.get('special_animation') and i not in (453, 454, 501, 502):
         source = 'canonical ability symbol in stock ILDB rule' if r.get('special_animation_rule') else 'name mapping policy'
         parts.append(f"named ILDB special choreography {r['special_animation']} ({source})")
     if r.get('stealth_shield'):
