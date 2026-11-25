@@ -846,7 +846,9 @@ namespace hds
                 // a server restart.
                 UInt32 deadCharId = deadClient.playerData.getCharID();
                 Store.dbManager.WorldDbHandler.SetOnlineStatus(deadCharId, 0);
-                Store.margin.RemoveClientsByCharId(deadCharId);
+                // A late datagram from a released endpoint makes a fresh, never-selected client (character 0).
+                // Reaping that one must not drop the margin entry of a session still at character select.
+                if (deadCharId != 0) Store.margin.RemoveClientsByCharId(deadCharId);
 
                 string handle = StringUtils.charBytesToString_NZ(deadClient.playerInstance.CharacterName.getValue());
                 new BuddylistHandler().ProcessAnnounceFriendsOffline(deadClient.playerData.getCharID(), handle);
