@@ -47,6 +47,8 @@ namespace hds
         // Friendly NPCs are spawned as non-enemies (no combat offered); mission NPCs remember their mission id
         public bool isFriendly = false;
         internal bool PassiveTarget { get; set; }
+        /// <summary>Disposable thrown-resisted Melee Dummy: keeps its reset heading so the fixture's rear stand stays behind it.</summary>
+        internal bool HoldsFixtureHeading { get; set; }
         public MobAggroKind aggroKind = MobAggroKind.Unfiltered;
         public ushort missionNpcId = 0;
         public ushort missionInstance = 0;

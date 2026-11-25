@@ -582,6 +582,11 @@ namespace hds
         private static void FaceThePlayer(CombatSession session)
         {
             Mob mob = session.DefenderMob;
+            if (mob.HoldsFixtureHeading)
+            {
+                Output.WriteDebugLog($"[FIXTURE] {mob.getName()} holds its reset heading {mob.getRotation()}");
+                return;
+            }
             double px = 0, py = 0, pz = 0;
             NumericalUtils.LtVector3dToDoubles(session.Attacker.playerInstance.Position.getValue(), ref px, ref py, ref pz);
             byte yaw = MobAggro.YawTowards(mob.getXPos(), mob.getZPos(), px, pz);
@@ -1417,6 +1422,11 @@ namespace hds
             if (!ControlActions.CanMove(TimedEffects.ForMob(mob).Effects))
             {
                 Output.WriteDebugLog($"[COMBAT] {mob.getName()} is stunned and stays put");
+                return;
+            }
+            if (mob.HoldsFixtureHeading)
+            {
+                Output.WriteDebugLog($"[FIXTURE] {mob.getName()} holds its reset position and heading {mob.getRotation()}");
                 return;
             }
             double px = 0, py = 0, pz = 0;
