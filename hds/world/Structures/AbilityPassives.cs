@@ -113,6 +113,8 @@ namespace hds
             var rows=loaded.ToArray();
             State state = client.playerData.passives;
             var pet = CoderPets.Of(client);
+            bool running = !newWorld && Stealth.Current(client) == null;
+            int previousRunPace = running ? Total(client, AbilityBuffs.RunOwnerMovementBonusStat) : 0;
             bool sneaking = !newWorld && Stealth.IsOn(client, Stealth.SneakGrantAbility);
             int previousSneakPace = sneaking ? Total(client, AbilityBuffs.SneakOwnerMovementBonusStat) : 0;
             bool deactivateSummon;
@@ -191,6 +193,9 @@ namespace hds
             DaemonBoost.LoadoutChanged(client);
             AbilityAuras.LoadoutChanged(client);
             AbilityGrantRegistration.LoadedChanged(client);
+            if (running && Stealth.Current(client) == null &&
+                previousRunPace != Total(client, AbilityBuffs.RunOwnerMovementBonusStat))
+                AbilityBuffs.PresentCurrentMovementScale(client);
             if (sneaking && Stealth.IsOn(client, Stealth.SneakGrantAbility) &&
                 previousSneakPace != Total(client, AbilityBuffs.SneakOwnerMovementBonusStat))
                 AbilityBuffs.PresentCurrentMovementScale(client);

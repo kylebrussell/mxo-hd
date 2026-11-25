@@ -359,6 +359,9 @@ namespace hds
                 ? stealth.Mods.Where(modifier => modifier.Stat == SneakMovementStat).Sum(modifier => modifier.Value) / 100f
                 : 0f;
             ushort stat = MovementStatFor(stealth);
+            // GOB 115 links the ordinary Run channel to the owner percentage 998.
+            if (stat == RunMovementStat)
+                stanceScale += AbilityStats.Player(client, RunOwnerMovementBonusStat) / 100f;
             // GOB 878 links to the owner percentage 1051. A stock Belt uses this channel.
             if (stealth?.Def.Ability == Stealth.InvisibilityGrantAbility)
                 stanceScale += AbilityStats.Player(client, InvisibilityMovementBonusStat) / 100f;
@@ -381,7 +384,7 @@ namespace hds
             if (stealth?.Def.Ability == Stealth.SneakGrantAbility)
                 stanceScale += AbilityStats.Player(client, SneakOwnerMovementBonusStat) / 100f;
             if (buff == null) return stanceScale;
-            if (stat == RunMovementStat) return buff.MovementScale;
+            if (stat == RunMovementStat) return stanceScale + buff.MovementScale;
             Modifier modifier = Array.Find(buff.Modifiers, entry => entry.Stat == stat);
             return stanceScale + (modifier.Stat == stat ? modifier.Value / 100f : buff.MovementScale);
         }
@@ -404,6 +407,7 @@ namespace hds
         }
 
         private const ushort CrashAbility = 396, BottleneckField = 402;
+        internal const ushort RunOwnerMovementBonusStat = 998;
         internal const ushort SneakOwnerMovementBonusStat = 1050;
         private const ushort InfiltratorUpgrade = 1115;
         private static bool UsesStanceMovement(ushort id) => id == InfiltratorUpgrade || id == AbilityShadowPresentation.Child;

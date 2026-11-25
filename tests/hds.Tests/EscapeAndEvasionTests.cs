@@ -63,7 +63,7 @@ public sealed class EscapeAndEvasionTests : IDisposable
 
         Assert.Null(Stealth.Current(client));
         Assert.Equal(AnimationPackets.StanceStanding, EmoteHandler.Stance(client));
-        Assert.Equal(0f, MovementScale());
+        Assert.Equal(.03f, MovementScale(), 3); // Rank-19 loaded 151 Sneak supplies +3% (0.03) ordinary Run baseline via stat 998.
         Assert.True(HasRpc(AbilityBuffs.BuildExclusive(Escape, false)));
         Assert.True(HasRpc(AbilityBuffs.BuildModifier(AbilityBuffs.KindStat, record, Escape, 877, 25, true, 0)));
     }
@@ -73,14 +73,14 @@ public sealed class EscapeAndEvasionTests : IDisposable
     {
         Assert.True(AbilityCancellation.CanDismiss(Escape));
         Assert.True(AbilityBuffs.Apply(client, 12));
-        Assert.Equal(.45f, MovementScale(), 3);
+        Assert.Equal(.48f, MovementScale(), 3); // 0.45 Hyper-Speed + 0.03 loaded rank-19 151 Sneak (stat 998).
 
         Stealth.Land(client, Escape, 0);
         Assert.Equal(.37f, MovementScale(), 3);
         Assert.True(AbilityCancellation.Dismiss(client, Escape));
         Assert.Null(Stealth.Current(client));
         Assert.True(AbilityBuffs.IsActive(client, 12));
-        Assert.Equal(.45f, MovementScale(), 3);
+        Assert.Equal(.48f, MovementScale(), 3);
 
         Stealth.Land(client, 1111, 0);
         var ordinary = Assert.IsType<Stealth.State>(Stealth.Current(client));
