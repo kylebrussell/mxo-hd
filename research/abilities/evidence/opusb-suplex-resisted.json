@@ -1,0 +1,13 @@
+{
+  "abilities": {
+    "287": {
+      "checks": {
+        "damage": {
+          "source": "Shipped 287 stores a function-3 thrown base (17..120, 120 at level 50) plus the stealth-started +300 opener bonus.",
+          "runtime": "SpyInstantSneakOpenerAdmission/SuplexDamage resolve the stored base and stealth bonus through ordinary thrown influence; TypedAbilityResistance applies the target's thrown resistance.",
+          "test": "SpyInstantSneakOpenersTests pins the level-50 totals 646 neutral / 531 under +75 Thrown. Stock PR1158 measured 646 neutral; stock PR1202 native QA measured [TYPED-RESISTANCE OURS] 287 type7 total75 raw646 final531 with the Suplex round on the post-reset rear dummy. https://github.com/kylebrussell/mxo-hd/pull/1158#issuecomment-7156199034 https://github.com/kylebrussell/mxo-hd/pull/1202#issuecomment-7170236013"
+        }
+      }
+    }
+  }
+}
