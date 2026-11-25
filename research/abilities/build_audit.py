@@ -346,6 +346,8 @@ def server(i):
         parts.append('Static Field pulse: caster-centred 6 m hostile selector; each eligible recipient rolls the stored viral test before one-point damage and typed resistance')
     elif i == 454:
         parts.append('current player path uses the stored fixed ballistic damage; NPC capture path is separate')
+    elif i == 505:
+        parts.append('stored fixed ballistic base 47 (legacy CSV endpoints 4..0) before influence and typed resistance; stock 52 neutral / 47 under +20 Ballistic, rank-50 57/57/54; archived 1660 with 182 absorbed lacks a caster/target profile, so historical magnitude unresolved')
     elif i == 453:
         parts.append('fixed ballistic base 6 on a won rifle withdrawal; stock 7 neutral and 6 armored; original +11 tactical input unresolved')
     elif r['direct_damage'] and not r.get('health_callback') and i not in PETS:
