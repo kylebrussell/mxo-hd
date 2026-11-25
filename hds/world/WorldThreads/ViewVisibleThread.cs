@@ -27,6 +27,7 @@ namespace hds
               // An exception escaping this loop ends the thread and the server; log it and try again next pass.
               try
               {
+                long stage=scaleStart;
                 List<WorldClient> clients = SnapshotClients();
                 List<Mob> mobs = SnapshotMobs();
                 List<Subway> subways = SnapshotSubways();
@@ -58,22 +59,31 @@ namespace hds
                 Dictionary<ushort, SpatialGrid<Mob>> mobGrids = BuildMobGrids(mobs);
                 Dictionary<ulong, WorldClient> clientsByEntity = BuildClientByEntity(aliveClients);
                 Dictionary<ulong, Mob> mobsByEntity = BuildMobByEntity(mobs);
+                stage=ScaleDiagnostics.Stage("snapshot",stage);
 
                 CheckPlayerViews(aliveClients, clientGrids, clientsByEntity);
+                stage=ScaleDiagnostics.Stage("player-views",stage);
                 CheckPlayerMobViews(aliveClients, mobGrids, mobsByEntity);
+                stage=ScaleDiagnostics.Stage("mob-views",stage);
                 MobMotion.Tick(aliveClients,mobsByEntity,TimeUtils.GetSimTimeSeconds());
+                stage=ScaleDiagnostics.Stage("mob-motion",stage);
                 CombatPresentation.CheckObservers();
                 StealthShieldAbilities.CheckObservers();
                 foreach (WorldClient client in aliveClients) DeathPenalty.Tick(client);
                 foreach (WorldClient client in aliveClients) DataMining.Check(client);
                 foreach (WorldClient client in aliveClients) CraftingSession.Check(client);
+                stage=ScaleDiagnostics.Stage("per-player",stage);
                 MobAggro.Check(aliveClients, mobGrids);
+                stage=ScaleDiagnostics.Stage("aggro",stage);
                 CheckForStaticSubways(aliveClients, subways);
+                stage=ScaleDiagnostics.Stage("subways",stage);
                 CheckForStaticObjectsViewsInRange(aliveClients);
+                stage=ScaleDiagnostics.Stage("static-objects",stage);
                 MissionContactNpcs.CheckViews(aliveClients);
                 foreach (WorldClient client in aliveClients) SafeFloorProbe.Check(client);
                 foreach (WorldClient client in aliveClients) PosterBoxFloorProbe.Check(client);
                 foreach (WorldClient client in aliveClients) PvpArchives.Check(client, DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()/1000.0);
+                ScaleDiagnostics.Stage("contacts-probes",stage);
               }
               catch (Exception ex)
               {

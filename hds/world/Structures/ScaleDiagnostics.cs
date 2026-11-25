@@ -19,10 +19,19 @@ namespace hds
         public static long Start=>Enabled?Stopwatch.GetTimestamp():0;
         private static readonly object gate=new object();
         private static ScaleHistogram ticks=new ScaleHistogram(),flushes=new ScaleHistogram(),rpc=new ScaleHistogram(),objects=new ScaleHistogram();
+        private static Dictionary<string,ScaleHistogram> stages=new Dictionary<string,ScaleHistogram>(StringComparer.Ordinal);
         private static DateTime windowStart=DateTime.UtcNow;
         public static double ElapsedMs(long start)=>Stopwatch.GetElapsedTime(start).TotalMilliseconds;
         public static void FirstSend(long start,bool objectMessage)
         { if(start==0||!Enabled)return;lock(gate)(objectMessage?objects:rpc).Record(ElapsedMs(start)); }
+        /// <summary>Records the stage of a visibility pass that began at <paramref name="start"/> and returns the next stage's start.</summary>
+        public static long Stage(string name,long start)
+        {
+            if(start==0||!Enabled)return 0;
+            long now=Stopwatch.GetTimestamp();double ms=Stopwatch.GetElapsedTime(start,now).TotalMilliseconds;
+            lock(gate){if(!stages.TryGetValue(name,out var h))stages[name]=h=new ScaleHistogram();h.Record(ms);}
+            return now;
+        }
         public static void FlushCompleted(long start)
         { if(start==0||!Enabled)return;lock(gate)flushes.Record(ElapsedMs(start)); }
         public static void VisibilityCompleted(long start,IEnumerable<WorldClient> clients)
@@ -32,8 +41,10 @@ namespace hds
             lock(gate)
             {
                 ticks.Record(elapsed);if((now-windowStart).TotalSeconds<1)return;
-                result=new ScaleWindow{StartUtc=windowStart,EndUtc=now,Visibility=ticks.Snapshot(),FlushProcessing=flushes.Snapshot(),RpcFirstSend=rpc.Snapshot(),ObjectFirstSend=objects.Snapshot()};
+                result=new ScaleWindow{StartUtc=windowStart,EndUtc=now,Visibility=ticks.Snapshot(),FlushProcessing=flushes.Snapshot(),RpcFirstSend=rpc.Snapshot(),ObjectFirstSend=objects.Snapshot(),
+                    Stages=stages.ToDictionary(s=>s.Key,s=>s.Value.Snapshot(),StringComparer.Ordinal)};
                 ticks=new ScaleHistogram();flushes=new ScaleHistogram();rpc=new ScaleHistogram();objects=new ScaleHistogram();windowStart=now;
+                stages=new Dictionary<string,ScaleHistogram>(StringComparer.Ordinal);
             }
             foreach(var client in clients)
             {
@@ -54,6 +65,8 @@ namespace hds
         public DateTime StartUtc{get;set;}public DateTime EndUtc{get;set;}
         public int ActiveClients{get;set;}public int RpcRetained{get;set;}public int RpcUnsent{get;set;}public int ObjectRetained{get;set;}public int ObjectUnsent{get;set;}
         public ScaleMetric Visibility{get;set;}public ScaleMetric FlushProcessing{get;set;}public ScaleMetric RpcFirstSend{get;set;}public ScaleMetric ObjectFirstSend{get;set;}
+        /// <summary>Per-stage durations inside the visibility pass; absent from windows recorded before stages existed.</summary>
+        public Dictionary<string,ScaleMetric> Stages{get;set;}
     }
     public sealed class ScaleMetric
     {
