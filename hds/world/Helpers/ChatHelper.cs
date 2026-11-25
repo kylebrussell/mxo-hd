@@ -165,6 +165,16 @@ namespace hds
                     new ServerPackets().sendSystemChatMessage(Store.currentClient, reply, "BROADCAST");
                 }
 
+                if (command.Equals(MissionNpcGoals.Command) && MissionNpcGoals.Allowed(Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS")))
+                {
+                    // Dev: the active mission's spawned NPCs, their views and the open goals each one serves
+                    foreach (string line in MissionNpcGoals.Describe(Store.currentClient))
+                    {
+                        Output.WriteDebugLog(line);
+                        new ServerPackets().sendSystemChatMessage(Store.currentClient, line, "BROADCAST");
+                    }
+                }
+
                 if (command.Equals("?missionpersist"))
                 {
                     MissionPersistence.Dev(Store.currentClient,commands);
