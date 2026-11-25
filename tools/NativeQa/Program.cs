@@ -244,6 +244,9 @@ try
                     else if (action == "cast" && fixtureMode is NativeQa.Modes.HackerCrashMovementMode)
                         result = await NativeQa.Modes.HackerCrashMovementMode.SendSampleAsync(
                             actor, q.GetProperty("target").GetString()!, q.GetProperty("ability").GetUInt16());
+                    else if (action == "cast" && fixtureMode is NativeQa.Modes.KnifeMovementDebuffsMode)
+                        result = await NativeQa.Modes.KnifeMovementDebuffsMode.SendSampleAsync(
+                            actor, q.GetProperty("target").GetString()!, q.GetProperty("ability").GetUInt16());
                     else if (action == "cast" && fixtureMode is NativeQa.Modes.AwakenedMovementLifecycleMode)
                         result = await NativeQa.Modes.AwakenedMovementLifecycleMode.SendLockdownAsync(
                             actor, q.GetProperty("target").GetString()!, q.GetProperty("ability").GetUInt16());
