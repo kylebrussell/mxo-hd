@@ -402,6 +402,55 @@ public class CombatStyleTests
         }
     }
 
+    [Theory]
+    [InlineData((ushort)286, 19593u)]
+    [InlineData((ushort)288, 19594u)]
+    [InlineData((ushort)289, 19590u)]
+    [InlineData((ushort)385, 19592u)]
+    [InlineData((ushort)387, 19591u)]
+    [InlineData((ushort)388, 19595u)]
+    [InlineData((ushort)152, 19599u)]
+    [InlineData((ushort)153, 19598u)]
+    [InlineData((ushort)287, 19597u)]
+    [InlineData((ushort)386, 19600u)]
+    public void AtRestSneakOpenerRoundNamesItsSneakAttackMoveOrTheFailedSneakControl(ushort opener, uint move)
+    {
+        Assert.True(SneakOpenerRound.IsOpener(opener));
+        const ulong combatEntity = 8031;
+        var caster = ReadyPresentationFighter(combatEntity, 21550);
+        var target = ReadyPresentationFighter(combatEntity, 21750);
+        Assert.True(SneakOpenerRound.Applies(caster, opener));
+        var handler = new AttributeClass3664("ILCombatHandler", 55);
+        handler.Position.setValue(NumericalUtils.doublesToLtVector3d(21550, 1095, 16150));
+        var previousClients = WorldServer.Clients;
+        WorldServer.Clients = new Dictionary<string, WorldClient>();
+        var presentation = new CombatPresentation(caster, target, null, handler, combatEntity);
+        try
+        {
+            foreach (bool landed in new[] { true, false })
+            {
+                caster.messageQueue.ObjectMessagesQueue.Clear();
+                target.messageQueue.ObjectMessagesQueue.Clear();
+                presentation.Round(true, CombatRules.SpecialMove, CombatTactic.Speed, CombatTactic.Speed, 0, 0, false, opener, landed);
+                byte[] update = Assert.Single(caster.messageQueue.ObjectMessagesQueue.Cast<SequencedMessage>()).content;
+                uint expected = landed ? move : 19603u; // Failed Sneak v Self-Defense against a Self-Defense target
+                Assert.Equal(CombatRoundEntry.Reference(expected), BitConverter.ToUInt64(update, 36 + 61));
+                Assert.Equal(update, Assert.Single(target.messageQueue.ObjectMessagesQueue.Cast<SequencedMessage>()).content);
+            }
+            // A queued opener inside an interlock already presents as that fight's own round.
+            CombatManager.GetHandler(caster).isCombatRunning = true;
+            Assert.False(SneakOpenerRound.Applies(caster, opener));
+            CombatManager.GetHandler(caster).isCombatRunning = false;
+            Assert.False(SneakOpenerRound.IsOpener(CombatSpecials.WoundingThrow));
+        }
+        finally
+        {
+            presentation.End();
+            WorldServer.Clients = previousClients;
+        }
+    }
+
+
     private static WorldClient ReadyPresentationFighter(ulong combatEntity, int x, int y = 1095, int z = 16150)
     {
         var client = Client();

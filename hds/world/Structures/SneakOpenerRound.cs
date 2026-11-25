@@ -1,0 +1,79 @@
+using System;
+using hds.shared;
+
+namespace hds
+{
+    /// <summary>
+    /// Presentation of an instant sneak opener landed at rest (CastWhenUsed 1, Spy Style, Stealthed, outside combat):
+    /// one Close Combat exchange naming the opener's ILDB "Sneak Attacks" move, shown to the caster, a player target and
+    /// observers through the ordinary combat view object, then removed after the move. The stock client plays the named
+    /// full-body move from this round record (PR1191 probe variant a: 286 Twist Throw, 288 Topsy Turvy) and not from an
+    /// at-rest animation block (variant b). Damage, state, cost and timers are unchanged; nothing enters combat.
+    /// </summary>
+    public static class SneakOpenerRound
+    {
+        public const string FailMode = "MXO_SNEAK_OPENER_FAIL_QA";
+        public static readonly ushort[] Openers = { 152, 153, 286, 287, 288, 289, 385, 386, 387, 388 };
+
+        public static bool IsOpener(ushort ability) => Array.IndexOf(Openers, AbilityCatalog.Canonical(ability)) >= 0;
+
+        /// <summary>Only an at-rest landing: a queued opener inside an interlock already presents as that fight's round.</summary>
+        internal static bool Applies(WorldClient caster, ushort ability)
+        {
+            var handler = CombatManager.GetHandler(caster);
+            return IsOpener(ability) && !handler.isCombatRunning && !handler.HasActiveInterlock && handler.pvpFight == null &&
+                CombatAnimations.Special(ability, true, CombatTactic.Speed) != null;
+        }
+
+        public const string Command = "?openerfail";
+        private static volatile bool qaFail;
+
+        private static bool QaAllowed(WorldClient caster) =>
+            Environment.GetEnvironmentVariable(FailMode) == "1" && caster.playerData.getCharID() == 110 &&
+            QaLoadout.Allowed(Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS"), Store.config?.dbParams?.DatabaseName,
+                caster.playerData.getCharID(), caster.playerData.getOnWorld(), caster.playerData.isDead);
+
+        /// <summary>QA only: present the ILDB "Failed Sneak v &lt;style&gt;" exchange instead (presentation, not outcome).</summary>
+        internal static bool ForcedFail(WorldClient caster) => qaFail && QaAllowed(caster);
+
+        internal static string Dev(WorldClient caller, string[] args)
+        {
+            if (!QaAllowed(caller)) return "Opener fail presentation requires the disposable QA fixture.";
+            if (args.Length != 1 || (args[0] != "on" && args[0] != "off")) return "Use ?openerfail on|off.";
+            qaFail = args[0] == "on";
+            return $"Opener fail presentation {(qaFail ? "on" : "off")}.";
+        }
+
+        internal static void Present(WorldClient caster, WorldClient target, Mob mob, ushort ability)
+        {
+            ability = AbilityCatalog.Canonical(ability);
+            if ((target == null) == (mob == null) || !Applies(caster, ability)) return;
+            bool landed = !ForcedFail(caster);
+            var move = CombatAnimations.Special(ability, landed, CombatTactic.Speed, target == null ? 'S' : CombatStyles.Letter(target));
+            if (move == null) return;
+
+            var handler = new GameObjectDefinitions().Object55;
+            handler.DisableAllAttributes();
+            handler.StartTime.enable();
+            handler.Position.enable();
+            handler.StartTime.setValue(CombatHandler.CombatStartTime());
+            handler.Position.setValue(caster.playerInstance.Position.getValue());
+            ulong entity;
+            lock (WorldServer.gameServerEntities)
+            {
+                entity = WorldServer.entityIdCounter++;
+                WorldServer.gameServerEntities.Add(handler);
+            }
+            var presentation = new CombatPresentation(caster, target, mob, handler, entity);
+            presentation.ShowFighters();
+            presentation.Round(true, CombatRules.SpecialMove, CombatTactic.Speed, CombatTactic.Speed, 0, 0, false, ability, landed);
+            Output.WriteDebugLog($"[SNEAK-OPENER-ROUND] {ability} {(landed ? "landed" : "failed (QA)")} move {move.Id} ({move.Name}) " +
+                $"on {(target != null ? TimedEffects.PlayerName(target) : mob.getName())}");
+            DelayedActions.After(move.DurationMs / 1000.0 + 0.7, () =>
+            {
+                presentation.HideFighters();
+                lock (WorldServer.gameServerEntities) WorldServer.gameServerEntities.Remove(handler);
+            });
+        }
+    }
+}

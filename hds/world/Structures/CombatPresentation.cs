@@ -196,6 +196,39 @@ namespace hds
             client.messageQueue.addObjectMessage(WorldServer.BuildViewUpdate(view, update), false);
             client.FlushQueue();
         }
+        private readonly Dictionary<WorldClient, ushort> shownFighters = new Dictionary<WorldClient, ushort>();
+
+        /// <summary>Presentation-only exchange (an at-rest sneak opener): each fighter gets its own view of the combat
+        /// object and its initialize, as an observer does, without combat mode, round state or interlock RPCs.</summary>
+        internal void ShowFighters()
+        {
+            lock (sync)
+            {
+                if (ended) return;
+                foreach (WorldClient fighter in fighters.Values)
+                {
+                    if (!fighter.Alive || !fighter.playerData.getOnWorld()) continue;
+                    new ServerPackets().SendSpawnGameObject(fighter, handler, entity);
+                    ClientView view = fighter.viewMan.FindViewForEntity(entity);
+                    if (view == null) continue;
+                    fighter.messageQueue.addObjectMessage(ServerPackets.BuildCombatInitialize(view.ViewID, centre, Handles(fighter), sequence + 1), false);
+                    shownFighters[fighter] = view.ViewID;
+                    fighter.FlushQueue();
+                }
+            }
+        }
+
+        /// <summary>Ends a presentation-only exchange: the final record and view deletion for every receiver.</summary>
+        internal void HideFighters()
+        {
+            lock (sync)
+            {
+                foreach (var shown in shownFighters) DeleteObserver(shown.Key, shown.Value);
+                shownFighters.Clear();
+            }
+            End();
+        }
+
         public void End(double delay = 0)
         {
             lock (sync) { if (ended) return; ended = true; }
