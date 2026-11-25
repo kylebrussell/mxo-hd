@@ -130,12 +130,12 @@ public sealed class SixthSenseParityMode : NativeQaMode
         // Verify Step 3: In-combat refusal without IS debit
         var enemyView = await caster.WaitForViewNamedAsync("QAEnemy");
         uint enemyHandle = DuelPackets.Handle(enemyView.ViewId, enemyView.SpawnId);
+        int combatRpc = caster.World.RpcSnapshot().Count;
         caster.SendRpc($"81 51 {WireFormat.ToHex(BitConverter.GetBytes(enemyHandle))}");
-        caster.SendRpc($"80 b6 {WireFormat.ToHex(BitConverter.GetBytes(enemyView.ViewId))} 00 00");
-        await caster.WaitUntilAsync(() => server.DebugLog().Contains("[PVP] Combat started", StringComparison.Ordinal) ||
-            server.DebugLog().Contains("CloseCombat", StringComparison.Ordinal), "PvP combat opens", TimeSpan.FromSeconds(8));
+        caster.SendRpc($"40 {WireFormat.ToHex(BitConverter.GetBytes(enemyHandle))} 00 00 00 00 00 00 00");
+        await ObserveAsync(caster, combatRpc, p => p.Bytes is [0x46, ..], "PvP close combat opens");
         logFrom = server.DebugLog().Length;
-        await StarterHackerControlTargetMode.RefusedAsync(caster, SixthSense.Ability, Request(), AbilityRefusals.MustBeOutsideCombat);
+        await RefusedAsync(caster, SixthSense.Ability, Request(), AbilityRefusals.MustBeOutsideCombat);
         Check.That(!server.DebugLog()[logFrom..].Contains("[ABILITY-COST] char=110 ability=149", StringComparison.Ordinal), "In-combat refusal spends 0 IS");
         caster.SendChat("?cd stop");
         await caster.WaitForTextAsync("Combat disengaged");
