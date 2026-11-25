@@ -21,7 +21,7 @@ namespace hds
         });
         public static bool IsTool(uint goid)=>tools.Value.Contains(goid);
         private sealed class Session { internal int Action; internal Motion Motion; }
-        private sealed class Motion { internal int Token,World,Life;internal ulong Target;internal ushort Ability;internal byte Counter,PreviousStance;internal double Until; internal readonly Dictionary<WorldClient,(uint Actor,uint Target)> Sent=new Dictionary<WorldClient,(uint Actor,uint Target)>(); }
+        private sealed class Motion { internal int Token,World,Life;internal ulong Target;internal ushort Ability;internal byte Counter,PreviousStance,Action=KnifeThrow;internal double Until; internal readonly Dictionary<WorldClient,(uint Actor,uint Target)> Sent=new Dictionary<WorldClient,(uint Actor,uint Target)>(); }
         private static readonly ConditionalWeakTable<WorldClient,Session> sessions=new ConditionalWeakTable<WorldClient,Session>();
         private static Session Of(WorldClient c)=>sessions.GetValue(c,_=>new Session());
         public sealed class Cast
@@ -147,22 +147,22 @@ namespace hds
             caster.FlushQueue();
             Output.WriteDebugLog("[STEALTH-FREE]1125 restored "+ability);
         }
-        public static byte[] BuildThrow(bool own,byte counter,ushort ability,uint target)
+        public static byte[] BuildThrow(bool own,byte counter,ushort ability,uint target,byte action=KnifeThrow)
         {
             var bytes=new List<byte>();if(own)bytes.AddRange(new byte[]{2,0});
             // Reader6267192c: built-in action byte64 has no named-action25 u16 prefix.
             // Target kind1 resolves a receiver-local view/spawn handle (62671a21..55); bit0x40 would name a GOID.
-            bytes.AddRange(new byte[]{1,0x20,counter,1,Aggro,KnifeThrow});bytes.AddRange(BitConverter.GetBytes(ability));bytes.AddRange(BitConverter.GetBytes(target));return bytes.ToArray();
+            bytes.AddRange(new byte[]{1,0x20,counter,1,Aggro,action});bytes.AddRange(BitConverter.GetBytes(ability));bytes.AddRange(BitConverter.GetBytes(target));return bytes.ToArray();
         }
-        internal static void PlayThrow(WorldClient caster,ulong target,ushort ability)
+        internal static void PlayThrow(WorldClient caster,ulong target,ushort ability,byte action=KnifeThrow)
         {
             if (target == 0 || caster.viewMan == null) return;
             var state=Of(caster);var motion=new Motion{Token=state.Action,World=caster.playerData.worldGeneration,
                 Life=caster.playerData.lifeGeneration,Target=target,Ability=ability,
-                Counter=++caster.playerData.emoteCounter,PreviousStance=caster.playerData.stance,Until=TimeUtils.GetSimTimeSeconds()+MotionSeconds};
+                Counter=++caster.playerData.emoteCounter,PreviousStance=caster.playerData.stance,Action=action,Until=TimeUtils.GetSimTimeSeconds()+MotionSeconds};
             state.Motion=motion;
             var ownTarget=caster.viewMan.FindViewForEntity(target);
-            if(ownTarget?.viewCreated==true)caster.messageQueue.addObjectMessage(BuildThrow(true,motion.Counter,motion.Ability,DuelPackets.Handle(ownTarget.ViewID,ownTarget.spawnId)),false);
+            if(ownTarget?.viewCreated==true)caster.messageQueue.addObjectMessage(BuildThrow(true,motion.Counter,motion.Ability,DuelPackets.Handle(ownTarget.ViewID,ownTarget.spawnId),motion.Action),false);
             foreach(var observer in SocialHandler.OnlineWhere(c=>c!=caster&&c.playerData.getDistrictId()==caster.playerData.getDistrictId()))
             {var actor=observer.viewMan.FindViewForEntity(caster.playerData.getEntityId());if(actor?.viewCreated==true)SendMotion(observer,caster,actor.ViewID,motion);}
             DelayedActions.AfterFor(caster,MotionSeconds,()=>
@@ -182,7 +182,7 @@ namespace hds
             uint actorHandle=DuelPackets.Handle(actor,actorView.spawnId);
             uint targetHandle=DuelPackets.Handle(target.ViewID,target.spawnId);
             lock(motion.Sent){if(motion.Sent.TryGetValue(observer,out var sent)&&sent==(actorHandle,targetHandle))return;motion.Sent[observer]=(actorHandle,targetHandle);}
-            observer.messageQueue.addObjectMessage(WorldServer.BuildViewUpdate(actor,BuildThrow(false,motion.Counter,motion.Ability,DuelPackets.Handle(target.ViewID,target.spawnId))),false);observer.FlushQueue();
+            observer.messageQueue.addObjectMessage(WorldServer.BuildViewUpdate(actor,BuildThrow(false,motion.Counter,motion.Ability,DuelPackets.Handle(target.ViewID,target.spawnId),motion.Action)),false);observer.FlushQueue();
         }
         private static void ResetMotion(WorldClient caster,byte stance)
         {
