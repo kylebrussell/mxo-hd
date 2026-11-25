@@ -257,6 +257,7 @@ namespace hds
             GhostStrikeCallbacks.Accepted(ghostStrike);
             CombatSpecials.Landed(client, abilityId);
             SpyAbilityRegistry.Landed(client, abilityId, mob.getEntityId());
+            SneakOpenerRound.Present(client, null, mob, abilityId);
             Output.WriteDebugLog("[ABILITY] " + abilityId + " lands on view " + targetViewId + " for " + damage);
             return true;
         }

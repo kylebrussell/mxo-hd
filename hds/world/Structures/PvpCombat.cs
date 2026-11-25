@@ -467,6 +467,7 @@ namespace hds
             CombatSpecials.Landed(caster, abilityId);
             HolyWaterCure.LandedOnPlayer(caster, target, abilityId);
             SpyAbilityRegistry.Landed(caster, abilityId, target.playerData.getEntityId());
+            SneakOpenerRound.Present(caster, target, null, abilityId);
             if (Damage(target, damage))
             {
                 Defeated(target, caster);
