@@ -19,7 +19,7 @@ namespace hds
             return id == NeuroDart || id == BlindingThrow || id == ThroatCuttingThrow || id == SubduingThrow;
         }
 
-        public static bool UsesGuardedCast(ushort id) => id == ThroatCuttingThrow || id == SubduingThrow;
+        public static bool UsesGuardedCast(ushort id) => id == NeuroDart || id == ThroatCuttingThrow || id == SubduingThrow;
 
         public static bool TryRefuse(WorldClient client, ushort abilityId, ushort targetViewId, ushort? targetSpawnId, out uint refusalReason)
         {
@@ -27,7 +27,8 @@ namespace hds
             ushort id = AbilityCatalog.Canonical(abilityId);
             if (!Handles(id)) return false;
 
-            if ((id == NeuroDart || id == SubduingThrow) && CombatManager.GetHandler(client).isCombatRunning)
+            var combat = CombatManager.GetHandler(client);
+            if ((id == NeuroDart || id == SubduingThrow) && (combat.isCombatRunning || combat.HasActiveInterlock))
             {
                 refusalReason = AbilityRefusals.MustBeOutsideCombat;
                 return true;
