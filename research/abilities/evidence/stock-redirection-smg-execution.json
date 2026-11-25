@@ -1,0 +1,37 @@
+{
+  "families": {
+    "smg-specialization-491": {
+      "representative": 491,
+      "scope": "Native PR1131 verified all four records and the independent Enrage duration control. https://github.com/kylebrussell/mxo-hd/pull/1131#issuecomment-7147715374",
+      "result": "pass",
+      "head": "e8778a36f73278a11d2b358bb15d937e2ca492b2",
+      "native": "https://github.com/kylebrussell/mxo-hd/pull/1131#issuecomment-7147715374"
+    }
+  },
+  "abilities": {
+    "405": {
+      "note": "PR1133 verified six matching adds and removes. An identical retained 330 read back at 640/600/640, with 0/40/0 resisted and no interlock. This covers the implemented 1148 consumer, not its historical magnitude or the 1030 interlock consumer. https://github.com/kylebrussell/mxo-hd/pull/1133#issuecomment-7148261914"
+    },
+    "491": {
+      "checks": {
+        "consumer": {
+          "source": "The shipped Enrage state 93 has no duration bonus link to 1068.",
+          "runtime": "The rank-50 491 record contributes +5 to 1068 without changing independent Enrage state application.",
+          "test": "PR1131 stock 145 added and removed state 93 for 10 s in all three load states; all four 491 records round-tripped. https://github.com/kylebrussell/mxo-hd/pull/1131#issuecomment-7147715374"
+        }
+      },
+      "note": "Stock records 1047 +10, 1068 +5, 1139 +5 and 1143 +5 add/remove/add. Live Determination, Melee Defense and Ballistic Damage consumption remain separate checks. https://github.com/kylebrussell/mxo-hd/pull/1131#issuecomment-7147715374",
+      "family": "smg-specialization-491"
+    },
+    "502": {
+      "checks": {
+        "targeting": {
+          "source": "Shipped 502 has a 19 m selected range and requires dual handguns and Handguns style.",
+          "runtime": "Admission checks a living hostile with the original view/spawn, in range and visible. An admitted at-rest cast resolves directly; the separate 995 interlock path queues only on the original fight.",
+          "test": "PR1132 stock QA observed ally, wall and range refusals without debit, then a 4.1 s at-rest cast for 53 after 35 IS. Exact headless replay verifies the stale spawn refusal. https://github.com/kylebrussell/mxo-hd/pull/1132#issuecomment-7148329973"
+        }
+      },
+      "note": "PR1132 naturally applied 522 -34 for 8 s. One observed application cannot establish the probability or eligibility of both shipped modifiers. https://github.com/kylebrussell/mxo-hd/pull/1132#issuecomment-7148329973"
+    }
+  }
+}
