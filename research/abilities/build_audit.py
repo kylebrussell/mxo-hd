@@ -251,7 +251,7 @@ LANE_THROWN_DAMAGE = {
     365: 'stored fixed thrown base 29 before influence and typed resistance; stock 37 neutral / 30 under +75 Thrown at level 50',
     387: 'stored fixed thrown base 75 plus the stealth-started +950 opener bonus before influence and typed resistance; stock 1578 neutral at level 50',
     388: 'stored fixed thrown base 56 plus the stealth-started +1200 opener bonus before influence and typed resistance; stock 1745 neutral at level 50',
-    1130: 'stored VF3 level-scaled thrown base (131 at level 50) before influence and typed resistance; stock rank-50 throw 201 neutral',
+    1130: 'stored VF3 level-scaled thrown base (131 at level 50) before influence and typed resistance; stock rank-50 throw 201 neutral / 182->149 under +75 Thrown',
     1133: 'stored VF3 level-scaled thrown base (113 at level 50) before influence and typed resistance; stock 157 neutral / 129 under +75 Thrown',
     1134: 'stored VF3 level-scaled thrown base (141 at level 50) before influence and typed resistance; stock 195 neutral / 160 under +75 Thrown',
 }
