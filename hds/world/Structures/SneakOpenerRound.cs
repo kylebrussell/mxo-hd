@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.CompilerServices;
 using hds.shared;
 
 namespace hds
@@ -14,6 +15,24 @@ namespace hds
     {
         public const string FailMode = "MXO_SNEAK_OPENER_FAIL_QA";
         public static readonly ushort[] Openers = { 152, 153, 286, 287, 288, 289, 385, 386, 387, 388 };
+
+        private sealed class Until { internal double Seconds; }
+        private static readonly ConditionalWeakTable<Mob, Until> holds = new ConditionalWeakTable<Mob, Until>();
+
+        /// <summary>Defers this NPC's retaliation until its opener exchange has finished (the HideFighters delay).</summary>
+        internal static void Hold(Mob mob, double seconds, double now)
+        {
+            if (mob == null || seconds <= 0) return;
+            var until = holds.GetValue(mob, _ => new Until());
+            lock (until) until.Seconds = Math.Max(until.Seconds, now + seconds);
+        }
+
+        /// <summary>Seconds left before the NPC may retaliate after an at-rest opener exchange, or 0.</summary>
+        internal static double RetaliationHold(Mob mob, double now)
+        {
+            if (mob == null || !holds.TryGetValue(mob, out var until)) return 0;
+            lock (until) return Math.Max(0, until.Seconds - now);
+        }
 
         public static bool IsOpener(ushort ability) => Array.IndexOf(Openers, AbilityCatalog.Canonical(ability)) >= 0;
 
@@ -69,7 +88,9 @@ namespace hds
             presentation.Round(true, CombatRules.SpecialMove, CombatTactic.Speed, CombatTactic.Speed, 0, 0, false, ability, landed);
             Output.WriteDebugLog($"[SNEAK-OPENER-ROUND] {ability} {(landed ? "landed" : "failed (QA)")} move {move.Id} ({move.Name}) " +
                 $"on {(target != null ? TimedEffects.PlayerName(target) : mob.getName())}");
-            DelayedActions.After(move.DurationMs / 1000.0 + 0.7, () =>
+            double presentSeconds = move.DurationMs / 1000.0 + 0.7;
+            Hold(mob, presentSeconds, TimeUtils.GetSimTimeSeconds());
+            DelayedActions.After(presentSeconds, () =>
             {
                 presentation.HideFighters();
                 lock (WorldServer.gameServerEntities) WorldServer.gameServerEntities.Remove(handler);

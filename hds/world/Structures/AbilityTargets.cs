@@ -100,7 +100,20 @@ namespace hds
                 skipMob: primary);
             // Enrage's zero-damage cast starts pursuit through its timed callback, even on a previously wounded NPC.
             if (!MobAggro.UsesEnragePursuit(ability.getAbilityID()) && !primary.getIsDead() && primary.getHealthC() < primary.getHealthM())
-                MobAggro.Retaliate(client, primary);
+            {
+                // An at-rest sneak opener's exchange is still playing: the same retaliation starts when it ends.
+                double hold = SneakOpenerRound.RetaliationHold(primary, TimeUtils.GetSimTimeSeconds());
+                if (hold > 0)
+                {
+                    Output.WriteDebugLog($"[SNEAK-OPENER-ROUND] {primary.getName()} retaliation held {hold:F1}s for the exchange");
+                    DelayedActions.After(hold, () =>
+                    {
+                        if (!primary.getIsDead() && primary.getHealthC() < primary.getHealthM()) MobAggro.Retaliate(client, primary);
+                    });
+                }
+                else
+                    MobAggro.Retaliate(client, primary);
+            }
             return true;
         }
 
