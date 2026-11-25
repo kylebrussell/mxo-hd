@@ -384,12 +384,15 @@ namespace hds
             client.FlushQueue();
         }
 
-        internal static uint? DisarmRefusal(WorldClient caster, out bool toolMissing)
+        internal static uint? DisarmRefusal(WorldClient caster, UInt16 targetView, out bool toolMissing)
         {
             toolMissing = false;
             if (!AbilityPassives.IsLoaded(caster, DisarmTraps)) return AbilityRefusals.NotLoaded;
             var fight = CombatManager.GetHandler(caster);
             if (fight.isCombatRunning || fight.HasActiveInterlock) return AbilityRefusals.MustBeOutsideCombat;
+            ClientView view = targetView == 0 ? null : caster.viewMan?.getViewById(targetView);
+            (UInt16 goid, UInt32 state) = view == null ? ((UInt16)0, 0u) : ObjectStates.TrackedObject(caster, view.entityId);
+            if (goid == 0 || state != TrappedState) return AbilityRefusals.InvalidTarget;
             if (ToolFor(caster, DisarmTraps) == 0)
             {
                 toolMissing = true;

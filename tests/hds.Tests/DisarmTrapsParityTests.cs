@@ -30,10 +30,10 @@ public class DisarmTrapsParityTests
     }
 
     [Fact]
-    public void DisarmRefusalEnforcesLoadedAndOutsideCombatBeforeToolCheck()
+    public void DisarmRefusalEnforcesLoadedOutsideCombatToolAndTrappedTargetBeforeCost()
     {
         var unloaded = Client(loaded: false);
-        Assert.Equal(AbilityRefusals.NotLoaded, UtilityAbilities.DisarmRefusal(unloaded, out bool missingUnloaded));
+        Assert.Equal(AbilityRefusals.NotLoaded, UtilityAbilities.DisarmRefusal(unloaded, 0, out bool missingUnloaded));
         Assert.False(missingUnloaded);
 
         var fighting = Client(loaded: true);
@@ -41,13 +41,25 @@ public class DisarmTrapsParityTests
         combat.isCombatRunning = true;
         try
         {
-            Assert.Equal(AbilityRefusals.MustBeOutsideCombat, UtilityAbilities.DisarmRefusal(fighting, out bool missingCombat));
+            Assert.Equal(AbilityRefusals.MustBeOutsideCombat, UtilityAbilities.DisarmRefusal(fighting, 0, out bool missingCombat));
             Assert.False(missingCombat);
         }
         finally
         {
             combat.isCombatRunning = false;
         }
+
+        // Loaded and outside combat: empty or untrapped/already-disarmed target refuses InvalidTarget before tool/IS debit.
+        var ready = Client(loaded: true);
+        ready.playerData.setCharID(11901);
+        Assert.Equal(AbilityRefusals.InvalidTarget, UtilityAbilities.DisarmRefusal(ready, 0, out bool emptyTool));
+        Assert.False(emptyTool);
+
+        const ushort safeViewId = 42;
+        const ulong safeEntity = 0x119010001UL;
+        ready.viewMan.views.Add(new ClientView(1416, safeViewId, safeEntity) { viewCreated = true });
+        Assert.Equal(AbilityRefusals.InvalidTarget, UtilityAbilities.DisarmRefusal(ready, safeViewId, out bool untrackedTool));
+        Assert.False(untrackedTool);
     }
 
     [Fact]
@@ -92,6 +104,7 @@ public class DisarmTrapsParityTests
         Assert.Contains(DisarmTraps, plan.Abilities);
         Assert.Equal(new[] { DisarmTraps }, plan.HotbarAbilities);
         Assert.True(plan.Abilities.Sum(AbilityMemory.Cost) <= AbilityMemory.ForLevel(10));
+        Assert.Equal("1", plan.EnvironmentOverrides[CombatFixtureWeapons.DisengageMode]);
 
         // Rank 10, toolBonus 0, difficulty 0 -> delta = roll - 40.
         Assert.Equal(UtilityAbilities.DisarmResult.Critical, UtilityAbilities.DisarmTrap(true, 10, 0, 0, detected: false, roll: 99));
