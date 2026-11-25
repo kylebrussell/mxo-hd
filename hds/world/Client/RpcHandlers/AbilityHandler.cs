@@ -1082,7 +1082,10 @@ namespace hds
 
             // The stock client allows these active upgrades to be switched off during their activation timer.
             bool startingClassUpgrade = AbilityBuffs.IsStartingClassUpgrade(AbilityID);
-            if (!(switchOff && startingClassUpgrade) && AbilityCooldowns.IsCoolingDown(data, AbilityID, now))
+            // The Organization E toggles share FamilyRecastTimer 1178. A sibling's toggle-off timer must not trap an
+            // already-active parent on; switching off never starts the parent's own cast or spends IS.
+            bool familyToggleOff = switchOff && AbilityHealthCallbacks.OrganizationParent(AbilityID);
+            if (!(switchOff && startingClassUpgrade) && !familyToggleOff && AbilityCooldowns.IsCoolingDown(data, AbilityID, now))
             {
                 Output.WriteDebugLog("[ABILITY] Still cooling down; denied");
                 Store.currentClient.messageQueue.addRpcMessage(

@@ -43,7 +43,7 @@ public class WriteCodeModeTests
             var plan=NativeQaModes.Find(mode).Plan;
             Assert.Equal(mode=="write-code",plan.ExtraQaMetadata.TryGetValue("WriteCodeQa",out var writer)&&writer.GetBoolean());
             Assert.Equal(mode=="ignored-actions",plan.GmCharacter110);
-            Assert.Equal(mode is "health-callbacks" or "zen-master" or "zen-master-capped-restore" or "ability-parity-awakened-resistance-and-health" or "ability-parity-starter-hacker-reactive-code",plan.FixedCallbackRolls);
+            Assert.Equal(mode is "health-callbacks" or "zen-master" or "zen-master-capped-restore" or "ability-parity-awakened-resistance-and-health" or "ability-parity-starter-hacker-reactive-code" or "ability-parity-organization-effects",plan.FixedCallbackRolls);
             const string holdHealthKey = "MXO_DESPERATION_QA_HOLD_HEALTH";
             bool originalHold = mode is "desperation" or "desperation-initiative" or "ability-sweep-hacker" or
                 "ability-parity-awakened-resistance-threshold";

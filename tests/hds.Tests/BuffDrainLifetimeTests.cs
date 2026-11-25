@@ -115,7 +115,7 @@ public class BuffDrainLifetimeTests
         foreach(var id in AbilityCatalog.All.Keys)
             if(AbilityScaledBuffs.Resolve(c,id,out var buff) && buff.DrainAmount>0)
             {found.Add(id);Assert.True(AbilityBuffs.SupportsDrainTermination(id,buff),"Unhandled draining definition "+id);}
-        Assert.Equal(new ushort[]{13,16,184,442,941,943},found.OrderBy(x=>x));
+        Assert.Equal(new ushort[]{13,16,184,442,941,943,1169,1173,1177},found.OrderBy(x=>x));
     }
 
     [Fact]
