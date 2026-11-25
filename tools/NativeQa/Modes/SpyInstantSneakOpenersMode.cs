@@ -49,7 +49,8 @@ public sealed class SpyInstantSneakOpenersMode : NativeQaMode
             $"Level {Level}, {Loadout.Sum(AbilityMemory.Cost)}/{AbilityMemory.ForLevel(Level)} memory (+54% Thrown influence). Verified outdoor HOME ({X},{Y},{Z}) faces east-facing QAEnemy's back 2 m east ({EnemyX},{Y},{Z}), QAFriend nearby. Page 2: 1=Spy Style (1112), 2=Sneak (1111), 3=Spinning Backsweep (152, 6 m), 4=Suplex (287, 6 m), 5=Bull Dog (387, 6 m). No initial tp needed.",
             "Step 1 (Cast first at HOME — one opener per 15 s family 691 window, Sneak before each): Select slot 1 (Spy Style), /target QAEnemy, press slot 2 (Sneak), then slot 3 (152) -> instant, 20 IS, 1111 off, 30 s own/15 s grp 691, 158 Thrown dmg, no interlock. After 15 s grp 691: Sneak, slot 4 (287) -> instant, 50 IS, 1111 off, 38 s own/15 s grp 691, 646 Thrown dmg + Dazed (199)/Off-Balance (200)/Staggered (201) for 15 s with matched removals, no interlock. After 15 s grp 691: Sneak, slot 5 (387) -> instant, 37 IS, 1111 off, 60 s own/15 s grp 691, 1578 Thrown dmg, no interlock.",
             "Step 2 (Rear-opener refusals — no IS debit or timer): Before Sneak -> local gate or reason 23 (StealthedFlag). Sneak on + /target QAFriend -> reason 24. At printed FRONT (inside QAEnemy's 50-deg cone), BLOCK (solid wall), and FAR (>6 m), /target QAEnemy and press slots 3/4/5 -> reason 24/9/34 or local gate without debit.",
-            "Step 3 (+75 Thrown resistance on rear-facing Melee Dummy): Type printed DUMMY chunks (17000,495,6448 facing north), type printed RESISTED chunks (?cd fixture-reset-thrown-resisted) and stay where the reset places you (2.52 m behind the north-facing dummy), select fresh dummy, if Close Combat opens type '?cd stop' then reselect slot 1 (Spy Style), press slot 2 (Sneak), press slot 3 (152) -> [TYPED-RESISTANCE OURS] 152 type7 total75 raw158 final130."
+            "Step 3 (+75 Thrown resistance; no DUMMY ?tp needed): from wherever you are, type the RESISTED chunks ('?cd fixture-rese', 't-thrown-resiste', 'd'). The reset itself teleports CSR 2.52 m behind the fresh north-facing dummy (heading held); do not move. Click the fresh dummy; if Close Combat opens type '?cd stop' and reselect slot 1 (Spy Style). Sneak (slot 2), slot 3 (152) -> [TYPED-RESISTANCE OURS] 152 type7 total75 raw158 final130.",
+            "Step 4 (287 Suplex under +75 Thrown): after 287's 38 s reuse, type the RESISTED chunks again (fresh dummy, same rear placement; the Suplex round may have moved CSR, the reset puts you back), click the fresh dummy, reselect slot 1 if needed, Sneak, slot 4 (287) -> Suplex exchange and [TYPED-RESISTANCE OURS] 287 type7 total75 raw646 final531."
         });
 
     public override async Task<byte[]> AfterStartAsync(NativeQaBootstrapContext context)
@@ -193,16 +194,14 @@ public sealed class SpyInstantSneakOpenersMode : NativeQaMode
         await WaitFamily691EndAsync(casterRpc);
 
         // Step 3: +75 Thrown Resistance on rear-facing Melee Dummy (152: 158 -> 130).
-        caster.SkipReceived();
-        caster.SendChat(dummyTp.Command);
-        await caster.WaitForTextAsync(dummyTp.Confirmation);
+        // The reset teleports CSR behind the fresh dummy from anywhere; no DUMMY ?tp first.
         int creationsBefore = caster.World.CreationSnapshot().Count;
         caster.SkipReceived();
         caster.SendChat("?cd fixture-reset-thrown-resisted");
         await caster.WaitForTextAsync("Fixture reset:");
         await caster.WaitUntilAsync(() => caster.World.CreationSnapshot().Skip(creationsBefore)
             .Any(v => v.Name == CombatFixtureLoadout.DummyName), "Resisted dummy spawns", HeadlessPlayer.DefaultTimeout);
-        var resDummy = caster.World.CreationSnapshot().Last(v => v.Name == CombatFixtureLoadout.DummyName);
+        var resDummy = caster.World.CreationSnapshot().Skip(creationsBefore).Last(v => v.Name == CombatFixtureLoadout.DummyName);
         uint resHandle = DuelPackets.Handle(resDummy.ViewId, resDummy.SpawnId);
 
         await SneakAsync();
@@ -212,6 +211,25 @@ public sealed class SpyInstantSneakOpenersMode : NativeQaMode
             server.DebugLog()[logFrom..].Contains($"[ABILITY] 152 lands on view {resDummy.ViewId} for 130", StringComparison.Ordinal) &&
             server.DebugLog()[logFrom..].Contains("[TYPED-RESISTANCE OURS] 152 type7 total75 raw158 final130", StringComparison.Ordinal),
             "152 hits +75 Thrown-resisted rear dummy for 130", TimeSpan.FromSeconds(10));
+
+        // Step 4: 287 Suplex under +75 Thrown on a fresh rear dummy, after its own 38 s reuse.
+        await Task.Delay(TimeSpan.FromSeconds(38));
+        creationsBefore = caster.World.CreationSnapshot().Count;
+        caster.SkipReceived();
+        caster.SendChat("?cd fixture-reset-thrown-resisted");
+        await caster.WaitForTextAsync("Fixture reset:");
+        await caster.WaitUntilAsync(() => caster.World.CreationSnapshot().Skip(creationsBefore)
+            .Any(v => v.Name == CombatFixtureLoadout.DummyName), "Second resisted dummy spawns", HeadlessPlayer.DefaultTimeout);
+        resDummy = caster.World.CreationSnapshot().Skip(creationsBefore).Last(v => v.Name == CombatFixtureLoadout.DummyName);
+        resHandle = DuelPackets.Handle(resDummy.ViewId, resDummy.SpawnId);
+        await SneakAsync();
+        logFrom = server.DebugLog().Length;
+        caster.SendRpc(Request(Suplex, resHandle));
+        await caster.WaitUntilAsync(() =>
+            server.DebugLog()[logFrom..].Contains("[TYPED-RESISTANCE OURS] 287 type7 total75 raw646 final531", StringComparison.Ordinal) &&
+            server.DebugLog()[logFrom..].Contains("[SNEAK-OPENER-ROUND] 287 landed move 19597 (Suplex)", StringComparison.Ordinal),
+            "287 hits +75 Thrown-resisted rear dummy for 531 with its Suplex exchange", TimeSpan.FromSeconds(10));
+        Console.WriteLine("READY BOOTSTRAP 287 +75 Thrown resisted on the dummy: raw646 final531");
 
         Check.That(!server.DebugLog().Contains("char=6111 source=152", StringComparison.Ordinal) &&
             !server.DebugLog().Contains("char=6111 source=287", StringComparison.Ordinal) &&
