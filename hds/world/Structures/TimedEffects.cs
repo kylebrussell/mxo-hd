@@ -1163,6 +1163,7 @@ namespace hds
             damage = PunishingBlows.Npc(caster, mob, damage);
             int rawDamage = damage;
             damage = TypedAbilityResistance.Npc(caster, mob, mod.Parent, damage, mod.DamageType);
+            ushort healthBefore = mob.getHealthC();
             // Each target keeps its DOT even when the caster's current fight changes. Death claiming and rewards
             // use the same path as a direct ability, so a secondary target cannot award its kill twice.
             if (!CombatManager.GetHandler(caster).ApplyAbilityToNpc(mob, mod.TargetView, (UInt16)Math.Min(damage, UInt16.MaxValue),
@@ -1172,7 +1173,7 @@ namespace hds
             }
             Tell(caster, AbilityMessages.Damage(true, mod.Parent, mod.CasterName ?? "", mob.getName() ?? "", damage, rawDamage - damage));
             caster.FlushQueue();
-            Output.WriteDebugLog("[EFFECTS] " + mod.Parent + " ticks on " + mob.getName() + " for " + damage);
+            Output.WriteDebugLog($"[EFFECTS] {mod.Parent} ticks on {mob.getName()} for {damage}: {healthBefore} -> {mob.getHealthC()}");
             return !mob.getIsDead();
         }
 
