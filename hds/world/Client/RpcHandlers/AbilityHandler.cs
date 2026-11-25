@@ -1838,7 +1838,7 @@ namespace hds
                 }
             }
 
-            data.PendingJump = new JumpRecords.Flight(endTime, data, report, route);
+            data.PendingJump = new JumpRecords.Flight(endTime, data, report, route, (xDest, yDest, zDest));
             ServerPackets packets = new ServerPackets();
             packets.SendHyperJumpWithOneStep((float)xDest, (float)yDest, (float)zDest, peakHeight, endTime,
                 clientTickSample, fullPeakOrigin);
@@ -1983,6 +1983,14 @@ namespace hds
             {
                 Output.WriteDebugLog("[NAV] Jump takeoff report " + request.Destination.X + "," +
                     request.Destination.Y + "," + request.Destination.Z);
+                return;
+            }
+            if (flight.Value.IsLandingReport(request.Destination, startTime))
+            {
+                // The accepted destination is already the stored position; retail sends no reply to a landing report.
+                data.PendingJump = null;
+                Output.WriteDebugLog(FormattableString.Invariant(
+                    $"[NAV] Jump landing report {request.Destination.X},{request.Destination.Y},{request.Destination.Z} {(flight.Value.EndMilliseconds - startTime) / 1000.0:F3}s before the deadline"));
                 return;
             }
             double xDest = request.Destination.X, yDest = request.Destination.Y, zDest = request.Destination.Z;
