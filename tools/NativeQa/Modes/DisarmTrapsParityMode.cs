@@ -115,7 +115,7 @@ public sealed class DisarmTrapsParityMode : NativeQaMode
                 server.DebugLog()[logFrom..].Contains($"[UTILITY] Disarm Traps on {WallSafeGoid} in 0x839: {logFragment}", StringComparison.Ordinal) &&
                 server.DebugLog()[logFrom..].Contains("[ABILITY-COST] char=110 ability=119 paid=10", StringComparison.Ordinal),
                 $"Disarm Traps resolves with {logFragment}", TimeSpan.FromSeconds(8));
-            byte[] expectedLine = AbilityMessages.AboutAbility(stringId, true, DisarmTraps, actor.Handle, "");
+            byte[] expectedLine = AbilityMessages.AboutAbility(stringId, true, DisarmTraps, actor.Handle, "", 0);
             await StockAbilityProfile.ObserveAsync(actor, rpcFrom, r => r.Bytes.AsSpan().SequenceEqual(expectedLine),
                 $"Disarm Traps sends 0x{stringId:x}");
         }
