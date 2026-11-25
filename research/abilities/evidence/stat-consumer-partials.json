@@ -1,0 +1,113 @@
+{
+  "abilities": {
+    "328": {
+      "checks": {
+        "stats": {
+          "source": "GOB 328 stores learned-rank function 2 bonuses: Melee and Ballistic Defense 0.1, Melee Damage and Ballistic Accuracy 0.2, Viral Resistance 0.2.",
+          "runtime": "AbilityPassives publishes 1143/1027/1142/996/1148. AbilityStats.Defense, Attack and the linked melee influence 159, plus TypedResistanceBonuses, consume them; unloading restores each consumer.",
+          "test": "Stock PR1147 verified the five records add/remove/add. LoadedPassiveConsumerTests.CodeBranching328FeedsDefenceAccuracyMeleeDamageAndViralResistance shows +2/+2 defence, +5 ranged attack, 100->110 melee damage and +22 viral resistance at rank 50, all restored on unload. https://github.com/kylebrussell/mxo-hd/pull/1147#issuecomment-7152042620"
+        },
+        "source-parity": {
+          "source": "The shipped stat stores a percentage linked to raw Viral Resistance; the retail owner coefficient is unarchived.",
+          "runtime": "TypedResistanceBonuses converts the loaded percentage on the recipient at damage time with the shipped GetDamageReductionValue range: truncated (4 x level + 20) x percent / 100 points, added once to the matching typed resistance. This is the chosen level-normalised policy also used by Transmit Virus 95 and 593.",
+          "test": "Stock PR1147 Logic Barrage 330 read 590/556/590 (15%/25%/15%, 33/55/33 points) across load, unload and reload. CodeBranchingViralTests and LoadedPassiveConsumerTests.CodeBranching328FeedsDefenceAccuracyMeleeDamageAndViralResistance. https://github.com/kylebrussell/mxo-hd/pull/1147#issuecomment-7152042620"
+        },
+        "behavior-tests": {
+          "source": "328 is a loaded passive with five while-enabled bonuses.",
+          "runtime": "Each bonus has a live consumer and is removed with the passive.",
+          "test": "LoadedPassiveConsumerTests.CodeBranching328FeedsDefenceAccuracyMeleeDamageAndViralResistance, CodeBranchingViralTests and the stock PR1147 records cycle. https://github.com/kylebrussell/mxo-hd/pull/1147#issuecomment-7152042620"
+        }
+      }
+    },
+    "422": {
+      "checks": {
+        "stats": {
+          "source": "GOB 422 stores learned-rank function 2 bonuses: Melee and Ballistic Damage 0.2, Thrown and Viral Resistance 0.1.",
+          "runtime": "AbilityPassives publishes 1142/1139/1146/1148; the linked melee 159 and ballistic 171 influence and TypedResistanceBonuses consume them.",
+          "test": "Stock PR1146 verified the four records add/remove/add. LoadedPassiveConsumerTests.EnhancedPotency422FeedsMeleeAndBallisticDamageAndTypedResistances shows 100->110 melee and ballistic damage and +11 thrown and viral resistance at rank 50. https://github.com/kylebrussell/mxo-hd/pull/1146#issuecomment-7151978377"
+        },
+        "source-parity": {
+          "source": "The two shipped resistance bonuses are percentages linked to raw thrown and viral resistance; the retail coefficient is unarchived.",
+          "runtime": "TypedResistanceBonuses converts the loaded percentage on the recipient at damage time with the shipped GetDamageReductionValue range: truncated (4 x level + 20) x percent / 100 points, added once to the matching typed resistance. This is the chosen level-normalised policy also used by Transmit Virus 95 and 593.",
+          "test": "Stock PR1146 Logic Barrage 330 read 640/623/640 (+5% = 11 points, 17 resisted). EnhancedPotencyViralTests and LoadedPassiveConsumerTests.EnhancedPotency422FeedsMeleeAndBallisticDamageAndTypedResistances. https://github.com/kylebrussell/mxo-hd/pull/1146#issuecomment-7151978377"
+        },
+        "behavior-tests": {
+          "source": "422 is a loaded passive with four while-enabled bonuses.",
+          "runtime": "Each bonus has a live consumer and is removed with the passive.",
+          "test": "LoadedPassiveConsumerTests.EnhancedPotency422FeedsMeleeAndBallisticDamageAndTypedResistances, EnhancedPotencyViralTests and the stock PR1146 records cycle. https://github.com/kylebrussell/mxo-hd/pull/1146#issuecomment-7151978377"
+        }
+      }
+    },
+    "358": {
+      "checks": {
+        "stats": {
+          "source": "GOB 358 stores learned-rank function 2 bonuses: Viral Defense 0.24, Viral Accuracy 0.1, Powerless Duration 0.2.",
+          "runtime": "AbilityPassives publishes 1030/1147/1042. SpecialDefense uses 1030 against a TestFunction 2 special, ViralAccuracy uses 1147, and AbilityControlDurations lengthens an applied Powerless 96 through its linked 1042.",
+          "test": "Stock PR1135 verified the three records remove and restore. LoadedPassiveConsumerTests.CodeShield358FeedsInterlockViralDefenceViralAccuracyAndPowerlessDuration shows +5 viral special defence, +2 viral accuracy and Powerless 10->11 s at rank 50. HackerBatchBParityTests.CodeShield358FeedsViralAccuracyAndPowerlessDuration. https://github.com/kylebrussell/mxo-hd/pull/1135#issuecomment-7149167962"
+        },
+        "source-parity": {
+          "source": "Viral Accuracy Bonus 1147 is a percentage linked to raw viral accuracy 342; the retail coefficient is unarchived.",
+          "runtime": "AbilityStats.ViralAccuracy adds trunc(level x 1147 / 100) once to capped direct 342, the same chosen convention closed for Clear Head's 349.",
+          "test": "Stock PR1135 normal Logic Blast free casts read inputs 64/0 -> 63/0 -> 64/0 across load, unload and reload. ViralAccuracyConsumerTests and LoadedPassiveConsumerTests.CodeShield358FeedsInterlockViralDefenceViralAccuracyAndPowerlessDuration. https://github.com/kylebrussell/mxo-hd/pull/1135#issuecomment-7149167962"
+        },
+        "behavior-tests": {
+          "source": "358 is a loaded passive with three while-enabled bonuses.",
+          "runtime": "Each bonus has a live consumer and is removed with the passive.",
+          "test": "LoadedPassiveConsumerTests.CodeShield358FeedsInterlockViralDefenceViralAccuracyAndPowerlessDuration and the stock PR1135 cycle. https://github.com/kylebrussell/mxo-hd/pull/1135#issuecomment-7149167962"
+        }
+      }
+    },
+    "498": {
+      "checks": {
+        "stats": {
+          "source": "GOB 498 stores learned-rank function 2 bonuses: Powerless Duration and Melee Defense 0.2, Determination and Ballistic Resistance 0.1.",
+          "runtime": "AbilityPassives publishes 1042/1143/1047/1140; AbilityControlDurations, AbilityStats.Defense, DeflectCode and ranged Toughness consume them.",
+          "test": "Stock PR1136 verified the four records remove and restore. LoadedPassiveConsumerTests.HandgunArtistry498FeedsPowerlessDurationMeleeDefenceDeterminationAndBallisticResistance shows Powerless 10->11 s, +5 melee defence, Stun 10->9.5 s and +11 ranged toughness. https://github.com/kylebrussell/mxo-hd/pull/1136#issuecomment-7149238593"
+        },
+        "source-parity": {
+          "source": "Determination Bonus 1047 is a percentage linked to raw Determination 575; the retail coefficient is unarchived.",
+          "runtime": "DeflectCode applies 1047 as a percentage of the duration left after shipped raw-575 mitigation (combat_calculations.py GetAbilityMitigationDuration) and keeps the 33% floor; the immunity timer is not scaled. This is the chosen stock-compatible policy already closed for Deflect Code 23 and Clear Head 233.",
+          "test": "Stock PR1136 helper Stun 315 on CSR lasted 6.9825/7.35/6.9825 s across load, unload and reload while immunity stayed 14 s. LoadedPassiveConsumerTests.HandgunArtistry498FeedsPowerlessDurationMeleeDefenceDeterminationAndBallisticResistance. https://github.com/kylebrussell/mxo-hd/pull/1136#issuecomment-7149238593"
+        },
+        "behavior-tests": {
+          "source": "498 is a loaded passive with four while-enabled bonuses.",
+          "runtime": "Each bonus has a live consumer and is removed with the passive.",
+          "test": "LoadedPassiveConsumerTests.HandgunArtistry498FeedsPowerlessDurationMeleeDefenceDeterminationAndBallisticResistance and the stock PR1136 cycle. https://github.com/kylebrussell/mxo-hd/pull/1136#issuecomment-7149238593"
+        }
+      }
+    },
+    "491": {
+      "checks": {
+        "stats": {
+          "source": "GOB 491 stores learned-rank function 2 bonuses: Determination 0.2, Melee Defense, Ballistic Damage and Enrage Duration 0.1.",
+          "runtime": "AbilityPassives publishes 1047/1143/1139/1068. DeflectCode, AbilityStats.Defense and the linked ballistic influence 171 consume the first three. Shipped Enraged state 93 has no linked-duration field, so 1068 is published as a record only, as for 339 and 531.",
+          "test": "Stock PR1131 verified the four records add/remove/add and Enrage stayed 10 s in every state. LoadedPassiveConsumerTests.SmgSpecialization491FeedsDeterminationMeleeDefenceAndBallisticDamage shows Stun 10->9 s, +2 melee defence, ballistic damage 100->104 (binary32) and an unchanged 10 s Enrage. https://github.com/kylebrussell/mxo-hd/pull/1131#issuecomment-7147715374"
+        },
+        "source-parity": {
+          "source": "Determination Bonus 1047 is a percentage linked to raw Determination 575; the retail coefficient is unarchived.",
+          "runtime": "DeflectCode applies 1047 as a percentage of the duration left after shipped raw-575 mitigation (combat_calculations.py GetAbilityMitigationDuration) and keeps the 33% floor; the immunity timer is not scaled. This is the chosen stock-compatible policy already closed for Deflect Code 23 and Clear Head 233.",
+          "test": "The shared 1047 consumer is stock-measured on PR1136 (498: 6.9825/7.35 s) and PR518 (23: +10% Stun 7.35->6.615 s). LoadedPassiveConsumerTests.SmgSpecialization491FeedsDeterminationMeleeDefenceAndBallisticDamage gives 491's +10 the same 10% shortening. https://github.com/kylebrussell/mxo-hd/pull/1136#issuecomment-7149238593 https://github.com/kylebrussell/mxo-hd/pull/518"
+        },
+        "behavior-tests": {
+          "source": "491 is a loaded passive with four while-enabled bonuses.",
+          "runtime": "Three have live consumers; 1068 has no shipped linked state.",
+          "test": "LoadedPassiveConsumerTests.SmgSpecialization491FeedsDeterminationMeleeDefenceAndBallisticDamage and the stock PR1131 cycle. https://github.com/kylebrussell/mxo-hd/pull/1131#issuecomment-7147715374"
+        }
+      }
+    },
+    "502": {
+      "checks": {
+        "stats": {
+          "source": "GOB 502 stores independent 40% procs: Ballistic Defense -31 and Melee Accuracy -27 for 8 s (NPC casters -44/-34).",
+          "runtime": "TempMods resolves both independent draws; AbilityStats.Defense(ranged) and Attack(melee) read the live records and return on expiry.",
+          "test": "DualPistolExecutionProcsTests.IndependentFortyPercentDrawsProduceAllFourOutcomesAndConsumeLiveStats covers all four draw outcomes, the -31/-27 consumer changes and expiry; PlayerAndNpcCatalogResolveBothIndependentFortyPercentProcs covers both caster tables. Stock PR1132 applied 522 for 8 s. https://github.com/kylebrussell/mxo-hd/pull/1132#issuecomment-7148329973"
+        },
+        "behavior-tests": {
+          "source": "GOB 502 stores 35 IS, a 4 s dual-handgun cast, ballistic damage and the two procs.",
+          "runtime": "Cast, queueing, damage and both procs execute as stored.",
+          "test": "DualPistolExecutionProcsTests and the stock PR995/PR1132 runs (queued 9532 landing, at-rest landing, 10/5 s reuse, the 522 application). https://github.com/kylebrussell/mxo-hd/pull/1132#issuecomment-7148329973"
+        }
+      }
+    }
+  }
+}
