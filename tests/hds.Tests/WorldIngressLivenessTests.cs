@@ -20,6 +20,19 @@ public class WorldIngressLivenessTests:IDisposable
         Set(c,"lastUsedTime",clock());Set(c,"processLock",new object());Set(c,"receivedPackets",new Queue<byte[]>());Set(c,"packetWorkerRunning",held);
         return c;
     }
+    [Fact]public void AConfirmedQuitIsReapableAtOnceWhileAnIdleClientStillWaitsThirtySeconds()
+    {
+        uint now=100;var quit=Client(()=>now);var idle=Client(()=>now);WorldServer.Clients["quit"]=quit;WorldServer.Clients["idle"]=idle;
+        TeleportHandler.ReleaseAfterQuit(quit);
+        // Same second as the last datagram: the quit is already dead for the view thread, and its claim succeeds.
+        Assert.False(quit.Alive);Assert.True(idle.Alive);
+        Assert.True(WorldThreads.TryClaimInactiveClient(quit,out string key));Assert.Equal("quit",key);
+        Assert.False(WorldThreads.TryClaimInactiveClient(idle,out _));
+        // Late ingress from the quitting endpoint can neither revive it nor queue work.
+        quit.QueuePacket(new byte[]{0xff});quit.Alive=true;Assert.False(quit.Alive);Assert.Equal(0,quit.PendingPacketCount);
+        now=130;Assert.True(idle.Alive);now=131;Assert.False(idle.Alive); // real disconnects keep the idle timeout
+        Assert.True(WorldThreads.RemoveClaimedClient(key,quit));Assert.False(WorldServer.Clients.ContainsKey("quit"));
+    }
     [Fact]public void ExactExistingThirtySecondLimitAndBotPolicyRemain()
     {
         uint now=100;var c=Client(()=>now);now=130;Assert.True(c.Alive);now=131;Assert.False(c.Alive);

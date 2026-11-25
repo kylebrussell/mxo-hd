@@ -218,10 +218,23 @@ namespace hds
             }
 
             AbilityAuras.Clear(client, announce: false);
-            AbilityBuffs.CancelDrains(client); // 80fe00: quit confirmed; the endpoint may linger until normal reap.
+            AbilityBuffs.CancelDrains(client); // 80fe00: quit confirmed.
             Store.dbManager.WorldDbHandler.SetOnlineStatus(client.playerData.getCharID(), 0);
             ServerPackets packets = new ServerPackets();
             packets.sendExitGame(client);
+            client.FlushQueue(force: true);
+            ReleaseAfterQuit(client);
+        }
+
+        /// <summary>
+        /// A confirmed quit ends the world session now instead of after 30 s of UDP silence: the client is stopped, and
+        /// the view thread's next pass (about 0.5 s) runs the ordinary reap: trade/combat/mission cleanup, offline status,
+        /// the margin in-use entry and the views on other players. Real disconnects still take the idle timeout.
+        /// </summary>
+        internal static void ReleaseAfterQuit(WorldClient client)
+        {
+            Output.WriteDebugLog("[SESSION] 80 fe 00 quit: releasing character " + client.playerData.getCharID() + " now");
+            client.Alive = false;
         }
 
         /// <summary>
