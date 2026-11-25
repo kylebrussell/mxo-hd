@@ -384,6 +384,20 @@ namespace hds
             client.FlushQueue();
         }
 
+        internal static uint? DisarmRefusal(WorldClient caster, out bool toolMissing)
+        {
+            toolMissing = false;
+            if (!AbilityPassives.IsLoaded(caster, DisarmTraps)) return AbilityRefusals.NotLoaded;
+            var fight = CombatManager.GetHandler(caster);
+            if (fight.isCombatRunning || fight.HasActiveInterlock) return AbilityRefusals.MustBeOutsideCombat;
+            if (ToolFor(caster, DisarmTraps) == 0)
+            {
+                toolMissing = true;
+                return null;
+            }
+            return null;
+        }
+
         private static void Disarm(WorldClient client, UInt16 targetView)
         {
             ClientView view = client.viewMan.getViewById(targetView);
@@ -395,9 +409,12 @@ namespace hds
             }
 
             UInt32 tool = ToolFor(client, DisarmTraps);
+            bool detected = TrapDetected(client, view.entityId);
+            int roll = DisarmTrapsQa.RollFor(client) ?? Roll();
             DisarmResult result = DisarmTrap(state == TrappedState, Level(client, DisarmTraps), TrapDisarmBonus(tool), 0,
-                TrapDetected(client, view.entityId), Roll());
-            Output.WriteDebugLog("[UTILITY] Disarm Traps on " + goid + " in 0x" + state.ToString("x") + ": " + result);
+                detected, roll);
+            Output.WriteDebugLog("[UTILITY] Disarm Traps on " + goid + " in 0x" + state.ToString("x") +
+                ": " + result + " (detected=" + detected + ", roll=" + roll + ")");
             if (result == DisarmResult.NotTrapped) return; // retail's test returned 0 with no message
             ToCaster(client, DisarmMessage(result), DisarmTraps);
             if (result == DisarmResult.Disarmed) SendState(client, view.entityId, goid, DisarmedState);

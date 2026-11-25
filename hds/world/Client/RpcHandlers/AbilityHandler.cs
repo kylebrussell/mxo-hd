@@ -702,6 +702,22 @@ namespace hds
             }
 
             WorldClient recallRecipient = null;
+            if (AbilityID == UtilityAbilities.DisarmTraps)
+            {
+                uint? disarmRefusal = UtilityAbilities.DisarmRefusal(Store.currentClient, out bool toolMissing);
+                if (toolMissing)
+                {
+                    Store.currentClient.messageQueue.addRpcMessage(DuelPackets.BuildSystemString(UtilityAbilities.ToolFail));
+                    Store.currentClient.FlushQueue();
+                    Output.WriteDebugLog("[ABILITY] Denied 119: missing trap disarm tool");
+                    return;
+                }
+                if (disarmRefusal.HasValue)
+                {
+                    Deny(AbilityID, "Disarm Traps cannot be used right now.", disarmRefusal.Value, sendServerText: false);
+                    return;
+                }
+            }
             if (AbilityID == UtilityAbilities.RecallTeamMember || AbilityID == UtilityAbilities.RecallMissionTeam)
             {
                 ushort? spawn = packet.Length == 41 ? (ushort?)BitConverter.ToUInt16(packet, 4) : null;
