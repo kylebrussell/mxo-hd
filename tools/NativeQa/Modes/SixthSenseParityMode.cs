@@ -100,7 +100,8 @@ public sealed class SixthSenseParityMode : NativeQaMode
         await ObserveAsync(neutral, neutralRpc, p => MatchesPattern(p.Bytes, SixthSenseFixture.Scan), "QAFriend receives ScanLine");
         await ObserveAsync(neutral, neutralRpc, p => MatchesPattern(p.Bytes, Resist), "QAFriend receives ResistLine");
 
-        // Verify Step 2: Detect (roll 20 + 40 = 60 > 50)
+        // Verify Step 2: Detect (roll 20 + 40 = 60 > 50); wait past the 0.5 s duplicate-request window.
+        await Task.Delay(TimeSpan.FromMilliseconds(750));
         caster.SkipReceived();
         caster.SendChat("?sixthroll 20");
         await caster.WaitForTextAsync("Sixth Sense QA roll set to 20.");
