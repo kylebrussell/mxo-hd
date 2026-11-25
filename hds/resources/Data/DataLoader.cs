@@ -639,6 +639,7 @@ namespace hds
                     string intValues = data[2];
                     UInt32[] items = intValues.Split(',').Select(n => Convert.ToUInt32(n)).ToArray();
                     Vendor theVendor = new Vendor(Convert.ToUInt16(data[0]), Convert.ToUInt32(data[1]), items);
+                    if (data.Length > 6 && UInt32.TryParse(data[6], out UInt32 npc)) theVendor.npcStaticID = npc;
                     Vendors.Add(theVendor);
                 }
 
@@ -897,9 +898,15 @@ namespace hds
             return goItem;
         }
 
+        /// <summary>A row keyed by this static id wins; otherwise the merchant static resolved for a row
+        /// (research/world-data/resolve_vendor_npcs.py), so using the drawn merchant opens its stock.</summary>
+        internal static Vendor FindVendor(List<Vendor> vendors, UInt32 staticId, UInt16 metrId) =>
+            vendors.Find(c => c.vendorStaticID == staticId && c.metrId == metrId) ??
+            vendors.Find(c => staticId != 0 && c.npcStaticID == staticId && c.metrId == metrId);
+
         public Vendor getVendorByGoIDandMetrId(UInt32 GoID, UInt16 metrId)
         {
-            Vendor theVendor = Vendors.Find(c => c.vendorStaticID == GoID && c.metrId == metrId);
+            Vendor theVendor = FindVendor(Vendors, GoID, metrId);
 
             return theVendor;
         }
