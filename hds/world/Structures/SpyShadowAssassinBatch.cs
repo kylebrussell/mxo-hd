@@ -27,6 +27,8 @@ namespace hds
             if (!Handles(id)) return false;
             if (id == ReverseBullDog)
                 return SneakFreeThrowAdmission.TryRefuseInstantOpener(client, id, targetViewId, targetSpawnId, out refusalReason);
+            if (id == GhostStrike)
+                return GhostStrikeAdmission.TryRefuse(client, id, targetViewId, targetSpawnId, out refusalReason);
 
             if (CombatManager.GetHandler(client).isCombatRunning)
             {
@@ -81,5 +83,10 @@ namespace hds
             SpyShadowAssassinBatch.TryRefuse(client, abilityId, targetViewId, targetSpawnId, out refusalReason);
         public bool TryResolveDamage(AbilityCatalog.Entry source, int characterLevel, Random random, out ushort damage) =>
             SpyShadowAssassinBatch.TryResolve(source, out damage);
+        public void OnLanded(WorldClient caster, ushort abilityId, ulong targetEntity)
+        {
+            if (AbilityCatalog.Canonical(abilityId) == SpyShadowAssassinBatch.GhostStrike)
+                StealthShieldAbilities.PlayThrow(caster, targetEntity, abilityId);
+        }
     }
 }
