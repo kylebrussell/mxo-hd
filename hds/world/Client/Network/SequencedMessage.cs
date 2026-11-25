@@ -71,8 +71,8 @@ namespace hds
 
         /// <summary>
         /// The server sequences an ack covers: the acked one, and for each set ack bit i the one i + 1 before it. Our
-        /// packets go out every other sequence, and the client's steady ack bits are 42 and 170 (bits 1, 3, 5 and 7: the
-        /// sent ones 2, 4, 6 and 8 back); 40 or 34 are the gaps a lost packet leaves.
+        /// packets used to go out every other sequence, so the client's steady ack bits were 42 and 170 (bits 1, 3, 5 and
+        /// 7) and covered only our last 4 packets; one sequence per packet, as retail, its 0x7f/0xff cover the last 8.
         /// </summary>
         public static HashSet<UInt16> AckedSequences(UInt16 ackSeq, UInt16 ackBits)
         {

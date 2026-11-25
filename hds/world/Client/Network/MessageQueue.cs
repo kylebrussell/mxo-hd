@@ -93,6 +93,62 @@ namespace hds
             }
         }
 
+        /// <summary>
+        /// The most RPC counters the client is sent ahead of its oldest unacked one. Retail kept about a hundred in flight
+        /// at world entry (Unknown.log2: 61-163 out before the client acked past 60). New RPCs past this wait for acks,
+        /// so a client that stops acking gets a bounded resend each interval rather than an ever-growing one.
+        /// </summary>
+        public const int MaxRpcsInFlight = 128;
+
+        /// <summary>What a flush resends: the counters, the oldest one's send count, and how many.</summary>
+        internal readonly struct RpcResend
+        {
+            internal readonly int First, Last, Count, OldestSend;
+            internal RpcResend(int first, int last, int count, int oldestSend) { First = first; Last = last; Count = count; OldestSend = oldestSend; }
+        }
+
+        /// <summary>
+        /// The reliable RPCs a flush sends, in counter order. Each sent-but-unacked RPC used to keep its own 500 ms resend
+        /// timer, so RPCs first sent in different flushes went out again in different packets, each on its own phase: a
+        /// packet carried 48-49 while 46-47, still unacked, went in another (the 52 53 54 46 47 50 51 48 49 pattern in
+        /// the level-four native log). Now, once any of them is due, it and every unacked RPC before it go out again,
+        /// oldest first; they then share a send time, so later resends stay one run starting at the oldest unacked
+        /// counter. New RPCs follow, while the counter span from the oldest unacked one stays under MaxRpcsInFlight.
+        /// </summary>
+        internal System.Collections.Generic.List<SequencedMessage> TakeRpcsToSend(long nowTickMs, UInt16 nextCounter, out RpcResend resend)
+        {
+            var sent = new System.Collections.Generic.List<SequencedMessage>();
+            var fresh = new System.Collections.Generic.List<SequencedMessage>();
+            lock (RPCMessagesQueue.SyncRoot)
+            {
+                foreach (SequencedMessage message in RPCMessagesQueue)
+                {
+                    if (message.rpcNumber >= 0) sent.Add(message);
+                    else fresh.Add(message);
+                }
+            }
+
+            // Oldest first, across the 16-bit wrap: the oldest is the furthest behind the next counter.
+            sent.Sort((a, b) => Behind(b, nextCounter).CompareTo(Behind(a, nextCounter)));
+            int due = -1;
+            for (int i = sent.Count - 1; i >= 0; i--)
+            {
+                if (sent[i].IsRpcDue(nowTickMs)) { due = i; break; }
+            }
+
+            var result = new System.Collections.Generic.List<SequencedMessage>(due + 1 + fresh.Count);
+            for (int i = 0; i <= due; i++) result.Add(sent[i]);
+            resend = due < 0 ? default : new RpcResend(sent[0].rpcNumber, sent[due].rpcNumber, due + 1, sent[0].sendCounter);
+
+            int span = sent.Count == 0 ? 0 : Behind(sent[0], nextCounter);
+            int room = Math.Max(0, MaxRpcsInFlight - span);
+            for (int i = 0; i < fresh.Count && i < room; i++) result.Add(fresh[i]);
+            return result;
+        }
+
+        /// <summary>How many counters before nextCounter this RPC's is: 1 for the newest sent one.</summary>
+        private static int Behind(SequencedMessage message, UInt16 nextCounter) => (UInt16)(nextCounter - (UInt16)message.rpcNumber);
+
         // Called only within the existing transport admission gate, BEFORE any new RPC counter is assigned.
         internal void PruneUnassignedWorldRpcs(int world,long transport)
         {

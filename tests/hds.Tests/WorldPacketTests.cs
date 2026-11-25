@@ -60,7 +60,7 @@ public class WorldPacketTests
     [Fact]
     public void AnAckCoversItsSequenceAndTheOnesItsBitsName()
     {
-        // The client's steady ack bits: 42 (bits 1, 3, 5) for our every-other-sequence packets
+        // 42 (bits 1, 3, 5): the steady ack bits our packets got when they went out every other sequence
         Assert.Equal(new HashSet<ushort> { 134, 132, 130, 128 }, SequencedMessage.AckedSequences(134, 42));
         // 40 (bits 3, 5): the packet two back was lost
         Assert.DoesNotContain((ushort)132, SequencedMessage.AckedSequences(134, 40));
