@@ -316,10 +316,22 @@ namespace hds
             if(id==SneakGrantAbility && StealthShieldAbilities.PendingRestealth(client))return "Sneak is waiting for Disable Evasion's restealth callback.";
             if (id == ImpartInvisibilityAbility)
             {
-                // ImpartInvisibility_Test and ImpartInvisibilityInit
+                // ImpartInvisibility_Test (no self target) and ImpartInvisibilityInit (recipient not interlocked,
+                // not already carrying 1116/629). The stored selector is 8 m with ordinary sight.
                 WorldClient target = AbilitySupport.PlayerInView(client, targetView);
                 if (target == null || target == client) return "You cannot impart invisibility on yourself.";
-                if (CombatManager.GetHandler(target).isCombatRunning) return "Your target is in combat.";
+                if (!AbilityTargets.WithinSelectionRange(client, id, targetView))
+                {
+                    reason = AbilityRefusals.TargetOutOfRange;
+                    return "Your target is out of range.";
+                }
+                if (!AbilityTargets.HasSelectionSight(client, AbilityCatalog.Find(id), targetView))
+                {
+                    reason = AbilityRefusals.TargetNotInSight;
+                    return "You cannot see your target.";
+                }
+                var targetCombat = CombatManager.GetHandler(target);
+                if (targetCombat.isCombatRunning || targetCombat.HasActiveInterlock) return "Your target is in combat.";
                 if ((BitsOf(target) & Invisible) != 0) return "Your target is already invisible.";
                 return null;
             }

@@ -5,6 +5,8 @@ using hds.shared;
 
 namespace hds.Tests;
 
+// Shares WorldServer.Clients with the rear-opener and Impart Invisibility admission tests.
+[Collection("AbilityParityWorld")]
 public class GhostStrikeParityTests
 {
     private const ushort Spy = CombatStyles.SpyStyle;

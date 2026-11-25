@@ -142,4 +142,55 @@ public class SneakAttackOpenerAdmissionTests
             WorldServer.Clients.Clear();
         }
     }
+
+    [Fact]
+    public void ImpartInvisibilityChecksSelfRangeSightCombatAndExistingInvisibility()
+    {
+        string dir = AppContext.BaseDirectory;
+        while (!File.Exists(Path.Combine(dir, "data", "sector_properties.csv")))
+            dir = Directory.GetParent(dir)!.FullName;
+        SectorProperties.Load(Path.Combine(dir, "data", "sector_properties.csv"));
+        NavMesh.UseDirectory(Path.Combine(dir, "data", "navmesh"));
+        const ushort impart = Stealth.ImpartInvisibilityAbility;
+        Assert.Equal(8, AbilityCatalog.Find(impart)!.Number("Ability/SelectionRange"));
+
+        var caster = Client(110, 21550, 1095, 16150);
+        var friend = Client(6111, 21650, 1095, 16250, yaw: 192);
+        WorldServer.Clients ??= new Dictionary<string, WorldClient>();
+        WorldServer.Clients.Clear();
+        WorldServer.Clients["c"] = caster;
+        WorldServer.Clients["f"] = friend;
+        try
+        {
+            Track(caster, friend, 5, 11);
+            Assert.NotNull(Stealth.Refusal(caster, impart, 2, out _));
+            Assert.Null(Stealth.Refusal(caster, impart, 5, out _));
+
+            friend.playerInstance.Position.setValue(Pos(21550, 1095, 16150 + 900));
+            if (NavMesh.HasSightPath(1, 21550, 1095, 16150, 21550, 1095, 16150 + 900))
+            {
+                Assert.NotNull(Stealth.Refusal(caster, impart, 5, out uint far));
+                Assert.Equal(AbilityRefusals.TargetOutOfRange, far);
+            }
+            friend.playerInstance.Position.setValue(Pos(21950, 1095, 16150));
+            if (!NavMesh.HasSightPath(1, 21550, 1095, 16150, 21950, 1095, 16150))
+            {
+                Assert.NotNull(Stealth.Refusal(caster, impart, 5, out uint blocked));
+                Assert.Equal(AbilityRefusals.TargetNotInSight, blocked);
+            }
+            friend.playerInstance.Position.setValue(Pos(21650, 1095, 16250));
+
+            var combat = CombatManager.GetHandler(friend);
+            combat.isCombatRunning = true;
+            Assert.Equal("Your target is in combat.", Stealth.Refusal(caster, impart, 5, out _));
+            combat.isCombatRunning = false;
+
+            Assert.NotNull(Stealth.Begin(friend, Stealth.Defs[Stealth.InvisibilityImpartedAbility], 50));
+            Assert.Equal("Your target is already invisible.", Stealth.Refusal(caster, impart, 5, out _));
+        }
+        finally
+        {
+            WorldServer.Clients.Clear();
+        }
+    }
 }
