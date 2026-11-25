@@ -235,7 +235,7 @@ public sealed class SpyInstantSneakOpenersMode : NativeQaMode
         async Task WaitFamily691EndAsync(int from)
         {
             await caster.WaitUntilAsync(() => caster.World.RpcSnapshot().Skip(from)
-                .Any(f => BytePattern.Parse($"80 bd 00 b3 02 {AbilityCooldowns.GroupTimer:x2} 00 00 70 41 00").IsMatch(f.Bytes)),
+                .Any(f => BytePattern.Parse($"80 bd 01 b3 02 {AbilityCooldowns.GroupTimer:x2} 00 00 70 41 00").IsMatch(f.Bytes)),
                 "family 691 15 s reuse completes", TimeSpan.FromSeconds(20));
         }
 
