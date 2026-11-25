@@ -17,6 +17,7 @@ namespace NativeQa.Modes;
 public sealed class SixthSenseParityMode : NativeQaMode
 {
     private const int Level = 16, SixthRank = 10;
+    private const uint SixthDescriptor = 0x80000000u | ((uint)SixthSense.Ability << 10);
     private const int X = SixthSenseFixture.X, Y = SixthSenseFixture.Y, Z = SixthSenseFixture.Z;
     private const int EnemyX = X + 200, NeutralZ = 1600, FarX = SixthSenseFixture.FarX;
     private const string Resist = "81 67 17 00 ?? ?? 80 00 00 60 00 95 00 00 00";
@@ -33,10 +34,11 @@ public sealed class SixthSenseParityMode : NativeQaMode
         $"UPDATE characters SET x={X},z={NeutralZ},rotation=0,alignment=1,healthC=1500,healthM=1500 WHERE charId=6111",
         $"UPDATE characters SET x={FarX},z={Z},rotation=192,alignment=2,healthC=1500,healthM=1500 WHERE charId=6113",
         $"UPDATE char_abilities SET level={Level} WHERE char_id=110",
-        $"UPDATE char_abilities SET level={SixthRank} WHERE char_id=110 AND ability_id={SixthSense.Ability}",
+        $"UPDATE char_abilities SET level={SixthRank} WHERE char_id=110 AND ability_id={SixthDescriptor}",
         "DELETE FROM char_abilities WHERE char_id IN (6111,6113,6114)",
         $"DELETE FROM inventory WHERE charId IN (110,6111,6113,6114) AND slot={CombatFixtureWeapons.HandSlot}"
     }, DevCommands: true, hotbarAbilities: new ushort[] { SixthSense.Ability },
+        testMobFixture: "wounding-throw.csv",
         environmentOverrides: new()
         {
             ["MXO_AGGRO"] = "0", ["MXO_MOB_WANDER"] = "0",
