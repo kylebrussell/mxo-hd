@@ -537,6 +537,14 @@ namespace hds
                 Output.WriteDebugLog("[ABILITY] Denied 150: active interlock");
                 return;
             }
+            if (AbilityID == AbilityEmpBlast.Ability && AbilityEmpBlast.TryRefuse(Store.currentClient, out uint empRefusal))
+            {
+                Store.currentClient.messageQueue.addRpcMessage(AbilityRefusals.Encode(
+                    new AbilityRefusals.Record(AbilityID, empRefusal)));
+                Store.currentClient.FlushQueue();
+                Output.WriteDebugLog("[ABILITY] Denied 1025: native refusal " + empRefusal);
+                return;
+            }
 
             bool distractingBlow = AbilityID == DistractingBlow.Id;
             bool sneakFreeThrow = distractingBlow || SneakFreeThrowAdmission.Handles(AbilityID);

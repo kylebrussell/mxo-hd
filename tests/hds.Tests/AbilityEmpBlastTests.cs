@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using hds;
 namespace hds.Tests;
 public class AbilityEmpBlastTests
@@ -25,6 +26,32 @@ public class AbilityEmpBlastTests
         var e=AbilityCatalog.Find(1025);
         Assert.Equal(10,e.Number("Ability/RadiusOfEffect"));Assert.Equal(1,e.CastSeconds);
         Assert.Equal(30,e.Number("Ability/RecastTime"));Assert.Equal(4,e.Number("Ability/CastDirectObjects"));
+        Assert.Equal(1,e.Number("Ability/CastWhenUsed"));
         Assert.False(AbilityCatalog.Find(1026).DirectDamage);
+    }
+    [Fact] public void TryRefuseEnforcesLoadedAndOutsideCombatGates()
+    {
+        var client = (WorldClient)RuntimeHelpers.GetUninitializedObject(typeof(WorldClient));
+        client.playerData = new ClientData();
+        client.playerData.setCharID(51025);
+        client.playerInstance = new PlayerCharacter();
+        client.playerInstance.Level.setValue((byte)19);
+        client.messageQueue = new MessageQueue();
+
+        Assert.True(AbilityEmpBlast.TryRefuse(client, out uint reason));
+        Assert.Equal(AbilityRefusals.NotLoaded, reason);
+
+        AbilityPassives.SetLoaded(client, new (ushort, ushort)[] { (1025, 1) });
+        Assert.False(AbilityEmpBlast.TryRefuse(client, out reason));
+        Assert.Equal(0u, reason);
+
+        var combat = CombatManager.GetHandler(client);
+        combat.isCombatRunning = true;
+        try
+        {
+            Assert.True(AbilityEmpBlast.TryRefuse(client, out reason));
+            Assert.Equal(AbilityRefusals.MustBeOutsideCombat, reason);
+        }
+        finally { combat.isCombatRunning = false; }
     }
 }
