@@ -31,7 +31,10 @@ namespace hds
         public static bool TryRefuse(WorldClient client, ushort abilityId, ushort targetViewId, ushort? targetSpawnId, out uint refusalReason)
         {
             refusalReason = 0;
-            if (!Handles(abilityId)) return false;
+            ushort id = AbilityCatalog.Canonical(abilityId);
+            if (!Handles(id)) return false;
+            if (id == LegThrow)
+                return SneakFreeThrowAdmission.TryRefuse(client, id, targetViewId, targetSpawnId, out refusalReason);
             if (CombatManager.GetHandler(client).isCombatRunning)
             {
                 refusalReason = AbilityRefusals.MustBeOutsideCombat;
@@ -78,5 +81,10 @@ namespace hds
             SpySneakOpeners.TryRefuse(client, abilityId, targetViewId, targetSpawnId, out refusalReason);
         public bool TryResolveDamage(AbilityCatalog.Entry source, int characterLevel, Random random, out ushort damage) =>
             SpySneakOpeners.TryResolve(source, characterLevel, out damage);
+        public void OnLanded(WorldClient caster, ushort abilityId, ulong targetEntity)
+        {
+            if (AbilityCatalog.Canonical(abilityId) == SpySneakOpeners.LegThrow)
+                StealthShieldAbilities.PlayThrow(caster, targetEntity, abilityId);
+        }
     }
 }
