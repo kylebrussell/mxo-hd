@@ -261,8 +261,20 @@ namespace hds
                 HashSet<uint> signposts = new HashSet<uint>();
 
                 DataLoader loader = DataLoader.getInstance();
+                foreach (NPC_Singpost signpost in loader.Signposts)
+                {
+                    signposts.Add(signpost.mxoStaticId);
+                }
+
+                // The visibility pass acts only on hardline booths and listed signposts (CheckForStaticObjectsViewsInRange),
+                // so the index holds only those: scanning every static object near every player dominated the pass.
                 foreach (StaticWorldObject worldObject in loader.WorldObjectsDB)
                 {
+                    if (!InStaticVisibilityIndex(worldObject, signposts))
+                    {
+                        continue;
+                    }
+
                     ushort districtId = worldObject.metrId;
                     if (!index.TryGetValue(districtId, out SpatialGrid<StaticWorldObject> grid))
                     {
@@ -273,14 +285,15 @@ namespace hds
                     grid.Add((float)worldObject.pos_x, (float)worldObject.pos_z, worldObject);
                 }
 
-                foreach (NPC_Singpost signpost in loader.Signposts)
-                {
-                    signposts.Add(signpost.mxoStaticId);
-                }
-
                 staticObjectsByDistrict = index;
                 signpostStaticIds = signposts;
             }
+        }
+
+        internal static bool InStaticVisibilityIndex(StaticWorldObject worldObject, HashSet<uint> signposts)
+        {
+            UInt16 typeId = NumericalUtils.ByteArrayToUint16(worldObject.type, 1);
+            return typeId == HardlineBooths.PhoneBoothType || typeId == 8400 && signposts.Contains(worldObject.staticId);
         }
 
         private static void EnsureSubwayIndex(List<Subway> subways)
