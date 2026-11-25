@@ -28,7 +28,7 @@ public sealed class KnifeThrowerClosureMode : NativeQaMode
         PvpOpponentsFixture.NativeSql,
         $"UPDATE characters SET level={Level},exp={PlayerProgression.ExperienceForLevel(Level)},x={X},y={Y},z={Z}," +
             "rotation=0,alignment=1,healthC=5000,healthM=5000,innerStrC=2000,innerStrM=2000 WHERE charId=110",
-        $"UPDATE characters SET level={Level},exp={PlayerProgression.ExperienceForLevel(Level)},x={EnemyX},y={Y},z={Z},rotation=64,alignment=2,healthC=5000,healthM=5000 WHERE charId=6114",
+        $"UPDATE characters SET level={Level},exp={PlayerProgression.ExperienceForLevel(Level)},x={EnemyX},y={Y},z={Z},rotation=192,alignment=2,healthC=5000,healthM=5000 WHERE charId=6114",
         $"UPDATE characters SET level={Level},exp={PlayerProgression.ExperienceForLevel(Level)},x=17150,y={Y},z={Z},rotation=192,alignment=1,healthC=5000,healthM=5000 WHERE charId=6111",
         "DELETE FROM char_abilities WHERE char_id IN (6111,6114)",
         $"UPDATE char_abilities SET level={Level} WHERE char_id=110",
@@ -50,7 +50,7 @@ public sealed class KnifeThrowerClosureMode : NativeQaMode
         },
         readyMessages: new[]
         {
-            $"Level {Level}, {Loadout.Sum(AbilityMemory.Cost)}/{AbilityMemory.ForLevel(Level)} memory. HOME ({X},{Y},{Z}) faces the Melee Dummy 3 m north; QAEnemy stands 2 m west. Page 2: 1=Spy Style, 2=Deadly Throw 279, 3=Crippling Throw 280, 4=Sneak, 5=Suplex 287. Do NOT press slot 1: you start in Self Defense.",
+            $"Level {Level}, {Loadout.Sum(AbilityMemory.Cost)}/{AbilityMemory.ForLevel(Level)} memory. HOME ({X},{Y},{Z}) faces the Melee Dummy 3 m north; QAEnemy stands 2 m west, facing west (away from you, so it cannot see you sneak). Page 2: 1=Spy Style, 2=Deadly Throw 279, 3=Crippling Throw 280, 4=Sneak, 5=Suplex 287. Do NOT press slot 1: you start in Self Defense.",
             "Step 1 (280 auto-switch + presentation): /target QAEnemy, press slot 3. Expect the style to switch to Spy Style without pressing slot 1, then a 2.0 s cast, 20 IS, a 1-point Thrown hit and Rooted on QAEnemy. Watch the CSR from cast start to 2 s after landing and write down exactly what it does (throw motion, cast pose only, or nothing).",
             $"Step 2 (279 presentation at rest): wait 4 s, /target QAEnemy, press slot 2. Expect 2.0 s cast, 18 IS, {DeadlyNeutral} Thrown (plus 279's records). Write down the CSR's motion the same way.",
             "Step 3 (279 inside Close Combat): /target Melee Dummy, right-click it and choose Close Combat. Once the fight starts (Spy Style still active; press slot 1 if the style changed), press slot 2. Record the client's answer word for word: a local refusal, or a cast bar. If it casts, note whether the fight keeps going and save the server lines from '[ABILITY] 279' and the '[COMBAT-VIEW] Round' lines around it.",
