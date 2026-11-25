@@ -28,15 +28,15 @@ public sealed class SixthSenseParityMode : NativeQaMode
     public override NativeQaModePlan Plan { get; } = new(Loadout, X, Z, Array.Empty<string>(), Array.Empty<string>(), new[]
     {
         PvpOpponentsFixture.NativeSql,
-        $"UPDATE characters SET level={Level},exp={PlayerProgression.ExperienceForLevel(Level)},y={Y},alignment=1,pvpflag=0 WHERE charId IN (110,6111,6113,6114)",
+        $"UPDATE characters SET level={Level},exp={PlayerProgression.ExperienceForLevel(Level)},y={Y},alignment=1,pvpflag=0 WHERE charId IN (110,6111,6112,6114)",
         $"UPDATE characters SET x={X},z={Z},rotation=64,healthC=1500,healthM=1500,innerStrC=1000,innerStrM=1000 WHERE charId=110",
         $"UPDATE characters SET x={EnemyX},z={Z},rotation=192,alignment=2,healthC=1500,healthM=1500 WHERE charId=6114",
         $"UPDATE characters SET x={X},z={NeutralZ},rotation=0,alignment=1,healthC=1500,healthM=1500 WHERE charId=6111",
-        $"UPDATE characters SET x={FarX},z={Z},rotation=192,alignment=2,healthC=1500,healthM=1500 WHERE charId=6113",
+        $"UPDATE characters SET x={FarX},z={Z},rotation=192,alignment=2,healthC=1500,healthM=1500 WHERE charId=6112",
         $"UPDATE char_abilities SET level={Level} WHERE char_id=110",
         $"UPDATE char_abilities SET level={SixthRank} WHERE char_id=110 AND ability_id={SixthDescriptor}",
-        "DELETE FROM char_abilities WHERE char_id IN (6111,6113,6114)",
-        $"DELETE FROM inventory WHERE charId IN (110,6111,6113,6114) AND slot={CombatFixtureWeapons.HandSlot}"
+        "DELETE FROM char_abilities WHERE char_id IN (6111,6112,6114)",
+        $"DELETE FROM inventory WHERE charId IN (110,6111,6112,6114) AND slot={CombatFixtureWeapons.HandSlot}"
     }, DevCommands: true, hotbarAbilities: new ushort[] { SixthSense.Ability },
         testMobFixture: "wounding-throw.csv",
         environmentOverrides: new()
@@ -156,9 +156,12 @@ public sealed class SixthSenseParityMode : NativeQaMode
 
     private static int ReadPingCount(byte[] map)
     {
-        Check.That(map.Length >= 6 && map[0] == 0x80 && map[1] == 0xc5, "Valid 80 c5 header");
+        Check.That(map.Length >= 5 && map[0] == 0x80 && map[1] == 0xc5, "Valid 80 c5 header");
         Check.Equal(10, map[4], "10 s display duration");
-        return map[5];
+        ushort offset = BitConverter.ToUInt16(map, 2);
+        if (offset == 0) return 0;
+        Check.That(map.Length >= offset + 2, "80 c5 ping count present");
+        return BitConverter.ToUInt16(map, offset);
     }
 
     private static bool MatchesPattern(byte[] bytes, string pattern)
