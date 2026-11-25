@@ -9,7 +9,7 @@ namespace NativeQa.Modes;
 public sealed class SpyInstantSneakOpenersMode : NativeQaMode
 {
     private const int Level = 50, X = 21550, Y = 1095, Z = 16150, EnemyX = 21750;
-    private const int DummyX = 17000, DummyY = 495, DummyZ = 6700, DummyBackZ = 6900;
+    private const int DummyX = 17000, DummyY = 495, DummyZ = 6700, DummyBackZ = 6448;
     private const ushort Spy = CombatStyles.SpyStyle, Sneak = Stealth.SneakGrantAbility;
     private const ushort SpinningBacksweep = SpinningBacksweepAdmission.SpinningBacksweep; // 152
     private const ushort Suplex = SuplexDamage.Suplex;                                     // 287
@@ -49,7 +49,7 @@ public sealed class SpyInstantSneakOpenersMode : NativeQaMode
             $"Level {Level}, {Loadout.Sum(AbilityMemory.Cost)}/{AbilityMemory.ForLevel(Level)} memory (+54% Thrown influence). Verified outdoor HOME ({X},{Y},{Z}) faces east-facing QAEnemy's back 2 m east ({EnemyX},{Y},{Z}), QAFriend nearby. Page 2: 1=Spy Style (1112), 2=Sneak (1111), 3=Spinning Backsweep (152, 6 m), 4=Suplex (287, 6 m), 5=Bull Dog (387, 6 m). No initial tp needed.",
             "Step 1 (Cast first at HOME — one opener per 15 s family 691 window, Sneak before each): Select slot 1 (Spy Style), /target QAEnemy, press slot 2 (Sneak), then slot 3 (152) -> instant, 20 IS, 1111 off, 30 s own/15 s grp 691, 158 Thrown dmg, no interlock. After 15 s grp 691: Sneak, slot 4 (287) -> instant, 50 IS, 1111 off, 38 s own/15 s grp 691, 646 Thrown dmg + Dazed (199)/Off-Balance (200)/Staggered (201) for 15 s with matched removals, no interlock. After 15 s grp 691: Sneak, slot 5 (387) -> instant, 37 IS, 1111 off, 60 s own/15 s grp 691, 1578 Thrown dmg, no interlock.",
             "Step 2 (Rear-opener refusals — no IS debit or timer): Before Sneak -> local gate or reason 23 (StealthedFlag). Sneak on + /target QAFriend -> reason 24. At printed FRONT (inside QAEnemy's 50-deg cone), BLOCK (solid wall), and FAR (>6 m), /target QAEnemy and press slots 3/4/5 -> reason 24/9/34 or local gate without debit.",
-            "Step 3 (+75 Thrown resistance on rear-facing Melee Dummy): Type printed DUMMY chunks (2 m behind south-facing Melee Dummy at 17000,495,6700), type printed RESISTED chunks (?cd fixture-reset-thrown-resisted), strafe/select fresh dummy, Sneak (slot 2), press slot 3 (152) -> [TYPED-RESISTANCE OURS] 152 type7 total75 raw158 final130."
+            "Step 3 (+75 Thrown resistance on rear-facing Melee Dummy): Type printed DUMMY chunks (17000,495,6448 facing north), type printed RESISTED chunks (?cd fixture-reset-thrown-resisted) and stay where the reset places you (2.52 m behind the north-facing dummy), select fresh dummy, if Close Combat opens type '?cd stop' then reselect slot 1 (Spy Style), press slot 2 (Sneak), press slot 3 (152) -> [TYPED-RESISTANCE OURS] 152 type7 total75 raw158 final130."
         });
 
     public override async Task<byte[]> AfterStartAsync(NativeQaBootstrapContext context)
@@ -64,7 +64,7 @@ public sealed class SpyInstantSneakOpenersMode : NativeQaMode
         Check.That(NavMesh.Locate(1, DummyX, DummyY, DummyBackZ, out var dummyStand) && !dummyStand.indoors && dummyStand.floorY + 95 == DummyY,
             "Verified rear stand behind Melee Dummy");
         var dummyTp = new Teleport(
-            $"?tp {DummyX} {DummyY} {DummyBackZ} {dummyStand.sector:x} {dummyStand.region:x} {dummyStand.polygon:x} - 80",
+            $"?tp {DummyX} {DummyY} {DummyBackZ} {dummyStand.sector:x} {dummyStand.region:x} {dummyStand.polygon:x} - 00",
             $"Teleported to {dummyStand.sector:x}/{dummyStand.region:x}");
 
         Check.That(NavMesh.HasSightPath(1, X, Y, Z, EnemyX, Y, Z), "Clear two-metre rear approach to QAEnemy");
@@ -72,7 +72,7 @@ public sealed class SpyInstantSneakOpenersMode : NativeQaMode
             Stealth.InFrustum(EnemyX, Z, 64, 21850, 16200, 50), "Clear frontal stand inside QAEnemy's 50-deg cone");
         Check.That(!NavMesh.HasSightPath(1, 21950, Y, Z, EnemyX, Y, Z), "Solid wall blocks opener sight");
         Check.That(NavMesh.HasSightPath(1, DummyX, DummyY, DummyBackZ, DummyX, DummyY, DummyZ) &&
-            !Stealth.InFrustum(DummyX, DummyZ, 128, DummyX, DummyBackZ, 50), "Rear stand behind south-facing Melee Dummy");
+            !Stealth.InFrustum(DummyX, DummyZ, 0, DummyX, DummyBackZ, 50), "Rear stand behind north-facing reset Melee Dummy");
         Check.That(Loadout.Sum(AbilityMemory.Cost) <= AbilityMemory.ForLevel(Level), "Level-50 loadout fits memory");
 
         PrintChunks("HOME", home);
