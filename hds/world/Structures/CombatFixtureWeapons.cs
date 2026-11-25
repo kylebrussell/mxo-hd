@@ -42,8 +42,10 @@ namespace hds
             bool duelist = (armor || ability == 501 || ability == 502) && Allowed(caller, MartialFixedDamageMode, "duelist");
             // Timed Spy throws: the armed win only decides the queued exchange; the dummy's thrown resistance uses fixture-reset-thrown-resisted.
             bool spyThrows = !armor && SpyTimedThrows.Handles(ability) && Allowed(caller, MartialFixedDamageMode, "spy-throws");
+            bool spyInterlock = (armor || ability == LegSweepAdmission.LegSweep || ability == CannyStrikeDamage.CannyStrike) &&
+                Allowed(caller, MartialFixedDamageMode, "spy-interlock");
             if (!starter && !kungFu && !karate && !aikido && !grandmaster && !karateGrandmaster && !machinegunFist &&
-                !aikidoGrandmaster && !zen && !duelist && !spyThrows)
+                !aikidoGrandmaster && !zen && !duelist && !spyThrows && !spyInterlock)
                 return "Martial preparation requires the matching disposable fixture.";
             var handler = CombatManager.GetHandler(caller);
             var dummy = handler.CurrentNpcTarget;
@@ -53,7 +55,7 @@ namespace hds
                 return "Select the fixture Melee Dummy and enter Close Combat first.";
             if (armor)
             {
-                ResetDummyEffects(dummy, duelist ? (ushort)181 : (ushort)180);
+                ResetDummyEffects(dummy, spyInterlock ? (ushort)1033 : duelist ? (ushort)181 : (ushort)180);
                 return "Martial starter dummy resistance +75.";
             }
             if (ability == 138 || ability == 273 || ability == 296 || ability == 427 || ability == 411 || ability == 412 || ability == 869)
