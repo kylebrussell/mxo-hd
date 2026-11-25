@@ -28,7 +28,12 @@ The server plans portal waypoints for a blocked pursuit and checks the final app
 before starting melee. The 7.6005 `NPC_BASE` template stores `CharMvt/Walk Speed`
 as a raw 1.0 with no known world-unit conversion. It has no stored `CharMvt/Run Speed`.
 The shipped `NPCMovementSpeedAbility` 809 targets the movement stat without a stored
-magnitude. Pursuit keeps the existing server default of 4 m/s.
+magnitude. Speeds come from retail's own NPC movement records instead: across the checked-in
+packet dumps, run-mode (3) legs have a median of 436.7 units/s (4.37 m/s, 257 legs in 14 logs) and
+walk-mode (1) legs 169.4 units/s (4986 legs). Pursuit now runs at that speed with the run mode, and
+wandering walks at the walk median ([measurement](../research/combat/npc-movement-speeds.json),
+`python research/combat/measure_npc_movement.py research/packet-dumps research/combat/npc-movement-speeds.json`).
+In the native retest, the chasing Goof should show running legs, not a walk.
 
 ## Team HUD and shared mission loot
 

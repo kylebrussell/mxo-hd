@@ -91,7 +91,7 @@ public static partial class Scenarios
         {
             try { firstChase = WorldNpcCornerFixture.Observe(actor); }
             catch (InvalidDataException) { return false; }
-            return firstChase.Positions.Count > 1 && firstChase.LastMotion == Mob.Animations.WALK;
+            return firstChase.Positions.Count > 1 && firstChase.LastMotion == Mob.Animations.RUN;
         }, "Blackwood Goof is already pursuing the player", TimeSpan.FromSeconds(10));
         Check.That(GroundDistance(firstChase!.Position, stand) > MobAggro.MeleeDistanceUnits + 100,
             "The old chase still has ground to cover");

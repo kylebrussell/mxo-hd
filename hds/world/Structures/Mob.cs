@@ -199,7 +199,9 @@ namespace hds
         {
             STAND = 0x00,
             WALK = 0x01,
-            WALK_BACKWARDS = 0x02
+            WALK_BACKWARDS = 0x02,
+            /// <summary>Retail NPCs pursued in this mode (research/combat/npc-movement-speeds.json).</summary>
+            RUN = 0x03
         }
 
 

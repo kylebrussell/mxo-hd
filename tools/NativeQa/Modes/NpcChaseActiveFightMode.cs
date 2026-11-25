@@ -71,14 +71,14 @@ public sealed class NpcChaseActiveFightMode : NativeQaMode
 
         actor.SendChat(EnterChase);
         await actor.WaitForTextAsync("Teleported to 4e2/12");
-        await actor.WaitUntilAsync(() => Chase(actor).LastMotion == Mob.Animations.WALK,
+        await actor.WaitUntilAsync(() => Chase(actor).LastMotion == Mob.Animations.RUN,
             "The Goof is already moving toward CSR", TimeSpan.FromSeconds(5));
         var inputWindow = Stopwatch.StartNew();
         // Reserve time for a human to read the chase cue and open the target radial.
         await Task.Delay(TimeSpan.FromSeconds(5));
         var approaching = Chase(actor);
-        Check.That(approaching.LastMotion == Mob.Animations.WALK &&
-            WorldNpcCornerFixture.Distance(approaching.Position, Entry.Position) > MobAggro.MeleeDistanceUnits + 400,
+        Check.That(approaching.LastMotion == Mob.Animations.RUN &&
+            WorldNpcCornerFixture.Distance(approaching.Position, Entry.Position) > MobAggro.MeleeDistanceUnits + MobMotion.ChaseSpeed,
             "The grounded chaser is still over a second away after five seconds of operator delay");
         string partnerHandle = Handle(partner);
         actor.SendRpc($"40 {partnerHandle} 01 6b"); // Retained stock Close Combat request with the live handle.
@@ -97,7 +97,7 @@ public sealed class NpcChaseActiveFightMode : NativeQaMode
             BitConverter.ToUInt32(round, round.Length - 36) == expected &&
             actor.Received($"46 {Handle(approaching.View)} 01").Count == 0 &&
             actor.Received($"46 {partnerHandle} 00").Count == 0, "The same partner's fight keeps running after the old chase arrives");
-        Console.WriteLine($"NPC CHASE ACTIVE BOOTSTRAP PASS: The first walking view preceded arrival by {inputWindow.Elapsed.TotalSeconds:0.0}s. {Partner} combat still opened after a five-second input delay.");
+        Console.WriteLine($"NPC CHASE ACTIVE BOOTSTRAP PASS: The first running view preceded arrival by {inputWindow.Elapsed.TotalSeconds:0.0}s. {Partner} combat still opened after a five-second input delay.");
 
         actor.SendChat(Park);
         await actor.WaitForTextAsync("Teleported to 465/c");
