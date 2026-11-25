@@ -54,7 +54,7 @@ public class SpyMasterSneakOpenersTests
         Assert.Equal(SpyStyle, CombatStyles.RequiredStyle(ability));
 
         var client = Client();
-        if (ability == FreedomToJoints || ability == StaggeringThrow || ability == InfuriatingAssault)
+        if (ability == FreedomToJoints || ability == StaggeringThrow || ability == InfuriatingAssault || ability == WardingBlow)
         {
             Assert.True(SpyAbilityRegistry.TryRefuse(client, ability, 0, null, out uint wrongStyle));
             Assert.Equal(AbilityRefusals.WrongStyle, wrongStyle);
