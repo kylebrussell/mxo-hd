@@ -138,7 +138,7 @@ public sealed class SixthSenseParityMode : NativeQaMode
         await RefusedAsync(caster, SixthSense.Ability, Request(), AbilityRefusals.MustBeOutsideCombat);
         Check.That(!server.DebugLog()[logFrom..].Contains("[ABILITY-COST] char=110 ability=149", StringComparison.Ordinal), "In-combat refusal spends 0 IS");
         caster.SendChat("?cd stop");
-        await caster.WaitForTextAsync("Combat disengaged");
+        await caster.WaitForTextAsync("Fixture combat ended.");
 
         Check.Equal(0, caster.World.Problems.Count + enemy.World.Problems.Count + neutral.World.Problems.Count + far.World.Problems.Count,
             "Clean stock framing");
