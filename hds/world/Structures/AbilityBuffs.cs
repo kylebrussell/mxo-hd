@@ -416,7 +416,9 @@ namespace hds
         private const ushort RunMovementStat = 115, SneakMovementStat = 877, InvisibleMovementStat = 878;
 
         private static bool UsesStanceMovementChannel(ushort source) => source == CrashAbility || source == BottleneckField ||
-            source == CombatSpecials.HinderingShot || source == CombatSpecials.CripplingShot;
+            source == CombatSpecials.HinderingShot || source == CombatSpecials.CripplingShot ||
+            source == MasterKnifeThrowerBatch.NeuroDart || source == DeadlyThrowDamage.Id ||
+            source == CombatSpecials.SeverArtery;
 
         public static bool ProjectsTimedMovementDebuff(ushort source) => source == 86 || UsesStanceMovementChannel(source);
 
@@ -429,7 +431,8 @@ namespace hds
         private static bool OverridesMovementScale(TimedEffects.Active modifier) =>
             modifier.Proc == TempMods.Proc.State && modifier.Target == TempMods.RootedAbility &&
             (modifier.Parent == CombatSpecials.SuppressionFire || modifier.Parent == CombatSpecials.PinningFire ||
-             (modifier.Parent == 176 || modifier.Parent == 254) && modifier.Break == TempMods.BreakRule.Chance);
+             (modifier.Parent == 176 || modifier.Parent == 254 || modifier.Parent == SpyAbilityDamage.CripplingThrow) &&
+             modifier.Break == TempMods.BreakRule.Chance);
 
         internal static float WithTimedMovementDebuffs(WorldClient client, float movementScale)
         {
