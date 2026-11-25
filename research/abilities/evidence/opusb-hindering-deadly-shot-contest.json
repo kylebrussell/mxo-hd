@@ -1,0 +1,42 @@
+{
+  "abilities": {
+    "130": {
+      "checks": {
+        "targeting": {
+          "source": "Shipped 130 is a selected TestFunction 1 special: a live hostile within its 20 m selector with sight, and generic_free_attacks.AbilityRangeFreeAttack decides the at-rest free cast (attack 524 vs defense 1010, consistency, tactic factors; a hit only when attack exceeds defense). The retained Vector26 Deadly Shot victim trace shows a hit (34/32, 0x7a0002d6) and a deflection (43/75, 0x7a000218).",
+          "runtime": "Admission checks the live selection, range and sight before cost and again at landing; the at-rest cast rolls the shared ranged contest. A deflection still plays the at-rest motion with no damage or effects; cost and reuse apply to both outcomes.",
+          "test": "RangedSpecialContestTests (inputs, gating and the exact Vector26 454 envelopes) and the admission refusal tests. Stock PR1205 native QA at aedd2cb3: a hit (84/27) did 9 with all four 8 s modifiers and the pistol motion; a deflection (28/79) printed \"QAEnemy deflected Hindering Shot. (28 vs 79)\" with no damage or modifiers and the motion still sent; IS was debited on both. https://github.com/kylebrussell/mxo-hd/pull/1205#issuecomment-7172141675"
+        },
+        "source-parity": {
+          "source": "Shipped 130 stores IS 20, 8 s own / 5 s group 690 reuse, a 2 s cast, a 20 m selector, fixed ballistic 9, and 8 s records 115/877/878 -50 and 519 -10.",
+          "runtime": "The server resolves exactly those stored values; the at-rest presentation is the client action FreeAttackWeaponSMPistolHinderingShot (0x5d).",
+          "test": "HinderingDeadlyShotBehaviorTests pins every stored term; stock PR1205 measured 9 with the four records, and PR1200 saw the pistol motion. https://github.com/kylebrussell/mxo-hd/pull/1205#issuecomment-7172141675 https://github.com/kylebrussell/mxo-hd/pull/1200#issuecomment-7169429641"
+        },
+        "behavior-tests": {
+          "source": "Shipped 130 lists Handguns and a handgun, a selected live hostile within 20 m, a 2 s cast, fixed ballistic 9, four 8 s slows/Force Combat records, the ranged contest and the pistol motion.",
+          "runtime": "Each listed behavior has an executor: admission, cast and landing rechecks, the fixed base, the timed records, the contest and the motion.",
+          "test": "HinderingDeadlyShotBehaviorTests, AbilityRefusalFeedbackTests.HinderingShotRequiresItsOwnHandgunAndOutsideCombatStateThroughoutTheCast, RangedSpecialContestTests, AtRestSpecialMotionTests and the hindering-shot-target bootstrap. https://github.com/kylebrussell/mxo-hd/pull/1205#issuecomment-7172141675"
+        }
+      }
+    },
+    "454": {
+      "checks": {
+        "targeting": {
+          "source": "Shipped 454 is a selected TestFunction 1 special: a live hostile within its 20 m selector with sight, and generic_free_attacks.AbilityRangeFreeAttack decides the at-rest free cast (attack 524 vs defense 1010, consistency, tactic factors; a hit only when attack exceeds defense). The retained Vector26 Deadly Shot victim trace shows a hit (34/32, 0x7a0002d6) and a deflection (43/75, 0x7a000218).",
+          "runtime": "Admission checks the live selection, range and sight before cost and again at landing; the at-rest cast rolls the shared ranged contest. A deflection still plays the at-rest motion with no damage or effects; cost and reuse apply to both outcomes.",
+          "test": "RangedSpecialContestTests (inputs, gating and the exact Vector26 454 envelopes) and the admission refusal tests. Stock PR1205 native QA at aedd2cb3: a hit (124/27) did 73 with the 4 s stun and immunity and the rifle motion; a deflection (42/81) printed \"QAEnemy deflected Deadly Shot. (42 vs 81)\" with no damage, stun or immunity; IS was debited on both. https://github.com/kylebrussell/mxo-hd/pull/1205#issuecomment-7172141675"
+        },
+        "source-parity": {
+          "source": "Current player GOB 454 stores IS 45, 10 s own / 5 s group 689 reuse, a 2 s cast, a 20 m selector, fixed ballistic 61 and a 10% ApplyStunWithTimer marker of 4.",
+          "runtime": "The server resolves exactly those stored values through ordinary Ballistic influence and typed resistance; the at-rest presentation is the client action FreeAttackWeaponSMRifleDeadlyShot (0x60). The NPC capture path is separate.",
+          "test": "SniperParityTests.SniperAndDeadlyShotsUseTheirFixedBallisticBasesAndStoredCastTerms and HinderingDeadlyShotBehaviorTests. Stock PR1006 measured 73 neutral / 69 with +20 Ballistic, and PR1205 measured 73. No player-cast retail magnitude is archived to contradict the stored base. https://github.com/kylebrussell/mxo-hd/pull/1006#issuecomment-7108874265 https://github.com/kylebrussell/mxo-hd/pull/1205#issuecomment-7172141675"
+        },
+        "behavior-tests": {
+          "source": "Shipped 454 lists Rifles and a rifle, a selected live hostile within 20 m, a 2 s cast, fixed ballistic 61, a 10% 4 s Stun marker with independent immunity, the ranged contest and the rifle motion.",
+          "runtime": "Each listed behavior has an executor: admission, cast and landing rechecks, the fixed base, the stun callback and immunity, the contest and the motion.",
+          "test": "SniperParityTests, ConditionalControlTests.DeadlyShotPreservesTheNpcStunAndThePlayersIndependentStunStack, RangedSpecialContestTests, AtRestSpecialMotionTests, HinderingDeadlyShotBehaviorTests and the deadly-shot bootstrap. https://github.com/kylebrussell/mxo-hd/pull/1006#issuecomment-7108874265 https://github.com/kylebrussell/mxo-hd/pull/1205#issuecomment-7172141675"
+        }
+      }
+    }
+  }
+}

@@ -533,13 +533,13 @@ def server(i):
     if style:
         parts.append('active-style modifiers via 3e/80 b9 (@50: ' + ', '.join(f"{name(m['stat'])} {m['level50']:+d}" for m in style) + '); ' + ('stock weapon exchanges and opening transitions with a matching equipped gun' if r.get('weapon_style_exchange') else 'style interlock exchanges'))
     if i == 130:
-        parts.append('direct cast with separate run, Sneak and Invisibility movement channels; exact named pistol motion unresolved')
+        parts.append('direct cast with separate run, Sneak and Invisibility movement channels; at-rest ranged free-attack contest (524 vs 1010) with hit and deflection')
     elif i == 501:
         parts.append('loaded dual-handgun Pistol Whip queues only against the original Dazed interlock opponent; stock move 287')
     elif i == 502:
         parts.append('4s dual-handgun cast queues only on the original fight; stock 9532 at 140 units, 9525 fallback; separate at-rest cast lands directly')
     elif i == 454:
-        parts.append('loaded Rifles opener at rest; fixed ballistic base 61, 2s cast bound to the original hostile, and stock 73 neutral / 69 armored; historical damage and named move selector unresolved')
+        parts.append('loaded Rifles opener at rest; fixed ballistic base 61, 2s cast bound to the original hostile, and stock 73 neutral / 69 armored; at-rest ranged free-attack contest (524 vs 1010) with hit and deflection; no player-cast retail magnitude archived')
     elif i == 453:
         parts.append('requires active Rifles and the original live interlock opponent; move 11356 withdraws and restores movement on a win; loss or tie keeps interlock')
     elif r.get('special_move_style'):
