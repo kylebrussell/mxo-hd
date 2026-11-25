@@ -55,7 +55,7 @@ public sealed class DropKickResistedThrowsMode : NativeQaMode
             $"Level {Level}, {Loadout.Sum(AbilityMemory.Cost)}/{AbilityMemory.ForLevel(Level)} memory. Verified outdoor HOME ({X},{Y},{Z}) is 2 m behind QAEnemy ({EnemyX},{Y},{Z}, facing east); QAFriend observes. No initial tp. Page 2: 1=Spy Style (1112), 2=Sneak (1111), 3=Drop Kick (153), 4=Leg Throw (1131), 5=Staggering Throw (348).",
             "Step 1 (153 Drop Kick neutral rear cast first): slot 1 (Spy Style), slot 2 (Sneak), /target QAEnemy, slot 3 -> instant, 20 IS, 30 s own / 15 s grp 691, Sneak off (1111 off), neutral Thrown hit printed below, no interlock, zero QAFriend records (shipped ILDB name 19598 Drop Kick).",
             "Step 2 (153 refusals without IS/timer; wait out 30 s own reuse or test before landing): no Sneak -> local/23; Sneak + /target QAFriend -> 24; printed FRONT -> 24; BLOCK -> local/9; FAR -> 34; in Close Combat -> local/21 (leave with ?cd stop, then reselect slot 1 Spy Style).",
-            "Step 3 (+75 Thrown resistance on rear dummy for 153, 1131, 348): type the RESISTED chunks — reset turns the fresh dummy north (heading 0, locked) and puts you at DUMMY (17000,495,6448) 2.52 m behind it; do not walk around it. Click fresh dummy, Sneak, slot 3 (153) -> [TYPED-RESISTANCE OURS] 153 type7 total75 raw/final printed below. Wait 15 s grp 691 (if Close Combat opened: '?cd stop' then slot 1 Spy Style; repeat RESISTED chunks if needed), click fresh dummy, Sneak, slot 4 (1131, 25 IS, 2 s cast) -> [TYPED-RESISTANCE OURS] 1131 type7 total75. Wait 15 s grp 691, repeat RESISTED chunks / '?cd stop' + slot 1 if needed, click fresh dummy, Sneak, slot 5 (348, 45 IS, 2 s cast) -> [TYPED-RESISTANCE OURS] 348 type7 total75."
+            "Step 3 (+75 Thrown resistance on rear dummy — 1131, then 348, then 153 so 153's 30 s own reuse expires naturally): type the RESISTED chunks — reset turns the fresh dummy north (heading 0, locked) and puts you at DUMMY (17000,495,6448) 2.52 m behind it; do not walk around it. After 15 s grp 691, click fresh dummy, Sneak, slot 4 (1131, 25 IS, 2 s cast) -> [TYPED-RESISTANCE OURS] 1131 type7 total75. Wait 15 s grp 691 (if Close Combat opened: '?cd stop' then slot 1 Spy Style; repeat RESISTED chunks), click fresh dummy, Sneak, slot 5 (348, 45 IS, 2 s cast) -> [TYPED-RESISTANCE OURS] 348 type7 total75. Wait 15 s grp 691, repeat RESISTED chunks / '?cd stop' + slot 1 if needed, click fresh dummy, Sneak, slot 3 (153, 20 IS, instant) -> [TYPED-RESISTANCE OURS] 153 type7 total75 raw/final matching neutral."
         });
 
     public override async Task<byte[]> AfterStartAsync(NativeQaBootstrapContext context)
@@ -136,14 +136,14 @@ public sealed class DropKickResistedThrowsMode : NativeQaMode
             "153 does not enter interlock");
         Console.WriteLine($"READY BOOTSTRAP 153 neutral stealth opener on QAEnemy: thrown {neutral153}");
 
-        // Move to rear dummy and verify +75 Thrown resistance on 153, 1131, and 348
+        // Move to rear dummy and verify +75 Thrown resistance on 1131, 348, then 153 (so 153's 30 s own reuse expires cleanly).
         await MoveAsync(rear.Command, rear.Confirmation);
-        await WaitForGroup691Async();
-        await VerifyResistedAsync(DropKick, 20, expectedRaw: neutral153, castSeconds: 0);
         await WaitForGroup691Async();
         await VerifyResistedAsync(LegThrow, 25, expectedRaw: null, castSeconds: 2);
         await WaitForGroup691Async();
         await VerifyResistedAsync(StaggeringThrow, 45, expectedRaw: null, castSeconds: 2);
+        await WaitForGroup691Async();
+        await VerifyResistedAsync(DropKick, 20, expectedRaw: neutral153, castSeconds: 0);
 
         Check.Equal(0, caster.World.Problems.Count + enemy.World.Problems.Count + friend.World.Problems.Count, "Clean stock framing");
         Console.WriteLine("DROP KICK + RESISTED THROWS PASS: 153 refusals/opener and 153/1131/348 +75 Thrown resistance verified.");
