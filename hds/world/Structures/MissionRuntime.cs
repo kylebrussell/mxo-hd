@@ -398,25 +398,11 @@ namespace hds
                 return false;
             }
 
-            int at = progress.phaseIndex + 1;
             lock (client.playerData.missionMobs)
             {
                 foreach (Mob mob in client.playerData.missionMobs)
                 {
-                    bool ofPhase;
-                    if (progress.hostileWave.TryGetValue(mob, out int wave))
-                    {
-                        ofPhase = true;
-                    }
-                    else
-                    {
-                        MissionNpc npc = progress.hostiles.Contains(mob) ? null : progress.mission.npcs.Find(n => n.id == mob.missionNpcId);
-                        ofPhase = progress.hostiles.Contains(mob) ||
-                                  (npc != null && (npc.at == at || (npc.at == 0 && !progress.mission.generated)));
-                        wave = npc?.wave ?? 0;
-                    }
-
-                    if (ofPhase && MissionProgress.Counts(defeatAll, wave) && !mob.isFriendly && !mob.getIsDead())
+                    if (CountsForDefeatAll(progress, mob, defeatAll) && !mob.isFriendly && !mob.getIsDead())
                     {
                         return false;
                     }
@@ -424,6 +410,25 @@ namespace hds
             }
 
             return true;
+        }
+
+        /// <summary>Whether this spawned NPC belongs to the current phase and the DefeatAll's waves (friendliness aside).</summary>
+        internal static bool CountsForDefeatAll(MissionProgress progress, Mob mob, MissionObjective defeatAll)
+        {
+            int at = progress.phaseIndex + 1;
+            bool ofPhase;
+            if (progress.hostileWave.TryGetValue(mob, out int wave))
+            {
+                ofPhase = true;
+            }
+            else
+            {
+                MissionNpc npc = progress.hostiles.Contains(mob) ? null : progress.mission.npcs.Find(n => n.id == mob.missionNpcId);
+                ofPhase = progress.hostiles.Contains(mob) ||
+                          (npc != null && (npc.at == at || (npc.at == 0 && !progress.mission.generated)));
+                wave = npc?.wave ?? 0;
+            }
+            return ofPhase && MissionProgress.Counts(defeatAll, wave);
         }
 
         /// <summary>A protected NPC died: the mission is over.</summary>
