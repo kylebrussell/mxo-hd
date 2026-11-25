@@ -12,7 +12,9 @@ namespace hds
         public static bool Handles(ushort abilityId)
         {
             ushort id = AbilityCatalog.Canonical(abilityId);
-            return id == HarryingAttackDamage.Id || id == DazzlingThrowDamage.Id;
+            return id == HarryingAttackDamage.Id || id == DazzlingThrowDamage.Id ||
+                id == SpySneakOpeners.LegThrow || id == SpyMasterSneakOpeners.InfuriatingAssault ||
+                id == SpyMasterSneakOpeners.StaggeringThrow;
         }
 
         public static bool TryRefuse(WorldClient caster, ushort abilityId, ushort targetViewId, ushort? spawn, out uint reason)
