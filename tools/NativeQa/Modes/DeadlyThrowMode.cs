@@ -26,7 +26,7 @@ public sealed class DeadlyThrowMode : NativeQaMode
         environmentOverrides: new() { ["MXO_AGGRO"] = "0", ["MXO_MOB_WANDER"] = "0", ["MXO_CONDITIONAL_THROW_QA"] = "1" },
         readyMessages: new[]
         {
-            "Level 20, rank 20, Spy Style (1112) active, unarmed, outside interlock. Clear target selection and try Deadly Throw (279): expect one orange 'Select a living enemy before using this ability.' notice, no IS spent, no cast bar and no reuse.",
+            "Level 20, rank 20, Spy Style (1112) active, unarmed, outside interlock. Clear target selection and try Deadly Throw (279): expect native InvalidTarget refusal (24) or stock suppression, no IS spent, no cast bar and no reuse.",
             "Select Melee Dummy (3 m west) and cast Deadly Throw (279). Expect 18 IS spent (1000 -> 982), 2.0 s cast bar (80 ac), landed thrown damage 37 (ValueFunction 3 base 30 at level 20 + 24% from rank-20 Spy Style 1112 +14%, Wicked Aim 278 +6% and prerequisite Weak Points 164 +4%), '[EFFECTS] 279 on Melee Dummy' with Stat 877 -85 / Stat 519 -15 / Stat 878 -72 / Stat 115 -57 for 15 s (plus optional 20% Dazed/Staggered 8 s procs), 10.0 s own reuse and 3.0 s shared family 1216 reuse.",
             "Optional conditional check after 10 s reuse: with Melee Dummy selected, run '?combatdepth offbalance 30' and cast 279 again to also capture the separate Off-Balance bonus hit of 38 (raw 31 + 24%)."
         },
@@ -52,7 +52,7 @@ public sealed class DeadlyThrowMode : NativeQaMode
 
         int refuseStart = server.DebugLog().Length;
         caster.SendRpc(new AbilityUseRecord(DeadlyThrow, 0, 0, 0, 0, 0, 0x6b, 0x6b, 0, 0).Encode());
-        await caster.WaitUntilAsync(() => server.DebugLog()[refuseStart..].Contains("[ABILITY] Denied 279: Select a living enemy", StringComparison.Ordinal),
+        await caster.WaitUntilAsync(() => server.DebugLog()[refuseStart..].Contains("[ABILITY] Denied 279: native refusal 24", StringComparison.Ordinal),
             "Deadly Throw rejects empty target selection", TimeSpan.FromSeconds(5));
 
         int castStart = server.DebugLog().Length;

@@ -28,7 +28,8 @@ namespace hds
             UInt16 currentTargetViewId = reader.ReadUInt16(1);
             bool poisonKnife = AbilityID == CombatSpecials.PoisonKnife;
             bool woundingThrow = AbilityID == CombatSpecials.WoundingThrow;
-            bool guardedKnifeThrow = MasterKnifeThrowerBatch.UsesGuardedCast(AbilityID) || AbilityID == CombatSpecials.SeverArtery ||
+            bool guardedKnifeThrow = MasterKnifeThrowerBatch.UsesGuardedCast(AbilityID) ||
+                KnifeThrowerThrowsAdmission.Handles(AbilityID) || AbilityID == CombatSpecials.SeverArtery ||
                 SpyTimedThrows.Handles(AbilityID);
             ushort? thrownTargetSpawn = null;
             bool dualSmgCone = CombatSpecials.IsDualSmgConeOpener(AbilityID);
@@ -800,19 +801,6 @@ namespace hds
                 {
                     Deny(AbilityID, $"Sight blocked for selected target {currentTargetViewId}.",
                         AbilityRefusals.TargetNotInSight, sendServerText: false);
-                    return;
-                }
-            }
-
-            if (SpyAbilityDamage.RequiresLiveEnemy(AbilityID) || DeadlyThrowDamage.RequiresLiveEnemy(AbilityID))
-            {
-                ushort? spawn = packet.Length == 41 ? (ushort?)BitConverter.ToUInt16(packet, 4) : null;
-                if (!AbilityTargets.HasLiveAttackSelection(Store.currentClient, currentTargetViewId, spawn))
-                {
-                    const string notice = "Select a living enemy before using this ability.";
-                    new ServerPackets().sendSystemChatMessage(Store.currentClient, notice, "BROADCAST");
-                    Store.currentClient.FlushQueue();
-                    Output.WriteDebugLog("[ABILITY] Denied " + AbilityID + ": " + notice);
                     return;
                 }
             }

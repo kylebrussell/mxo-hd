@@ -26,7 +26,7 @@ public sealed class CripplingThrowMode : NativeQaMode
         environmentOverrides: new() { ["MXO_AGGRO"] = "0", ["MXO_MOB_WANDER"] = "0" },
         readyMessages: new[]
         {
-            "Level 25, rank 25, Spy Style (1112) active, unarmed, outside interlock. First clear selection and try Crippling Throw (280): expect one orange 'Select a living enemy before using this ability.' notice, no IS spent, no cast bar and no reuse.",
+            "Level 25, rank 25, Spy Style (1112) active, unarmed, outside interlock. First clear selection and try Crippling Throw (280): expect native InvalidTarget refusal (24) or stock suppression, no IS spent, no cast bar and no reuse.",
             "Select Melee Dummy (3 m west) and cast Crippling Throw (280) outside interlock. Expect 20 IS spent (1000 -> 980), 2.0 s cast bar (80 ac), landed thrown damage 1, '[EFFECTS] 280 on Melee Dummy: State 99 0 15.75 s (15.749999 s), Stat 519 -40 15 s' (Rooted state 99, 15 s base scaled +5% by rank-25 Wicked Aim 278 Root Duration Bonus = 15.75 s, break Chance; Force Combat stat 519 -40 for 15 s), 10.0 s own reuse and 3.0 s shared family 1215 reuse."
         },
         extraQaMetadata: new()
@@ -52,7 +52,7 @@ public sealed class CripplingThrowMode : NativeQaMode
         // Empty selection must refuse cleanly without charging IS or starting cast/reuse.
         int refuseStart = server.DebugLog().Length;
         caster.SendRpc(new AbilityUseRecord(CripplingThrow, 0, 0, 0, 0, 0, 0x6b, 0x6b, 0, 0).Encode());
-        await caster.WaitUntilAsync(() => server.DebugLog()[refuseStart..].Contains("[ABILITY] Denied 280: Select a living enemy", StringComparison.Ordinal),
+        await caster.WaitUntilAsync(() => server.DebugLog()[refuseStart..].Contains("[ABILITY] Denied 280: native refusal 24", StringComparison.Ordinal),
             "Crippling Throw rejects empty target selection", TimeSpan.FromSeconds(5));
 
         int castStart = server.DebugLog().Length;

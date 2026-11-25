@@ -439,7 +439,8 @@ namespace hds
             Random qaProc = MartialBlindEnrageAreaQa.ProcRandom(caster, target, abilityId)
                 ?? MartialConfuseQa.ProcRandom(caster, target, abilityId)
                 ?? SneakFreeControlsQa.ProcRandom(caster, target, abilityId)
-                ?? DualPistolExecutionQa.ProcRandom(caster, target, abilityId);
+                ?? DualPistolExecutionQa.ProcRandom(caster, target, abilityId)
+                ?? DeadlyThrowProcsQa.ProcRandom(caster, target, abilityId);
             if (qaProc != null && TempMods.TryGet(abilityId, out TempMods.Effect qaEffect))
             {
                 var subject = TimedEffects.ForPlayer(target);
