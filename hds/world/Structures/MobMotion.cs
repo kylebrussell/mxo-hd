@@ -8,8 +8,10 @@ namespace hds
     /// <summary>One movement clock for visible ordinary NPCs. Mission actors and pets have their own controllers.</summary>
     public static class MobMotion
     {
-        // Preserve the old wander travel-time calculation. Chase speed is a local gameplay default.
-        public const double WalkSpeed = .176 * 500 / .9586, ChaseSpeed = 400, WanderRadius = 500;
+        // Retail medians of NPC 02 0e records in research/packet-dumps, in world units per second
+        // (research/combat/measure_npc_movement.py -> npc-movement-speeds.json): walk mode 1 169.4 over 4986 legs,
+        // run mode 3 436.7 over 257 legs in 14 logs. Wander walks; pursuit runs.
+        public const double WalkSpeed = 169.4, ChaseSpeed = 436.7, WanderRadius = 500;
         private const int MinimumIdleSeconds = 8, MaximumIdleSeconds = 15;
         private const double SelectionGraceSeconds = 2;
         private const double ChaseReplanDistance = 100;
@@ -215,7 +217,8 @@ namespace hds
                         Stop(mob,state,now,publishArrival:true);
                         continue;
                     }
-                    mob.currentState=(int)Mob.statusList.WALKING;state.Walking=true;mob.updateAnimation((byte)Mob.Animations.WALK);
+                    mob.currentState=(int)Mob.statusList.WALKING;state.Walking=true;
+                    mob.updateAnimation((byte)(state.Target!=null?Mob.Animations.RUN:Mob.Animations.WALK));
                 }
             }
         }

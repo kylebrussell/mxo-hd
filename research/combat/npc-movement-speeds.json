@@ -1,0 +1,130 @@
+{
+  "source": "research/packet-dumps",
+  "units": "world units (cm) per second",
+  "record": "<view u16> 02 0e <mode> <yaw> <x y z f32>",
+  "modes": {
+    "0 stand": {
+      "legs": 126,
+      "median": 30.4,
+      "p25": 17.1,
+      "p75": 60.6
+    },
+    "1 walk": {
+      "legs": 4986,
+      "median": 169.4,
+      "p25": 145.0,
+      "p75": 177.7
+    },
+    "3 run": {
+      "legs": 257,
+      "median": 436.7,
+      "p25": 347.5,
+      "p75": 510.4
+    },
+    "4 turn": {
+      "legs": 1755,
+      "median": 22.6,
+      "p25": 14.8,
+      "p75": 44.9
+    },
+    "5 turn": {
+      "legs": 1765,
+      "median": 23.0,
+      "p25": 15.0,
+      "p75": 45.0
+    }
+  },
+  "files_with_run_legs": {
+    "community-intake/20260607T003822Z-hdneo-mxopackets1-combat-ability-selected/logs/actions_combat.log.txt": {
+      "legs": 16,
+      "median": 373.7,
+      "p25": 349.1,
+      "p75": 484.6
+    },
+    "community-intake/20260607T003822Z-hdneo-mxopackets1-combat-ability-selected/logs/actions_combat_marketplace_abilitychangecoder.log.txt": {
+      "legs": 41,
+      "median": 424.2,
+      "p25": 345.6,
+      "p75": 479.9
+    },
+    "community-intake/20260607T024558Z-hdneo-public-mission-code-rajko-worldstate-sanitized-selected/logs/mxopackets1_crashover2k_afterwhoruneo_old_world_packets_Vector26_manythings_4bill_upgradeabilitie_buyzionkey_start_keymission_gotowhite.log.txt": {
+      "legs": 2,
+      "median": 518.4,
+      "p25": 418.8,
+      "p75": 518.4
+    },
+    "community-intake/20260607T030922Z-hdneo-public-luizoe-old-sniffer-selected/logs/mxopackets1_luizoe_old_sniffer_Recursion.log.txt": {
+      "legs": 8,
+      "median": 589.9,
+      "p25": 573.1,
+      "p75": 599.2
+    },
+    "community-intake/20260607T030922Z-hdneo-public-luizoe-old-sniffer-selected/logs/mxopackets1_luizoe_old_sniffer_Unknown.log.txt": {
+      "legs": 19,
+      "median": 466.5,
+      "p25": 309.7,
+      "p75": 546.7
+    },
+    "community-intake/20260607T200024Z-hdneo-public-remaining-small-ability-loot-market/logs/mxopackets1_crashover2k_afterwhoruneo_old_world_packets_Vector_abilityloadoutchange.log.txt": {
+      "legs": 40,
+      "median": 387.4,
+      "p25": 270.7,
+      "p75": 473.3
+    },
+    "community-intake/20260607T203107Z-hdneo-public-vector-state-static-selected/logs/mxopackets1_crashover2k_afterwhoruneo_old_world_packets_Vector12.log.txt": {
+      "legs": 7,
+      "median": 427.2,
+      "p25": 390.2,
+      "p75": 470.2
+    },
+    "community-intake/20260607T203107Z-hdneo-public-vector-state-static-selected/logs/mxopackets1_crashover2k_afterwhoruneo_old_world_packets_Vector35.log.txt": {
+      "legs": 17,
+      "median": 367.4,
+      "p25": 234.9,
+      "p75": 430.1
+    },
+    "community-intake/20260607T203107Z-hdneo-public-vector-state-static-selected/logs/mxopackets1_crashover2k_afterwhoruneo_old_world_packets_Vector45.log.txt": {
+      "legs": 42,
+      "median": 432.5,
+      "p25": 331.1,
+      "p75": 466.5
+    },
+    "community-intake/20260607T205703Z-hdneo-public-vector-supplemental-state-selected/logs/mxopackets1_crashover2k_afterwhoruneo_old_world_packets_Vector_zerooneetc..log.txt": {
+      "legs": 2,
+      "median": 613.1,
+      "p25": 510.4,
+      "p75": 613.1
+    },
+    "community-intake/20260607T205703Z-hdneo-public-vector-supplemental-state-selected/logs/mxopackets1_crashover2k_afterwhoruneo_old_world_packets_second_pc_logins_newlogwith_spawned_specialagent.log.txt": {
+      "legs": 12,
+      "median": 523.2,
+      "p25": 481.6,
+      "p75": 584.6
+    },
+    "community-intake/20260607T205703Z-hdneo-public-vector-supplemental-state-selected/logs/mxopackets1_crashover2k_afterwhoruneo_old_world_packets_second_pc_others_Syntax.log.txt": {
+      "legs": 36,
+      "median": 486.4,
+      "p25": 411.1,
+      "p75": 568.4
+    },
+    "community-intake/20260607T212233Z-hdneo-public-session-spawn-movement-sanitized-selected/logs/mxopackets1_crashover2k_afterwhoruneo_old_world_packets_second_pc_Neuer_Ordner_Unknown.log2.txt": {
+      "legs": 4,
+      "median": 497.0,
+      "p25": 469.5,
+      "p75": 576.9
+    },
+    "community-intake/20260608T120313Z-hdneo-public-create-spawn-session-sanitized-selected/logs/mxopackets1_crashover2k_afterwhoruneo_old_world_packets_second_pc_others_special_agent_spawn.log.txt": {
+      "legs": 7,
+      "median": 573.1,
+      "p25": 333.8,
+      "p75": 658.6
+    },
+    "mxopackets1/crashover2k/afterwhoruneo/old_world_packets_second_pc/Neuer Ordner/Unknown.log2": {
+      "legs": 4,
+      "median": 497.0,
+      "p25": 469.5,
+      "p75": 576.9
+    }
+  },
+  "files_with_walk_legs": 48
+}

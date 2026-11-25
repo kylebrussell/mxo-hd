@@ -47,6 +47,17 @@ public class MobMotionTests
     }
 
     [Fact]
+    public void WanderAndPursuitSpeedsAreTheRetailMovementRecordMedians()
+    {
+        string root=AppContext.BaseDirectory;while(!File.Exists(Path.Combine(root,"research/combat/npc-movement-speeds.json")))root=Path.GetDirectoryName(root)!;
+        using var json=System.Text.Json.JsonDocument.Parse(File.ReadAllText(Path.Combine(root,"research/combat/npc-movement-speeds.json")));
+        var modes=json.RootElement.GetProperty("modes");
+        Assert.Equal(modes.GetProperty("1 walk").GetProperty("median").GetDouble(),MobMotion.WalkSpeed);
+        Assert.Equal(modes.GetProperty("3 run").GetProperty("median").GetDouble(),MobMotion.ChaseSpeed);
+        Assert.Equal(3,(int)Mob.Animations.RUN);Assert.Equal(1,(int)Mob.Animations.WALK);
+    }
+
+    [Fact]
     public void PursuitCanTraverseTheShippedMaraCornerFromItsAggroSpawn()
     {
         Load();
