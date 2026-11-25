@@ -29,7 +29,9 @@ public class MissionComputerHackTests
 
         Use(client, view, 4, 7);
         Assert.False(progress.IsDone(1));
-        Assert.Contains(Rpcs(client), bytes => Encoding.ASCII.GetString(bytes).Contains("Load Hacker"));
+        Assert.Single(Rpcs(client), rpc => HackLine(rpc, MissionRuntime.HackComputerAbilityFailed));
+        Assert.DoesNotContain(Rpcs(client), rpc => HackLine(rpc, MissionRuntime.HackComputerSuccess));
+        Assert.DoesNotContain(Rpcs(client), bytes => Encoding.ASCII.GetString(bytes).Contains("Load Hacker"));
 
         client.playerData.passives.Loaded[52] = 2;
         Use(client, view, 5, 7); // Take does not execute the authored Hack.
@@ -44,6 +46,7 @@ public class MissionComputerHackTests
         Assert.False(progress.IsDone(3));
         Assert.Equal(MissionStaging.ComputerIdle, progress.objects[1].shownState);
         Assert.Single(Rpcs(client), CompletedHack);
+        Assert.Single(Rpcs(client), rpc => HackLine(rpc, MissionRuntime.HackComputerSuccess));
     }
 
     [Fact]
@@ -66,6 +69,7 @@ public class MissionComputerHackTests
         Assert.True(progress.IsDone(1));
         Assert.False(AbilityPassives.IsLoaded(client, 52));
         Assert.Single(Rpcs(client), CompletedHack);
+        Assert.DoesNotContain(Rpcs(client), rpc => HackLine(rpc, MissionRuntime.HackComputerSuccess));
     }
 
     private static (WorldClient, MissionProgress, ClientView) Start(XmlDocument xml, ushort goid)
@@ -104,6 +108,11 @@ public class MissionComputerHackTests
     private static IEnumerable<byte[]> Rpcs(WorldClient client) =>
         client.messageQueue.RPCMessagesQueue.Cast<SequencedMessage>()
             .Select(message => message.content[(message.content[0] >= 128 ? 2 : 1)..]);
+
+    // 81 67 combat-log line from the caster about Hacker 52 (serverrules.py ComputerHack abilityMessageToCaster).
+    private static bool HackLine(byte[] rpc, uint stringId) =>
+        rpc.Length > 14 && rpc[0] == 0x81 && rpc[1] == 0x67 && BitConverter.ToUInt32(rpc, 6) == stringId && rpc[10] == 1 &&
+        BitConverter.ToUInt32(rpc, 11) == 52;
 
     private static bool CompletedHack(byte[] rpc) =>
         rpc.Length > 5 && rpc[0] == 0x80 && rpc[1] == 0xa0 && rpc[2] == 1 && rpc[5] == 1;

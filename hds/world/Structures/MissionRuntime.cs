@@ -461,6 +461,9 @@ namespace hds
             return handled;
         }
 
+        // stringtable_client: "Computer hacked successfully!" and "Hack failed! Make sure you have the %1z ability loaded."
+        internal const UInt32 HackComputerSuccess = 0x7a00013d, HackComputerAbilityFailed = 0x7a000140;
+
         private static bool OnViewUseCore(WorldClient client, ClientView view, ushort spawn, byte use, out bool hacked)
         {
             hacked = false;
@@ -555,13 +558,18 @@ namespace hds
                             return true;
                         if (AbilityPassives.Level(client, hackerAbility) < 1)
                         {
-                            client.messageQueue.addRpcMessage(ServerPackets.BuildSystemChatMessage(
-                                "Load Hacker before attempting to hack this computer.", "BROADCAST"));
+                            // serverrules.py ComputerHack: abilityMessageToCaster(ID_CLIENT_HACK_COMPUTER_ABILITY_FAILED, HackerAbility, ...).
+                            client.messageQueue.addRpcMessage(AbilityMessages.AboutAbility(HackComputerAbilityFailed, true,
+                                hackerAbility, TimedEffects.PlayerName(client), "", 0));
                             return true;
                         }
                     }
                     Complete(client, progress, objective);
                     hacked = objective.computerHack;
+                    // The same rule sends ID_CLIENT_HACK_COMPUTER_SUCCESS before awarding the experience.
+                    if (hacked)
+                        client.messageQueue.addRpcMessage(AbilityMessages.AboutAbility(HackComputerSuccess, true,
+                            52, TimedEffects.PlayerName(client), "", 0));
                     break;
                 }
             }

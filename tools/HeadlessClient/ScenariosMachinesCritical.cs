@@ -52,7 +52,8 @@ public static partial class Scenarios
         await p.WaitForRpcAsync("80 b3 34 00");
         await p.WaitForRpcAsync(PassiveRecord(hacker, 643, 4 * level, true));
         p.SendRpc(hack);
-        await p.WaitForTextAsync("Load Hacker before attempting to hack this computer.");
+        // ID_CLIENT_HACK_COMPUTER_ABILITY_FAILED naming Hacker 52 through %1z.
+        await p.WaitForRpcAsync("81 67 ?? ?? ?? ?? 40 01 00 7a 01 34 00 00 00");
         Check.Equal(0, p.Received("80 a0 01 06 00 01").Count, "No optional goal receipt while unloaded");
         Check.Equal(0, p.Received("81 19").Count, "A refused Hack opens no container");
         Check.Equal(initialExperience, await context.Database.LongAsync(account), "A refused Hack earns no experience");
@@ -72,6 +73,7 @@ public static partial class Scenarios
         string gain = $"80 e6 {Le(earned)}";
         await p.WaitForRpcAsync(gain);
         await p.WaitForViewUpdateAsync(terminal.ViewId, "01 08 60 09 00 00");
+        Check.Equal(1, p.Received("81 67 ?? ?? ?? ?? 3d 01 00 7a 01 34 00 00 00").Count, "One ID_CLIENT_HACK_COMPUTER_SUCCESS line");
         Check.Equal(initialExperience + earned, await context.Database.LongAsync(account), "Goal and level-19 XP commit together");
         Check.Equal(1, p.Received(gain).Count, "One Hack experience gain packet");
         Check.Equal(1, p.Received("80 a0 01 06 00 01").Count, "The loaded Hack closes its exact goal once");

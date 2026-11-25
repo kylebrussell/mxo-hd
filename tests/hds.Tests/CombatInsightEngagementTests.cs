@@ -198,6 +198,32 @@ public class CombatInsightEngagementTests
         Assert.Equal(baseline.Evade, removed.Evade);
     }
 
+    [Fact]
+    public void ElusiveCodePassiveRaisesTheLiveEntryEvadeAndRangedToughnessOnlyWhileLoaded()
+    {
+        using var f = new Fixture();
+        Assert.False(CombatInsightEngagement.Allows(f.Source, f.Target, f.Handle, out var baseline));
+        int ranged = AbilityStats.Toughness(f.Target, true), melee = AbilityStats.Toughness(f.Target, false);
+        // GOB 940 at learned level 50: Combat Evasion 520 function3 x1.0 = +50, Ballistic Damage Resistance 181 x0.5 = +25.
+        AbilityPassives.SetLoaded(f.Target, new (ushort, ushort)[] { (2, 50), (217, 50), (49, 50), (940, 50) });
+        Assert.False(CombatInsightEngagement.Allows(f.Source, f.Target, f.Handle, out var loaded));
+        Assert.Equal(baseline.Evade + 50, loaded.Evade);
+        Assert.Equal(baseline.Force, loaded.Force);
+        Assert.Equal(ranged + 25, AbilityStats.Toughness(f.Target, true));
+        Assert.Equal(melee, AbilityStats.Toughness(f.Target, false));
+
+        // Positive 520 never creates the gate by itself: without the live 217 shield the passive is not consulted.
+        Assert.True(AbilityBuffs.Remove(f.Target, 217));
+        Assert.True(CombatInsightEngagement.Allows(f.Source, f.Target, f.Handle, out var unshielded));
+        Assert.False(unshielded.Computed);
+        Assert.True(AbilityBuffs.Apply(f.Target, 217));
+
+        AbilityPassives.SetLoaded(f.Target, new (ushort, ushort)[] { (2, 50), (217, 50), (49, 50) });
+        Assert.False(CombatInsightEngagement.Allows(f.Source, f.Target, f.Handle, out var unloaded));
+        Assert.Equal(baseline.Evade, unloaded.Evade);
+        Assert.Equal(ranged, AbilityStats.Toughness(f.Target, true));
+    }
+
     [Theory]
     [InlineData(294, 80)]
     [InlineData(1120, 10)]
