@@ -326,33 +326,35 @@ namespace hds
                     lock (messageQueue.RPCMessagesQueue.SyncRoot)
                     {
                         long rpcNow = Environment.TickCount64;
-                        foreach (SequencedMessage messageRPC in messageQueue.RPCMessagesQueue)
+                        // Unacked RPCs that are due go out again as one run from the oldest unacked counter, then new
+                        // ones, all in counter order and within MessageQueue.MaxRpcsInFlight (TakeRpcsToSend).
+                        List<SequencedMessage> rpcsToSend = messageQueue.TakeRpcsToSend(rpcNow, playerData.getRPCCounter(),
+                            out MessageQueue.RpcResend resend);
+                        if (resend.Count > 0)
                         {
-                            // New RPCs, and sent ones the client hasn't acked within RpcResendIntervalMs. They stay
-                            // in counter order, so a resent one goes out ahead of anything newer.
-                            if (messageRPC.IsRpcDue(rpcNow))
+                            // One line per flush. The char id says which session (a fixture's probe shares the log), and
+                            // the client's last ack says whether it is acking anything at all.
+                            Output.WriteDebugLog("[NET] Resending RPC " + resend.First + " (send " + (resend.OldestSend + 1) + ")" +
+                                                 (resend.Count > 1 ? " through " + resend.Last + ", " + resend.Count + " RPCs" : "") +
+                                                 ", char " + playerData.getCharID() + "; client acked sseq " + playerData.getACK() +
+                                                 " bits " + playerData.getPss().ToString("x2"));
+                        }
+                        foreach (SequencedMessage messageRPC in rpcsToSend)
+                        {
+                            messageRPC.lastRpcSendTick = rpcNow;
+                            messageRPC.IncreaseSentCounter();
+                            if (packet.addRPCContent(messageRPC) == false)
                             {
-                                if (messageRPC.rpcNumber >= 0)
-                                {
-                                    Output.WriteDebugLog("[NET] Resending RPC " + messageRPC.rpcNumber + " (send " +
-                                                         (messageRPC.sendCounter + 1) + ")");
-                                }
+                                packet.isFinal = true;
+                                worldPackets.Add(packet);
+                                // Start new packet and add it to the queue 
+                                packet = new WorldPacket(playerData);
+                                packet.addRPCContent(messageRPC);
+                            }
 
-                                messageRPC.lastRpcSendTick = rpcNow;
-                                messageRPC.IncreaseSentCounter();
-                                if (packet.addRPCContent(messageRPC) == false)
-                                {
-                                    packet.isFinal = true;
-                                    worldPackets.Add(packet);
-                                    // Start new packet and add it to the queue 
-                                    packet = new WorldPacket(playerData);
-                                    packet.addRPCContent(messageRPC);
-                                }
-
-                                if (messageRPC.isTimed == true)
-                                {
-                                    packet.timed = true;
-                                }
+                            if (messageRPC.isTimed == true)
+                            {
+                                packet.timed = true;
                             }
                         }
                     }
@@ -399,8 +401,9 @@ namespace hds
                     // A bare reset ACK can arrive after the client resets its sequence history.
                     // The reliable reset RPC already acknowledges the last request.
                     if (thePacket.IsEmpty && playerData.waitForRPCShutDown) return;
-                    playerData.IncrementSseq();
-
+                    // getFinalData takes the packet's sequence. This used to increment it here as well, so our packets
+                    // went out every other sequence; retail's go up by one (Unknown.log2, loggedinsession001: 1, 2, 3...),
+                    // and the client's 8 ack bits then covered only our last 4 packets instead of 8.
                     byte[] finalData = thePacket.getFinalData(playerData);
 
                     Stopwatch stopWatch = new Stopwatch();

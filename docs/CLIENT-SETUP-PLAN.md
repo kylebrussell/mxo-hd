@@ -107,7 +107,9 @@ Fixed (2026-11-09): **the client sometimes stopped acting on server RPCs partway
 RPCs now work as in Reality (rajkosto/mxoemu, `GameClient::FlushQueue` and `AcknowledgePacket`):
 - **Counters:** an RPC keeps the counter it was first sent with, and remembers each packet it went out in.
 - **Acks:** it is gone once the client acks one of those packets. The client acks a sequence, and its ack-bits byte (what the code calls PSS) names the 8 before it: bit i is ack − (i+1), so the steady 42 and 170 cover the server's every-other-sequence packets.
-- **Resends:** until acked, it goes out again every 500 ms, in counter order, in blocks of consecutive counters (`04 <blocks>`, then each block's first counter, count and RPCs). After 60 sends it is dropped.
+- **Resends:** until acked, it goes out again every 500 ms, in blocks of consecutive counters (`04 <blocks>`, then each block's first counter, count and RPCs). Once any unacked RPC is due, it and every unacked RPC before it go out again as one run from the oldest, then new ones. (Each RPC used to keep its own timer, so RPCs first sent in different flushes were resent in separate packets on separate phases.) After 60 sends it is dropped.
+- **In flight:** at most `MessageQueue.MaxRpcsInFlight` (128) counters past the oldest unacked RPC; newer ones wait for acks. Retail had about a hundred out at world entry.
+- **Sequences:** one per packet, as in retail's captures. The server used to take two per packet, so the client's 8 ack bits (42/170) covered only its last 4 packets.
 - **Comm reset:** RPCs already sent are dropped.
 - **Packet size:** packets stop at 1,300 bytes and 255 RPCs.
 - **Testing:** `MXO_DROP_RPC_PACKET=n` doesn't send the nth packet carrying RPCs, to test recovery.
