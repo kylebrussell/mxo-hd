@@ -313,6 +313,44 @@ public class CombatInsightEngagementTests
     }
 
     [Fact]
+    public void TheTrailingCloseCombatRequestOfAKillingFireBatchDoesNotOpenARoundWithTheCorpse()
+    {
+        using var fixture = new Fixture();
+        var player = fixture.Target;
+        AbilityBuffs.Remove(player, 217);
+        var npc = new Mob();
+        npc.setName("Test Corpse");
+        npc.setEntityId(61701);
+        npc.setDistrict(1);
+        npc.setLevel(11);
+        npc.setHealthM(100);
+        npc.setHealthC(0);
+        npc.setIsDead(true);
+        npc.setIsSpawned(true);
+        var view = player.viewMan.addView(npc.getEntityId(), 599);
+        view.viewCreated = true;
+        view.spawnId = 0x75;
+        var handler = new CombatHandler(player);
+        var clients = WorldServer.Clients;
+        WorldServer.Clients = new();
+        WorldServer.mobs.Add(npc);
+        try
+        {
+            byte[] packet = BitConverter.GetBytes(DuelPackets.Handle(view.ViewID, view.spawnId)).Concat(new byte[] { 0, 0x6b }).ToArray();
+            handler.ProcessRequestCloseCombat(ref packet);
+            Assert.False(handler.isCombatRunning);
+            // No 40 echo (and no 4e) reaches the client for the dead NPC.
+            Assert.DoesNotContain(player.messageQueue.RPCMessagesQueue.Cast<SequencedMessage>(),
+                rpc => rpc.content.Length > 1 && (rpc.content[1] == 0x40 || rpc.content[1] == 0x4e));
+        }
+        finally
+        {
+            WorldServer.mobs.Remove(npc);
+            WorldServer.Clients = clients;
+        }
+    }
+
+    [Fact]
     public void NpcForcedEntryRejectsStaleSpawnAndChargesAtMostOncePerNpcAction()
     {
         using var fixture = new Fixture();
