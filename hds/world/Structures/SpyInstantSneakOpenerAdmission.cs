@@ -4,7 +4,7 @@ namespace hds
 {
     /// <summary>
     /// Shared rear-opener admission for instant Spy sneak attacks:
-    /// Spinning Backsweep (152), Suplex (287), and Bull Dog (387).
+    /// Spinning Backsweep (152), Suplex (287), Bull Dog (387) and Diving Frankensteiner (385).
     /// All three store CastWhenUsed=1, Spy Style stance, Stealthed caster state (0x02000000),
     /// SelectionRange=6 m, and CastOutsideTargetFOVAngle=50 deg.
     /// </summary>
@@ -15,7 +15,8 @@ namespace hds
             ushort id = AbilityCatalog.Canonical(abilityId);
             return id == SpinningBacksweepAdmission.SpinningBacksweep ||
                    id == SuplexDamage.Suplex ||
-                   id == BullDogDamage.Id;
+                   id == BullDogDamage.Id ||
+                   id == SpyMasterSneakOpeners.DivingFrankensteiner;
         }
 
         public static bool TryRefuse(WorldClient caster, ushort abilityId, ushort targetViewId, ushort? spawn, out uint reason)

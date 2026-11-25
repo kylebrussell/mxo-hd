@@ -55,6 +55,7 @@ public class SpyInstantSneakOpenersTests
     [InlineData(SpinningBacksweep, 28, 75, 158, 130, 20, 30f)]
     [InlineData(Suplex, 120, 300, 646, 531, 50, 38f)]
     [InlineData(BullDog, 75, 950, 1578, 1298, 37, 60f)]
+    [InlineData(SpyMasterSneakOpeners.DivingFrankensteiner, 164, 725, 1369, 1126, 80, 60f)]
     public void InstantSneakOpenersEnforceRearAdmissionAndResolveExactLevel50Totals(
         ushort abilityId, ushort expectedBase, int expectedStealthBonus, ushort expectedNeutral, ushort expectedResisted, ushort expectedIs, float expectedOwn)
     {

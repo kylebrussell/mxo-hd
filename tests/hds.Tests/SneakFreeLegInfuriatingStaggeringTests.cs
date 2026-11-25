@@ -5,6 +5,8 @@ using hds.shared;
 
 namespace hds.Tests;
 
+// Shares WorldServer.Clients with the other rear-opener admission tests; never run them in parallel.
+[Collection("AbilityParityWorld")]
 public class SneakFreeLegInfuriatingStaggeringTests
 {
     private const ushort Spy = CombatStyles.SpyStyle;
