@@ -70,7 +70,7 @@ namespace hds{
             {
                 string text = error is AbilityAcquisition.Refusal ? error.Message : "The purchase could not be completed. Your information was kept.";
                 Output.WriteDebugLog($"[VENDOR] Purchase refused char={stamp.Character} item={itemGoID}: {error.Message}");
-                if (stamp.Publish(client, ServerPackets.BuildSystemChatMessage(text, "MODAL"), VendorBuyback.RefusalAck()))
+                if (stamp.Publish(client, ServerPackets.BuildSystemChatMessage(text, "BROADCAST"), VendorBuyback.RefusalAck()))
                     client.FlushQueue();
                 return;
             }

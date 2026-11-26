@@ -15,7 +15,7 @@ public sealed class VendorPurchaseFullBagMode : NativeQaMode
             """ }, Array.Empty<string>(), DevCommands: true,
         environmentOverrides: new() { ["MXO_AGGRO"] = "0", ["MXO_MOB_WANDER"] = "0" },
         readyMessages: new[] {
-            "At the Mara Central stand (17000,495,2300), type ?clientactions vendor to open the tools vendor. Find Lock Pick (1,000 Info), attempt Buy with all bag slots filled, then confirm Info stays 5,000. If the stock client refuses before 81 0e, record the local message. If it sends 81 0e, expect the full-bag modal and 81 10.",
+            "At the Mara Central stand (17000,495,2300), type ?clientactions vendor to open the tools vendor. Find Lock Pick (1,000 Info) and attempt Buy with all bag slots filled. Expect 5,000 Info, 'Your inventory is full.' in chat and 81 10.",
             "Close the window, Recycle one shirt from the bag for 340 Info, then reopen the vendor and Buy Lock Pick. Expect one Lock Pick in the freed slot, Info 4,340 and [VENDOR] Bought char=110 item=4."
         });
 

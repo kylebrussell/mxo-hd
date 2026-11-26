@@ -83,20 +83,26 @@ some requests incorrectly.
 | 7 | Low | FX completion `81 aa`, world-entry `80 be`, range `81 46` | Senders are known. No reply or authoritative state transition is established. `81 47` and `81 4a` still lack a reachable sender. |
 | 8 | Low | Local support `81 b*`, GM inspection `81 57/59/5b` | Local support and private GM text reports work. External ticket service and structured GM viewers remain open. |
 
-The marketplace policy uses the low seven bits of the captured ordinary code
-descriptor as its existing charge count. It accepts unloaded ordinary item
-codes whose category matches a shipped recipe. Checkout places the same
-descriptor in the first free archive slot and echoes the request's byte slot
-in the buy result. The archive update carries the actual slot as a u16. The
-capture proves listing; the checkout ordering uses the existing buy response
-and the known-abilities add already used by Write Code. Native QA checks that
-the stock client renders this combination and leaves the controls usable.
+The marketplace uses the low seven bits of the captured class-46 descriptor
+for the charge count (1–127). Listing accepts both flagged storage rows and
+older unflagged Write Code rows whose category matches a shipped recipe.
+Checkout stores `CodeStorage.BaseValue(goid)` and `charges - 1`, then sends the
+flagged storage add. Marketplace delivery uses slots 384–519 by server
+policy, with the actual u16 slot in the storage add. The `81 27` buy result
+echoes the requested byte slot and keeps the marketplace descriptor.
 
 Use `vendor-purchase-full-bag` at Mara Central to attempt a Lock Pick purchase
 at 5,000 Info, recycle one shirt for 340, then buy for 1,000. Use
 `marketplace-archive-code` from the same booth to list CSR's code for 1,200,
-then buy QAFriend's pre-posted code for 1,000. Check for one charge in the archive, no
-bag addition and 1,000 Info remaining. The fixtures print the stands and steps.
+then buy QAFriend's pre-posted code for 1,000. Compile the bought code in the
+archive. Expect `61 00`, a Lock Pick in the bag, and 880 Info after the
+120 Info compile. De-list and re-list CSR's code to check the return path. The
+fixtures print the stands and steps.
+
+The vendor refusal's `81 10` carries a zero StringID, which bypasses the
+stock popup. Ordinary vendor purchases now also put the refusal in visible
+chat (`2e c7`). The inventory-full status used by mail and the marketplace
+has no verified mapping to the vendor's popup StringID.
 
 ## Original ignored-row audit
 

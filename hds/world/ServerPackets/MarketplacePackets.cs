@@ -24,6 +24,8 @@ namespace hds
         internal bool IsArchiveCode => GoId == AbilityProgression.AbilityCodeItem &&
             (Category & 0x80000000u) != 0 &&
             OrdinaryItemCode.Valid(Descriptor & ~127u, (int)(Descriptor & 127u));
+        internal uint ArchiveGoid => Descriptor >> 7;
+        internal int ArchiveCharges => (int)(Descriptor & 127u);
     }
 
     /// <summary>

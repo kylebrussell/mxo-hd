@@ -10,7 +10,8 @@ namespace hds.databases
         public ClientActionRequests.Materialized MaterializeStoredCode(uint character, ushort sourceSlot, uint goid, long cost, bool allowOrdinaryItemCode = false)
         {
             var result = new ClientActionRequests.Materialized();
-            if ((!CodeStorage.IsUploadable(goid) && !(allowOrdinaryItemCode && OrdinaryItemCode.Supported(goid))) || cost < 0)
+            if ((!CodeStorage.IsUploadable(goid) &&
+                !(allowOrdinaryItemCode && OrdinaryItemCode.CanMaterialize(CraftingRules.Find(goid)))) || cost < 0)
                 return result;
             using var connection = new MySqlConnection(connectionString); connection.Open();
             EnsureTransactionalInventory(connection);

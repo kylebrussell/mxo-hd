@@ -213,8 +213,8 @@ namespace hds
         private static byte CompileFlaggedCode(WorldClient client, ClientActionRequests.StoredCompile request, uint goid, bool inLoadingArea)
         {
             bool uploadable = CodeStorage.IsUploadable(goid);
-            bool ordinary = inLoadingArea && !uploadable && OrdinaryItemCode.Supported(goid);
             var item = CraftingRules.Find(goid);
+            bool ordinary = inLoadingArea && !uploadable && OrdinaryItemCode.CanMaterialize(item);
             if ((!uploadable && !ordinary) || item == null) return 1;
             long cost = ordinary ? OrdinaryItemCode.Cost(item, 0) :
                 CraftingRules.InfoCost(item, inLoadingArea ? 0 : CraftingHandler.Skill(client, 530));

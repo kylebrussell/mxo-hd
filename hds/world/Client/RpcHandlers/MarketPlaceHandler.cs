@@ -152,7 +152,7 @@ namespace hds{
             MarketListing listing = purchase.Listing;
             byte amount = (byte)(listing.Descriptor >> 16);
             byte type = (byte)(listing.Descriptor >> 24);
-            byte[] delivery = listing.IsArchiveCode ? ServerPackets.BuildKnownAbilityAdd(purchase.Slot, listing.Descriptor)
+            byte[] delivery = listing.IsArchiveCode ? CodeStorage.BuildAdd(purchase.Slot, listing.ArchiveGoid, listing.ArchiveCharges)
                 : ServerPackets.BuildInventoryItemAdd(purchase.Slot, listing.GoId, amount, type);
             const uint reason = MarketplacePackets.InfoReasonMarketplace;
             byte replySlot = listing.IsArchiveCode ? requestedSlot : (byte)purchase.Slot;

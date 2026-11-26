@@ -7,6 +7,9 @@ namespace hds.databases
 {
     public partial class MarketplaceDb
     {
+        // Prefer the upper portion of the shared archive array for marketplace deliveries.
+        internal const ushort ArchiveDeliveryFirstSlot = 384;
+
         internal sealed class Purchase
         {
             public readonly uint Status, Cost, BuyerCash;
@@ -55,22 +58,26 @@ namespace hds.databases
                 {
                     if (!rows.Read()) return "There is no item in that marketplace source slot.";
                     uint item = unchecked((uint)Convert.ToInt64(rows[0]));
-                    int count = rows.GetInt32(1);
+                    long storedCount = rows.GetInt64(1);
                     if (archive)
                     {
-                        uint goid = item >> 7;
+                        bool flagged = CodeStorage.IsCode(item);
+                        uint goid = flagged ? CodeStorage.GoidOf(item) : item >> 7;
+                        long charges = flagged ? storedCount + 1 : storedCount;
                         var recipeItem = CraftingRules.Find(goid);
-                        if (rows.GetBoolean(2) || !OrdinaryItemCode.Valid(item, count) || recipeItem == null ||
-                            recipeItem.CantCraft || !Crafting.Recipes.ContainsKey(goid) ||
+                        // Accept legacy Write Code rows as well as canonical flagged storage rows.
+                        if (rows.GetBoolean(2) || (item & 127u) != 0 || charges < 1 || charges > 127 ||
+                            (flagged ? item != unchecked((uint)CodeStorage.BaseValue(goid)) : (item & 0x80000000u) != 0) ||
+                            !OrdinaryItemCode.CanMaterialize(recipeItem) ||
                             !MarketplaceRequests.SameCategory(listing.Category, recipeItem.Category))
                             return "Only supported item codes can be listed from the archive.";
                         listing.Category |= 0x80000000u;
                         listing.GoId = AbilityProgression.AbilityCodeItem;
-                        listing.Descriptor = OrdinaryItemCode.Packed(item, count);
+                        listing.Descriptor = OrdinaryItemCode.Packed(goid << 7, (int)charges);
                     }
                     else
                     {
-                        if (item == 0 || !AbilityAcquisition.RawSingleCount(count))
+                        if (item == 0 || (storedCount != 0 && storedCount != 1))
                             return "Only single bag items can be listed. Split the stack first.";
                         listing.GoId = item;
                         uint descriptor = unchecked((uint)rows.GetInt32(2));
@@ -127,14 +134,20 @@ namespace hds.databases
             ushort slot;
             if (listing.IsArchiveCode)
             {
+                var recipeItem = CraftingRules.Find(listing.ArchiveGoid);
+                if (!OrdinaryItemCode.CanMaterialize(recipeItem) ||
+                    !MarketplaceRequests.SameCategory(listing.Category, recipeItem.Category))
+                    return new Purchase(CentralStorage.InvalidStorageItem);
                 var occupied = ReadSlots(transaction, "SELECT slot FROM char_abilities WHERE char_id=@character AND slot<520 FOR UPDATE", buyer);
-                int? available = CentralStorage.FirstFreeSlot(occupied);
-                if (!available.HasValue) return new Purchase(CentralStorage.StorageFull);
-                slot = (ushort)available.Value;
+                int available = Enumerable.Range(ArchiveDeliveryFirstSlot, CentralStorage.Slots - ArchiveDeliveryFirstSlot)
+                    .FirstOrDefault(candidate => !occupied.Contains(candidate), -1);
+                if (available < 0) return new Purchase(CentralStorage.StorageFull);
+                slot = (ushort)available;
                 using var command = TransactionCommand(transaction, @"
                     INSERT INTO char_abilities(char_id,slot,ability_id,level,is_loaded,ability_name,added)
-                    VALUES(@character,@slot,@item,@charges,0,'Marketplace item code',NOW())
-                    ", "@character", buyer, "@slot", slot, "@item", listing.Descriptor & ~127u, "@charges", listing.Descriptor & 127u);
+                    VALUES(@character,@slot,@item,@level,0,'Marketplace item code',NOW())
+                    ", "@character", buyer, "@slot", slot, "@item", CodeStorage.BaseValue(listing.ArchiveGoid),
+                    "@level", listing.ArchiveCharges - 1);
                 if (command.ExecuteNonQuery() != 1) return new Purchase(CentralStorage.InvalidTransaction);
             }
             else
