@@ -21,8 +21,8 @@ public sealed class ClientActionFollowupsMode : NativeQaMode
             $"INSERT INTO inventory(charId,goid,slot,count,purity) VALUES(110,613,3,1,0),(110,{HealthPill},5,2,0)",
             $"UPDATE characters SET y={Y},rotation=128,cash=250 WHERE charId=110",
             $"DELETE FROM char_abilities WHERE char_id=110 AND slot IN ({ArchiveSlot},{ArchiveSlot + 1})",
-            $"INSERT INTO char_abilities(char_id,slot,ability_id,level,is_loaded) VALUES(110,{ArchiveSlot},{HealthPill << 7},2,0)," +
-                $"(110,{ArchiveSlot + 1},{Revolver << 7},2,0)"
+            $"INSERT INTO char_abilities(char_id,slot,ability_id,level,is_loaded) VALUES(110,{ArchiveSlot},{CodeStorage.BaseValue(HealthPill)},1,0)," +
+                $"(110,{ArchiveSlot + 1},{CodeStorage.BaseValue(Revolver)},1,0)"
         },
         new[] { $"UPDATE char_abilities SET level={Rank} WHERE char_id=110 AND ability_id={AbilityMessages.AbilityGameObject(Decompile)}" },
         DevCommands: false, GmCharacter110: false, FixedCallbackRolls: false,
@@ -34,9 +34,9 @@ public sealed class ClientActionFollowupsMode : NativeQaMode
         {
             $"CSR starts at the Mara Central hardline {MaraCentral} arrival stand ({X},{Y},{Z}), facing the booth. Inventory page 1, bag slot 3 holds the tool and slot 5 holds two Health Pills. Info starts at 250.",
             "Open Inventory (I) and hotbar page 2. If the stock UI template is unavailable, drag Decompile Items from Actions > Abilities to slot 1 and right-click bag slot 3 > Add Item to Hotbar for a tool shortcut.",
-            "1. Press page 2 slot 1 (Decompile Items 276), then click the Health Pills in bag slot 5. If the ability shortcut does not arm an inventory target, press page 2 slot 2 (Item Decompiler) and click the same pill. The tool shortcut is the stock route observed in PR687. Expect 81 31 14 01 00 00 05 03 01, [DECOMPILE] item=2399 skill=18 complexity=1 success=True, 81 30 and 81 2f success. Slot 5 drops from 2 to 1. Repeat after 10 seconds and confirm slot 5 disappears. Info stays at 250.",
-            "2. Face the booth at (17000,400,2200), right-click it and choose Loading Area, then confirm. In the Loading Area code archive, compile Health Pill (slot 400) twice. 60 FromCrafting=0, 61 00, [COMPILE60] item=2399 result=0 cost=9, remaining 1 then 0, two pills in the bag and Info 250 to 241 to 232. Then compile Revolver (slot 401) once for 120 Info and one charge. Try it again at 112 Info. Expect the remaining charge and Info to stay unchanged and 61 04 if the client sends another request.",
-            "3. Select the Tutorial from the Loading Area picker and enter it. Click Skip Tutorial and confirm the exit. The stock handoff should select Richland hardline 153 and load the city without another hardline pick. Check [TUTORIAL] Jacking into Richland at hardline 153 and report whether 81 01 or the existing 05 path initiated it. An ordinary Loading Area exit afterwards should still wait at the picker."
+            "One decompile passed on f804b3f5. To repeat it, press page 2 slot 1 (Decompile Items 276), then single-click the stack in bag slot 5. If the ability does not arm an inventory target, use the Item Decompiler hotbar shortcut and single-click the pill. Expect 81 31 14 01 00 00 05 03 01, [DECOMPILE] item=2399 skill=18 success=True, 81 30 and 81 2f success. After 10 seconds repeat to clear the stack. Info stays at 250.",
+            "For the archive retest, right-click the booth in front of CSR at (17000,400,2200), choose Loading Area and confirm. In Equipment > Code Archive, select Health Pill (slot 400) and Compile twice. Record the first 60 Item field. Expect 61 00 each time and [COMPILE60] Loading Area item=2399 cost=9, remaining 1 then 0, two pills added and Info 250 to 241 to 232.",
+            "Compile Revolver (slot 401) once for 120 Info and one charge. At 112 Info try again. Expect one remaining charge, no extra Revolver, Info still 112 and 61 04 if the client sends the request. The separate client-action-tutorial mode starts directly in the Tutorial."
         });
 
     public override async Task<byte[]> AfterStartAsync(NativeQaBootstrapContext context)
@@ -55,11 +55,20 @@ public sealed class ClientActionFollowupsMode : NativeQaMode
             "Two pills in the decompile source slot");
         Check.Equal(1L, await db.LongAsync("SELECT count FROM inventory WHERE charId=110 AND slot=3 AND goid=613"),
             "An owned Item Decompiler in slot 3");
-        Check.Equal(2L, await db.LongAsync($"SELECT level FROM char_abilities WHERE char_id=110 AND slot={ArchiveSlot} " +
-            $"AND ability_id={HealthPill << 7} AND is_loaded=0"), "Two ordinary code charges in archive");
-        Check.Equal(2L, await db.LongAsync($"SELECT level FROM char_abilities WHERE char_id=110 AND slot={ArchiveSlot + 1} " +
-            $"AND ability_id={Revolver << 7} AND is_loaded=0"), "Two ordinary Revolver code charges in archive");
+        Check.Equal(2L, await db.LongAsync("SELECT COUNT(*) FROM char_abilities WHERE char_id=110 AND level=1 AND is_loaded=0 AND " +
+            $"((slot={ArchiveSlot} AND ability_id={CodeStorage.BaseValue(HealthPill)}) OR " +
+            $"(slot={ArchiveSlot + 1} AND ability_id={CodeStorage.BaseValue(Revolver)}))"),
+            "Both Loading Area archive rows have a code flag and two charges");
         if (context.StockProbe is not { } actor) return Array.Empty<byte>();
+        byte[] archive = actor.CharacterData[7];
+        Dictionary<ushort, uint> codes = new();
+        for (int offset = 0; offset + 6 <= archive.Length; offset += 6)
+        {
+            uint value = BitConverter.ToUInt32(archive, offset + 2);
+            if (CodeStorage.IsCode(value)) codes.Add(BitConverter.ToUInt16(archive, offset), value);
+        }
+        Check.Equal(CodeStorage.Pack(HealthPill, 2), codes[ArchiveSlot], "Stock Margin sends the flagged Health Pill row");
+        Check.Equal(CodeStorage.Pack(Revolver, 2), codes[ArchiveSlot + 1], "Stock Margin sends the flagged Revolver row");
         var loaded = AbilityMemoryUiFixture.Decode(actor.CharacterData[6]).Where(row => AbilityMemory.IsAbility(row.Descriptor))
             .ToDictionary(row => AbilityCatalog.IdOf(row.Descriptor), row => row.Level);
         Check.Equal((ushort)Rank, loaded[Decompile], "Stock Margin loads rank 18 Decompile Items");
@@ -84,6 +93,10 @@ public sealed class ClientActionFollowupsMode : NativeQaMode
         await actor.WaitForRpcAsync("81 07");
         actor.SendRpc("81 08 00 00 00 00");
         await actor.WaitForLoadingAreaAsync();
+        actor.SendRpc("60 00 00 00 00 90 01 00 6b 00");
+        await actor.WaitForRpcAsync("61 00");
+        Check.Equal(241L, await db.LongAsync("SELECT cash FROM characters WHERE charId=110"),
+            "The captured zero-Item request resolves the flagged Health Pill row");
         Check.Equal(0, actor.World.Problems.Count, "The booth radial route enters the Loading Area");
         return Array.Empty<byte>();
     }

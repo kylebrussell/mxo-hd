@@ -1,3 +1,5 @@
+using hds;
+
 namespace HeadlessClient;
 
 public static partial class Scenarios
@@ -60,28 +62,34 @@ public static partial class Scenarios
 
     private static async Task LoadingAreaOrdinaryArchiveCompile(ScenarioContext context)
     {
-        const uint item = 2399, encoded = item << 7;
+        const uint item = 2399;
         const uint revolver = 700;
         var player = await context.AddPlayerAsync(new CharacterSeed("ArchiveCompile") { Info = 250 });
         await context.Database.ExecuteAsync("INSERT INTO char_abilities(char_id,slot,ability_id,level,is_loaded) VALUES" +
-            $"({player.CharId},400,{encoded},2,0),({player.CharId},401,{revolver << 7},2,0)");
+            $"({player.CharId},400,{CodeStorage.BaseValue(item)},1,0),({player.CharId},401,{CodeStorage.BaseValue(revolver)},1,0)," +
+            $"({player.CharId},402,{item << 7},1,0)");
         await player.EnterWorldAsync();
-        const string request = "60 5f 09 00 00 90 01 00 6b 00";
-        player.SendRpc(request);
+        const string native = "60 00 00 00 00 90 01 00 6b 00";
+        const string named = "60 5f 09 00 00 90 01 00 6b 00";
+        player.SendRpc(native);
         await player.WaitForRpcAsync("61 01");
         await ClientActionEnterLoadingArea(player);
 
         player.SendRpc("60 5f 09 00 00 90 01 00 01 01");
         await player.WaitForRpcAsync("61 01");
-        player.SendRpc(request);
-        await player.WaitForRpcAsync("61 00");
-        Check.Equal(1, player.Received("69 00 90 01 81 af 04 00 00 00").Count, "A direct charge remains in archive");
-        player.SendRpc(request);
-        await player.WaitForRpcAsync("61 00");
-        Check.Equal(1, player.Received("5f 90 01 00").Count, "Last direct charge removes the archive row");
-        player.SendRpc(request);
+        player.SendRpc("60 bc 02 00 00 90 01 00 6b 00");
         await player.WaitForRpcAsync("61 01");
-        player.SendRpc("60 bc 02 00 00 91 01 00 6b 00");
+        Check.Equal(250L, await context.Database.LongAsync($"SELECT cash FROM characters WHERE charId={player.CharId}"),
+            "A forged nonzero item or wrong compile route cannot spend Info");
+        player.SendRpc(native);
+        await player.WaitForRpcAsync("61 00");
+        Check.Equal(1, player.Received("69 00 90 01 80 af 04 84 00 00").Count, "The last remaining charge retains the code flag");
+        player.SendRpc(named);
+        await player.WaitForRpcAsync("61 00");
+        Check.Equal(1, player.Received("5f 90 01 00").Count, "The last charge removes the archive row");
+        player.SendRpc(native);
+        await player.WaitForRpcAsync("61 01");
+        player.SendRpc("60 00 00 00 00 91 01 00 6b 00");
         await player.WaitForRpcAsync("61 00");
         player.SendRpc("60 bc 02 00 00 91 01 00 6b 00");
         await player.WaitForRpcAsync("61 04");
@@ -91,10 +99,14 @@ public static partial class Scenarios
             "Two bag items from two charged successes");
         Check.Equal(0L, await context.Database.LongAsync($"SELECT COUNT(*) FROM char_abilities WHERE char_id={player.CharId} AND slot=400"),
             "Replaying a depleted source cannot add another item");
-        Check.Equal(1L, await context.Database.LongAsync($"SELECT level FROM char_abilities WHERE char_id={player.CharId} AND slot=401"),
+        Check.Equal(0L, await context.Database.LongAsync($"SELECT level FROM char_abilities WHERE char_id={player.CharId} AND slot=401"),
             "Insufficient Info preserves the remaining revolver charge");
         Check.Equal(1L, await context.Database.LongAsync($"SELECT COUNT(*) FROM inventory WHERE charId={player.CharId} AND goid={revolver}"),
             "Exactly one ordinary weapon materialized");
+        player.SendRpc("60 00 00 00 00 92 01 00 6b 00");
+        await player.WaitForRpcAsync("61 00");
+        Check.Equal(103L, await context.Database.LongAsync($"SELECT cash FROM characters WHERE charId={player.CharId}"),
+            "The owned legacy ordinary-code format also resolves by slot in LA");
         Check.Equal(0, player.World.Problems.Count, "Archive compile packets decode");
     }
 }

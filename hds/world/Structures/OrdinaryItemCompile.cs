@@ -29,7 +29,32 @@ namespace hds
             }
         }
 
-        /// <summary>Returns false for other code families so the existing flagged executor stays unchanged.</summary>
+        internal static bool TryCompileFromLoadingArea(WorldClient client, ClientActionRequests.StoredCompile request)
+        {
+            // The caller holds craftingSync and has admitted this Loading Area request.
+            var db = Store.dbManager.WorldDbHandler;
+            uint character = client.playerData.getCharID();
+            var archived = db.GetOrdinaryItemCode(character, request.Slot);
+            if (archived == null || (request.Item != 0 && request.Item != archived.Goid) ||
+                !OrdinaryItemCode.Supported(archived.Goid))
+                return false;
+
+            long price = OrdinaryItemCode.Cost(CraftingRules.Find(archived.Goid), 0);
+            ClientActionRequests.Materialized materialized;
+            try { materialized = db.MaterializeOrdinaryItemCode(character, archived, null, price); }
+            catch (System.Data.Common.DbException ex)
+            {
+                Output.WriteDebugLog($"[COMPILE60] Loading Area transaction failed item={archived.Goid}: {ex}");
+                Finish(client, 1);
+                return true;
+            }
+            PublishTransfer(client, archived, materialized);
+            Output.WriteDebugLog($"[COMPILE60] Loading Area item={archived.Goid} requestItem={request.Item} slot={request.Slot} result={materialized.Result} cost={price} remaining={materialized.Remaining}");
+            Finish(client, materialized.Result);
+            return true;
+        }
+
+        /// <summary>Starts the in-world Compiler contest for ordinary item codes.</summary>
         public static bool TryStart(WorldClient client, ClientActionRequests.StoredCompile request)
         {
             if (request == null || !OrdinaryItemCode.Supported(request.Item)) return false;
@@ -39,27 +64,6 @@ namespace hds
                 var db = Store.dbManager.WorldDbHandler;
                 double now = TimeUtils.GetSimTimeSeconds();
                 if (request.Slot >= 0x208) { Finish(client, 1); return true; }
-                if (!request.FromCrafting)
-                {
-                    if (!client.Alive || !data.DistrictIsLA() || data.worldChangePending || data.isDead || data.duelDeath)
-                    { Finish(client, 1); return true; }
-                    var archived = db.GetOrdinaryItemCode(data.getCharID(), request.Slot);
-                    if (archived == null || archived.Goid != request.Item) { Finish(client, 1); return true; }
-                    // Apply the existing Loading Area archive policy: the undiscounted price for one stored charge.
-                    long price = OrdinaryItemCode.Cost(CraftingRules.Find(request.Item), 0);
-                    ClientActionRequests.Materialized materialized;
-                    try { materialized = db.MaterializeOrdinaryItemCode(data.getCharID(), archived, null, price); }
-                    catch (System.Data.Common.DbException ex)
-                    {
-                        Output.WriteDebugLog($"[COMPILE60] Loading Area transaction failed item={request.Item}: {ex}");
-                        Finish(client, 1);
-                        return true;
-                    }
-                    PublishTransfer(client, archived, materialized);
-                    Output.WriteDebugLog($"[COMPILE60] Loading Area item={request.Item} result={materialized.Result} cost={price} remaining={materialized.Remaining}");
-                    Finish(client, materialized.Result);
-                    return true;
-                }
                 if (!Ready(client, request.Tool) ||
                     pending.TryGetValue(client, out _) || AbilityCooldowns.IsCasting(data, now)) { Finish(client, 1); return true; }
                 var source = db.GetOrdinaryItemCode(data.getCharID(), request.Slot);

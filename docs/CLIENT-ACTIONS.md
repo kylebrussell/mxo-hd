@@ -680,7 +680,7 @@ SocialBot (`?socialbot`) accepts any paired emote a second after it is asked.
 
 ## Item requests in detail
 
-None of `5b`, `5c`, `60`, `61`, `66` or `80 c6` appears in the 339 captures, so all of this comes from client.dll.
+The 339 retail captures contain none of `5b`, `5c`, `60`, `61`, `66` or `80 c6`. Their original identification came from client.dll. The later stock-client Loading Area observation is recorded below.
 
 **`66 <Slot u8> <TargetID u32>`: giving a mission item by dragging it.**
 - The trigger is a bag item dropped on a world object (drop handler destination 0). That goes to the trade sender 0x621eb790, which takes this path (0x621eb080) instead of `81 82` when the target lists interface 0x31.
@@ -695,6 +695,7 @@ If no Give goal wants the item from that NPC, the server says "They don't want t
 **`60`: compile.** The server serves owned uploaded bits/fragments and supported ordinary item codes with atomic source, bag and Info changes. See [the policy and gates](IGNORED-CLIENT-ACTIONS.md#round-2-priorities).
 - Layout: `60 <ObjectID u32> <Slot u16> <PersonalInventoryItem u8> <InvSlotOfToolUsed u8> <FromCrafting u8>`, 10 bytes.
 - It comes from the Compile window's button, which an `80 bc` for ability 969 opens, and from the Loading Area storage window's compile. PersonalInventoryItem 0 means the slot is a code storage slot.
+- The in-world sender at `6208375a..62083782` writes the decoded GOID. PR1217 native QA captured a Loading Area request with ObjectID 0 for slot 400 (`60 00 00 00 00 90 01 00 6b 00`). In the Loading Area only, zero resolves through that character's owned archive slot. A nonzero ObjectID must match the owned item.
 - The answer is `61 <ResultCode u8>`. The client acts on it only while the Compile window is open:
 
 | ResultCode | The client shows |
@@ -707,6 +708,7 @@ If no Give goal wants the item from that NPC, the server says "They don't want t
 | 5 | singleton |
 
 - Ordinary item codes use the existing tool-bound contest in world and the direct archive price in the Loading Area. Recipe assembly still uses `81 2e`.
+- Flagged Loading Area rows use `CodeStorage.BaseValue(goid)` and store charges minus one. Health Pill (2399) and Revolver (700) are supported ordinary item codes. Upload eligibility is limited to bits and fragments.
 
 **`5c <Slot u16> <PersonalInventoryItem u8>`: dropping a luggable into the world.**
 - It is sent when a dragged bag item is released over the world.

@@ -16,7 +16,7 @@ namespace hds.databases.interfaces{
         List<LocalSupport.Ticket> SupportTickets(UInt32 character);
         UInt32 SaveSupportTicket(UInt32 character, string handle, UInt32 ticket, string text, bool cancel);
         UInt32 FindSupportGroup(string name, bool faction);
-        ClientActionRequests.Materialized MaterializeStoredCode(UInt32 character, UInt16 sourceSlot, UInt32 goid, long cost);
+        ClientActionRequests.Materialized MaterializeStoredCode(UInt32 character, UInt16 sourceSlot, UInt32 goid, long cost, bool allowOrdinaryItemCode = false);
         UInt32 GetCharIdByHandle(string handle);
         Hashtable GetCharInfo (UInt32 charId);
 

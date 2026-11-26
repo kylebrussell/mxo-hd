@@ -58,11 +58,13 @@ damage, `81 56` and `39` remain deferred. Central storage `62` is served.
 stand (17000,495,2300). With a stock-written disposable UI template, hotbar
 page 2 has Decompile Items in slot 1 and the Item Decompiler tool in slot 2.
 Open Inventory, use the page 2 shortcut and click the pill in bag slot 5.
-Use the nearby booth's Loading Area action for the archive and tutorial
-checks. The fixture bootstrap replays the inventory request and the booth
-radial from this position. Headless scenarios also cover the tutorial request
-and its replay, archive charge depletion, and a rejected recipe commit
-followed by a successful decompile.
+Use the nearby booth's Loading Area action for the archive check. The fixture
+bootstrap replays the inventory request, the booth radial and the captured
+zero-Item archive request. It verifies both flagged rows in the actual Margin
+known-abilities block. Run `client-action-tutorial` as a fresh fixture to
+log directly into the Tutorial and check Skip Tutorial independently.
+Headless scenarios also cover the tutorial request and replay, archive charge
+depletion, and a rejected recipe commit followed by a successful decompile.
 
 ## Original ignored-row audit
 
