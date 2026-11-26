@@ -54,10 +54,15 @@ completion token. `81 46` still has no established ranges or units and no sender
 was found for `81 47` or `81 4a`. Constructs, hovercraft, clock, target
 damage, `81 56` and `39` remain deferred. Central storage `62` is served.
 
-`client-action-followups` prints the three stock UI checks from Mara Central
-(23828,495,13984). The headless checks cover the exact bare tutorial request
-and replay, two archive charges and a depleted replay, and a rejected recipe
-commit followed by a successful decompile.
+`client-action-followups` starts on the verified Mara Central hardline 152
+stand (17000,495,2300). With a stock-written disposable UI template, hotbar
+page 2 has Decompile Items in slot 1 and the Item Decompiler tool in slot 2.
+Open Inventory, use the page 2 shortcut and click the pill in bag slot 5.
+Use the nearby booth's Loading Area action for the archive and tutorial
+checks. The fixture bootstrap replays the inventory request and the booth
+radial from this position. Headless scenarios also cover the tutorial request
+and its replay, archive charge depletion, and a rejected recipe commit
+followed by a successful decompile.
 
 ## Original ignored-row audit
 

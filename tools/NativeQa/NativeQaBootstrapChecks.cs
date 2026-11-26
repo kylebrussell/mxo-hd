@@ -57,7 +57,7 @@ public static class NativeQaBootstrapChecks
         var mode = NativeQaModes.Find(seedMode);
         var plan = mode.Plan;
         byte[]? characterUi = plan.HasHotbar
-            ? AbilitySweepHotbar.FromEnvironment(plan.HotbarAbilities, required: plan.HotbarInventory.Count != 0,
+            ? AbilitySweepHotbar.FromEnvironment(plan.HotbarAbilities, required: plan.HotbarInventory.Count != 0 && !plan.AllowManualHotbarSetup,
                 includeWithdraw: plan.HotbarWithdraw, pageThree: plan.HotbarPageThree, inventory: plan.HotbarInventory)
             : null;
         using var database = await ThrowawayDatabase.CreateAsync(root, "bootstrap");
@@ -75,7 +75,7 @@ public static class NativeQaBootstrapChecks
         HeadlessPlayer? probe = null;
         try
         {
-            if (characterUi != null || plan.LoadAbilityAncestors ||
+            if (characterUi != null || plan.AllowManualHotbarSetup || plan.LoadAbilityAncestors ||
                 mode is Modes.AbilityParityOperativeSweep2Mode or Modes.MartialPlayerControlMode or Modes.StarterDecompileCleanUiMode or
                     Modes.TransmitCodeMode or Modes.ShadowReadyPresentationMode)
             {
