@@ -44,6 +44,10 @@ namespace hds
 
         public bool IsRpcDue(long nowTickMs) => rpcNumber < 0 || nowTickMs - lastRpcSendTick >= RpcResendIntervalMs;
 
+        public const int AckHistoryBits = 7;
+        public const byte ForceAckBit = 0x80;
+        internal const byte AckHistoryMask = (1 << AckHistoryBits) - 1;
+
         /// <summary>Whether any packet this RPC went out in is among those the client acked.</summary>
         public bool IsRpcAckedBy(ICollection<UInt16> ackedSeqs)
         {
@@ -70,14 +74,13 @@ namespace hds
         }
 
         /// <summary>
-        /// The server sequences an ack covers: the acked one, and for each set ack bit i the one i + 1 before it. Our
-        /// packets used to go out every other sequence, so the client's steady ack bits were 42 and 170 (bits 1, 3, 5 and
-        /// 7) and covered only our last 4 packets; one sequence per packet, as retail, its 0x7f/0xff cover the last 8.
+        /// The server sequences an ACK covers: the reported sequence and up to seven preceding ones.
+        /// PSS bit 7 requests an ACK from the peer. It does not acknowledge a sequence.
         /// </summary>
         public static HashSet<UInt16> AckedSequences(UInt16 ackSeq, UInt16 ackBits)
         {
             HashSet<UInt16> acked = new HashSet<UInt16> { (UInt16)(ackSeq & 0xFFF) };
-            for (int i = 0; i < 8; i++)
+            for (int i = 0; i < AckHistoryBits; i++)
             {
                 if ((ackBits & (1 << i)) != 0)
                 {

@@ -176,7 +176,7 @@ public sealed class WorldSession : IDisposable
     private byte AckBits(ushort ack)
     {
         byte bits = 0;
-        for (int i = 0; i < 8; i++)
+        for (int i = 0; i < SequencedMessage.AckHistoryBits; i++)
         {
             if (receivedServerSeqs.Contains((ushort)((ack - i - 1) & 0xfff)))
             {
@@ -309,9 +309,9 @@ public sealed class WorldSession : IDisposable
             return;
         }
         resetAnswered = false;
-        if (!payload.IsAckOnly)
+        // Bit 7 explicitly requests a reply even on a bare ACK.
+        if (!payload.IsAckOnly || (packetPss & SequencedMessage.ForceAckBit) != 0)
         {
-            // Bare acks aren't acked: the server answers an ack-only packet with another, so that would never end.
             SendAck();
         }
     }

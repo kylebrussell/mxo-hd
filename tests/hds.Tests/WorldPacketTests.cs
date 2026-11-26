@@ -69,6 +69,16 @@ public class WorldPacketTests
     }
 
     [Fact]
+    public void ForceAckBitNeverAcknowledgesAnEighthPacket()
+    {
+        // The stock idle ACK of 1883 has PSS ff (86b9468137d4, PacketLog 19589).
+        var acks = SequencedMessage.AckedSequences(1883, 0xff);
+        Assert.Equal(Enumerable.Range(1876, 8).Select(s => (ushort)s), acks.OrderBy(s => s));
+        Assert.DoesNotContain((ushort)1875, acks);
+        Assert.Equal(new HashSet<ushort> { 0 }, SequencedMessage.AckedSequences(0, 0x80));
+    }
+
+    [Fact]
     public void AnRpcIsDoneWhenAPacketItWentOutInIsAcked()
     {
         SequencedMessage rpc = Message(4);
