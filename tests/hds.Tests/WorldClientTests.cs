@@ -5,6 +5,10 @@ using hds.shared;
 
 namespace hds.Tests;
 
+[CollectionDefinition(nameof(WorldClientGlobals), DisableParallelization = true)]
+public sealed class WorldClientGlobals { }
+
+[Collection(nameof(WorldClientGlobals))]
 public class WorldClientTests
 {
     /// <summary>
@@ -14,13 +18,21 @@ public class WorldClientTests
     [Fact]
     public void ANewClientIsAliveBeforeItsFirstPacketIsProcessed()
     {
-        Store.world ??= new WorldServer();
-        const string key = "127.0.0.1:1";
-        Store.world.objMan.PushClient(key);
-        using Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
-
-        WorldClient client = new WorldClient(new IPEndPoint(IPAddress.Loopback, 1), socket, key);
-
-        Assert.True(client.Alive);
+        var previousWorld = Store.world;
+        var previousClients = WorldServer.Clients;
+        try
+        {
+            Store.world = new WorldServer();
+            const string key = "127.0.0.1:1";
+            Store.world.objMan.PushClient(key);
+            using Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+            WorldClient client = new WorldClient(new IPEndPoint(IPAddress.Loopback, 1), socket, key);
+            Assert.True(client.Alive);
+        }
+        finally
+        {
+            Store.world = previousWorld;
+            WorldServer.Clients = previousClients;
+        }
     }
 }
