@@ -1,9 +1,9 @@
 using System;
-using System.Data;
 using System.Linq;
 using hds.databases.Entities;
 using hds.databases.interfaces;
 using hds.shared;
+using Microsoft.EntityFrameworkCore;
 
 namespace hds.databases
 {
@@ -13,7 +13,6 @@ namespace hds.databases
         {
             return new MatrixDbContext(Store.config.dbParams);
         }
-
 
         public bool FetchWorldList(ref WorldList wl)
         {
@@ -27,8 +26,8 @@ namespace hds.databases
                 using (MatrixDbContext dbContext = CreateDbContext())
                 {
                     // The auth handler has already checked the password (AccountLogin) and set the user id.
-                    uint userId = (uint) worldList.getUserID();
-                    var player = dbContext.Users.Single(u => u.UserId == userId);
+                    uint userId = (uint)worldList.getUserID();
+                    var player = dbContext.Users.AsNoTracking().Single(u => u.UserId == userId);
 
                     byte[] publicModulus = new byte[96];
                     byte[] privateExponent = new byte[96];
@@ -40,38 +39,34 @@ namespace hds.databases
                     wl.setPublicModulus(publicModulus);
                     wl.setPrivateExponent(privateExponent);
                     wl.setExistance(true);
-                    wl.setUserID((int) player.UserId);
-                    wl.setTimeCreated((int) dateTimeCreated);
+                    wl.setUserID((int)player.UserId);
+                    wl.setTimeCreated((int)dateTimeCreated);
+
+                    var characters = dbContext.Characters.AsNoTracking()
+                        .Where(c => c.UserId == userId && c.IsDeleted == 0)
+                        .ToList();
+
+                    wl.getCharPack().setTotalChars(characters.Count);
+
+                    foreach (var character in characters)
+                    {
+                        wl.getCharPack().addCharacter(character.Handle, (int)character.CharId, character.Status,
+                            character.WorldId);
+                    }
+
+                    var worlds = dbContext.Worlds.AsNoTracking().OrderBy(w => w.WorldId).ToList();
+                    foreach (var world in worlds)
+                    {
+                        wl.getWorldPack().AddWorld(world.Name, world.WorldId, world.Status, world.Type,
+                            (UInt16)world.NumPlayers);
+                    }
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 // Never log the password or its hash here.
-                Output.WriteLine("Auth: account " + wl.getUserID() + " has no usable row or key");
+                Output.WriteLine("Auth: failed to load world list for account " + wl.getUserID() + " (" + ex.GetType().Name + ")");
                 return false;
-            }
-
-            // Prepare to read characters
-            using (MatrixDbContext dbContext = CreateDbContext())
-            {
-                var userId = wl.getUserID();
-                var characters = dbContext.Characters.Where(c => c.UserId == userId).Where(c => c.IsDeleted == 0)
-                    .ToList();
-
-                wl.getCharPack().setTotalChars(characters.Count);
-
-                foreach (var character in characters)
-                {
-                    wl.getCharPack().addCharacter(character.Handle, (int) character.CharId, character.Status,
-                        character.WorldId);
-                }
-
-                var worlds = dbContext.Worlds.OrderBy(w => w.WorldId).ToList();
-                foreach (var world in worlds)
-                {
-                    wl.getWorldPack().AddWorld(world.Name, world.WorldId, world.Status, world.Type,
-                        (UInt16) world.NumPlayers);
-                }
             }
 
             return true;

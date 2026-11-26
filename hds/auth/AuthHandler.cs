@@ -47,20 +47,23 @@ namespace hds.auth
             return status;
         }
 
+        public static int PeekOpcode(byte[] data)
+        {
+            if (data == null || data.Length < 2) return -1;
+            if (data[0] < 0x80) return data[1];
+            return data.Length >= 3 ? data[2] : -1;
+        }
+
         private int getOpCode(byte[] data)
         {
-            int opCode = -1;
-            if ((int) data[0] < 0x80)
-                opCode = (int) data[1];
-            else
-                opCode = (int) data[2];
-
-            return opCode;
+            return PeekOpcode(data);
         }
 
         public void ProcessPacket(PacketReader reader, long receivedBytes)
         {
-            byte[] opcodeData = reader.ReadBytes(3);
+            if (receivedBytes < 2)
+                throw new AuthException("Auth frame too short");
+            byte[] opcodeData = reader.ReadBytes((int)Math.Min(3, receivedBytes));
             status = getOpCode(opcodeData);
             switch (status)
             {
@@ -69,11 +72,11 @@ namespace hds.auth
                     break;
 
                 case (byte) AuthOpcode.AS_AuthRequest:
-                    ProcessHandleAuth_Request(reader);
+                    ProcessHandleAuth_Request(reader, receivedBytes);
                     break;
 
                 case (byte) AuthOpcode.AS_AuthChallengeResponse:
-                    ProcessHandleAuthChallenge_Response(reader);
+                    ProcessHandleAuthChallenge_Response(reader, receivedBytes);
                     break;
 
                 default:
@@ -160,6 +163,14 @@ namespace hds.auth
 
         public void ProcessHandleAuth_Request(PacketReader reader)
         {
+            ProcessHandleAuth_Request(reader, reader.ReturnFullData().Length);
+        }
+
+        private void ProcessHandleAuth_Request(PacketReader reader, long receivedBytes)
+        {
+            if (receivedBytes < 172)
+                throw new AuthException("Auth request too short");
+
             // RSA version check
             byte[] neededRSAV = {0x04, 0x00, 0x00, 0x00};
             byte[] packetRSAV = new byte[4];
@@ -184,6 +195,8 @@ namespace hds.auth
 
             // Get RSA decrypted blob
             byte[] decryptedBlob = rsa.decryptWithPrivkey(blob);
+            if (decryptedBlob == null || decryptedBlob.Length < 30)
+                throw new AuthException("Decrypted auth blob too short");
             Output.OptWriteLine("-> Blob decoded.");
 
 
@@ -230,8 +243,20 @@ namespace hds.auth
 
         public void ProcessHandleAuthChallenge_Response(PacketReader reader)
         {
+            ProcessHandleAuthChallenge_Response(reader, reader.ReturnFullData().Length);
+        }
+
+        private void ProcessHandleAuthChallenge_Response(PacketReader reader, long receivedBytes)
+        {
+            if (receivedBytes < 6)
+                throw new AuthException("Auth challenge response too short");
+            if (md5edChallenge == null || challenge == null)
+                throw new AuthException("Challenge response received before auth request");
+
             reader.SetOffsetOverrideValue(4);
             int blobSize = (int) reader.ReadUint8();
+            if (blobSize < 32 || (blobSize % 16) != 0 || 6 + blobSize > receivedBytes)
+                throw new AuthException("Bad challenge blob size");
 
             byte[] encryptedBlob = new byte[blobSize];
             byte[] decryptedBlob = new byte[blobSize];
@@ -380,22 +405,17 @@ namespace hds.auth
 
                 byte[] finalSize = NumericalUtils.uint16ToByteArray((UInt16) bigSize, 0);
 
-                // Create the finalResponse (full data, plus total size)
+                // Create the finalResponse (full data, plus total size and the trailing two-zero terminator)
                 DynamicArray finalResponse = new DynamicArray();
                 finalResponse.append(finalSize);
                 finalResponse.append(semiResponse.getBytes());
-                
+                finalResponse.append(new byte[] {0x00, 0x00});
 
                 Output.OptWriteLine("Sending world list.");
                 status = -1;
-                
+
                 authClientSession.SendAsync(finalResponse.getBytes());
             }
-
-            byte[] worldListPacket = {0x00, 0x00};
-
-            status = -1; // trick
-            authClientSession.SendAsync(worldListPacket);
         }
         
         public void SendAuthError(UInt32 errorCode)
