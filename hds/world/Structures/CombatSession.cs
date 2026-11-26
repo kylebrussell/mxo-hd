@@ -4,7 +4,7 @@ using System.Timers;
 namespace hds
 {
     /// <summary>
-    /// Tracks one player’s active combat session against an NPC. PvP uses PvpFight.
+    /// Tracks one playerâ€™s active combat session against an NPC. PvP uses PvpFight.
     ///
     /// A combat session is created when a player initiates combat with a mob
     /// and is destroyed when combat ends (death, flee, timeout).
