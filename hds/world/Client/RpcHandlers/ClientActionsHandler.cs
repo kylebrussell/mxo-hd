@@ -214,7 +214,7 @@ namespace hds
                     }
                 }
                 client.messageQueue.addRpcMessage(new byte[] { 0x61, result });
-                if (result == 1) Notice(client, "This compile requires an owned uploaded Code Bit or fragment and a valid Loading Area or Compile session. Ability and equipment-code compilation is not reconstructed.");
+                if (result == 1) Notice(client, "This compile requires an owned supported item code, Code Bit or fragment and a valid Loading Area or Compile session.");
                 client.FlushQueue();
             }
         }

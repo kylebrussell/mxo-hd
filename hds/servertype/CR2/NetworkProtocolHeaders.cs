@@ -8,6 +8,7 @@ namespace hds
     {
         CLIENT_SPAWN_READY = 0x05,
         CLIENT_ENTER_TUTORIAL = 0x100, // 81 00: LA picker selected a tutorial construct (800..899)
+        CLIENT_TUTORIAL_JACK_IN = 0x101, // 81 01: continue to Richland after tutorial exit
         CLIENT_CHAT = 0x28,
         CLIENT_WHISPER = 0x29,
         CLIENT_COMBAT_STANCE = 0x3d, // 01 = draw weapon / ready, 00 = stand down

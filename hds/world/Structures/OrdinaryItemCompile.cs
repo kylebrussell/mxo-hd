@@ -38,7 +38,29 @@ namespace hds
             {
                 var db = Store.dbManager.WorldDbHandler;
                 double now = TimeUtils.GetSimTimeSeconds();
-                if (!request.FromCrafting || request.Slot >= 0x208 || !Ready(client, request.Tool) ||
+                if (request.Slot >= 0x208) { Finish(client, 1); return true; }
+                if (!request.FromCrafting)
+                {
+                    if (!client.Alive || !data.DistrictIsLA() || data.worldChangePending || data.isDead || data.duelDeath)
+                    { Finish(client, 1); return true; }
+                    var archived = db.GetOrdinaryItemCode(data.getCharID(), request.Slot);
+                    if (archived == null || archived.Goid != request.Item) { Finish(client, 1); return true; }
+                    // Apply the existing Loading Area archive policy: the undiscounted price for one stored charge.
+                    long price = OrdinaryItemCode.Cost(CraftingRules.Find(request.Item), 0);
+                    ClientActionRequests.Materialized materialized;
+                    try { materialized = db.MaterializeOrdinaryItemCode(data.getCharID(), archived, null, price); }
+                    catch (System.Data.Common.DbException ex)
+                    {
+                        Output.WriteDebugLog($"[COMPILE60] Loading Area transaction failed item={request.Item}: {ex}");
+                        Finish(client, 1);
+                        return true;
+                    }
+                    PublishTransfer(client, archived, materialized);
+                    Output.WriteDebugLog($"[COMPILE60] Loading Area item={request.Item} result={materialized.Result} cost={price} remaining={materialized.Remaining}");
+                    Finish(client, materialized.Result);
+                    return true;
+                }
+                if (!Ready(client, request.Tool) ||
                     pending.TryGetValue(client, out _) || AbilityCooldowns.IsCasting(data, now)) { Finish(client, 1); return true; }
                 var source = db.GetOrdinaryItemCode(data.getCharID(), request.Slot);
                 var item = CraftingRules.Find(request.Item);
@@ -74,17 +96,7 @@ namespace hds
                         bool contestWon = OrdinaryItemCode.Succeeds(skill, item.Complexity.Value, roll, specialization);
                         var transfer = db.MaterializeOrdinaryItemCode(data.getCharID(), source, request.Tool, cost, contestWon);
                         committed = transfer.Result == 0;
-                        if (transfer.Result == 0)
-                        {
-                            client.messageQueue.addRpcMessage(transfer.Remaining == 0 ? CodeStorage.BuildRemove(source.Slot) : OrdinaryItemCode.Update(source.Slot, source.Base, transfer.Remaining));
-                            if (transfer.BagCount > 1) client.messageQueue.addRpcMessage(ItemStacks.BuildStackCount(transfer.Slot, transfer.BagCount));
-                            else new ServerPackets().sendInventoryItemAdd(transfer.Slot, source.Goid, 0, 0, client);
-                        }
-                        if (transfer.InfoCommitted)
-                        {
-                            data.setInfo(transfer.Cash);
-                            new ServerPackets().SendInfoCurrent(client, (uint)transfer.Cash);
-                        }
+                        PublishTransfer(client, source, transfer);
                         Output.WriteDebugLog("[COMPILE60] Finished " + request.Item + " result " + transfer.Result + " remaining " + transfer.Remaining);
                         if (!contestWon && transfer.InfoCommitted)
                             Output.WriteDebugLog($"[COMPILE60] Contest failed item={request.Item} roll={roll} info={cost} cash={transfer.Cash}; code retained");
@@ -100,6 +112,23 @@ namespace hds
                 return true;
             }
         }
+
+        private static void PublishTransfer(WorldClient client, OrdinaryItemCode.Entry source, ClientActionRequests.Materialized result)
+        {
+            if (result.Result == 0)
+            {
+                client.messageQueue.addRpcMessage(result.Remaining == 0 ? CodeStorage.BuildRemove(source.Slot) :
+                    OrdinaryItemCode.Update(source.Slot, source.Base, result.Remaining));
+                if (result.BagCount > 1) client.messageQueue.addRpcMessage(ItemStacks.BuildStackCount(result.Slot, result.BagCount));
+                else new ServerPackets().sendInventoryItemAdd(result.Slot, source.Goid, 0, 0, client);
+            }
+            if (result.InfoCommitted)
+            {
+                client.playerData.setInfo(result.Cash);
+                new ServerPackets().SendInfoCurrent(client, (uint)result.Cash);
+            }
+        }
+
         public static bool Matches(int world, int life, double stamp, int currentWorld, int currentLife, double currentStamp) =>
             world == currentWorld && life == currentLife && stamp == currentStamp;
         internal static void CompleteSafely(Action completion, Action<Exception> failed)

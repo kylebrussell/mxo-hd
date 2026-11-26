@@ -43,7 +43,7 @@ Remaining ignored requests now depend on unrecovered protocol purpose or backend
 | `81 08` | Ready for the world change (Status) | C 209 | handled | high |
 | `80 c9` | Region loaded (ObjID, ObjPos) | C 10438 | handled | high |
 | `81 00` | LA picker selects tutorial construct800..899 (client.dll62171620); normal picks use80ff. Retail resets and loads tutorial_v2 | D, C 8, U 3 | handled only in LA; pending-reset spawn guard; [evidence](CLIENT-COMBAT-ACTIONS.md#deathreconstruction-follow-up-2026-11-11) | high |
-| `81 01` | No fields. Retail answered `80 fa` (ConstructID, HardlineID, MakeActive) then `81 07`: a world change. Guess: jack in from the Loading Area by another route | C 8 | ignored | low (guess) |
+| `81 01` | No fields. Post-tutorial Loading Area jack-in. Retail answered `80 fa` for Richland hardline 153, then `81 07`. | C 8 | handled for pending tutorial exits | high when blocked |
 | `81 56` | No fields; 13 send sites in `viewmgr.cpp` | D, C 1 | ignored | low (purpose unknown) |
 | `81 4d` | ElapsedTime u32; retail echoed `81 4d` | C 1 | handled: exact bounded elapsed-time echo; [P7 evidence](IGNORED-CLIENT-ACTIONS.md) | low |
 
@@ -213,7 +213,7 @@ The phone's Email window, `/mail`, and mail the server sends (retail forwarded l
 | `62` | SourceSlot u16, DestinationSlot u16, PersonalInventoryItem u8: between the bag and central storage, from the Loading Area's Central Storage window (laviewinventory.cpp): double-click, the Move buttons, or a drag. PersonalInventoryItem 1 stores a bag slot (0x621e2000), 0 takes a storage entry out (0x621d4c00); DestinationSlot 6b means any | D | handled (new): `5f`/`5e`/`69` for the bag and storage, and `81 18` for storing; see [CENTRAL-STORAGE.md](CENTRAL-STORAGE.md) | low |
 | `5b` | ItemHandle: pick up an item. Its sender (0x621e2140) is never called in this build | D | not sent by this client | none |
 | `5c` | Slot u16, PersonalInventoryItem: drop a luggable item into the world (a dragged bag item released over the world, 0x621e1d10). The client refuses anything else: "You can only drop luggable objects in the world." The other sender is never called | D | partial: shared light-luggable drop/pickup and persistence; heavy attachments absent (DATA-MINING.md) | low |
-| `60` | Compile stored code into an item (ObjectID, Slot u16, PersonalInventoryItem 0 = a code storage slot, InvSlotOfToolUsed, FromCrafting): the Compile window's button (`CfCo`, 0x620836b0) and the Loading Area storage window. Not "use an item on an object". The answer is `61 <ResultCode>` | D | partial: atomic owned stored-bit/fragment materialization in LA or valid Compile session; explicit local policy, equipment/ability archive economy unresolved | medium |
+| `60` | Compile stored code into an item (ObjectID, Slot u16, PersonalInventoryItem 0 = a code storage slot, InvSlotOfToolUsed, FromCrafting): the Compile window's button (`CfCo`, 0x620836b0) and the Loading Area storage window. The answer is `61 <ResultCode>` | D | partial: owned bits, fragments and supported ordinary item codes. Ability-code archive economy unresolved. | medium |
 | `66` | Slot u8, TargetID: a mission item dragged onto the NPC whose key it carries (0x621eb080). The client prints "You hand over the %s." itself | D | handled (new): the mission's Give goal, as the NPC menu's Give | medium |
 | `80 c6` | PillInvSlot: use a pill from the bag (callers in the inventory and hotbar menus) | D | partial: owned supported pill goes through existing effect/timer/removal path; other consumables remain unsupported | low |
 | `81 0e` | Vendor buy (ItemTypeID, BuyBackLastItemSold) | D, C 40 | handled | high |
@@ -254,7 +254,7 @@ The phone's Email window, `/mail`, and mail the server sends (retail forwarded l
 | `81 9e` | `/pvp` | D | handled | medium |
 | `81 51` | Target | D, C 972 | handled | high |
 | `81 2e` | Compile code (SourceCode, CodeFragmentInfoArray, InvSlotForToolBeingUsed) | D | handled: validated compiler request and script contest; [limits](CLIENT-COMBAT-ACTIONS.md) | medium |
-| `81 31` | Inventory-target ability (AbilityID, SlotID, InvSlotOfToolUsed, IsRecipeKnown) | D | partial: Decompile276 learns/persists recipes; native producer requires CastValidTarget7, so this cannot activate Write Code970 (target0); fragment recovery and other inventory abilities remain | medium |
+| `81 31` | Inventory-target ability (AbilityID, SlotID, InvSlotOfToolUsed, IsRecipeKnown) | D | partial: Decompile276 consumes the owned item and persists recipe learning atomically. Fragment recovery and other inventory abilities remain open. | medium |
 | `81 aa` | UserData, Interrupted: an FX or cast ending (guess) | D | ignored | low |
 
 ## Help and petitions
@@ -692,7 +692,7 @@ None of `5b`, `5c`, `60`, `61`, `66` or `80 c6` appears in the 339 captures, so 
 
 If no Give goal wants the item from that NPC, the server says "They don't want that." That text is ours: the client has already said it handed the item over, and the item is still in the bag.
 
-**`60`: compile.** P7 now serves owned uploaded bits/fragments with atomic source/bag/cash changes; other archive economies remain unresolved. See [the exact policy and gates](IGNORED-CLIENT-ACTIONS.md).
+**`60`: compile.** The server serves owned uploaded bits/fragments and supported ordinary item codes with atomic source, bag and Info changes. See [the policy and gates](IGNORED-CLIENT-ACTIONS.md#round-2-priorities).
 - Layout: `60 <ObjectID u32> <Slot u16> <PersonalInventoryItem u8> <InvSlotOfToolUsed u8> <FromCrafting u8>`, 10 bytes.
 - It comes from the Compile window's button, which an `80 bc` for ability 969 opens, and from the Loading Area storage window's compile. PersonalInventoryItem 0 means the slot is a code storage slot.
 - The answer is `61 <ResultCode u8>`. The client acts on it only while the Compile window is open:
@@ -706,7 +706,7 @@ If no Give goal wants the item from that NPC, the server says "They don't want t
 | 4 | not enough information |
 | 5 | singleton |
 
-- P7 implements the bounded stored-bit/fragment subset; `81 2e` remains recipe assembly.
+- Ordinary item codes use the existing tool-bound contest in world and the direct archive price in the Loading Area. Recipe assembly still uses `81 2e`.
 
 **`5c <Slot u16> <PersonalInventoryItem u8>`: dropping a luggable into the world.**
 - It is sent when a dragged bag item is released over the world.

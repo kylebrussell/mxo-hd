@@ -54,6 +54,10 @@ namespace hds{
                 case (int)RPCRequestHeader.CLIENT_ENTER_TUTORIAL:
                     TeleportHandler.EnterTutorial(Store.currentClient, rpcData);
                     break;
+                case (int)RPCRequestHeader.CLIENT_TUTORIAL_JACK_IN:
+                    if (rpcData.Length == 0)
+                        TutorialMission.JackIntoRichland(Store.currentClient);
+                    break;
 			        
 		        case (int) RPCRequestHeader.CLIENT_CLOSE_COMBAT:
 					#if DEBUG

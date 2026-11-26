@@ -132,7 +132,7 @@ namespace hds.databases
         }
 
         /// <summary>A resolved contest spends Info. A success also spends one code charge and materializes an item.</summary>
-        public ClientActionRequests.Materialized MaterializeOrdinaryItemCode(uint character, OrdinaryItemCode.Entry source, byte tool, long cost, bool contestWon = true)
+        public ClientActionRequests.Materialized MaterializeOrdinaryItemCode(uint character, OrdinaryItemCode.Entry source, byte? tool, long cost, bool contestWon = true)
         {
             var result = new ClientActionRequests.Materialized();
             if (source == null || !OrdinaryItemCode.Valid(source.Base, source.Charges) || !OrdinaryItemCode.Supported(source.Goid) || cost < 0) return result;
@@ -148,13 +148,16 @@ namespace hds.databases
             c.CommandText = "SELECT ability_id,level FROM char_abilities WHERE char_id=@char AND slot=@source FOR UPDATE";
             using (var r = c.ExecuteReader())
                 if (!r.Read() || unchecked((uint)Convert.ToInt64(r[0])) != source.Base || Convert.ToInt32(r[1]) != source.Charges || r.Read()) return result;
-            c.CommandText = "SELECT ability_id FROM char_abilities WHERE char_id=@char AND (ability_id & 0xffffffff)=2147767296 AND is_loaded=1 LIMIT 1 FOR UPDATE";
-            if (c.ExecuteScalar() == null) return result;
+            if (tool.HasValue)
+            {
+                c.CommandText = "SELECT ability_id FROM char_abilities WHERE char_id=@char AND (ability_id & 0xffffffff)=2147767296 AND is_loaded=1 LIMIT 1 FOR UPDATE";
+                if (c.ExecuteScalar() == null) return result;
+            }
             if (result.Cash < cost) { result.Result = 4; return result; }
             c.CommandText = "SELECT slot,goid,count FROM inventory WHERE charId=@char AND slot BETWEEN 1 AND 96 FOR UPDATE";
             var bag = new List<Crafting.InventoryItem>();
             using (var r = c.ExecuteReader()) while (r.Read()) bag.Add(new Crafting.InventoryItem(r.GetUInt16(0), r.GetUInt32(1), ItemStacks.CountFromDb(r.GetInt32(2))));
-            if (!bag.Any(i => i.Slot == tool && i.Goid == 1271)) return result;
+            if (tool.HasValue && !bag.Any(i => i.Slot == tool.Value && i.Goid == 1271)) return result;
             var stack = bag.FirstOrDefault(i => i.Goid == source.Goid && ItemStacks.IsStackable(source.Goid) && i.Count < ItemStacks.MaxStack);
             ushort slot = stack.Slot == 0 ? Enumerable.Range(1,96).Select(i => (ushort)i).FirstOrDefault(i => bag.All(b => b.Slot != i)) : stack.Slot;
             if (slot == 0) { result.Result = 3; return result; }
