@@ -1,0 +1,5 @@
+district_id;district;handle;level;hpM;hpC;rsi;x_pos;y_pos;z_pos;rotation;is_defeated;is_lootable;unparsed13;unparsed14;unparsed15;unparsed16;unparsed17;unparsed18;unparsed19;unparsed20;weapon
+1;slums;Chopper Runner;1;75;75;5e010088;19403;-705;60701;233;false;false
+1;slums;Chopper Runner;1;75;75;5d010088;20097;-705;61491;213;false;false
+1;slums;QA Melee Guard;2;5000;5000;B3010058;17000;495;6535;128;false;false
+1;slums;QA Rifle Guard;2;5000;5000;B4010058;17000;495;7200;128;false;false;;;;;;;;693

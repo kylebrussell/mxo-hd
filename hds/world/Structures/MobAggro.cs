@@ -98,7 +98,7 @@ namespace hds
             z = playerZ + dz / length * distance;
         }
 
-        /// <summary>Called every visibility pass: lets the nearest willing NPC attack each idle player.</summary>
+        /// <summary>Starts the nearest opponent and lets other public NPCs support an existing NPC fight.</summary>
         internal static void Check(List<WorldClient> clients, Dictionary<ushort, SpatialGrid<Mob>> mobGrids)
         {
             if (!Enabled)
@@ -124,7 +124,7 @@ namespace hds
         {
             ClientData data = client?.playerData;
             if (data == null || data.isBot || !client.Alive || !data.getOnWorld() || data.waitForRPCShutDown || data.isDead || data.duelDeath ||
-                data.DistrictIsLA() || now - data.lastAggroAt < RetrySeconds)
+                data.worldChangePending || data.DistrictIsLA())
             {
                 return;
             }
@@ -135,10 +135,8 @@ namespace hds
             }
 
             CombatHandler handler = CombatManager.GetHandler(client);
-            if (handler.isCombatRunning)
-            {
-                return;
-            }
+            bool supporting = HasActiveNpcFight(client);
+            if (!supporting && (!handler.CanStartNpcAggro || !RetryReady(client, now))) return;
 
             double px = 0, py = 0, pz = 0;
             NumericalUtils.LtVector3dToDoubles(client.playerInstance.Position.getValue(), ref px, ref py, ref pz);
@@ -168,15 +166,29 @@ namespace hds
                     double dx = mob.getXPos() - px;
                     double dz = mob.getZPos() - pz;
                     double distance = Math.Sqrt(dx * dx + dz * dz);
-                    if (distance >= best || !SameFloor(mob.getYPos(), py) || !WouldAttack(mob, distance, playerLevel))
+                    if (!SameFloor(mob.getYPos(), py)) continue;
+                    if (!supporting && distance <= RangeUnits && MobMotion.HoldingFor(mob, client)) return;
+                    if ((!supporting && distance >= best) || !WouldAttack(mob, distance, playerLevel))
                     {
                         continue;
                     }
 
                     ClientView view = client.viewMan.FindViewForEntity(mob.getEntityId());
-                    if (view == null || !view.viewCreated)
+                    if (view == null || !view.viewCreated || view.viewNeedsToBeDeleted)
                     {
                         continue; // the player hasn't got it spawned yet
+                    }
+
+                    if (supporting)
+                    {
+                        if (MobMotion.Ordinary(mob) && !ControlActions.Incapacitated(TimedEffects.ForMob(mob).Effects))
+                        {
+                            bool firing = MobSupportingFire.TryFire(client, mob, distance, now);
+                            if ((firing || ControlActions.CanMove(TimedEffects.ForMob(mob).Effects) && !MobiusCode.PreventsNpcInterlock(client)) &&
+                                MobMotion.BeginChase(client, mob) && !firing)
+                                Output.WriteDebugLog($"[AGGRO] {mob.getName()} pursues {data.getCharID()} as a second aggressor");
+                        }
+                        continue;
                     }
 
                     attacker = mob;
@@ -195,6 +207,11 @@ namespace hds
             ClientView viewToAttack = attackerView;
             DelayedActions.AfterFor(client, 0, () => Attack(client, mobToAttack, viewToAttack, px, py, pz));
         }
+
+        internal static bool RetryReady(WorldClient client, double now) => now - client.playerData.lastAggroAt >= RetrySeconds;
+
+        internal static bool HasActiveNpcFight(WorldClient client) =>
+            CombatManager.GetHandler(client).CurrentNpcOpponentFor(client) != null;
 
         public static void Retaliate(WorldClient client, Mob mob)
         {
@@ -263,7 +280,9 @@ namespace hds
             TimedEffects.Active enrage = null)
         {
             CombatHandler handler = CombatManager.GetHandler(client);
-            if (!handler.CanStartNpcAggro) return;
+            if (!handler.CanStartNpcAggro || !client.Alive || !client.playerData.getOnWorld() ||
+                client.playerData.worldChangePending || client.playerData.isDead || client.playerData.duelDeath ||
+                mob.getIsDead() || mob.getCombatTarget() != null || view.viewNeedsToBeDeleted) return;
 
             var effects = TimedEffects.ForMob(mob).Effects;
             if (ControlActions.Incapacitated(effects) || enrage != null &&
