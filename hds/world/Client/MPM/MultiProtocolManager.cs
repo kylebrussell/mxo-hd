@@ -66,9 +66,7 @@ namespace hds{
 
             if (AckFlags.Get(6) == true)
             {
-	            #if DEBUG
-                Output.WriteDebugLog("[CLIENT]CLIENTFLAGS_RESETDONE found - we can init new RCC Comm ");
-				#endif
+                Output.WriteDebugLog("[CLIENT] CLIENTFLAGS_RESETDONE received");
                 var resetClient = Store.currentClient;
                 long resetEpoch = resetClient.TransportFence.Capture();
                 try
