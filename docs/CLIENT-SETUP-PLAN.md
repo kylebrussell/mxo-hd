@@ -114,6 +114,19 @@ RPCs now work as in Reality (rajkosto/mxoemu, `GameClient::FlushQueue` and `Ackn
 - **Packet size:** packets stop at 1,300 bytes and 255 RPCs.
 - **Testing:** `MXO_DROP_RPC_PACKET=n` doesn't send the nth packet carrying RPCs, to test recovery.
 
+The server now reports its own receive history in outgoing datagrams. In
+`actions_combat.log.txt` lines 187/191 and 197/201, client sequences 1 and 2
+carry inbound ack bits 0 and 2. The server replies with ack sequences 1 and 2
+and bits 1 and 3, covering the client sequences received in that reset epoch.
+The sequence window accepts late packets within its eight history bits.
+
+OUR policy for a silent peer keeps the existing 30-second session reap. After
+four reliable retry cycles without an advancing server acknowledgment and at
+least five seconds without an inbound datagram, the retry interval rises from
+500 ms to four seconds. Incoming traffic or an advancing acknowledgment allows
+the regular interval again. The `silent-rpc-backoff` headless scenario closes a
+socket with reliable traffic pending and checks both the retry rate and reap.
+
 The history before the fix: in 2026-11-07 tests it always happened in the burst right after a teleport:
 - The client requests dozens of static objects (RPC `c9`).
 - The server used to answer each request with two debug chat messages, hundreds within seconds and 5–7 per packet.
