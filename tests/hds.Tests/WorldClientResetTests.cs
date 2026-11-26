@@ -12,15 +12,87 @@ public class WorldClientResetTests
     private sealed class RecordingCipher : IWorldEncryption
     {
         public readonly List<byte[]> Plain = new();
+        public readonly List<(ushort Bits, ushort ClientSequence, ushort ServerSequence)> Headers = new();
+        private readonly WorldEncryption inbound = new();
         public Exception? Fault;
         public byte[] encrypt(byte[] bytes,int length,ushort pss,ushort cseq,ushort sseq)
-        { if(Fault != null) throw Fault; lock(Plain) Plain.Add(bytes.ToArray()); return bytes; }
-        public ArrayList decrypt(byte[] bytes,int length)=>throw new NotSupportedException();
+        {
+            if (Fault != null) throw Fault;
+            lock (Plain)
+            {
+                Plain.Add(bytes.ToArray());
+                Headers.Add((pss, cseq, sseq));
+            }
+            return bytes;
+        }
+        public ArrayList decrypt(byte[] bytes,int length) => inbound.decrypt(bytes, length);
     }
     private static void Set(WorldClient client,string field,object value)=>typeof(WorldClient)
         .GetField(field,BindingFlags.Instance|BindingFlags.NonPublic)!.SetValue(client,value);
     private static bool Flag(WorldClient client,string field)=>(bool)typeof(WorldClient)
         .GetField(field,BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(client)!;
+
+    [Fact]
+    public void WorldResetEchoesTheHandshakeThenStartsWithAnEmptyReceiptWindow()
+    {
+        // crashover2k proxy_second_pc_001_exit_to_loadingarea, lines 355-392:
+        // 81 08 arrives at CSEQ 592, and the server reset acknowledges 592 with PSS 7f.
+        // RESETDONE still arrives at CSEQ 595. First new-epoch setup goes out with PSS/CSEQ 0/0.
+        var client = (WorldClient)RuntimeHelpers.GetUninitializedObject(typeof(WorldClient));
+        var fence = new WorldSendFence();
+        var recorder = new RecordingCipher();
+        var peer = new WorldEncryption();
+        using var receiver = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+        receiver.Bind(new IPEndPoint(IPAddress.Loopback, 0));
+        using var sender = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+        Set(client, "flushLock", new object());
+        Set(client, "<TransportFence>k__BackingField", fence);
+        Set(client, "cypher", recorder);
+        Set(client, "socket", sender);
+        Set(client, "Remote", receiver.LocalEndPoint!);
+        client.playerData = new ClientData();
+        client.messageQueue = new MessageQueue();
+        client.viewMan = new ViewManager();
+        client.playerData.setSseq(547);
+
+        void Receive(string hex, ushort sequence, ushort ack, ushort bits)
+        {
+            byte[] payload = Convert.FromHexString(hex);
+            byte[] datagram = peer.encrypt(payload, payload.Length, bits, ack, sequence);
+            Assert.Equal(payload, client.DecryptReceivedPacket(datagram));
+        }
+
+        // Deliver a later bare ACK before the captured reliable request to exercise reordering.
+        Receive("02", 594, 547, 0x7f);
+        Receive("020401003b0106810800000000", 592, 546, 0x7f);
+        Assert.Equal((ushort)594, client.messageQueue.ClientReceipts.Latest);
+        client.playerData.setRPCShutDown(true);
+        client.messageQueue.addRpcMessage(new byte[] { 0x81, 0x08 });
+        client.FlushQueue(force: true);
+        Assert.True(HeadlessClient.WireFormat.ParsePayload(Assert.Single(recorder.Plain)).ResetRequested);
+        Assert.Equal(((ushort)0x7f, (ushort)592, (ushort)548), Assert.Single(recorder.Headers));
+
+        Receive("42", 595, 548, 0x7f);
+        long epoch = fence.Capture();
+        Assert.True(fence.ApplyReset(epoch, () =>
+        {
+            client.playerData.setCseq(0);
+            client.playerData.setPss(0);
+            client.playerData.setSseq(0);
+            client.playerData.setRPCCounter(0);
+            client.playerData.setRPCShutDown(false);
+            client.messageQueue.ForgetSentRpcs();
+            client.messageQueue.addRpcMessage(new byte[] { 0x81, 0x09 });
+        }));
+        fence.Resume(epoch);
+        client.FlushQueue(force: true);
+        Assert.Equal(((ushort)0, (ushort)0, (ushort)1), recorder.Headers[1]);
+
+        Receive("02", 1, 1, 0);
+        client.messageQueue.addRpcMessage(new byte[] { 0x81, 0x49 });
+        client.FlushQueue(force: true);
+        Assert.Equal(((ushort)1, (ushort)1, (ushort)2), recorder.Headers[2]);
+    }
 
     [Fact]
     public void EncryptionFailureReleasesTheActualFlushClaimForLaterWork()

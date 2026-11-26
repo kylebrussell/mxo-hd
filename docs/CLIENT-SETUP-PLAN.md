@@ -120,6 +120,15 @@ carry inbound ack bits 0 and 2. The server replies with ack sequences 1 and 2
 and bits 1 and 3, covering the client sequences received in that reset epoch.
 The sequence window accepts late packets within its eight history bits.
 
+World changes keep the previously working client-envelope fields until the
+reset completes. The retail `001_exit_to_loadingarea` trace at lines 355-392
+shows `81 08` at client sequence 592, a server reset acknowledging 592 with
+PSS `7f`, then `RESETDONE` at old sequence 595. The first new-epoch setup
+acknowledges 0 with PSS 0. Keep the RESETDONE datagram and its server
+acknowledgment out of the new receipt and retry windows. The replay test
+delivers a later bare ACK before that captured request to exercise reordering,
+then checks the reset, first setup and first new client sequence.
+
 OUR policy for a silent peer keeps the existing 30-second session reap. After
 four reliable retry cycles without an advancing server acknowledgment and at
 least five seconds without an inbound datagram, the retry interval rises from

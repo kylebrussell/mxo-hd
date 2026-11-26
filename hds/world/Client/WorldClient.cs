@@ -420,8 +420,13 @@ namespace hds
                     Stopwatch stopWatch = new Stopwatch();
                     stopWatch.Start();
 
-                    byte[] encryptedData = cypher.encrypt(finalData, finalData.Length, messageQueue.ClientReceipts.Bits,
-                        messageQueue.ClientReceipts.Latest, playerData.getSseq());
+                    // Keep the stock-compatible envelope until the world reset is complete. The
+                    // old and new client counters can overlap while RESETDONE is still in flight.
+                    bool transitioning = playerData.worldChangePending || (finalData[0] & 0x40) != 0;
+                    ushort receiptBits = transitioning ? playerData.getPss() : messageQueue.ClientReceipts.Bits;
+                    ushort receiptSequence = transitioning ? playerData.getCseq() : messageQueue.ClientReceipts.Latest;
+                    byte[] encryptedData = cypher.encrypt(finalData, finalData.Length, receiptBits,
+                        receiptSequence, playerData.getSseq());
                     if (thePacket.RPCMessages.Count > 0 && DropTest.ShouldDrop(++rpcPacketsSent))
                     {
                         Output.WriteDebugLog("[NET] Test: dropped RPC packet sseq " + playerData.getSseq());
@@ -442,7 +447,7 @@ namespace hds
 
 
                     Output.WritePacketLog(this, finalData, "SERVER",
-                        messageQueue.ClientReceipts.Bits.ToString(), messageQueue.ClientReceipts.Latest.ToString(),
+                        receiptBits.ToString(), receiptSequence.ToString(),
                         playerData.getSseq().ToString(), ts.TotalMilliseconds.ToString(), "ENCRYPT");
                     })) flushPending = true;
                 }
@@ -566,11 +571,15 @@ namespace hds
             {
             if (resetReceived)
             {
+                // The RESETDONE envelope still carries the old epoch's sequence numbers.
                 messageQueue.ClientReceipts.Reset();
                 messageQueue.ResendBackoff.Reset();
             }
-            messageQueue.ClientReceipts.Observe((UInt16)decValues[2]);
-            messageQueue.ResendBackoff.ObserveAck((UInt16)decValues[3]);
+            else
+            {
+                messageQueue.ClientReceipts.Observe((UInt16)decValues[2]);
+                messageQueue.ResendBackoff.ObserveAck((UInt16)decValues[3]);
+            }
             playerData.setPss((UInt16) decValues[1]);
             playerData.setCseq((UInt16) decValues[2]);
             playerData.setACK((UInt16) decValues[3]);
