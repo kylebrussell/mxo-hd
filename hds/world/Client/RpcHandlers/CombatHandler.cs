@@ -765,7 +765,7 @@ namespace hds
             packets.SendEnterCombatMode(client);
 
             // Spawn the ILCombatHandler game object
-            var ilCombatHandler = new GameObjectDefinitions().Object55;
+            var ilCombatHandler = new AttributeClass3664("ILCombatHandler", 55); // one object, not all ~40k definitions
             ilCombatHandler.DisableAllAttributes();
             ilCombatHandler.StartTime.enable();
             ilCombatHandler.Position.enable();

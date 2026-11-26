@@ -1,0 +1,20 @@
+[
+  {
+    "Utc": "2026-11-25T22:35:08.9624661Z",
+    "ElapsedSeconds": 1.0081697,
+    "ServerCpuCorePercent": 139.485445753825,
+    "ServerCpuHostPercent": 8.717840359614062,
+    "GeneratorCpuCorePercent": 120.88738631998164,
+    "ServerWorkingSetBytes": 2924941312,
+    "GeneratorWorkingSetBytes": 361377792
+  },
+  {
+    "Utc": "2026-11-25T22:35:09.9898693Z",
+    "ElapsedSeconds": 2.0356452,
+    "ServerCpuCorePercent": 130.7817072037241,
+    "ServerCpuHostPercent": 8.173856700232756,
+    "GeneratorCpuCorePercent": 79.07731133248434,
+    "ServerWorkingSetBytes": 1713405952,
+    "GeneratorWorkingSetBytes": 361758720
+  }
+]

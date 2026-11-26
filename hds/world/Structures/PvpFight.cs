@@ -248,7 +248,7 @@ namespace hds
             Output.WriteDebugLog("[PVP] " + PvpFlag.Name(attacker) + " pulls " + PvpFlag.Name(defender) + " into close combat");
 
             // One combat view object, seen by both
-            var handler = new GameObjectDefinitions().Object55;
+            var handler = new AttributeClass3664("ILCombatHandler", 55); // one object, not all ~40k definitions
             handler.DisableAllAttributes();
             handler.StartTime.enable();
             handler.Position.enable();

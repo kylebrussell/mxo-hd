@@ -4,18 +4,19 @@ using System.Security.Cryptography;
 using HeadlessClient;
 using hds;
 
-public sealed record ScaleOptions(string Root,string Output,int Clients,int LoginParallel,int WarmupSeconds,int MeasureSeconds,int RampTimeoutSeconds,bool Plan)
+public sealed record ScaleOptions(string Root,string Output,int Clients,int LoginParallel,int WarmupSeconds,int MeasureSeconds,int RampTimeoutSeconds,bool Plan,bool Move=false,bool WorldMobs=false)
 {
     public static ScaleOptions Parse(string[] args)
     {
         string root=Directory.GetCurrentDirectory(),output=Path.Combine(Path.GetTempPath(),"mxo-scale",DateTime.UtcNow.ToString("yyyyMMddTHHmmssZ")+"-"+Guid.NewGuid().ToString("N")[..6]);
-        int clients=50,parallel=4,warmup=30,measure=60,ramp=120;bool plan=false;
+        int clients=50,parallel=4,warmup=30,measure=60,ramp=120;bool plan=false,move=false,worldMobs=false;
         for(int i=0;i<args.Length;i++)
         {
             string Value()=>i+1<args.Length?args[++i]:throw new ArgumentException("Missing option value");
             switch(args[i])
             {
                 case "--authenticated":break;case "--plan":plan=true;break;
+                case "--move":move=true;break;case "--world-mobs":worldMobs=true;break;
                 case "--root":root=Path.GetFullPath(Value());break;case "--output":output=Path.GetFullPath(Value());break;
                 case "--clients":clients=int.Parse(Value());break;case "--login-parallel":parallel=int.Parse(Value());break;
                 case "--warmup-seconds":warmup=int.Parse(Value());break;case "--measure-seconds":measure=int.Parse(Value());break;case "--ramp-timeout-seconds":ramp=int.Parse(Value());break;
@@ -23,7 +24,7 @@ public sealed record ScaleOptions(string Root,string Output,int Clients,int Logi
             }
         }
         if(clients<1||clients>200||parallel<1||parallel>8||warmup<0||warmup>120||measure<1||measure>300||ramp<1||ramp>300)throw new ArgumentException("Load bounds exceeded");
-        return new(root,output,clients,parallel,warmup,measure,ramp,plan);
+        return new(root,output,clients,parallel,warmup,measure,ramp,plan,move,worldMobs);
     }
 }
 public sealed record ScaleCpuSample(DateTime Utc,double ElapsedSeconds,double ServerCpuCorePercent,double ServerCpuHostPercent,double GeneratorCpuCorePercent,long ServerWorkingSetBytes,long GeneratorWorkingSetBytes);
@@ -34,7 +35,7 @@ public static class ScaleDecoder
         const string prefix="[SCALE] ";if(!line.StartsWith(prefix,StringComparison.Ordinal))throw new FormatException("Not a scale aggregate");
         var item=JsonSerializer.Deserialize<ScaleWindow>(line[prefix.Length..])??throw new FormatException("Empty aggregate");
         if(item.EndUtc<=item.StartUtc||item.ActiveClients<0||item.RpcRetained<item.RpcUnsent||item.ObjectRetained<item.ObjectUnsent||item.RpcUnsent<0||item.ObjectUnsent<0)throw new FormatException("Invalid aggregate bounds");
-        foreach(var metric in new[]{item.Visibility,item.FlushProcessing,item.RpcFirstSend,item.ObjectFirstSend})
+        foreach(var metric in new[]{item.Visibility,item.FlushProcessing,item.RpcFirstSend,item.ObjectFirstSend}.Concat(item.Stages?.Values??Enumerable.Empty<ScaleMetric>()))
         {var validate=new ScaleHistogram();validate.Merge(metric??throw new FormatException("Missing metric"));}
         return item;
     }
@@ -53,7 +54,9 @@ public static class ScaleDecoder
             MinActiveClients=windows.Count==0?(int?)null:windows.Min(w=>w.ActiveClients),
             RpcRetainedMax=windows.Count==0?(int?)null:windows.Max(w=>w.RpcRetained),RpcUnsentMax=windows.Count==0?(int?)null:windows.Max(w=>w.RpcUnsent),
             ObjectRetainedMax=windows.Count==0?(int?)null:windows.Max(w=>w.ObjectRetained),ObjectUnsentMax=windows.Count==0?(int?)null:windows.Max(w=>w.ObjectUnsent),
-            Visibility=Merge(w=>w.Visibility),FlushProcessing=Merge(w=>w.FlushProcessing),RpcFirstSend=Merge(w=>w.RpcFirstSend),ObjectFirstSend=Merge(w=>w.ObjectFirstSend)};
+            Visibility=Merge(w=>w.Visibility),FlushProcessing=Merge(w=>w.FlushProcessing),RpcFirstSend=Merge(w=>w.RpcFirstSend),ObjectFirstSend=Merge(w=>w.ObjectFirstSend),
+            Stages=windows.SelectMany(w=>w.Stages?.Keys??Enumerable.Empty<string>()).Distinct().OrderBy(k=>k,StringComparer.Ordinal)
+                .ToDictionary(k=>k,k=>Merge(w=>w.Stages!=null&&w.Stages.TryGetValue(k,out var m)?m:new ScaleHistogram().Snapshot()))};
     }
 }
 public static class AuthenticatedScale
@@ -75,6 +78,7 @@ public static class AuthenticatedScale
         string gitHead=Git("rev-parse HEAD"),gitStatus=Git("status --porcelain");
         Directory.CreateDirectory(o.Output);
         var environment=new Dictionary<string,string>{{"MXO_MOB_WANDER","0"},{"MXO_AGGRO","0"},{"MXO_MOBS","test"},{"MXO_DEBUG_LOG","0"},{"MXO_PACKET_LOG","0"},{"MXO_RPC_LOG","0"},{"MXO_CLIENT_VIEW_LOG","0"},{"MXO_CHAT_DEBUG","0"},{"MXO_DROP_RPC_PACKET","0"},{"MXO_DEV_COMMANDS","1"},{ScaleDiagnostics.Variable,"1"}};
+        if(o.WorldMobs){environment["MXO_MOBS"]="world";environment["MXO_MOB_WANDER"]="1";}
         var entered=new List<HeadlessPlayer>();var failures=new List<object>();var rtts=new List<double>();var samples=new List<ScaleCpuSample>();
         var options=new JsonSerializerOptions{WriteIndented=true};await File.WriteAllTextAsync(Path.Combine(o.Output,"plan.json"),JsonSerializer.Serialize(new {Options=o,GitHead=gitHead,GitDirty=gitStatus.Length>0,Environment=environment,HistogramBoundsMs=ScaleHistogram.Bounds,LogicalProcessors=Environment.ProcessorCount,Framework=System.Runtime.InteropServices.RuntimeInformation.FrameworkDescription,OS=System.Runtime.InteropServices.RuntimeInformation.OSDescription},options));
         await using var context=await ScenarioContext.StartAsync(o.Root,"scale"+o.Clients,environment);
@@ -97,6 +101,19 @@ public static class AuthenticatedScale
         await Task.Delay(TimeSpan.FromSeconds(o.WarmupSeconds));
         DateTime start=DateTime.UtcNow;var duration=Stopwatch.StartNew();TimeSpan oldServer=server.TotalProcessorTime,oldGenerator=generator.TotalProcessorTime;double oldSeconds=0;
         using var measureCancel=new CancellationTokenSource(TimeSpan.FromSeconds(o.MeasureSeconds));
+        // --move: every client walks a 3 m circle around its spawn at 1.7 m/s, sending its own-view position every 250 ms.
+        var movers=o.Move?entered.Select((player,index)=>Task.Run(async()=>
+        {
+            double cx=17020+(index%20)*80,cz=2693+(index/20)*80,phase=index*.7;var clock=Stopwatch.StartNew();
+            while(!measureCancel.IsCancellationRequested)
+            {
+                double a=phase+clock.Elapsed.TotalSeconds*170/300;
+                try{player.World.SendViewList(new byte[]{2,0,1,8}.Concat(BitConverter.GetBytes((float)(cx+300*Math.Cos(a)))).Concat(BitConverter.GetBytes(495f))
+                    .Concat(BitConverter.GetBytes((float)(cz+300*Math.Sin(a)))).Concat(new byte[]{0,0}).ToArray());}
+                catch(Exception e){lock(failures)failures.Add(new{ClientIndex=index,Error="Move:"+e.GetType().Name,Message=e.Message});}
+                try{await Task.Delay(250,measureCancel.Token);}catch(OperationCanceledException){}
+            }
+        })).ToArray():Array.Empty<Task>();
         var workers=entered.Select((player,index)=>Task.Run(async()=>
         {
             uint sequence=(uint)(index<<16);
@@ -120,7 +137,7 @@ public static class AuthenticatedScale
             samples.Add(new(DateTime.UtcNow,seconds,(cpu-oldServer).TotalSeconds/delta*100,(cpu-oldServer).TotalSeconds/delta*100/Environment.ProcessorCount,(own-oldGenerator).TotalSeconds/delta*100,server.WorkingSet64,generator.WorkingSet64));
             oldServer=cpu;oldGenerator=own;oldSeconds=seconds;
         }
-        DateTime end=DateTime.UtcNow;measureCancel.Cancel();await Task.WhenAll(workers);
+        DateTime end=DateTime.UtcNow;measureCancel.Cancel();await Task.WhenAll(workers);await Task.WhenAll(movers);
         var lines=context.Server.OutputLines("[SCALE] ").ToArray();var decoded=new List<ScaleWindow>();foreach(string line in lines)
         {try{decoded.Add(ScaleDecoder.Parse(line));}catch(Exception e){failures.Add(new{Phase="MetricsDecode",Error=e.GetType().Name,Message=e.Message});}}
         var contained=decoded.Where(w=>w.StartUtc>=start&&w.EndUtc<=end).ToArray();

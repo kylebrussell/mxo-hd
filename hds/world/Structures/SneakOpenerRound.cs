@@ -71,7 +71,7 @@ namespace hds
             var move = CombatAnimations.Special(ability, landed, CombatTactic.Speed, target == null ? 'S' : CombatStyles.Letter(target));
             if (move == null) return;
 
-            var handler = new GameObjectDefinitions().Object55;
+            var handler = new AttributeClass3664("ILCombatHandler", 55); // one object, not all ~40k definitions
             handler.DisableAllAttributes();
             handler.StartTime.enable();
             handler.Position.enable();

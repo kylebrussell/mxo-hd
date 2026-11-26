@@ -558,7 +558,7 @@ namespace hds
         internal static GameObject BuildCreation(Mob mob, (byte Organization, uint Flags) presentation)
         {
             Pet pet = mob.pet;
-            var go = new GameObjectDefinitions().Object40376;
+            var go = new AttributeClass3828("NPC_BASE_SIMULACRA", 40376); // one object, not all ~40k definitions
             go.DisableAllAttributes();
             go.CharacterName.enable(); go.CharacterName.setValue(mob.getName());
             go.TitleAbility.enable(); go.TitleAbility.setValue(new byte[] { 0x00, 0x10, 0x00, 0x00 });
