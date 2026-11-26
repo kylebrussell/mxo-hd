@@ -366,6 +366,7 @@ public static partial class Scenarios
         new Scenario("two-players-fight-one-npc", TwoPlayersFightOneNpc, StillNpcs),
         new Scenario("other-view-level-up-and-equipment", OtherViewLevelUpAndEquipment),
         new Scenario("other-view-gunfire", OtherViewGunfire, StillNpcs),
+        new Scenario("view-range-lifecycle", ViewRangeLifecycle, StillNpcs),
         new Scenario("large01-world-door-diagnostic", Large01DoorDiagnostic, new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="0"}),
         new Scenario("large02-world-door-diagnostic", Large02DoorDiagnostic, new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="0"}),
         new Scenario("resent-rpc-handled-once", ResentRpcHandledOnce),
