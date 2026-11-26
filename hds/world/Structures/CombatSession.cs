@@ -4,7 +4,7 @@ using System.Timers;
 namespace hds
 {
     /// <summary>
-    /// Tracks the state of an active combat session between two entities.
+    /// Tracks one player’s active combat session against an NPC. PvP uses PvpFight.
     ///
     /// A combat session is created when a player initiates combat with a mob
     /// and is destroyed when combat ends (death, flee, timeout).
@@ -24,14 +24,9 @@ namespace hds
         public WorldClient Attacker { get; private set; }
 
         /// <summary>
-        /// The defending mob (if fighting an NPC).
+        /// The defending mob.
         /// </summary>
         public Mob DefenderMob { get; private set; }
-
-        /// <summary>
-        /// The defending player (if PvP).
-        /// </summary>
-        public WorldClient DefenderPlayer { get; private set; }
 
         /// <summary>
         /// View ID of the target (mob or player).
@@ -141,9 +136,6 @@ namespace hds
             OutOfRange
         }
 
-        /// <summary>
-        /// Creates a new combat session for player vs mob combat.
-        /// </summary>
         private readonly Func<bool> npcLifetimeCurrent;
         internal Mob CurrentNpcOpponent(WorldClient owner)
         {
@@ -169,24 +161,6 @@ namespace hds
                     defender.getEntityId() == entity && defender.DeathGeneration == death &&
                     defender.missionInstance == instance && defender.missionPhase == phase;
             }
-            DefenderPlayer = null;
-            TargetViewSpawnId = targetViewSpawnId;
-            Type = type;
-            StartTime = DateTime.Now;
-            RoundNumber = 0;
-            HitCounter = 0;
-            IsActive = false;
-        }
-
-        /// <summary>
-        /// Creates a new combat session for PvP combat.
-        /// </summary>
-        public CombatSession(WorldClient attacker, WorldClient defender, UInt32 targetViewSpawnId, CombatType type)
-        {
-            SessionId = sessionIdCounter++;
-            Attacker = attacker;
-            DefenderMob = null;
-            DefenderPlayer = defender;
             TargetViewSpawnId = targetViewSpawnId;
             Type = type;
             StartTime = DateTime.Now;
@@ -260,32 +234,6 @@ namespace hds
         }
 
         /// <summary>
-        /// Gets the defender's current health.
-        /// </summary>
-        public UInt16 GetDefenderHealth()
-        {
-            if (DefenderMob != null)
-            {
-                return DefenderMob.getHealthC();
-            }
-            // TODO: Get player health for PvP
-            return 0;
-        }
-
-        /// <summary>
-        /// Gets the defender's max health.
-        /// </summary>
-        public UInt16 GetDefenderMaxHealth()
-        {
-            if (DefenderMob != null)
-            {
-                return DefenderMob.getHealthM();
-            }
-            // TODO: Get player max health for PvP
-            return 0;
-        }
-
-        /// <summary>
         /// Applies damage to the defender.
         /// Returns true if the defender died.
         /// </summary>
@@ -296,7 +244,6 @@ namespace hds
                 DefenderMob.HitEnemyWithDamage(damage, fxId);
                 return DefenderMob.getHealthC() <= 0;
             }
-            // TODO: Handle PvP damage
             return false;
         }
 
@@ -309,7 +256,6 @@ namespace hds
             {
                 return DefenderMob.getIsDead() || DefenderMob.getHealthC() <= 0;
             }
-            // TODO: Check player death for PvP
             return false;
         }
 
