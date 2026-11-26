@@ -27,16 +27,24 @@ if (bindArgument >= 0)
 // Reject mistyped inspection flags before even resolving a fixture mode or creating a path.
 if (args.Length > 0 && (args[0] == "--help" || args[0] == "-h"))
 {
-    Console.WriteLine("NativeQa --fixture-plan [mode] [--bind-address IPv4] | --build-info [repository] | --bootstrap-checks <repository> <proof-directory> [mode ...]");
+    Console.WriteLine("NativeQa --fixture-plan [mode] [--bind-address IPv4] | --build-info [repository] | --bootstrap-checks <repository> <proof-directory> [mode ...] | --capture-cui-template <cui.cfg-or-MxO-dir> [output-path]");
     Console.WriteLine("Native preparation: NativeQa <repository> <fixture-directory> <commit> [mode] [ability-ids] [--bind-address IPv4]");
     Console.WriteLine("Accounts: NativeQa <repository> <fixture-directory> <commit> account-signup (sign-up API + password checks on; credentials go to <fixture-directory>/credentials.json)");
     return;
 }
 if (args.Length > 0 && args[0].StartsWith('-') &&
-    args[0] != "--fixture-plan" && args[0] != "--build-info" && args[0] != "--bootstrap-checks")
+    args[0] != "--fixture-plan" && args[0] != "--build-info" && args[0] != "--bootstrap-checks" && args[0] != "--capture-cui-template")
 {
     Console.Error.WriteLine("Unknown NativeQa option: " + args[0] + ". Use --help for supported commands.");
     Environment.ExitCode = 2;
+    return;
+}
+if (args.Length > 0 && args[0] == "--capture-cui-template")
+{
+    if (args.Length < 2 || args.Length > 3)
+        throw new ArgumentException("--capture-cui-template <cui.cfg-or-MxO-dir> [output-path]");
+    var captured = AbilitySweepHotbar.CaptureTemplate(args[1], args.Length == 3 ? args[2] : null);
+    Console.WriteLine($"Captured stock cui.cfg template ({captured.Bytes} bytes, {captured.ShortcutCount} shortcuts) -> {captured.DestinationPath}");
     return;
 }
 
@@ -108,11 +116,14 @@ var fixturePlan=fixtureMode.Plan;
 if (fixturePlan.HasHotbar && requestedAbilities.Length != 0)
     throw new ArgumentException("Seeded hotbars use the mode's fixed loadout.");
 byte[]? characterUi = fixturePlan.HasHotbar
-    ? AbilitySweepHotbar.FromEnvironment(fixturePlan.HotbarAbilities, required: !fixturePlan.AllowManualHotbarSetup, includeWithdraw: fixturePlan.HotbarWithdraw,
+    ? AbilitySweepHotbar.FromEnvironment(fixturePlan.HotbarAbilities, required: false, includeWithdraw: fixturePlan.HotbarWithdraw,
         pageThree: fixturePlan.HotbarPageThree, inventory: fixturePlan.HotbarInventory)
     : null;
-if (fixturePlan.HasHotbar && characterUi == null)
-    Console.WriteLine("No disposable stock UI template was found. Use the manual hotbar steps in this mode.");
+IReadOnlyList<string> manualHotbarMessages = fixturePlan.HasHotbar && characterUi == null
+    ? AbilitySweepHotbar.ManualSetupMessages(fixturePlan)
+    : Array.Empty<string>();
+foreach (string line in manualHotbarMessages)
+    Console.WriteLine(line);
 const string handoff = "C:/Users/russe/AppData/Local/Temp/mxo-claude-codex-handoff.txt";
 string lockPath = endpoint.ClientLock("C:/Users/russe/Developer/mxo-client.lock");
 string account = endpoint.Account;
@@ -180,6 +191,7 @@ try
         OwnedUnloadedDisciplineAncestors=disciplineAncestors, LoadedAbilityAncestors=seeded.LoadedAncestors,
         HealthCallbackQa=fixturePlan.HealthCallbackQa, CompileItemsQa=fixturePlan.CompileItemsQa,
         CallbackRoll15=fixturePlan.HealthCallbackQa?0:(int?)null, CallbackRoll100=fixturePlan.HealthCallbackQa?0:(int?)null }), new JsonSerializerOptions { WriteIndented=true }));
+    foreach (string message in manualHotbarMessages) Console.WriteLine(message);
     foreach(string message in fixturePlan.ReadyMessages) Console.WriteLine(message);
     Console.WriteLine(endpoint.IsPrimary
         ? "Native ability QA ready: CSR_AbilityQA / placeholder password / CSR_Tester110."

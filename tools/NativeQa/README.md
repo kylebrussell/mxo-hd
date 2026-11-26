@@ -53,7 +53,15 @@ Claude-only mode `emp-blast` owns2,17,1025 and starts at the NPC fixture with ex
 
 Mode configuration and safe pending-branch ports are documented in [Modes/README.md](Modes/README.md). Read-only `--fixture-plan` now also reports the exact immutable loadout, spawn and ordered SQL stages without executing them.
 
-For a pre-placed hotbar, supply the active ability and style IDs in order via `NativeQaModePlan(hotbarAbilities: ...)`. `--fixture-plan` and the READY output print the slot map on stock page 2. The launcher uses the retained disposable `cui.cfg` copy in Temp's `mxo-qa` folder or the file named by `MXO_NATIVE_QA_CUI_TEMPLATE`. It sends the patched copy to the disposable CSR account in the login response.
+For a pre-placed hotbar, supply the active ability and style IDs in order via `NativeQaModePlan(hotbarAbilities: ...)`. `--fixture-plan` and the READY output print the slot map on stock page 2. The launcher uses the retained disposable `cui.cfg` copy in Temp's `mxo-qa` folder (`%TEMP%\mxo-qa\cui-template-CSR_AbilityQA-CSR_Tester_6E.cfg`) or the file named by `MXO_NATIVE_QA_CUI_TEMPLATE`. It sends the patched copy to the disposable CSR account in the login response.
+
+If the disposable Temp template is absent (for example after disk cleanup) and `MXO_NATIVE_QA_CUI_TEMPLATE` is unset, hotbar modes (`multi-npc-aggro`, ability sweeps, etc.) still start cleanly without sending Margin character UI (type `0c`) and print manual hotbar setup instructions at startup and READY. To regenerate the template from a stock client profile (after logging in once as `CSR_AbilityQA` / `CSR_Tester` and exiting so the client writes `Profiles/CSR_AbilityQA/CSR_Tester_6E/cui.cfg`), run:
+
+```powershell
+dotnet tools/NativeQa/bin/Release/net8.0/NativeQa.dll --capture-cui-template "$env:USERPROFILE\Developer\mxo-client\MxO"
+```
+
+You can also pass a direct path to any valid stock `cui.cfg` file (and an optional second argument for a custom output path). `--capture-cui-template` validates the version 2 / shortcuts version 1 binary layout before installing the template.
 
 ## Inventory hit-test A/B (PR640)
 

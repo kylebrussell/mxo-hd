@@ -146,6 +146,63 @@ public class AbilitySweepHotbarTests
             Template(tail, new byte[] { 0, 0, 8, 0, 0, 0 }), Abilities));
     }
 
+    [Fact]
+    public void ManualSetupMessagesDescribeAbilitiesWithdrawInventoryAndPageThree()
+    {
+        var aggro = AbilitySweepHotbar.ManualSetupMessages(new NativeQa.Modes.MultiNpcAggroMode().Plan, "C:\\missing\\cui.cfg");
+        Assert.Contains(aggro, m => m.Contains("C:\\missing\\cui.cfg") && m.Contains("type 0c"));
+        Assert.Contains(aggro, m => m.Contains("slot 1 = ability 17"));
+        Assert.Contains(aggro, m => m.Contains("--capture-cui-template"));
+
+        var withdraw = AbilitySweepHotbar.ManualSetupMessages(new NativeQa.Modes.StarterStyleWithdrawalMode().Plan);
+        Assert.Contains(withdraw, m => m.Contains("slot 4 = Withdraw"));
+
+        var decompile = AbilitySweepHotbar.ManualSetupMessages(new NativeQa.Modes.StarterDecompileSkillMode().Plan);
+        Assert.Contains(decompile, m => m.Contains("Item Decompiler") && m.Contains("bag slot 3") && m.Contains("GOID 613"));
+
+        var twoPages = AbilitySweepHotbar.ManualSetupMessages(new NativeQa.Modes.MartialPlayerControlMode().Plan);
+        Assert.Contains(twoPages, m => m.StartsWith("Manual hotbar page 3:"));
+
+        var noHotbar = AbilitySweepHotbar.ManualSetupMessages(new NativeQa.Modes.ShadowReadyPresentationMode().Plan);
+        Assert.Empty(noHotbar);
+    }
+
+    [Fact]
+    public void CaptureTemplateValidatesCopiesFromFileOrClientDirAndRejectsCorruptFiles()
+    {
+        string work = Path.Combine(Path.GetTempPath(), "mxo-cui-capture-test-" + Guid.NewGuid().ToString("N")[..8]);
+        Directory.CreateDirectory(work);
+        try
+        {
+            byte[] valid = Template(new byte[48], new byte[] { 1, 0, 0, 0, 0, 0, 17, 0, 0, 0 });
+            string clientDir = Path.Combine(work, "MxO");
+            string profileFile = Path.Combine(clientDir, "Profiles", "CSR_AbilityQA", "CSR_Tester_6E", "cui.cfg");
+            Directory.CreateDirectory(Path.GetDirectoryName(profileFile)!);
+            File.WriteAllBytes(profileFile, valid);
+
+            string dest1 = Path.Combine(work, "out", "from-dir.cfg");
+            var fromDir = AbilitySweepHotbar.CaptureTemplate(clientDir, dest1);
+            Assert.Equal(Path.GetFullPath(dest1), fromDir.DestinationPath);
+            Assert.Equal(valid.Length, fromDir.Bytes);
+            Assert.Equal(1u, fromDir.ShortcutCount);
+            Assert.Equal(valid, File.ReadAllBytes(dest1));
+
+            string dest2 = Path.Combine(work, "out", "from-file.cfg");
+            var fromFile = AbilitySweepHotbar.CaptureTemplate(profileFile, dest2);
+            Assert.Equal(valid, File.ReadAllBytes(dest2));
+
+            string badFile = Path.Combine(work, "bad.cfg");
+            File.WriteAllBytes(badFile, new byte[] { 1, 2, 3, 4 });
+            string destBad = Path.Combine(work, "out", "should-not-exist.cfg");
+            Assert.Throws<InvalidDataException>(() => AbilitySweepHotbar.CaptureTemplate(badFile, destBad));
+            Assert.False(File.Exists(destBad));
+        }
+        finally
+        {
+            Directory.Delete(work, recursive: true);
+        }
+    }
+
     private static byte[] Template(byte[] tail, params byte[][] records)
     {
         int recordBytes = records.Sum(record => record.Length);
