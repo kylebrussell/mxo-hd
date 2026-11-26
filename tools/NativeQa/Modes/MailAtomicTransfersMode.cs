@@ -1,4 +1,5 @@
 using System.Text;
+using System.Text.Json;
 using HeadlessClient;
 using hds;
 
@@ -6,10 +7,10 @@ namespace NativeQa.Modes;
 
 public sealed class MailAtomicTransfersMode : NativeQaMode
 {
-    private const string Incoming = "Bag Check";
+    private const string Delivery = "Delivery Check", FullBag = "Bag Check";
     private const string Outgoing = "Gift";
     private const uint CodeBit = 7332, Pill = 2399;
-    private uint incomingId;
+    private uint deliveryId, fullBagId;
 
     public override string Name => "mail-atomic-transfers";
     public override NativeQaModePlan Plan { get; } = new(new ushort[] { 2 }, 17000, 2300,
@@ -25,14 +26,15 @@ public sealed class MailAtomicTransfersMode : NativeQaMode
             DELETE FROM inventory WHERE charId=(SELECT charId FROM characters WHERE handle='QAFriend') AND slot<=96;
             DELETE FROM mail WHERE ownerCharId=(SELECT charId FROM characters WHERE handle='QAFriend');
             INSERT INTO inventory(charId,goid,slot,count,purity)
-            SELECT charId,2399,5,1,0 FROM characters WHERE handle='QAFriend';
+            SELECT charId,2399,5,1,0 FROM characters WHERE handle='QAFriend'
+            UNION ALL SELECT charId,2399,6,1,0 FROM characters WHERE handle='QAFriend';
             """ },
         environmentOverrides: new() { ["MXO_AGGRO"] = "0", ["MXO_MOB_WANDER"] = "0" },
         readyMessages: new[] {
-            "Mara Central (17000,495,2300), no teleport required. Use /mail and open QAFriend's Bag Check. Try to take its Health Pill while all 96 bag slots are filled. Expect the full-bag refusal and the pill still attached. If the stock UI blocks locally, record that and whether it sent 81 fc.",
-            "Compose to QAFriend with subject Gift and a short body. Attach Code Bit 1 from bag slot 3 and 200 Info, then Send. Expect slot 3 empty and 300 Info.",
-            """Before retrying Bag Check, submit {"actor":"QAFriend","action":"mail-verify"}. This confirms the first pill is still in CSR's message. QAFriend reads Gift, receives 250 Info and claims one Code Bit 1. The helper verifies both wallets and checks the database.""",
-            "Reopen Bag Check and take the pill again. Expect 81 fd success and one Health Pill in the freed slot 3."
+            "Fresh login at Mara Central (17000,495,2300). Open Phone > Email and click New before opening or claiming either attachment. The stock Compose window should open locally. If it does not, select Delivery Check and try Reply before any claim. Record whether either window appears.",
+            "In Compose, enter QAFriend, subject Gift and a short body. Attach Code Bit 1 from bag slot 3 and 200 Info. Send and expect 81 e6 success, slot 3 empty and 300 Info.",
+            """Submit {"actor":"QAFriend","action":"mail-verify"}. QAFriend reads Gift, verifies 250 Info and claims one Code Bit 1. Then open Delivery Check on CSR and Take All. Expect 81 fd success and the first Health Pill in slot 3.""",
+            """Open Bag Check and Take All with the bag full again. Expect 81 fd ca 02 00 0c and chat explaining the pill stayed attached. Dismiss the Mail popup with OK, even if it has an empty body. Submit {"actor":"QAFriend","action":"mail-verify","step":"full"} to confirm exactly one pill in CSR's bag and the second still attached."""
         });
 
     public override async Task<byte[]> AfterStartAsync(NativeQaBootstrapContext context)
@@ -50,23 +52,39 @@ public sealed class MailAtomicTransfersMode : NativeQaMode
         context.Helpers.Add("QAFriend", helper);
         await helper.EnterWorldAsync();
         NativeQaReadiness.RequireNoAmbientAggro(context.ActualServer!, helper);
-        Scenarios.SendMailWithAttachments(helper, "CSR_Tester", Incoming, "One Health Pill.",
-            """<MXO_Mail_OOB><ItemList><Item FromPI="True" Slot="5"/></ItemList></MXO_Mail_OOB>""");
-        var sent = await helper.WaitForRpcAsync("81 e6 ?? ?? ?? ?? 84 00 00 8e");
-        incomingId = BitConverter.ToUInt32(sent.Bytes, 2);
-        Check.Equal("2399:0:1", await db.ScalarAsync($"SELECT items FROM mail WHERE ownerCharId=110 AND id={incomingId}"),
-            "Bag Check contains the incoming Health Pill");
-        Console.WriteLine($"QAFriend seeded Bag Check id={incomingId} via 81 e5. CSR has 96 occupied bag slots.");
+        deliveryId = await SendPillAsync(helper, db, Delivery, 5);
+        fullBagId = await SendPillAsync(helper, db, FullBag, 6);
+        Console.WriteLine($"QAFriend seeded Delivery Check id={deliveryId} and Bag Check id={fullBagId} via 81 e5. CSR has 96 occupied bag slots.");
         return Array.Empty<byte>();
     }
 
-    public async Task<object> VerifyAsync(HeadlessPlayer actor, ThrowawayDatabase db)
+    private static async Task<uint> SendPillAsync(HeadlessPlayer helper, ThrowawayDatabase db, string subject, int slot)
+    {
+        string xml = $"""<MXO_Mail_OOB><ItemList><Item FromPI="True" Slot="{slot}"/></ItemList></MXO_Mail_OOB>""";
+        Scenarios.SendMailWithAttachments(helper, "CSR_Tester", subject, "One Health Pill.", xml);
+        var sent = await helper.WaitForRpcAsync("81 e6 ?? ?? ?? ?? 84 00 00 8e");
+        uint id = BitConverter.ToUInt32(sent.Bytes, 2);
+        Check.Equal("2399:0:1", await db.ScalarAsync($"SELECT items FROM mail WHERE ownerCharId=110 AND id={id}"),
+            $"{subject} contains one Health Pill");
+        return id;
+    }
+
+    public async Task<object> VerifyAsync(HeadlessPlayer actor, JsonElement request, ThrowawayDatabase db)
     {
         if (actor.Handle != "QAFriend") throw new ArgumentException("Use mail-verify with QAFriend.");
-        Check.Equal("2399:0:1", await db.ScalarAsync($"SELECT items FROM mail WHERE ownerCharId=110 AND id={incomingId}"),
-            "Full-bag refusal retained CSR's pill in the message");
-        Check.Equal(0L, await db.LongAsync($"SELECT COUNT(*) FROM inventory WHERE charId=110 AND goid={Pill} AND slot BETWEEN 1 AND 96"),
-            "Full-bag refusal granted no pill");
+        if (request.TryGetProperty("step", out var step))
+        {
+            if (step.GetString() != "full") throw new ArgumentException("Use step full after the full-bag refusal.");
+            Check.Equal("", await db.ScalarAsync($"SELECT items FROM mail WHERE ownerCharId=110 AND id={deliveryId}"),
+                "CSR claimed Delivery Check");
+            Check.Equal("2399:0:1", await db.ScalarAsync($"SELECT items FROM mail WHERE ownerCharId=110 AND id={fullBagId}"),
+                "Full-bag refusal retained the second pill in Bag Check");
+            Check.Equal(1L, await db.LongAsync($"SELECT COUNT(*) FROM inventory WHERE charId=110 AND goid={Pill} AND slot=3"),
+                "One Health Pill filled CSR's slot 3");
+            Check.Equal(1L, await db.LongAsync($"SELECT SUM(GREATEST(1,count)) FROM inventory WHERE charId=110 AND goid={Pill} AND slot BETWEEN 1 AND 96"),
+                "Full-bag refusal granted no second pill");
+            return new { ClaimedPill = deliveryId, RetainedPill = fullBagId };
+        }
         uint id = (uint)await db.LongAsync($"SELECT id FROM mail WHERE ownerCharId={actor.CharId} AND subject='{Outgoing}'");
         Check.Equal("7332:0:1", await db.ScalarAsync($"SELECT items FROM mail WHERE id={id}"), "Gift contains one Code Bit");
         await actor.WaitForRpcAsync($"81 ed 19 00 ?? ?? ?? ?? {Le(id)}");
@@ -83,7 +101,7 @@ public sealed class MailAtomicTransfersMode : NativeQaMode
         Check.Equal(0L, await db.LongAsync("SELECT COUNT(*) FROM inventory WHERE charId=110 AND slot=3"), "CSR mailed the slotted Code Bit");
         Check.Equal(300L, await db.LongAsync("SELECT cash FROM characters WHERE charId=110"), "CSR sent 200 Info");
         Check.Equal(250L, await db.LongAsync($"SELECT cash FROM characters WHERE charId={actor.CharId}"), "QAFriend received 200 Info");
-        return new { Gift = id, SenderInfo = 300, ReceiverInfo = 250, ClaimedCodeBits = 1, IncomingPillRetained = incomingId };
+        return new { Gift = id, SenderInfo = 300, ReceiverInfo = 250, ClaimedCodeBits = 1 };
     }
 
     private static string Le(uint value) => WireFormat.ToHex(BitConverter.GetBytes(value));

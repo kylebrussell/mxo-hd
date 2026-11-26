@@ -144,7 +144,7 @@ server policy. [Room packet details](#chat-rooms-in-detail)
 
 ## Email
 
-The phone's Email window, `/mail`, and mail the server sends (retail forwarded loot to it when the bag was full: "New items forwarded to email because your inventory is full."). Retail: `mxopackets1_crashover2k_afterwhoruneo_proxy_026`, packets 14653-14716 (list, read two, reply to System, close, list again).
+Open the stock inbox from Phone > Email. Retail also sent system mail for loot overflow. See `mxopackets1_crashover2k_afterwhoruneo_proxy_026`, packets 14653-14716 (list, read two, reply to System, close, list again).
 
 | Request | Name / purpose | Evidence | Server today | Impact |
 |---|---|---|---|---|
@@ -327,15 +327,36 @@ All layouts are client.dll's; the values are retail's. Strings are `<u16 length 
 
 ### Native mail transaction check
 
-Run `mail-atomic-transfers` at Mara Central (17000,495,2300). Open `/mail`
-and try to claim the Health Pill from **Bag Check** with all 96 slots occupied.
-Record `81 fc`, the `81 fd` refusal and the chat line, or record the client
-preflight if it prevents the request. Compose **Gift** to QAFriend with the
-Code Bit 1 from slot 3 and 200 Info. After send, CSR should have 300 Info and
-an empty slot 3. Submit `{"actor":"QAFriend","action":"mail-verify"}` before
-retrying the claim. The helper verifies the original Health Pill is still
-attached, reads Gift, checks its 250 Info balance and claims one Code Bit.
-Retry **Bag Check** on CSR and verify the Health Pill arrives in slot 3.
+Run `mail-atomic-transfers` at Mara Central (17000,495,2300).
+
+1. On a fresh login, open Phone > Email and click **New** before any claim.
+   If New does not open Compose, select **Delivery Check** and try **Reply**.
+2. Send **Gift** to QAFriend with Code Bit 1 from slot 3 and 200 Info. Expect
+   300 Info and an empty slot 3. Submit
+   `{"actor":"QAFriend","action":"mail-verify"}`. The helper reads Gift,
+   confirms 250 Info, and claims one Code Bit.
+3. Take the pill from **Delivery Check** into slot 3. Then try the pill in
+   **Bag Check** with the bag full again. Check `81 fd ca 02 00 0c` and the
+   chat line. Dismiss the Mail popup with **OK** even if its body is empty.
+   Submit `{"actor":"QAFriend","action":"mail-verify","step":"full"}` to
+   verify the first pill arrived and the second remains in the message.
+
+**Stock Compose and the claim modal.** In client 7.6005 (`client.dll`
+SHA-256 `cb5ffcc6bb046fc01e9b10cd8e0c5aa86a82ce8a6a50549c0af6b5c55f79cf3a`),
+New (`620cc28d`) and Reply (`620cc298`) enter the local mail UI through
+`620c9920` and `620ca070`. Both reach `620c5ad0`, which creates view
+`0x5b`. Its constructor loads layout `0x020000f2` from the shipped resource
+map. Reply also requires a selected message and fills the recipient locally.
+Opening the view emits no RPC. The Compose route reads no server feature,
+inbox limit, or mail-cost setting. `81 e5` is sent when the player submits.
+
+On a failed claim, `621f88e7` reads the `81 fd` status, looks up the reason
+text through `6224c0e0`, then passes it to the Mail modal at `621f7460`.
+PR1230's blocked run received that failure and showed an empty modal before
+New and Reply were tried. Master at `75be38de` sends the same failure code and
+the same inbox records. Earlier stock-client QA confirmed that Compose and
+Reply worked on `59747aa`, an ancestor of master. A fresh master control can
+use Phone > Email > New before any claim. [Original native mail retest](https://github.com/kylebrussell/mxo-hd/pull/96#issuecomment-6805218597)
 
 ### Dev helpers (`MXO_DEV_COMMANDS=1`)
 
