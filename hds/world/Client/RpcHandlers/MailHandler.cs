@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Data.Common;
 using System.Linq;
 using System.Text;
 using hds.databases;
@@ -20,19 +21,7 @@ namespace hds
 
         bool IsDead(UInt32 charId);
 
-        long InfoOf(UInt32 charId);
-
-        void AddInfo(UInt32 charId, long change);
-
-        /// <summary>The item in a bag slot, or null.</summary>
-        MailItem ItemAt(UInt32 charId, int slot);
-
-        /// <summary>Takes the whole stack out of the slot.</summary>
-        void RemoveItem(UInt32 charId, int slot);
-
-        int FreeBagSlots(UInt32 charId);
-
-        void GiveItem(UInt32 charId, MailItem item);
+        void PublishCash(UInt32 charId, UInt32 cash);
     }
 
     /// <summary>
@@ -49,6 +38,7 @@ namespace hds
 
         private readonly IMailStore store;
         private readonly IMailHost host;
+        private readonly Func<IMailTransfer> beginTransfer;
         private readonly Func<string> serverName;
         private readonly Func<UInt32> clock;
         private readonly object sync = new object();
@@ -65,10 +55,11 @@ namespace hds
             public bool Complete => Bytes.Count >= TotalLength;
         }
 
-        public MailService(IMailStore store, IMailHost host, Func<string> serverName, Func<UInt32> clock = null)
+        public MailService(IMailStore store, IMailHost host, Func<IMailTransfer> beginTransfer, Func<string> serverName, Func<UInt32> clock = null)
         {
             this.store = store;
             this.host = host;
+            this.beginTransfer = beginTransfer;
             this.serverName = serverName;
             this.clock = clock ?? (() => (UInt32)DateTimeOffset.UtcNow.ToUnixTimeSeconds());
         }
@@ -112,6 +103,7 @@ namespace hds
                 {
                     foreach (var entry in chunks)
                     {
+                        if (!entry.Value.Complete) continue;
                         byte[] bytes = entry.Value.Bytes.ToArray();
                         int length = Array.IndexOf(bytes, (byte)0);
                         done[entry.Key] = Encoding.UTF8.GetString(bytes, 0, length >= 0 ? length : bytes.Length);
@@ -244,197 +236,216 @@ namespace hds
             store.Delete(charId, id);
         }
 
-        /// <summary>Client 81 fc: take a message's attached items into the bag.</summary>
-        public void OnTake(UInt32 charId, MailRequests.Take take)
+        private sealed class Refusal : Exception
         {
-            MailMessage message = store.Get(charId, take.Id);
-            if (message == null)
-            {
-                host.Send(charId, MailPackets.BuildStatus(0xfd, MailPackets.MessageNotFound));
-                return;
-            }
-            List<MailItem> taking = new List<MailItem>();
-            List<MailItem> left = new List<MailItem>(message.Items);
-            // The client lists what its copy of the message's ItemList holds; an empty list takes everything
-            var requested = take.Items.Count > 0 ? take.Items : message.Items.Select(i => (i.ClassData, i.InstanceData)).ToList();
-            foreach (var wanted in requested)
-            {
-                MailItem match = left.FirstOrDefault(i => i.ClassData == wanted.ClassData && i.InstanceData == wanted.InstanceData);
-                if (match != null)
-                {
-                    left.Remove(match);
-                    taking.Add(match);
-                }
-            }
-            if (taking.Count == 0)
-            {
-                host.Send(charId, MailPackets.BuildStatus(0xfd, MailPackets.NothingToDo));
-                return;
-            }
-            if (host.FreeBagSlots(charId) < taking.Count)
-            {
-                host.Send(charId, MailPackets.BuildStatus(0xfd, MailPackets.PersonalInventoryFull));
-                return;
-            }
-            message.Items = left;
-            store.Update(message);
-            foreach (MailItem item in taking)
-            {
-                host.GiveItem(charId, item);
-            }
-            host.Send(charId, MailPackets.BuildStatus(0xfd, MailPackets.Success));
+            public readonly uint Status;
+            public Refusal(uint status) { Status = status; }
         }
 
-        /// <summary>
-        /// Client 81 e5. Chunks: 0 the recipients, 1 the subject, 2 the body, 3 the out-of-band XML (sent ahead in 81 ab /
-        /// 81 ac when marked chunked). Everything is checked before anything moves; a recipient that doesn't exist fails
-        /// the whole send, as retail answered DESTAVATARDOESNTEXIST and then mailed "Message Undeliverable".
-        /// </summary>
-        public void OnSend(UInt32 charId, MailRequests.Send send)
+        /// <summary>Client 81 fc: move attachments from one owned message into the bag.</summary>
+        public void OnTake(uint character, MailRequests.Take take)
         {
-            Dictionary<int, string> chunked = TakeChunks(charId);
+            var delivered = new List<(ushort Slot, MailItem Item)>();
+            try
+            {
+                using var transfer = beginTransfer();
+                if (transfer.ReadCash(character) < 0) throw new Refusal(MailPackets.MessageNotFound);
+                MailMessage message = transfer.ReadMessage(character, take.Id);
+                if (message == null) throw new Refusal(MailPackets.MessageNotFound);
+
+                var left = new List<MailItem>(message.Items);
+                var taking = new List<MailItem>();
+                var requested = take.Items.Count > 0 ? take.Items : message.Items.Select(i => (i.ClassData, i.InstanceData)).ToList();
+                foreach (var wanted in requested)
+                {
+                    MailItem item = left.FirstOrDefault(i => i.ClassData == wanted.ClassData && i.InstanceData == wanted.InstanceData);
+                    if (item == null) continue;
+                    left.Remove(item);
+                    taking.Add(item);
+                }
+                if (taking.Count == 0) throw new Refusal(MailPackets.NothingToDo);
+
+                var occupied = transfer.ReadBag(character).Select(row => (int)row.Slot).ToHashSet();
+                List<ushort> free = TradeRules.FreeBagSlots(occupied);
+                if (free.Count < taking.Count) throw new Refusal(MailPackets.PersonalInventoryFull);
+                message.Items = left;
+                transfer.SetAttachments(message);
+                for (int i = 0; i < taking.Count; i++)
+                {
+                    transfer.AddItem(character, free[i], taking[i]);
+                    delivered.Add((free[i], taking[i]));
+                }
+                transfer.Commit();
+            }
+            catch (Refusal error)
+            {
+                if (error.Status == MailPackets.PersonalInventoryFull)
+                    Notice(character, "Your inventory is full. The attachments are still in the message.");
+                host.Send(character, MailPackets.BuildStatus(0xfd, error.Status));
+                return;
+            }
+            catch (Exception error) when (error is DbException || error is InvalidOperationException || error is OverflowException)
+            {
+                Output.WriteDebugLog($"[MAIL] Claim rolled back char={character} id={take.Id}: {error.Message}");
+                Notice(character, "Could not take the attachments. Open the message again and retry.");
+                host.Send(character, MailPackets.BuildStatus(0xfd, MailPackets.BadData));
+                return;
+            }
+
+            foreach (var (slot, item) in delivered)
+                host.Send(character, ServerPackets.BuildInventoryItemAdd(slot, item.Goid, item.InstanceData));
+            host.Send(character, MailPackets.BuildStatus(0xfd, MailPackets.Success));
+            Output.WriteDebugLog($"[MAIL] Claimed char={character} id={take.Id} items={delivered.Count}");
+        }
+
+        /// <summary>Client 81 e5: send the mail and move any assets in one transaction.</summary>
+        public void OnSend(uint character, MailRequests.Send send)
+        {
+            Dictionary<int, string> chunked = TakeChunks(character);
             string Chunk(int index) => send.IsChunked(index) || send.Chunk(index) == null
                 ? chunked.TryGetValue(index, out string text) ? text : send.Chunk(index) ?? ""
                 : send.Chunk(index);
 
             string to = Chunk(0), subject = Chunk(1), body = Chunk(2);
             MailOob.Outgoing oob = MailOob.ParseOutgoing(Chunk(3));
+            if (oob.Invalid || Enumerable.Range(0, 4).Any(index => send.IsChunked(index) && !chunked.ContainsKey(index)))
+            {
+                Notice(character, "The mail data was incomplete. Reopen the compose window and retry.");
+                host.Send(character, MailPackets.BuildSendResult(0, MailPackets.BadData));
+                return;
+            }
+            var handles = (oob.Recipients.Count > 0 ? oob.Recipients
+                : to.Split(new[] { ',', ';', ' ' }, StringSplitOptions.RemoveEmptyEntries).ToList())
+                .Select(MailPackets.HandleOf).Where(h => h.Length > 0).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
 
-            List<string> handles = (oob.Recipients.Count > 0 ? oob.Recipients : to.Split(new[] { ',', ';', ' ' }, StringSplitOptions.RemoveEmptyEntries).ToList())
-                .Select(MailPackets.HandleOf).Where(h => h.Length > 0)
-                .Distinct(StringComparer.OrdinalIgnoreCase).ToList();
-
-            UInt32 failure = 0;
-            string reason = null;
-            List<UInt32> recipients = new List<UInt32>();
+            var recipients = new List<uint>();
             bool toBot = false;
-            foreach (string handle in handles)
+            string missing = null;
+            var messages = new List<MailMessage>();
+            var changedCash = new Dictionary<uint, uint>();
+            var slots = new List<ushort>();
+            try
             {
-                if (BotEnabled && string.Equals(handle, BotHandle, StringComparison.OrdinalIgnoreCase))
+                foreach (string handle in handles)
                 {
-                    toBot = true;
-                    continue;
-                }
-                UInt32 recipient = host.CharIdByHandle(handle);
-                if (recipient == 0)
-                {
-                    failure = MailPackets.RecipientUnknown;
-                    reason = "There is no one called " + handle + ".";
-                    break;
-                }
-                recipients.Add(recipient);
-            }
-            if (failure == 0 && recipients.Count == 0 && !toBot)
-            {
-                failure = MailPackets.RecipientUnknown;
-                reason = "The message had no recipient.";
-            }
-
-            bool attachments = oob.Info > 0 || oob.Items.Count > 0;
-            List<(int Slot, MailItem Item)> items = new List<(int, MailItem)>();
-            if (failure == 0 && attachments)
-            {
-                if (recipients.Count + (toBot ? 1 : 0) != 1) failure = MailPackets.BadData;
-                else if (host.IsDead(charId)) failure = MailPackets.BadData;
-                else if (oob.Info > host.InfoOf(charId)) failure = MailPackets.BadData;
-                else if (oob.Items.Count > MaxAttachments) failure = MailPackets.BadData;
-                foreach (var (slot, personal) in oob.Items)
-                {
-                    if (failure != 0) break;
-                    MailItem item = personal && slot >= 0 && slot <= MyWorldDbAccess.LastBagSlot ? host.ItemAt(charId, slot) : null;
-                    if (item == null || items.Any(i => i.Slot == slot))
+                    if (BotEnabled && string.Equals(handle, BotHandle, StringComparison.OrdinalIgnoreCase))
                     {
-                        failure = MailPackets.BadData;
-                        break;
+                        toBot = true;
+                        continue;
                     }
-                    items.Add((slot, item));
-                }
-                if (failure == MailPackets.BadData)
-                {
-                    reason = "The attachments could not be sent.";
-                }
-            }
-            if (failure == 0)
-            {
-                foreach (UInt32 recipient in recipients)
-                {
-                    if (send.EnforceInboxLimit && store.Count(recipient) >= MailPackets.InboxLimit)
+                    uint recipient = host.CharIdByHandle(handle);
+                    if (recipient == 0)
                     {
-                        failure = MailPackets.InboxFull;
-                        break;
+                        missing = handle;
+                        throw new Refusal(MailPackets.RecipientUnknown);
+                    }
+                    if (!recipients.Contains(recipient)) recipients.Add(recipient);
+                }
+                if (recipients.Count == 0 && !toBot) throw new Refusal(MailPackets.RecipientUnknown);
+
+                uint now = clock();
+                string sender = AddressOf(character);
+                string bot = toBot ? MailPackets.Address(serverName(), BotHandle) : null;
+                bool attachments = oob.Info > 0 || oob.Items.Count > 0;
+                if (attachments && (recipients.Count + (toBot ? 1 : 0) != 1 || host.IsDead(character) ||
+                    oob.Items.Count > MaxAttachments || oob.Items.Any(item => !item.FromPersonalInventory || item.Slot < 0 ||
+                        item.Slot > MyWorldDbAccess.LastBagSlot) ||
+                    oob.Items.Select(item => item.Slot).Distinct().Count() != oob.Items.Count))
+                    throw new Refusal(MailPackets.BadData);
+
+                using var transfer = beginTransfer();
+                var cash = new Dictionary<uint, long>();
+                // Taking the character rows in ID order also serializes inbox capacity checks.
+                foreach (uint id in recipients.Append(character).Distinct().OrderBy(id => id))
+                {
+                    long balance = transfer.ReadCash(id);
+                    if (balance < 0) throw new Refusal(MailPackets.BadData);
+                    cash.Add(id, balance);
+                }
+                foreach (uint recipient in recipients)
+                    if (send.EnforceInboxLimit && transfer.InboxCount(recipient) >= MailPackets.InboxLimit)
+                        throw new Refusal(MailPackets.InboxFull);
+
+                var items = new List<MailItem>();
+                if (oob.Items.Count > 0)
+                {
+                    var bag = transfer.ReadBag(character).ToLookup(row => (int)row.Slot, row => row.Item);
+                    foreach (var attachment in oob.Items)
+                    {
+                        var matches = bag[attachment.Slot].ToArray();
+                        if (matches.Length != 1 || matches[0].Goid == 0) throw new Refusal(MailPackets.BadData);
+                        items.Add(matches[0]);
+                        slots.Add((ushort)attachment.Slot);
                     }
                 }
-            }
-
-            if (failure != 0)
-            {
-                host.Send(charId, MailPackets.BuildSendResult(0, failure));
-                if (failure == MailPackets.RecipientUnknown)
+                if (oob.Info > cash[character]) throw new Refusal(MailPackets.BadData);
+                if (oob.Info != 0 && !toBot && recipients[0] != character)
                 {
-                    Deliver(SystemMessage(charId, "Message Undeliverable",
-                        "Your message \"" + subject + "\" to " + to + " could not be delivered. " + (reason ?? "")));
+                    uint recipient = recipients[0];
+                    if (cash[recipient] + oob.Info > int.MaxValue) throw new Refusal(MailPackets.BadData);
+                    changedCash.Add(character, (uint)(cash[character] - oob.Info));
+                    changedCash.Add(recipient, (uint)(cash[recipient] + oob.Info));
                 }
-                Output.WriteDebugLog("[MAIL] Send by " + host.HandleOf(charId) + " refused: " + failure.ToString("x8") + " " + reason);
+
+                foreach (ushort slot in slots) transfer.RemoveItem(character, slot);
+                foreach (var balance in changedCash) transfer.SetCash(balance.Key, balance.Value);
+                foreach (uint recipient in recipients)
+                    messages.Add(new MailMessage { OwnerCharId = recipient, Sender = sender, SentTime = now,
+                        Subject = subject, Body = body, Items = items });
+                if (toBot)
+                    messages.Add(new MailMessage { OwnerCharId = character, Sender = bot, SentTime = now,
+                        Subject = "RE: " + subject, Body = "MailBot got your message:\n\n" + body, Items = items });
+                foreach (var message in messages) transfer.AddMessage(message);
+                transfer.Commit();
+            }
+            catch (Refusal error)
+            {
+                if (error.Status == MailPackets.BadData)
+                    Notice(character, "Mail could not be sent. Check the attached items and information.");
+                host.Send(character, MailPackets.BuildSendResult(0, error.Status));
+                if (error.Status == MailPackets.RecipientUnknown)
+                {
+                    string reason = missing == null ? "The message had no recipient." : "There is no one called " + missing + ".";
+                    Deliver(SystemMessage(character, "Message Undeliverable",
+                        "Your message \"" + subject + "\" to " + to + " could not be delivered. " + reason));
+                }
+                return;
+            }
+            catch (Exception error) when (error is DbException || error is InvalidOperationException || error is OverflowException)
+            {
+                Output.WriteDebugLog($"[MAIL] Send rolled back char={character}: {error.Message}");
+                Notice(character, "Could not send the mail. Check your attachments and information before retrying.");
+                host.Send(character, MailPackets.BuildSendResult(0, MailPackets.BadData));
                 return;
             }
 
-            foreach (var entry in items)
+            foreach (ushort slot in slots) host.Send(character, ServerPackets.BuildInventoryItemDelete(slot));
+            if (changedCash.TryGetValue(character, out uint senderCash)) host.PublishCash(character, senderCash);
+            foreach (var message in messages.Take(recipients.Count))
             {
-                host.RemoveItem(charId, entry.Slot);
+                Notify(message);
+                if (message.OwnerCharId != character && changedCash.TryGetValue(message.OwnerCharId, out uint cash))
+                    host.PublishCash(message.OwnerCharId, cash);
             }
-            if (oob.Info > 0)
-            {
-                host.AddInfo(charId, -oob.Info);
-            }
+            host.Send(character, MailPackets.BuildSendResult(recipients.Count > 0 ? messages[0].Id : 0, MailPackets.Success));
+            if (toBot) Notify(messages[messages.Count - 1]);
+            Output.WriteDebugLog($"[MAIL] Sent char={character} recipients={recipients.Count} items={slots.Count} info={oob.Info}");
+        }
 
-            UInt32 now = clock();
-            UInt32 firstId = 0;
-            foreach (UInt32 recipient in recipients)
-            {
-                MailMessage message = new MailMessage
-                {
-                    OwnerCharId = recipient,
-                    Sender = AddressOf(charId),
-                    Category = MailPackets.CategoryPlayer,
-                    SentTime = now,
-                    Status = MailPackets.StatusNew,
-                    Subject = subject,
-                    Body = body,
-                    Items = items.Select(i => i.Item).ToList()
-                };
-                Deliver(message);
-                if (oob.Info > 0)
-                {
-                    host.AddInfo(recipient, oob.Info);
-                }
-                if (firstId == 0)
-                {
-                    firstId = message.Id;
-                }
-            }
-            host.Send(charId, MailPackets.BuildSendResult(firstId, MailPackets.Success));
-            Output.WriteDebugLog("[MAIL] " + host.HandleOf(charId) + " sent \"" + subject + "\" to " + string.Join(", ", handles) +
-                                 " with " + items.Count + " items and " + oob.Info + " info");
+        private void Notice(uint character, string text) =>
+            host.Send(character, ServerPackets.BuildSystemChatMessage(text, "BROADCAST"));
 
-            if (toBot)
-            {
-                // The bot answers with the text quoted and gives back whatever was attached
-                MailMessage reply = new MailMessage
-                {
-                    OwnerCharId = charId,
-                    Sender = MailPackets.Address(serverName(), BotHandle),
-                    Category = MailPackets.CategoryPlayer,
-                    SentTime = now,
-                    Subject = "RE: " + subject,
-                    Body = "MailBot got your message:\n\n" + body,
-                    Items = items.Select(i => i.Item).ToList()
-                };
-                Deliver(reply);
-                if (oob.Info > 0)
-                {
-                    host.AddInfo(charId, oob.Info);
-                }
-            }
+        internal void OnMalformedSend(uint character)
+        {
+            TakeChunks(character);
+            Notice(character, "The mail data was incomplete. Reopen the compose window and retry.");
+            host.Send(character, MailPackets.BuildSendResult(0, MailPackets.BadData));
+        }
+
+        internal void OnMalformedClaim(uint character)
+        {
+            Notice(character, "The attachment request was incomplete. Open the message again and retry.");
+            host.Send(character, MailPackets.BuildStatus(0xfd, MailPackets.BadData));
         }
 
         public MailMessage SystemMessage(UInt32 charId, string subject, string body, List<MailItem> items = null)
@@ -457,8 +468,11 @@ namespace hds
         {
             message.Status = MailPackets.StatusNew;
             store.Add(message);
-            host.Send(message.OwnerCharId, MailPackets.BuildHeader(message, false, true));
+            Notify(message);
         }
+
+        private void Notify(MailMessage message) =>
+            host.Send(message.OwnerCharId, MailPackets.BuildHeader(message, false, true));
     }
 
     /// <summary>The live world behind MailService.</summary>
@@ -478,7 +492,7 @@ namespace hds
 
         public void Send(UInt32 charId, byte[] record)
         {
-            WorldClient client = SocialHandler.FindOnlineByCharId(charId);
+            WorldClient client = MailClient(charId);
             if (client != null)
             {
                 client.messageQueue.addRpcMessage(record);
@@ -488,70 +502,22 @@ namespace hds
 
         public bool IsDead(UInt32 charId) => SocialHandler.FindOnlineByCharId(charId)?.playerData.isDead ?? false;
 
-        public long InfoOf(UInt32 charId) => SocialHandler.FindOnlineByCharId(charId)?.playerData.getInfo() ?? 0;
-
-        public void AddInfo(UInt32 charId, long change)
+        public void PublishCash(uint charId, uint cash)
         {
-            WorldClient client = SocialHandler.FindOnlineByCharId(charId);
-            if (client == null)
-            {
-                if (change > 0)
-                {
-                    MarketPlaceHandler.Db.AddCash(charId, (UInt32)change);
-                }
-                return;
-            }
-            long info = Math.Max(0, client.playerData.getInfo() + change);
-            client.playerData.setInfo(info);
-            Store.dbManager.WorldDbHandler.SaveInfo(client, info);
-            client.messageQueue.addRpcMessage(ServerPackets.BuildInfoCurrent((UInt32)info, MarketplacePackets.InfoReasonMarketplace));
+            WorldClient client = MailClient(charId);
+            if (client == null) return;
+            var publication = new AbilityAcquisition.Publication(client);
+            if (publication.Character == charId && publication.PublishPurchase(client, cash,
+                ServerPackets.BuildInfoCurrent(cash, MarketplacePackets.InfoReasonMarketplace)))
+                client.FlushQueue();
         }
 
-        public MailItem ItemAt(UInt32 charId, int slot)
+        private static WorldClient MailClient(uint charId)
         {
-            MarketPlaceHandler.Db.GetInventoryItem(charId, (UInt16)slot, out UInt32 goid, out UInt32 purity);
-            if (goid == 0)
-            {
-                return null;
-            }
-            return new MailItem
-            {
-                Goid = goid, Purity = purity,
-                Count = ItemStacks.CountFromDb(MarketPlaceHandler.Db.GetInventoryCount(charId, (UInt16)slot))
-            };
-        }
-
-        public void RemoveItem(UInt32 charId, int slot)
-        {
-            MarketPlaceHandler.Db.RemoveInventoryItem(charId, (UInt16)slot);
-            WorldClient client = SocialHandler.FindOnlineByCharId(charId);
-            client?.messageQueue.addRpcMessage(ServerPackets.BuildInventoryItemDelete((UInt16)slot));
-        }
-
-        public int FreeBagSlots(UInt32 charId)
-        {
-            HashSet<int> occupied = new HashSet<int>(Store.dbManager.WorldDbHandler.GetInventoryItems(charId).Select(i => (int)i.Slot));
-            return TradeRules.FreeBagSlots(occupied).Count;
-        }
-
-        public void GiveItem(UInt32 charId, MailItem item)
-        {
-            HashSet<int> occupied = new HashSet<int>(Store.dbManager.WorldDbHandler.GetInventoryItems(charId).Select(i => (int)i.Slot));
-            List<UInt16> free = TradeRules.FreeBagSlots(occupied);
-            if (free.Count == 0)
-            {
-                return;
-            }
-            UInt16 slot = free[0];
-            UInt32 descriptor = item.InstanceData;
-            MarketPlaceHandler.Db.AddInventoryItem(charId, slot, item.Goid, item.Purity);
-            if (item.Count > 1)
-            {
-                Store.dbManager.WorldDbHandler.SetInventoryCount(slot, charId, item.Count);
-            }
-            WorldClient client = SocialHandler.FindOnlineByCharId(charId);
-            client?.messageQueue.addRpcMessage(ServerPackets.BuildInventoryItemAdd(slot, item.Goid,
-                (byte)((descriptor >> 16) & 0xff), (byte)(descriptor >> 24)));
+            lock (WorldServer.Clients)
+                return WorldServer.Clients.Values.FirstOrDefault(client => client != null && client.Alive &&
+                    client.playerData != null && client.playerData.getCharID() == charId &&
+                    (client.playerData.getOnWorld() || client.playerData.DistrictIsLA()));
         }
     }
 
@@ -570,7 +536,8 @@ namespace hds
                 {
                     if (service == null)
                     {
-                        service = new MailService(new MySqlMailStore(), new WorldMailHost(), () => ChatAddress.WorldName)
+                        var store = new MySqlMailStore();
+                        service = new MailService(store, new WorldMailHost(), store.BeginTransfer, () => ChatAddress.WorldName)
                         {
                             BotEnabled = Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS") == "1"
                         };
@@ -611,7 +578,7 @@ namespace hds
                         break;
                     case (int)RPCRequestHeader.CLIENT_MAIL_SEND:
                         if (MailRequests.TryParseSend(data, out var send)) Service.OnSend(charId, send);
-                        else Unreadable("81 e5", data);
+                        else Service.OnMalformedSend(charId);
                         break;
                     case (int)RPCRequestHeader.CLIENT_MAIL_GET_HEADERS:
                         if (MailRequests.TryParseHeaderRequest(data, out var request)) Service.OnHeaderRequest(charId, request);
@@ -636,7 +603,7 @@ namespace hds
                         break;
                     case (int)RPCRequestHeader.CLIENT_MAIL_TAKE_ATTACHMENTS:
                         if (MailRequests.TryParseTake(data, out var take)) Service.OnTake(charId, take);
-                        else Unreadable("81 fc", data);
+                        else Service.OnMalformedClaim(charId);
                         break;
                     case (int)RPCRequestHeader.CLIENT_MAIL_DELETE:
                         if (MailRequests.TryParseId(data, out UInt32 deleteId)) Service.OnDelete(charId, deleteId);

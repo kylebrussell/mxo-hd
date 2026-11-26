@@ -317,12 +317,25 @@ All layouts are client.dll's; the values are retail's. Strings are `<u16 length 
 ### What the server does (ours, not retail's)
 
 - Mail lives in table `mail` (made on first use; also in `SQL/reality_hd.sql`). Status 5 deletes the row.
-- A send is checked whole before anything moves. An unknown recipient fails it with DESTAVATARDOESNTEXIST and a "Message Undeliverable" mail from System, as retail did; its text is ours. A full inbox (300) fails it with INBOXLIMITEXCEEDED.
-- Attached items leave the sender's bag on sending and are listed in the message's ItemList. `81 fc` puts them into free bag slots; without room it answers `LTPS_SPPERSONALINVENTORYFULL` (`0x0c0002ca`) and keeps them.
-- Attached information leaves the sender and reaches the recipient when the mail is sent. The received message has no place for an amount, so retail must have done something like this; how it showed it is not known.
+- A send locks the participating character rows in ID order. One SQL transaction removes the selected bag entries, moves the attached Info between the wallets, and inserts the inbox mail. The server publishes notifications, bag changes and wallet changes after commit. An unknown recipient gets DESTAVATARDOESNTEXIST and a System "Message Undeliverable" mail. A full inbox (300) gets INBOXLIMITEXCEEDED.
+- `81 fc` locks the owned message and recipient bag. Removing attachments from the message and adding them to the bag commit together. Full bags get `LTPS_SPPERSONALINVENTORYFULL` (`0x0c0002ca`) and a chat explanation. The attachments remain in the message and can be claimed after making room. Read, folder and status changes write metadata only.
+- Attached Info reaches the recipient on send, including when offline. The received message carries the item descriptors. The recipient's wallet reflects the Info credit.
+- Database errors return the send or claim result with a chat explanation. The headless `email-atomic-transfers` scenario forces a failed mail insert and a failed second bag insert. It checks rollback, retry, full-bag refusal and a repeated claim.
 - Reading a new or seen message marks it read. The new-mail notice is `81 ed` with Notification 1 to an online recipient. Nothing is said at login about mail that arrived while offline (no evidence of what retail did).
 - No postage: the client has MailInfoCost and MailItemCost settings, whose values and use were not traced.
 - Not done: mail to several recipients with attachments (the client refuses it anyway), folders other than storing the name, and items forwarded to mail when the bag is full (`MailService.SystemMessage` and `Deliver` are there for it).
+
+### Native mail transaction check
+
+Run `mail-atomic-transfers` at Mara Central (17000,495,2300). Open `/mail`
+and try to claim the Health Pill from **Bag Check** with all 96 slots occupied.
+Record `81 fc`, the `81 fd` refusal and the chat line, or record the client
+preflight if it prevents the request. Compose **Gift** to QAFriend with the
+Code Bit 1 from slot 3 and 200 Info. After send, CSR should have 300 Info and
+an empty slot 3. Submit `{"actor":"QAFriend","action":"mail-verify"}` before
+retrying the claim. The helper verifies the original Health Pill is still
+attached, reads Gift, checks its 250 Info balance and claims one Code Bit.
+Retry **Bag Check** on CSR and verify the Health Pill arrives in slot 3.
 
 ### Dev helpers (`MXO_DEV_COMMANDS=1`)
 

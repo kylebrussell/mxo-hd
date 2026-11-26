@@ -55,15 +55,16 @@ namespace hds
         /// then 01. Matches retail exactly; a 30,000 weapon bought into slot 0 was
         /// "5e 00 00 c1 09 00 00 00 00 00 10 01".
         /// </summary>
-        internal static byte[] BuildInventoryItemAdd(UInt16 slot, UInt32 itemId, ushort amount, UInt16 type)
+        internal static byte[] BuildInventoryItemAdd(UInt16 slot, UInt32 itemId, ushort amount, UInt16 type) =>
+            BuildInventoryItemAdd(slot, itemId, ((uint)(byte)type << 24) | ((uint)(byte)amount << 16));
+
+        internal static byte[] BuildInventoryItemAdd(UInt16 slot, UInt32 itemId, UInt32 descriptor)
         {
             PacketContent pak = new PacketContent();
             pak.AddByte(0x5e);
             pak.AddUint16(slot, 1);
             pak.AddUint32(itemId, 1);
-            pak.AddUint16(0,1);
-            pak.AddUShort(amount);
-            pak.AddUShort(type);
+            pak.AddUint32(descriptor, 1);
             pak.AddUShort(1);
             return pak.ReturnFinalPacket();
         }
