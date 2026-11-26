@@ -61,6 +61,29 @@ The fixed 200-client case now delivers about 150,000 viewer updates per second w
 
 On today's master, the 100-client moving case no longer passes. The earlier round passed it on a tree from before PR1210. With the fix it passes.
 
+## Player-view and contact costs (follow-up)
+
+After the broadcast-lock fix, the largest stages at 200 dense moving players were player-views and contacts-probes. The pair loop decoded every neighbour's position and goid once per pair, which allocated about 40,000 times a pass. It also found each view with a linear search of the player's view list. The contact check resolved every contact with a linear search, and looked up a view for every spot in the district.
+
+Changes:
+
+- **Positions are decoded once.** `NumericalUtils.LtVector3dToDoubles` now reads the doubles in place, without allocating.
+- **Each player is sampled once per pass.** Position, liveness, district, stealth, entity and goid are read once, not once per pair.
+- **View lookups are indexed.** `ViewList` indexes views by entity and view id, and keeps the list's own first-match order.
+- **Unchanged players are skipped.** A player is skipped when its own sample, its view list (tracked by a version counter) and every neighbour, current or from its last evaluation, are unchanged. Any join, leave, district or world change, or a hidden player anywhere, makes it a full pass.
+- **Contacts are bucketed.** Contacts are grouped by district once per pass, and a view is looked up only for spots within the despawn range.
+- **PvP archive checks stop waiting on the transport fence when nothing changes.** They no longer wait on the fence for objects already shown in their current state, and no longer flush a client every pass when nothing was queued.
+
+The in-process benchmark is `VisibilityPassBenchmark` (`MXO_VISIBILITY_BENCH=1`). It runs 200 players in the scale footprint who already see each other and the contacts in range, needs no MySQL, and reports pass time on one thread:
+
+| Stage (ms per pass) | master a8a79fe0 | this change |
+|---|---:|---:|
+| player-views, everyone moving | 28.3 mean / 87-91 max | 10.6-11.2 / 13-14 |
+| player-views, nobody moving | 24.9-28.1 / 35 | 2.1-2.3 / 3.2-3.6 |
+| contacts, everyone moving | 4.0-4.4 / 17-21 | 1.1-1.2 / 2.1-2.5 |
+
+PvP archive checks need the world data loader and are not in the in-process benchmark. Their effect, and the server-side before and after with the stage timings, wait for the MySQL-backed scale harness, which is down while Docker is.
+
 ## Reproduce
 
 Build Release last, because the tool refuses to run when a newer Debug server DLL exists. Then run each case serially:

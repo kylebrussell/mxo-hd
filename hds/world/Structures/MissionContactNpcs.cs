@@ -123,6 +123,11 @@ namespace hds
         /// <summary>Spawns the contacts near each player and takes away those out of range. Called by the view thread.</summary>
         public static void CheckViews(List<WorldClient> clients)
         {
+            // This pass's spots with a contact, by district: resolved once instead of per player and spot
+            // (MissionContacts.ById is a linear search).
+            var byDistrict = new Dictionary<UInt16, (MissionContactSpot, MissionContact)[]>();
+            foreach (var group in All.Select(s => (spot: s, contact: s.Contact)).Where(p => p.contact != null).GroupBy(p => p.spot.metrId))
+                byDistrict[group.Key] = group.Select(p => (p.spot, p.contact)).ToArray();
             foreach (WorldClient client in clients)
             {
                 if (client == null || !client.Alive || !client.playerData.getOnWorld() || client.playerData.waitForRPCShutDown)
@@ -134,14 +139,15 @@ namespace hds
                 NumericalUtils.LtVector3dToDoubles(client.playerInstance.Position.getValue(), ref px, ref py, ref pz);
                 UInt16 district = (UInt16)client.playerData.getDistrictId();
                 HashSet<UInt64> keep = new HashSet<UInt64>();
-                foreach (MissionContactSpot spot in All)
+                if (!byDistrict.TryGetValue(district, out var districtSpots)) districtSpots = Array.Empty<(MissionContactSpot, MissionContact)>();
+                foreach (var (spot, contact) in districtSpots)
                 {
-                    if (spot.metrId != district || spot.Contact == null)
+                    double dx = spot.x - px, dz = spot.z - pz, distance = Math.Sqrt(dx * dx + dz * dz);
+                    if (distance > DespawnRange)
                     {
-                        continue;
+                        continue; // neither kept nor spawned: no view lookup needed
                     }
 
-                    double dx = spot.x - px, dz = spot.z - pz, distance = Math.Sqrt(dx * dx + dz * dz);
                     UInt64 entity = EntityId(spot);
                     ClientView existing = client.viewMan.FindViewForEntity(entity);
                     if (distance <= DespawnRange && existing != null && existing.viewCreated)

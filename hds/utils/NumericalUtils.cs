@@ -268,17 +268,13 @@ namespace hds
 		}
 		
 		static public void LtVector3dToDoubles(byte[] LtVector3d,ref double x,ref double y, ref double z){
-			byte[] tempX = {0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00};
-			byte[] tempY = {0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00};
-			byte[] tempZ = {0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00};
-			for(int i = 0;i<8;i++){
-				tempX[i] = LtVector3d[i];
-				tempY[i] = LtVector3d[i+8];
-				tempZ[i] = LtVector3d[i+16];
-			}
-			x = NumericalUtils.byteArrayToDouble(tempX,1);
-			y = NumericalUtils.byteArrayToDouble(tempY,1);
-			z = NumericalUtils.byteArrayToDouble(tempZ,1);
+			// Three little-endian doubles at 0, 8 and 16, read in place: the visibility pass decodes positions for every
+			// pair of players each pass, and the old copy into three temporary arrays allocated per call.
+			if(LtVector3d.Length<24) throw new IndexOutOfRangeException();
+			ReadOnlySpan<byte> v=LtVector3d;
+			x = System.Buffers.Binary.BinaryPrimitives.ReadDoubleLittleEndian(v.Slice(0,8));
+			y = System.Buffers.Binary.BinaryPrimitives.ReadDoubleLittleEndian(v.Slice(8,8));
+			z = System.Buffers.Binary.BinaryPrimitives.ReadDoubleLittleEndian(v.Slice(16,8));
 		}
 		
 		static public byte[] floatsToLtVector3f(float x,float y,float z){

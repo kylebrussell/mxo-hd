@@ -239,9 +239,19 @@ namespace hds
                 double[] at = Position(c);
                 uint map = c.playerData.getDistrictId();
                 var wanted = new HashSet<ulong>();
+                bool queued = false;
                 void View(ulong entity, ushort goid, double x, double y, double z, StaticWorldObject spot, uint state)
                 {
                     if (Math.Abs(at[1]-y) > 3000 || Math.Pow(at[0]-x,2)+Math.Pow(at[2]-z,2) > 5000*5000) return;
+                    // Already shown in its current state: nothing to send, so no need to wait on the transport fence,
+                    // which the flush and send paths hold (every pass waited on it for every nearby object).
+                    ClientView shown = c.viewMan.FindViewForEntity(entity);
+                    if (shown != null && shown.viewCreated && s.Views.ContainsKey(entity) &&
+                        (state == 0 || ObjectStates.TrackedState(c, entity) == state))
+                    {
+                        wanted.Add(entity);
+                        return;
+                    }
                     CommitViews(c, viewEpoch, map, viewWorld, () =>
                     {
                     wanted.Add(entity);
@@ -258,12 +268,13 @@ namespace hds
                         Attr("Orientation", spot == null ? StringUtils.hexStringToBytes("0000000000000000000000000000803f") : StringUtils.hexStringToBytes(spot.quat));
                         if (state != 0) Attr("CurrentState", BitConverter.GetBytes(state));
                         new ServerPackets().SendSpawnGameObject(c, obj, entity);
+                        queued = true;
                         v = c.viewMan.FindViewForEntity(entity);
                         if (v != null) v.staticObject = spot;
                         s.Views[entity] = 0;
                         if (state != 0) ObjectStates.Track(c, entity, goid, state);
                     }
-                    else if (state != 0 && ObjectStates.TrackedState(c, entity) != state) ObjectStates.SetState(c, entity, state);
+                    else if (state != 0 && ObjectStates.TrackedState(c, entity) != state) { ObjectStates.SetState(c, entity, state); queued = true; }
                     });
                 }
                 if (map == 1)
@@ -291,16 +302,18 @@ namespace hds
                 if (map == 7)
                     foreach (var spot in DataMineReturners.Bindings)
                         View(DataMineReturners.Entity(spot),DataMineReturners.GoId,spot.pos_x,spot.pos_y,spot.pos_z,spot,0);
-                CommitViews(c, viewEpoch, map, viewWorld, () =>
-                {
-                foreach (ulong entity in s.Views.Keys.Where(e => !wanted.Contains(e)).ToArray())
-                {
-                    var v = c.viewMan.FindViewForEntity(entity);
-                    if (v != null) { new ServerPackets().sendDeleteViewPacket(c,v.ViewID); c.viewMan.removeViewByViewId(v.ViewID); }
-                    s.Views.Remove(entity);
-                }
-                });
-                c.FlushQueue();
+                ulong[] stale = s.Views.Keys.Where(e => !wanted.Contains(e)).ToArray();
+                if (stale.Length > 0)
+                    CommitViews(c, viewEpoch, map, viewWorld, () =>
+                    {
+                    foreach (ulong entity in stale)
+                    {
+                        var v = c.viewMan.FindViewForEntity(entity);
+                        if (v != null) { new ServerPackets().sendDeleteViewPacket(c,v.ViewID); c.viewMan.removeViewByViewId(v.ViewID); queued = true; }
+                        s.Views.Remove(entity);
+                    }
+                    });
+                if (queued) c.FlushQueue();
             }
         }
     }
