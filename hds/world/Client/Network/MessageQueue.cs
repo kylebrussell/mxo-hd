@@ -13,6 +13,10 @@ namespace hds
         public ArrayList rawMessages;
         public ArrayList worldPackets; // These are final worldPackets to be resend
         public int ackOnlyCount = 0;
+        // Per-viewer unsent movement coalescing and unsent-prefix cursor (guarded by ObjectMessagesQueue.SyncRoot).
+        private readonly System.Collections.Generic.Dictionary<ushort, SequencedMessage> pendingMovementByView =
+            new System.Collections.Generic.Dictionary<ushort, SequencedMessage>();
+        internal int FirstUnsentObjectIndex;
         // Receipt and retry snapshots are published under the WorldClient transport fence.
         internal ClientDatagramReceipts ClientReceipts { get; } = new ClientDatagramReceipts();
         internal RpcResendBackoff ResendBackoff { get; } = new RpcResendBackoff();
@@ -202,8 +206,120 @@ namespace hds
         /// <summary>The client discarded every old-world view at comm reset, including unacked creations.</summary>
         public void ForgetWorldObjects()
         {
-            lock (ObjectMessagesQueue.SyncRoot) ObjectMessagesQueue.Clear();
+            lock (ObjectMessagesQueue.SyncRoot)
+            {
+                ObjectMessagesQueue.Clear();
+                ClearPendingMovementsLocked();
+            }
             CancelObjectReceipts();
+        }
+
+        /// <summary>
+        /// Queues a player's forwarded movement/pose update for <paramref name="viewId"/>, coalescing in place
+        /// with any unsent movement entry already waiting for the same viewer and view so each viewer gets at most
+        /// one combined latest movement update per entity per flush without dropping Action or Yaw transitions.
+        /// </summary>
+        internal void AddOrCoalesceMovement(ushort viewId, SelfViewUpdate state, byte[] forwardedState)
+        {
+            if (state == null || forwardedState == null || forwardedState.Length < 2) return;
+            byte newFlags = (byte)(state.Flags & ~SelfViewUpdate.Flag20);
+            if (newFlags == 0) return;
+
+            lock (ObjectMessagesQueue.SyncRoot)
+            {
+                if (ObjectMessagesQueue.Count == 0 && pendingMovementByView.Count > 0)
+                {
+                    pendingMovementByView.Clear();
+                    FirstUnsentObjectIndex = 0;
+                }
+
+                if (pendingMovementByView.TryGetValue(viewId, out SequencedMessage existing) && !existing.isSent)
+                {
+                    byte mergedFlags = (byte)(existing.MovementFlags | newFlags);
+                    if (state.Action.HasValue) existing.MovementAction = state.Action.Value;
+                    if (state.Yaw.HasValue) existing.MovementYaw = state.Yaw.Value;
+                    if (state.HasPosition)
+                    {
+                        if (existing.MovementPosition == null) existing.MovementPosition = new byte[12];
+                        Buffer.BlockCopy(forwardedState, forwardedState.Length - 12, existing.MovementPosition, 0, 12);
+                    }
+                    existing.MovementFlags = mergedFlags;
+                    existing.content = WriteMovementPayload(viewId, existing, existing.content);
+                    return;
+                }
+
+                byte[] payload = BuildViewUpdateFast(viewId, forwardedState);
+                byte[] posCopy = null;
+                if (state.HasPosition)
+                {
+                    posCopy = new byte[12];
+                    Buffer.BlockCopy(forwardedState, forwardedState.Length - 12, posCopy, 0, 12);
+                }
+
+                SequencedMessage message = new SequencedMessage(payload)
+                {
+                    MovementViewId = viewId,
+                    MovementFlags = newFlags,
+                    MovementAction = state.Action ?? 0,
+                    MovementYaw = state.Yaw ?? 0,
+                    MovementPosition = posCopy
+                };
+                ObjectMessagesQueue.Add(message);
+                pendingMovementByView[viewId] = message;
+            }
+        }
+
+        internal static byte[] BuildViewUpdateFast(ushort viewId, byte[] data)
+        {
+            byte[] result = new byte[2 + data.Length];
+            result[0] = (byte)(viewId & 0xFF);
+            result[1] = (byte)((viewId >> 8) & 0xFF);
+            Buffer.BlockCopy(data, 0, result, 2, data.Length);
+            return result;
+        }
+
+        private static byte[] WriteMovementPayload(ushort viewId, SequencedMessage msg, byte[] reuse)
+        {
+            byte flags = msg.MovementFlags;
+            int len = 4
+                + ((flags & SelfViewUpdate.FlagAction) != 0 ? 1 : 0)
+                + ((flags & SelfViewUpdate.FlagYaw) != 0 ? 1 : 0)
+                + ((flags & SelfViewUpdate.FlagPosition) != 0 ? 12 : 0);
+            byte[] buf = reuse != null && reuse.Length == len ? reuse : new byte[len];
+            buf[0] = (byte)(viewId & 0xFF);
+            buf[1] = (byte)((viewId >> 8) & 0xFF);
+            buf[2] = SelfViewEntry.PartState;
+            buf[3] = flags;
+            int cursor = 4;
+            if ((flags & SelfViewUpdate.FlagAction) != 0) buf[cursor++] = msg.MovementAction;
+            if ((flags & SelfViewUpdate.FlagYaw) != 0) buf[cursor++] = msg.MovementYaw;
+            if ((flags & SelfViewUpdate.FlagPosition) != 0) Buffer.BlockCopy(msg.MovementPosition, 0, buf, cursor, 12);
+            return buf;
+        }
+
+        /// <summary>Called under ObjectMessagesQueue.SyncRoot when an object message is marked sent.</summary>
+        internal void OnObjectMessageSentLocked(SequencedMessage message)
+        {
+            if (message.MovementViewId != 0 &&
+                pendingMovementByView.TryGetValue(message.MovementViewId, out SequencedMessage current) &&
+                ReferenceEquals(current, message))
+            {
+                pendingMovementByView.Remove(message.MovementViewId);
+            }
+        }
+
+        internal void ClearPendingMovement(ushort viewId)
+        {
+            lock (ObjectMessagesQueue.SyncRoot)
+            {
+                pendingMovementByView.Remove(viewId);
+            }
+        }
+
+        internal void ClearPendingMovementsLocked()
+        {
+            pendingMovementByView.Clear();
+            FirstUnsentObjectIndex = 0;
         }
 
         public void addRawMessage(byte[] messageBlock)

@@ -24,6 +24,7 @@ namespace hds
             // (01 00 01 01 00 <view> <next view id> ...). An extra 00 used to make the client read the
             // next view id one byte off and drop the rest of the packet (e.g. the NPC death after combat).
 
+            client.messageQueue.ClearPendingMovement(viewIdToDelete);
             client.messageQueue.addObjectMessage(pak.ReturnFinalPacket(), false);
             client.FlushQueue();
 

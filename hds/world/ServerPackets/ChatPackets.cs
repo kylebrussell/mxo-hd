@@ -49,15 +49,12 @@ namespace hds
                 default:
                     // Area chat skips listeners who ignore the speaker; the stock client hides those lines anyway.
                     byte[] areaLine = pak.ReturnFinalPacket();
-                    lock (WorldServer.Clients)
+                    foreach (WorldClient listener in WorldServer.ClientSnapshot())
                     {
-                        foreach (WorldClient listener in WorldServer.Clients.Values)
-                        {
-                            if (listener == null || listener.playerData.getCharID() == Store.currentClient.playerData.getCharID() ||
-                                IgnoreFilter.Ignores(listener, Store.currentClient)) continue;
-                            listener.messageQueue.addRpcMessage(areaLine);
-                            listener.FlushQueue();
-                        }
+                        if (listener == null || listener.playerData.getCharID() == Store.currentClient.playerData.getCharID() ||
+                            IgnoreFilter.Ignores(listener, Store.currentClient)) continue;
+                        listener.messageQueue.addRpcMessage(areaLine);
+                        listener.FlushQueue();
                     }
                     break;
             }

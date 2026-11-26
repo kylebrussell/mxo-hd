@@ -95,6 +95,31 @@ Server-side, `LoadTest --authenticated`, master a8a79fe0 against this change, ru
 
 All runs PASS except the master run that failed at login. Under movement the run-to-run variance is large; the first moving run of this change had the worst echo RTT of the set. Even so, its pass stages were lower than both master runs. PvP archives is now the largest remaining stage under movement (77.7 and 17.9 ms).
 
+## Movement coalescing and PvP-archive cost (follow-up)
+
+After the player-view and contact optimizations, the two remaining scaling bottlenecks under 200 dense moving clients were:
+
+1. **`PvpArchives.Check` (`77.7 / 17.9 ms` under movement).** `Check` called `c.TransportFence.Capture()` unconditionally on every client every pass, blocking on the same lock held by `WorldClient.FlushQueue` during packet build/encrypt/send even when no archive sender was within 50 m. It also allocated `double[3]`, `HashSet<ulong>`, and LINQ stale-view arrays per client per pass, rescanned `MissionSites.Goid` / `Stage(now)` inside the loop, and used per-spawn reflection.
+2. **Per-viewer movement fan-out and flush contention.** `PlayerCharacter.parseAutoView` forwarded every incoming movement packet through `SendViewPacketToAllPlayers`, allocating `PacketContent`/`DynamicArray` + a throwaway byte array inside `SequencedMessage` and synchronously calling `viewer.FlushQueue()` across all 199 other clients on the mover's packet thread. `DeletedAckedPackets` and `CleanNakPackets` also removed acked messages one by one in an O(N^2) loop, and `WorldClient` allocated `Stopwatch` + `.ToString()` strings per UDP packet even with `MXO_PACKET_LOG=0`.
+
+Changes:
+
+- **PvP archives fast path (`hds/world/Structures/PvpArchives.cs`).** Precomputes district-1 archive senders once as a flat struct array, caches spawn `FieldInfo` metadata per GOID, decodes client position in place without allocating, captures `TransportFence` lazily only when a spawn, state change, or delete is actually required, and skips `ViewManager` / `ObjectStates` lookups when the client's view list version and sender stage are unchanged.
+- **Per-viewer movement coalescing (`MessageQueue`, `WorldServer`, `PlayerCharacter`, `WorldClient`, `PlayerPackets`).** Forwarded `SelfViewUpdate` movement frames coalesce in place per `(viewer, viewId)` while unsent, merging `(Action, Yaw, Position)` flags so a newer position-only update never drops a pending `Action` or `Yaw` transition, and defer sending to `FlushThread`'s 50 ms tick via `MarkFlushPending()` instead of contending on 199 other clients' `flushLock` / `TransportFence` locks on the mover's receive thread. View deletion and world reset clear pending coalescing slots.
+- **Queue compaction and hot-path allocation cleanup (`WorldClient`, `SequencedMessage`, `Output`).** `DeletedAckedPackets` and `CleanNakPackets` compact in a single O(N) pass under one lock, `FlushQueue` tracks the unsent object-queue prefix when `ObjectResendEnabled` is off, `SequencedMessage` drops its dead duplicate byte-array allocation, and packet-log `Stopwatch`/`.ToString()` formatting is guarded by `Output.PacketLogsEnabled`.
+- **`Clients`-lock broadcast audit (`WorldServer`, `ChatPackets`).** Switched the remaining RPC broadcast helpers (`SendRPCToOnePlayer`, `SendRPCToOnePlayerByHandle`, `SendRPCToAllOtherPlayers`, crew/faction/mission-team/player-list/all-player RPCs, and area chat) to `WorldServer.ClientSnapshot()`, which copies directly without LINQ.
+
+Server-side `LoadTest --authenticated` (Release build, 200 dense clients, 30 s warmup + 60 s measure, two runs per case on 2026-11-26; prior `de85f822f` moving baseline is the PR1221 row above, since a fresh unmodified `move-200` run hit the unlocked `MarginServer.clientList` ramp crash fixed separately in PR1224):
+
+| Case (2 runs each) | Status | Echo RTT mean ms | Visibility mean / max ms | Server CPU % | player-views ms | contacts + floor-probes ms | pvp-archives mean ms |
+|---|---|---:|---|---:|---:|---:|---:|
+| idle 200, master `de85f822f` | PASS / PASS | 16.4 / 19.5 | 14.6 / 38.7, 11.0 / 19.5 | 14.1 / 12.2 | 1.9 / 1.8 | 2.1 / 1.2 | 0.45 / 0.24 |
+| idle 200, this change | PASS / PASS | 16.0 / 15.6 | 14.4 / 30.1, 11.3 / 32.6 | 13.8 / 10.1 | 2.0 / 1.6 | 1.7 / 1.3 | 0.18 / 0.14 |
+| move 200, master (PR1221) | PASS / PASS | 212.3 / 60.3 | 160.1 / 698, 49.5 / 280 | ~404 | 44.9 / 17.7 | 6.5 / 1.6 | 77.7 / 17.9 |
+| move 200, this change | PASS / PASS | 89.0 / 81.1 | 66.4 / 342.4, 51.6 / 229.9 | 361.3 / 362.2 | 32.5 / 26.1 | 5.9 / 3.6 | **0.13 / 0.29** |
+
+`pvp-archives` drops from `77.7 / 17.9 ms` to `0.13 / 0.29 ms` under movement, `snapshot` stays at `0.53 / 0.60 ms`, both moving runs pass with 0 ping timeouts and steadier echo RTT (`89.0 / 81.1 ms`), and `view-range-lifecycle` + `VisibilityPassBenchmark` remain green.
+
 ## Reproduce
 
 Build Release last, because the tool refuses to run when a newer Debug server DLL exists. Then run each case serially:

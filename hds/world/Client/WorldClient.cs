@@ -139,11 +139,23 @@ namespace hds
             lock (messageQueue.ObjectMessagesQueue.SyncRoot)
             {
                 messageQueue.ObjectMessagesQueue.Clear();
+                messageQueue.ClearPendingMovementsLocked();
             }
             lock (messageQueue.RPCMessagesQueue.SyncRoot)
             {
                 messageQueue.RPCMessagesQueue.Clear();
             }
+        }
+
+        /// <summary>Requests that FlushThread send queued updates on its next tick without taking flushLock on a broadcaster's thread.</summary>
+        internal void MarkFlushPending()
+        {
+            if (IsBot)
+            {
+                DropQueuedMessages();
+                return;
+            }
+            flushPending = true;
         }
 
         // This method sends one packet at a time to the game client 
@@ -190,50 +202,47 @@ namespace hds
 
         private void CleanNakPackets()
         {
-            // ToDo: split flushQueue and resending 
-            UInt32 currentTime = TimeUtils.getUnixTimeUint32();
-            // Remove Packets that are resent more than 3 times and we didnt got an ack for it
-            ArrayList ackedObjectMessages = new ArrayList();
             lock (messageQueue.ObjectMessagesQueue.SyncRoot)
             {
-                foreach (SequencedMessage message in messageQueue.ObjectMessagesQueue)
+                ArrayList q = messageQueue.ObjectMessagesQueue;
+                int write = 0;
+                for (int i = 0; i < q.Count; i++)
                 {
+                    SequencedMessage message = (SequencedMessage)q[i];
                     // Give up on object messages the client still hasn't acked after the last allowed send.
                     if (message.sendCounter >= SequencedMessage.MaxObjectSends)
                     {
-                        ackedObjectMessages.Add(message);
+                        messageQueue.OnObjectMessageSentLocked(message);
+                        continue;
                     }
+                    if (write != i) q[write] = message;
+                    write++;
+                }
+                if (write < q.Count)
+                {
+                    q.RemoveRange(write, q.Count - write);
+                    messageQueue.FirstUnsentObjectIndex = 0;
                 }
             }
 
-
-            ArrayList ackedRPCMessages = new ArrayList();
             lock (messageQueue.RPCMessagesQueue.SyncRoot)
             {
-                foreach (SequencedMessage message in messageQueue.RPCMessagesQueue)
+                ArrayList q = messageQueue.RPCMessagesQueue;
+                int write = 0;
+                for (int i = 0; i < q.Count; i++)
                 {
+                    SequencedMessage message = (SequencedMessage)q[i];
                     if (message.sendCounter >= SequencedMessage.MaxRpcSends)
                     {
                         Output.WriteDebugLog("[NET] Giving up on RPC " + message.rpcNumber + " after " + message.sendCounter + " sends");
-                        ackedRPCMessages.Add(message);
+                        continue;
                     }
+                    if (write != i) q[write] = message;
+                    write++;
                 }
-            }
-
-            // Now delete them finally
-            foreach (SequencedMessage deletedAckObject in ackedObjectMessages)
-            {
-                lock (messageQueue.ObjectMessagesQueue.SyncRoot)
+                if (write < q.Count)
                 {
-                    messageQueue.ObjectMessagesQueue.Remove(deletedAckObject);
-                }
-            }
-
-            foreach (SequencedMessage deletedAckRpc in ackedRPCMessages)
-            {
-                lock (messageQueue.RPCMessagesQueue.SyncRoot)
-                {
-                    messageQueue.RPCMessagesQueue.Remove(deletedAckRpc);
+                    q.RemoveRange(write, q.Count - write);
                 }
             }
         }
@@ -293,16 +302,27 @@ namespace hds
                 // we currently dont know if we send something out so we need to proove that in a way
                 if (messageQueue.ObjectMessagesQueue.Count > 0)
                 {
-                    UInt16 sendingSSeq = playerData.calculateNextPossibleSseq();
                     long nowTick = Environment.TickCount64;
                     lock (messageQueue.ObjectMessagesQueue.SyncRoot)
                     {
-                        foreach (SequencedMessage messageObjects in messageQueue.ObjectMessagesQueue)
+                        ArrayList q = messageQueue.ObjectMessagesQueue;
+                        int start = 0;
+                        if (!SequencedMessage.ObjectResendEnabled &&
+                            messageQueue.FirstUnsentObjectIndex > 0 &&
+                            messageQueue.FirstUnsentObjectIndex <= q.Count &&
+                            ((SequencedMessage)q[messageQueue.FirstUnsentObjectIndex - 1]).isSent)
                         {
+                            start = messageQueue.FirstUnsentObjectIndex;
+                        }
+
+                        for (int i = start; i < q.Count; i++)
+                        {
+                            SequencedMessage messageObjects = (SequencedMessage)q[i];
                             // New messages, plus unacked ones whose resend interval has passed.
                             if (messageObjects.IsObjectSendDue(nowTick))
                             {
                                 messageObjects.MarkObjectSent(nowTick);
+                                messageQueue.OnObjectMessageSentLocked(messageObjects);
                                 bool canAddThePak = packet.addObjectContent(messageObjects);
                                 if (canAddThePak == false)
                                 {
@@ -318,6 +338,11 @@ namespace hds
                                     packet.timed = true;
                                 }
                             }
+                        }
+
+                        if (!SequencedMessage.ObjectResendEnabled)
+                        {
+                            messageQueue.FirstUnsentObjectIndex = q.Count;
                         }
                     }
                 }
@@ -417,8 +442,7 @@ namespace hds
                     // and the client's 8 ack bits then covered only our last 4 packets instead of 8.
                     byte[] finalData = thePacket.getFinalData(playerData);
 
-                    Stopwatch stopWatch = new Stopwatch();
-                    stopWatch.Start();
+                    long encryptStart = Output.PacketLogsEnabled ? Stopwatch.GetTimestamp() : 0;
 
                     // Keep the stock-compatible envelope until the world reset is complete. The
                     // old and new client counters can overlap while RESETDONE is still in flight.
@@ -442,13 +466,13 @@ namespace hds
                         }
                     }
 
-                    stopWatch.Stop();
-                    TimeSpan ts = stopWatch.Elapsed;
-
-
-                    Output.WritePacketLog(this, finalData, "SERVER",
-                        receiptBits.ToString(), receiptSequence.ToString(),
-                        playerData.getSseq().ToString(), ts.TotalMilliseconds.ToString(), "ENCRYPT");
+                    if (Output.PacketLogsEnabled)
+                    {
+                        Output.WritePacketLog(this, finalData, "SERVER",
+                            receiptBits.ToString(), receiptSequence.ToString(),
+                            playerData.getSseq().ToString(),
+                            Stopwatch.GetElapsedTime(encryptStart).TotalMilliseconds.ToString(), "ENCRYPT");
+                    }
                     })) flushPending = true;
                 }
             }
@@ -485,52 +509,53 @@ namespace hds
         public void DeletedAckedPackets(UInt16 ackSeq)
         {
             messageQueue.ObserveObjectReceipts(ackSeq,playerData.getPss());
-            // First identify which messages needs to be deleted from queue
-            ArrayList ackedObjectMessages = new ArrayList();
             lock (messageQueue.ObjectMessagesQueue.SyncRoot)
             {
-                foreach (SequencedMessage message in messageQueue.ObjectMessagesQueue)
+                ArrayList q = messageQueue.ObjectMessagesQueue;
+                int write = 0;
+                for (int i = 0; i < q.Count; i++)
                 {
+                    SequencedMessage message = (SequencedMessage)q[i];
                     // Only a message that has gone out can be acked. A queued-but-unsent message
                     // still has neededAck 0, so without the sendCounter check any client ack that
                     // arrived before the next flush deleted it unsent. That dropped the self-spawn
                     // about half the time and left the client at "Negotiating with Servers...".
                     if (message.IsAckedBy(ackSeq))
                     {
-                        ackedObjectMessages.Add(message);
+                        continue;
                     }
+                    if (write != i) q[write] = message;
+                    write++;
+                }
+                if (write < q.Count)
+                {
+                    q.RemoveRange(write, q.Count - write);
+                    messageQueue.FirstUnsentObjectIndex = 0;
                 }
             }
 
-
-            ArrayList ackedRPCMessages = new ArrayList();
             lock (messageQueue.RPCMessagesQueue.SyncRoot)
             {
-                HashSet<UInt16> ackedSeqs = SequencedMessage.AckedSequences(ackSeq, playerData.getPss());
-                foreach (SequencedMessage message in messageQueue.RPCMessagesQueue)
+                ArrayList q = messageQueue.RPCMessagesQueue;
+                if (q.Count > 0)
                 {
-                    // Gone once the client acks a packet it was in; until then FlushQueue sends it again
-                    if (message.rpcNumber >= 0 && message.IsRpcAckedBy(ackedSeqs))
+                    HashSet<UInt16> ackedSeqs = SequencedMessage.AckedSequences(ackSeq, playerData.getPss());
+                    int write = 0;
+                    for (int i = 0; i < q.Count; i++)
                     {
-                        ackedRPCMessages.Add(message);
+                        SequencedMessage message = (SequencedMessage)q[i];
+                        // Gone once the client acks a packet it was in; until then FlushQueue sends it again
+                        if (message.rpcNumber >= 0 && message.IsRpcAckedBy(ackedSeqs))
+                        {
+                            continue;
+                        }
+                        if (write != i) q[write] = message;
+                        write++;
                     }
-                }
-            }
-
-            // Now delete them finally
-            foreach (SequencedMessage deletedAckObject in ackedObjectMessages)
-            {
-                lock (messageQueue.ObjectMessagesQueue.SyncRoot)
-                {
-                    messageQueue.ObjectMessagesQueue.Remove(deletedAckObject);
-                }
-            }
-
-            foreach (SequencedMessage deletedAckRpc in ackedRPCMessages)
-            {
-                lock (messageQueue.RPCMessagesQueue.SyncRoot)
-                {
-                    messageQueue.RPCMessagesQueue.Remove(deletedAckRpc);
+                    if (write < q.Count)
+                    {
+                        q.RemoveRange(write, q.Count - write);
+                    }
                 }
             }
         }
@@ -650,32 +675,35 @@ namespace hds
                     bool encrypted = false;
 
                     byte[] processedPacket = null;
-                    Stopwatch stopwatch = new Stopwatch();
                     if (packet.Length > 0)
                     {
                         if (packet[0] == 0x00)
                         {
                             // Plain text packet
                             processedPacket = packet;
-                            Output.WritePacketLog(processedPacket, "CLIENT",
-                                playerData.getPss().ToString(), playerData.getCseq().ToString(),
-                                playerData.getACK().ToString());
+                            if (Output.PacketLogsEnabled)
+                            {
+                                Output.WritePacketLog(processedPacket, "CLIENT",
+                                    playerData.getPss().ToString(), playerData.getCseq().ToString(),
+                                    playerData.getACK().ToString());
+                            }
                         }
                         else
                         {
                             encrypted = true;
-                            stopwatch.Start();
+                            long decryptStart = Output.PacketLogsEnabled ? Stopwatch.GetTimestamp() : 0;
                             processedPacket = DecryptReceivedPacket(packet);
-                            stopwatch.Stop();
                             if (processedPacket == null)
                             {
                                 return;
                             }
-                            TimeSpan ts = stopwatch.Elapsed;
 
-                            Output.WritePacketLog(this, processedPacket, "CLIENT",
-                                playerData.getPss().ToString(), playerData.getCseq().ToString(), playerData.getACK().ToString(),
-                                ts.TotalMilliseconds.ToString(), "DECRYPT");
+                            if (Output.PacketLogsEnabled)
+                            {
+                                Output.WritePacketLog(this, processedPacket, "CLIENT",
+                                    playerData.getPss().ToString(), playerData.getCseq().ToString(), playerData.getACK().ToString(),
+                                    Stopwatch.GetElapsedTime(decryptStart).TotalMilliseconds.ToString(), "DECRYPT");
+                            }
                         }
 
                         using(MissionProxyIntroduction.Incoming(this,encrypted && (processedPacket[0]&0x40)==0))

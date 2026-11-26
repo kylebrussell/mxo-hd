@@ -17,6 +17,11 @@ namespace hds
         }
         internal ObjectMessageReceipt ObjectReceipt;
         internal SequencedMessage TimedViewWithRpc;
+        internal ushort MovementViewId;
+        internal byte MovementFlags;
+        internal byte MovementAction;
+        internal byte MovementYaw;
+        internal byte[] MovementPosition;
         public byte[] content;
         public UInt16 sendCounter;
         private int resendTime;
@@ -93,7 +98,6 @@ namespace hds
 
         public SequencedMessage(byte[] _content)
         {
-            content = new byte[_content.Length];
             content = _content;
             sendCounter = 0;
             resendTime = 0;

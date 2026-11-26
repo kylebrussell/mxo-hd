@@ -91,7 +91,7 @@ namespace hds
 				byte[] forwarded = state.ToForwardedUpdate(buffer);
 				if (forwarded != null)
 				{
-					ForwardStateToOthers(forwarded);
+					ForwardStateToOthers(state, forwarded);
 				}
 			}
 
@@ -105,9 +105,9 @@ namespace hds
 			return entry.End;
 		}
 
-		private static void ForwardStateToOthers(byte[] stateData)
+		private static void ForwardStateToOthers(SelfViewUpdate state, byte[] stateData)
 		{
-			Store.world.SendViewPacketToAllPlayers(stateData, Store.currentClient.playerData.getCharID(), NumericalUtils.ByteArrayToUint16(Store.currentClient.playerInstance.GetGoid(), 1), Store.currentClient.playerData.getEntityId());
+			Store.world.SendMovementUpdateToAllPlayers(state, stateData, Store.currentClient.playerData.getCharID(), Store.currentClient.playerData.getEntityId());
 		}
 		
         internal byte[] GetFullSelfViewAttributeGroups()

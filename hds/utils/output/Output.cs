@@ -14,6 +14,7 @@ namespace hds
 		static int verbose = 0;
 		// Environment-variable toggles to avoid per-packet disk I/O in production.
 		private static readonly bool EnablePacketLogs = GetEnvFlag("MXO_PACKET_LOG", false);
+		public static bool PacketLogsEnabled => EnablePacketLogs;
 		private static readonly bool EnableDebugLogs = GetEnvFlag("MXO_DEBUG_LOG", false);
 		private static readonly object DebugLogLock = new object();
 		private static readonly bool EnableRpcLogs = GetEnvFlag("MXO_RPC_LOG", false);
