@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.Common;
 using System.Linq;
 using hds.databases;
 using hds.shared;
@@ -16,13 +17,6 @@ namespace hds{
         internal static MarketplaceDb Db = new MarketplaceDb();
 
         private static readonly object BuyLock = new object();
-
-        private static ServerPackets Packets => new ServerPackets();
-
-        private static void Notice(WorldClient client, string text)
-        {
-            Packets.sendSystemChatMessage(client, text, "SYSTEM");
-        }
 
         /// <summary>
         /// The connected client of this character, in the world or not: the Loading Area, where the marketplace is used,
@@ -80,156 +74,113 @@ namespace hds{
             }
 
             WorldClient client = Store.currentClient;
-            UInt32 charId = client.playerData.getCharID();
-            if (placement.Price == 0)
+            var publication = new AbilityAcquisition.Publication(client);
+            if (placement.Container == 0 && !client.playerData.DistrictIsLA())
             {
-                Notice(client, "Set a price first.");
+                publication.Notice(client, "List archive codes from the Loading Area marketplace.");
                 return;
             }
-
-            UInt32 goId, purity;
-            Db.GetInventoryItem(charId, placement.Slot, out goId, out purity);
-            if (goId == 0)
-            {
-                // Container 00 held a lockpick code in retail (code storage); this server only stores the backpack.
-                Notice(client, "There is no item in that slot.");
-                return;
-            }
-
-            // A listing holds one item: listing a stack would delete the whole stack and sell one.
-            if (Db.GetInventoryCount(charId, placement.Slot) > 1)
-            {
-                Notice(client, "Only single items can be listed. Split the stack first.");
-                return;
-            }
-
-            MarketListing listing = new MarketListing
+            var listing = new MarketListing
             {
                 Category = placement.Category,
-                GoId = goId,
-                // Items saved before purity was kept have 0; retail's login inventory used 00 00 00 0c.
-                Descriptor = purity != 0 ? purity : 0x0c000000,
                 Price = placement.Price,
                 DelistPrice = MarketplacePackets.DelistPriceFor(placement.Price),
-                SellerCharId = charId,
+                SellerCharId = publication.Character,
                 SellerRep = client.playerInstance.OrganizationID.getValue()[0],
                 Created = TimeUtils.getUnixTimeUint32()
             };
 
-            Db.RemoveInventoryItem(charId, placement.Slot);
-            Db.Insert(listing);
-            Output.WriteDebugLog("[MARKET] " + charId + " listed goid " + goId + " for " + listing.Price + " as " +
-                                 MarketplaceRequests.CategoryText(listing.Category) + " (listing " + listing.Id + ")");
+            string refusal;
+            lock (client.playerData.craftingSync)
+            {
+                try
+                {
+                    refusal = Db.Place(listing, placement);
+                }
+                catch (DbException ex)
+                {
+                    Output.WriteDebugLog("[MARKET] Listing transaction rolled back: " + ex.Message);
+                    refusal = "The listing could not be posted. Your item was kept.";
+                }
+            }
+            if (refusal != null)
+            {
+                publication.Notice(client, refusal);
+                return;
+            }
 
-            // Retail: 5f (item leaves the slot), then 81 2c.
-            client.messageQueue.addRpcMessage(ServerPackets.BuildInventoryItemDelete(placement.Slot));
-            client.messageQueue.addRpcMessage(MarketplacePackets.Listed(listing, placement.Container, placement.Slot));
-            client.FlushQueue();
+            byte[] remove = placement.Container == 0 ? CodeStorage.BuildRemove(placement.Slot)
+                : ServerPackets.BuildInventoryItemDelete(placement.Slot);
+            Output.WriteDebugLog($"[MARKET] {publication.Character} listed class={listing.GoId} descriptor={listing.Descriptor:x8} " +
+                $"container={placement.Container} slot={placement.Slot} price={listing.Price} id={listing.Id}");
+            if (publication.Publish(client, remove, MarketplacePackets.Listed(listing, placement.Container, placement.Slot)))
+                client.FlushQueue();
         }
 
-        /// <summary>
-        /// Client 81 26 &lt;listing id&gt; &lt;slot&gt;: buy a listing. The client's De-list button sends the same request
-        /// for the player's own listing: the item comes back for the delist price (no capture shows retail's answer,
-        /// so it gets the buyer's records).
-        /// </summary>
+        /// <summary>Client 81 26 buys a listing or de-lists the buyer's own listing.</summary>
         public void ProcessBuyItem(ref byte[] packet)
         {
-            UInt32 listingId;
-            byte requestedSlot;
-            if (!MarketplaceRequests.TryParseBuy(packet, out listingId, out requestedSlot))
-            {
-                return;
-            }
+            if (!MarketplaceRequests.TryParseBuy(packet, out uint listingId, out byte requestedSlot)) return;
 
             WorldClient buyer = Store.currentClient;
-            UInt32 buyerId = buyer.playerData.getCharID();
-            MarketListing listing;
-            UInt16 slot;
-            long newInfo;
-            bool delist;
-            UInt32 cost;
+            var publication = new AbilityAcquisition.Publication(buyer);
             lock (BuyLock)
             {
-                listing = Db.Find(listingId);
-                if (listing == null || listing.Sold)
+                MarketplaceDb.Purchase purchase;
+                try
                 {
-                    RefuseBuy(buyer, listingId, requestedSlot, MarketplacePackets.ItemNotInMarketplace);
+                    lock (buyer.playerData.craftingSync)
+                        purchase = Db.Checkout(listingId, publication.Character, requestedSlot, buyer.playerData.DistrictIsLA());
+                }
+                catch (Exception ex) when (ex is DbException || ex is InvalidOperationException)
+                {
+                    Output.WriteDebugLog("[MARKET] Purchase transaction rolled back: " + ex.Message);
+                    purchase = new MarketplaceDb.Purchase(CentralStorage.InvalidTransaction);
+                }
+                if (purchase.Status != 0)
+                {
+                    RefuseBuy(buyer, publication, listingId, requestedSlot, purchase.Status);
                     return;
                 }
-
-                delist = listing.SellerCharId == buyerId;
-                cost = delist ? listing.DelistPrice : listing.Price;
-
-                long info = buyer.playerData.getInfo();
-                if (info < cost)
-                {
-                    RefuseBuy(buyer, listingId, requestedSlot, MarketplacePackets.NotEnoughInformation);
-                    return;
-                }
-
-                UInt32 occupied, ignored;
-                Db.GetInventoryItem(buyerId, requestedSlot, out occupied, out ignored);
-                int free = occupied == 0 && requestedSlot < 97 ? requestedSlot : Db.FirstFreeSlot(buyerId);
-                if (free < 0)
-                {
-                    RefuseBuy(buyer, listingId, requestedSlot, MarketplacePackets.InventoryFull);
-                    return;
-                }
-
-                if (!Db.MarkSold(listingId))
-                {
-                    RefuseBuy(buyer, listingId, requestedSlot, MarketplacePackets.ItemNotInMarketplace);
-                    return;
-                }
-
-                slot = (UInt16) free;
-                Db.AddInventoryItem(buyerId, slot, listing.GoId, listing.Descriptor);
-                newInfo = info - cost;
-                buyer.playerData.setInfo(newInfo);
-                Store.dbManager.WorldDbHandler.SaveInfo(buyer, newInfo);
-            }
-
-            // Retail order: 5e (item into the slot), 80 e7 (-price, reason 5), 80 e4 (new info), 81 27.
-            byte amount = (byte) ((listing.Descriptor >> 16) & 0xff);
-            byte type = (byte) (listing.Descriptor >> 24);
-            buyer.messageQueue.addRpcMessage(ServerPackets.BuildInventoryItemAdd(slot, listing.GoId, amount, type));
-            buyer.messageQueue.addRpcMessage(ServerPackets.BuildInfoDelta(-(long) cost, MarketplacePackets.InfoReasonMarketplace));
-            buyer.messageQueue.addRpcMessage(ServerPackets.BuildInfoCurrent((UInt32) newInfo, MarketplacePackets.InfoReasonMarketplace));
-            buyer.messageQueue.addRpcMessage(MarketplacePackets.Bought(listing, (byte) slot));
-            buyer.FlushQueue();
-            Output.WriteDebugLog("[MARKET] " + buyerId + (delist ? " delisted" : " bought") + " listing " + listing.Id +
-                                 " for " + cost);
-
-            if (!delist)
-            {
-                PaySeller(listing);
+                PublishPurchase(buyer, publication, purchase, requestedSlot);
             }
         }
 
-        private static void RefuseBuy(WorldClient buyer, UInt32 listingId, byte requestedSlot, UInt32 status)
+        private static void PublishPurchase(WorldClient buyer, AbilityAcquisition.Publication publication,
+            MarketplaceDb.Purchase purchase, byte requestedSlot)
+        {
+            MarketListing listing = purchase.Listing;
+            byte amount = (byte)(listing.Descriptor >> 16);
+            byte type = (byte)(listing.Descriptor >> 24);
+            byte[] delivery = listing.IsArchiveCode ? ServerPackets.BuildKnownAbilityAdd(purchase.Slot, listing.Descriptor)
+                : ServerPackets.BuildInventoryItemAdd(purchase.Slot, listing.GoId, amount, type);
+            const uint reason = MarketplacePackets.InfoReasonMarketplace;
+            byte replySlot = listing.IsArchiveCode ? requestedSlot : (byte)purchase.Slot;
+            if (publication.PublishPurchase(buyer, purchase.BuyerCash, delivery,
+                ServerPackets.BuildInfoDelta(-(long)purchase.Cost, reason), ServerPackets.BuildInfoCurrent(purchase.BuyerCash, reason),
+                MarketplacePackets.Bought(listing, replySlot, purchase.Cost)))
+                buyer.FlushQueue();
+            Output.WriteDebugLog($"[MARKET] {publication.Character} checked out id={listing.Id} archive={listing.IsArchiveCode} " +
+                $"slot={purchase.Slot} cost={purchase.Cost} cash={purchase.BuyerCash}");
+
+            if (!purchase.SellerCash.HasValue) return;
+            WorldClient seller = FindOnline(listing.SellerCharId);
+            if (seller == null) return;
+            uint sellerCash = purchase.SellerCash.Value;
+            var sellerPublication = new AbilityAcquisition.Publication(seller);
+            if (sellerPublication.Character == listing.SellerCharId &&
+                sellerPublication.PublishPurchase(seller, sellerCash, ServerPackets.BuildInfoDelta(purchase.Cost, reason),
+                    ServerPackets.BuildInfoCurrent(sellerCash, reason),
+                    ServerPackets.BuildSystemChatMessage("Your marketplace item sold for " + purchase.Cost + " information.", "SYSTEM")))
+                seller.FlushQueue();
+        }
+
+        private static void RefuseBuy(WorldClient buyer, AbilityAcquisition.Publication publication,
+            uint listingId, byte requestedSlot, uint status)
         {
             // The Loading Area purchase controls wait for the correlated 81 27 response.
-            buyer.messageQueue.addRpcMessage(MarketplacePackets.BuyRefused(listingId, requestedSlot, status));
-            buyer.FlushQueue();
-        }
-
-        /// <summary>Retail's seller side is not captured: pay at once, with the buyer's packets for an info change.</summary>
-        private static void PaySeller(MarketListing listing)
-        {
-            WorldClient seller = FindOnline(listing.SellerCharId);
-            if (seller == null)
-            {
-                Db.AddCash(listing.SellerCharId, listing.Price);
-                return;
-            }
-
-            long info = seller.playerData.getInfo() + listing.Price;
-            seller.playerData.setInfo(info);
-            Store.dbManager.WorldDbHandler.SaveInfo(seller, info);
-            seller.messageQueue.addRpcMessage(ServerPackets.BuildInfoDelta(listing.Price, MarketplacePackets.InfoReasonMarketplace));
-            seller.messageQueue.addRpcMessage(ServerPackets.BuildInfoCurrent((UInt32) info, MarketplacePackets.InfoReasonMarketplace));
-            seller.FlushQueue();
-            Notice(seller, "Your marketplace item sold for " + listing.Price + " information.");
+            if (publication.Publish(buyer, MarketplacePackets.BuyRefused(listingId, requestedSlot, status)))
+                buyer.FlushQueue();
         }
     }
 }

@@ -34,12 +34,6 @@ namespace hds{
             {
                 ClientActionsHandler.Notice(Store.currentClient,"This vendor purchase request is not supported.");return;
             }
-            if (packet.Length < 4)
-            {
-                Output.WriteDebugLog("[VENDOR] Buy packet too short.");
-                return;
-            }
-
             byte[] goByteID = {packet[0],packet[1],packet[2],packet[3]};
             UInt32 itemGoID = NumericalUtils.ByteArrayToUint32(goByteID,1);
             if (Array.IndexOf(Store.currentClient.playerData.activeVendor.items, itemGoID) < 0)
@@ -48,12 +42,8 @@ namespace hds{
                 return;
             }
 
-            // Native BuyBackLastItemSold is a separate operation; no normal-purchase fallback.
-            if(packet.Length>4 && packet[4]!=0)
-            { ClientActionsHandler.Notice(Store.currentClient,"Buying back the last sold item is not supported.");return; }
             if(AbilityProgression.IsAbilityCode(itemGoID))
             {
-                if(packet.Length!=5){ClientActionsHandler.Notice(Store.currentClient,"Invalid ability purchase request.");return;}
                 var publication=new AbilityAcquisition.Publication(Store.currentClient);
                 AbilityAcquisition.Receipt receipt;
                 try { receipt=Store.dbManager.WorldDbHandler.AcquireAbility(Store.currentClient.playerData.getCharID(),itemGoID,VendorPricing.GetBuyPrice(itemGoID)); }
@@ -69,25 +59,28 @@ namespace hds{
                 publication.PublishPurchase(Store.currentClient,receipt.Cash,acquiredPackets);
                 return;
             }
-            long currentCash = Store.currentClient.playerData.getInfo();
-            ServerPackets packets = new ServerPackets();
-            if (!VendorPricing.TryApplyBuy(currentCash, itemGoID, out UInt32 newCash, out UInt32 price))
+            var client = Store.currentClient;
+            var stamp = new AbilityAcquisition.Publication(client);
+            (ushort Slot, int Count, uint Cash, uint Price) receiptItem;
+            try
             {
-                packets.sendSystemChatMessage(Store.currentClient,
-                    "You do not have enough information to buy this item.", "MODAL");
+                receiptItem = Store.dbManager.WorldDbHandler.PurchaseVendorItem(stamp.Character, itemGoID);
+            }
+            catch (Exception error) when (error is AbilityAcquisition.Refusal || error is System.Data.Common.DbException || error is InvalidOperationException)
+            {
+                string text = error is AbilityAcquisition.Refusal ? error.Message : "The purchase could not be completed. Your information was kept.";
+                Output.WriteDebugLog($"[VENDOR] Purchase refused char={stamp.Character} item={itemGoID}: {error.Message}");
+                if (stamp.Publish(client, ServerPackets.BuildSystemChatMessage(text, "MODAL"), VendorBuyback.RefusalAck()))
+                    client.FlushQueue();
                 return;
             }
-
-            // Retail order: 5e (add item, sent by processItemAdd) -> 80 e7 (-price) -> 80 e4 (new cash)
-            // -> 81 0f (buy complete), all with reason 8.
-            InventoryHandler inventory = new InventoryHandler();
-            inventory.processItemAdd(itemGoID,0x10);
-
-            Store.dbManager.WorldDbHandler.SaveInfo(Store.currentClient, newCash);
-            Store.currentClient.playerData.setInfo(newCash);
-            packets.SendInfoDelta(Store.currentClient, (long)newCash - currentCash, ServerPackets.InfoReasonVendorBuy);
-            packets.SendInfoCurrent(Store.currentClient, newCash, ServerPackets.InfoReasonVendorBuy);
-            packets.SendVendorBuyAck(Store.currentClient, itemGoID, price);
+            var (slot, count, cash, price) = receiptItem;
+            const uint reason = ServerPackets.InfoReasonVendorBuy;
+            var added = count == 1 ? ServerPackets.BuildInventoryItemAdd(slot, itemGoID, 0, 0x10) : ItemStacks.BuildStackCount(slot, count);
+            Output.WriteDebugLog($"[VENDOR] Bought char={stamp.Character} item={itemGoID} slot={slot} count={count} price={price} cash={cash}");
+            if (stamp.PublishPurchase(client, cash, added, ServerPackets.BuildInfoDelta(-(long)price, reason),
+                ServerPackets.BuildInfoCurrent(cash, reason), ServerPackets.BuildVendorBuyAck(itemGoID, ServerPackets.DefaultItemDescriptor, price)))
+                client.FlushQueue();
         }
 
         public void processSellItem(ref byte[] packet)

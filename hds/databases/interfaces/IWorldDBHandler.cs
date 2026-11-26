@@ -60,6 +60,7 @@ namespace hds.databases.interfaces{
         void SaveExperience(WorldClient client, long exp);
         void SaveInfo(WorldClient client, long exp);
         void EnsureVendorBuyback();
+        (ushort Slot, int Count, uint Cash, uint Price) PurchaseVendorItem(uint character, uint goid);
         VendorBuyback.Result SellVendorItem(uint character, ushort slot, string session, uint vendor);
         VendorBuyback.Result BuyBackVendorItem(uint character, string session, uint vendor);
         AbilityAcquisition.Receipt AcquireAbility(UInt32 character, UInt32 goid, UInt32 price, UInt16? bagSlot = null, UInt16? archiveSlot = null, UInt16[] reserved = null);
