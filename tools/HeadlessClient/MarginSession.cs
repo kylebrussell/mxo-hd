@@ -28,7 +28,10 @@ public sealed class MarginSession : IDisposable
     /// <summary>Character data blocks by opcode (05 inventory, 07 known abilities...), from the last load.</summary>
     public Dictionary<byte, byte[]> CharacterData { get; } = new();
 
-    /// <summary>The world session key the server sent under the account's key (which is what WorldEncryption defaults to).</summary>
+    /// <summary>
+    /// This login's session key: margin generates one per connection and sends it under the account's RSA key. Margin
+    /// traffic after the certificate exchange and the character's world UDP session are encrypted with it.
+    /// </summary>
     public byte[]? SessionKey { get; private set; }
     public byte[] LoginReply { get; private set; } = Array.Empty<byte>();
 
@@ -54,11 +57,12 @@ public sealed class MarginSession : IDisposable
         int blobSize = BitConverter.ToUInt16(reply, 3);
         byte[] plain = AuthLogin.DecryptWithAccountKey(reply[5..(5 + blobSize)], ticket.PublicModulus, ticket.PrivateExponent);
         SessionKey = plain[1..17];
-        if (!SessionKey.SequenceEqual(encryption.getTFKey()))
+        if (SessionKey.SequenceEqual(MarginEncryption.LegacyKey))
         {
-            // MarginEncryption has no way to set the key: the server's is fixed, and this class only works with that one.
-            throw new InvalidDataException("Margin sent a session key other than the server's fixed one");
+            // Every login used to get this one fixed key, so anyone could read and forge anyone's traffic.
+            throw new InvalidDataException("Margin sent the old fixed session key");
         }
+        encryption.SetSessionKey(SessionKey);
 
         await ExchangeAsync(new byte[] { CertConnectAck }, 0x04, cancel);
         await ExchangeAsync(new byte[] { ConnectChallenge }, ConnectChallengeReply, cancel);
@@ -73,6 +77,7 @@ public sealed class MarginSession : IDisposable
             request[0] = LoadCharacter;
             BitConverter.GetBytes(charId).CopyTo(request, 1);
         }
+        RememberSessionKey(charId);
         await SendAsync(request, cancel);
 
         await ReadCharacterDataAsync(charId, cancel);
@@ -139,6 +144,20 @@ public sealed class MarginSession : IDisposable
         }
     }
 
+    private static readonly System.Collections.Concurrent.ConcurrentDictionary<uint, byte[]> sessionKeys = new();
+
+    /// <summary>
+    /// The session key of the margin connection that last loaded or reserved this character, for a WorldSession made
+    /// without one (WorldSession.SendSessionRequest looks it up). Callers that hold the MarginSession can pass
+    /// SessionKey to the WorldSession directly instead.
+    /// </summary>
+    public static byte[]? SessionKeyFor(uint charId) => sessionKeys.TryGetValue(charId, out byte[]? key) ? key.ToArray() : null;
+
+    private void RememberSessionKey(uint charId)
+    {
+        if (SessionKey != null) sessionKeys[charId] = SessionKey.ToArray();
+    }
+
     /// <summary>Only creation/name bodies, never certificates, tickets or account private keys.</summary>
     public List<(string Direction, byte[] Body)> CreationTranscript { get; } = new();
 
@@ -153,6 +172,7 @@ public sealed class MarginSession : IDisposable
             throw new InvalidDataException("Character reservation refused: "+Convert.ToHexString(reply));
         uint id=BitConverter.ToUInt32(reply,7);
         if(id==0)throw new InvalidDataException("Zero character reservation");
+        RememberSessionKey(id);
         return id;
     }
 

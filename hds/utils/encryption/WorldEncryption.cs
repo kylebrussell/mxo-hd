@@ -26,6 +26,14 @@ namespace hds
             InitCrypto();
         }
 
+        /// <summary>A session under its own key: the one margin generated for this login (MarginEncryption.ForNewSession).</summary>
+        public WorldEncryption(byte[] sessionKey)
+        {
+            if (sessionKey == null || sessionKey.Length != 16) throw new ArgumentException("A session key is 16 bytes.", nameof(sessionKey));
+            TF_Key = (byte[])sessionKey.Clone();
+            InitCrypto();
+        }
+
         public void InitCrypto()
         {
             crc32 = new Crc32();

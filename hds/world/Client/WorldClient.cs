@@ -74,7 +74,9 @@ namespace hds
             Remote = _Remote;
             socket = _socket;
             key = _key;
-            cypher = new WorldEncryption();
+            // A key nobody has until the UDP init names a verified character and UseSessionKey installs that login's
+            // key: datagrams from anyone else fail the CRC and are dropped.
+            cypher = new WorldEncryption(System.Security.Cryptography.RandomNumberGenerator.GetBytes(16));
             protocolManager = new MultiProtocolManager();
 
             messageQueue = new MessageQueue();
@@ -97,6 +99,12 @@ namespace hds
             lastUsedTime = TimeUtils.getUnixTimeUint32();
         }
 
+
+        /// <summary>Switches this session to the key margin generated for this login (see PlayerHandler.processInitUDPSession).</summary>
+        public void UseSessionKey(byte[] sessionKey)
+        {
+            cypher = new WorldEncryption(sessionKey);
+        }
 
         /// <summary>
         /// A player the server plays itself (dev partners such as ?duelbot): a full character in the world that other

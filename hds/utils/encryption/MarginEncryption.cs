@@ -9,7 +9,9 @@ namespace hds
 	
 	public class MarginEncryption{
 		
-		private byte[] TF_Key = { 0x6C, 0xAB, 0x8E, 0xCC, 0xE7, 0x3C, 0x22, 0x47, 0xDB, 0xEB, 0xDE, 0x1A, 0xA8, 0xE7, 0x5F, 0xB8 };
+		/// <summary>The old fixed session key, every login's until per-login keys. Only tests and old tooling still use it.</summary>
+		public static readonly byte[] LegacyKey = { 0x6C, 0xAB, 0x8E, 0xCC, 0xE7, 0x3C, 0x22, 0x47, 0xDB, 0xEB, 0xDE, 0x1A, 0xA8, 0xE7, 0x5F, 0xB8 };
+		private byte[] TF_Key = (byte[])LegacyKey.Clone();
         private byte[] IV = { 0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30 };
 
 		private const string xmlKeys = "<RSAKeyValue><Modulus>qMIfEkrXWpRr44ecWMzJHV7Hjg9bnru2PZv3NydzOZ6uab52wET+RoHhIzv+zJb3zBhmETAtsrmNnBXiW7tfqPK0xf6lb9RbvupfnfYSHO5WaEcWEi0JjQRBevg9d8qlETo9Hrfy9PEfpeK1T2WF+xxx73chvBTB12Paa7yT+Ik=</Modulus><Exponent>EQ==</Exponent><P>y1biPGcMKGk2VRKuHJZBvge0A/8YLTM5+gvdiZn2+2sC09iz/zjWa26ARP9ENMA687B6vo9asGtHovQCizWNgw==</P><Q>1HaPHEY726MwhSXUOl9l3Roon/hxOdfEE4ooMSe0z8WYW3+IDXTAbYCpJHMZNIvrTLSEuReuDdNL8W91Kq5wAw==</Q><DP>v2DU7Y4pj3IVBMZJhFEu0Pgw9LPahOTrRbDQgYHZZRlsEq3WldskKOB4uWi4qh5Vmg+ClTugpgqdxotNsDJnEQ==</DP><DQ>V3wcz2g2w9nIr0vP28zttWUfyWZMvXb2YmYQjLX/KGBr6XC/jRH04cuQ8OQZb/1g41lj07502IQuVFsSIKIuHw==</DQ><InverseQ>CnkbOBzROWVuJMlB8YIwswZSkBmhckoz+EjEKqIUSE8cYPnhOr2KNfUnTVFTFLlOzWc4jrrOQPi94rrDae8yPw==</InverseQ><D>RX0b2lsNYYhoqPuauycloq6OZ6v4jKelZKmiB6bVF7nPWLfWi2ez/uovhvqWGAHtkEZIJTH0swEcMTYwB6eBvV5fQPkL1CiZJELi7UGEME9v/UMqsMn/aAs3iqDYn0sR1kC4mZHRRNzIq7l16yufV6XnNaVuwlDMo3OLVWwqWE0=</D></RSAKeyValue>";
@@ -24,9 +26,27 @@ namespace hds
 			tf = new MxoTwofish();
 			crc32 = new Crc32();
 		}
+
+		/// <summary>
+		/// Margin's side of one login: a fresh random Twofish key. Margin sends it to the client under the account's RSA key
+		/// (CertConnectReply) and the world uses it for this character's UDP session (docs/ACCOUNTS.md).
+		/// </summary>
+		public static MarginEncryption ForNewSession()
+		{
+			var session = new MarginEncryption();
+			session.TF_Key = RandomNumberGenerator.GetBytes(16);
+			return session;
+		}
+
+		/// <summary>The client's side: use the key margin sent.</summary>
+		public void SetSessionKey(byte[] key)
+		{
+			if (key == null || key.Length != 16) throw new ArgumentException("A session key is 16 bytes.", nameof(key));
+			TF_Key = (byte[])key.Clone();
+		}
 		
 		public byte[] getTFKey(){
-			return TF_Key;
+			return (byte[])TF_Key.Clone();
 		}
 		
 		public byte[] getIV(){

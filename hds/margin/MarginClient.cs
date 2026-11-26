@@ -47,7 +47,8 @@ namespace hds{
 			working = true;
 			waitingForWorld = false;
 			
-			marginEncr = new MarginEncryption();
+			// One random session key per margin connection (one login), not the old fixed one.
+			marginEncr = MarginEncryption.ForNewSession();
 			 
 		}
 
@@ -66,6 +67,9 @@ namespace hds{
         {
             return working && userID != 0 && charId != 0 && newCharID == charId;
         }
+
+        /// <summary>This login's session key (sent to the client under its account key), for the world's UDP session.</summary>
+        public byte[] SessionKey => marginEncr.getTFKey();
 		
 		public bool isWorking(){
 			return working;

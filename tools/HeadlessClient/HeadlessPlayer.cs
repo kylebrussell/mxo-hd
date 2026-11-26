@@ -37,7 +37,7 @@ public sealed class HeadlessPlayer : IDisposable
     public static async Task<HeadlessPlayer> AttachCreatedAsync(ServerAddress server,string handle,uint charId,MarginSession margin)
     {
         using var timeout=new CancellationTokenSource(TimeSpan.FromSeconds(30));
-        var world=new WorldSession(server.Host,server.WorldPort);
+        var world=new WorldSession(server.Host,server.WorldPort,margin.SessionKey);
         try{world.SendSessionRequest(charId);await margin.WaitForUdpSessionAsync(timeout.Token);return new HeadlessPlayer(handle,charId,margin,world);}
         catch{world.Dispose();throw;}
     }
@@ -61,7 +61,7 @@ public sealed class HeadlessPlayer : IDisposable
             await margin.ConnectAsync(server.Host, server.MarginPort, ticket, cancel);
             await margin.LoadCharacterAsync(character.CharId, cancel, stockCharacterLoad);
 
-            world = new WorldSession(server.Host, server.WorldPort);
+            world = new WorldSession(server.Host, server.WorldPort, margin.SessionKey);
             world.SendSessionRequest(character.CharId);
             await margin.WaitForUdpSessionAsync(cancel);
             return new HeadlessPlayer(handle, character.CharId, margin, world);

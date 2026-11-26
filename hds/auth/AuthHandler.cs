@@ -279,22 +279,21 @@ namespace hds.auth
                         Output.WriteLine("-> MXO_DEV_ANY_PASSWORD: accepted " + username + " without checking the password");
                     break;
                 case LoginOutcome.Banned:
-                    SendAuthError((UInt32) AuthErrorCode.LTAS_ACCOUNTISBANNED);
-                    return;
                 case LoginOutcome.Inactive:
-                    SendAuthError((UInt32) AuthErrorCode.LTAS_ACCOUNTINACTIVE);
+                    SendAuthError(AuthErrorReply.StatusFor(login.Outcome));
                     return;
                 case LoginOutcome.Locked:
                     Output.WriteLine("-> Login refused: too many failed attempts (retry in " + (int) Math.Ceiling(login.RetryAfter.TotalSeconds) + "s)");
-                    SendAuthError((UInt32) AuthErrorCode.LTAS_RADIUSMAXATTEMPTS);
+                    SendAuthError(AuthErrorReply.StatusFor(login.Outcome));
                     return;
                 case LoginOutcome.Unavailable:
-                    SendAuthError((UInt32) AuthErrorCode.LTAS_DATABASECONNDOWN);
+                    Output.WriteLine("-> Login refused: account store unavailable");
+                    SendAuthError(AuthErrorReply.StatusFor(login.Outcome));
                     return;
                 default:
                     // Same answer for an unknown name and a wrong password.
                     Output.WriteLine("-> Login refused: bad username or password");
-                    SendAuthError((UInt32) AuthErrorCode.LTAS_USERNAMEPASSWORDMISMATCH);
+                    SendAuthError(AuthErrorReply.StatusFor(login.Outcome));
                     return;
             }
 
@@ -401,14 +400,8 @@ namespace hds.auth
         
         public void SendAuthError(UInt32 errorCode)
         {
-            PacketContent packetContent = new PacketContent();
-            packetContent.AddByte((byte) AuthOpcode.AS_AuthReply);
-            packetContent.AddUint32(errorCode, 1);
-            packetContent.AddInt32(0, 1);
-            packetContent.AddUint16(0, 1);
-            // Framed like every other auth message (it used to go out without the length prefix, so the client never
-            // read the code).
-            authClientSession.SendAsync(FrameAuthMessage(packetContent.ReturnFinalPacket()));
+            // Framed, and with the whole fixed header the launcher parses (AuthErrorReply), so it shows its own dialog.
+            authClientSession.SendAsync(AuthErrorReply.Framed(errorCode));
         }
 
         private IPAddress RemoteAddress()
