@@ -232,7 +232,10 @@ public static partial class Scenarios
         Check.Equal(0L, await ReceiverItems(), "Full-bag refusal grants no items");
 
         await db.ExecuteAsync($"DELETE FROM inventory WHERE charId={receiver.CharId} AND slot IN (11,12)");
-        await db.ExecuteAsync($"ALTER TABLE inventory ADD CONSTRAINT reject_second_attachment CHECK (charId<>{receiver.CharId} OR goid<>2399)");
+        // The fixture retains legacy zero dates. MySQL may rebuild the table when altering its constraints.
+        const string fixtureDdl = "SET SESSION sql_mode='STRICT_TRANS_TABLES,NO_ENGINE_SUBSTITUTION'; ";
+        await db.ExecuteAsync(fixtureDdl +
+            $"ALTER TABLE inventory ADD CONSTRAINT reject_second_attachment CHECK (charId<>{receiver.CharId} OR goid<>2399)");
         receiverCursor = receiver.World.RpcSnapshot().Count;
         receiver.SendRpc(take);
         await receiver.WaitForTextAsync("Could not take the attachments");
@@ -240,7 +243,7 @@ public static partial class Scenarios
         Check.Equal(stored, await db.ScalarAsync($"SELECT items FROM mail WHERE id={id}"), "Failed claim restored both attachments");
         Check.Equal(0L, await ReceiverItems(), "Failed second insertion rolled back the first");
         Check.That(!receiver.World.RpcSnapshot().Skip(receiverCursor).Any(r => r.Bytes[0] == 0x5e), "Failed claim published no bag adds");
-        await db.ExecuteAsync("ALTER TABLE inventory DROP CONSTRAINT reject_second_attachment");
+        await db.ExecuteAsync(fixtureDdl + "ALTER TABLE inventory DROP CONSTRAINT reject_second_attachment");
 
         receiver.SendRpc(take);
         await receiver.WaitForRpcAsync("5e 0b 00 a4 1c 00 00 34 12 08 0c 01");
