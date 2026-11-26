@@ -10,6 +10,45 @@ namespace hds
         private static readonly object SupportSync = new object();
         public static void Notice(WorldClient client, string text) => new ServerPackets().sendSystemChatMessage(client, text, "SYSTEM");
 
+        /// <summary>Seconds between accepted /stuck requests for one character (local policy).</summary>
+        public const int StuckCooldownSeconds = 300;
+        private static readonly Dictionary<uint, double> lastStuck = new Dictionary<uint, double>();
+
+        /// <summary>
+        /// 81 55 (no fields) is /stuck: the stock client sends it only after its own local stuck test passes
+        /// (CLIENT-ACTIONS-FOLLOWTHROUGH.md). Retail's server recovery is not recovered, so this is a local policy:
+        /// a living, in-world player out of combat is sent to the Loading Area through the same 80 fd ... 01 00
+        /// exit the hardline booth uses (the client confirms with 80 fe 01), from where any known hardline returns
+        /// them to the city. Once per five minutes per character; refusals explain themselves.
+        /// </summary>
+        public static void Stuck(WorldClient client, byte[] body, double now)
+        {
+            if (body == null || body.Length != 0) return;
+            var data = client.playerData;
+            string refusal = data.DistrictIsLA() ? "You are already in the Loading Area. Choose a known hardline to return to the city." :
+                data.isDead || data.duelDeath ? "Use Reconstruct to return to the Loading Area." :
+                !data.getOnWorld() || data.worldChangePending || data.waitForRPCShutDown || data.isJackoutInProgress ? "You are already leaving this area." :
+                CombatManager.GetHandler(client).isCombatRunning ? "You cannot use /stuck while in combat." : null;
+            uint character = data.getCharID();
+            if (refusal == null)
+                lock (lastStuck)
+                {
+                    if (lastStuck.TryGetValue(character, out double last) && now - last < StuckCooldownSeconds)
+                        refusal = "You can use /stuck again in " + (int)Math.Ceiling(StuckCooldownSeconds - (now - last)) + " seconds.";
+                    else lastStuck[character] = now;
+                }
+            if (refusal != null)
+            {
+                Notice(client, refusal);
+                client.FlushQueue();
+                return;
+            }
+            Output.WriteLine("[STUCK OURS] character " + character + " sent to the Loading Area");
+            Notice(client, "Local /stuck: returning you to the Loading Area. Choose a known hardline there to return to the city.");
+            client.messageQueue.addRpcMessage(ServerPackets.BuildJackoutToLoadingArea());
+            client.FlushQueue();
+        }
+
         public static void Afk(WorldClient client, byte[] body)
         {
             if (body?.Length != 1 || body[0] > 1) return;

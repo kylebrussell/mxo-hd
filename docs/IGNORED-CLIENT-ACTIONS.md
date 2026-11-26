@@ -41,7 +41,7 @@ All three require the authenticated character ID to be an exact member of the se
 
 ## Every remaining ignored row
 
-The following rows remain ignored; adding a switch that accepts and does nothing would not improve parity. P3 PR113 is now integrated: `5c` is partial for light luggables with pickup/drop persistence; heavy attachments remain absent. Actual combined counts are 118 handled / 14 partial / 15 ignored / 19 not sent (166 rows).
+The following rows remain ignored; adding a switch that accepts and does nothing would not improve parity. P3 PR113 is now integrated: `5c` is partial for light luggables with pickup/drop persistence; heavy attachments remain absent. Actual combined counts are 118 handled / 14 partial / 15 ignored / 19 not sent (166 rows). Since then `81 55` (/stuck) is handled by a local Loading Area policy (CLIENT-ACTIONS.md).
 
 | Request | Evidence and remaining reason |
 |---|---|
@@ -52,7 +52,6 @@ The following rows remain ignored; adding a switch that accepts and does nothing
 | `81 46` | `62241a50` allocates10 bytes; `6225909d..622590c5` parses two integer words and sends them. The name `/range`, units, which ranges change and authority are not established. No guessed interest-radius or weapon-range control. |
 | `81 37` | `62078cd0`/`62078d03` writes the imported tick count into TimeRequested. `62079687` invokes it through a common UI timer; it is not proof of a `/time` slash request. Dispatcher137 goes to `6217e9b0` (no inbound case). Exact clock response remains unknown; neither an echo nor UTC chat spam is claimed as parity. |
 | `3b` | Two no-field senders; C1 now identifies `/targetdamage` (string600000d3, dispatcher62258267/leaf62259838). Response and reporting semantics remain unknown; see CLIENT-ACTIONS-FOLLOWTHROUGH.md. |
-| `81 55` | C1 identifies `/stuck` (string3a000052, sender62246b40), gated by native local stuck predicate62605da0. No server recovery destination or authority policy recovered; see CLIENT-ACTIONS-FOLLOWTHROUGH.md. |
 | `81 47` / `81 4a` | Classes exist but no native senders were found. No effect invented. |
 | `80 89` | `62038cd6` allocates9 bytes: embedded submessage at2, transaction u8 at3, slot u8 at4, data u32 at5. `621c8e40` accepts successful `80 8a` transaction codes1..6. Which transactions equip/delete/deliver which owned hovercraft object and their economy are not established, and no hovercraft inventory/backend exists here. No arbitrary request data is persisted as a craft upgrade. |
 | `80 f2` | FactionID query; `80 f3` has factionID plus array of38-byte `{status u8 at1, constructID u32 at2, fixed name32 at6}` records (`620b4940`, `62161de0`). No faction-construct registry/creation or instance ownership source has been recovered. An empty fabricated registry is not marked handled. |
