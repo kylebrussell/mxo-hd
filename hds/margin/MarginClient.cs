@@ -10,6 +10,8 @@ using System.Net.Sockets;
 using System.Threading;
 using hds.databases.Entities;
 using hds.shared;
+using hds.accounts;
+using hds.auth;
 
 namespace hds{
 
@@ -57,6 +59,12 @@ namespace hds{
         public UInt32 getCharID()
         {
             return newCharID;
+        }
+
+        /// <summary>True once this connection presented a verified ticket and loaded (or created) one of its own characters.</summary>
+        public bool HoldsVerifiedCharacter(UInt32 charId)
+        {
+            return working && userID != 0 && charId != 0 && newCharID == charId;
         }
 		
 		public bool isWorking(){
@@ -307,6 +315,11 @@ namespace hds{
             
             // Need for SQL Delete
             UInt64 charID = NumericalUtils.ByteArrayToUint32(charIDB, 1);
+            if (!OwnsCharacter((uint) charID))
+            {
+                Output.WriteLine("Margin: refused to delete character " + charID + " for account " + userID);
+                working = false; forceClose(); return;
+            }
             Store.dbManager.MarginDbHandler.deleteCharacter(charID);
 
             // Create viewData
@@ -544,6 +557,12 @@ namespace hds{
             {    
                 ArrayUtils.copy(packet, 3, charIDB, 0, 4); //Offset for charID is 3 in request
                 uint charId = NumericalUtils.ByteArrayToUint32(charIDB, 1);
+                // Only this account's own characters, and only after a verified ticket.
+                if (!OwnsCharacter(charId))
+                {
+                    Output.WriteLine("Margin: refused to load character " + charId + " for account " + userID);
+                    working = false; forceClose(); return;
+                }
                 // Remove current instances for this character
                 if (Store.margin.IsAnotherClientActive(charId))
                 {
@@ -670,6 +689,20 @@ namespace hds{
             sendTCPVariableLenPacket(encryptedResponse, client);
         }
 
+        private bool OwnsCharacter(uint charId)
+        {
+            if (userID == 0) return false;
+            try
+            {
+                return AccountStore.FromConfig().CharacterBelongsTo(charId, userID);
+            }
+            catch (Exception e)
+            {
+                Output.WriteLine("Margin: character ownership check failed (" + e.GetType().Name + ")");
+                return false;
+            }
+        }
+
         public void CharacterAlreadyInUseReply(NetworkStream client)
         {
             byte[] response = {0x10, 0x25, 0x00, 0x00, 0x0b, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00 };
@@ -725,26 +758,46 @@ namespace hds{
 
             }
 
-            // Get the Signature
-            byte[] signature= new byte[128];
-			
-			ArrayUtils.copy(packet,7,signature,0,128);
-			            
-			// TODO MD5 Signature and verify it with RSA to check if everything is correct
+            // `<frame u16> 01 03 00 <ticket size u16> <signature 128> <signed data 182>`. Only a ticket the auth server
+            // signed is accepted: the user id and account key come from it, so an unchecked one let anyone pick an
+            // account. Expiry has a grace period (AuthTicketCodec.GraceSeconds) because clients reuse the ticket.
+            int ticketSize = authstart;
+            if (ticketSize != AuthTicketCodec.SignatureSize + AuthTicketCodec.SignedDataSize || packet.Length < 7 + ticketSize)
+            {
+                Output.WriteLine("Margin: refused a malformed ticket");
+                working = false; forceClose(); return;
+            }
+            byte[] signature = new byte[AuthTicketCodec.SignatureSize];
+			ArrayUtils.copy(packet, 7, signature, 0, signature.Length);
+            byte[] signedData = new byte[AuthTicketCodec.SignedDataSize];
+            ArrayUtils.copy(packet, 7 + signature.Length, signedData, 0, signedData.Length);
 
-            // Get the signedData
-            byte[] signedData = new byte[packet.Length - 135];
-            ArrayUtils.copy(packet,135,signedData,0,packet.Length-135);
-			int userid = BitConverter.ToInt32(signedData, 1);
-			userID = (UInt32)userid;
+            if (!AuthTicketCodec.TryVerify(signature, signedData, TimeUtils.getUnixTimeUint32(), out VerifiedTicket ticket))
+            {
+                Output.WriteLine("Margin: refused a ticket the auth server didn't issue (bad signature or expired)");
+                working = false; forceClose(); return;
+            }
+            int? accountStatus;
+            try
+            {
+                accountStatus = AccountStore.FromConfig().GetStatus(ticket.UserId);
+            }
+            catch (Exception e)
+            {
+                Output.WriteLine("Margin: account check failed (" + e.GetType().Name + ")");
+                working = false; forceClose(); return;
+            }
+            if (accountStatus != AccountLogin.StatusActive)
+            {
+                Output.WriteLine("Margin: refused account " + ticket.UserId + " (missing, banned or disabled)");
+                working = false; forceClose(); return;
+            }
+			userID = ticket.UserId;
 
-			
             // Stripout Exponent and Modulus
 
             byte[] exponent = {0x00, 0x00, 0x00, 0x11};
-            byte[] modulus = new byte[96];
-            
-			ArrayUtils.copy(signedData,82,modulus,0,96);
+            byte[] modulus = ticket.PublicModulus;
             
             // Init our encryptor with users modulus and exponent
             marginEncr.setUserPubKey(exponent, modulus);

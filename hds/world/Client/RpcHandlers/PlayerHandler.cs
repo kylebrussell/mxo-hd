@@ -258,7 +258,15 @@ namespace hds
             PacketReader reader = new PacketReader(packetData);
             reader.SetOffsetOverrideValue(11);
 
-            Store.currentClient.playerData.setCharID(reader.ReadUInt32(1));
+            // The init names only a character id, so it's honoured only for a character that a margin connection with
+            // a verified auth ticket has loaded (its owner); otherwise any UDP sender could take over any character.
+            UInt32 requestedCharId = reader.ReadUInt32(1);
+            if (!Store.margin.HasVerifiedCharacter(requestedCharId))
+            {
+                Output.WriteLine("World: refused a UDP session for character " + requestedCharId + " (no verified margin session holds it)");
+                return;
+            }
+            Store.currentClient.playerData.setCharID(requestedCharId);
 
             Store.dbManager.WorldDbHandler.SetPlayerValues();
             Store.dbManager.WorldDbHandler.SetRsiValues();

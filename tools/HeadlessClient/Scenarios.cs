@@ -23,6 +23,7 @@ public static partial class Scenarios
 
     public static readonly IReadOnlyList<Scenario> All = new[]
     {
+        new Scenario(AccountSignupScenario,AccountSignup,AccountSignupEnvironment,Timeout:TimeSpan.FromMinutes(4)),
         new Scenario(NativeBoundFurnitureFixture.Name,NativeBoundFurniture,new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="1",["MXO_PACKET_LOG"]="1"},Timeout:TimeSpan.FromMinutes(4)),
         new Scenario("native-furniture-admission-timing",NativeFurnitureAdmissionTiming,new Dictionary<string,string>(StillNpcs){["MXO_PACKET_LOG"]="1"},Timeout:TimeSpan.FromMinutes(4)),
         new Scenario("corpse-loot-ui-reopen",CorpseLootUiReopen,StillNpcs),

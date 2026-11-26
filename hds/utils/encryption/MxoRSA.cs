@@ -31,6 +31,22 @@ namespace hds
 
 		}
 
+		/// <summary>
+		/// Checks a signature made by <see cref="signWithMD5"/> over the same MD5 digest: margin uses this to accept only
+		/// tickets the auth server issued.
+		/// </summary>
+		public static bool VerifyWithServerKey(byte[] md5fromStructure, byte[] signature){
+			if (md5fromStructure == null || signature == null) return false;
+			using RSA rsa = RSA.Create();
+			rsa.ImportParameters(ParametersOf(privKeyXML));
+			try {
+				return rsa.VerifyData(md5fromStructure, signature, HashAlgorithmName.MD5, RSASignaturePadding.Pkcs1);
+			}
+			catch (CryptographicException) {
+				return false;
+			}
+		}
+
 		// Key roles, as decompiled from launcher.exe (see docs/CLIENT-SETUP-PLAN.md):
 		//  - privKeyXML  (1024-bit, e=17) is the auth *server* key: the launcher encrypts the
 		//    login blob to it (OAEP) and verifies auth replies with it.

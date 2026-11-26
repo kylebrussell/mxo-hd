@@ -26,9 +26,9 @@ namespace hds.databases
             {
                 using (MatrixDbContext dbContext = CreateDbContext())
                 {
-                    var player = dbContext.Users
-                        .Where(u => u.Username == worldList.getUsername())
-                        .Single(u => u.Passwordmd5 == worldList.getPassword());
+                    // The auth handler has already checked the password (AccountLogin) and set the user id.
+                    uint userId = (uint) worldList.getUserID();
+                    var player = dbContext.Users.Single(u => u.UserId == userId);
 
                     byte[] publicModulus = new byte[96];
                     byte[] privateExponent = new byte[96];
@@ -46,8 +46,8 @@ namespace hds.databases
             }
             catch (Exception)
             {
-                String msg = "Player not found on DB with #" + wl.getUsername() + "# and #" + wl.getPassword() + "#";
-                Output.WriteLine(msg);
+                // Never log the password or its hash here.
+                Output.WriteLine("Auth: account " + wl.getUserID() + " has no usable row or key");
                 return false;
             }
 
