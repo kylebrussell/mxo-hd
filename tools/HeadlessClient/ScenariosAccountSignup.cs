@@ -25,7 +25,7 @@ public static partial class Scenarios
     };
 
     private const uint UsernameMismatch = 0x11000002;
-    private const uint MaxAttempts = 0x1100000D;
+    private const uint LockedOut = 0x1100000F; // LTAS_DATABASECONNDOWN: the launcher's "try again later" dialog (AuthErrorReply)
 
     /// <summary>The sign-up URL a server started with <see cref="AccountSignupEnvironment"/> bound to.</summary>
     public static Uri SignupUrl(ServerInstance server)
@@ -136,12 +136,16 @@ INSERT INTO users (userId, username, publicExponent, publicModulus, privateExpon
         HeadlessPlayer first = await HeadlessPlayer.LoginAsync(server, username, "SignupQA", password);
         await first.EnterWorldAsync();
         Check.That(first.World.Problems.Count == 0, "first login wire: " + string.Join("; ", first.World.Problems));
+        byte[] firstKey = MarginSession.SessionKeyFor(charId) ?? throw new ScenarioFailure("no session key recorded for the first login");
+        Check.That(!firstKey.SequenceEqual(hds.MarginEncryption.LegacyKey), "first login has its own session key, not the old fixed one");
         await QuitAsync(first);
         await Task.Delay(TimeSpan.FromSeconds(33)); // the ordinary >30s world/margin reservation cleanup
         using (HeadlessPlayer relog = await HeadlessPlayer.LoginAsync(server, username, "SignupQA", password))
         {
             await relog.EnterWorldAsync();
             Check.That(relog.World.Problems.Count == 0, "relog wire: " + string.Join("; ", relog.World.Problems));
+            byte[] relogKey = MarginSession.SessionKeyFor(charId) ?? throw new ScenarioFailure("no session key recorded for the relog");
+            Check.That(!relogKey.SequenceEqual(firstKey) && !relogKey.SequenceEqual(hds.MarginEncryption.LegacyKey), "relog gets a fresh session key");
             await QuitAsync(relog);
         }
 
@@ -192,14 +196,14 @@ INSERT INTO users (userId, username, publicExponent, publicModulus, privateExpon
         await AddLegacyAccountAsync(context.Database, lockId, "LockQA", lockPassword);
         for (int i = 0; i < 5; i++)
             Check.Equal(UsernameMismatch, await RefusedStatusAsync(server, "LockQA", "wrong-" + i), "failure " + (i + 1));
-        Check.Equal(MaxAttempts, await RefusedStatusAsync(server, "LockQA", lockPassword), "locked account refuses the right password");
+        Check.Equal(LockedOut, await RefusedStatusAsync(server, "LockQA", lockPassword), "locked account refuses the right password");
         Check.Equal(1L, await context.Database.LongAsync($"SELECT passwordmd5 IS NOT NULL FROM users WHERE userId={lockId}"), "no migration while locked");
 
         // Banned and disabled accounts stop at auth (after the password).
         await context.Database.ExecuteAsync($"UPDATE users SET account_status=1 WHERE userId={userId}");
         Check.Equal(0x11000003u, await RefusedStatusAsync(server, username, password), "banned account");
         await context.Database.ExecuteAsync($"UPDATE users SET account_status=2 WHERE userId={userId}");
-        Check.Equal(0x11000007u, await RefusedStatusAsync(server, username, password), "disabled account");
+        Check.Equal(0x11000003u, await RefusedStatusAsync(server, username, password), "disabled account gets the suspended dialog too");
 
         Check.That(!context.Server.FullOutput().Contains(password, StringComparison.Ordinal) &&
                    !context.Server.FullOutput().Contains(legacyPassword, StringComparison.Ordinal), "no password in the server output");

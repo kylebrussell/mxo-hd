@@ -22,7 +22,8 @@ public static class AccountSignupFixture
     public const string NewCharacter = "SignupQA";
     public const string LegacyAccount = "QA_Legacy";
     public const string LegacyCharacter = "LegacyQA";
-    private const uint NewCharId = 30311, LegacyCharId = 30312, LegacyUserId = 990312;
+    public const string BannedAccount = "QA_Banned";
+    private const uint NewCharId = 30311, LegacyCharId = 30312, LegacyUserId = 990312, BannedCharId = 30313, BannedUserId = 990313;
     private const string Handoff = "C:/Users/russe/AppData/Local/Temp/mxo-claude-codex-handoff.txt";
 
     public static Dictionary<string, string> Environment(NativeQaEndpoint endpoint)
@@ -60,6 +61,11 @@ public static class AccountSignupFixture
             string legacyPassword = Scenarios.ThrowawayPassword();
             await Scenarios.AddLegacyAccountAsync(database, LegacyUserId, LegacyAccount, legacyPassword);
             await Scenarios.AddCharacterAsync(database, LegacyUserId, LegacyCharId, LegacyCharacter, 23828, 495, 13984);
+            // A banned account (status 1) with a known password, to see the launcher's suspended dialog.
+            string bannedPassword = Scenarios.ThrowawayPassword();
+            await Scenarios.AddLegacyAccountAsync(database, BannedUserId, BannedAccount, bannedPassword);
+            await Scenarios.AddCharacterAsync(database, BannedUserId, BannedCharId, "BannedQA", 23828, 495, 13984);
+            await database.ExecuteAsync($"UPDATE users SET account_status=1 WHERE userId={BannedUserId}");
 
             // Same snapshot rule as the other native modes: a rebuild mid-QA can't change the running server.
             string sourceBin = Path.Combine(root, "hds", "bin", configuration, "net8.0");
@@ -99,6 +105,7 @@ public static class AccountSignupFixture
                 SignupUrl,
                 NewAccount = new { Username = username, Password = password, Character = NewCharacter, UserId = userId },
                 LegacyAccount = new { Username = LegacyAccount, Password = legacyPassword, Character = LegacyCharacter, UserId = LegacyUserId },
+                BannedAccount = new { Username = BannedAccount, Password = bannedPassword, Status = "banned (account_status=1)", UserId = BannedUserId },
             }, new JsonSerializerOptions { WriteIndented = true }));
             await File.WriteAllTextAsync(statePath, JsonSerializer.Serialize(new
             {
@@ -152,10 +159,11 @@ public static class AccountSignupFixture
         $"1. Open {credentialsPath}. NewAccount was created through POST {SignupUrl}/api/signup; LegacyAccount is an old passwordmd5 row with the shared stock key.",
         "2. Launcher: log in as NewAccount with its password (real password check: MXO_DEV_ANY_PASSWORD is off). Expect the character list with " + NewCharacter + ", select it, enter the world, move a little.",
         "3. Exit to the launcher (or quit), wait ~35 s, log in as NewAccount again: same character, enters the world (relog).",
-        "4. Log in as NewAccount with a wrong password once: expect a refusal message (code 0x11000002, username/password mismatch); note the client's text. Then the right password still works.",
+        "4. Log in as NewAccount with a wrong password once: expect the launcher's own dialog 'Your username or password is incorrect. Please try again...' (0x11000002; with Caps Lock on, the *CAPS LOCK* variant) and the launcher stays open. Then the right password still works.",
         $"5. Log in as {LegacyAccount} with its password, select {LegacyCharacter}, enter the world. The fixture prints 'READY {LegacyAccount} migrated' once the row is rewritten.",
         $"6. Relog {LegacyAccount}: works against the new digest.",
-        "Optional: 5 wrong passwords in a row on one account, then the right one: expect the lockout refusal (0x1100000D) for 30 s; note the client's text.",
+        $"7. Log in as {BannedAccount} with its password: expect the launcher's own dialog 'Your account has been suspended by a Game Master...' (0x11000003; disabled accounts get the same) and the launcher stays open.",
+        "Optional: 5 wrong passwords in a row on one account, then the right one: expect 'The auth servers are unavailable. Please try again later.' (lockout, 0x1100000F) for 30 s, then the right password works.",
         "Stop: create the file 'stop' in the fixture folder.",
     };
 

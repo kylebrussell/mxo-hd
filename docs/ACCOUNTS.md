@@ -40,16 +40,46 @@ The steps run in this order:
 3. Verification: the digest, or the legacy MD5 followed by migration.
 4. `account_status`.
 
-| Result | `AS_AuthReply` status |
-| --- | --- |
-| Unknown user or wrong password (one answer for both; unknown users run a dummy hash so timing matches) | `0x11000002` `LTAS_USERNAMEPASSWORDMISMATCH` |
-| Locked out | `0x1100000D` `LTAS_RADIUSMAXATTEMPTS` |
-| `account_status = 1` (banned) | `0x11000003` `LTAS_ACCOUNTISBANNED` |
-| `account_status = 2` (disabled) or any other non-zero value | `0x11000007` `LTAS_ACCOUNTINACTIVE` |
-| Database down | `0x1100000F` `LTAS_DATABASECONNDOWN` |
+| Result | `AS_AuthReply` status | Stock launcher dialog (string ID) |
+| --- | --- | --- |
+| Unknown user or wrong password (one answer for both; unknown users run a dummy hash so timing matches) | `0x11000002` `LTAS_USERNAMEPASSWORDMISMATCH` | 114 "Your username or password is incorrect. Please try again..." (225, the *CAPS LOCK* variant, when Caps Lock is on) |
+| `account_status = 1` (banned), `2` (disabled) or any other non-zero value | `0x11000003` `LTAS_ACCOUNTISBANNED` | 274 "Your account has been suspended by a Game Master..." |
+| Locked out | `0x1100000F` `LTAS_DATABASECONNDOWN` | 116 "The auth servers are unavailable. Please try again later." |
+| Database down | `0x1100000F` `LTAS_DATABASECONNDOWN` | 116 (same) |
 
-Status is checked only after the password, so a stranger can't learn that an account is banned. Error replies are now framed with
-the auth TCP length prefix. Before, they went out raw, so the client never saw the code.
+Status is checked only after the password, so a stranger can't learn that an account is banned.
+
+### How the stock launcher shows a refusal
+
+There's no failed-login capture in `research/packet-dumps`: all 11 `AS_AuthReply` messages there are successes. The format below
+comes from disassembling the 7.6005 `launcher.exe` (image base `0x400000`):
+
+- **Parsing.** The opcode-`0x0b` case of `0x448140` runs the generic `AS_AuthReply` parser (`0x443470`) before it looks at
+  Status. The parser reads nine u16 array offsets at body `+0x05`, `+0x0b`, `+0x0d`, `+0x0f`, `+0x11`, `+0x13`, `+0x19`, `+0x1b` and
+  `+0x1d`. It follows each non-zero offset to a `[u16 length][bytes]` array, and NUL-terminates two of the arrays in place.
+- **Error path.** If Status (body `+1`) is non-zero, `0x448140` returns 3, before any signature check. The login state
+  (`0x43f300`) then stores Status as the mediator's error, and the UI's error handler (`0x409305`) picks a string.
+- **Status to dialog.** The UI handler maps each status to a string-table entry:
+
+  | Status | String | Note |
+  | --- | --- | --- |
+  | `0x11000002` | 114, or 225 if `GetAsyncKeyState(VK_CAPITAL)` | |
+  | `0x11000003` | 274 | |
+  | `0x11000005` | 115 "already in use" | |
+  | `0x11000007` | 128 "disabled" | Also `ShellExecute("open", InactiveAccountURL)`; the default is `http://expired.lith.thematrixonline.net/` |
+  | `0x11000008`..`0x1100000D` | 213-218 | Admin and SecurID texts; `0x1100000D` `RADIUSMAXATTEMPTS` is 216, "SecurID authentication failed due to networking error" |
+  | `0x1100000F` | 116 | |
+  | `0x11000011` | 117 | |
+  | Anything else | 222 "(%s)" with the code's name | |
+
+hds's old error reply was 11 bytes, so the offsets at `+0x0b` onwards came from past the end of the message. Most likely the
+launcher faulted while reading through them: native QA saw the window close about 3 s after submit, with no dialog and no crash event.
+
+`AuthErrorReply` now sends the full fixed part: 33 bytes, the same length as the success header, with every offset zero. That
+leaves all the arrays empty, so the launcher should reach its own dialog. This comes from static analysis and still needs native QA.
+
+- **Disabled accounts** get the "suspended" text rather than `0x11000007`, which would open a browser at a domain we don't control.
+- **Lockout** uses 116 ("try again later"). The launcher has no player-facing lockout text, and the SecurID one is misleading.
 
 **Lockout** (`LoginThrottle`, in memory):
 
@@ -96,8 +126,22 @@ any character id. Now:
 - Character load and delete require the character to belong to the ticket's account.
 - The world's UDP init is honoured only for a character that a live, verified margin connection has loaded.
 
-**Still open (follow-up):** margin and world use one fixed Twofish session key (`MarginEncryption.TF_Key`), so per-account keys
-protect nothing on the wire yet. A random per-session key needs the world's UDP decryption to look it up per client.
+**Per-login session key.** Margin and world used to share one fixed Twofish key (now `MarginEncryption.LegacyKey`), so anyone
+could read or forge any session. Now:
+
+- **Margin.** Each margin connection generates a random 16-byte key (`MarginEncryption.ForNewSession`). It sends the key in
+  `CertConnectReply`, OAEP-encrypted to the account's modulus from the verified ticket, which is what the protocol carries the
+  key for. Margin encrypts its own traffic with it from then on.
+- **World.** A new UDP endpoint starts under a random key nobody has. The unencrypted UDP init names the character; once a live,
+  verified margin connection holds that character, the world switches the session to that connection's key
+  (`MarginServer.SessionKeyForVerifiedCharacter`, then `WorldClient.UseSessionKey`). Datagrams under any other key fail the CRC
+  and are dropped.
+- **Relog.** A relog is a new margin connection, so it gets a new key.
+- **HeadlessClient.** `MarginSession` takes the key from the cert reply and refuses the legacy key. `HeadlessPlayer` passes it to
+  `WorldSession`. A `WorldSession` built without a key looks up the key of the margin session that last loaded that character
+  (`MarginSession.SessionKeyFor`), so callers such as mxo-web's proxy keep working unchanged once they run a current
+  HeadlessClient build. A HeadlessClient vendored before this change throws "Margin sent a session key other than the server's
+  fixed one" against a current server and has to be re-vendored.
 
 ## Sign-up API
 

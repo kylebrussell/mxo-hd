@@ -135,13 +135,19 @@ namespace hds
         /// True when a live margin connection with a verified ticket has this character loaded: the world only opens a
         /// UDP session for such a character, since the UDP init carries nothing but the character id.
         /// </summary>
-        public bool HasVerifiedCharacter(UInt32 charId)
+        public bool HasVerifiedCharacter(UInt32 charId) => SessionKeyForVerifiedCharacter(charId) != null;
+
+        /// <summary>
+        /// The session key of the live, verified margin connection that has this character loaded, or null. The world
+        /// encrypts that character's UDP session with it, so only the client that got it under its account key can talk.
+        /// </summary>
+        public byte[] SessionKeyForVerifiedCharacter(UInt32 charId)
         {
             foreach (MarginClient resultClient in clientList.ToArray())
             {
-                if (resultClient != null && resultClient.HoldsVerifiedCharacter(charId)) return true;
+                if (resultClient != null && resultClient.HoldsVerifiedCharacter(charId)) return resultClient.SessionKey;
             }
-            return false;
+            return null;
         }
 
         public bool IsAnotherClientActive(UInt32 charId)

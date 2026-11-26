@@ -261,11 +261,14 @@ namespace hds
             // The init names only a character id, so it's honoured only for a character that a margin connection with
             // a verified auth ticket has loaded (its owner); otherwise any UDP sender could take over any character.
             UInt32 requestedCharId = reader.ReadUInt32(1);
-            if (!Store.margin.HasVerifiedCharacter(requestedCharId))
+            byte[] sessionKey = Store.margin.SessionKeyForVerifiedCharacter(requestedCharId);
+            if (sessionKey == null)
             {
                 Output.WriteLine("World: refused a UDP session for character " + requestedCharId + " (no verified margin session holds it)");
                 return;
             }
+            // From here on this session is encrypted with the key margin sent this login, not a key everyone knows.
+            Store.currentClient.UseSessionKey(sessionKey);
             Store.currentClient.playerData.setCharID(requestedCharId);
 
             Store.dbManager.WorldDbHandler.SetPlayerValues();

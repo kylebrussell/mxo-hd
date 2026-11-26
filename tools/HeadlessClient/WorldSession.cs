@@ -18,8 +18,11 @@ public sealed class WorldSession : IDisposable
     private readonly Task keepAliveLoop;
 
     // The server's WorldEncryption keeps an IV as state, shared by encrypt and decrypt. Here each direction has its own.
-    private readonly WorldEncryption sendCypher = new();
-    private readonly WorldEncryption receiveCypher = new();
+    // Both start on the old fixed key and switch to the login's session key before the first encrypted packet
+    // (SetSessionKey, or SendSessionRequest finding it from MarginSession).
+    private WorldEncryption sendCypher = new();
+    private WorldEncryption receiveCypher = new();
+    private bool hasSessionKey;
 
     private readonly object sendLock = new();
     private ushort ownSeq;
@@ -56,6 +59,23 @@ public sealed class WorldSession : IDisposable
     private readonly List<string> problems = new();
     private int rawPackets;
     private long version;
+
+    /// <summary>A world session under this login's session key (MarginSession.SessionKey).</summary>
+    public WorldSession(string host, int port, byte[]? sessionKey) : this(host, port)
+    {
+        if (sessionKey != null) SetSessionKey(sessionKey);
+    }
+
+    /// <summary>Uses the session key margin sent for this login, for both directions.</summary>
+    public void SetSessionKey(byte[] sessionKey)
+    {
+        lock (sendLock)
+        {
+            sendCypher = new WorldEncryption(sessionKey);
+            receiveCypher = new WorldEncryption(sessionKey);
+            hasSessionKey = true;
+        }
+    }
 
     public WorldSession(string host, int port)
     {
@@ -105,6 +125,7 @@ public sealed class WorldSession : IDisposable
     /// </summary>
     public void SendSessionRequest(uint charId)
     {
+        if (!hasSessionKey && MarginSession.SessionKeyFor(charId) is byte[] key) SetSessionKey(key);
         byte[] packet = new byte[16];
         BitConverter.GetBytes(charId).CopyTo(packet, 11);
         udp.Send(packet, packet.Length, server);
