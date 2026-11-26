@@ -80,10 +80,12 @@ namespace hds
                 CheckForStaticObjectsViewsInRange(aliveClients);
                 stage=ScaleDiagnostics.Stage("static-objects",stage);
                 MissionContactNpcs.CheckViews(aliveClients);
+                stage=ScaleDiagnostics.Stage("contacts",stage);
                 foreach (WorldClient client in aliveClients) SafeFloorProbe.Check(client);
                 foreach (WorldClient client in aliveClients) PosterBoxFloorProbe.Check(client);
+                stage=ScaleDiagnostics.Stage("floor-probes",stage);
                 foreach (WorldClient client in aliveClients) PvpArchives.Check(client, DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()/1000.0);
-                ScaleDiagnostics.Stage("contacts-probes",stage);
+                ScaleDiagnostics.Stage("pvp-archives",stage);
               }
               catch (Exception ex)
               {
@@ -161,7 +163,7 @@ namespace hds
             return subways;
         }
 
-        private static Dictionary<uint, SpatialGrid<WorldClient>> BuildClientGrids(List<WorldClient> clients)
+        internal static Dictionary<uint, SpatialGrid<WorldClient>> BuildClientGrids(List<WorldClient> clients)
         {
             Dictionary<uint, SpatialGrid<WorldClient>> grids = new Dictionary<uint, SpatialGrid<WorldClient>>();
             foreach (WorldClient client in clients)
@@ -211,7 +213,7 @@ namespace hds
             return grids;
         }
 
-        private static Dictionary<ulong, WorldClient> BuildClientByEntity(List<WorldClient> clients)
+        internal static Dictionary<ulong, WorldClient> BuildClientByEntity(List<WorldClient> clients)
         {
             Dictionary<ulong, WorldClient> lookup = new Dictionary<ulong, WorldClient>();
             foreach (WorldClient client in clients)
@@ -664,34 +666,94 @@ namespace hds
             }
         }
 
-        private static void CheckPlayerViews(List<WorldClient> clients,
+        /// <summary>
+        /// One player's state as this pass reads it: decoded once per pass instead of once per pair (at 200 dense
+        /// players the pair loop decoded 40,000 positions and goids a pass, each allocating).
+        /// </summary>
+        private sealed class PlayerSample
+        {
+            public bool Eligible, Hidden;
+            public uint District;
+            public double X, Z;
+            public ulong Entity;
+            public UInt16 Goid;
+            /// <summary>Different from the previous pass (or new): position, liveness, district or stealth.</summary>
+            public bool Changed = true;
+            public bool SameAs(PlayerSample o) => o != null && o.Eligible == Eligible && o.Hidden == Hidden && o.District == District &&
+                o.X == X && o.Z == Z && o.Entity == Entity && o.Goid == Goid;
+        }
+
+        // The previous pass's samples and each player's view-list version after it was last evaluated. Only the
+        // visibility thread (and tests calling it directly) runs CheckPlayerViews.
+        private static Dictionary<WorldClient, PlayerSample> previousSamples;
+        private static readonly Dictionary<WorldClient, (long Views, List<WorldClient> Near)> evaluatedViews =
+            new Dictionary<WorldClient, (long Views, List<WorldClient> Near)>(ReferenceEqualityComparer.Instance);
+        internal static int SkippedPlayerEvaluations;
+
+        private static Dictionary<WorldClient, PlayerSample> SamplePlayers(List<WorldClient> clients)
+        {
+            var samples = new Dictionary<WorldClient, PlayerSample>(clients.Count, ReferenceEqualityComparer.Instance);
+            foreach (WorldClient client in clients)
+            {
+                if (client == null || samples.ContainsKey(client)) continue;
+                double x = 0, y = 0, z = 0;
+                NumericalUtils.LtVector3dToDoubles(client.playerInstance.Position.getValue(), ref x, ref y, ref z);
+                samples[client] = new PlayerSample
+                {
+                    Eligible = client.Alive && client.playerData.getOnWorld() && !client.playerData.waitForRPCShutDown,
+                    Hidden = Stealth.IsHidden(client),
+                    District = client.playerData.getDistrictId(),
+                    X = x, Z = z,
+                    Entity = client.playerData.getEntityId(),
+                    Goid = NumericalUtils.ByteArrayToUint16(client.playerInstance.GetGoid(), 1)
+                };
+            }
+            return samples;
+        }
+
+        internal static void CheckPlayerViews(List<WorldClient> clients,
             Dictionary<uint, SpatialGrid<WorldClient>> clientGrids,
             Dictionary<ulong, WorldClient> clientsByEntity)
         {
             Maths mathUtils = new Maths();
+            Dictionary<WorldClient, PlayerSample> samples = SamplePlayers(clients);
+            Dictionary<WorldClient, PlayerSample> previous = previousSamples;
+            // A player's outcome depends only on its own sample, its views and the samples near it, so when none of
+            // those changed it is skipped. Any join, leave or hidden player (stealth visibility also depends on PvP
+            // state, which a sample doesn't carry) makes this a full pass.
+            bool canSkip = previous != null && previous.Count == samples.Count && !samples.Values.Any(s => s.Hidden);
+            foreach (var pair in samples)
+            {
+                if (previous == null || !previous.TryGetValue(pair.Key, out PlayerSample before)) { canSkip = false; continue; }
+                pair.Value.Changed = !pair.Value.SameAs(before);
+                // Leaving the world or the district takes a player out of the grid, where neighbours wouldn't see it.
+                if (before.Eligible != pair.Value.Eligible || before.District != pair.Value.District) canSkip = false;
+            }
+            previousSamples = samples;
+            foreach (WorldClient gone in evaluatedViews.Keys.Where(c => !samples.ContainsKey(c)).ToList()) evaluatedViews.Remove(gone);
+
             foreach (WorldClient currentClient in clients)
             {
-                if (currentClient == null || currentClient.Alive == false)
+                if (currentClient == null || !samples.TryGetValue(currentClient, out PlayerSample current) || !current.Eligible)
                 {
                     continue;
                 }
 
-                if (currentClient.playerData.getOnWorld() == false || currentClient.playerData.waitForRPCShutDown)
-                {
-                    continue;
-                }
-
-                uint districtId = currentClient.playerData.getDistrictId();
+                uint districtId = current.District;
                 if (!clientGrids.TryGetValue(districtId, out SpatialGrid<WorldClient> grid))
                 {
                     continue;
                 }
 
-                double currentPlayerX = 0;
-                double currentPlayerY = 0;
-                double currentPlayerZ = 0;
-                NumericalUtils.LtVector3dToDoubles(currentClient.playerInstance.Position.getValue(),
-                    ref currentPlayerX, ref currentPlayerY, ref currentPlayerZ);
+                if (canSkip && !current.Changed && evaluatedViews.TryGetValue(currentClient, out var seen) &&
+                    seen.Views == currentClient.viewMan.Version && !NeighbourChanged(grid, current, seen.Near, samples))
+                {
+                    SkippedPlayerEvaluations++;
+                    continue;
+                }
+
+                double currentPlayerX = current.X;
+                double currentPlayerZ = current.Z;
 
                 HashSet<ulong> nearbyPlayerEntities = new HashSet<ulong>();
                 foreach (List<WorldClient> cell in grid.GetNeighborCells((float)currentPlayerX, (float)currentPlayerZ, ViewRange))
@@ -703,25 +765,19 @@ namespace hds
                             continue;
                         }
 
-                        if (otherClient.Alive == false || otherClient.playerData.getOnWorld() == false ||
-                            otherClient.playerData.waitForRPCShutDown)
+                        // A client the grid holds but this pass didn't sample (added since the snapshot) is read live.
+                        if (!samples.TryGetValue(otherClient, out PlayerSample other))
+                        {
+                            samples[otherClient] = other = SamplePlayers(new List<WorldClient> { otherClient })[otherClient];
+                        }
+
+                        if (!other.Eligible || other.District != districtId)
                         {
                             continue;
                         }
-
-                        if (otherClient.playerData.getDistrictId() != districtId)
-                        {
-                            continue;
-                        }
-
-                        double otherPlayerX = 0;
-                        double otherPlayerY = 0;
-                        double otherPlayerZ = 0;
-                        NumericalUtils.LtVector3dToDoubles(otherClient.playerInstance.Position.getValue(),
-                            ref otherPlayerX, ref otherPlayerY, ref otherPlayerZ);
 
                         bool playerIsInCircle = mathUtils.IsInCircle((float)currentPlayerX, (float)currentPlayerZ,
-                            (float)otherPlayerX, (float)otherPlayerZ, ViewRange);
+                            (float)other.X, (float)other.Z, ViewRange);
 
                         if (!playerIsInCircle)
                         {
@@ -729,16 +785,14 @@ namespace hds
                         }
 
                         // A sneaking or invisible enemy stays out of this player's sight (docs/STEALTH.md)
-                        if (Stealth.HiddenFrom(currentClient, otherClient))
+                        if (other.Hidden && Stealth.HiddenFrom(currentClient, otherClient))
                         {
                             continue;
                         }
 
-                        nearbyPlayerEntities.Add(otherClient.playerData.getEntityId());
+                        nearbyPlayerEntities.Add(other.Entity);
 
-                        ClientView clientView = currentClient.viewMan.GetViewForEntityAndGo(
-                            otherClient.playerData.getEntityId(),
-                            NumericalUtils.ByteArrayToUint16(otherClient.playerInstance.GetGoid(), 1));
+                        ClientView clientView = currentClient.viewMan.GetViewForEntityAndGo(other.Entity, other.Goid);
 
                         if (clientView.viewCreated == false &&
                             currentClient.playerData.getDistrictId() == otherClient.playerData.getDistrictId() &&
@@ -767,7 +821,7 @@ namespace hds
                     continue;
                 }
 
-                UInt16 playerGoId = NumericalUtils.ByteArrayToUint16(currentClient.playerInstance.GetGoid(), 1);
+                UInt16 playerGoId = current.Goid;
                 List<UInt16> viewsToRemove = new List<UInt16>();
                 List<ClientView> viewSnapshot = currentClient.viewMan.Snapshot();
                 foreach (ClientView view in viewSnapshot)
@@ -802,7 +856,29 @@ namespace hds
                 {
                     currentClient.viewMan.removeViewByViewId(viewId);
                 }
+                evaluatedViews[currentClient] = (currentClient.viewMan.Version, Near(grid, current, currentClient));
             }
+        }
+
+        /// <summary>Whether anyone in the player's neighbour cells now, or in them at its last evaluation, changed.</summary>
+        private static bool NeighbourChanged(SpatialGrid<WorldClient> grid, PlayerSample current, List<WorldClient> near,
+            Dictionary<WorldClient, PlayerSample> samples)
+        {
+            foreach (WorldClient other in near)
+                if (!samples.TryGetValue(other, out PlayerSample s) || s.Changed) return true;
+            foreach (List<WorldClient> cell in grid.GetNeighborCells((float)current.X, (float)current.Z, ViewRange))
+                foreach (WorldClient other in cell)
+                    if (other != null && (!samples.TryGetValue(other, out PlayerSample s) || s.Changed)) return true;
+            return false;
+        }
+
+        private static List<WorldClient> Near(SpatialGrid<WorldClient> grid, PlayerSample current, WorldClient self)
+        {
+            var near = new List<WorldClient>();
+            foreach (List<WorldClient> cell in grid.GetNeighborCells((float)current.X, (float)current.Z, ViewRange))
+                foreach (WorldClient other in cell)
+                    if (other != null && !ReferenceEquals(other, self)) near.Add(other);
+            return near;
         }
 
         internal static bool TryClaimInactiveClient(WorldClient client,out string key)

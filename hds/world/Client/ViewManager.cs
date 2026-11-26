@@ -11,7 +11,9 @@ namespace hds
     /// </summary>
     public class ViewManager
     {
-        public List<ClientView> views = new List<ClientView>();
+        /// <summary>The views in creation order, indexed by entity and view id: the visibility pass looks up a view for
+        /// every pair of nearby players each pass, and a linear Find made that quadratic in the view count.</summary>
+        public readonly ViewList views = new ViewList();
         UInt16 currentViewID = 3; // We start from 3 to increment
 
 
@@ -34,7 +36,7 @@ namespace hds
         {
             lock (views)
             {
-                return views.Find(delegate(ClientView cv) { return cv.ViewID == viewId; });
+                return views.FirstWithViewId(viewId);
             }
         }
 
@@ -42,7 +44,7 @@ namespace hds
         {
             lock (views)
             {
-                return views.Find(delegate(ClientView cv) { return cv.entityId == entityId; });
+                return views.FirstForEntity(entityId);
             }
         }
 
@@ -50,7 +52,7 @@ namespace hds
         {
             lock (views)
             {
-                ClientView view = views.Find(delegate(ClientView cv) { return cv.ViewID == viewId; });
+                ClientView view = views.FirstWithViewId(viewId);
                 if (view != null)
                 {
                     views.Remove(view);
@@ -71,6 +73,9 @@ namespace hds
                 views.Clear();
             }
         }
+
+        /// <summary>See ViewList.Version.</summary>
+        public long Version { get { lock (views) return views.Version; } }
 
         public int Count
         {
@@ -97,7 +102,7 @@ namespace hds
         {
             lock (views)
             {
-                ClientView view = views.Find(delegate(ClientView cv) { return cv.entityId == entityId; });
+                ClientView view = views.FirstForEntity(entityId);
                 if (view == null || view.ViewID == 0)
                 {
                     view = addView(entityId, goID);
@@ -106,5 +111,86 @@ namespace hds
             }
         }
 
+    }
+    /// <summary>
+    /// The view list with entity and view-id indexes kept in step with every add and remove, so the first view
+    /// for an entity or id is found without scanning. Order and first-match semantics are the list's own.
+    /// </summary>
+    public sealed class ViewList : System.Collections.ObjectModel.Collection<ClientView>
+    {
+        private readonly Dictionary<UInt64, List<ClientView>> byEntity = new Dictionary<UInt64, List<ClientView>>();
+        private readonly Dictionary<UInt16, List<ClientView>> byViewId = new Dictionary<UInt16, List<ClientView>>();
+
+        /// <summary>Bumped by every add, remove, replace and clear: the visibility pass skips a player whose views and surroundings are unchanged.</summary>
+        public long Version { get; private set; }
+
+        public ClientView FirstForEntity(UInt64 entityId) =>
+            byEntity.TryGetValue(entityId, out var list) && list.Count > 0 ? list[0] : null;
+
+        public ClientView FirstWithViewId(UInt16 viewId) =>
+            byViewId.TryGetValue(viewId, out var list) && list.Count > 0 ? list[0] : null;
+
+        protected override void InsertItem(int index, ClientView item)
+        {
+            base.InsertItem(index, item);
+            Version++;
+            if (item == null) return;
+            if (index == Count - 1)
+            {
+                Append(byEntity, item.entityId, item);
+                Append(byViewId, item.ViewID, item);
+            }
+            else Rebuild();
+        }
+
+        protected override void RemoveItem(int index)
+        {
+            ClientView item = this[index];
+            base.RemoveItem(index);
+            Version++;
+            if (item == null) return;
+            Unindex(byEntity, item.entityId, item);
+            Unindex(byViewId, item.ViewID, item);
+        }
+
+        protected override void SetItem(int index, ClientView item)
+        {
+            base.SetItem(index, item);
+            Version++;
+            Rebuild();
+        }
+
+        protected override void ClearItems()
+        {
+            base.ClearItems();
+            Version++;
+            byEntity.Clear();
+            byViewId.Clear();
+        }
+
+        private void Rebuild()
+        {
+            byEntity.Clear();
+            byViewId.Clear();
+            foreach (ClientView view in this)
+            {
+                if (view == null) continue;
+                Append(byEntity, view.entityId, view);
+                Append(byViewId, view.ViewID, view);
+            }
+        }
+
+        private static void Append<TKey>(Dictionary<TKey, List<ClientView>> index, TKey key, ClientView item)
+        {
+            if (!index.TryGetValue(key, out var list)) index[key] = list = new List<ClientView>(1);
+            list.Add(item);
+        }
+
+        private static void Unindex<TKey>(Dictionary<TKey, List<ClientView>> index, TKey key, ClientView item)
+        {
+            if (!index.TryGetValue(key, out var list)) return;
+            list.Remove(item);
+            if (list.Count == 0) index.Remove(key);
+        }
     }
 }
