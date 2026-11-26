@@ -3,6 +3,7 @@ using System.Net;
 using System.Net.Sockets;
 
 if(args.Contains("--authenticated")) return await AuthenticatedScale.RunAsync(args);
+if(args.Contains("--auth-burst")) return await AuthBurst.RunAsync(args);
 
 Options options = Options.Parse(args);
 byte[] payload = new byte[Math.Max(1, options.PayloadBytes)];
