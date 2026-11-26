@@ -80,8 +80,8 @@ namespace hds{
 		}
 		
 		public void forceClose(){
-			tcpClient.Close();
-			clientStream.Close();
+			try { tcpClient?.Close(); } catch { }
+			try { clientStream?.Close(); } catch { }
 		}
 		
 		public bool isYourClientWaiting(UInt32 waitingID){
@@ -128,13 +128,16 @@ namespace hds{
 				}catch(MarginException marEx){
 					Output.WriteLine(marEx);
 					break;
+				}catch(Exception ex){
+					Output.WriteLine("Margin client dropped (" + ex.GetType().Name + "): " + ex.Message);
+					break;
 				}
 				
   			}
 			working = false;
   			Output.WriteLine("Margin Client Disconnected");
-  			tcpClient.Close();
-			clientStream.Close();
+  			try { tcpClient?.Close(); } catch { }
+			try { clientStream?.Close(); } catch { }
 		}	
 		
 		

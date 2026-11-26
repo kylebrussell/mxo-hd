@@ -233,4 +233,44 @@ public class AuthBurstAndFramingTests
             server.stopServer();
         }
     }
+
+    [Fact]
+    public void Margin_server_client_list_survives_concurrent_logins_and_lookups()
+    {
+        var margin = new MarginServer();
+        using var start = new ManualResetEventSlim();
+        var errors = new System.Collections.Concurrent.ConcurrentBag<Exception>();
+
+        Task[] writers = Enumerable.Range(0, 4).Select(w => Task.Run(() =>
+        {
+            start.Wait();
+            try
+            {
+                for (int i = 0; i < 200; i++)
+                {
+                    margin.RegisterClient(new MarginClient((w << 16) | i));
+                }
+            }
+            catch (Exception ex) { errors.Add(ex); }
+        })).ToArray();
+
+        Task[] readers = Enumerable.Range(0, 4).Select(r => Task.Run(() =>
+        {
+            start.Wait();
+            try
+            {
+                for (int i = 0; i < 500; i++)
+                {
+                    _ = margin.IsAnotherClientActive((uint)(i + 1));
+                    _ = margin.SessionKeyForVerifiedCharacter((uint)(i + 1));
+                    if (i % 10 == 0) margin.RemoveClientsByCharId((uint)(i + 1));
+                }
+            }
+            catch (Exception ex) { errors.Add(ex); }
+        })).ToArray();
+
+        start.Set();
+        Task.WaitAll(writers.Concat(readers).ToArray());
+        Assert.Empty(errors);
+    }
 }
