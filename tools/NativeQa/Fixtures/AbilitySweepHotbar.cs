@@ -12,6 +12,7 @@ public static class AbilitySweepHotbar
     private const int SlotRecordsStart = 16;
     private const int SelectionLength = 32;
     internal const uint SingleItemDescriptor = 0x0c000000; // Margin 05 descriptor for one ordinary bag item.
+    public static string DefaultTemplatePath => Path.Combine(Path.GetTempPath(), "mxo-qa", DisposableTemplate);
 
     public sealed record InventoryShortcut(byte BagSlot, uint Goid, string Label);
 
@@ -21,7 +22,7 @@ public static class AbilitySweepHotbar
         string? path = Environment.GetEnvironmentVariable(TemplateVariable);
         if (string.IsNullOrWhiteSpace(path))
         {
-            path = Path.Combine(Path.GetTempPath(), "mxo-qa", DisposableTemplate);
+            path = DefaultTemplatePath;
             if (!File.Exists(path))
             {
                 if (required)
@@ -36,6 +37,105 @@ public static class AbilitySweepHotbar
         byte[] template = new byte[(int)file.Length];
         file.ReadExactly(template);
         return Seed(template, loadout, includeWithdraw, pageThree, inventory);
+    }
+
+    /// <summary>
+    /// Validates a stock client cui.cfg (or MxO client directory containing Profiles/CSR_AbilityQA/CSR_Tester_6E/cui.cfg)
+    /// and installs a disposable copy at <paramref name="destinationPath"/> (default: <see cref="DefaultTemplatePath"/>).
+    /// </summary>
+    public static (string DestinationPath, int Bytes, uint ShortcutCount) CaptureTemplate(string sourcePath, string? destinationPath = null)
+    {
+        if (string.IsNullOrWhiteSpace(sourcePath))
+            throw new ArgumentException("Supply a stock cui.cfg path or an MxO client directory.", nameof(sourcePath));
+
+        string resolvedSource = Path.GetFullPath(sourcePath);
+        if (Directory.Exists(resolvedSource))
+        {
+            resolvedSource = Path.Combine(resolvedSource, "Profiles", "CSR_AbilityQA", "CSR_Tester_6E", "cui.cfg");
+        }
+        if (!File.Exists(resolvedSource))
+            throw new FileNotFoundException("Stock client cui.cfg not found.", resolvedSource);
+
+        byte[] bytes = File.ReadAllBytes(resolvedSource);
+        uint shortcutCount = ValidateTemplate(bytes);
+
+        string destination = Path.GetFullPath(string.IsNullOrWhiteSpace(destinationPath) ? DefaultTemplatePath : destinationPath);
+        Directory.CreateDirectory(Path.GetDirectoryName(destination)!);
+        string temp = destination + ".tmp-" + Guid.NewGuid().ToString("N")[..8];
+        try
+        {
+            File.WriteAllBytes(temp, bytes);
+            File.Move(temp, destination, overwrite: true);
+        }
+        catch
+        {
+            if (File.Exists(temp)) File.Delete(temp);
+            throw;
+        }
+        return (destination, bytes.Length, shortcutCount);
+    }
+
+    public static uint ValidateTemplate(byte[] template)
+    {
+        if (template.Length is < SlotRecordsStart + SelectionLength or > QaCharacterUi.MaxLength ||
+            Read(template, 0) != 2 || Read(template, 8) != 1)
+            throw new InvalidDataException("Expected stock cui.cfg version 2 with shortcuts version 1.");
+
+        uint size = Read(template, 4);
+        uint count = Read(template, 12);
+        if (size < 12 + SelectionLength || size >= template.Length - 4 || count > 200)
+            throw new InvalidDataException("Invalid shortcut section size or count.");
+        int endOfRecords = 4 + (int)size - SelectionLength;
+
+        var seen = new HashSet<(byte Page, byte Slot)>();
+        int cursor = SlotRecordsStart;
+        for (int i = 0; i < count; i++)
+        {
+            RequireBytes(cursor, 6, endOfRecords);
+            byte page = template[cursor];
+            byte slot = template[cursor + 1];
+            int length = RecordLength(template, cursor, endOfRecords);
+            if (page >= 20 || slot >= 10 || !seen.Add((page, slot)))
+                throw new InvalidDataException("Invalid or duplicate stock shortcut slot.");
+            cursor += length;
+        }
+        if (cursor != endOfRecords)
+            throw new InvalidDataException("Unexpected bytes between stock shortcuts and selection state.");
+        return count;
+    }
+
+    public static IReadOnlyList<string> ManualSetupMessages(NativeQaModePlan plan, string? expectedTemplatePath = null)
+    {
+        if (!plan.HasHotbar) return Array.Empty<string>();
+
+        string path = expectedTemplatePath ?? DefaultTemplatePath;
+        var lines = new List<string>
+        {
+            $"No disposable stock UI template found at {path} (and {TemplateVariable} is unset). Starting without pre-seeded Margin character UI (type 0c); place shortcuts manually:"
+        };
+
+        var page2 = new List<string>();
+        for (int i = 0; i < plan.HotbarAbilities.Count; i++)
+            page2.Add($"slot {i + 1} = ability {plan.HotbarAbilities[i]} (Actions > Abilities)");
+        if (plan.HotbarWithdraw)
+            page2.Add($"slot {plan.HotbarAbilities.Count + 1} = Withdraw (Actions > Combat Tactics)");
+        int itemStart = plan.HotbarAbilities.Count + (plan.HotbarWithdraw ? 1 : 0) + 1;
+        for (int i = 0; i < plan.HotbarInventory.Count; i++)
+        {
+            var item = plan.HotbarInventory[i];
+            page2.Add($"slot {itemStart + i} = {item.Label} (Inventory bag slot {item.BagSlot}, GOID {item.Goid} -> right-click > Add Item to Hotbar)");
+        }
+        if (page2.Count > 0)
+            lines.Add("Manual hotbar page 2: " + string.Join("; ", page2) + ".");
+
+        if (plan.HotbarPageThree.Count > 0)
+        {
+            var page3 = plan.HotbarPageThree.Select((id, index) => $"slot {index + 1} = ability {id}");
+            lines.Add("Manual hotbar page 3: " + string.Join("; ", page3) + ".");
+        }
+
+        lines.Add("To restore pre-seeded hotbars after a stock client run: dotnet tools/NativeQa/bin/Release/net8.0/NativeQa.dll --capture-cui-template \"$env:USERPROFILE\\Developer\\mxo-client\\MxO\"");
+        return lines;
     }
 
     internal static void Validate(IReadOnlyList<ushort> abilities, bool includeWithdraw = false,
