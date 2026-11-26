@@ -4,6 +4,7 @@ using System.Net.Sockets;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using hds;
+using hds.shared;
 
 namespace hds.Tests;
 
@@ -92,6 +93,79 @@ public class WorldClientResetTests
         client.messageQueue.addRpcMessage(new byte[] { 0x81, 0x49 });
         client.FlushQueue(force: true);
         Assert.Equal(((ushort)1, (ushort)1, (ushort)2), recorder.Headers[2]);
+    }
+
+    [Theory]
+    [InlineData(51, 190, 195)]
+    [InlineData(52, 386, 401)]
+    public void PostResetBareAckRetiresReliableRpcWithoutStartingAnotherAckRun(
+        ushort rpcNumber, ushort clientSequence, ushort serverSequence)
+    {
+        // PR1222 PacketLog lines 8464 and 10492: the final 02s before two silent intervals.
+        // Without the 02 reply, the next server sequence goes to the captured chat RPC.
+        var client = (WorldClient)RuntimeHelpers.GetUninitializedObject(typeof(WorldClient));
+        var recorder = new RecordingCipher();
+        var peer = new WorldEncryption();
+        var protocol = new MultiProtocolManager();
+        using var receiver = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+        receiver.Bind(new IPEndPoint(IPAddress.Loopback, 0));
+        using var sender = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+        Set(client, "flushLock", new object());
+        Set(client, "<TransportFence>k__BackingField", new WorldSendFence());
+        Set(client, "cypher", recorder);
+        Set(client, "socket", sender);
+        Set(client, "Remote", receiver.LocalEndPoint!);
+        client.messageQueue = new MessageQueue();
+        client.playerData = new ClientData();
+        client.playerData.setSseq(serverSequence);
+        client.playerData.setRPCCounter(rpcNumber);
+        for (int sequence = clientSequence - 8; sequence < clientSequence; sequence++)
+            client.messageQueue.ClientReceipts.Observe((ushort)sequence);
+
+        var previous = Store.currentClient;
+        Store.currentClient = client;
+        try
+        {
+            void ReplayBareAck(ushort sequence, ushort ack, ushort bits)
+            {
+                byte[] bare = { 0x02 };
+                byte[] decoded = client.DecryptReceivedPacket(peer.encrypt(bare, bare.Length, bits, ack, sequence));
+                Assert.Equal(bare, decoded);
+                protocol.Parse(true, decoded);
+                client.FlushQueue(force: true);
+            }
+
+            ReplayBareAck(clientSequence, serverSequence, 0x7f);
+            Assert.Equal(serverSequence, client.playerData.getACK());
+            Assert.Empty(recorder.Plain);
+
+            byte[] captured = Convert.FromHexString(
+                "2e0700000000000000000000006400002e00240000000000000000000000000000000b004353525f54657374657200");
+            client.messageQueue.addRpcMessage(captured);
+            client.FlushQueue(force: true);
+
+            var packet = Assert.Single(recorder.Plain);
+            var record = Assert.Single(HeadlessClient.WireFormat.ParsePayload(packet).Rpcs);
+            Assert.Equal(captured, record.Bytes);
+            Assert.Equal(rpcNumber, record.ListCounter);
+            var header = Assert.Single(recorder.Headers);
+            Assert.Equal(clientSequence, header.ClientSequence);
+            Assert.Equal((ushort)0xff, header.Bits);
+            Assert.Equal(serverSequence + 1, header.ServerSequence);
+            var message = Assert.IsType<SequencedMessage>(Assert.Single(client.messageQueue.RPCMessagesQueue));
+
+            ReplayBareAck((ushort)(clientSequence + 1), header.ServerSequence, 0x7f);
+            Assert.Equal(header.ServerSequence, client.playerData.getACK());
+            Assert.Equal(clientSequence + 1, client.messageQueue.ClientReceipts.Latest);
+            Assert.Single(recorder.Plain);
+            Assert.Empty(client.messageQueue.TakeRpcsToSend(
+                message.lastRpcSendTick + SequencedMessage.RpcResendIntervalMs, client.playerData.getRPCCounter(), out var retry));
+            Assert.Equal(0, retry.Count);
+        }
+        finally
+        {
+            Store.currentClient = previous;
+        }
     }
 
     [Fact]

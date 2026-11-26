@@ -129,6 +129,21 @@ acknowledgment out of the new receipt and retry windows. The replay test
 delivers a later bare ACK before that captured request to exercise reordering,
 then checks the reset, first setup and first new client sequence.
 
+The native PR1222 Jack In capture shows the first new-epoch ACK at
+CSEQ 1 / SSEQ 1 (PacketLog line 6497). Later, 185 of the first 198
+server datagrams in this epoch are bare `02` replies. The client and
+server repeatedly acknowledge each other's bare packets. The client then
+reports SSEQ 195 for about 12 seconds, while RPC counter 51 goes out six
+times, and the same pattern repeats at SSEQ 401 for counter 52. A similar
+stall at SSEQ 506 precedes either reset. No acknowledgment covering the
+later datagrams arrives during the stalls.
+
+Bare `02` packets still update the receive window, retire acknowledged
+reliable traffic, and count as ingress. They stop requesting a reply of
+their own. Reset and ordinary data responses keep their existing behavior.
+The replay uses the two captured checkpoints and chat records to verify
+that a bare acknowledgment retires the RPC without another send.
+
 OUR policy for a silent peer keeps the existing 30-second session reap. After
 four reliable retry cycles without an advancing server acknowledgment and at
 least five seconds without an inbound datagram, the retry interval rises from

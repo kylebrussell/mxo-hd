@@ -160,9 +160,10 @@ namespace hds{
 				}
 
 			}
-			else
+			else if (AckFlags.Get(6))
 			{
-				// we have just ackonly but we need to send it 
+				// Preserve the reset reply. WorldClient already applied ordinary
+				// bare ACKs. Replying makes the stock client ACK again.
 				Store.currentClient.messageQueue.ackOnlyCount++;
 			}
 			
