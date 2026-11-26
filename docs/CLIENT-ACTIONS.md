@@ -216,7 +216,7 @@ The phone's Email window, `/mail`, and mail the server sends (retail forwarded l
 | `60` | Compile stored code into an item (ObjectID, Slot u16, PersonalInventoryItem 0 = a code storage slot, InvSlotOfToolUsed, FromCrafting): the Compile window's button (`CfCo`, 0x620836b0) and the Loading Area storage window. The answer is `61 <ResultCode>` | D | partial: owned bits, fragments and supported ordinary item codes. Ability-code archive economy unresolved. | medium |
 | `66` | Slot u8, TargetID: a mission item dragged onto the NPC whose key it carries (0x621eb080). The client prints "You hand over the %s." itself | D | handled (new): the mission's Give goal, as the NPC menu's Give | medium |
 | `80 c6` | PillInvSlot: use a pill from the bag (callers in the inventory and hotbar menus) | D | partial: owned supported pill goes through existing effect/timer/removal path; other consumables remain unsupported | low |
-| `81 0e` | Vendor buy (ItemTypeID, BuyBackLastItemSold) | D, C 40 | handled | high |
+| `81 0e` | Vendor buy (ItemTypeID, BuyBackLastItemSold) | D, C 40 | handled: ordinary purchase places the item and debits Info atomically; full bags are refused; Buy Back uses its separate last-sale receipt | high |
 | `81 11` | Vendor sell (Appraise, Slot) | D, C 5 | handled | high |
 | `81 10` | StringID, CloseUI, sent as `00 00 00 00 01`. Guess: closing the vendor window | C 9 | handled: CloseUI=1 invalidates active vendor session; listed-stock/session authority enforced | low |
 | `81 16` | Collector exchange (ItemSetIndex, Prizes) | D | handled | medium |
@@ -228,8 +228,8 @@ The phone's Email window, `/mail`, and mail the server sends (retail forwarded l
 | `81 21` | Slot u8: a bag item dropped onto the open container window (the drop handler's target 15, 0x620a045b, from the window's `MLUp`); the server's `81 22` (ObjectID, InstanceData, Status) answers. Guess: putting an item into a mission container | D | handled: nearby open mission Put container; `81 22` result; generic storage remains missing | low |
 | `81 29` | Marketplace: my listings / next page (MarketplaceID, SearchForward) | D, C 7 | handled | medium |
 | `81 24` | Marketplace search | D, C 84 | handled | medium |
-| `81 26` | Marketplace buy | D, C 14 | handled | medium |
-| `81 2b` | Marketplace: list an item | D, C 2 | handled | medium |
+| `81 26` | Marketplace buy or de-list | D, C 14 | handled: atomic sale/delivery; ordinary item codes go to the archive | medium |
+| `81 2b` | Marketplace: list an item | D, C 2 | handled: container 1 reads the bag; container 0 reads ordinary item codes in the archive | medium |
 | `81 82` | Secure trade request | D | handled (docs/SECURE-TRADE.md) | high |
 | `81 85` | Secure trade action | D | handled | high |
 

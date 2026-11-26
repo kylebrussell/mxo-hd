@@ -12,7 +12,7 @@ namespace hds.databases
     /// Table <c>marketplace</c>: id, category (hex of the 4-byte tag), itemID, purity (item descriptor),
     /// delistPrice, price, charID (seller), charRep, is_sold, created (unix time).
     /// </summary>
-    public class MarketplaceDb
+    public partial class MarketplaceDb
     {
         private static readonly object IdLock = new object();
 
@@ -47,7 +47,7 @@ namespace hds.databases
             {
                 Id = Convert.ToUInt32(r["id"]),
                 Category = Convert.ToUInt32(Convert.ToString(r["category"]), 16),
-                GoId = Convert.ToUInt32(Convert.ToInt64(r["itemID"])),
+                GoId = unchecked((UInt32) Convert.ToInt64(r["itemID"])),
                 Descriptor = unchecked((UInt32) Convert.ToInt32(r["purity"])),
                 DelistPrice = Convert.ToUInt32(r["delistPrice"]),
                 Price = Convert.ToUInt32(r["price"]),
@@ -105,36 +105,6 @@ namespace hds.databases
             }
         }
 
-        /// <summary>Stores the listing and gives it the next id (the table has no auto increment).</summary>
-        public void Insert(MarketListing listing)
-        {
-            lock (IdLock)
-            {
-                using (var conn = Open())
-                {
-                    object max = Cmd(conn, "SELECT COALESCE(MAX(id), 0) FROM marketplace").ExecuteScalar();
-                    listing.Id = Convert.ToUInt32(max) + 1;
-                    Cmd(conn,
-                        "INSERT INTO marketplace (id, category, itemID, purity, delistPrice, price, charID, charRep, is_sold, created) " +
-                        "VALUES (@id, @cat, @goid, @purity, @delist, @price, @char, @rep, 0, @created)",
-                        "@id", (long) listing.Id, "@cat", CategoryKey(listing.Category), "@goid", (long) listing.GoId,
-                        "@purity", unchecked((int) listing.Descriptor), "@delist", (long) listing.DelistPrice,
-                        "@price", (long) listing.Price, "@char", (long) listing.SellerCharId, "@rep", (int) listing.SellerRep,
-                        "@created", (long) listing.Created).ExecuteNonQuery();
-                }
-            }
-        }
-
-        /// <summary>Marks the listing sold; false if someone else bought it first.</summary>
-        public bool MarkSold(UInt32 listingId)
-        {
-            using (var conn = Open())
-            {
-                return Cmd(conn, "UPDATE marketplace SET is_sold = 1 WHERE id = @id AND is_sold = 0", "@id", (long) listingId)
-                    .ExecuteNonQuery() == 1;
-            }
-        }
-
         /// <summary>The item in one of the player's inventory slots (goid 0 when empty).</summary>
         public void GetInventoryItem(UInt32 charId, UInt16 slot, out UInt32 goId, out UInt32 purity)
         {
@@ -181,31 +151,6 @@ namespace hds.databases
                 Cmd(conn, "INSERT INTO inventory (charId, goid, slot, count, purity, created) VALUES (@c, @g, @s, 0, @p, NOW())",
                     "@c", (long) charId, "@g", (long) goId, "@s", (int) slot, "@p", unchecked((int) purity)).ExecuteNonQuery();
             }
-        }
-
-        /// <summary>The first free backpack slot (0..96, the worn range starts at 97), or -1 when full.</summary>
-        public int FirstFreeSlot(UInt32 charId)
-        {
-            var used = new HashSet<int>();
-            using (var conn = Open())
-            using (var cmd = Cmd(conn, "SELECT slot FROM inventory WHERE charId = @c", "@c", (long) charId))
-            using (var r = cmd.ExecuteReader())
-            {
-                while (r.Read())
-                {
-                    used.Add(Convert.ToInt32(r.GetValue(0)));
-                }
-            }
-
-            for (int slot = 0; slot < 97; slot++)
-            {
-                if (!used.Contains(slot))
-                {
-                    return slot;
-                }
-            }
-
-            return -1;
         }
 
         /// <summary>Credits an offline seller (the online case goes through the player's live info).</summary>

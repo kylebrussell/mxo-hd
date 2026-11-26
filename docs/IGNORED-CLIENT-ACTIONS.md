@@ -66,6 +66,44 @@ log directly into the Tutorial and check Skip Tutorial independently.
 Headless scenarios also cover the tutorial request and replay, archive charge
 depletion, and a rejected recipe commit followed by a successful decompile.
 
+## Round 2 follow-up ranking
+
+The ranking weighs lost items or Info first, followed by blocked player actions
+and missing presentation. It includes implemented handlers that still answered
+some requests incorrectly.
+
+| Rank | Player impact | Stock action | Evidence and disposition |
+|---|---|---|---|
+| 1 | High | Vendor Buy `81 0e` | The ordinary purchase used to debit Info even when inventory placement failed. The vendor charge and item update now commit together. Full bags get the existing vendor refusal response. |
+| 2 | High | Marketplace List `81 2b` | The stock Lock Pick code trace uses container 0, slot 396. A bag lookup ignores that source. The captured `5f 8c 01 00` and `81 2c` now follow an atomic archive removal and posting. |
+| 3 | High | Marketplace Buy or De-list `81 26` | Checkout used to write the listing, bag, and wallets separately and could only deliver to the bag. Now it commits delivery, sale state and payment together. An ordinary item code returns through a known-abilities `5e` record. |
+| 4 | Medium | Mail Send and Take Attachments `81 e5` / `81 fc` | The layouts and success results are known. Bag writes and message updates still span separate commits, so a delivery failure can strand an item. |
+| 5 | Medium | Archive Compile `60`, Decompile Items `81 31` | Ordinary archive materialization and owned-item recipe learning work. Ability-code archive economy and fragment recovery still need grounded costs or yields. |
+| 6 | Low | Drop Luggable `5c`; Use Pill `80 c6` | Light luggables and supported pill families work. Heavy attachments need carrying-state evidence, and additional consumables need verified effect rules. |
+| 7 | Low | FX completion `81 aa`, world-entry `80 be`, range `81 46` | Senders are known. No reply or authoritative state transition is established. `81 47` and `81 4a` still lack a reachable sender. |
+| 8 | Low | Local support `81 b*`, GM inspection `81 57/59/5b` | Local support and private GM text reports work. External ticket service and structured GM viewers remain open. |
+
+The marketplace uses the low seven bits of the captured class-46 descriptor
+for the charge count (1–127). Listing accepts both flagged storage rows and
+older unflagged Write Code rows whose category matches a shipped recipe.
+Checkout stores `CodeStorage.BaseValue(goid)` and `charges - 1`, then sends the
+flagged storage add. Marketplace delivery uses slots 384–519 by server
+policy, with the actual u16 slot in the storage add. The `81 27` buy result
+echoes the requested byte slot and keeps the marketplace descriptor.
+
+Use `vendor-purchase-full-bag` at Mara Central to attempt a Lock Pick purchase
+at 5,000 Info, recycle one shirt for 340, then buy for 1,000. Use
+`marketplace-archive-code` from the same booth to list CSR's code for 1,200,
+then buy QAFriend's pre-posted code for 1,000. Compile the bought code in the
+archive. Expect `61 00`, a Lock Pick in the bag, and 880 Info after the
+120 Info compile. De-list and re-list CSR's code to check the return path. The
+fixtures print the stands and steps.
+
+The vendor refusal's `81 10` carries a zero StringID, which bypasses the
+stock popup. Ordinary vendor purchases now also put the refusal in visible
+chat (`2e c7`). The inventory-full status used by mail and the marketplace
+has no verified mapping to the vendor's popup StringID.
+
 ## Original ignored-row audit
 
 The following rows remain ignored; adding a switch that accepts and does nothing would not improve parity. P3 PR113 is now integrated: `5c` is partial for light luggables with pickup/drop persistence; heavy attachments remain absent. Actual combined counts are 118 handled / 14 partial / 15 ignored / 19 not sent (166 rows). Since then `81 55` (/stuck) is handled by a local Loading Area policy (CLIENT-ACTIONS.md).

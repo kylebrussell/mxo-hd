@@ -12,9 +12,12 @@ namespace hds
         public static bool Supported(uint goid)
         {
             var item = CraftingRules.Find(goid);
-            return item != null && item.DefaultCodeCharges >= 1 && item.DefaultCodeCharges <= 127 && !item.CantCraft &&
-                item.Price >= 0 && item.Complexity >= 0 && item.Complexity <= 255 && Crafting.Recipes.ContainsKey(goid);
+            return item != null && item.DefaultCodeCharges >= 1 && item.DefaultCodeCharges <= 127 && CanMaterialize(item);
         }
+
+        // An owned code already carries its charge count. Only writing a new code needs a shipped default.
+        internal static bool CanMaterialize(CraftingRules.Item item) => item != null && !item.CantCraft &&
+            item.Price >= 0 && item.Complexity >= 0 && item.Complexity <= 255 && Crafting.Recipes.ContainsKey(item.Goid);
         public static bool IsConsumable(uint category) => (category & 0xffff) == 0x4349; // Little-endian FourCC starts with IC.
         // Native6207f650: signed16 totals, explicit float32 stores, final clamp after both reductions.
         public static float Seconds(int complexity, int skill, int reduction, int consumableReduction)

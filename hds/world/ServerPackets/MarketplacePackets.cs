@@ -20,6 +20,12 @@ namespace hds
         public bool Sold;
         /// <summary>Unix time the item was listed.</summary>
         public UInt32 Created;
+
+        internal bool IsArchiveCode => GoId == AbilityProgression.AbilityCodeItem &&
+            (Category & 0x80000000u) != 0 &&
+            OrdinaryItemCode.Valid(Descriptor & ~127u, (int)(Descriptor & 127u));
+        internal uint ArchiveGoid => Descriptor >> 7;
+        internal int ArchiveCharges => (int)(Descriptor & 127u);
     }
 
     /// <summary>
@@ -102,8 +108,8 @@ namespace hds
         }
 
         /// <summary>81 27: purchase result. Listing id, slot, goid, descriptor, price and Status (0 for success).</summary>
-        public static byte[] Bought(MarketListing listing, byte slot) =>
-            BuyResult(listing.Id, slot, listing.GoId, listing.Descriptor, listing.Price, 0);
+        public static byte[] Bought(MarketListing listing, byte slot, uint? charged = null) =>
+            BuyResult(listing.Id, slot, listing.GoId, listing.Descriptor, charged ?? listing.Price, 0);
 
         public static byte[] BuyRefused(UInt32 listingId, byte requestedSlot, UInt32 status) =>
             BuyResult(listingId, requestedSlot, 0, 0, 0, status);
