@@ -44,6 +44,23 @@ Raw evidence is under [research/scale/2026-11-25](../research/scale/2026-11-25),
 - **Next profiling targets.** Under that fan-out the next costs are the snapshot stage and player-views. The snapshot stage copies the client and NPC lists and builds the grids; it rises to 85 ms. It is most likely waiting on `WorldServer.Clients`, which the receive path also locks once per datagram. Coalescing queued movement updates per viewer is the other lever. Neither is changed here.
 - **World NPCs no longer stall the pass.** With the full NPC catalog, logins no longer freeze the visibility pass. Mob-motion reaches about 300 ms per pass while 100 to 175 clients are logging in, and the steady mob-views stage averages 15 ms.
 
+## Broadcast lock (follow-up)
+
+The snapshot stage turned out to be lock waiting, not GC. Server GC alone (`DOTNET_gcServer=1`) left it at 83 ms. Every own-view movement datagram went through `WorldServer.SendViewPacketToAllPlayers`, which held the global `Clients` lock while it built, queued and flushed an update for every viewer. NPC updates, NPC view deletes, static-object updates and self-view-to-target updates did the same. Those broadcasts now loop over a `ClientSnapshot()` copy instead.
+
+A/B on master 96d883c0, run back to back. The fix runs used the uncommitted diff, so their plans record GitDirty. Raw data is in [research/scale/2026-11-25-broadcast-lock](../research/scale/2026-11-25-broadcast-lock), with a [SHA256 manifest](../research/scale/2026-11-25-broadcast-lock/SHA256.json).
+
+| Case | Status | Ping timeouts | Echo RTT mean ms | Object updates sent | Snapshot stage mean ms | Server CPU % |
+|---|---|---:|---:|---:|---:|---:|
+| move 100, master | INCOMPLETE | 171 | 589 | 2,019,105 | 64.3 | 129 |
+| move 100, fix | PASS | 0 | 45.6 | 2,239,072 | 0.3 | 104 |
+| move 200, master | INCOMPLETE | 1679 | 1604 | 2,034,724 | 168.5 | 127 |
+| move 200, fix | PASS | 0 | 112.9 | 8,990,881 | 0.8 | 404 |
+
+The fixed 200-client case now delivers about 150,000 viewer updates per second with no ping timeouts. The server CPU figure rises to about four logical processors because broadcasters no longer queue on one lock. The largest remaining stages are player-views (127 ms) and contacts-probes (110 ms).
+
+On today's master, the 100-client moving case no longer passes. The earlier round passed it on a tree from before PR1210. With the fix it passes.
+
 ## Reproduce
 
 Build Release last, because the tool refuses to run when a newer Debug server DLL exists. Then run each case serially:

@@ -36,6 +36,20 @@ public class ScaleMovementEvidenceTests
         }
     }
     [Fact]
+    public void BroadcastLockEvidenceMatchesItsManifestAndTheFixedRunsPass()
+    {
+        string folder=Path.Combine(Root,"research","scale","2026-11-25-broadcast-lock");
+        var manifest=JsonSerializer.Deserialize<Dictionary<string,string>>(File.ReadAllText(Path.Combine(folder,"SHA256.json")))!;
+        Assert.Equal(20,manifest.Count);
+        foreach(var pair in manifest)Assert.Equal(pair.Value,Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(Path.Combine(folder,pair.Key)))));
+        foreach(string run in new[]{"fix-move-100","fix-move-200"})
+        {
+            using var summary=JsonDocument.Parse(File.ReadAllText(Path.Combine(folder,run,"summary.json")));
+            Assert.Equal("PASS",summary.RootElement.GetProperty("Status").GetString());
+            Assert.Empty(summary.RootElement.GetProperty("Failures").EnumerateArray());
+        }
+    }
+    [Fact]
     public void TheUnfixedMovingRunEndedWithoutAnyMeasuredWindow()
     {
         using var summary=JsonDocument.Parse(File.ReadAllText(Data("before-move-200","summary.json")));

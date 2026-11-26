@@ -1,0 +1,52 @@
+{
+  "Options": {
+    "Root": "C:\\Users\\russe\\Developer\\mxo-wt\\opusb-bcast",
+    "Output": "C:\\Users\\russe\\AppData\\Local\\Temp\\claude\\18ef67ab5f120784\\3544e18e-9886-428d-b5ef-ed42efc3c228\\scratchpad\\ab-lock\\fix-move-100",
+    "Clients": 100,
+    "LoginParallel": 4,
+    "WarmupSeconds": 30,
+    "MeasureSeconds": 60,
+    "RampTimeoutSeconds": 120,
+    "Plan": false,
+    "Move": true,
+    "WorldMobs": false
+  },
+  "GitHead": "96d883c09d9dcfc39935a7be2b3f4561b5ff205f",
+  "GitDirty": true,
+  "Environment": {
+    "MXO_MOB_WANDER": "0",
+    "MXO_AGGRO": "0",
+    "MXO_MOBS": "test",
+    "MXO_DEBUG_LOG": "0",
+    "MXO_PACKET_LOG": "0",
+    "MXO_RPC_LOG": "0",
+    "MXO_CLIENT_VIEW_LOG": "0",
+    "MXO_CHAT_DEBUG": "0",
+    "MXO_DROP_RPC_PACKET": "0",
+    "MXO_DEV_COMMANDS": "1",
+    "MXO_SCALE_METRICS": "1"
+  },
+  "HistogramBoundsMs": [
+    0.125,
+    0.25,
+    0.5,
+    1,
+    2,
+    4,
+    8,
+    16,
+    32,
+    64,
+    128,
+    256,
+    512,
+    1000,
+    2000,
+    5000,
+    10000,
+    30000
+  ],
+  "LogicalProcessors": 16,
+  "Framework": ".NET 8.0.34",
+  "OS": "Microsoft Windows 10.0.26300"
+}

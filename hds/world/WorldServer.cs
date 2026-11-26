@@ -373,6 +373,16 @@ namespace hds
         }
 
         /// <summary>
+        /// The connected clients at this moment. Broadcasts iterate this copy instead of holding the Clients lock
+        /// while they build, queue and flush per viewer: under 200 moving players the per-movement broadcast held it
+        /// for the whole fan-out and the receive and visibility threads waited on it.
+        /// </summary>
+        internal static WorldClient[] ClientSnapshot()
+        {
+            lock (Clients) return Clients.Values.ToArray();
+        }
+
+        /// <summary>
         /// This sends a View Create/Update/Delete Packet to all Players 
         /// </summary>
         /// <param name="data">Packet Stream without ViewID</param>
@@ -385,32 +395,28 @@ namespace hds
         /// </summary>
         public void SendViewPacketToAllPlayers(byte[] data,UInt32 charId, UInt32 goId, UInt64 entityId, byte[] followingUpdate = null)
         {
-            lock (Clients)
+            foreach (WorldClient client in ClientSnapshot())
             {
-                foreach (string clientKey in Clients.Keys)
+                if (client == null || client.playerData.getCharID() == charId)
                 {
-                    WorldClient client = Clients[clientKey] as WorldClient;
-                    if (client == null || client.playerData.getCharID() == charId)
-                    {
-                        continue;
-                    }
-
-                    // This used to create a view for every connected client (any district, any distance) and,
-                    // when the view didn't exist yet, send the movement bytes as if they were a spawn; it also
-                    // added stray 00 bytes after the update and after deletes, which made the client misread the
-                    // rest of the packet.
-                    ClientView view = client.viewMan.FindViewForEntity(entityId);
-                    if (view == null || !view.viewCreated)
-                    {
-                        continue;
-                    }
-
-                    byte[] update = BuildViewUpdate(view.ViewID, data);
-                    if (followingUpdate != null)
-                        update = update.Concat(BuildViewUpdate(view.ViewID, followingUpdate)).ToArray();
-                    client.messageQueue.addObjectMessage(update, false);
-                    client.FlushQueue();
+                    continue;
                 }
+
+                // This used to create a view for every connected client (any district, any distance) and,
+                // when the view didn't exist yet, send the movement bytes as if they were a spawn; it also
+                // added stray 00 bytes after the update and after deletes, which made the client misread the
+                // rest of the packet.
+                ClientView view = client.viewMan.FindViewForEntity(entityId);
+                if (view == null || !view.viewCreated)
+                {
+                    continue;
+                }
+
+                byte[] update = BuildViewUpdate(view.ViewID, data);
+                if (followingUpdate != null)
+                    update = update.Concat(BuildViewUpdate(view.ViewID, followingUpdate)).ToArray();
+                client.messageQueue.addObjectMessage(update, false);
+                client.FlushQueue();
             }
         }
 
@@ -444,37 +450,28 @@ namespace hds
                 return;
             }
 
-            lock (Clients)
+            foreach (WorldClient target in ClientSnapshot())
             {
-                
-                foreach (string clientKey in Clients.Keys)
+                if (target.playerData.getEntityId() == theView.entityId)
                 {
-                    WorldClient target = Clients[clientKey];
-                    if (target.playerData.getEntityId() == theView.entityId)
-                    {
-                        Output.WriteDebugLog("Update SelfViewState from Ability FX on OtherState Views from " + StringUtils.charBytesToString(currentClient.playerInstance.CharacterName.getValue()) + " to  " + StringUtils.charBytesToString(target.playerInstance.CharacterName.getValue()) + " HEX: " + StringUtils.bytesToString_NS(pak.ReturnFinalPacket()));
-                        target.messageQueue.addObjectMessage(pak.ReturnFinalPacket(), false);
-                        target.FlushQueue();
-                        return;
-                    }
+                    Output.WriteDebugLog("Update SelfViewState from Ability FX on OtherState Views from " + StringUtils.charBytesToString(currentClient.playerInstance.CharacterName.getValue()) + " to  " + StringUtils.charBytesToString(target.playerInstance.CharacterName.getValue()) + " HEX: " + StringUtils.bytesToString_NS(pak.ReturnFinalPacket()));
+                    target.messageQueue.addObjectMessage(pak.ReturnFinalPacket(), false);
+                    target.FlushQueue();
+                    return;
                 }
             }
         }
 
         public void SendViewUpdateToClientWhoHasStaticObjectSpawned(PacketContent packet, StaticWorldObject worldObject, UInt64 entityStaticId)
         {
-            lock (Clients)
+            foreach (WorldClient client in ClientSnapshot())
             {
-                foreach (string clientKey in Clients.Keys)
+                // Find, not GetViewForEntityAndGo: that would add an empty view to every player for every car
+                ClientView objectView = client.viewMan.FindViewForEntity(entityStaticId);
+                if (objectView != null && objectView.viewCreated && worldObject.metrId == client.playerData.getDistrictId() && client.playerData.getOnWorld())
                 {
-                    WorldClient client = Clients[clientKey] as WorldClient;
-                    // Find, not GetViewForEntityAndGo: that would add an empty view to every player for every car
-                    ClientView objectView = client.viewMan.FindViewForEntity(entityStaticId);
-                    if (objectView != null && objectView.viewCreated && worldObject.metrId == client.playerData.getDistrictId() && client.playerData.getOnWorld())
-                    {
-                        ServerPackets pak = new ServerPackets();
-                        pak.SendUpdateViewStatePacket(client, objectView.ViewID, packet.ReturnFinalPacket());
-                    }
+                    ServerPackets pak = new ServerPackets();
+                    pak.SendUpdateViewStatePacket(client, objectView.ViewID, packet.ReturnFinalPacket());
                 }
             }
         }
@@ -485,41 +482,33 @@ namespace hds
         /// </summary>
         public void DeleteMobViews(Mob mob)
         {
-            lock (Clients)
+            foreach (WorldClient client in ClientSnapshot())
             {
-                foreach (string clientKey in Clients.Keys)
+                ClientView mobView = client?.viewMan.FindViewForEntity(mob.getEntityId());
+                if (mobView == null)
                 {
-                    WorldClient client = Clients[clientKey] as WorldClient;
-                    ClientView mobView = client?.viewMan.FindViewForEntity(mob.getEntityId());
-                    if (mobView == null)
-                    {
-                        continue;
-                    }
+                    continue;
+                }
 
-                    client.viewMan.removeViewByViewId(mobView.ViewID);
-                    if (mobView.viewCreated)
-                    {
-                        new ServerPackets().sendDeleteViewPacket(client, mobView.ViewID);
-                    }
+                client.viewMan.removeViewByViewId(mobView.ViewID);
+                if (mobView.viewCreated)
+                {
+                    new ServerPackets().sendDeleteViewPacket(client, mobView.ViewID);
                 }
             }
         }
 
         public void SendViewUpdateToClientsWhoHasMobSpawned(PacketContent packet, Mob mob, byte[] followingUpdate = null)
         {
-            lock (Clients)
+            foreach (WorldClient client in ClientSnapshot())
             {
-                foreach (string clientKey in Clients.Keys)
+                // Look up only: GetViewForEntityAndGo would hand every client without the NPC a view id it never
+                // spawns, and the client's view ids would then run one behind the server's.
+                ClientView mobView = client.viewMan.FindViewForEntity(mob.getEntityId());
+                if (mobView != null && mobView.viewCreated && mob.getDistrict() == client.playerData.getDistrictId() && client.playerData.getOnWorld())
                 {
-                    WorldClient client = Clients[clientKey] as WorldClient;
-                    // Look up only: GetViewForEntityAndGo would hand every client without the NPC a view id it never
-                    // spawns, and the client's view ids would then run one behind the server's.
-                    ClientView mobView = client.viewMan.FindViewForEntity(mob.getEntityId());
-                    if (mobView != null && mobView.viewCreated && mob.getDistrict() == client.playerData.getDistrictId() && client.playerData.getOnWorld())
-                    {
-                        ServerPackets pak = new ServerPackets();
-                        pak.SendNpcUpdateData(mobView.ViewID, client, packet.ReturnFinalPacket(), followingUpdate);
-                    }
+                    ServerPackets pak = new ServerPackets();
+                    pak.SendNpcUpdateData(mobView.ViewID, client, packet.ReturnFinalPacket(), followingUpdate);
                 }
             }
         }

@@ -8,7 +8,7 @@ See `docs/TODO.md` for the broader modernization checklist and `docs/PACKET-RESE
 - Outbound flush loop with throttled `FlushQueue()` to batch sends.
 
 ## Validation To Run
-- Done: 50/100/200 authenticated clients, idle ([baseline](SCALE-BASELINE.md)) and moving, with world NPCs and per-stage visibility-pass durations ([movement round](SCALE-MOVEMENT.md)). 100 dense moving clients hold; 200 dense moving clients saturate on the movement fan-out. Next targets are the snapshot stage's `Clients` lock and per-viewer movement coalescing.
+- Done: 50/100/200 authenticated clients, idle ([baseline](SCALE-BASELINE.md)) and moving, with world NPCs and per-stage visibility-pass durations ([movement round](SCALE-MOVEMENT.md)). Broadcasts no longer hold the `Clients` lock, so 200 dense moving clients now pass (echo about 113 ms); the next target is the player-views stage.
 - Done (headless): view spawn/despawn for players, NPCs and hardline booths (`view-range-lifecycle`); subway cars (`subway-*`).
 - Verify auth/margin flows after DB context changes.
 - Capture or acquire vendor buy/sell packet dumps; the imported community dump set does not currently include those headers.
