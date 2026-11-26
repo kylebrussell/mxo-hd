@@ -1016,6 +1016,7 @@ CREATE TABLE `users` (
   `account_status` int(11) NOT NULL DEFAULT '0' COMMENT 'if banned',
   `sessionid` varchar(100) DEFAULT NULL,
   `passwordmd5` varchar(40) DEFAULT NULL,
+  `password_digest` varchar(255) DEFAULT NULL COMMENT 'PasswordHasher: $pbkdf2-sha256$v=1$i=N$salt$hash',
   `email_adress` varchar(255) DEFAULT NULL
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
 

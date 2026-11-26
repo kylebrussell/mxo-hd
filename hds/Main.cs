@@ -1,4 +1,5 @@
 using System;
+using hds.accounts;
 using hds.auth;
 using hds.shared;
 using hds.world.scripting;
@@ -9,6 +10,11 @@ namespace hds{
 	public static class MainClass{
 
 		public static void Main(string[] args){
+			if (Array.IndexOf(args, "--rekey-accounts") >= 0)
+			{
+				Environment.ExitCode = AccountCommands.RekeyAccounts(Array.IndexOf(args, "--all") >= 0);
+				return;
+			}
 			var customCulture = (System.Globalization.CultureInfo)System.Threading.Thread.CurrentThread.CurrentCulture.Clone();
 			customCulture.NumberFormat.NumberDecimalSeparator = ".";
 			System.Threading.Thread.CurrentThread.CurrentCulture = customCulture;
@@ -47,6 +53,7 @@ namespace hds{
                 Store.dbManager.WorldDbHandler.EnsureMissionPersistence();
                 Store.dbManager.MarginDbHandler.EnsureCharacterCreationStorage();
                 Store.dbManager.WorldDbHandler.EnsureVendorBuyback();
+                AccountStore.FromConfig().EnsureSchema();
 
                 /* Initialize the scripting server */
                 Store.rpcScriptManager = new ScriptManager();
@@ -65,6 +72,9 @@ namespace hds{
                 Store.auth.startServer();
                 Store.margin.StartServer();
                 Store.world.StartServer();
+
+                // Sign-up API (off unless MXO_SIGNUP_HTTP=1; loopback by default)
+                AccountCommands.StartSignupIfEnabled();
 
                 // Check if execution keeps going after starting
                 Output.WriteLine("Im'running :D");

@@ -124,6 +124,10 @@
     <Compile Include="world\WorldServer.cs" />
   </ItemGroup>
   <ItemGroup>
+    <!-- Sign-up HTTP API (hds/accounts/SignupHost.cs), only started with MXO_SIGNUP_HTTP=1. -->
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="IronPython" Version="3.4.1" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.8.0" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Scripting" Version="4.8.0" />

@@ -29,6 +29,7 @@ if (args.Length > 0 && (args[0] == "--help" || args[0] == "-h"))
 {
     Console.WriteLine("NativeQa --fixture-plan [mode] [--bind-address IPv4] | --build-info [repository] | --bootstrap-checks <repository> <proof-directory> [mode ...]");
     Console.WriteLine("Native preparation: NativeQa <repository> <fixture-directory> <commit> [mode] [ability-ids] [--bind-address IPv4]");
+    Console.WriteLine("Accounts: NativeQa <repository> <fixture-directory> <commit> account-signup (sign-up API + password checks on; credentials go to <fixture-directory>/credentials.json)");
     return;
 }
 if (args.Length > 0 && args[0].StartsWith('-') &&
@@ -76,6 +77,15 @@ if (args.Length > 0 && args[0] == "--build-info")
     return;
 }
 
+// Accounts QA (docs/ACCOUNTS.md) has its own server setup: real password checks and the sign-up API, no CSR110 copy.
+if (args.Length > 3 && args[3] == AccountSignupFixture.Mode)
+{
+    string signupRoot = Path.GetFullPath(args[0]);
+    if (!File.Exists(Path.Combine(signupRoot, "SQL", "reality_hd.sql")))
+        throw new ArgumentException("NativeQa repository must contain SQL/reality_hd.sql: " + signupRoot);
+    await AccountSignupFixture.RunAsync(signupRoot, Path.GetFullPath(args[1]), args[2], endpoint, configuration);
+    return;
+}
 // Server/data preparation only. The real client's inputs are supplied through Computer Use.
 var fixtureMode=NativeQaModes.RequireKnown(args.Length > 3 ? args[3] : "");
 string root = Path.GetFullPath(args.Length > 0 ? args[0] : Directory.GetCurrentDirectory());

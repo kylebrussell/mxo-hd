@@ -1,7 +1,8 @@
 using System;
 using System.Linq;
 using HDS.Network;
-using hds.databases.Entities;
+using System.Net;
+using hds.accounts;
 using hds.shared;
 
 namespace hds.auth
@@ -19,6 +20,12 @@ namespace hds.auth
         byte[] md5edChallenge;
         
         WorldList wl;
+
+        /// <summary>Shared by every auth session: the lockout counters have to see all of them.</summary>
+        private static readonly Lazy<AccountLogin> SharedLogin = new Lazy<AccountLogin>(() =>
+            new AccountLogin(AccountStore.FromConfig(), LoginThrottle.Shared));
+
+        private static AccountLogin Login => SharedLogin.Value;
 
         public AuthClientSession authClientSession;
         public AuthHandler(AuthClientSession authClientSession)
@@ -187,18 +194,18 @@ namespace hds.auth
             tf.SetIV(blankIV);
             tf.SetKey(tfKey);
 
-            // Create the challenge
-            challenge = new byte[]
-                {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+            // Create the challenge: random, so a recorded login can't be replayed (it used to be all zeros). The client
+            // answers with its MD5 and uses the encrypted form as the IV for the account key, whatever its value.
+            challenge = System.Security.Cryptography.RandomNumberGenerator.GetBytes(16);
 
             byte[] criptedChallenge = new byte[16];
             tf.Encrypt(challenge, criptedChallenge);
 
             md5edChallenge = md5.digest(challenge); // Rajko said this
 
-            Output.WriteLine(" --> Client TF key: " + StringUtils.bytesToString(tfKey));
-            Output.WriteLine(" --> MD5(challenge): " + StringUtils.bytesToString(md5edChallenge));
-            Output.WriteLine(" --> Twofished(challenge): " + StringUtils.bytesToString(criptedChallenge));
+            // Never log the client's Twofish key: it decrypts the password in the next packet.
+            Output.OptWriteLine(" --> MD5(challenge): " + StringUtils.bytesToString(md5edChallenge));
+            Output.OptWriteLine(" --> Twofished(challenge): " + StringUtils.bytesToString(criptedChallenge));
 
             // Copy the encrypted thing to the global variable "Challenge"
             ArrayUtils.copy(criptedChallenge, 0, challenge, 0, 16);
@@ -217,7 +224,7 @@ namespace hds.auth
             packetContent.AddByte((byte) AuthOpcode.AS_AuthChallenge);
             packetContent.AddByteArray(criptedChallenge);
 
-            Output.WriteLine("Auth Request Response: " + StringUtils.bytesToString(packetContent.ReturnFinalPacket()));
+            Output.OptWriteLine("Auth Request Response: " + StringUtils.bytesToString(packetContent.ReturnFinalPacket()));
             authClientSession.SendAsync(packetContent.ReturnFinalPacket());
         }
 
@@ -252,86 +259,63 @@ namespace hds.auth
 
             // We take the pass from the decrypted Blob and subtract 1 byte, the ending "0"
             int passSize = ((int) decryptedBlob[23]) - 1;
+            if (passSize < 1 || 25 + passSize > decryptedBlob.Length)
+                throw new AuthException("Bad password length");
 
             byte[] passwordB = new byte[passSize];
             ArrayUtils.copy(decryptedBlob, 25, passwordB, 0, passSize);
 
             Output.OptWriteLine("-> Password decrypted, size:" + passSize);
 
-            // Set WorldList password
-            string passwordMd5 = StringUtils.bytesToString_NS(md5.digest(passwordB));
-            wl.setPassword(passwordMd5);
-
-            try
+            // The password is only ever held here, as the launcher's bytes, for the one verification call.
+            string username = wl.getUsername();
+            LoginResult login = Login.Authenticate(username, passwordB, RemoteAddress(), DevAcceptAnyPassword);
+            Array.Clear(passwordB, 0, passwordB.Length);
+            Array.Clear(decryptedBlob, 0, decryptedBlob.Length);
+            switch (login.Outcome)
             {
-                using (var dbContext = new MatrixDbContext(Store.config.dbParams))
-                {
-                    string username = wl.getUsername();
-                    bool anyPassword = DevAcceptAnyPassword;
-                    var user = dbContext.Users
-                        .Where(u => u.Username == username)
-                        .Single(u => anyPassword || u.Passwordmd5 == passwordMd5);
-
-                    if (anyPassword)
-                    {
-                        // FetchWorldList matches on the stored hash, so hand it that instead.
-                        wl.setPassword(user.Passwordmd5);
+                case LoginOutcome.Ok:
+                    if (DevAcceptAnyPassword)
                         Output.WriteLine("-> MXO_DEV_ANY_PASSWORD: accepted " + username + " without checking the password");
-                    }
-
-                    if (user.AccountStatus.Equals(1))
-                    {
-                        SendAuthError((UInt32) AuthErrorCode.LTAS_ACCOUNTISBANNED);
-                        return;
-                    }
-                }
+                    break;
+                case LoginOutcome.Banned:
+                    SendAuthError((UInt32) AuthErrorCode.LTAS_ACCOUNTISBANNED);
+                    return;
+                case LoginOutcome.Inactive:
+                    SendAuthError((UInt32) AuthErrorCode.LTAS_ACCOUNTINACTIVE);
+                    return;
+                case LoginOutcome.Locked:
+                    Output.WriteLine("-> Login refused: too many failed attempts (retry in " + (int) Math.Ceiling(login.RetryAfter.TotalSeconds) + "s)");
+                    SendAuthError((UInt32) AuthErrorCode.LTAS_RADIUSMAXATTEMPTS);
+                    return;
+                case LoginOutcome.Unavailable:
+                    SendAuthError((UInt32) AuthErrorCode.LTAS_DATABASECONNDOWN);
+                    return;
+                default:
+                    // Same answer for an unknown name and a wrong password.
+                    Output.WriteLine("-> Login refused: bad username or password");
+                    SendAuthError((UInt32) AuthErrorCode.LTAS_USERNAMEPASSWORDMISMATCH);
+                    return;
             }
-            catch (Exception)
+
+            wl.setUserID((int) login.UserId);
+            if (!Store.dbManager.AuthDbHandler.FetchWorldList(ref wl))
             {
-                SendAuthError((UInt32) AuthErrorCode.LTAS_ACCOUNTDOESNOTEXIST);
+                SendAuthError((UInt32) AuthErrorCode.LTAS_DATABASECONNDOWN);
                 return;
             }
 
-            if (Store.dbManager.AuthDbHandler.FetchWorldList(ref wl))
             {
-                // Do calculations magic
-                byte[] hexUserID = NumericalUtils.uint32ToByteArray((UInt32) wl.getUserID(), 1);
-
-                byte[] nameH = new byte[33];
-
                 string name = wl.getUsername();
-                for (int i = 0; i < name.Length; i++)
-                {
-                    nameH[i] = (byte) name[i];
-                }
+                uint expires = TimeUtils.getUnixTimeUint32() + AuthTicketCodec.LifetimeSeconds;
 
-                byte[] padding = new byte[4]; // 4 empty byte ==> [0x00,0x00,0x00,0x00]
-
-                // +10 mins from now, so 60secs per min
-                byte[] expiredTime = TimeUtils.getUnixTime(60 * 10);
-
-                byte[] padding2 = new byte[32]; // 32 empty byte ==> [0x00,0x00,0x00,0x00,...]
-                byte[] pubModulusH = wl.getPublicModulus();
-                byte[] createdTime = NumericalUtils.uint32ToByteArray((UInt32) wl.getTimeCreated(), 1);
-
-
-                // Create signed data
+                // Create signed data (layout in AuthTicketCodec; margin verifies the signature)
                 DynamicArray signedData = new DynamicArray();
-                signedData.append(new byte[] {0x01});
-                signedData.append(hexUserID);
-                signedData.append(nameH);
-                signedData.append(new byte[] {0x00, 0x01});
-                signedData.append(padding);
-                signedData.append(expiredTime);
-                signedData.append(padding2);
-                signedData.append(new byte[] {0x00, 0x11});
-                signedData.append(pubModulusH);
-                signedData.append(createdTime);
-
-                byte[] md5FromStructure = md5.digest(signedData.getBytes());
+                signedData.append(AuthTicketCodec.BuildSignedData((uint) wl.getUserID(), name, expires,
+                    wl.getPublicModulus(), (uint) wl.getTimeCreated()));
 
                 // Do MD5 to the signed data and RSA encrypt the result
-                byte[] signature = rsa.signWithMD5(md5FromStructure);
+                byte[] signature = AuthTicketCodec.Sign(signedData.getBytes());
 
 
                 Output.OptWriteLine("-> Signing with RSA");
@@ -422,7 +406,21 @@ namespace hds.auth
             packetContent.AddUint32(errorCode, 1);
             packetContent.AddInt32(0, 1);
             packetContent.AddUint16(0, 1);
-            authClientSession.SendAsync(packetContent.ReturnFinalPacket());
+            // Framed like every other auth message (it used to go out without the length prefix, so the client never
+            // read the code).
+            authClientSession.SendAsync(FrameAuthMessage(packetContent.ReturnFinalPacket()));
+        }
+
+        private IPAddress RemoteAddress()
+        {
+            try
+            {
+                return (authClientSession?.Socket?.RemoteEndPoint as IPEndPoint)?.Address;
+            }
+            catch (Exception)
+            {
+                return null;
+            }
         }
     }
 }

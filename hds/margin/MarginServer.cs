@@ -131,6 +131,19 @@ namespace hds
             }
         }
 
+        /// <summary>
+        /// True when a live margin connection with a verified ticket has this character loaded: the world only opens a
+        /// UDP session for such a character, since the UDP init carries nothing but the character id.
+        /// </summary>
+        public bool HasVerifiedCharacter(UInt32 charId)
+        {
+            foreach (MarginClient resultClient in clientList.ToArray())
+            {
+                if (resultClient != null && resultClient.HoldsVerifiedCharacter(charId)) return true;
+            }
+            return false;
+        }
+
         public bool IsAnotherClientActive(UInt32 charId)
         {
             bool isActive = false;
