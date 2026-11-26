@@ -82,7 +82,18 @@ The in-process benchmark is `VisibilityPassBenchmark` (`MXO_VISIBILITY_BENCH=1`)
 | player-views, nobody moving | 24.9-28.1 / 35 | 2.1-2.3 / 3.2-3.6 |
 | contacts, everyone moving | 4.0-4.4 / 17-21 | 1.1-1.2 / 2.1-2.5 |
 
-PvP archive checks need the world data loader and are not in the in-process benchmark. Their effect, and the server-side before and after with the stage timings, wait for the MySQL-backed scale harness, which is down while Docker is.
+PvP archive checks need the world data loader and are not in the in-process benchmark.
+
+Server-side, `LoadTest --authenticated`, master a8a79fe0 against this change, run back to back on 2026-11-26. Mean ms per pass. On master the contact, floor-probe and PvP-archive checks were one stage; here they are split into three. One more master move run failed during the login ramp, with auth connections forcibly closed, and was rerun.
+
+| Case | Echo RTT | Visibility mean / max | player-views | contacts + probes + pvp-archives |
+|---|---:|---|---:|---:|
+| idle 200, master (2 runs) | 21.7 / 19.7 | 39.7 / 101, 39.6 / 223 | 28.2 / 28.9 | 4.6 / 4.4 |
+| idle 200, this change | 15.7 / 15.4 | 9.8 / 34, 9.5 / 80 | 1.4 / 1.5 | 1.4 / 1.3 |
+| move 200, master (2 runs) | 98.7 / 60.1 | 254.7 / 883, 168.8 / 562 | 121.4 / 74.3 | 107.6 / 81.5 |
+| move 200, this change | 212.3 / 60.3 | 160.1 / 698, 49.5 / 280 | 44.9 / 17.7 | 84.2 / 19.5 |
+
+All runs PASS except the master run that failed at login. Under movement the run-to-run variance is large; the first moving run of this change had the worst echo RTT of the set. Even so, its pass stages were lower than both master runs. PvP archives is now the largest remaining stage under movement (77.7 and 17.9 ms).
 
 ## Reproduce
 
