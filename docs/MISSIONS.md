@@ -146,7 +146,7 @@ Goal types beyond the five above:
 | `Upload` | `item` | uploading at a hardline while carrying it |
 | `Survive` | `seconds` | that many seconds after it opens: a hold-out. A goal open from the start of a generated phase counts from reaching the area |
 
-`optional="1"` on any goal lets the phase end without it. `limit="120"` on any goal fails the mission if it isn't done 120 seconds after it opens (counted as for `Survive`); the operator says "You ran out of time." No timer is shown: the client's mission timer isn't known, so say the limit in the goal's text or a line.
+`optional="1"` on any goal lets the phase end without it. `limit="120"` on any goal fails the mission if it isn't done 120 seconds after it opens (counted as for `Survive`); the operator says "You ran out of time." The deadline is enforced by the server. Put the limit in the goal text or an operator line for now. See [mission timer evidence](#mission-timer-evidence) for the remaining client question.
 
 ### Waves
 
@@ -235,6 +235,15 @@ Each site's neighbourhood comes from `data/slums_neighbourhoods.csv`: every Slum
 - **A button** moves the player to the same spot on that floor of the shaft, with any follower beside them.
 - **The floor list shows when the client knows where the player stands.** client.dll compares the panel's sector and region with the player's own nav location (the own-view teleport record's sector, region and polygon; `NavMesh`) and closes the panel with `81 41` when they differ. With retail's record layout (PR #59) the lobby panels open, and a ride ends with retail's ding (`81 42 2a 06 00 22 00000000 <region> <sector>`).
 - **The mission building's elevator doors** still take the player straight to the mission floor (or back to the street once it's done). Retail's operator offered that ride (`ID_OPERATOR_MISSION_ELEVATOR`, "I've hacked into the elevator control system. Do you want me to send you to the right floor?"), but the modal showed from a chat command and not after a door's use, so we don't ask.
+
+
+### Mission timer evidence
+
+`MissionProgress.DueSurvivals` starts a timed objective when it opens, or at the area arrival required by a generated phase. `MissionProgress.Overdue` compares elapsed server time with the goal's authored `limit`. `MissionRuntime` fails the mission and sends “You ran out of time.” after expiry.
+
+The retained objective record `80 a0` carries a goal ID, state and sized text. The end record `80 a2` has elapsed seconds in the decoded success case. Neither provides a proven live countdown. `80 a3` contains partly decoded briefing data. Its trailing header word is `3c 00` in the tutorial and the first Devoted mission (`create_char_devoted_make_first_mission`, lines 364/9117 in the endgame intake), and also in `old_world_packets_actions_missionstart` at line 741. These records lack a known timed objective and a synchronized view of a countdown, so the repeated word cannot identify a deadline or its units. The retained `rshooks.py` mission functions cover map access and rewards. The bomb countdown names in `fxlistreal.txt` identify event effects and establish no mission UI binding.
+
+The missing evidence is an identified stock-client field or message that starts the clock, its units and whether it belongs to the mission or goal. A useful capture would show a known timed objective opening with the Mission panel visible, a second objective with a different limit or an untimed control, and the corresponding cleared state on phase change, completion or expiry. The timer payload must also distinguish a fresh start from a restored remaining time if the client displays either. Leave the wire path alone until one of those records is identified.
 
 ## What's built
 
