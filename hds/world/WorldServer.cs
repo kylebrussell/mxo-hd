@@ -483,7 +483,7 @@ namespace hds
             }
         }
 
-        public void SendViewUpdateToClientsWhoHasMobSpawned(PacketContent packet, Mob mob, byte[] followingUpdate = null)
+        public void SendViewUpdateToClientsWhoHasMobSpawned(PacketContent packet, Mob mob, byte[] followingUpdate = null, bool forceFlush = false)
         {
             foreach (WorldClient client in ClientSnapshot())
             {
@@ -493,7 +493,7 @@ namespace hds
                 if (mobView != null && mobView.viewCreated && mob.getDistrict() == client.playerData.getDistrictId() && client.playerData.getOnWorld())
                 {
                     ServerPackets pak = new ServerPackets();
-                    pak.SendNpcUpdateData(mobView.ViewID, client, packet.ReturnFinalPacket(), followingUpdate);
+                    pak.SendNpcUpdateData(mobView.ViewID, client, packet.ReturnFinalPacket(), followingUpdate, forceFlush);
                 }
             }
         }

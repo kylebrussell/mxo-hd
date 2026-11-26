@@ -38,7 +38,7 @@ namespace hds
             client.FlushQueue();
         }
 
-        public void SendNpcUpdateData(UInt16 viewId, WorldClient client, byte[] updateData, byte[] followingUpdate = null)
+        public void SendNpcUpdateData(UInt16 viewId, WorldClient client, byte[] updateData, byte[] followingUpdate = null, bool forceFlush = false)
         {
             PacketContent pak = new PacketContent();
             
@@ -51,7 +51,7 @@ namespace hds
             }
             
             client.messageQueue.addObjectMessage(pak.ReturnFinalPacket(), false);
-            client.FlushQueue();
+            client.FlushQueue(false, forceFlush);
             
         }
 
@@ -80,7 +80,8 @@ namespace hds
             PacketContent death = new PacketContent();
             death.AddByteArray(BuildNpcDeathUpdate(theMob.NextAnimationSeq(), (byte)theMob.getRotation(),
                 (float)theMob.getXPos(), (float)theMob.getYPos(), (float)theMob.getZPos()));
-            Store.world.SendViewUpdateToClientsWhoHasMobSpawned(death, theMob);
+            // Force-flush so the death goes out in its own packet even when the killing hit flushed < 50 ms earlier.
+            Store.world.SendViewUpdateToClientsWhoHasMobSpawned(death, theMob, null, true);
             MobLifecycle.Died(theMob);
         }
 

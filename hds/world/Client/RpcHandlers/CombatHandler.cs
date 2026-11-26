@@ -644,6 +644,8 @@ namespace hds
                 mob.isUpdateable = false;
                 new ServerPackets().SendNpcDies(viewId, client, mob);
                 RewardNpcDefeat(client, mob);
+                client.FlushQueue(false, true);
+                return true;
             }
             client.FlushQueue();
             return true;
@@ -1063,32 +1065,42 @@ namespace hds
             // If defender died, trigger the experience/loot sequence
             if (defenderDied)
             {
-
                 RewardNpcDefeat(session.Attacker, session.DefenderMob);
             }
 
-            session.Attacker.FlushQueue();
+            session.Attacker.FlushQueue(false, true);
             currentSession = null;
         }
 
         private static void RewardNpcDefeat(WorldClient attacker, Mob mob)
         {
             if(attacker.playerData.missionProgress!=null&&attacker.playerData.missionMobs.Contains(mob))
-                MissionPersistence.MutateKill(attacker,mob,()=>RewardNpcDefeatCore(attacker,mob,attacker));
+            {
+                NpcLootCache.Corpse dropped = null;
+                if(MissionPersistence.MutateKill(attacker,mob,()=>RewardNpcDefeatCore(attacker,mob,attacker,out dropped)))
+                    NpcLoot.ScheduleAutoOpen(attacker,dropped);
+            }
             else
             {
                 var holder=MissionTeamProgress.Holder(attacker,mob);
-                if(holder==null){RewardNpcDefeatCore(attacker,mob,null);return;}
+                if(holder==null)
+                {
+                    RewardNpcDefeatCore(attacker,mob,null,out NpcLootCache.Corpse soloDropped);
+                    NpcLoot.ScheduleAutoOpen(attacker,soloDropped);
+                    return;
+                }
                 uint earned=0;
-                if(MissionPersistence.MutateKill(holder,mob,()=>earned=RewardNpcDefeatCore(attacker,mob,holder)))
+                NpcLootCache.Corpse dropped = null;
+                if(MissionPersistence.MutateKill(holder,mob,()=>earned=RewardNpcDefeatCore(attacker,mob,holder,out dropped)))
                 {
                     if(earned>0)PlayerRewards.GrantExperience(attacker,earned);
                     new ServerPackets().sendSystemChatMessage(attacker,"Your teammate's mission progress has been updated.","BROADCAST");
-                    attacker.FlushQueue();
+                    attacker.FlushQueue(false, true);
+                    NpcLoot.ScheduleAutoOpen(holder,dropped);
                 }
             }
         }
-        private static uint RewardNpcDefeatCore(WorldClient attacker, Mob mob,WorldClient missionOwner)
+        private static uint RewardNpcDefeatCore(WorldClient attacker, Mob mob,WorldClient missionOwner,out NpcLootCache.Corpse dropped)
         {
             // Award experience
             // Retail's formula (KillExperience); every NPC counts as a weakling, the rank isn't in our NPC data
@@ -1121,8 +1133,8 @@ namespace hds
             {
                 drops.Insert(0, CollectorHandler.FunctionData);
             }
-            NpcLoot.Drop(missionActor, mob, lootMoney, missionItem, drops);
-            Output.WriteDebugLog($"[COMBAT] Loot window sent with {lootMoney} info and {drops.Count + (missionItem == 0 ? 0 : 1)} items");
+            dropped = NpcLoot.DropAndRegister(missionActor, mob, lootMoney, missionItem, drops, deferPresentation: true);
+            Output.WriteDebugLog($"[COMBAT] Loot window scheduled with {lootMoney} info and {drops.Count + (missionItem == 0 ? 0 : 1)} items");
             // The client doesn't show a corpse window during a fight: leave time to loot before the next NPC attacks.
             // Our choice, using aggro's own retry delay; nothing in the logs says what retail did.
             attacker.playerData.lastAggroAt = TimeUtils.GetSimTimeSeconds();

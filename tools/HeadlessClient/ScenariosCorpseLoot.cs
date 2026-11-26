@@ -23,6 +23,77 @@ public static partial class Scenarios
         p.SendRpc("81 1f");await p.WaitForRpcAsync("81 20");
     }
 
+    private static async Task CorpseWindowFourKills(ScenarioContext context)
+    {
+        var p = (await context.AddPlayersInWorldAsync(new CharacterSeed("CorpseFour")
+        {
+            Level = 50, X = 19403, Y = -705, Z = 60401, Health = 5000, MaxHealth = 5000
+        }))[0];
+        ViewCreation[] targets = Array.Empty<ViewCreation>();
+        await p.WaitUntilAsync(() =>
+        {
+            targets = p.ViewsOfGoid(599)
+                .Where(v => v.Name == "Chopper Runner"
+                    && v.Attributes.TryGetValue("Level", out var lvl) && lvl.Length == 1 && lvl[0] == 1
+                    && v.Attributes.TryGetValue("Health", out var hp) && hp.Length == 2 && BitConverter.ToUInt16(hp) > 0
+                    && v.Attributes.TryGetValue("Position", out var pos) && pos.Length == 24)
+                .OrderBy(v =>
+                {
+                    byte[] pos = v.Attributes["Position"];
+                    double dx = BitConverter.ToDouble(pos, 0) - 19403d;
+                    double dz = BitConverter.ToDouble(pos, 16) - 60401d;
+                    return dx * dx + dz * dz;
+                })
+                .Take(4)
+                .ToArray();
+            return targets.Length == 4;
+        }, "four nearby Chopper Runners", TimeSpan.FromSeconds(20));
+
+        var ui = new CorpseLootWindowState();
+        byte[] deathSignature = WireFormat.FromHex("fd 07 00 00");
+        for (int i = 0; i < targets.Length; i++)
+        {
+            var target = targets[i];
+            byte[] pos = target.Attributes["Position"];
+            await MoveForMissionTest(p, BitConverter.ToDouble(pos, 0), BitConverter.ToDouble(pos, 8), BitConverter.ToDouble(pos, 16) - 100);
+            int rpcCursor = p.World.RpcSnapshot().Count;
+            p.SkipReceived();
+            p.SendChat("?weaken 1");
+            p.SendRpc($"40 {MissionNpcId(target)} 01 6b");
+
+            var combatEnd = await p.WaitForRpcAsync($"46 {MissionNpcId(target)} 00", TimeSpan.FromSeconds(30));
+            var lootWindow = await p.WaitForRpcAsync("81 19", TimeSpan.FromSeconds(10));
+            var killRpcs = p.World.RpcSnapshot().Skip(rpcCursor).ToArray();
+            var lootClose = killRpcs.LastOrDefault(r => r.Bytes.Length == 2 && r.Bytes[0] == 0x81 && r.Bytes[1] == 0x1a);
+            Check.That(lootClose != null, $"Kill #{i + 1}: 81 1a precedes 81 19");
+            Check.That(combatEnd.DatagramViewSection == null || BytePattern.IndexOf(combatEnd.DatagramViewSection, deathSignature, 0) < 0,
+                $"Kill #{i + 1}: SendNpcDies went out before SendCombatEnd (not coalesced with 46 00)");
+            Check.That(combatEnd.DatagramSequence.HasValue && lootWindow.DatagramSequence.HasValue && lootClose!.DatagramSequence.HasValue,
+                $"Kill #{i + 1}: datagram sequences recorded");
+            int seqDelta = (lootWindow.DatagramSequence!.Value - combatEnd.DatagramSequence!.Value) & 0x0FFF;
+            Check.That(seqDelta > 0 && seqDelta < 2048,
+                $"Kill #{i + 1}: 81 19 arrived in a later datagram than 46 00 (end={combatEnd.DatagramSequence}, loot={lootWindow.DatagramSequence})");
+            int closeDelta = (lootClose!.DatagramSequence!.Value - combatEnd.DatagramSequence!.Value) & 0x0FFF;
+            Check.That(closeDelta > 0 && closeDelta < 2048,
+                $"Kill #{i + 1}: 81 1a arrived in a later datagram than 46 00 (end={combatEnd.DatagramSequence}, close={lootClose.DatagramSequence})");
+
+            foreach (var rpc in killRpcs) ui.Receive(rpc.Bytes);
+            Check.That(ui.Visible, $"Kill #{i + 1}: Corpse window is visible after combat teardown");
+
+            if (i % 2 == 0)
+            {
+                p.SendRpc("81 1f");
+                await p.WaitForRpcAsync("81 20");
+                ui.CloseLocally();
+            }
+            else
+            {
+                ui.CloseLocally();
+                p.SendRpc("81 1a");
+            }
+        }
+    }
+
     private static async Task ContainerAndCorpseLoot(ScenarioContext context)
     {
         HeadlessPlayer player = await StartFullBagMission(context, "machines_01_the_end_of_the_beginning.xml");

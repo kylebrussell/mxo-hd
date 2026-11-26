@@ -240,7 +240,8 @@ namespace hds
             byte yaw = client.playerInstance.YawInterval.getValue()[0];
             UInt32 simMs = (UInt32)Math.Round(TimeUtils.GetSimTimeSeconds() * 1000.0);
             client.messageQueue.addObjectMessage(BuildSelfPositionHandoff(yaw, (float)x, (float)y, (float)z, simMs), false);
-            client.FlushQueue();
+            // Force-flush so combat teardown always lands in its own packet after SendNpcDies and before rewards/loot.
+            client.FlushQueue(false, true);
 
             // DelayedActions keeps the action until it runs. The plain Timer this used, referenced by nothing, could be
             // garbage-collected before it fired; the reset then never went out and the client stayed in combat
