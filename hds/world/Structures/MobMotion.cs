@@ -25,7 +25,7 @@ namespace hds
             public double[] PathTarget;
             public int Waypoint;
             public int Life;
-            public bool Walking;
+            public bool Walking, Holding, TakeoverPending;
             public Random Random;
         }
         private static readonly object sync = new object();
@@ -42,6 +42,12 @@ namespace hds
                 Life=mob.DeathGeneration,Random=random};
         }
         public static bool Chasing(Mob mob) { lock(sync)return moving.TryGetValue(mob,out var state)&&state.Target!=null; }
+        internal static bool HoldingFor(Mob mob,WorldClient client)
+        {
+            lock(sync)
+                return moving.TryGetValue(mob,out var state)&&state.Life==mob.DeathGeneration&&
+                    state.Holding&&ReferenceEquals(state.Target,client);
+        }
         internal static void ResetFixtureMotion(Mob mob) { lock (sync) moving.Remove(mob); }
         private static double[] Position(Mob mob)=>new[]{mob.getXPos(),mob.getYPos(),mob.getZPos()};
         private static double[] Position(WorldClient client)
@@ -74,7 +80,8 @@ namespace hds
                 if(state.Target!=null&&!ReferenceEquals(state.Target,client))return false;
                 var from=Position(mob);var target=Position(client);
                 if(!NavMesh.HasSightPath(mob.getDistrict(),from[0],from[1],from[2],target[0],target[1],target[2]) ||
-                    !Step(mob.getDistrict(),from,target,.5,ChaseSpeed,out _))
+                    (!MobAggro.ReachedMeleeDistance(DistanceSquared(from,target)) &&
+                     !Step(mob.getDistrict(),from,target,.5,ChaseSpeed,out _)))
                 {
                     if(!PlanChase(mob.getDistrict(), state, from, target))return false;
                 }
@@ -129,8 +136,39 @@ namespace hds
                 mob.currentState=(int)Mob.statusList.STANDING;
                 mob.updateAnimation((byte)Mob.Animations.STAND);
             }
-            state.Walking=false;state.Goal=null;state.Target=null;state.Enrage=null;state.Path=null;
+            state.Walking=false;state.Holding=false;state.TakeoverPending=false;state.Goal=null;state.Target=null;state.Enrage=null;state.Path=null;
             state.WaitUntil=now+state.Random.Next(MinimumIdleSeconds,MaximumIdleSeconds+1);
+        }
+        private static void QueueTakeover(Mob mob,Motion state,WorldClient target,ClientView view)
+        {
+            if(state.TakeoverPending)return;
+            state.TakeoverPending=true;
+            var owner=target.playerData;
+            var epoch=target.TransportFence.Capture();
+            DelayedActions.AfterFor(target,.15,()=>
+            {
+                lock(sync)
+                {
+                    state.TakeoverPending=false;
+                    double now=TimeUtils.GetSimTimeSeconds();
+                    if(!moving.TryGetValue(mob,out var current)||current!=state||!state.Holding||
+                        state.Life!=mob.DeathGeneration||target.playerData!=owner||target.TransportFence.Capture()!=epoch||
+                        !ReferenceEquals(state.Target,target)||!MobAggro.RetryReady(target,now)||
+                        !CombatManager.GetHandler(target).CanStartNpcAggro||Stealth.Current(target)!=null||
+                        mob.getDistrict()!=owner.getDistrictId()||target.viewMan.FindViewForEntity(mob.getEntityId())!=view)
+                        return;
+
+                    var to=Position(target);
+                    double distanceSquared=DistanceSquared(to,Position(mob));
+                    if(!(MobAggro.ReachedMeleeDistance(distanceSquared)||MobSupportingFire.CanFireAt(mob,Math.Sqrt(distanceSquared)))||
+                        !MobAggro.SameFloor(to[1],mob.getYPos())||
+                        !NavMesh.HasSightPath(mob.getDistrict(),mob.getXPos(),mob.getYPos(),mob.getZPos(),to[0],to[1],to[2])||
+                        ControlActions.Incapacitated(TimedEffects.ForMob(mob).Effects))
+                        return;
+                    Stop(mob,state,now);
+                    MobAggro.Attack(target,mob,view,to[0],to[1],to[2]);
+                }
+            });
         }
         internal static void Tick(List<WorldClient> clients,Dictionary<ulong,Mob> mobs,double now)
         {
@@ -158,7 +196,7 @@ namespace hds
                 {
                     if(!moving.TryGetValue(mob,out var state)||state.Life!=mob.DeathGeneration)moving[mob]=state=New(mob,now);
                     double elapsed=now-state.Updated;state.Updated=now;
-                    if(mob.getCombatTarget()!=null){state.Goal=null;state.Target=null;state.Enrage=null;state.Path=null;state.Walking=false;continue;}
+                    if(mob.getCombatTarget()!=null){state.Goal=null;state.Target=null;state.Enrage=null;state.Path=null;state.Walking=false;state.Holding=false;state.TakeoverPending=false;continue;}
                     if(state.Target==null&&selected.Contains(mob))
                     {
                         if(state.Goal!=null||state.Walking)Stop(mob,state,now);
@@ -180,7 +218,8 @@ namespace hds
                     {
                         var target=state.Target;
                         var enrage=state.Enrage;
-                        if(!target.Alive||target.playerData.isDead||!target.playerData.getOnWorld()||target.playerData.waitForRPCShutDown||
+                        if(!target.Alive||target.playerData.isDead||target.playerData.duelDeath||!target.playerData.getOnWorld()||
+                            target.playerData.waitForRPCShutDown||target.playerData.worldChangePending||
                             target.playerData.getDistrictId()!=mob.getDistrict()||Stealth.Current(target)!=null||
                             enrage!=null&&!TimedEffects.ForMob(mob).Effects.IsCurrent(enrage,now))
                         {Stop(mob,state,now);continue;}
@@ -188,11 +227,42 @@ namespace hds
                         if(Math.Abs(from[1]-to[1])>150||Math.Pow(to[0]-mob.xBase,2)+Math.Pow(to[2]-mob.zBase,2)>25000000)
                         {Stop(mob,state,now);continue;}
                         bool straight=NavMesh.HasSightPath(mob.getDistrict(),from[0],from[1],from[2],to[0],to[1],to[2]);
-                        if(straight&&MobAggro.ReachedMeleeDistance(DistanceSquared(to,from)))
+                        double distanceSquared=DistanceSquared(to,from);
+                        bool meleeReached=straight&&MobAggro.ReachedMeleeDistance(distanceSquared);
+                        var handler=CombatManager.GetHandler(target);
+                        bool inNpcFight=MobAggro.HasActiveNpcFight(target);
+                        bool firingPosition=enrage==null&&(inNpcFight||state.Holding)&&straight&&
+                            MobSupportingFire.CanFireAt(mob,Math.Sqrt(distanceSquared));
+                        if(inNpcFight&&firingPosition)
+                            MobSupportingFire.TryFire(target,mob,Math.Sqrt(distanceSquared),now);
+                        if(meleeReached||firingPosition)
                         {
-                            var view=target.viewMan.FindViewForEntity(mob.getEntityId());Stop(mob,state,now);
-                            if(view?.viewCreated==true)MobAggro.Attack(target,mob,view,to[0],to[1],to[2],enrage);continue;
+                            var view=target.viewMan.FindViewForEntity(mob.getEntityId());
+                            if(view?.viewCreated!=true||view.viewNeedsToBeDeleted)
+                            {Stop(mob,state,now);continue;}
+                            if(inNpcFight&&enrage==null)
+                            {
+                                if(!state.Holding)
+                                {
+                                    mob.currentState=(int)Mob.statusList.STANDING;
+                                    mob.updateAnimation((byte)Mob.Animations.STAND);
+                                    if(!firingPosition)
+                                        Output.WriteDebugLog($"[AGGRO] {mob.getName()} holds at melee range of {target.playerData.getCharID()} (view {view.ViewID})");
+                                }
+                                state.Walking=false;state.Holding=true;state.Goal=null;
+                            }
+                            else if(state.Holding&&handler.CanStartNpcAggro)
+                            {
+                                if(MobAggro.RetryReady(target,now)) QueueTakeover(mob,state,target,view);
+                            }
+                            else
+                            {
+                                Stop(mob,state,now);
+                                DelayedActions.AfterFor(target,0,()=>MobAggro.Attack(target,mob,view,to[0],to[1],to[2],enrage));
+                            }
+                            continue;
                         }
+                        state.Holding=false;
                         if(!ChaseGoal(mob.getDistrict(),state,from,to,straight)){Stop(mob,state,now);continue;}
                         speed=ChaseSpeed;
                     }
