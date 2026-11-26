@@ -184,39 +184,62 @@ namespace hds
             lock (client.playerData.craftingSync)
             {
                 var r = ClientActionRequests.ParseStoredCompile(body);
-                if (OrdinaryItemCompile.TryStart(client, r)) return;
+                if (r?.FromCrafting == true && OrdinaryItemCompile.TryStart(client, r)) return;
                 byte result = 1;
                 var db = Store.dbManager.WorldDbHandler;
+                bool inLoadingArea = client.Alive && client.playerData.DistrictIsLA();
                 if (r != null && !client.playerData.isDead && !client.playerData.duelDeath && !client.playerData.worldChangePending &&
                     (r.FromCrafting ? CraftingSession.Authorized(client, r.Tool) && !client.playerData.DistrictIsLA() && ControlActions.CanUseAbilities(client) &&
                         !CombatManager.GetHandler(client).isCombatRunning &&
                         CombatSelection.IsLoaded(969, Store.dbManager.MarginDbHandler.LoadAbilities((int)client.playerData.getCharID())) &&
                         db.GetInventoryItems(client.playerData.getCharID()).Any(i => i.Slot == r.Tool && i.Goid == 1271)
-                        : client.playerData.DistrictIsLA()))
+                        : inLoadingArea && r.Slot < 0x208))
                 {
-                    var entries = db.GetCodeStorage(client.playerData.getCharID());
-                    var entry = entries.FirstOrDefault(e => e.Slot == r.Slot && e.Goid == r.Item && e.Count > 0);
-                    var item = CraftingRules.Find(r.Item);
-                    if (entry.Goid != 0 && CodeStorage.IsUploadable(r.Item) && item != null)
+                    uint character = client.playerData.getCharID();
+                    var sources = db.GetCodeStorage(character).Where(e => e.Slot == r.Slot).Take(2).ToArray();
+                    if (sources.Length == 0 && inLoadingArea && OrdinaryItemCompile.TryCompileFromLoadingArea(client, r)) return;
+                    if (sources.Length == 1 && sources[0].Count > 0 && sources[0].Count <= CodeStorage.MaxCount &&
+                        (r.Item == sources[0].Goid || (inLoadingArea && r.Item == 0)))
                     {
-                        long cost = CraftingRules.InfoCost(item, client.playerData.DistrictIsLA() ? 0 : CraftingHandler.Skill(client, 530));
-                        var transfer = db.MaterializeStoredCode(client.playerData.getCharID(), r.Slot, r.Item, cost);
-                        result = transfer.Result;
-                        if (result == 0)
-                        {
-                            client.messageQueue.addRpcMessage(transfer.Remaining == 0 ? CodeStorage.BuildRemove(r.Slot) :
-                                CodeStorage.BuildUpdate(r.Slot, r.Item, transfer.Remaining));
-                            if (transfer.BagCount > 1) client.messageQueue.addRpcMessage(ItemStacks.BuildStackCount(transfer.Slot, transfer.BagCount));
-                            else new ServerPackets().sendInventoryItemAdd(transfer.Slot, r.Item, 0, 0, client);
-                            client.playerData.setInfo(transfer.Cash);
-                            new ServerPackets().SendInfoCurrent(client, (uint)transfer.Cash);
-                        }
+                        result = CompileFlaggedCode(client, r, sources[0].Goid, inLoadingArea);
                     }
                 }
                 client.messageQueue.addRpcMessage(new byte[] { 0x61, result });
-                if (result == 1) Notice(client, "This compile requires an owned uploaded Code Bit or fragment and a valid Loading Area or Compile session. Ability and equipment-code compilation is not reconstructed.");
+                if (result == 1) Notice(client, "This compile requires an owned supported item code, Code Bit or fragment and a valid Loading Area or Compile session.");
                 client.FlushQueue();
             }
+        }
+
+        private static byte CompileFlaggedCode(WorldClient client, ClientActionRequests.StoredCompile request, uint goid, bool inLoadingArea)
+        {
+            bool uploadable = CodeStorage.IsUploadable(goid);
+            bool ordinary = inLoadingArea && !uploadable && OrdinaryItemCode.Supported(goid);
+            var item = CraftingRules.Find(goid);
+            if ((!uploadable && !ordinary) || item == null) return 1;
+            long cost = ordinary ? OrdinaryItemCode.Cost(item, 0) :
+                CraftingRules.InfoCost(item, inLoadingArea ? 0 : CraftingHandler.Skill(client, 530));
+            ClientActionRequests.Materialized transfer;
+            try
+            {
+                transfer = Store.dbManager.WorldDbHandler.MaterializeStoredCode(client.playerData.getCharID(), request.Slot, goid, cost, ordinary);
+            }
+            catch (System.Data.Common.DbException ex)
+            {
+                Output.WriteDebugLog($"[COMPILE60] Flagged code transaction failed item={goid} slot={request.Slot}: {ex}");
+                return 1;
+            }
+            if (inLoadingArea)
+                Output.WriteDebugLog($"[COMPILE60] Loading Area item={goid} requestItem={request.Item} slot={request.Slot} result={transfer.Result} cost={cost} remaining={transfer.Remaining}");
+            if (transfer.Result == 0)
+            {
+                client.messageQueue.addRpcMessage(transfer.Remaining == 0 ? CodeStorage.BuildRemove(request.Slot) :
+                    CodeStorage.BuildUpdate(request.Slot, goid, transfer.Remaining));
+                if (transfer.BagCount > 1) client.messageQueue.addRpcMessage(ItemStacks.BuildStackCount(transfer.Slot, transfer.BagCount));
+                else new ServerPackets().sendInventoryItemAdd(transfer.Slot, goid, 0, 0, client);
+                client.playerData.setInfo(transfer.Cash);
+                new ServerPackets().SendInfoCurrent(client, (uint)transfer.Cash);
+            }
+            return transfer.Result;
         }
 
         public static void Support(WorldClient client, int opcode, byte[] body)

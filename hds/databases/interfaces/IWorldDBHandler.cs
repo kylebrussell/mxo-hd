@@ -10,13 +10,13 @@ namespace hds.databases.interfaces{
     {
         CraftingRequests.WrittenCode WriteRecipeCode(uint character, CraftingRequests.Compile request, long cost, long requiredInfo);
         OrdinaryItemCode.Entry GetOrdinaryItemCode(UInt32 character, UInt16 slot);
-        ClientActionRequests.Materialized MaterializeOrdinaryItemCode(UInt32 character, OrdinaryItemCode.Entry source, byte tool, long cost, bool contestWon = true);
+        ClientActionRequests.Materialized MaterializeOrdinaryItemCode(UInt32 character, OrdinaryItemCode.Entry source, byte? tool, long cost, bool contestWon = true);
         PrisonDevices.Owned ReadPrisonDevice(uint character, ushort slot);
         bool MovePrisonDevice(uint character, PrisonDevices.Owned expected, ushort destination);
         List<LocalSupport.Ticket> SupportTickets(UInt32 character);
         UInt32 SaveSupportTicket(UInt32 character, string handle, UInt32 ticket, string text, bool cancel);
         UInt32 FindSupportGroup(string name, bool faction);
-        ClientActionRequests.Materialized MaterializeStoredCode(UInt32 character, UInt16 sourceSlot, UInt32 goid, long cost);
+        ClientActionRequests.Materialized MaterializeStoredCode(UInt32 character, UInt16 sourceSlot, UInt32 goid, long cost, bool allowOrdinaryItemCode = false);
         UInt32 GetCharIdByHandle(string handle);
         Hashtable GetCharInfo (UInt32 charId);
 
@@ -102,7 +102,7 @@ namespace hds.databases.interfaces{
         void AddCodeStorage(UInt32 charId, CodeStorage.Entry entry);
         void SetCodeStorageCount(UInt32 charId, UInt16 slot, int count);
         HashSet<UInt32> GetLearnedRecipes(UInt32 charId);
-        void LearnRecipe(UInt32 charId, UInt32 goid);
+        int DecompileItem(UInt32 charId, UInt16 slot, UInt32 expectedGoid);
         (float Factor, double At) GetDeathPenalty(UInt32 charId);
         void SaveDeathPenalty(UInt32 charId, float factor, double at);
         void RemoveCodeStorage(UInt32 charId, UInt16 slot);

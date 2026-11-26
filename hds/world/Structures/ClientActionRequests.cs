@@ -29,7 +29,7 @@ namespace hds
             public long Cash;
             public bool InfoCommitted;
         }
-        // 6208375a..782: ObjectID is the decoded goid, not the packed archive entry.
+        // 6208375a..782: the in-world compiler writes the decoded GOID. Native LA can leave it zero.
         public static StoredCompile ParseStoredCompile(byte[] body) => body?.Length == 9 && body[6] == 0 && body[8] <= 1
             ? new StoredCompile { Item = BitConverter.ToUInt32(body, 0), Slot = BitConverter.ToUInt16(body, 4), Tool = body[7], FromCrafting = body[8] != 0 }
             : null;

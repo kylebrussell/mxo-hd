@@ -7,10 +7,11 @@ namespace hds.databases
 {
     public partial class MyWorldDbAccess
     {
-        public ClientActionRequests.Materialized MaterializeStoredCode(uint character, ushort sourceSlot, uint goid, long cost)
+        public ClientActionRequests.Materialized MaterializeStoredCode(uint character, ushort sourceSlot, uint goid, long cost, bool allowOrdinaryItemCode = false)
         {
             var result = new ClientActionRequests.Materialized();
-            if (!CodeStorage.IsUploadable(goid) || cost < 0) return result;
+            if ((!CodeStorage.IsUploadable(goid) && !(allowOrdinaryItemCode && OrdinaryItemCode.Supported(goid))) || cost < 0)
+                return result;
             using var connection = new MySqlConnection(connectionString); connection.Open();
             EnsureTransactionalInventory(connection);
             using var tx = connection.BeginTransaction(); using var c = connection.CreateCommand(); c.Transaction = tx;
@@ -28,7 +29,8 @@ namespace hds.databases
                 count = Convert.ToInt32(r[1]) + 1;
                 if (r.Read()) return result; // an ambiguous archive/known-ability slot must not clear another entry
             }
-            if (count < 1 || count > 128) return result;
+            if (count < 1 || count > CodeStorage.MaxCount) return result;
+            result.Remaining = count;
             if (result.Cash < cost) { result.Result = 4; return result; }
             c.CommandText = "SELECT slot,goid,count FROM inventory WHERE charId=@char AND slot BETWEEN 1 AND 96 FOR UPDATE";
             var bag = new List<Crafting.InventoryItem>();
@@ -46,7 +48,8 @@ namespace hds.databases
                 "UPDATE char_abilities SET level=level-1 WHERE char_id=@char AND slot=@source AND ability_id=@code";
             if (c.ExecuteNonQuery() != 1) return new ClientActionRequests.Materialized();
             c.CommandText = "UPDATE characters SET cash=cash-@cost WHERE charId=@char AND cash>=@cost";
-            c.ExecuteNonQuery(); tx.Commit();
+            if (cost > 0 && c.ExecuteNonQuery() != 1) return new ClientActionRequests.Materialized();
+            tx.Commit();
             result.Cash -= cost; result.Remaining = count - 1; result.Result = 0; return result;
         }
     }

@@ -21,6 +21,7 @@ public sealed class NativeQaModePlan
     public IReadOnlyList<ushort> HotbarPageThree { get; }
     public IReadOnlyList<AbilitySweepHotbar.InventoryShortcut> HotbarInventory { get; }
     public bool HotbarWithdraw { get; }
+    public bool AllowManualHotbarSetup { get; }
     public bool HasHotbar => HotbarAbilities.Count != 0 || HotbarWithdraw || HotbarInventory.Count != 0;
     public string? MissionFixture { get; }
     public string? TestMobFixture { get; }
@@ -37,7 +38,7 @@ public sealed class NativeQaModePlan
         string[] afterHelpers, bool DevCommands=false, bool GmCharacter110=false, bool FixedCallbackRolls=false,
         bool SeedDisguiseTool=false, string Bootstrap="", bool StealthShieldQa=false, bool HealthCallbackQa=false, bool CompileItemsQa=false, Dictionary<string,string>? environmentOverrides=null, Dictionary<string,object?>? extraQaMetadata=null, string[]? readyMessages=null,string? missionFixture=null, string? testMobFixture=null,
         bool loadAbilityAncestors=false, ushort[]? hotbarAbilities=null, bool hotbarWithdraw = false, ushort[]? hotbarPageThree = null,
-        AbilitySweepHotbar.InventoryShortcut[]? hotbarInventory = null)
+        AbilitySweepHotbar.InventoryShortcut[]? hotbarInventory = null, bool allowManualHotbarSetup = false)
     {
         Abilities=Array.AsReadOnly((ushort[])abilities.Clone()); X=x; Z=z;
         BeforeLoadout=Array.AsReadOnly((string[])beforeLoadout.Clone());
@@ -54,6 +55,7 @@ public sealed class NativeQaModePlan
         HotbarPageThree=Array.AsReadOnly((ushort[])(hotbarPageThree ?? Array.Empty<ushort>()).Clone());
         HotbarInventory=Array.AsReadOnly(hotbarInventory?.ToArray() ?? Array.Empty<AbilitySweepHotbar.InventoryShortcut>());
         HotbarWithdraw = hotbarWithdraw;
+        AllowManualHotbarSetup = allowManualHotbarSetup;
         if (HasHotbar) AbilitySweepHotbar.Validate(HotbarAbilities, HotbarWithdraw, HotbarInventory);
         var hotbarInstructions = !HasHotbar ? Array.Empty<string>() :
             new[] { "Open stock hotbar page 2." }.Concat(HotbarAbilities.Select((id, index) => $"slot {index + 1} = ability {id}"));

@@ -49,14 +49,27 @@ public static partial class Scenarios
     private static async Task NativeCraftingRequests(ScenarioContext context)
     {
         var player = await context.AddPlayerAsync(new CharacterSeed("CraftActions") { Level = 50,
-            Items = new[] { (2, 613u, 1), (3, 1271u, 1), (4, 7336u, 2), (5, 2399u, 1) } });
+            Items = new[] { (2, 613u, 1), (3, 1271u, 1), (4, 7336u, 2), (5, 2399u, 2) } });
         await context.Database.ExecuteAsync($"INSERT INTO char_abilities (char_id,slot,ability_id,level,is_loaded) VALUES " +
             $"({player.CharId},30,{unchecked((int)(0x80000000u | 277u << 10))},50,1)," +
             $"({player.CharId},31,{unchecked((int)(0x80000000u | 276u << 10))},50,1);");
         await player.EnterWorldAsync();
+        // Deny the actual recipe insert after the tentative stack decrement.
+        await context.Database.ExecuteAsync("CREATE TABLE IF NOT EXISTS char_recipes (charId INT UNSIGNED NOT NULL, " +
+            "goid BIGINT UNSIGNED NOT NULL, PRIMARY KEY(charId,goid)) ENGINE=InnoDB;" +
+            $"ALTER TABLE char_recipes ADD CONSTRAINT reject_decompile_recipe CHECK (charId <> {player.CharId} OR goid <> 2399)");
+        player.SendRpc("81 31 14 01 00 00 05 02 01");
+        await player.WaitForRpcAsync("81 2f 00 05 5f 09 00 00");
+        await player.WaitForTextAsync("The item could not be decompiled.");
+        Check.Equal(2L, await context.Database.LongAsync($"SELECT count FROM inventory WHERE charId={player.CharId} AND slot=5"),
+            "A rejected recipe insert rolls back the source decrement");
+        Check.Equal(0, player.Received("81 30 5f 09 00 00").Count, "Failed commit never reports a learned recipe");
+        await context.Database.ExecuteAsync("ALTER TABLE char_recipes DROP CONSTRAINT reject_decompile_recipe");
+        await Task.Delay(TimeSpan.FromSeconds(10.25));
         player.SendRpc("81 31 14 01 00 00 05 02 01");
         await player.WaitForRpcAsync("81 30 5f 09 00 00 01");
-        Check.That(player.Received("5f 05 00 01").Count > 0, "Decompiled source left the bag");
+        Check.Equal(1L, await context.Database.LongAsync($"SELECT count FROM inventory WHERE charId={player.CharId} AND slot=5"),
+            "A successful decompile consumes exactly one item");
         Check.Equal(1L, await context.Database.LongAsync($"SELECT COUNT(*) FROM char_recipes WHERE charId={player.CharId} AND goid=2399"), "Learned recipe persists");
         CompilerTool(player,3,true);
         await player.WaitForRpcAsync(ModPattern(969,968));

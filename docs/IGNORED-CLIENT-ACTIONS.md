@@ -39,14 +39,41 @@ The ticket status switch at `6209699a`/`62096bf8` maps 0 to string `0200017b` (N
 
 All three require the authenticated character ID to be an exact member of the server environment allowlist `MXO_GM_CHARACTER_IDS` (comma-separated numeric IDs). Default is nobody. A handle, character name, supplied faction ID, substring match, or dev-command enablement cannot grant GM privileges. Reports contain actual current loaded abilities, bag slots/counts, active buff IDs, stored crew/faction bank/leader/member information, sent privately as local system text. The native structured chunk viewers (`81 5a`/`81 5c`) are not reconstructed: these rows remain **partial**, not full native snoop parity.
 
-## Every remaining ignored row
+## Round 2 priorities
+
+| Impact | Action and evidence | Result |
+|---|---|---|
+| High when blocked | Post-tutorial jack-in (`81 01`). The Norajob creation trace has the bare request followed by `80 fa 01 00 00 00 99 00 00 00 01` and `81 07`. The Morpheuzz and first-mission traces name the same hardline. | Accept the request once, from the Loading Area after a server-recognized tutorial finish or skip. Keep the existing `05` compatibility route with the same admission. |
+| Medium | Loading Area archive Compile (`60`). The stock archive sender and `61` results are documented in [Client actions](CLIENT-ACTIONS.md#item-requests-in-detail). Ordinary stored codes already have an in-world executor and charge format. | **OURS:** extend the existing direct LA policy to supported ordinary item codes. Use the shipped base cost, one charge, and the same atomic archive/bag/Info update. The in-world tool, contest and timing rules still apply when FromCrafting=1. |
+| Medium | Decompile Items (`81 31`). Owned item/slot, contest, recipe notification and result are already verified. Separate SQL writes could persist the recipe and consume a replacement item if the source changed. | Match the owned source under a SQL lock. One transaction consumes the source and persists the recipe. A failed commit emits a failed result, with no item loss or recipe notice. |
+
+The other ignored actions have lower demonstrated impact or an unresolved response
+contract. World-entry `80 be` has no direct captured response. `81 aa` has an
+interruption flag and user datum, with no demonstrated mapping to a server-owned
+completion token. `81 46` still has no established ranges or units and no sender
+was found for `81 47` or `81 4a`. Constructs, hovercraft, clock, target
+damage, `81 56` and `39` remain deferred. Central storage `62` is served.
+
+`client-action-followups` starts on the verified Mara Central hardline 152
+stand (17000,495,2300). With a stock-written disposable UI template, hotbar
+page 2 has Decompile Items in slot 1 and the Item Decompiler tool in slot 2.
+Open Inventory, use the page 2 shortcut and click the pill in bag slot 5.
+Use the nearby booth's Loading Area action for the archive check. The fixture
+bootstrap replays the inventory request, the booth radial and the captured
+zero-Item archive request. It verifies both flagged rows in the actual Margin
+known-abilities block. Run `client-action-tutorial` as a fresh fixture to
+log directly into the Tutorial and check Skip Tutorial independently.
+Headless scenarios also cover the tutorial request and replay, archive charge
+depletion, and a rejected recipe commit followed by a successful decompile.
+
+## Original ignored-row audit
 
 The following rows remain ignored; adding a switch that accepts and does nothing would not improve parity. P3 PR113 is now integrated: `5c` is partial for light luggables with pickup/drop persistence; heavy attachments remain absent. Actual combined counts are 118 handled / 14 partial / 15 ignored / 19 not sent (166 rows). Since then `81 55` (/stuck) is handled by a local Loading Area policy (CLIENT-ACTIONS.md).
 
 | Request | Evidence and remaining reason |
 |---|---|
 | `80 be` | Inventory/ability manager world-entry sender `621e2cf0`, no fields. Existing captures show no direct reply; following `80 bc` is correlated with normal world-entry effects. An active-effects query is still a guess, so no unsolicited effect replay is invented. |
-| `81 01` | Eight captures show `80 fa` and world change, but the native producer and destination-selection/authorization rules are not established. Does not authorize arbitrary LA exit destinations. |
+| `81 01` | Handled for the server-owned tutorial exit. The request supplies no destination and has no effect during ordinary Loading Area visits. |
 | `81 56` | Thirteen view-manager send sites, no fields. Purpose and response contract remain unknown. |
 | `39` | Direction byte; eight captures, seven with value2. Which operation is directed remains unknown; it is not treated as movement/yaw. |
 | `81 46` | `62241a50` allocates10 bytes; `6225909d..622590c5` parses two integer words and sends them. The name `/range`, units, which ranges change and authority are not established. No guessed interest-radius or weapon-range control. |

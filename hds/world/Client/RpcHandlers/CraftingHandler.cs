@@ -243,9 +243,18 @@ namespace hds
                     $"complexity={complexity} roll={roll} total={4 * skill + roll} requiredAbove={4 * complexity + 50} success={success}");
                 if (!success)
                 { Finish(client, 0, request.Slot, source.Goid, "Failed to decompile the item."); return; }
-                // Persist learning before deleting the item; a failed database write cannot destroy the source.
-                db.LearnRecipe(client.playerData.getCharID(), source.Goid);
-                InventoryHandler.RemoveOne(client, request.Slot);
+                int remaining;
+                try { remaining = db.DecompileItem(client.playerData.getCharID(), request.Slot, source.Goid); }
+                catch (System.Data.Common.DbException ex)
+                {
+                    Output.WriteDebugLog($"[DECOMPILE] Recipe transaction failed for char={client.playerData.getCharID()} item={source.Goid}: {ex}");
+                    Finish(client, 0, request.Slot, source.Goid, "The item could not be decompiled.");
+                    return;
+                }
+                if (remaining < 0)
+                { Finish(client, 0, request.Slot, source.Goid, "The item moved before it could be decompiled."); return; }
+                if (remaining == 0) new ServerPackets().sendInventoryItemDelete(request.Slot, client);
+                else client.messageQueue.addRpcMessage(ItemStacks.BuildStackCount(request.Slot, remaining));
                 byte[] learned = new byte[11] { 0x81, 0x30, 0, 0, 0, 0, (byte)item.Complexity.Value, 0, 0, 0, 0 };
                 BitConverter.GetBytes(source.Goid).CopyTo(learned, 2);
                 BitConverter.GetBytes(item.Category).CopyTo(learned, 7);

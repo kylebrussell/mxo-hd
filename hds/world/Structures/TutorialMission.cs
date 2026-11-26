@@ -811,12 +811,14 @@ namespace hds
         /// </summary>
         public static bool JackIntoRichland(WorldClient client)
         {
-            if (!client.playerData.leavingTutorial)
+            if (!client.playerData.leavingTutorial || !client.playerData.DistrictIsLA() ||
+                client.playerData.worldChangePending)
             {
                 return false;
             }
 
             client.playerData.leavingTutorial = false;
+            client.playerData.worldChangePending = true;
             TeleportHandler.MoveToHardline(client, (UInt16)MxOLocations.SLUMS, RichlandHardline);
             client.messageQueue.addRpcMessage(new byte[] { 0x80, 0xfa, 0x01, 0x00, 0x00, 0x00, (byte)RichlandHardline, 0x00, 0x00, 0x00, 0x01 });
             client.messageQueue.addRpcMessage(new byte[] { 0x81, 0x07 });
