@@ -51,17 +51,36 @@ public static partial class Scenarios
 
         var ui = new CorpseLootWindowState();
         byte[] deathSignature = WireFormat.FromHex("fd 07 00 00");
+        ushort previousCombatView = 0;
         for (int i = 0; i < targets.Length; i++)
         {
             var target = targets[i];
             byte[] pos = target.Attributes["Position"];
-            await MoveForMissionTest(p, BitConverter.ToDouble(pos, 0), BitConverter.ToDouble(pos, 8), BitConverter.ToDouble(pos, 16) - 100);
+            if (i != 1)
+            {
+                await MoveForMissionTest(p, BitConverter.ToDouble(pos, 0), BitConverter.ToDouble(pos, 8), BitConverter.ToDouble(pos, 16) - 100);
+            }
+            else
+            {
+                // Keep CSR at Kill #1's stand so Kill #2 exercises a direct out-of-range 0x40 engage request:
+                // verify the server confirms a real combat session and tears down CombatView cleanly rather than
+                // stranding the client in a phantom combat state.
+                byte[] prevPos = targets[0].Attributes["Position"];
+                double gapM = Math.Sqrt(Math.Pow(BitConverter.ToDouble(pos, 0) - BitConverter.ToDouble(prevPos, 0), 2)
+                    + Math.Pow(BitConverter.ToDouble(pos, 16) - (BitConverter.ToDouble(prevPos, 16) - 100), 2)) / 100.0;
+                Check.That(!hds.CombatHandler.InMeleeReach((float)gapM),
+                    $"Kill #2 starts from outside melee reach ({gapM:0.00} m)");
+            }
             int rpcCursor = p.World.RpcSnapshot().Count;
             p.SkipReceived();
             p.SendChat("?weaken 1");
             p.SendRpc($"40 {MissionNpcId(target)} 01 6b");
 
+            await p.WaitForRpcAsync($"40 {MissionNpcId(target)} 00 6b", TimeSpan.FromSeconds(10));
+            ushort combatView = await WaitForCombatView(p, previousCombatView);
+            previousCombatView = combatView;
             var combatEnd = await p.WaitForRpcAsync($"46 {MissionNpcId(target)} 00", TimeSpan.FromSeconds(30));
+            await p.WaitForViewUpdateAsync(1, $"01 01 00 {Le(combatView)}", TimeSpan.FromSeconds(10));
             var lootWindow = await p.WaitForRpcAsync("81 19", TimeSpan.FromSeconds(10));
             var killRpcs = p.World.RpcSnapshot().Skip(rpcCursor).ToArray();
             var lootClose = killRpcs.LastOrDefault(r => r.Bytes.Length == 2 && r.Bytes[0] == 0x81 && r.Bytes[1] == 0x1a);
