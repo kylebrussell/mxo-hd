@@ -20,9 +20,9 @@ P7 audits every remaining ignored row in [IGNORED-CLIENT-ACTIONS.md](IGNORED-CLI
 
 | | High | Medium | Low | Total |
 |---|---:|---:|---:|---:|
-| Handled | 52 | 47 | 20 | 119 |
+| Handled | 52 | 47 | 21 | 120 |
 | Partial | 0 | 2 | 12 | 14 |
-| Ignored | 0 | 0 | 14 | 14 |
+| Ignored | 0 | 0 | 13 | 13 |
 | Wrong | 0 | 0 | 0 | 0 |
 | Not sent by this client | | | | 19 |
 | **Total** | 52 | 49 | 46 | 166 |
@@ -84,7 +84,7 @@ Remaining ignored requests now depend on unrecovered protocol purpose or backend
 | `35` | Mood (Demeanor) | D, C 8 | handled | medium |
 | `2a` | `/afk` (Afk u8; `01` once) | D, S, C 1, U 1 | handled: own/observer/late-view AFK and tell feedback; session presence | low |
 | `3b` | No fields; `/targetdamage` string600000d3 dispatches62259838. Response/effect unknown; see CLIENT-ACTIONS-FOLLOWTHROUGH.md | D | ignored | low |
-| `81 55` | No fields; `/stuck` string3a000052 dispatches62246b40 after a local stuck gate. Server recovery contract unknown | D | ignored | low |
+| `81 55` | No fields; `/stuck` string3a000052 dispatches62246b40 after a local stuck gate. Retail's recovery contract unknown | D | handled (OURS): a living, in-world player out of combat gets the booth's Exit to Loading Area (`80 fd 00000000 0100`, confirmed by `80 fe 01`), once per five minutes; refusals explain themselves (`stuck-to-loading-area`) | low |
 | `81 47`, `81 4a` | No fields; no sender found | D | ignored | low |
 
 ## Chat rooms (custom channels)

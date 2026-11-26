@@ -39,6 +39,7 @@ namespace hds{
                         NpcLoot.TryTakeOne(Store.currentClient, BitConverter.ToUInt32(rpcData, 4), BitConverter.ToUInt32(rpcData, 8));
                     break;
                 case 0x141: ClientActionsHandler.CloseElevator(Store.currentClient, rpcData); break;
+                case 0x155: ClientActionsHandler.Stuck(Store.currentClient, rpcData, TimeUtils.GetSimTimeSeconds()); break;
                 case 0x157: case 0x159: case 0x15b:
                     ClientActionsHandler.Snoop(Store.currentClient, header, rpcData); break;
                 case 0x1b0: case 0x1b7: case 0x1b2: case 0x1b4: case 0x1b9: case 0x1bb: case 0x1bd:

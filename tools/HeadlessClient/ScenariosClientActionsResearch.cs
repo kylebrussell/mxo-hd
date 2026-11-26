@@ -9,7 +9,7 @@ public static partial class Scenarios
         long items=await context.Database.LongAsync($"SELECT SUM(GREATEST(count,1)) FROM inventory WHERE charId={p.CharId}");
         int worldChanges=p.Received("81 07").Count+p.Received("80 fa").Count;
         // These are standalone native-shaped requests. No unknown response or backend semantics are fabricated.
-        string[] records={"3b","81 55","81 56","81 37 78 56 34 12","81 46 01 00 00 00 02 00 00 00",
+        string[] records={"3b","81 56","81 37 78 56 34 12","81 46 01 00 00 00 02 00 00 00",
             "81 aa 78 56 34 12 01","80 89 00 00 00 00 00 00 00","80 f2 00 00 00 00",
             "80 f6 00 00 00 00 00 00 00 00","80 ef 00 00"};
         foreach(string record in records)

@@ -352,6 +352,10 @@ namespace hds
                     new ServerPackets().sendSystemChatMessage(client, "Teleported to " + commands[4] + "/" + commands[5], "BROADCAST");
                 }
 
+                // Dev: the stock client sends 81 55 only when its own stuck test passes; this runs the same handler.
+                if (command.Equals("?stuck") && Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS") == "1")
+                    ClientActionsHandler.Stuck(Store.currentClient, new byte[0], TimeUtils.GetSimTimeSeconds());
+
                 if (command.Equals("?jret") && Environment.GetEnvironmentVariable(JumpRedirectQa.Mode) == "1")
                     new ServerPackets().sendSystemChatMessage(Store.currentClient, JumpRedirectQa.Replay(Store.currentClient), "BROADCAST");
 
