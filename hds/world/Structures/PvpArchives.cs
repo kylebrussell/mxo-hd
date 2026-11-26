@@ -37,19 +37,83 @@ namespace hds
             }
             return result;
         });
+        private readonly struct SenderSpot
+        {
+            public readonly StaticWorldObject Spot;
+            public readonly ulong Entity;
+            public readonly ushort Goid;
+            public readonly uint Org;
+            public readonly double X, Y, Z;
+
+            public SenderSpot(StaticWorldObject spot, ushort goid, uint org)
+            {
+                Spot = spot;
+                Entity = 0xa100000000000000UL | spot.mxoStaticId;
+                Goid = goid;
+                Org = org;
+                X = spot.pos_x;
+                Y = spot.pos_y;
+                Z = spot.pos_z;
+            }
+        }
+
+        private sealed class ObjectMeta
+        {
+            public readonly Type Type;
+            public readonly string Name;
+            public readonly FieldInfo Position;
+            public readonly FieldInfo Orientation;
+            public readonly FieldInfo CurrentState;
+
+            public ObjectMeta(FieldInfo field)
+            {
+                Type = field.FieldType;
+                Name = field.Name;
+                Position = Type.GetField("Position");
+                Orientation = Type.GetField("Orientation");
+                CurrentState = Type.GetField("CurrentState");
+            }
+        }
+
         private sealed class Session
         {
             public uint OriginMap;
             public string OriginKey;
             public byte[] OriginPosition;
             public long LastCycle = -1;
-            public readonly Dictionary<ulong, byte> Views = new Dictionary<ulong, byte>();
+            public long LastViewVersion = -1;
+            public readonly Dictionary<ulong, uint> Views = new Dictionary<ulong, uint>();
+            public readonly HashSet<ulong> ScratchWanted = new HashSet<ulong>();
         }
         private static readonly ConditionalWeakTable<WorldClient, Session> sessions = new ConditionalWeakTable<WorldClient, Session>();
-        private static readonly Lazy<List<StaticWorldObject>> senders = new Lazy<List<StaticWorldObject>>(() =>
-            DataLoader.getInstance().WorldObjectsDB.Where(s => s.metrId == 1 &&
-                (MissionSites.Goid(s) == 38278 || MissionSites.Goid(s) == 38279 || MissionSites.Goid(s) == 38282)).ToList());
+        private static readonly object metaLock = new object();
+        private static readonly Dictionary<ushort, ObjectMeta> metaByGoid = new Dictionary<ushort, ObjectMeta>();
+        private static readonly Lazy<SenderSpot[]> senders = new Lazy<SenderSpot[]>(() =>
+        {
+            var list = new List<SenderSpot>();
+            foreach (var s in DataLoader.getInstance().WorldObjectsDB)
+            {
+                if (s.metrId != 1) continue;
+                ushort goid = MissionSites.Goid(s);
+                if (goid == 38278 || goid == 38279 || goid == 38282)
+                    list.Add(new SenderSpot(s, goid, SenderOrg(goid)));
+            }
+            return list.ToArray();
+        });
+        private static readonly byte[] DefaultOrientation = StringUtils.hexStringToBytes("0000000000000000000000000000803f");
         private static readonly Dictionary<(ushort, uint), NavPoint> arrivals = new Dictionary<(ushort, uint), NavPoint>();
+
+        private static ObjectMeta MetaFor(ushort goid)
+        {
+            lock (metaLock)
+            {
+                if (metaByGoid.TryGetValue(goid, out ObjectMeta existing)) return existing;
+                FieldInfo field = typeof(GameObjectDefinitions).GetField("Object" + goid);
+                ObjectMeta created = field == null ? null : new ObjectMeta(field);
+                metaByGoid[goid] = created;
+                return created;
+            }
+        }
         public static Ticket Find(uint goid) => tickets.Value.TryGetValue(goid, out var t) ? t : null;
         public static ushort MapFor(int id) => id > 0 && id < maps.Length ? maps[id] : (ushort)0;
         public static uint ConstructId(uint map)
@@ -231,88 +295,165 @@ namespace hds
         public static void Check(WorldClient c, double now)
         {
             if (!c.playerData.getOnWorld() || c.playerData.waitForRPCShutDown) return;
-            long viewEpoch = c.TransportFence.Capture();
-            int viewWorld = c.playerData.worldGeneration;
+            uint map = c.playerData.getDistrictId();
+            double ax = 0, ay = 0, az = 0;
+            NumericalUtils.LtVector3dToDoubles(c.playerInstance.Position.getValue(), ref ax, ref ay, ref az);
+
             Session s = sessions.GetOrCreateValue(c);
             lock (s)
             {
-                double[] at = Position(c);
-                uint map = c.playerData.getDistrictId();
-                var wanted = new HashSet<ulong>();
+                // Fast exit for district 1 when the player has no active archive views and no sender is in range:
+                // avoids TransportFence, ViewManager and ObjectStates locks on every visibility pass.
+                if (map == 1 && s.Views.Count == 0)
+                {
+                    SenderSpot[] allSenders = senders.Value;
+                    bool anyInRange = false;
+                    for (int i = 0; i < allSenders.Length; i++)
+                    {
+                        SenderSpot sp = allSenders[i];
+                        double dx = ax - sp.X;
+                        double dz = az - sp.Z;
+                        if (Math.Abs(ay - sp.Y) <= 3000.0 && dx * dx + dz * dz <= 5000.0 * 5000.0)
+                        {
+                            anyInRange = true;
+                            break;
+                        }
+                    }
+                    if (!anyInRange) return;
+                }
+                else if (map != 1 && !IsArchive(map) && s.Views.Count == 0)
+                {
+                    return;
+                }
+
+                // Capture TransportFence lazily ONLY when an object actually needs creation, state update, or deletion.
+                long? viewEpoch = null;
+                int viewWorld = c.playerData.worldGeneration;
+                long currentViewVersion = c.viewMan.Version;
+                HashSet<ulong> wanted = s.ScratchWanted;
+                wanted.Clear();
                 bool queued = false;
+
                 void View(ulong entity, ushort goid, double x, double y, double z, StaticWorldObject spot, uint state)
                 {
-                    if (Math.Abs(at[1]-y) > 3000 || Math.Pow(at[0]-x,2)+Math.Pow(at[2]-z,2) > 5000*5000) return;
+                    double dx = ax - x;
+                    double dz = az - z;
+                    if (Math.Abs(ay - y) > 3000.0 || dx * dx + dz * dz > 5000.0 * 5000.0) return;
+
+                    // Fast path: already tracked in this state and the client's view list version has not changed.
+                    if (s.Views.TryGetValue(entity, out uint shownState) && s.LastViewVersion == currentViewVersion &&
+                        (state == 0 || shownState == state))
+                    {
+                        wanted.Add(entity);
+                        return;
+                    }
+
                     // Already shown in its current state: nothing to send, so no need to wait on the transport fence,
                     // which the flush and send paths hold (every pass waited on it for every nearby object).
                     ClientView shown = c.viewMan.FindViewForEntity(entity);
                     if (shown != null && shown.viewCreated && s.Views.ContainsKey(entity) &&
                         (state == 0 || ObjectStates.TrackedState(c, entity) == state))
                     {
+                        s.Views[entity] = state;
                         wanted.Add(entity);
                         return;
                     }
-                    CommitViews(c, viewEpoch, map, viewWorld, () =>
+
+                    long epoch = viewEpoch ?? (viewEpoch = c.TransportFence.Capture()).Value;
+                    CommitViews(c, epoch, map, viewWorld, () =>
                     {
-                    wanted.Add(entity);
-                    ClientView v = c.viewMan.FindViewForEntity(entity);
-                    if (v == null || !v.viewCreated)
-                    {
-                        FieldInfo field = typeof(GameObjectDefinitions).GetField("Object" + goid);
-                        if (field == null) return;
-                        var obj = (GameObject)Activator.CreateInstance(field.FieldType, field.Name, goid);
-                        obj.DisableAllAttributes();
-                        if (spot != null) obj.SetRelatedStaticObjId(spot.mxoStaticId); else obj.UnsetRelatedStaticObjId();
-                        void Attr(string name, byte[] value) { if (obj.GetType().GetField(name)?.GetValue(obj) is Attribute a) { a.enable(); a.setValue(value); } }
-                        Attr("Position", NumericalUtils.doublesToLtVector3d(x,y,z));
-                        Attr("Orientation", spot == null ? StringUtils.hexStringToBytes("0000000000000000000000000000803f") : StringUtils.hexStringToBytes(spot.quat));
-                        if (state != 0) Attr("CurrentState", BitConverter.GetBytes(state));
-                        new ServerPackets().SendSpawnGameObject(c, obj, entity);
-                        queued = true;
-                        v = c.viewMan.FindViewForEntity(entity);
-                        if (v != null) v.staticObject = spot;
-                        s.Views[entity] = 0;
-                        if (state != 0) ObjectStates.Track(c, entity, goid, state);
-                    }
-                    else if (state != 0 && ObjectStates.TrackedState(c, entity) != state) { ObjectStates.SetState(c, entity, state); queued = true; }
+                        wanted.Add(entity);
+                        ClientView v = c.viewMan.FindViewForEntity(entity);
+                        if (v == null || !v.viewCreated)
+                        {
+                            ObjectMeta meta = MetaFor(goid);
+                            if (meta == null) return;
+                            var obj = (GameObject)Activator.CreateInstance(meta.Type, meta.Name, goid);
+                            obj.DisableAllAttributes();
+                            if (spot != null) obj.SetRelatedStaticObjId(spot.mxoStaticId); else obj.UnsetRelatedStaticObjId();
+                            void SetAttr(FieldInfo fi, byte[] value) { if (fi?.GetValue(obj) is Attribute a) { a.enable(); a.setValue(value); } }
+                            SetAttr(meta.Position, NumericalUtils.doublesToLtVector3d(x, y, z));
+                            SetAttr(meta.Orientation, spot == null ? DefaultOrientation : StringUtils.hexStringToBytes(spot.quat));
+                            if (state != 0) SetAttr(meta.CurrentState, BitConverter.GetBytes(state));
+                            new ServerPackets().SendSpawnGameObject(c, obj, entity);
+                            queued = true;
+                            v = c.viewMan.FindViewForEntity(entity);
+                            if (v != null) v.staticObject = spot;
+                            s.Views[entity] = state;
+                            if (state != 0) ObjectStates.Track(c, entity, goid, state);
+                        }
+                        else if (state != 0 && ObjectStates.TrackedState(c, entity) != state)
+                        {
+                            ObjectStates.SetState(c, entity, state);
+                            s.Views[entity] = state;
+                            queued = true;
+                        }
                     });
                 }
+
                 if (map == 1)
-                    foreach (var spot in senders.Value)
+                {
+                    uint stage = Stage(now);
+                    long cycle = (long)Math.Floor(now / 180.0);
+                    SenderSpot[] allSenders = senders.Value;
+                    for (int i = 0; i < allSenders.Length; i++)
                     {
-                        ushort goid = MissionSites.Goid(spot);
-                        View(0xa100000000000000UL | spot.mxoStaticId, goid, spot.pos_x, spot.pos_y, spot.pos_z, spot, Stage(now));
-                        long cycle = (long)Math.Floor(now/180);
-                        if (Stage(now) == 0xc1e && s.LastCycle != cycle && Available(c) &&
-                            Math.Pow(at[0]-spot.pos_x,2)+Math.Pow(at[1]-spot.pos_y,2)+Math.Pow(at[2]-spot.pos_z,2) <= 500*500)
+                        SenderSpot sp = allSenders[i];
+                        View(sp.Entity, sp.Goid, sp.X, sp.Y, sp.Z, sp.Spot, stage);
+                        if (stage == 0xc1e && s.LastCycle != cycle && Available(c))
                         {
-                            s.LastCycle = cycle;
-                            if (Enter(c, SenderOrg(goid))) break;
+                            double dx = ax - sp.X, dy = ay - sp.Y, dz = az - sp.Z;
+                            if (dx * dx + dy * dy + dz * dz <= 500.0 * 500.0)
+                            {
+                                s.LastCycle = cycle;
+                                if (Enter(c, sp.Org)) break;
+                            }
                         }
                     }
+                }
                 else if (IsArchive(map))
+                {
                     for (uint org = 1; org <= 6; org++)
                         if ((map != 7 && map != 9 || org == Organization(c)) && Arrival((ushort)map, org, out NavPoint p))
                         {
                             if (map == SatiFallbackLayout.Map && !SatiFallbackLayout.TryGet(out _, out p)) continue;
-                            View(0xa200000000000000UL | map << 8 | org, (ushort)returners[org], p.x,p.y,p.z,null,0);
+                            View(0xa200000000000000UL | map << 8 | org, (ushort)returners[org], p.x, p.y, p.z, null, 0);
                         }
+                }
                 // These actual statics are NPC/model views, not automatically visible merely because CSV exists.
                 // Keep the existing generated map7 fallback ALWAYS: exact retail arrival/route remains unknown.
                 if (map == 7)
                     foreach (var spot in DataMineReturners.Bindings)
-                        View(DataMineReturners.Entity(spot),DataMineReturners.GoId,spot.pos_x,spot.pos_y,spot.pos_z,spot,0);
-                ulong[] stale = s.Views.Keys.Where(e => !wanted.Contains(e)).ToArray();
-                if (stale.Length > 0)
-                    CommitViews(c, viewEpoch, map, viewWorld, () =>
+                        View(DataMineReturners.Entity(spot), DataMineReturners.GoId, spot.pos_x, spot.pos_y, spot.pos_z, spot, 0);
+
+                if (s.Views.Count > wanted.Count)
+                {
+                    List<ulong> stale = null;
+                    foreach (ulong entity in s.Views.Keys)
                     {
-                    foreach (ulong entity in stale)
-                    {
-                        var v = c.viewMan.FindViewForEntity(entity);
-                        if (v != null) { new ServerPackets().sendDeleteViewPacket(c,v.ViewID); c.viewMan.removeViewByViewId(v.ViewID); queued = true; }
-                        s.Views.Remove(entity);
+                        if (!wanted.Contains(entity))
+                        {
+                            if (stale == null) stale = new List<ulong>();
+                            stale.Add(entity);
+                        }
                     }
-                    });
+                    if (stale != null)
+                    {
+                        long epoch = viewEpoch ?? (viewEpoch = c.TransportFence.Capture()).Value;
+                        CommitViews(c, epoch, map, viewWorld, () =>
+                        {
+                            for (int i = 0; i < stale.Count; i++)
+                            {
+                                ulong entity = stale[i];
+                                var v = c.viewMan.FindViewForEntity(entity);
+                                if (v != null) { new ServerPackets().sendDeleteViewPacket(c, v.ViewID); c.viewMan.removeViewByViewId(v.ViewID); queued = true; }
+                                s.Views.Remove(entity);
+                            }
+                        });
+                    }
+                }
+
+                s.LastViewVersion = s.Views.Count > 0 ? c.viewMan.Version : -1;
                 if (queued) c.FlushQueue();
             }
         }
