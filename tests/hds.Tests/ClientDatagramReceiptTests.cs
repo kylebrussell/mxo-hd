@@ -48,6 +48,18 @@ public sealed class ClientDatagramReceiptTests
     }
 
     [Fact]
+    public void LatePacketEightBehindDoesNotSetTheForceAckBit()
+    {
+        var window = new ClientDatagramReceipts();
+        window.Observe(8);
+        Assert.Equal(0, window.Bits);
+        window.Observe(0);
+        Assert.Equal(0, window.Bits);
+        window.Observe(1);
+        Assert.Equal(0x40, window.Bits);
+    }
+
+    [Fact]
     public void BackoffRequiresBothSilenceAndStalledReliableRetries()
     {
         var backoff = new RpcResendBackoff();

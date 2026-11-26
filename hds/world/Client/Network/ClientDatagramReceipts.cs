@@ -19,13 +19,14 @@ namespace hds
 
             if (advance < 0x800)
             {
-                Bits = advance > 8 ? (byte)0 : (byte)((Bits << advance) | (1 << (advance - 1)));
+                Bits = advance > SequencedMessage.AckHistoryBits ? (byte)0
+                    : (byte)(((Bits << advance) | (1 << (advance - 1))) & SequencedMessage.AckHistoryMask);
                 Latest = sequence;
             }
             else
             {
                 int behind = (Latest - sequence) & 0xfff;
-                if (behind <= 8) Bits |= (byte)(1 << (behind - 1));
+                if (behind <= SequencedMessage.AckHistoryBits) Bits |= (byte)(1 << (behind - 1));
             }
         }
     }

@@ -4,6 +4,7 @@ using System.Net.Sockets;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using hds;
+using hds.shared;
 
 namespace hds.Tests;
 
@@ -16,10 +17,11 @@ public class RpcOrderedResendTests
 {
     private sealed class SequenceCipher : IWorldEncryption
     {
-        public readonly List<(byte[] Plain, ushort Sseq)> Sent = new();
+        public readonly List<(byte[] Plain, ushort Sseq, ushort Pss)> Sent = new();
         public byte[] encrypt(byte[] bytes, int length, ushort pss, ushort cseq, ushort sseq)
-        { lock (Sent) Sent.Add((bytes.ToArray(), sseq)); return bytes; }
-        public ArrayList decrypt(byte[] bytes, int length) => throw new NotSupportedException();
+        { lock (Sent) Sent.Add((bytes.ToArray(), sseq, pss)); return bytes; }
+        private readonly WorldEncryption inbound = new();
+        public ArrayList decrypt(byte[] bytes, int length) => inbound.decrypt(bytes, length);
     }
 
     private sealed class Rig : IDisposable
@@ -51,7 +53,7 @@ public class RpcOrderedResendTests
         public List<(ushort Sseq, int[] Counters)> Flush()
         {
             Client.FlushQueue(force: true);
-            List<(byte[] Plain, ushort Sseq)> fresh;
+            List<(byte[] Plain, ushort Sseq, ushort Pss)> fresh;
             lock (Cipher.Sent) { fresh = Cipher.Sent.Skip(seen).ToList(); seen = Cipher.Sent.Count; }
             return fresh.Select(p => (p.Sseq, HeadlessClient.WireFormat.ParsePayload(p.Plain).Rpcs
                     .Select(r => (int)(ushort)(r.ListCounter + r.Index)).ToArray()))
@@ -68,10 +70,18 @@ public class RpcOrderedResendTests
             foreach (SequencedMessage m in Pending().Where(m => counters.Contains(m.rpcNumber))) m.lastRpcSendTick = now - ms;
         }
 
-        public void Ack(ushort sseq)
+        private readonly WorldEncryption peer = new();
+        private ushort clientSequence;
+
+        public void Ack(ushort sseq, ushort bits = 0) => ReceiveAck(++clientSequence, sseq, bits);
+
+        public byte[] ReceiveAck(ushort sequence, ushort sseq, ushort bits)
         {
-            Client.playerData.setPss(0);
-            Client.DeletedAckedPackets(sseq);
+            byte[] bare = { 0x02 };
+            byte[] datagram = peer.encrypt(bare, bare.Length, bits, sseq, sequence);
+            byte[] decoded = Client.DecryptReceivedPacket(datagram);
+            Assert.Equal(bare, decoded);
+            return decoded;
         }
 
         public void Dispose() { receiver.Dispose(); sender.Dispose(); }
@@ -128,6 +138,100 @@ public class RpcOrderedResendTests
         var again = Assert.Single(resent);
         rig.Client.playerData.setPss(0x01);
         rig.Client.DeletedAckedPackets((ushort)(again.Sseq + 1));
+        Assert.Empty(rig.Pending());
+    }
+
+    [Theory]
+    [InlineData(348, 357)]
+    [InlineData(1837, 1883)]
+    public void NativeBareAckReplyCarriesHistoryWithoutRequestingAnotherAck(
+        ushort clientSequence, ushort serverSequence)
+    {
+        // Both captures resume after the client repeats its last ACK with bit 7 set.
+        // 3190e49da1d5 lines 4192/4341. 86b9468137d4 lines 19416/19589.
+        using var rig = new Rig();
+        var protocol = new MultiProtocolManager();
+        var previous = Store.currentClient;
+        Store.currentClient = rig.Client;
+        try
+        {
+            for (int sequence = clientSequence - 8; sequence < clientSequence; sequence++)
+                rig.ReceiveAck((ushort)sequence, (ushort)(serverSequence - 1), 0x7f);
+
+            rig.Client.playerData.setSseq(serverSequence);
+            void AcceptAndFlush(ushort client, ushort bits)
+            {
+                protocol.Parse(true, rig.ReceiveAck(client, serverSequence, bits));
+                rig.Flush();
+            }
+
+            AcceptAndFlush(clientSequence, 0x7f);
+            var reply = Assert.Single(rig.Cipher.Sent);
+            Assert.True(HeadlessClient.WireFormat.ParsePayload(reply.Plain).IsAckOnly);
+            Assert.Equal(serverSequence + 1, reply.Sseq);
+            Assert.Equal((ushort)0x7f, reply.Pss);
+
+            AcceptAndFlush((ushort)(clientSequence + 1), 0xff);
+            Assert.Equal((ushort)0x7f, rig.Cipher.Sent.Last().Pss);
+            Assert.Equal(serverSequence + 2, rig.Cipher.Sent.Last().Sseq);
+            Assert.Equal(2, rig.Cipher.Sent.Count);
+        }
+        finally
+        {
+            Store.currentClient = previous;
+        }
+    }
+
+    [Theory]
+    // Native master at PacketLog 4212/4436/4454, and pre-1222 at 19441/19594/19622.
+    [InlineData(43, 357, 360, 381, 382, 0x7f,
+        "4700000001023a00000000801f0005000c004a001a0003000000010000000001034c00000000800c0017001e001b00",
+        "45010002000100000001023a00000000801f0005000c004a0000000201042300000000802900320014004a0000000000010500030005000300000000000100000000000000000000001200feff05b501000000000000000000")]
+    [InlineData(52, 1883, 1887, 1905, 1905, 0,
+        "4700000001023500000000800e002700070008001a0003000000010000000001032f0000000080590048003b000c00",
+        "45010002000000000001023500000000800e0027000700080000000101043d0000000080300049002200510000000000010500030005000300000000000800000000000000090007001200feffb2a504000000000000000000")]
+    public void CapturedIdleAckCannotRetireCombatBeforeTheFirstCoveringReceipt(
+        ushort counter, ushort staleAck, ushort firstSend, ushort lastSend, ushort finalAck, ushort finalBits,
+        string nextMove, string round)
+    {
+        using var rig = new Rig();
+        rig.Client.playerData.setRPCCounter(counter);
+        rig.Client.playerData.setSseq((ushort)(firstSend - 1));
+        rig.Client.messageQueue.addRpcMessage(Convert.FromHexString(nextMove));
+        rig.Client.messageQueue.addRpcMessage(Convert.FromHexString(round));
+        var first = Assert.Single(rig.Flush());
+        Assert.Equal(firstSend, first.Sseq);
+        Assert.Equal(Range(counter, 2), first.Counters);
+        rig.Ack(staleAck, 0x7f);
+        Assert.Equal(2, rig.Pending().Length);
+
+        // Advance past the datagrams between the first and final transmissions of this same pair.
+        rig.Client.playerData.setSseq((ushort)(lastSend - 1));
+        rig.Age(SequencedMessage.RpcResendIntervalMs + 1, Range(counter, 2));
+        var retry = Assert.Single(rig.Flush());
+        Assert.Equal(lastSend, retry.Sseq);
+        Assert.Equal(first.Counters, retry.Counters);
+        rig.Ack(finalAck, finalBits);
+        Assert.Empty(rig.Pending());
+        Assert.Empty(rig.Flush());
+    }
+
+    [Fact]
+    public void AClientAcknowledgingEveryDatagramGetsNoRpcResends()
+    {
+        using var rig = new Rig();
+        rig.Client.playerData.setSseq(4090);
+        for (int i = 0; i < 18; i++)
+        {
+            rig.Queue(3);
+            var packet = Assert.Single(rig.Flush());
+            Assert.Equal(Range(i * 3, 3), packet.Counters);
+            var pending = rig.Pending();
+            rig.Ack(packet.Sseq, 0x7f);
+            foreach (var rpc in pending) rpc.lastRpcSendTick -= SequencedMessage.RpcResendIntervalMs;
+            Assert.Empty(rig.Flush());
+            Assert.All(pending, rpc => Assert.Equal((ushort)1, rpc.sendCounter));
+        }
         Assert.Empty(rig.Pending());
     }
 

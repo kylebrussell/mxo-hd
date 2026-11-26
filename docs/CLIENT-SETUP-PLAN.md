@@ -106,10 +106,10 @@ Fixed (2026-11-09): **the client sometimes stopped acting on server RPCs partway
 
 RPCs now work as in Reality (rajkosto/mxoemu, `GameClient::FlushQueue` and `AcknowledgePacket`):
 - **Counters:** an RPC keeps the counter it was first sent with, and remembers each packet it went out in.
-- **Acks:** it is gone once the client acks one of those packets. The client acks a sequence, and its ack-bits byte (what the code calls PSS) names the 8 before it: bit i is ack − (i+1), so the steady 42 and 170 cover the server's every-other-sequence packets.
+- **Acks:** an RPC leaves the queue once a client ACK covers a datagram that carried it. PSS bits 0 through 6 name the seven preceding sequences. Bit i covers ack minus (i+1). Bit 7 requests an ACK.
 - **Resends:** until acked, it goes out again every 500 ms, in blocks of consecutive counters (`04 <blocks>`, then each block's first counter, count and RPCs). Once any unacked RPC is due, it and every unacked RPC before it go out again as one run from the oldest, then new ones. (Each RPC used to keep its own timer, so RPCs first sent in different flushes were resent in separate packets on separate phases.) After 60 sends it is dropped.
 - **In flight:** at most `MessageQueue.MaxRpcsInFlight` (128) counters past the oldest unacked RPC; newer ones wait for acks. Retail had about a hundred out at world entry.
-- **Sequences:** one per packet, as in retail's captures. The server used to take two per packet, so the client's 8 ack bits (42/170) covered only its last 4 packets.
+- **Sequences:** one per packet, as in retail. The server used to take two per packet, which left gaps in the client receipt window.
 - **Comm reset:** RPCs already sent are dropped.
 - **Packet size:** packets stop at 1,300 bytes and 255 RPCs.
 - **Testing:** `MXO_DROP_RPC_PACKET=n` doesn't send the nth packet carrying RPCs, to test recovery.
@@ -118,7 +118,7 @@ The server now reports its own receive history in outgoing datagrams. In
 `actions_combat.log.txt` lines 187/191 and 197/201, client sequences 1 and 2
 carry inbound ack bits 0 and 2. The server replies with ack sequences 1 and 2
 and bits 1 and 3, covering the client sequences received in that reset epoch.
-The sequence window accepts late packets within its eight history bits.
+The sequence window accepts late packets within its seven history bits.
 
 World changes keep the previously working client-envelope fields until the
 reset completes. The retail `001_exit_to_loadingarea` trace at lines 355-392
@@ -128,6 +128,22 @@ acknowledges 0 with PSS 0. Keep the RESETDONE datagram and its server
 acknowledgment out of the new receipt and retry windows. The replay test
 delivers a later bare ACK before that captured request to exercise reordering,
 then checks the reset, first setup and first new client sequence.
+
+Two native level-four controls show a receive stall during in-world play.
+On master `15879e58`, ACK 357 / PSS 7f preceded the first combat RPC batch
+(43–44 at SSEQ 360, PacketLog 4192–4212). ACK 382 / PSS 7f
+finally covered the copy at SSEQ 381. On pre-1222 `3e3ad019`, ACK 1883
+preceded counters 52–53 at SSEQ 1887 (PacketLog 19416–19441). ACK 1905
+retired the copy at SSEQ 1905. The repeat runs end on those covering ACKs.
+
+Both stalls follow a sustained exchange of bare `02` packets. The stock
+client reads PSS bit 7 as `forceAck` and masks history to `0x7f`
+(`client.dll` build 7.6005, `0x623bf41f` through `0x623bf431` and
+`0x623bf53d` through `0x623bf542`). The former server history included
+bit 7, so after eight consecutive receipts its bare replies carried `0xff`
+and requested another ACK. The ordinary server reply now carries the
+seven history bits. The replay also covers the stock client's repeated
+idle ACK with PSS `0xff` and verifies the server replies with `0x7f`.
 
 OUR policy for a silent peer keeps the existing 30-second session reap. After
 four reliable retry cycles without an advancing server acknowledgment and at
