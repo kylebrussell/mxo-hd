@@ -239,7 +239,7 @@ Each site's neighbourhood comes from `data/slums_neighbourhoods.csv`: every Slum
 
 ### Mission timer evidence
 
-`MissionProgress.DueSurvivals` starts a timed objective when it opens, or at the area arrival required by a generated phase. `MissionProgress.Overdue` compares elapsed server time with the goal's authored `limit`. `MissionRuntime` fails the mission and sends ìYou ran out of time.î after expiry.
+`MissionProgress.DueSurvivals` starts a timed objective when it opens, or at the area arrival required by a generated phase. `MissionProgress.Overdue` compares elapsed server time with the goal's authored `limit`. `MissionRuntime` fails the mission and sends ‚ÄúYou ran out of time.‚Äù after expiry.
 
 The retained objective record `80 a0` carries a goal ID, state and sized text. The end record `80 a2` has elapsed seconds in the decoded success case. Neither provides a proven live countdown. `80 a3` contains partly decoded briefing data. Its trailing header word is `3c 00` in the tutorial and the first Devoted mission (`create_char_devoted_make_first_mission`, lines 364/9117 in the endgame intake), and also in `old_world_packets_actions_missionstart` at line 741. These records lack a known timed objective and a synchronized view of a countdown, so the repeated word cannot identify a deadline or its units. The retained `rshooks.py` mission functions cover map access and rewards. The bomb countdown names in `fxlistreal.txt` identify event effects and establish no mission UI binding.
 
