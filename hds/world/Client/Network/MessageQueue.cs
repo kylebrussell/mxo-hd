@@ -13,6 +13,9 @@ namespace hds
         public ArrayList rawMessages;
         public ArrayList worldPackets; // These are final worldPackets to be resend
         public int ackOnlyCount = 0;
+        // Receipt and retry snapshots are published under the WorldClient transport fence.
+        internal ClientDatagramReceipts ClientReceipts { get; } = new ClientDatagramReceipts();
+        internal RpcResendBackoff ResendBackoff { get; } = new RpcResendBackoff();
         private readonly object receiptSync=new object();
         private readonly System.Collections.Generic.HashSet<ObjectMessageReceipt> receipts=new System.Collections.Generic.HashSet<ObjectMessageReceipt>();
         private bool receiptSequenceKnown;
@@ -115,7 +118,8 @@ namespace hds
         /// oldest first; they then share a send time, so later resends stay one run starting at the oldest unacked
         /// counter. New RPCs follow, while the counter span from the oldest unacked one stays under MaxRpcsInFlight.
         /// </summary>
-        internal System.Collections.Generic.List<SequencedMessage> TakeRpcsToSend(long nowTickMs, UInt16 nextCounter, out RpcResend resend)
+        internal System.Collections.Generic.List<SequencedMessage> TakeRpcsToSend(long nowTickMs, UInt16 nextCounter, out RpcResend resend,
+            long? lastIngressTickMs = null)
         {
             var sent = new System.Collections.Generic.List<SequencedMessage>();
             var fresh = new System.Collections.Generic.List<SequencedMessage>();
@@ -130,11 +134,14 @@ namespace hds
 
             // Oldest first, across the 16-bit wrap: the oldest is the furthest behind the next counter.
             sent.Sort((a, b) => Behind(b, nextCounter).CompareTo(Behind(a, nextCounter)));
+            long interval = lastIngressTickMs.HasValue
+                ? ResendBackoff.Interval(nowTickMs, lastIngressTickMs.Value) : SequencedMessage.RpcResendIntervalMs;
             int due = -1;
             for (int i = sent.Count - 1; i >= 0; i--)
             {
-                if (sent[i].IsRpcDue(nowTickMs)) { due = i; break; }
+                if (nowTickMs - sent[i].lastRpcSendTick >= interval) { due = i; break; }
             }
+            if (due >= 0 && lastIngressTickMs.HasValue) ResendBackoff.RecordRetry();
 
             var result = new System.Collections.Generic.List<SequencedMessage>(due + 1 + fresh.Count);
             for (int i = 0; i <= due; i++) result.Add(sent[i]);

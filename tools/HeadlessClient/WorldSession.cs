@@ -33,6 +33,20 @@ public sealed class WorldSession : IDisposable
     private int? expectedServerRpc;
     private bool resetAnswered;
     private bool disposed;
+    private bool disconnecting;
+
+    internal string DisconnectAfterRpc(byte[] request)
+    {
+        string endpoint;
+        lock (sendLock)
+        {
+            endpoint = udp.Client.LocalEndPoint!.ToString()!;
+            SendRpcs(request);
+            disconnecting = true;
+        }
+        Dispose();
+        return endpoint;
+    }
 
     private readonly object logLock = new();
     private readonly List<RpcRecord> rpcLog = new();
@@ -153,6 +167,7 @@ public sealed class WorldSession : IDisposable
 
     private void SendEncrypted(byte[] plain)
     {
+        if (disconnecting) return;
         // Sequence word: own sequence in the low 12 bits, the last server sequence seen in the next 12. The server's
         // encrypt() parameter names are from its side: there, cseq is the peer's number and sseq its own.
         ownSeq = (ushort)((ownSeq + 1) & 0xfff);
@@ -291,8 +306,8 @@ public sealed class WorldSession : IDisposable
             lastServerSeq = 0;
             pss = 0;
             receivedServerSeqs.Clear();
-            SendEncrypted(new byte[] { 0x42 });
             ownSeq = 0;
+            SendEncrypted(new byte[] { 0x42 });
             rpcCounter = 0;
             lastRpcPlain = null;
         }

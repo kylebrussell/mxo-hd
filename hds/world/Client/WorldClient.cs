@@ -24,6 +24,7 @@ namespace hds
         private object livenessLock;
         private bool explicitlyStopped, reapClaimed, reapInProgress;
         private long ingressGeneration;
+        private long lastIngressTick = Environment.TickCount64;
         internal Func<uint> LivenessClock;
         private object LivenessSync => LazyInitializer.EnsureInitialized(ref livenessLock);
         private uint LivenessNow => LivenessClock==null?TimeUtils.getUnixTimeUint32():LivenessClock();
@@ -35,7 +36,9 @@ namespace hds
             lock(LivenessSync)
             {
                 if(explicitlyStopped||reapClaimed||!alive)return false;
-                lastUsedTime=LivenessNow;ingressGeneration++;return true;
+                lastUsedTime=LivenessNow;ingressGeneration++;
+                Interlocked.Exchange(ref lastIngressTick, Environment.TickCount64);
+                return true;
             }
         }
         // Called only under the endpoint dictionary gate. No cleanup/SQL or other owner locks here.
@@ -329,7 +332,7 @@ namespace hds
                         // Unacked RPCs that are due go out again as one run from the oldest unacked counter, then new
                         // ones, all in counter order and within MessageQueue.MaxRpcsInFlight (TakeRpcsToSend).
                         List<SequencedMessage> rpcsToSend = messageQueue.TakeRpcsToSend(rpcNow, playerData.getRPCCounter(),
-                            out MessageQueue.RpcResend resend);
+                            out MessageQueue.RpcResend resend, Interlocked.Read(ref lastIngressTick));
                         if (resend.Count > 0)
                         {
                             // One line per flush. The char id says which session (a fixture's probe shares the log), and
@@ -409,8 +412,8 @@ namespace hds
                     Stopwatch stopWatch = new Stopwatch();
                     stopWatch.Start();
 
-                    byte[] encryptedData = cypher.encrypt(finalData, finalData.Length, playerData.getPss(),
-                        playerData.getCseq(), playerData.getSseq());
+                    byte[] encryptedData = cypher.encrypt(finalData, finalData.Length, messageQueue.ClientReceipts.Bits,
+                        messageQueue.ClientReceipts.Latest, playerData.getSseq());
                     if (thePacket.RPCMessages.Count > 0 && DropTest.ShouldDrop(++rpcPacketsSent))
                     {
                         Output.WriteDebugLog("[NET] Test: dropped RPC packet sseq " + playerData.getSseq());
@@ -431,7 +434,7 @@ namespace hds
 
 
                     Output.WritePacketLog(this, finalData, "SERVER",
-                        playerData.getPss().ToString(), playerData.getCseq().ToString(),
+                        messageQueue.ClientReceipts.Bits.ToString(), messageQueue.ClientReceipts.Latest.ToString(),
                         playerData.getSseq().ToString(), ts.TotalMilliseconds.ToString(), "ENCRYPT");
                     })) flushPending = true;
                 }
@@ -550,9 +553,16 @@ namespace hds
 
 
             // Fence reset before publishing its new envelope headers, not later in Parse.
-            TransportFence.PublishIncoming((processedPacket[0] & 0x40) != 0, () =>
+            bool resetReceived = (processedPacket[0] & 0x40) != 0;
+            TransportFence.PublishIncoming(resetReceived, () =>
             {
-            //clData.setPss((UInt16) decValues[1]);
+            if (resetReceived)
+            {
+                messageQueue.ClientReceipts.Reset();
+                messageQueue.ResendBackoff.Reset();
+            }
+            messageQueue.ClientReceipts.Observe((UInt16)decValues[2]);
+            messageQueue.ResendBackoff.ObserveAck((UInt16)decValues[3]);
             playerData.setPss((UInt16) decValues[1]);
             playerData.setCseq((UInt16) decValues[2]);
             playerData.setACK((UInt16) decValues[3]);
