@@ -80,11 +80,5 @@ namespace hds
             pill = default;
             return goid >= 46739 && goid <= 46973 && items.Value.TryGetValue(goid, out pill);
         }
-
-        internal static bool OutsideCombat(WorldClient client)
-        {
-            var combat = CombatManager.GetHandler(client);
-            return !combat.isCombatRunning && !combat.HasActiveInterlock;
-        }
     }
 }

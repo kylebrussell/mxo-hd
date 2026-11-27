@@ -19,7 +19,7 @@ public sealed class InnerStrengthBoosterMode : NativeQaMode
             "Mara Central (17000,495,2300), no teleport or target. Stay out of combat. CSR starts at 100/1500 IS. Let two or three ordinary +8 IS ticks pass.",
             "Activate the Inner Strength Booster in bag 5 via its Inventory menu or double-click. Expect a 1 s cast, one booster left, and [MODIFIER] char=110 source=1333 stat=114 add value=+20 duration=1200s. A visual pulse should recur about every 4 s.",
             "Watch six consecutive IS updates. The last minus the first should be 48, with +9/+10 per tick. PacketLog own IS update starts 02 00 02 80 80 80 10 then u16 IS. No instant grant is expected.",
-            "If the buff control accepts Shift+right-click, dismiss the booster. Expect [MODIFIER] 1333/114 remove and subsequent +8 ticks. Check the second booster stays in bag 5. Stock request is 80 bb 35 05."
+            "Confirm the second booster stays in bag 5. Stock right-click and Shift+right-click on the buff bar sent no dismissal request in PR1240. Headless checks the dismissal packet."
         });
 
     public override async Task<byte[]> AfterStartAsync(NativeQaBootstrapContext context)
