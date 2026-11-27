@@ -12,7 +12,7 @@ namespace hds
         public List<SequencedMessage> ObjectMessages = new List<SequencedMessage>();
         public UInt16 neededAckSSeq;
         
-        public DynamicArray content = new DynamicArray();
+        public DynamicArray content;
         public bool isFinal = false;
         public UInt16 bufferSize = 0;
         private UInt16 maxBuffer = 1300;
@@ -127,6 +127,7 @@ namespace hds
             // TODO: Sim Time with Client (not real time) on every 4 Local SSEQ we send
             
 
+            content = new DynamicArray(bufferSize + 32);
             playerData.IncrementSseq();
             this.neededAckSSeq = playerData.getSseq();
 

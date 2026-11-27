@@ -738,7 +738,7 @@ namespace hds
             pak.AddByte((byte) rotation);
             pak.AddFloatLtVector3f((float) getXPos(), (float) getYPos(), (float) getZPos());
 
-            Store.world.SendViewUpdateToClientsWhoHasMobSpawned(pak, this);
+            Store.world.SendViewUpdateToClientsWhoHasMobSpawned(pak, this, deferFlush: true);
         }
 
         /// <summary>

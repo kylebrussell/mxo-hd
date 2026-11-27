@@ -207,6 +207,89 @@ namespace hds
             }
         }
 
+        /// <summary>
+        /// Reconciles nearby introducible mobs against this client's views under a single lock acquisition:
+        /// creates missing ClientView slots, collects uncreated spawns and active pet refreshes, and collects
+        /// stale mob views without copying the view list.
+        /// </summary>
+        internal void ReconcileMobViews(
+            ushort districtId,
+            List<Mob> introducibleMobs,
+            HashSet<ulong> nearbyMobEntities,
+            Dictionary<ulong, Mob> mobsByEntity,
+            List<(Mob Mob, ClientView View)> toSpawn,
+            List<(Mob Mob, ClientView View)> petsToRefresh,
+            List<(ClientView View, Mob Mob)> toDelete)
+        {
+            toSpawn.Clear();
+            petsToRefresh.Clear();
+            toDelete.Clear();
+            lock (views)
+            {
+                int count = introducibleMobs.Count;
+                for (int i = 0; i < count; i++)
+                {
+                    Mob mob = introducibleMobs[i];
+                    ClientView view = views.FirstForEntity(mob.getEntityId());
+                    if (view == null || view.ViewID == 0)
+                    {
+                        view = addView(mob.getEntityId(), NumericalUtils.ByteArrayToUint16(mob.getGoId(), 1));
+                    }
+                    if (!view.viewCreated)
+                    {
+                        toSpawn.Add((mob, view));
+                    }
+                    else if (!view.viewNeedsToBeDeleted && mob.pet != null)
+                    {
+                        petsToRefresh.Add((mob, view));
+                    }
+                }
+
+                List<ClientView> backing = views.BackingList;
+                for (int i = 0; i < backing.Count; i++)
+                {
+                    ClientView view = backing[i];
+                    if (view == null || !view.viewCreated) continue;
+                    if (!mobsByEntity.TryGetValue(view.entityId, out Mob mob)) continue;
+                    if (!nearbyMobEntities.Contains(view.entityId) || mob.getDistrict() != districtId)
+                    {
+                        toDelete.Add((view, mob));
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Collects visible ordinary mobs (and any currently selected mob) directly from the view list
+        /// without allocating a Snapshot() copy.
+        /// </summary>
+        internal void CollectVisibleMobs(
+            Dictionary<ulong, Mob> mobs,
+            uint districtId,
+            bool isDead,
+            ushort targetView,
+            ushort targetSpawn,
+            HashSet<Mob> visible,
+            HashSet<Mob> selected)
+        {
+            lock (views)
+            {
+                List<ClientView> backing = views.BackingList;
+                for (int i = 0; i < backing.Count; i++)
+                {
+                    ClientView view = backing[i];
+                    if (view == null || !view.viewCreated || view.viewNeedsToBeDeleted) continue;
+                    if (!mobs.TryGetValue(view.entityId, out Mob mob)) continue;
+                    if (!MobMotion.Ordinary(mob) || mob.getDistrict() != districtId) continue;
+                    visible.Add(mob);
+                    if (!isDead && view.ViewID == targetView && view.spawnId == targetSpawn)
+                    {
+                        selected.Add(mob);
+                    }
+                }
+            }
+        }
+
     }
     /// <summary>
     /// The view list with entity and view-id indexes kept in step with every add and remove, so the first view

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
@@ -46,10 +47,27 @@ namespace hds
         {
             public float minX, minZ, maxX, maxZ;
             public int[] xz;       // x0, z0, x1, z1, ... (v3 supports the large archive sectors)
+            // Lazily computed outward unit normals interleaved as [nx0, nz0, nx1, nz1, ...] (NaN for degenerate edges).
+            // Kept lazy so NavMesh.Load(1) during RPC 05 spawn does not allocate ~600k arrays across unused polygons.
+            public double[] edgeNormals;
             public float a, b, c, d; // plane; flat floors have a = c = 0, b = -1, d = y
             public double area2;      // twice the signed area: the winding
 
             public double FloorAt(double x, double z) => -(a * x + c * z + d) / b;
+        }
+
+        private readonly struct OutdoorPolyRef
+        {
+            public readonly UInt16 region;
+            public readonly UInt16 polygon;
+            public readonly Polygon poly;
+
+            public OutdoorPolyRef(UInt16 region, UInt16 polygon, Polygon poly)
+            {
+                this.region = region;
+                this.polygon = polygon;
+                this.poly = poly;
+            }
         }
 
         private class Placement
@@ -64,7 +82,13 @@ namespace hds
             public List<Polygon>[] regions;
             public Placement[] placements;
             public List<Surface> projectionSurfaces;
+            public List<Surface> outdoorProjectionSurfaces;
+            // Outdoor polygons bucketed by 500-unit cell in ascending (region, polygon) order so
+            // Locate checks ~2-5 candidates while preserving exact Better() tie-breaking.
+            public Dictionary<long, List<OutdoorPolyRef>> outdoorGrid;
         }
+
+        private const double OutdoorCellSize = 500.0;
 
         private class District
         {
@@ -80,7 +104,7 @@ namespace hds
         private const double EdgeSlack = 2;
 
         private static readonly object loadLock = new object();
-        private static readonly Dictionary<UInt16, District> districts = new Dictionary<UInt16, District>();
+        private static readonly ConcurrentDictionary<UInt16, District> districts = new ConcurrentDictionary<UInt16, District>();
         private static string directory;
         private static long snapshotRevision;
         internal static long SnapshotRevision=>System.Threading.Volatile.Read(ref snapshotRevision);
@@ -153,8 +177,94 @@ namespace hds
             return list;
         }
 
+        private static double[] EnsureEdgeNormals(Polygon p)
+        {
+            double[] normals = System.Threading.Volatile.Read(ref p.edgeNormals);
+            if (normals != null)
+            {
+                return normals;
+            }
+
+            int[] xz = p.xz;
+            int n = xz.Length >> 1;
+            double winding = p.area2 >= 0 ? 1.0 : -1.0;
+            normals = new double[n * 2];
+            for (int v = 0; v < n; v++)
+            {
+                int w = (v + 1) % n;
+                double ex = xz[w * 2] - xz[v * 2];
+                double ez = xz[w * 2 + 1] - xz[v * 2 + 1];
+                double len = Math.Sqrt(ex * ex + ez * ez);
+                if (len < 1e-6)
+                {
+                    normals[v * 2] = double.NaN;
+                    normals[v * 2 + 1] = double.NaN;
+                }
+                else
+                {
+                    normals[v * 2] = winding * ez / len;
+                    normals[v * 2 + 1] = -winding * ex / len;
+                }
+            }
+
+            System.Threading.Volatile.Write(ref p.edgeNormals, normals);
+            return normals;
+        }
+
+        private static Dictionary<long, List<OutdoorPolyRef>> GetOutdoorGrid(Sector sector)
+        {
+            Dictionary<long, List<OutdoorPolyRef>> fast = System.Threading.Volatile.Read(ref sector.outdoorGrid);
+            if (fast != null) return fast;
+
+            lock (loadLock)
+            {
+                if (sector.outdoorGrid != null) return sector.outdoorGrid;
+                var grid = BuildOutdoorGrid(sector.regions);
+                System.Threading.Volatile.Write(ref sector.outdoorGrid, grid);
+                return grid;
+            }
+        }
+
+        private static Dictionary<long, List<OutdoorPolyRef>> BuildOutdoorGrid(List<Polygon>[] regions)
+        {
+            var grid = new Dictionary<long, List<OutdoorPolyRef>>();
+            for (int g = 0; g < regions.Length; g++)
+            {
+                List<Polygon> polys = regions[g];
+                for (int k = 0; k < polys.Count; k++)
+                {
+                    Polygon p = polys[k];
+                    if (p.xz == null || p.xz.Length == 0) continue;
+                    int minCx = (int)Math.Floor((p.minX - EdgeSlack) / OutdoorCellSize);
+                    int maxCx = (int)Math.Floor((p.maxX + EdgeSlack) / OutdoorCellSize);
+                    int minCz = (int)Math.Floor((p.minZ - EdgeSlack) / OutdoorCellSize);
+                    int maxCz = (int)Math.Floor((p.maxZ + EdgeSlack) / OutdoorCellSize);
+                    var entry = new OutdoorPolyRef((UInt16)g, (UInt16)k, p);
+                    for (int cx = minCx; cx <= maxCx; cx++)
+                    {
+                        for (int cz = minCz; cz <= maxCz; cz++)
+                        {
+                            long key = ((long)cx << 32) | (uint)cz;
+                            if (!grid.TryGetValue(key, out List<OutdoorPolyRef> bucket))
+                            {
+                                bucket = new List<OutdoorPolyRef>(4);
+                                grid[key] = bucket;
+                            }
+                            bucket.Add(entry);
+                        }
+                    }
+                }
+            }
+            return grid;
+        }
+
         private static District Load(UInt16 metrId)
         {
+            if (districts.TryGetValue(metrId, out District fast))
+            {
+                return fast;
+            }
+
             lock (loadLock)
             {
                 if (districts.TryGetValue(metrId, out District loaded))
@@ -166,58 +276,64 @@ namespace hds
                 string path = Path.Combine(directory ?? DataLoader.DataPath("navmesh"), metrId + ".bin.gz");
                 if (File.Exists(path))
                 {
-                    MemoryStream raw = new MemoryStream();
-                    using (GZipStream gz = new GZipStream(File.OpenRead(path), CompressionMode.Decompress))
+                    using (FileStream fs = File.OpenRead(path))
                     {
-                        gz.CopyTo(raw);
-                    }
-
-                    raw.Position = 0;
-                    using (BinaryReader r = new BinaryReader(raw))
-                    {
-                        uint magic = r.ReadUInt32();
-                        ushort version = r.ReadUInt16();
-                        if (magic != 0x564e584d || version != 2 && version != 3)
+                        int initialCapacity = (int)Math.Min(Math.Max(fs.Length * 3, 4096), 32 * 1024 * 1024);
+                        using (MemoryStream raw = new MemoryStream(initialCapacity))
                         {
-                            throw new InvalidDataException("Not a supported nav mesh file: " + path);
-                        }
-
-                        r.ReadUInt16();
-                        district.prefabs = new List<Polygon>[r.ReadUInt32()];
-                        for (int i = 0; i < district.prefabs.Length; i++)
-                        {
-                            r.ReadUInt32(); // the prefab's resource id
-                            district.prefabs[i] = ReadPolygons(r, version == 3);
-                        }
-
-                        UInt32 count = r.ReadUInt32();
-                        for (UInt32 i = 0; i < count; i++)
-                        {
-                            UInt16 id = r.ReadUInt16();
-                            Sector s = new Sector { regions = new List<Polygon>[r.ReadUInt16()] };
-                            for (int g = 0; g < s.regions.Length; g++)
+                            using (GZipStream gz = new GZipStream(fs, CompressionMode.Decompress, leaveOpen: true))
                             {
-                                s.regions[g] = ReadPolygons(r, version == 3);
+                                gz.CopyTo(raw);
                             }
 
-                            s.placements = new Placement[r.ReadUInt16()];
-                            for (int k = 0; k < s.placements.Length; k++)
+                            raw.Position = 0;
+                            using (BinaryReader r = new BinaryReader(raw))
                             {
-                                Placement p = new Placement { prefab = r.ReadUInt16() };
-                                p.pivotX = r.ReadInt16() * 10;
-                                p.pivotY = r.ReadInt16() * 10;
-                                p.pivotZ = r.ReadInt16() * 10;
-                                p.minX = r.ReadInt16() * 10;
-                                p.minY = r.ReadInt16() * 10;
-                                p.minZ = r.ReadInt16() * 10;
-                                p.maxX = r.ReadInt16() * 10;
-                                p.maxY = r.ReadInt16() * 10;
-                                p.maxZ = r.ReadInt16() * 10;
-                                p.rotation = r.ReadByte();
-                                s.placements[k] = p;
-                            }
+                                uint magic = r.ReadUInt32();
+                                ushort version = r.ReadUInt16();
+                                if (magic != 0x564e584d || version != 2 && version != 3)
+                                {
+                                    throw new InvalidDataException("Not a supported nav mesh file: " + path);
+                                }
 
-                            district.sectors[id] = s;
+                                r.ReadUInt16();
+                                district.prefabs = new List<Polygon>[r.ReadUInt32()];
+                                for (int i = 0; i < district.prefabs.Length; i++)
+                                {
+                                    r.ReadUInt32(); // the prefab's resource id
+                                    district.prefabs[i] = ReadPolygons(r, version == 3);
+                                }
+
+                                UInt32 count = r.ReadUInt32();
+                                for (UInt32 i = 0; i < count; i++)
+                                {
+                                    UInt16 id = r.ReadUInt16();
+                                    Sector s = new Sector { regions = new List<Polygon>[r.ReadUInt16()] };
+                                    for (int g = 0; g < s.regions.Length; g++)
+                                    {
+                                        s.regions[g] = ReadPolygons(r, version == 3);
+                                    }
+
+                                    s.placements = new Placement[r.ReadUInt16()];
+                                    for (int k = 0; k < s.placements.Length; k++)
+                                    {
+                                        Placement p = new Placement { prefab = r.ReadUInt16() };
+                                        p.pivotX = r.ReadInt16() * 10;
+                                        p.pivotY = r.ReadInt16() * 10;
+                                        p.pivotZ = r.ReadInt16() * 10;
+                                        p.minX = r.ReadInt16() * 10;
+                                        p.minY = r.ReadInt16() * 10;
+                                        p.minZ = r.ReadInt16() * 10;
+                                        p.maxX = r.ReadInt16() * 10;
+                                        p.maxY = r.ReadInt16() * 10;
+                                        p.maxZ = r.ReadInt16() * 10;
+                                        p.rotation = r.ReadByte();
+                                        s.placements[k] = p;
+                                    }
+
+                                    district.sectors[id] = s;
+                                }
+                            }
                         }
                     }
                 }
@@ -275,12 +391,16 @@ namespace hds
             double lx = x - info.minX, lz = z - info.minZ, feet = y - 95;
             double best = MaxFloorDistance, bestOutside = EdgeSlack;
             bool found = false;
-            for (int g = 0; g < sector.regions.Length; g++)
+            int cellX = (int)Math.Floor(lx / OutdoorCellSize);
+            int cellZ = (int)Math.Floor(lz / OutdoorCellSize);
+            long cellKey = ((long)cellX << 32) | (uint)cellZ;
+            Dictionary<long, List<OutdoorPolyRef>> outdoorGrid = GetOutdoorGrid(sector);
+            if (outdoorGrid.TryGetValue(cellKey, out List<OutdoorPolyRef> bucket))
             {
-                List<Polygon> polys = sector.regions[g];
-                for (int k = 0; k < polys.Count; k++)
+                for (int i = 0; i < bucket.Count; i++)
                 {
-                    Polygon p = polys[k];
+                    OutdoorPolyRef item = bucket[i];
+                    Polygon p = item.poly;
                     double outside = Outside(p, lx, lz);
                     if (outside > EdgeSlack)
                     {
@@ -293,7 +413,7 @@ namespace hds
                         found = true;
                         location = new NavLocation
                         {
-                            sector = info.sector, region = (UInt16)g, polygon = (UInt16)k, floorY = floor, originX = info.minX, originZ = info.minZ
+                            sector = info.sector, region = item.region, polygon = item.polygon, floorY = floor, originX = info.minX, originZ = info.minZ
                         };
                     }
                 }
@@ -446,19 +566,20 @@ namespace hds
             }
 
             int[] xz = p.xz;
-            int n = xz.Length / 2;
-            double winding = p.area2 >= 0 ? 1 : -1, worst = double.MinValue;
+            double[] edgeNormals = EnsureEdgeNormals(p);
+            int n = xz.Length >> 1;
+            double worst = double.MinValue;
             for (int j = 0; j < n; j++)
             {
-                int k = (j + 1) % n;
-                double ex = xz[k * 2] - xz[j * 2], ez = xz[k * 2 + 1] - xz[j * 2 + 1];
-                double length = Math.Sqrt(ex * ex + ez * ez);
-                if (length < 1e-6)
+                int idx = j << 1;
+                double nx = edgeNormals[idx];
+                if (double.IsNaN(nx))
                 {
                     continue;
                 }
 
-                worst = Math.Max(worst, -winding * (ex * (z - xz[j * 2 + 1]) - ez * (x - xz[j * 2])) / length);
+                double dist = nx * (x - xz[idx]) + edgeNormals[idx + 1] * (z - xz[idx + 1]);
+                if (dist > worst) worst = dist;
             }
 
             return worst;

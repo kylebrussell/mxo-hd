@@ -230,6 +230,103 @@ public class WorldEncryptionTests
         Assert.Equal(new byte[] { 0x01, 0x02, 0x03, 0x04 }, dyn.getBytes());
     }
 
+    [Fact]
+    public void Twofish128MatchesSchneier49StepIterativeKnownAnswerVector()
+    {
+        // Schneier Twofish-128 iterative KAT (ecb_tbl.txt): chains 49 distinct keys and plaintexts,
+        // exercising all 256 entries of the precomputed S-box/MDS tables and round subkey schedule.
+        byte[] ctPrev2 = new byte[16];
+        byte[] ctPrev1 = new byte[16];
+        byte[] ct = new byte[16];
+        byte[] decOut = new byte[16];
+
+        using var tf = new ManyMonkeys.Cryptography.Twofish
+        {
+            Mode = System.Security.Cryptography.CipherMode.ECB,
+            KeySize = 128,
+            BlockSize = 128
+        };
+
+        for (int i = 1; i <= 49; i++)
+        {
+            byte[] key = (byte[])ctPrev2.Clone();
+            byte[] pt = (byte[])ctPrev1.Clone();
+            using var enc = tf.CreateEncryptor(key, new byte[16]);
+            enc.TransformBlock(pt, 0, 16, ct, 0);
+
+            if (i == 1)
+            {
+                Assert.Equal("9F589F5CF6122C32B6BFEC2F2AE8C35A", Convert.ToHexString(ct));
+            }
+            else if (i == 49)
+            {
+                Assert.Equal("5D9D4EEFFA9151575524F115815A12E0", Convert.ToHexString(ct));
+            }
+
+            using var dec = tf.CreateDecryptor(key, new byte[16]);
+            dec.TransformBlock(ct, 0, 16, decOut, 0);
+            Assert.Equal(pt, decOut);
+
+            Array.Copy(ctPrev1, ctPrev2, 16);
+            Array.Copy(ct, ctPrev1, 16);
+        }
+    }
+
+    [Fact]
+    public async Task ConcurrentMultiKeyMultiBlockEncryptAndDecryptNeverDropsOrCorrupts()
+    {
+        var rng = new Random(1236);
+        for (int session = 0; session < 24; session++)
+        {
+            byte[] key = new byte[16];
+            rng.NextBytes(key);
+            var serverEnc = new WorldEncryption(key);
+            var clientEnc = new WorldEncryption(key);
+
+            // Build multi-block client->server packets covering wire sizes 33..177 (1..10 Twofish blocks).
+            byte[][] inboundWire = new byte[160][];
+            byte[][] inboundPlain = new byte[160][];
+            for (int i = 0; i < inboundWire.Length; i++)
+            {
+                int len = 1 + (i % 144);
+                inboundPlain[i] = new byte[len];
+                rng.NextBytes(inboundPlain[i]);
+                inboundWire[i] = clientEnc.encrypt(inboundPlain[i], len, 0x7f, (ushort)(i & 0xfff), (ushort)((i + 1) & 0xfff));
+            }
+
+            using var stop = new CancellationTokenSource();
+            int outboundErrors = 0;
+            Task flushWriter = Task.Run(() =>
+            {
+                byte[] mobUpdate = new byte[96];
+                mobUpdate[0] = 0x02;
+                while (!stop.IsCancellationRequested)
+                {
+                    byte[] wire = serverEnc.encrypt(mobUpdate, mobUpdate.Length, 0x7f, 1, 1);
+                    ArrayList? roundTrip = clientEnc.decrypt(wire, wire.Length);
+                    if (roundTrip == null || !((byte[])roundTrip[0]!).AsSpan().SequenceEqual(mobUpdate))
+                    {
+                        Interlocked.Increment(ref outboundErrors);
+                    }
+                }
+            });
+
+            for (int pass = 0; pass < 4; pass++)
+            {
+                for (int i = 0; i < inboundWire.Length; i++)
+                {
+                    ArrayList? decrypted = serverEnc.decrypt(inboundWire[i], inboundWire[i].Length);
+                    Assert.NotNull(decrypted);
+                    Assert.Equal(inboundPlain[i], (byte[])decrypted![0]!);
+                }
+            }
+
+            stop.Cancel();
+            await flushWriter;
+            Assert.Equal(0, outboundErrors);
+        }
+    }
+
     private static byte[] EncryptWithExplicitIv(byte[] key, byte[] iv, byte[] plainData, ushort pss, ushort cseq, ushort sseq)
     {
         uint seqValue = ((uint)pss << 24) | ((uint)cseq << 12) | sseq;

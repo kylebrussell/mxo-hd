@@ -129,20 +129,18 @@ namespace hds
 
         private static List<Mob> SnapshotMobs()
         {
-            List<Mob> mobs = new List<Mob>();
             lock (WorldServer.mobs.SyncRoot)
             {
-                foreach (object mob in WorldServer.mobs)
+                List<Mob> mobs = new List<Mob>(WorldServer.mobs.Count);
+                for (int i = 0; i < WorldServer.mobs.Count; i++)
                 {
-                    Mob castMob = mob as Mob;
-                    if (castMob != null)
+                    if (WorldServer.mobs[i] is Mob castMob)
                     {
                         mobs.Add(castMob);
                     }
                 }
+                return mobs;
             }
-
-            return mobs;
         }
 
         private static List<Subway> SnapshotSubways()
@@ -215,9 +213,10 @@ namespace hds
 
         internal static Dictionary<ulong, WorldClient> BuildClientByEntity(List<WorldClient> clients)
         {
-            Dictionary<ulong, WorldClient> lookup = new Dictionary<ulong, WorldClient>();
-            foreach (WorldClient client in clients)
+            Dictionary<ulong, WorldClient> lookup = new Dictionary<ulong, WorldClient>(clients.Count);
+            for (int i = 0; i < clients.Count; i++)
             {
+                WorldClient client = clients[i];
                 if (client == null)
                 {
                     continue;
@@ -231,9 +230,10 @@ namespace hds
 
         private static Dictionary<ulong, Mob> BuildMobByEntity(List<Mob> mobs)
         {
-            Dictionary<ulong, Mob> lookup = new Dictionary<ulong, Mob>();
-            foreach (Mob mob in mobs)
+            Dictionary<ulong, Mob> lookup = new Dictionary<ulong, Mob>(mobs.Count);
+            for (int i = 0; i < mobs.Count; i++)
             {
+                Mob mob = mobs[i];
                 if (mob == null)
                 {
                     continue;
@@ -533,12 +533,16 @@ namespace hds
         private static void CheckPlayerMobViews(List<WorldClient> clients, Dictionary<ushort, SpatialGrid<Mob>> mobGrids,
             Dictionary<ulong, Mob> mobsByEntity)
         {
-            Maths mathUtils = new Maths();
+            const double viewRangeSq = (double)ViewRange * ViewRange;
             var nearbyMobEntities = new HashSet<ulong>();
+            var introducibleMobs = new List<Mob>();
             var neighborCells = new List<List<Mob>>(9);
+            var mobsToSpawn = new List<(Mob Mob, ClientView View)>();
+            var petsToRefresh = new List<(Mob Mob, ClientView View)>();
             var viewsToDelete = new List<(ClientView View, Mob Mob)>();
-            foreach (WorldClient thisclient in clients)
+            for (int ci = 0; ci < clients.Count; ci++)
             {
+                WorldClient thisclient = clients[ci];
                 if (thisclient == null || thisclient.Alive == false)
                 {
                     continue;
@@ -560,9 +564,12 @@ namespace hds
                 double playerZ = 0;
                 NumericalUtils.LtVector3dToDoubles(thisclient.playerInstance.Position.getValue(),
                     ref playerX, ref playerY, ref playerZ);
+                float px = (float)playerX;
+                float pz = (float)playerZ;
 
                 nearbyMobEntities.Clear();
-                grid.CollectNeighborCells((float)playerX, (float)playerZ, ViewRange, neighborCells);
+                introducibleMobs.Clear();
+                grid.CollectNeighborCells(px, pz, ViewRange, neighborCells);
                 for (int c = 0; c < neighborCells.Count; c++)
                 {
                     List<Mob> cell = neighborCells[c];
@@ -575,10 +582,9 @@ namespace hds
                             continue;
                         }
 
-                        bool mobIsInCircle = mathUtils.IsInCircle((float)playerX, (float)playerZ,
-                            (float)thismob.getXPos(), (float)thismob.getZPos(), ViewRange);
-
-                        if (!mobIsInCircle)
+                        double dx = px - (float)thismob.getXPos();
+                        double dz = pz - (float)thismob.getZPos();
+                        if (dx * dx + dz * dz > viewRangeSq)
                         {
                             continue;
                         }
@@ -588,41 +594,54 @@ namespace hds
                         // Ordinary corpses stay with their existing viewers. Scripted mission bodies are introduced
                         // with their dead attributes and sourced pose. GetViewForEntityAndGo hands out a view id,
                         // and one the client never sees spawned puts every later view id one off.
-                        if (!DeathPresentation.CanIntroduceNpc(thismob) && !MissionPersistence.PendingLootOwner(thisclient,thismob))
+                        if (!DeathPresentation.CanIntroduceNpc(thismob) && !MissionPersistence.PendingLootOwner(thisclient, thismob))
                         {
                             continue;
                         }
 
-                        // Spawn Mob if its in Visibility Range
-                        ClientView mobView = thisclient.viewMan.GetViewForEntityAndGo(thismob.getEntityId(),
-                            NumericalUtils.ByteArrayToUint16(thismob.getGoId(), 1));
-                        if (mobView.viewCreated == false &&
-                            thismob.getDistrict() == thisclient.playerData.getDistrictId() &&
-                            thisclient.playerData.getOnWorld() && mobIsInCircle)
-                        {
-#if DEBUG
-                            ServerPackets pak = new ServerPackets();
-                            if (DebugChat.Enabled)
-                            pak.sendSystemChatMessage(thisclient,
-                                "Mob with Name " + thismob.getName() + " with new View ID " + mobView.ViewID +
-                                " spawned", "BROADCAST");
-#endif
-
-                            ServerPackets mobPak = new ServerPackets();
-                            mobPak.SpawnMobView(thisclient, thismob, mobView); // sets mobView.spawnId
-                            mobView.viewCreated = true;
-                            thismob.isUpdateable = true;
-                            thismob.DoMobUpdate(thismob);
-                        }
-                        else if (mobView.viewCreated && !mobView.viewNeedsToBeDeleted && thismob.pet != null &&
-                            thismob.getDistrict() == districtId && thisclient.playerData.getOnWorld())
-                        {
-                            CoderPets.RefreshPresentation(thismob.pet, thisclient, mobView);
-                        }
+                        introducibleMobs.Add(thismob);
                     }
                 }
 
-                thisclient.viewMan.CollectStaleMobViews(districtId, nearbyMobEntities, mobsByEntity, viewsToDelete);
+                thisclient.viewMan.ReconcileMobViews(
+                    districtId, introducibleMobs, nearbyMobEntities, mobsByEntity,
+                    mobsToSpawn, petsToRefresh, viewsToDelete);
+
+                for (int i = 0; i < mobsToSpawn.Count; i++)
+                {
+                    Mob thismob = mobsToSpawn[i].Mob;
+                    ClientView mobView = mobsToSpawn[i].View;
+                    if (mobView.viewCreated == false &&
+                        thismob.getDistrict() == thisclient.playerData.getDistrictId() &&
+                        thisclient.playerData.getOnWorld())
+                    {
+#if DEBUG
+                        ServerPackets pak = new ServerPackets();
+                        if (DebugChat.Enabled)
+                        pak.sendSystemChatMessage(thisclient,
+                            "Mob with Name " + thismob.getName() + " with new View ID " + mobView.ViewID +
+                            " spawned", "BROADCAST");
+#endif
+
+                        ServerPackets mobPak = new ServerPackets();
+                        mobPak.SpawnMobView(thisclient, thismob, mobView); // sets mobView.spawnId
+                        mobView.viewCreated = true;
+                        thismob.isUpdateable = true;
+                        thismob.DoMobUpdate(thismob);
+                    }
+                }
+
+                for (int i = 0; i < petsToRefresh.Count; i++)
+                {
+                    Mob thismob = petsToRefresh[i].Mob;
+                    ClientView mobView = petsToRefresh[i].View;
+                    if (mobView.viewCreated && !mobView.viewNeedsToBeDeleted && thismob.pet != null &&
+                        thismob.getDistrict() == districtId && thisclient.playerData.getOnWorld())
+                    {
+                        CoderPets.RefreshPresentation(thismob.pet, thisclient, mobView);
+                    }
+                }
+
                 for (int i = 0; i < viewsToDelete.Count; i++)
                 {
                     ClientView view = viewsToDelete[i].View;

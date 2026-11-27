@@ -96,6 +96,49 @@ public class SequencedMessageTests
     }
 
     [Fact]
+    public void SentObjectMessageRetiresAcrossTwelveBitSseqWrap()
+    {
+        SequencedMessage message = new SequencedMessage(new byte[] { 0x01 });
+        message.setNeededAck(4095);
+        message.MarkObjectSent(0);
+
+        Assert.False(message.IsAckedBy(4094));
+        Assert.True(message.IsAckedBy(4095));
+        Assert.True(message.IsAckedBy(0));
+        Assert.True(message.IsAckedBy(1));
+        Assert.True(message.IsAckedBy(100));
+    }
+
+    [Fact]
+    public void StalePreWrapAckDoesNotPrematurelyRetirePostWrapObjectMessage()
+    {
+        SequencedMessage message = new SequencedMessage(new byte[] { 0x01 });
+        message.setNeededAck(0);
+        message.MarkObjectSent(0);
+
+        Assert.False(message.IsAckedBy(4095));
+        Assert.False(message.IsAckedBy(4090));
+        Assert.True(message.IsAckedBy(0));
+        Assert.True(message.IsAckedBy(5));
+    }
+
+    [Fact]
+    public void MarkedSentObjectMessageWithoutAssignedSseqIsNotPrematurelyRetired()
+    {
+        // FlushQueue marks object messages sent during preparation before getFinalData assigns their SSEQ.
+        // An incoming client ACK between packets must not delete them while neededAck is still unset.
+        SequencedMessage message = new SequencedMessage(new byte[] { 0x01 });
+        message.MarkObjectSent(0);
+
+        Assert.False(message.IsAckedBy(0));
+        Assert.False(message.IsAckedBy(500));
+
+        message.setNeededAck(501);
+        Assert.False(message.IsAckedBy(500));
+        Assert.True(message.IsAckedBy(501));
+    }
+
+    [Fact]
     public void UnackedObjectMessageIsResentUntilTheSendLimit()
     {
         WithResend(() =>

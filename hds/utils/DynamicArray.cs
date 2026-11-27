@@ -13,6 +13,10 @@ namespace hds
 		public DynamicArray(){
 			storage = new MemoryStream();
 		}
+
+		public DynamicArray(int capacity){
+			storage = new MemoryStream(capacity);
+		}
 		
 		public byte[] getBytes(){
 			return storage.ToArray();

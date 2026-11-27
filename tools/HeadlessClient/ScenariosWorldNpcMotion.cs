@@ -175,4 +175,73 @@ public static partial class Scenarios
             "No observed pursuit segment crossed the blocked corner");
         Console.WriteLine($"Mara corner: {caught.Positions.Count} grounded points with ordinary interlock at the far marker.");
     }
+
+    private static async Task WorldNpcDeferredFlushCrcStress(ScenarioContext context)
+    {
+        SectorProperties.Load(Path.Combine(context.RepositoryRoot, "data/sector_properties.csv"));
+        NavMesh.UseDirectory(Path.Combine(context.RepositoryRoot, "data/navmesh"));
+        var fixture = WorldNpcMotionFixture.Chase(context.RepositoryRoot);
+        var approach = fixture.Start;
+
+        var wanderSeed = OpenWorldFirstLevelFixture.Seed with { Handle = "CrcWander", Level = 50 };
+        var aggroSeed = OpenWorldFirstLevelFixture.Seed with
+        {
+            Handle = "CrcAggro", Level = 1, Health = 5000, MaxHealth = 5000,
+            X = approach.x, Y = approach.y, Z = approach.z
+        };
+        var players = await context.AddPlayersInWorldAsync(wanderSeed, aggroSeed);
+        var wanderer = players[0];
+        var target = players[1];
+
+        // Wait for live wandering motion (deferred Mob.updateAnimation flushes) and active aggro pursuit.
+        await wanderer.WaitUntilAsync(() =>
+        {
+            try { return MotionNpc(wanderer).Positions.Count >= 2; }
+            catch (InvalidDataException) { return false; }
+        }, "wandering NPC broadcasts deferred movement updates", TimeSpan.FromSeconds(30));
+
+        // Drive heavy multi-block inbound traffic (1..9 Twofish blocks: movement, varied-length chat, 81 48 echoes)
+        // from both players concurrently while wandering and aggroing NPCs push deferred flushes.
+        for (int i = 0; i < 120; i++)
+        {
+            double dx = (i % 5) * 4.0;
+            wanderer.World.SendViewList(DisturbingTrendsFixture.ClientPosition(new[] { 19403.0 + dx, -705.0, 60701.0 }));
+            target.World.SendViewList(DisturbingTrendsFixture.ClientPosition(new[] { approach.x + dx, approach.y, approach.z }));
+
+            int msgLen = 8 + (i % 10) * 12; // spans 49..161+ wire bytes
+            string body = new string((char)('a' + (i % 26)), msgLen);
+            wanderer.SendChat(body);
+            target.SendChat(body);
+
+            if ((i & 3) == 0)
+            {
+                wanderer.SendRpc("81 48");
+                target.SendRpc("81 48");
+            }
+            await Task.Delay(25);
+        }
+
+        await target.WaitUntilAsync(() => target.World.RpcSnapshot().Any(r => r.Bytes.Length > 0 && r.Bytes[0] == 0x46),
+            "aggroing world NPC reaches melee interlock during inbound stress", TimeSpan.FromSeconds(30));
+        await wanderer.WaitUntilAsync(() =>
+        {
+            try { return MotionNpc(wanderer).Positions.Count >= 4; }
+            catch (InvalidDataException) { return false; }
+        }, "wandering NPC keeps moving during inbound stress", TimeSpan.FromSeconds(20));
+
+        wanderer.SkipReceived();
+        target.SkipReceived();
+        wanderer.SendRpc("81 48");
+        target.SendRpc("81 48");
+        await wanderer.WaitForRpcAsync("81 49");
+        await target.WaitForRpcAsync("81 49");
+
+        var crcDrops = context.Server.OutputLines("CRC didn't match");
+        var allDrops = context.Server.OutputLines("Dropping packet:");
+        Check.Equal(0, crcDrops.Count, "Zero server inbound CRC drops under wandering/aggroing deferred flushes: " + string.Join(" | ", crcDrops.Take(5)));
+        Check.Equal(0, allDrops.Count, "Zero server inbound packet drops under wandering/aggroing deferred flushes: " + string.Join(" | ", allDrops.Take(5)));
+        Check.Equal(0, wanderer.World.Problems.Count, "Zero client wire problems for wander observer");
+        Check.Equal(0, target.World.Problems.Count, "Zero client wire problems for aggro target");
+        Console.WriteLine($"Deferred-flush CRC stress: 0 server drops across 600+ inbound packets (wander frames={MotionNpc(wanderer).Positions.Count}).");
+    }
 }
