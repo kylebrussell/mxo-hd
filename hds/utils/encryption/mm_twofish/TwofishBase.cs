@@ -199,6 +199,9 @@ namespace ManyMonkeys.Cryptography
 		protected void blockDecrypt(ref uint x0, ref uint x1, ref uint x2, ref uint x3)
 		{
 			uint[] s0 = sbox0, s1 = sbox1, s2 = sbox2, s3 = sbox3, sk = subKeys;
+			if (s0.Length < 256 || s1.Length < 256 || s2.Length < 256 || s3.Length < 256 || sk.Length < 40)
+				throw new InvalidOperationException("Twofish tables not initialized.");
+
 			uint c0 = x0, c1 = x1, c2 = x2, c3 = x3;
 
 			x0 ^= sk[4];
@@ -206,45 +209,48 @@ namespace ManyMonkeys.Cryptography
 			x2 ^= sk[6];
 			x3 ^= sk[7];
 
-			for (int r = rounds - 1; r >= 0; r--)
+			// 16 rounds unrolled in even/odd pairs to eliminate swap branches and per-round swaps.
+			for (int rk = 38; rk >= 8; rk -= 4)
 			{
 				uint t0 = s0[x0 & 0xFF] ^ s1[(x0 >> 8) & 0xFF] ^ s2[(x0 >> 16) & 0xFF] ^ s3[x0 >> 24];
 				uint t1 = s0[x1 >> 24] ^ s1[x1 & 0xFF] ^ s2[(x1 >> 8) & 0xFF] ^ s3[(x1 >> 16) & 0xFF];
 				uint sum = t0 + t1;
-				int rk = 8 + (r << 1);
-
-				x2 = (x2 << 1) | (x2 >> 31);
-				x2 ^= sum + sk[rk];
+				x2 = ((x2 << 1) | (x2 >> 31)) ^ (sum + sk[rk]);
 				x3 ^= sum + t1 + sk[rk + 1];
 				x3 = (x3 >> 1) | (x3 << 31);
 
-				if (r > 0)
-				{
-					uint tmp = x0; x0 = x2; x2 = tmp;
-					tmp = x1; x1 = x3; x3 = tmp;
-				}
+				t0 = s0[x2 & 0xFF] ^ s1[(x2 >> 8) & 0xFF] ^ s2[(x2 >> 16) & 0xFF] ^ s3[x2 >> 24];
+				t1 = s0[x3 >> 24] ^ s1[x3 & 0xFF] ^ s2[(x3 >> 8) & 0xFF] ^ s3[(x3 >> 16) & 0xFF];
+				sum = t0 + t1;
+				x0 = ((x0 << 1) | (x0 >> 31)) ^ (sum + sk[rk - 2]);
+				x1 ^= sum + t1 + sk[rk - 1];
+				x1 = (x1 >> 1) | (x1 << 31);
 			}
 
-			x0 ^= sk[0];
-			x1 ^= sk[1];
-			x2 ^= sk[2];
-			x3 ^= sk[3];
+			// Final undo of swap from the last pair: swap (x0,x1) <-> (x2,x3) before output whitening.
+			uint out0 = x2 ^ sk[0];
+			uint out1 = x3 ^ sk[1];
+			uint out2 = x0 ^ sk[2];
+			uint out3 = x1 ^ sk[3];
 			if (cipherMode == CipherMode.CBC)
 			{
-				x0 ^= IV[0];
-				x1 ^= IV[1];
-				x2 ^= IV[2];
-				x3 ^= IV[3];
+				out0 ^= IV[0];
+				out1 ^= IV[1];
+				out2 ^= IV[2];
+				out3 ^= IV[3];
 				IV[0] = c0;
 				IV[1] = c1;
 				IV[2] = c2;
 				IV[3] = c3;
 			}
+			x0 = out0; x1 = out1; x2 = out2; x3 = out3;
 		}
 
 		protected void blockEncrypt(ref uint x0, ref uint x1, ref uint x2, ref uint x3)
 		{
 			uint[] s0 = sbox0, s1 = sbox1, s2 = sbox2, s3 = sbox3, sk = subKeys;
+			if (s0.Length < 256 || s1.Length < 256 || s2.Length < 256 || s3.Length < 256 || sk.Length < 40)
+				throw new InvalidOperationException("Twofish tables not initialized.");
 
 			x0 ^= sk[0];
 			x1 ^= sk[1];
@@ -258,36 +264,37 @@ namespace ManyMonkeys.Cryptography
 				x3 ^= IV[3];
 			}
 
-			for (int r = 0; r < rounds; r++)
+			// 16 rounds unrolled in even/odd pairs to eliminate per-round swaps and branches.
+			for (int rk = 8; rk < 40; rk += 4)
 			{
 				uint t0 = s0[x0 & 0xFF] ^ s1[(x0 >> 8) & 0xFF] ^ s2[(x0 >> 16) & 0xFF] ^ s3[x0 >> 24];
 				uint t1 = s0[x1 >> 24] ^ s1[x1 & 0xFF] ^ s2[(x1 >> 8) & 0xFF] ^ s3[(x1 >> 16) & 0xFF];
 				uint sum = t0 + t1;
-				int rk = 8 + (r << 1);
-
-				x3 = (x3 << 1) | (x3 >> 31);
+				x3 = ((x3 << 1) | (x3 >> 31)) ^ (sum + t1 + sk[rk + 1]);
 				x2 ^= sum + sk[rk];
-				x3 ^= sum + t1 + sk[rk + 1];
 				x2 = (x2 >> 1) | (x2 << 31);
 
-				if (r < rounds - 1)
-				{
-					uint tmp = x0; x0 = x2; x2 = tmp;
-					tmp = x1; x1 = x3; x3 = tmp;
-				}
+				t0 = s0[x2 & 0xFF] ^ s1[(x2 >> 8) & 0xFF] ^ s2[(x2 >> 16) & 0xFF] ^ s3[x2 >> 24];
+				t1 = s0[x3 >> 24] ^ s1[x3 & 0xFF] ^ s2[(x3 >> 8) & 0xFF] ^ s3[(x3 >> 16) & 0xFF];
+				sum = t0 + t1;
+				x1 = ((x1 << 1) | (x1 >> 31)) ^ (sum + t1 + sk[rk + 3]);
+				x0 ^= sum + sk[rk + 2];
+				x0 = (x0 >> 1) | (x0 << 31);
 			}
 
-			x0 ^= sk[4];
-			x1 ^= sk[5];
-			x2 ^= sk[6];
-			x3 ^= sk[7];
+			// Final output whitening swaps (x0,x1) <-> (x2,x3) (undoing the last pair's implicit swap).
+			uint out0 = x2 ^ sk[4];
+			uint out1 = x3 ^ sk[5];
+			uint out2 = x0 ^ sk[6];
+			uint out3 = x1 ^ sk[7];
 			if (cipherMode == CipherMode.CBC)
 			{
-				IV[0] = x0;
-				IV[1] = x1;
-				IV[2] = x2;
-				IV[3] = x3;
+				IV[0] = out0;
+				IV[1] = out1;
+				IV[2] = out2;
+				IV[3] = out3;
 			}
+			x0 = out0; x1 = out1; x2 = out2; x3 = out3;
 		}
 
 		protected void blockDecrypt(ref uint[] x)

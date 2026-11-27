@@ -1,4 +1,5 @@
 using System;
+using System.Buffers.Binary;
 using System.Collections;
 
 using hds.shared;
@@ -35,11 +36,10 @@ namespace hds{
 			buffer = packetData;
 			offset = 0; //initialize to initial byte
 			
-			byte temp;	
-			temp = BufferHandler.readByte(ref packetData,ref offset);
-
-            // Convert to Ack Flags
-            BitArray AckFlags = NumericalUtils.byteToBitArray(temp);
+            byte temp = packetData[offset++];
+            bool isAck = (temp & 0x02) != 0;
+            bool isResetDone = (temp & 0x40) != 0;
+            bool hasSimTime = (temp & 0x80) != 0;
 
             /* Flag Field
              * 1 - unknown / nothing
@@ -51,20 +51,20 @@ namespace hds{
                7 - SERVERFLAG_SIMTIME (aka 0x82, 0xc2)
             */
 
-            if (AckFlags.Get(1) == false)
+            if (!isAck)
             {
                 Output.WriteDebugLog("[WARNING] Packet has acked not set and is encrypted");
             }
 
-            if (AckFlags.Get(7) == true)
+            if (hasSimTime)
             {
-
-                byte[] simTime = BufferHandler.readBytes(ref packetData, ref offset, 4);
-                Store.currentClient.playerData.setClientSimTime(NumericalUtils.byteArrayToFloat(simTime,1));
+                float simTime = BinaryPrimitives.ReadSingleLittleEndian(packetData.AsSpan(offset, 4));
+                offset += 4;
+                Store.currentClient.playerData.setClientSimTime(simTime);
             }
 
 
-            if (AckFlags.Get(6) == true)
+            if (isResetDone)
             {
                 Output.WriteDebugLog("[CLIENT] CLIENTFLAGS_RESETDONE received");
                 var resetClient = Store.currentClient;
@@ -107,7 +107,7 @@ namespace hds{
             }
 
 
-			if (packetData.Length > 1 && AckFlags.Get(1) == true)
+			if (packetData.Length > 1 && isAck)
 			{
 				//Not just ACK nor Resetting
 

@@ -1,5 +1,7 @@
 using System;
+using System.Buffers.Binary;
 using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
@@ -13,9 +15,11 @@ namespace hds
         public ArrayList rawMessages;
         public ArrayList worldPackets; // These are final worldPackets to be resend
         public int ackOnlyCount = 0;
-        // Per-viewer unsent movement coalescing and unsent-prefix cursor (guarded by ObjectMessagesQueue.SyncRoot).
-        private readonly System.Collections.Generic.Dictionary<ushort, SequencedMessage> pendingMovementByView =
-            new System.Collections.Generic.Dictionary<ushort, SequencedMessage>();
+        // Per-viewer unsent movement coalescing, recycled movement message pool, and unsent-prefix cursor (guarded by ObjectMessagesQueue.SyncRoot).
+        private readonly Dictionary<ushort, SequencedMessage> pendingMovementByView =
+            new Dictionary<ushort, SequencedMessage>();
+        private Stack<SequencedMessage> movementPool;
+        private const int MaxPooledMovementMessages = 512;
         internal int FirstUnsentObjectIndex;
         internal int ReliableObjectCount;
         // Receipt and retry snapshots are published under the WorldClient transport fence.
@@ -299,12 +303,25 @@ namespace hds
         /// Queues a player's forwarded movement/pose update for <paramref name="viewId"/>, coalescing in place
         /// with any unsent movement entry already waiting for the same viewer and view so each viewer gets at most
         /// one combined latest movement update per entity per flush without dropping Action or Yaw transitions.
+        /// Stores movement fields inline on <see cref="SequencedMessage"/> and recycles retired shells to avoid
+        /// per-viewer byte[] and object allocations across 200-player movement fan-out.
         /// </summary>
         internal void AddOrCoalesceMovement(ushort viewId, SelfViewUpdate state, byte[] forwardedState)
         {
             if (state == null || forwardedState == null || forwardedState.Length < 2) return;
             byte newFlags = (byte)(state.Flags & ~SelfViewUpdate.Flag20);
             if (newFlags == 0) return;
+
+            uint pos0 = 0, pos1 = 0, pos2 = 0;
+            bool hasPos = state.HasPosition;
+            if (hasPos)
+            {
+                int posOff = forwardedState.Length - 12;
+                ReadOnlySpan<byte> posSpan = forwardedState.AsSpan(posOff, 12);
+                pos0 = BinaryPrimitives.ReadUInt32LittleEndian(posSpan.Slice(0, 4));
+                pos1 = BinaryPrimitives.ReadUInt32LittleEndian(posSpan.Slice(4, 4));
+                pos2 = BinaryPrimitives.ReadUInt32LittleEndian(posSpan.Slice(8, 4));
+            }
 
             lock (ObjectMessagesQueue.SyncRoot)
             {
@@ -316,35 +333,38 @@ namespace hds
 
                 if (pendingMovementByView.TryGetValue(viewId, out SequencedMessage existing) && !existing.isSent)
                 {
-                    byte mergedFlags = (byte)(existing.MovementFlags | newFlags);
+                    existing.MovementFlags = (byte)(existing.MovementFlags | newFlags);
                     if (state.Action.HasValue) existing.MovementAction = state.Action.Value;
                     if (state.Yaw.HasValue) existing.MovementYaw = state.Yaw.Value;
-                    if (state.HasPosition)
+                    if (hasPos)
                     {
-                        if (existing.MovementPosition == null) existing.MovementPosition = new byte[12];
-                        Buffer.BlockCopy(forwardedState, forwardedState.Length - 12, existing.MovementPosition, 0, 12);
+                        existing.MovementPos0 = pos0;
+                        existing.MovementPos1 = pos1;
+                        existing.MovementPos2 = pos2;
                     }
-                    existing.MovementFlags = mergedFlags;
-                    existing.content = WriteMovementPayload(viewId, existing, existing.content);
+                    existing.InvalidateMovementContent();
                     return;
                 }
 
-                byte[] payload = BuildViewUpdateFast(viewId, forwardedState);
-                byte[] posCopy = null;
-                if (state.HasPosition)
+                SequencedMessage message;
+                if (movementPool != null && movementPool.Count > 0)
                 {
-                    posCopy = new byte[12];
-                    Buffer.BlockCopy(forwardedState, forwardedState.Length - 12, posCopy, 0, 12);
+                    message = movementPool.Pop();
+                    message.ResetForMovement(viewId, newFlags, state.Action ?? 0, state.Yaw ?? 0, pos0, pos1, pos2);
                 }
-
-                SequencedMessage message = new SequencedMessage(payload)
+                else
                 {
-                    MovementViewId = viewId,
-                    MovementFlags = newFlags,
-                    MovementAction = state.Action ?? 0,
-                    MovementYaw = state.Yaw ?? 0,
-                    MovementPosition = posCopy
-                };
+                    message = new SequencedMessage(null)
+                    {
+                        MovementViewId = viewId,
+                        MovementFlags = newFlags,
+                        MovementAction = state.Action ?? 0,
+                        MovementYaw = state.Yaw ?? 0,
+                        MovementPos0 = pos0,
+                        MovementPos1 = pos1,
+                        MovementPos2 = pos2
+                    };
+                }
                 ObjectMessagesQueue.Add(message);
                 pendingMovementByView[viewId] = message;
             }
@@ -359,23 +379,19 @@ namespace hds
             return result;
         }
 
-        private static byte[] WriteMovementPayload(ushort viewId, SequencedMessage msg, byte[] reuse)
+        /// <summary>Called under ObjectMessagesQueue.SyncRoot when an ACKed/expired movement message is removed.</summary>
+        internal void RecycleMovementMessageLocked(SequencedMessage message)
         {
-            byte flags = msg.MovementFlags;
-            int len = 4
-                + ((flags & SelfViewUpdate.FlagAction) != 0 ? 1 : 0)
-                + ((flags & SelfViewUpdate.FlagYaw) != 0 ? 1 : 0)
-                + ((flags & SelfViewUpdate.FlagPosition) != 0 ? 12 : 0);
-            byte[] buf = reuse != null && reuse.Length == len ? reuse : new byte[len];
-            buf[0] = (byte)(viewId & 0xFF);
-            buf[1] = (byte)((viewId >> 8) & 0xFF);
-            buf[2] = SelfViewEntry.PartState;
-            buf[3] = flags;
-            int cursor = 4;
-            if ((flags & SelfViewUpdate.FlagAction) != 0) buf[cursor++] = msg.MovementAction;
-            if ((flags & SelfViewUpdate.FlagYaw) != 0) buf[cursor++] = msg.MovementYaw;
-            if ((flags & SelfViewUpdate.FlagPosition) != 0) Buffer.BlockCopy(msg.MovementPosition, 0, buf, cursor, 12);
-            return buf;
+            if (message.MovementViewId == 0 || message.ReliableObject || message.ObjectReceipt != null)
+            {
+                return;
+            }
+            if (movementPool == null) movementPool = new Stack<SequencedMessage>(64);
+            if (movementPool.Count < MaxPooledMovementMessages)
+            {
+                message.InvalidateMovementContent();
+                movementPool.Push(message);
+            }
         }
 
         /// <summary>Called under ObjectMessagesQueue.SyncRoot when an object message is marked sent.</summary>

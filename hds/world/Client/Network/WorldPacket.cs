@@ -1,4 +1,6 @@
 using System;
+using System.Buffers;
+using System.Buffers.Binary;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -40,6 +42,20 @@ namespace hds
         public WorldPacket(ClientData _playerData)
         {
             this.playerData = _playerData;
+        }
+
+        internal void Reset(ClientData _playerData)
+        {
+            RPCMessages.Clear();
+            ObjectMessages.Clear();
+            neededAckSSeq = 0;
+            content = null;
+            isFinal = false;
+            bufferSize = 0;
+            playerData = _playerData;
+            timed = false;
+            isRPCReset = false;
+            modifierRpcCount = 0;
         }
 
         public void setFinalContent(byte[] content)
@@ -114,13 +130,14 @@ namespace hds
 
         public bool addObjectContent(SequencedMessage objectMessage)
         {
-            if (!IsEmpty && (ObjectMessages.Count >= 255 || checkIfBufferIsFull(objectMessage.content.Length + 2)))
+            int contentLen = objectMessage.ObjectContentLength;
+            if (!IsEmpty && (ObjectMessages.Count >= 255 || checkIfBufferIsFull(contentLen + 2)))
             {
                 return false;
             }
 
             this.ObjectMessages.Add(objectMessage);
-            bufferSize = (UInt16)Math.Min(UInt16.MaxValue, bufferSize + objectMessage.content.Length + 2);
+            bufferSize = (UInt16)Math.Min(UInt16.MaxValue, bufferSize + contentLen + 2);
             return true;
         }
 
@@ -146,12 +163,38 @@ namespace hds
             });
         }
 
-        public byte[] getFinalData(ClientData playerData)
+        internal int EstimateMaxPlaintextSize()
         {
-            // TODO: Sim Time with Client (not real time) on every 4 Local SSEQ we send
-            
+            int size = 5;
+            int objCount = ObjectMessages.Count;
+            if (objCount > 0)
+            {
+                size += 3;
+                for (int i = 0; i < objCount; i++)
+                {
+                    size += ObjectMessages[i].ObjectContentLength;
+                }
+            }
+            int rpcCount = RPCMessages.Count;
+            if (rpcCount > 0)
+            {
+                size += 2;
+                for (int i = 0; i < rpcCount; i++)
+                {
+                    size += 3 + RPCMessages[i].content.Length;
+                }
+            }
+            return size;
+        }
 
-            content = new DynamicArray(bufferSize + 32);
+        /// <summary>
+        /// Serializes the finalized MPM plaintext payload directly into <paramref name="destination"/> starting at
+        /// <paramref name="startOffset"/> (e.g. offset 14 of WorldEncryption's rented work buffer), avoiding
+        /// intermediate DynamicArray and byte[] allocations on every outbound datagram.
+        /// </summary>
+        internal int WriteFinalData(ClientData playerData, byte[] destination, int startOffset)
+        {
+            int cursor = startOffset;
             playerData.IncrementSseq();
             this.neededAckSSeq = playerData.getSseq();
 
@@ -165,91 +208,167 @@ namespace hds
                 playerData.lastSimTimeSeconds = simNow;
             }
 
-
             playerData.getRPCShutDown();
             if (timed)
             {
-
-                if (playerData.waitForRPCShutDown==true)
-                {
-                    content.append((byte)0xc2);
-                }
-                else
-                {
-                    content.append((byte)0x82);
-                }
-
-                content.append(TimeUtils.getCurrentSimTime());
+                destination[cursor++] = playerData.waitForRPCShutDown ? (byte)0xc2 : (byte)0x82;
+                BinaryPrimitives.WriteSingleLittleEndian(destination.AsSpan(cursor, 4), simNow);
+                cursor += 4;
             }
             else
             {
-
-                if (playerData.waitForRPCShutDown == true)
-                {
-                    content.append((byte)0x42);
-                }
-                else
-                {
-                    content.append((byte)0x02);
-                }
-
+                destination[cursor++] = playerData.waitForRPCShutDown ? (byte)0x42 : (byte)0x02;
             }
 
-            // Merge all Message together and generate the Final Packet Header
-            generateObjectMessageData();
-            generateRpcMessageData();
-            return content.getBytes();
-            
+            WriteObjectMessageData(destination, ref cursor);
+            WriteRpcMessageData(playerData, destination, ref cursor);
+            return cursor - startOffset;
+        }
+
+        public byte[] getFinalData(ClientData playerData)
+        {
+            int maxLen = EstimateMaxPlaintextSize();
+            byte[] rented = ArrayPool<byte>.Shared.Rent(maxLen);
+            try
+            {
+                int len = WriteFinalData(playerData, rented, 0);
+                byte[] result = new byte[len];
+                Buffer.BlockCopy(rented, 0, result, 0, len);
+                return result;
+            }
+            finally
+            {
+                ArrayPool<byte>.Shared.Return(rented);
+            }
+        }
+
+        private void WriteObjectMessageData(byte[] destination, ref int cursor)
+        {
+            int count = ObjectMessages.Count;
+            if (count == 0) return;
+
+            destination[cursor++] = (byte)ProtocolHeaders.OBJECT_VIEW_PROTOCOL;
+            for (int i = 0; i < count; i++)
+            {
+                SequencedMessage message = ObjectMessages[i];
+                message.increaseResendTime();
+                message.setNeededAck(this.neededAckSSeq);
+                message.RecordReliableObjectPacket(this.neededAckSSeq);
+                message.WriteObjectContent(destination, ref cursor);
+            }
+            // Add ViewId 0 to tell our Client that Object Protocol is done now
+            destination[cursor++] = 0x00;
+            destination[cursor++] = 0x00;
+        }
+
+        private void WriteRpcMessageData(ClientData data, byte[] destination, ref int cursor)
+        {
+            int count = RPCMessages.Count;
+            if (count == 0) return;
+
+            // New RPCs take the next counters and share one immutable block start per packet; resent RPCs keep
+            // their original counter and block start (stock client.dll CLTMessageBargeGuar skips any overlapping
+            // block whose start < m_nextExpectedSeq, so resends must never merge into a wider block).
+            UInt16 counter = data.getRPCCounter();
+            int freshBlockStart = -1;
+            for (int i = 0; i < count; i++)
+            {
+                SequencedMessage message = RPCMessages[i];
+                if (message.rpcNumber < 0)
+                {
+                    if (freshBlockStart < 0) freshBlockStart = counter;
+                    message.rpcNumber = counter++;
+                    message.rpcBlockStart = freshBlockStart;
+                    Output.WriteBonusDebugLog(data.getCharID(), message.content);
+                }
+            }
+
+            data.setRPCCounter(counter);
+
+            UInt16 sseq = (UInt16)(neededAckSSeq & 0xFFF);
+            long now = Environment.TickCount64;
+
+            // Fast path: 99%+ of outbound RPC packets are a single contiguous block in order (<= 255 RPCs).
+            bool singleBlock = count <= 255;
+            if (singleBlock)
+            {
+                for (int i = 1; i < count; i++)
+                {
+                    SequencedMessage prev = RPCMessages[i - 1];
+                    SequencedMessage curr = RPCMessages[i];
+                    bool sameBlock = (prev.rpcBlockStart < 0 && curr.rpcBlockStart < 0) ||
+                                     prev.rpcBlockStart == curr.rpcBlockStart;
+                    if (!sameBlock || (UInt16)(prev.rpcNumber + 1) != (UInt16)curr.rpcNumber)
+                    {
+                        singleBlock = false;
+                        break;
+                    }
+                }
+            }
+
+            if (singleBlock)
+            {
+                destination[cursor++] = (byte)ProtocolHeaders.RPC_PROTOCOL;
+                destination[cursor++] = 1;
+                UInt16 startNum = (UInt16)RPCMessages[0].rpcNumber;
+                destination[cursor++] = (byte)(startNum >> 8);
+                destination[cursor++] = (byte)(startNum & 0xFF);
+                destination[cursor++] = (byte)count;
+                for (int i = 0; i < count; i++)
+                {
+                    SequencedMessage message = RPCMessages[i];
+                    byte[] bytes = message.content;
+                    Buffer.BlockCopy(bytes, 0, destination, cursor, bytes.Length);
+                    cursor += bytes.Length;
+                    message.RecordRpcPacket(sseq);
+                    message.lastRpcSendTick = now;
+                }
+                return;
+            }
+
+            // 04 <blocks>, then each block's first counter, its count and its RPCs: a resent RPC and new ones can
+            // share a packet, as Reality's OrderedPacket did
+            List<List<SequencedMessage>> blocks = RpcBlocks(RPCMessages);
+            destination[cursor++] = (byte)ProtocolHeaders.RPC_PROTOCOL;
+            destination[cursor++] = (byte)blocks.Count;
+            for (int b = 0; b < blocks.Count; b++)
+            {
+                List<SequencedMessage> block = blocks[b];
+                UInt16 startNum = (UInt16)block[0].rpcNumber;
+                destination[cursor++] = (byte)(startNum >> 8);
+                destination[cursor++] = (byte)(startNum & 0xFF);
+                destination[cursor++] = (byte)block.Count;
+                for (int i = 0; i < block.Count; i++)
+                {
+                    SequencedMessage message = block[i];
+                    byte[] bytes = message.content;
+                    Buffer.BlockCopy(bytes, 0, destination, cursor, bytes.Length);
+                    cursor += bytes.Length;
+                    message.RecordRpcPacket(sseq);
+                    message.lastRpcSendTick = now;
+                }
+            }
         }
 
         public void generateRpcMessageData()
         {
-            // Example : 04 01 00 15 01 + submessages
-            // Strcut: uint8 04 header + uint8 listcount + uint16 currentRPCCounter + submessageCounter (list1)
-            // If you have 2 lists , the data struct is : uint8 submessagecount + submessages
-
-            // TODO!!! FINALIZE!!
-            // Here goes code from RPCPacket (As it should be generated on the fly)
             if (RPCMessages.Count > 0)
             {
-                // New RPCs take the next counters and share one immutable block start per packet; resent RPCs keep
-                // their original counter and block start (stock client.dll CLTMessageBargeGuar skips any overlapping
-                // block whose start < m_nextExpectedSeq, so resends must never merge into a wider block).
-                UInt16 counter = playerData.getRPCCounter();
-                int freshBlockStart = -1;
-                foreach (SequencedMessage message in RPCMessages)
+                int maxLen = EstimateMaxPlaintextSize();
+                byte[] rented = ArrayPool<byte>.Shared.Rent(maxLen);
+                try
                 {
-                    if (message.rpcNumber < 0)
-                    {
-                        if (freshBlockStart < 0) freshBlockStart = counter;
-                        message.rpcNumber = counter++;
-                        message.rpcBlockStart = freshBlockStart;
-                        Output.WriteBonusDebugLog(playerData.getCharID(), message.content);
-                    }
+                    int cursor = 0;
+                    WriteRpcMessageData(playerData, rented, ref cursor);
+                    byte[] slice = new byte[cursor];
+                    Buffer.BlockCopy(rented, 0, slice, 0, cursor);
+                    content.append(slice);
                 }
-
-                playerData.setRPCCounter(counter);
-
-                // 04 <blocks>, then each block's first counter, its count and its RPCs: a resent RPC and new ones can
-                // share a packet, as Reality's OrderedPacket did
-                List<List<SequencedMessage>> blocks = RpcBlocks(RPCMessages);
-                content.append((byte)ProtocolHeaders.RPC_PROTOCOL);
-                content.append((byte)blocks.Count);
-                UInt16 sseq = (UInt16)(neededAckSSeq & 0xFFF);
-                long now = Environment.TickCount64;
-                foreach (List<SequencedMessage> block in blocks)
+                finally
                 {
-                    content.append(NumericalUtils.uint16ToByteArray((UInt16)block[0].rpcNumber, 0));
-                    content.append(NumericalUtils.uint16ToByteArrayShort((UInt16)block.Count));
-                    foreach (SequencedMessage message in block)
-                    {
-                        content.append(message.content);
-                        message.RecordRpcPacket(sseq);
-                        message.lastRpcSendTick = now;
-                    }
+                    ArrayPool<byte>.Shared.Return(rented);
                 }
             }
-            
         }
 
         /// <summary>
@@ -290,28 +409,23 @@ namespace hds
 
         public void generateObjectMessageData()
         {
-            // ToDo: add the SSEQ to the MessageQueue Objects
             if (ObjectMessages.Count > 0)
             {
-                content.append((byte)ProtocolHeaders.OBJECT_VIEW_PROTOCOL);
-                // Add ViewId 0 to tell our Client that Object Protocol is done now
-                foreach (SequencedMessage message in ObjectMessages)
+                int maxLen = EstimateMaxPlaintextSize();
+                byte[] rented = ArrayPool<byte>.Shared.Rent(maxLen);
+                try
                 {
-                    message.increaseResendTime();
-                    message.setNeededAck(this.neededAckSSeq);
-                    message.RecordReliableObjectPacket(this.neededAckSSeq);
-                    content.append(message.content);
+                    int cursor = 0;
+                    WriteObjectMessageData(rented, ref cursor);
+                    byte[] slice = new byte[cursor];
+                    Buffer.BlockCopy(rented, 0, slice, 0, cursor);
+                    content.append(slice);
                 }
-                content.append(0x00);
-                content.append(0x00);
-
-
+                finally
+                {
+                    ArrayPool<byte>.Shared.Return(rented);
+                }
             }
-            
         }
-
-
-
-        
     }
 }

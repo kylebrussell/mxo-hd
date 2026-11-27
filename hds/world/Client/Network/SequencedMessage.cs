@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Buffers.Binary;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,7 +9,7 @@ namespace hds
     public class SequencedMessage
     {
         // Created with the queue entry; delayed/timed entries remain included in first-send latency.
-        private readonly long scaleEnqueued=ScaleDiagnostics.Start;
+        private long scaleEnqueued=ScaleDiagnostics.Start;
         private int scaleFirstSent;
         public void RecordScaleFirstSend(bool objectMessage)
         {
@@ -28,8 +29,96 @@ namespace hds
         internal byte MovementFlags;
         internal byte MovementAction;
         internal byte MovementYaw;
-        internal byte[] MovementPosition;
-        public byte[] content;
+        internal uint MovementPos0;
+        internal uint MovementPos1;
+        internal uint MovementPos2;
+        private byte[] _content;
+        public byte[] content
+        {
+            get
+            {
+                if (_content != null) return _content;
+                if (MovementViewId != 0)
+                {
+                    _content = MaterializeMovementContent();
+                }
+                return _content;
+            }
+            set => _content = value;
+        }
+        internal int ObjectContentLength
+        {
+            get
+            {
+                if (_content != null) return _content.Length;
+                if (MovementViewId == 0) return 0;
+                byte flags = MovementFlags;
+                return 4
+                    + ((flags & SelfViewUpdate.FlagAction) != 0 ? 1 : 0)
+                    + ((flags & SelfViewUpdate.FlagYaw) != 0 ? 1 : 0)
+                    + ((flags & SelfViewUpdate.FlagPosition) != 0 ? 12 : 0);
+            }
+        }
+        internal void WriteObjectContent(byte[] destination, ref int offset)
+        {
+            if (_content != null)
+            {
+                Buffer.BlockCopy(_content, 0, destination, offset, _content.Length);
+                offset += _content.Length;
+                return;
+            }
+            if (MovementViewId == 0) return;
+            destination[offset++] = (byte)(MovementViewId & 0xFF);
+            destination[offset++] = (byte)((MovementViewId >> 8) & 0xFF);
+            destination[offset++] = SelfViewEntry.PartState;
+            byte flags = MovementFlags;
+            destination[offset++] = flags;
+            if ((flags & SelfViewUpdate.FlagAction) != 0) destination[offset++] = MovementAction;
+            if ((flags & SelfViewUpdate.FlagYaw) != 0) destination[offset++] = MovementYaw;
+            if ((flags & SelfViewUpdate.FlagPosition) != 0)
+            {
+                BinaryPrimitives.WriteUInt32LittleEndian(destination.AsSpan(offset, 4), MovementPos0);
+                BinaryPrimitives.WriteUInt32LittleEndian(destination.AsSpan(offset + 4, 4), MovementPos1);
+                BinaryPrimitives.WriteUInt32LittleEndian(destination.AsSpan(offset + 8, 4), MovementPos2);
+                offset += 12;
+            }
+        }
+        private byte[] MaterializeMovementContent()
+        {
+            byte[] buf = new byte[ObjectContentLength];
+            int cursor = 0;
+            WriteObjectContent(buf, ref cursor);
+            return buf;
+        }
+        internal void InvalidateMovementContent() => _content = null;
+        internal void ResetForMovement(ushort viewId, byte flags, byte action, byte yaw, uint pos0, uint pos1, uint pos2)
+        {
+            scaleEnqueued = ScaleDiagnostics.Start;
+            scaleFirstSent = 0;
+            ObjectReceipt = null;
+            TimedViewWithRpc = null;
+            ReliableObject = false;
+            ReliableObjectPrerequisite = null;
+            ReliableObjectAcked = false;
+            ReliableObjectGapObserved = false;
+            ObjectWorldGeneration = null;
+            ObjectTransportEpoch = 0;
+            MovementViewId = viewId;
+            MovementFlags = flags;
+            MovementAction = action;
+            MovementYaw = yaw;
+            MovementPos0 = pos0;
+            MovementPos1 = pos1;
+            MovementPos2 = pos2;
+            _content = null;
+            sendCounter = 0;
+            resendTime = 0;
+            neededAck = 0;
+            hasNeededAck = false;
+            isTimed = false;
+            isSent = false;
+            lastSentTick = 0;
+        }
         public UInt16 sendCounter;
         private int resendTime;
         private UInt16 neededAck;
@@ -52,7 +141,9 @@ namespace hds
         internal long RpcTransportEpoch;
         internal bool DiscardUnassignedWorldRpc(int world,long transport) => rpcNumber < 0 &&
             RpcWorldGeneration.HasValue && (RpcWorldGeneration.Value != world || RpcTransportEpoch != transport);
-        public readonly HashSet<UInt16> rpcPackets = new HashSet<UInt16>();
+        // Lazy-allocated so millions of object/movement updates per minute do not allocate an unused HashSet<ushort>.
+        private HashSet<UInt16> _rpcPackets;
+        public HashSet<UInt16> rpcPackets => _rpcPackets ?? (_rpcPackets = new HashSet<UInt16>());
         public long lastRpcSendTick;
 
         /// <summary>How long an unacked RPC waits before it is sent again (Reality: the ping, 30 ms to 1 s).</summary>
@@ -70,9 +161,11 @@ namespace hds
         /// <summary>Whether any packet this RPC went out in is among those the client acked.</summary>
         public bool IsRpcAckedBy(ICollection<UInt16> ackedSeqs)
         {
-            lock (rpcPackets)
+            HashSet<UInt16> packets = _rpcPackets;
+            if (packets == null) return false;
+            lock (packets)
             {
-                foreach (UInt16 seq in rpcPackets)
+                foreach (UInt16 seq in packets)
                 {
                     if (ackedSeqs.Contains(seq))
                     {
@@ -86,9 +179,10 @@ namespace hds
 
         public void RecordRpcPacket(UInt16 sequence)
         {
-            lock (rpcPackets)
+            HashSet<UInt16> packets = rpcPackets;
+            lock (packets)
             {
-                rpcPackets.Add(sequence);
+                packets.Add(sequence);
             }
         }
 

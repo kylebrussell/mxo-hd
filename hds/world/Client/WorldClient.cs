@@ -1,4 +1,5 @@
 using System;
+using System.Buffers;
 using System.Net;
 using System.Net.Sockets;
 using System.Collections;
@@ -54,6 +55,10 @@ namespace hds
         // Preserve the existing cleanup retry after a failure, while the endpoint stays terminal.
         internal void ReleaseFailedReap(){lock(LivenessSync)if(reapClaimed)reapInProgress=false;}
         private bool flushingQueueInProgress = false;
+        // Reusable per-client flush scratch (accessed strictly while flushingQueueInProgress is true).
+        private List<WorldPacket> flushPackets;
+        private Stack<WorldPacket> flushPacketPool;
+        private const int MaxPooledFlushPackets = 8;
         private readonly MultiProtocolManager protocolManager;
         private readonly object processLock = new object();
         private readonly Queue<byte[]> receivedPackets = new Queue<byte[]>();
@@ -160,7 +165,9 @@ namespace hds
         }
 
         // This method sends one packet at a time to the game client 
-        private bool sendPacket(byte[] data)
+        private bool sendPacket(byte[] data) => sendPacket(data, data.Length);
+
+        private bool sendPacket(byte[] data, int length)
         {
             if (this.deadSignals == 0)
             {
@@ -169,7 +176,7 @@ namespace hds
                 {
                     // Synchronous UDP SendTo hands the datagram straight to the kernel send buffer in order,
                     // avoiding per-packet AsyncCallback/IAsyncResult/IOCP completions and async reordering.
-                    socket.SendTo(data, 0, data.Length, SocketFlags.None, Remote);
+                    socket.SendTo(data, 0, length, SocketFlags.None, Remote);
                     return true;
                 }
                 catch (Exception ex)
@@ -179,6 +186,30 @@ namespace hds
                 }
             }
             return false;
+        }
+
+        private WorldPacket RentFlushPacket()
+        {
+            if (flushPacketPool != null && flushPacketPool.Count > 0)
+            {
+                WorldPacket reused = flushPacketPool.Pop();
+                reused.Reset(playerData);
+                return reused;
+            }
+            return new WorldPacket(playerData);
+        }
+
+        private void ReturnFlushPacket(WorldPacket packet)
+        {
+            if (packet == null) return;
+            packet.RPCMessages.Clear();
+            packet.ObjectMessages.Clear();
+            packet.content = null;
+            if (flushPacketPool == null) flushPacketPool = new Stack<WorldPacket>(MaxPooledFlushPackets);
+            if (flushPacketPool.Count < MaxPooledFlushPackets)
+            {
+                flushPacketPool.Push(packet);
+            }
         }
 
 
@@ -211,6 +242,7 @@ namespace hds
                                                  " sends, char " + playerData.getCharID());
                         }
                         messageQueue.OnObjectMessageSentLocked(message);
+                        messageQueue.RecycleMovementMessageLocked(message);
                         continue;
                     }
                     if (write != i) q[write] = message;
@@ -278,6 +310,14 @@ namespace hds
             }
 
             long scaleFlushStart=0;
+            List<WorldPacket> worldPackets = flushPackets;
+            if (worldPackets == null)
+            {
+                worldPackets = new List<WorldPacket>(4);
+                flushPackets = worldPackets;
+            }
+            worldPackets.Clear();
+            WorldPacket packet = null;
             try
             {
             scaleFlushStart=ScaleDiagnostics.Start;
@@ -288,9 +328,8 @@ namespace hds
 
             // Sends RAW MEssages
             SendRawMessages();
-            ArrayList worldPackets = new ArrayList();
 
-            WorldPacket packet = new WorldPacket(playerData);
+            packet = RentFlushPacket();
 
             if (!TransportFence.TryRun(outgoingEpoch, () =>
             {
@@ -350,7 +389,7 @@ namespace hds
                                     // if one sub has a timed param set, we just set it here too
                                     worldPackets.Add(packet);
                                     // Start new packet and add it to the queue 
-                                    packet = new WorldPacket(playerData);
+                                    packet = RentFlushPacket();
                                     packet.addObjectContent(messageObjects);
                                 }
                                 if (messageObjects.isTimed == true)
@@ -380,7 +419,7 @@ namespace hds
                 {
                     packet.isFinal = true;
                     worldPackets.Add(packet);
-                    packet = new WorldPacket(playerData);
+                    packet = RentFlushPacket();
                     packet.timed = false;
                 }
 
@@ -430,7 +469,7 @@ namespace hds
                                 {
                                     packet.isFinal = true;
                                     worldPackets.Add(packet);
-                                    packet = new WorldPacket(playerData);
+                                    packet = RentFlushPacket();
                                     packet.addRPCBlock(existingBlock);
                                 }
 
@@ -449,7 +488,7 @@ namespace hds
                                 packet.isFinal = true;
                                 worldPackets.Add(packet);
                                 // Start new packet and add it to the queue 
-                                packet = new WorldPacket(playerData);
+                                packet = RentFlushPacket();
                                 packet.addRPCContent(first);
                             }
 
@@ -465,6 +504,7 @@ namespace hds
                 if ((packet.isFinal == false) && (packet.ObjectMessages.Count > 0 || packet.RPCMessages.Count > 0))
                 {
                     worldPackets.Add(packet);
+                    packet = null;
                 }
             }
 
@@ -476,7 +516,7 @@ namespace hds
                     // Ack-only packets are a bare 02 (retail too). This used to set isFinal/timed on
                     // `packet` - the content packet - instead of ackPacket, which stamped sim time on
                     // whatever content went out in the same flush.
-                    WorldPacket ackPacket = new WorldPacket(playerData);
+                    WorldPacket ackPacket = RentFlushPacket();
                     ackPacket.isFinal = true;
                     worldPackets.Add(ackPacket);
                 }
@@ -492,8 +532,9 @@ namespace hds
                 #if DEBUG
                 Output.WriteLine("[CLIENT] Flush the final Queue with " + worldPackets.Count.ToString() + " Packets");
                 #endif 
-                foreach (WorldPacket thePacket in worldPackets)
+                for (int pi = 0; pi < worldPackets.Count; pi++)
                 {
+                    WorldPacket thePacket = worldPackets[pi];
                     if (!TransportFence.TryRun(outgoingEpoch, () =>
                     {
                     // A world generation can change after preparation. Drop only unnumbered producer-owned records.
@@ -502,42 +543,98 @@ namespace hds
                     // A bare reset ACK can arrive after the client resets its sequence history.
                     // The reliable reset RPC already acknowledges the last request.
                     if (thePacket.IsEmpty && playerData.waitForRPCShutDown) return;
-                    // getFinalData takes the packet's sequence. This used to increment it here as well, so our packets
-                    // went out every other sequence; retail's go up by one (Unknown.log2, loggedinsession001: 1, 2, 3...),
-                    // and the client's 8 ack bits then covered only our last 4 packets instead of 8.
-                    byte[] finalData = thePacket.getFinalData(playerData);
 
-                    long encryptStart = Output.PacketLogsEnabled ? Stopwatch.GetTimestamp() : 0;
-
-                    // Keep the stock-compatible envelope until the world reset is complete. The
-                    // old and new client counters can overlap while RESETDONE is still in flight.
-                    bool transitioning = playerData.worldChangePending || (finalData[0] & 0x40) != 0;
-                    ushort receiptBits = transitioning ? playerData.getPss() : messageQueue.ClientReceipts.Bits;
-                    ushort receiptSequence = transitioning ? playerData.getCseq() : messageQueue.ClientReceipts.Latest;
-                    byte[] encryptedData = cypher.encrypt(finalData, finalData.Length, receiptBits,
-                        receiptSequence, playerData.getSseq());
-                    if ((thePacket.RPCMessages.Count > 0 && DropTest.ShouldDrop(++rpcPacketsSent)) ||
-                        DropTest.ShouldDropSseq(playerData.getSseq()))
+                    IWorldEncryption activeCypher = cypher;
+                    if (activeCypher is WorldEncryption worldCrypto)
                     {
-                        Output.WriteDebugLog("[NET] Test: dropped packet sseq " + playerData.getSseq());
+                        // Zero-alloc pooled send path: serialize plaintext straight into workBuf[14..],
+                        // encrypt into a pooled wire buffer, dispatch synchronously, and return both buffers.
+                        int maxPlain = thePacket.EstimateMaxPlaintextSize();
+                        byte[] workBuf = ArrayPool<byte>.Shared.Rent(14 + maxPlain + 16);
+                        byte[] wireBuf = null;
+                        try
+                        {
+                            int payloadLen = thePacket.WriteFinalData(playerData, workBuf, 14);
+                            long encryptStart = Output.PacketLogsEnabled ? Stopwatch.GetTimestamp() : 0;
+
+                            // Keep the stock-compatible envelope until the world reset is complete. The
+                            // old and new client counters can overlap while RESETDONE is still in flight.
+                            bool transitioning = playerData.worldChangePending || (workBuf[14] & 0x40) != 0;
+                            ushort receiptBits = transitioning ? playerData.getPss() : messageQueue.ClientReceipts.Bits;
+                            ushort receiptSequence = transitioning ? playerData.getCseq() : messageQueue.ClientReceipts.Latest;
+                            worldCrypto.EncryptFromWorkBuffer(workBuf, payloadLen, receiptBits, receiptSequence,
+                                playerData.getSseq(), out wireBuf, out int wireLen);
+
+                            if ((thePacket.RPCMessages.Count > 0 && DropTest.ShouldDrop(++rpcPacketsSent)) ||
+                                DropTest.ShouldDropSseq(playerData.getSseq()))
+                            {
+                                Output.WriteDebugLog("[NET] Test: dropped packet sseq " + playerData.getSseq());
+                            }
+                            else
+                            {
+                                bool dispatched = sendPacket(wireBuf, wireLen);
+                                if (dispatched) thePacket.RecordDispatchedObjectReceipts(messageQueue);
+                                if (dispatched && ScaleDiagnostics.Enabled)
+                                {
+                                    for (int mi = 0; mi < thePacket.RPCMessages.Count; mi++)
+                                        thePacket.RPCMessages[mi].RecordScaleFirstSend(false);
+                                    for (int mi = 0; mi < thePacket.ObjectMessages.Count; mi++)
+                                        thePacket.ObjectMessages[mi].RecordScaleFirstSend(true);
+                                }
+                            }
+
+                            if (Output.PacketLogsEnabled)
+                            {
+                                byte[] finalData = new byte[payloadLen];
+                                Buffer.BlockCopy(workBuf, 14, finalData, 0, payloadLen);
+                                Output.WritePacketLog(this, finalData, "SERVER",
+                                    receiptBits.ToString(), receiptSequence.ToString(),
+                                    playerData.getSseq().ToString(),
+                                    Stopwatch.GetElapsedTime(encryptStart).TotalMilliseconds.ToString(), "ENCRYPT");
+                            }
+                        }
+                        finally
+                        {
+                            if (wireBuf != null) ArrayPool<byte>.Shared.Return(wireBuf);
+                            ArrayPool<byte>.Shared.Return(workBuf);
+                        }
                     }
                     else
                     {
-                        bool dispatched=sendPacket(encryptedData);
-                        if(dispatched)thePacket.RecordDispatchedObjectReceipts(messageQueue);
-                        if(dispatched && ScaleDiagnostics.Enabled)
-                        {
-                            foreach(var message in thePacket.RPCMessages)message.RecordScaleFirstSend(false);
-                            foreach(var message in thePacket.ObjectMessages)message.RecordScaleFirstSend(true);
-                        }
-                    }
+                        // Custom IWorldEncryption path (e.g. unit-test recording ciphers).
+                        byte[] finalData = thePacket.getFinalData(playerData);
+                        long encryptStart = Output.PacketLogsEnabled ? Stopwatch.GetTimestamp() : 0;
 
-                    if (Output.PacketLogsEnabled)
-                    {
-                        Output.WritePacketLog(this, finalData, "SERVER",
-                            receiptBits.ToString(), receiptSequence.ToString(),
-                            playerData.getSseq().ToString(),
-                            Stopwatch.GetElapsedTime(encryptStart).TotalMilliseconds.ToString(), "ENCRYPT");
+                        bool transitioning = playerData.worldChangePending || (finalData[0] & 0x40) != 0;
+                        ushort receiptBits = transitioning ? playerData.getPss() : messageQueue.ClientReceipts.Bits;
+                        ushort receiptSequence = transitioning ? playerData.getCseq() : messageQueue.ClientReceipts.Latest;
+                        byte[] encryptedData = activeCypher.encrypt(finalData, finalData.Length, receiptBits,
+                            receiptSequence, playerData.getSseq());
+                        if ((thePacket.RPCMessages.Count > 0 && DropTest.ShouldDrop(++rpcPacketsSent)) ||
+                            DropTest.ShouldDropSseq(playerData.getSseq()))
+                        {
+                            Output.WriteDebugLog("[NET] Test: dropped packet sseq " + playerData.getSseq());
+                        }
+                        else
+                        {
+                            bool dispatched = sendPacket(encryptedData);
+                            if (dispatched) thePacket.RecordDispatchedObjectReceipts(messageQueue);
+                            if (dispatched && ScaleDiagnostics.Enabled)
+                            {
+                                for (int mi = 0; mi < thePacket.RPCMessages.Count; mi++)
+                                    thePacket.RPCMessages[mi].RecordScaleFirstSend(false);
+                                for (int mi = 0; mi < thePacket.ObjectMessages.Count; mi++)
+                                    thePacket.ObjectMessages[mi].RecordScaleFirstSend(true);
+                            }
+                        }
+
+                        if (Output.PacketLogsEnabled)
+                        {
+                            Output.WritePacketLog(this, finalData, "SERVER",
+                                receiptBits.ToString(), receiptSequence.ToString(),
+                                playerData.getSseq().ToString(),
+                                Stopwatch.GetElapsedTime(encryptStart).TotalMilliseconds.ToString(), "ENCRYPT");
+                        }
                     }
                     })) flushPending = true;
                 }
@@ -546,6 +643,12 @@ namespace hds
             }
             finally
             {
+                if (packet != null) ReturnFlushPacket(packet);
+                for (int pi = 0; pi < worldPackets.Count; pi++)
+                {
+                    ReturnFlushPacket(worldPackets[pi]);
+                }
+                worldPackets.Clear();
                 lock (flushLock)
                 {
                     flushingQueueInProgress = false;
@@ -615,6 +718,7 @@ namespace hds
                         // still has neededAck 0, so without the sendCounter check any client ack that
                         // arrived before the next flush deleted it unsent. That dropped the self-spawn
                         // about half the time and left the client at "Negotiating with Servers...".
+                        messageQueue.RecycleMovementMessageLocked(message);
                         continue;
                     }
                     if (write != i) q[write] = message;
@@ -656,22 +760,39 @@ namespace hds
 
         public byte[] DecryptReceivedPacket(byte[] packet)
         {
-            ArrayList decValues = cypher.decrypt(packet, packet.Length);
-            if (decValues == null)
+            byte[] processedPacket;
+            ushort pss;
+            ushort cseq;
+            ushort ackSeq;
+
+            IWorldEncryption activeCypher = cypher;
+            if (activeCypher is WorldEncryption worldCrypto)
             {
-                return null; // corrupt packet, already logged
+                if (!worldCrypto.TryDecrypt(packet, packet.Length, out processedPacket, out pss, out cseq, out ackSeq, stripTimedHeader: true))
+                {
+                    return null; // corrupt packet, already logged
+                }
             }
-            byte[] processedPacket = (byte[]) decValues[0];
-
-
-            if (processedPacket[0] == 0x82) //It's a timed data packet
+            else
             {
-                byte[] temp = new byte[processedPacket.Length - 4];
-                temp[0] = (byte) 0x02;
-                ArrayUtils.copy(processedPacket, 5, temp, 1, processedPacket.Length - 4);
-                processedPacket = temp;
-            }
+                ArrayList decValues = activeCypher.decrypt(packet, packet.Length);
+                if (decValues == null)
+                {
+                    return null; // corrupt packet, already logged
+                }
+                processedPacket = (byte[])decValues[0];
+                pss = (UInt16)decValues[1];
+                cseq = (UInt16)decValues[2];
+                ackSeq = (UInt16)decValues[3];
 
+                if (processedPacket[0] == 0x82) //It's a timed data packet
+                {
+                    byte[] temp = new byte[processedPacket.Length - 4];
+                    temp[0] = (byte)0x02;
+                    ArrayUtils.copy(processedPacket, 5, temp, 1, processedPacket.Length - 4);
+                    processedPacket = temp;
+                }
+            }
 
             // Fence reset before publishing its new envelope headers, not later in Parse.
             bool resetReceived = (processedPacket[0] & 0x40) != 0;
@@ -685,19 +806,19 @@ namespace hds
             }
             else
             {
-                messageQueue.ClientReceipts.Observe((UInt16)decValues[2]);
-                messageQueue.ResendBackoff.ObserveAck((UInt16)decValues[3]);
+                messageQueue.ClientReceipts.Observe(cseq);
+                messageQueue.ResendBackoff.ObserveAck(ackSeq);
             }
-            playerData.setPss((UInt16) decValues[1]);
-            playerData.setCseq((UInt16) decValues[2]);
-            playerData.setACK((UInt16) decValues[3]);
+            playerData.setPss(pss);
+            playerData.setCseq(cseq);
+            playerData.setACK(ackSeq);
 
             if (DropTest.Enabled)
             {
-                Output.WriteDebugLog("[NET] Client acks sseq " + (UInt16) decValues[3]);
+                Output.WriteDebugLog("[NET] Client acks sseq " + ackSeq);
             }
 
-            this.DeletedAckedPackets((UInt16) decValues[3]); // REMOVING FROM ACK QUEUE
+            this.DeletedAckedPackets(ackSeq); // REMOVING FROM ACK QUEUE
             });
             return processedPacket;
         }
