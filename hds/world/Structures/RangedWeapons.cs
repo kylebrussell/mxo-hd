@@ -185,6 +185,15 @@ namespace hds
             });
         }
 
+        // The shipped gun-vs-fists rules distinguish shotguns from rifles even though both send wire class 0x37.
+        internal static bool IsShotgun(UInt32 goid)
+        {
+            string name = GetStats(goid)?.Name;
+            if (name == null && goid != 0)
+                name = DataLoader.getInstance().GODB.Find(item => (UInt32)item.getGOID() == goid)?.getName();
+            return name?.IndexOf("shotgun", StringComparison.OrdinalIgnoreCase) >= 0;
+        }
+
         public static bool IsGun(UInt32 goid)
         {
             return AttackClass(goid) != 0;
