@@ -92,6 +92,7 @@ namespace hds
             SequencedMessage selfSpawn = Store.currentClient.messageQueue.AddReliableObject(rsiObject, spawnWorld, spawnEpoch);
             Store.currentClient.playerData.setOnWorld(true);
             MissionPersistence.WorldEntry(Store.currentClient);
+            DatamineTapEffects.OnWorldEntry(Store.currentClient);
             if (DeathPresentation.IsCorpse(Store.currentClient)) DeathPresentation.Corpse(Store.currentClient);
             AbilityPassives.Refresh(Store.currentClient);
             AbilityBuffs.PresentCurrentMovementScale(Store.currentClient);

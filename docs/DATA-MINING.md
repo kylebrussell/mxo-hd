@@ -71,8 +71,21 @@ it leaves the next cast running. Other light luggables have no such effect.
 The `datamine-tap-shadow` mode seeds tap 1 in bag 5 and another light
 luggable in bag 6. Cast Master Shadow from page 2, then drop only the tap.
 After reuse, repeat the cast and wait for the first ordinary IS drain.
-The ground tap and the unrelated carried item are controls. The separate
-Datamine tap activation FX callback remains outside this package.
+The ground tap and the unrelated carried item are controls.
+
+### Carried tap effect
+
+All four taps also specify `PlayItemActivationFXIfInInv`, a 4.0-second
+update interval, and `ActivationFX=0x04000078`. A tap already in the personal
+bag at world entry and a tap acquired through ground pickup both start the
+four-second pulse. The effect plays on the carrier for their own client and
+nearby viewers. Each tick checks the committed bag, so a dropped tap stops
+pulsing and picking it back up starts a new interval. Other luggables have
+no tap effect. This is a one-shot view effect, independent of Master Shadow.
+
+The `datamine-tap-carry-fx` mode seeds the same bag items on a clear Mara
+street stand. Watch two pulses, drag bag 5 to the street, wait through an
+interval, and use Pick Up on the ground tap. Pulses resume after pickup.
 
 ### Archive travel
 
