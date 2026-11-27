@@ -155,6 +155,21 @@ namespace hds
             public static Plan Refuse(UInt32 status) => new Plan { Status = status };
         }
 
+        /// <summary>The planned, committed move or the refusal. Ability learning uses its own transaction.</summary>
+        public sealed class Receipt
+        {
+            public Plan Plan { get; }
+            public uint Goid { get; }
+            public bool RolledBack { get; }
+
+            internal Receipt(Plan plan, uint goid = 0, bool rolledBack = false)
+            {
+                Plan = plan;
+                Goid = goid;
+                RolledBack = rolledBack;
+            }
+        }
+
         public static bool IsStorageSlot(int slot) => slot >= 0 && slot < Slots;
 
         public static bool IsBagSlot(int slot) => slot >= 0 && slot < StackMoves.FirstWornSlot;

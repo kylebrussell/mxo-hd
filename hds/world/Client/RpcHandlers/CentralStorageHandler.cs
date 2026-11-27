@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using hds.databases;
 using hds.databases.interfaces;
 using hds.shared;
@@ -33,206 +32,122 @@ namespace hds
             return slot => entries.TryGetValue(slot, out CentralStorage.Entry entry) ? entry : default(CentralStorage.Entry);
         }
 
-        private static Func<int?> FirstFreeStorage(UInt32 charId) =>
-            () => CentralStorage.FirstFreeSlot(Db.GetAbilityInventorySlots(charId));
-
-        private static Func<int, StackMoves.Stack> BagOf(UInt32 charId)
-        {
-            Dictionary<int, StackMoves.Stack> bag = new Dictionary<int, StackMoves.Stack>();
-            foreach (Crafting.InventoryItem item in Db.GetInventoryItems(charId))
-            {
-                bag[item.Slot] = new StackMoves.Stack { Goid = item.Goid, Count = Math.Max(1, item.Count) };
-            }
-            return slot => bag.TryGetValue(slot, out StackMoves.Stack stack) ? stack : default(StackMoves.Stack);
-        }
-
-        private static int? FirstFreeBag(UInt32 charId)
-        {
-            HashSet<int> used = new HashSet<int>(Db.GetInventoryItems(charId).Select(i => (int)i.Slot));
-            List<UInt16> free = TradeRules.FreeBagSlots(used);
-            return free.Count > 0 ? free[0] : (int?)null;
-        }
-
         /// <summary>Client 62.</summary>
         public static void ProcessMove(WorldClient client, byte[] rpcData)
         {
-            lock(client.playerData.craftingSync) ProcessMoveLocked(client,rpcData);
-        }
-        private static void ProcessMoveLocked(WorldClient client,byte[] rpcData)
-        {
-            if (!CentralStorage.TryParseMove(rpcData, out CentralStorage.Move move))
+            if (!CentralStorage.TryParseMove(rpcData, out var move)) return;
+            lock (client.playerData.craftingSync)
             {
+                var publication = new AbilityAcquisition.Publication(client);
+                var result = IsOpenFor(client) ? Db.MoveCentralStorage(publication.Character, move) :
+                    new CentralStorage.Receipt(CentralStorage.Plan.Refuse(CentralStorage.InvalidTransaction));
+                var plan = result.Plan;
+                if (plan.Refused)
+                {
+                    PublishRefusal(client, publication, result, move.FromBag);
+                    return;
+                }
+                if (plan.LearnAbility)
+                {
+                    UploadAbility(client, publication, plan, result.Goid);
+                    client.FlushQueue();
+                    return;
+                }
+
+                byte[] bag = BagUpdate(plan, result.Goid);
+                byte[] archive = StorageUpdate(plan.StorageSlot, result.Goid, plan.StorageCount, plan.StorageIsNew);
+                byte[][] packets = move.FromBag ? new[] { bag, archive, CentralStorage.BuildUploadResult(plan.Moved, false, plan.Status) }
+                    : new[] { archive, bag };
+                if (publication.Publish(client, packets)) client.FlushQueue();
+                Output.WriteDebugLog($"[CENTRAL STORAGE] {(move.FromBag ? "Upload" : "Download")} committed " +
+                    $"char={publication.Character} bag={plan.BagSlot} count={plan.BagCount} " +
+                    $"archive={plan.StorageSlot} count={plan.StorageCount} moved={plan.Moved}");
+            }
+        }
+
+        private static void UploadAbility(WorldClient client, AbilityAcquisition.Publication publication,
+            CentralStorage.Plan plan, uint goid)
+        {
+            AbilityAcquisition.Receipt receipt;
+            try { receipt = Db.AcquireAbility(publication.Character, goid, 0, plan.BagSlot, plan.StorageSlot); }
+            catch (Exception error)
+            {
+                Output.WriteDebugLog("[ABILITY ACQUISITION] LA upload refused/rolled back: " + error.Message);
+                publication.Notice(client, error is AbilityAcquisition.Refusal ? error.Message :
+                    "The ability upload could not be completed. Its code was kept.");
+                publication.Publish(client, CentralStorage.BuildUploadResult(0, false, CentralStorage.InvalidTransaction));
                 return;
             }
-            var publication=new AbilityAcquisition.Publication(client);
-            UInt32 charId = client.playerData.getCharID();
-            CentralStorage.Plan plan;
-            if (!IsOpenFor(client))
-            {
-                plan = CentralStorage.Plan.Refuse(CentralStorage.InvalidTransaction);
-            }
-            else if (move.FromBag)
-            {
-                plan = CentralStorage.PlanUpload(move, BagOf(charId), StorageOf(charId), FirstFreeStorage(charId),
-                    goid => Db.HasAbility(charId, unchecked((Int32)goid)));
-            }
+            CodeStorageHandler.PublishLearn(client, receipt, publication, true);
+        }
+
+        private static byte[] BagUpdate(CentralStorage.Plan plan, uint goid)
+        {
+            if (plan.BagCount == 0) return ServerPackets.BuildInventoryItemDelete(plan.BagSlot);
+            if (!plan.BagIsNew) return ItemStacks.BuildStackCount(plan.BagSlot, plan.BagCount);
+            return ServerPackets.BuildInventoryItemAdd(plan.BagSlot, goid, TradePackets.Descriptor(0, plan.BagCount));
+        }
+
+        private static byte[] StorageUpdate(ushort slot, uint goid, int count, bool isNew)
+        {
+            if (count == 0) return CentralStorage.BuildRemove(slot);
+            return isNew ? CodeStorage.BuildAdd(slot, goid, count) : CodeStorage.BuildUpdate(slot, goid, count);
+        }
+
+        private static void PublishRefusal(WorldClient client, AbilityAcquisition.Publication publication,
+            CentralStorage.Receipt result, bool upload)
+        {
+            uint status = result.Plan.Status;
+            Output.WriteDebugLog($"[CENTRAL STORAGE] Move refused char={publication.Character}: {CentralStorage.NameOf(status)}");
+            string notice = result.RolledBack ? "The storage move could not be saved. Your items were kept." :
+                "You can't do that: " + CentralStorage.Describe(status) + ".";
+            byte[] message = ServerPackets.BuildSystemChatMessage(notice, "BROADCAST");
+            byte[][] packets;
+            if (!upload) packets = new[] { message };
             else
             {
-                plan = CentralStorage.PlanDownload(move, BagOf(charId), StorageOf(charId),
-                    Enumerable.Range(1, MyWorldDbAccess.LastBagSlot), () => FirstFreeBag(charId));
+                byte[] statusPacket = CentralStorage.BuildUploadResult(0, false, status);
+                packets = result.RolledBack ? new[] { message, statusPacket } : new[] { statusPacket };
             }
-
-            string what = (move.FromBag ? "Bag slot " : "Storage slot ") + move.Source + " to " +
-                          (move.FromBag ? "storage slot " : "bag slot ") + move.Dest;
-            if (plan.Refused)
-            {
-                Output.WriteDebugLog("[CENTRAL STORAGE] " + what + " refused: " + CentralStorage.NameOf(plan.Status));
-                if (move.FromBag)
-                {
-                    client.messageQueue.addRpcMessage(CentralStorage.BuildUploadResult(0, false, plan.Status));
-                }
-                else
-                {
-                    new ServerPackets().sendSystemChatMessage(client, "You can't do that: " + CentralStorage.Describe(plan.Status) + ".", "SYSTEM");
-                }
-                client.FlushQueue();
-                return;
-            }
-
-            if (move.FromBag)
-            {
-                ApplyUpload(client, charId, plan,publication);
-            }
-            else
-            {
-                ApplyDownload(client, charId, plan);
-            }
-            client.FlushQueue();
-            Output.WriteDebugLog("[CENTRAL STORAGE] " + what + ": moved " + plan.Moved + " (" + CentralStorage.NameOf(plan.Status) + ")");
-        }
-
-        private static void ApplyUpload(WorldClient client, UInt32 charId, CentralStorage.Plan plan,AbilityAcquisition.Publication publication)
-        {
-            MarketPlaceHandler.Db.GetInventoryItem(charId, plan.BagSlot, out UInt32 goid, out UInt32 ignored);
-
-            if(plan.LearnAbility)
-            {
-                // A changed snapshot must still use the exact shared ability transaction.
-                AbilityAcquisition.Receipt receipt;
-                try { receipt=Db.AcquireAbility(charId,goid,0,plan.BagSlot,plan.StorageSlot); }
-                catch(Exception error)
-                {
-                    Output.WriteDebugLog("[ABILITY ACQUISITION] LA upload refused/rolled back: "+error.Message);
-                    publication.Notice(client,error is AbilityAcquisition.Refusal?error.Message:"The ability upload could not be completed. Its code was kept.");
-                    publication.Publish(client,CentralStorage.BuildUploadResult(0,false,CentralStorage.InvalidTransaction));return;
-                }
-                CodeStorageHandler.PublishLearn(client,receipt,publication,true);
-                return;
-            }
-            SetBagCount(client, charId, plan.BagSlot, plan.BagCount);
-            SetStorage(client, charId, plan.StorageSlot, goid, plan.StorageCount, plan.StorageIsNew);
-            client.messageQueue.addRpcMessage(CentralStorage.BuildUploadResult(plan.Moved,false,plan.Status));
-        }
-
-        private static void ApplyDownload(WorldClient client, UInt32 charId, CentralStorage.Plan plan)
-        {
-            UInt32 goid = StorageOf(charId)(plan.StorageSlot).Goid;
-            SetStorage(client, charId, plan.StorageSlot, goid, plan.StorageCount, false);
-            if (plan.BagIsNew)
-            {
-                MarketPlaceHandler.Db.AddInventoryItem(charId, plan.BagSlot, goid, 0);
-                if (plan.BagCount > 1)
-                {
-                    Db.SetInventoryCount(plan.BagSlot, charId, plan.BagCount);
-                }
-                UInt32 descriptor = TradePackets.Descriptor(0, plan.BagCount);
-                client.messageQueue.addRpcMessage(ServerPackets.BuildInventoryItemAdd(plan.BagSlot, goid,
-                    (byte)((descriptor >> 16) & 0xff), (byte)(descriptor >> 24)));
-            }
-            else
-            {
-                SetBagCount(client, charId, plan.BagSlot, plan.BagCount);
-            }
-        }
-
-        /// <summary>A bag slot's new count: <c>69 01</c>, or <c>5f &lt;slot&gt; 01</c> when it empties.</summary>
-        private static void SetBagCount(WorldClient client, UInt32 charId, UInt16 slot, int count)
-        {
-            if (count <= 0)
-            {
-                MarketPlaceHandler.Db.RemoveInventoryItem(charId, slot);
-                client.messageQueue.addRpcMessage(ServerPackets.BuildInventoryItemDelete(slot));
-                return;
-            }
-            Db.SetInventoryCount(slot, charId, count);
-            client.messageQueue.addRpcMessage(ItemStacks.BuildStackCount(slot, count));
-        }
-
-        /// <summary>A storage entry's new count: <c>5e</c> for a new one, <c>69 00</c> for a change, <c>5f &lt;slot&gt; 00</c> when it empties.</summary>
-        private static void SetStorage(WorldClient client, UInt32 charId, UInt16 slot, UInt32 goid, int count, bool isNew)
-        {
-            if (count <= 0)
-            {
-                Db.RemoveCodeStorage(charId, slot);
-                client.messageQueue.addRpcMessage(CentralStorage.BuildRemove(slot));
-            }
-            else if (isNew)
-            {
-                Db.AddCodeStorage(charId, new CodeStorage.Entry(slot, goid, count));
-                client.messageQueue.addRpcMessage(CodeStorage.BuildAdd(slot, goid, count));
-            }
-            else
-            {
-                Db.SetCodeStorageCount(charId, slot, count);
-                client.messageQueue.addRpcMessage(CodeStorage.BuildUpdate(slot, goid, count));
-            }
-        }
-
-        private static void Refuse(WorldClient client, string what, UInt32 status)
-        {
-            Output.WriteDebugLog("[CENTRAL STORAGE] " + what + " refused: " + CentralStorage.NameOf(status));
-            new ServerPackets().sendSystemChatMessage(client, "You can't do that: " + CentralStorage.Describe(status) + ".", "SYSTEM");
-            client.FlushQueue();
+            if (publication.Publish(client, packets)) client.FlushQueue();
         }
 
         /// <summary>Client 67 with IsCentralStorageItem 1.</summary>
-        public static void ProcessMerge(WorldClient client, UInt16 source, UInt16 dest)
-        {
-            UInt32 charId = client.playerData.getCharID();
-            Func<int, CentralStorage.Entry> storage = StorageOf(charId);
-            CentralStorage.Plan plan = IsOpenFor(client)
-                ? CentralStorage.PlanMerge(source, dest, storage)
-                : CentralStorage.Plan.Refuse(CentralStorage.InvalidTransaction);
-            if (plan.Refused)
-            {
-                Refuse(client, "Merge of storage slot " + source + " into " + dest, plan.Status);
-                return;
-            }
-            UInt32 goid = storage(source).Goid;
-            SetStorage(client, charId, plan.StorageSlot, goid, plan.StorageCount, false);
-            SetStorage(client, charId, plan.SourceSlot, goid, plan.SourceCount, false);
-            client.FlushQueue();
-            Output.WriteDebugLog("[CENTRAL STORAGE] Merged storage slot " + source + " into " + dest + " (" + plan.StorageCount + ")");
-        }
+        public static void ProcessMerge(WorldClient client, ushort source, ushort dest) =>
+            MoveStorageStack(client, source, dest, null);
 
         /// <summary>Client 68 with IsCentralStorageItem 1.</summary>
-        public static void ProcessSplit(WorldClient client, UInt16 source, UInt16 dest, UInt32 amount)
+        public static void ProcessSplit(WorldClient client, ushort source, ushort dest, uint amount) =>
+            MoveStorageStack(client, source, dest, amount);
+
+        private static void MoveStorageStack(WorldClient client, ushort source, ushort dest, uint? amount)
         {
-            UInt32 charId = client.playerData.getCharID();
-            Func<int, CentralStorage.Entry> storage = StorageOf(charId);
-            CentralStorage.Plan plan = IsOpenFor(client)
-                ? CentralStorage.PlanSplit(source, dest, amount, storage, FirstFreeStorage(charId))
-                : CentralStorage.Plan.Refuse(CentralStorage.InvalidTransaction);
-            if (plan.Refused)
+            lock (client.playerData.craftingSync)
             {
-                Refuse(client, "Split of storage slot " + source, plan.Status);
-                return;
+                var publication = new AbilityAcquisition.Publication(client);
+                var result = IsOpenFor(client) ? Db.MoveCentralStorageStack(publication.Character, source, dest, amount) :
+                    new CentralStorage.Receipt(CentralStorage.Plan.Refuse(CentralStorage.InvalidTransaction));
+                var plan = result.Plan;
+                if (plan.Refused)
+                {
+                    PublishRefusal(client, publication, result, upload: false);
+                    return;
+                }
+
+                byte[] from = StorageUpdate(plan.SourceSlot, result.Goid, plan.SourceCount, false);
+                byte[] to = StorageUpdate(plan.StorageSlot, result.Goid, plan.StorageCount, plan.StorageIsNew);
+                byte[][] packets = amount.HasValue ? new[] { from, to } : new[] { to, from };
+                if (publication.Publish(client, packets)) client.FlushQueue();
+                Output.WriteDebugLog($"[CENTRAL STORAGE] {(amount.HasValue ? "Split" : "Merge")} committed " +
+                    $"char={publication.Character} source={source} count={plan.SourceCount} " +
+                    $"archive={plan.StorageSlot} count={plan.StorageCount}");
             }
-            UInt32 goid = storage(source).Goid;
-            SetStorage(client, charId, plan.SourceSlot, goid, plan.SourceCount, false);
-            SetStorage(client, charId, plan.StorageSlot, goid, plan.StorageCount, plan.StorageIsNew);
-            client.FlushQueue();
-            Output.WriteDebugLog("[CENTRAL STORAGE] Split " + amount + " of storage slot " + source + " to " + plan.StorageSlot);
+        }
+
+        private static void Refuse(WorldClient client, string what, uint status)
+        {
+            Output.WriteDebugLog("[CENTRAL STORAGE] " + what + " refused: " + CentralStorage.NameOf(status));
+            new ServerPackets().sendSystemChatMessage(client, "You can't do that: " + CentralStorage.Describe(status) + ".", "SYSTEM");
         }
 
         /// <summary>
