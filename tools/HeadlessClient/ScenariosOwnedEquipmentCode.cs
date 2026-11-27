@@ -12,6 +12,7 @@ public static partial class Scenarios
             OwnedLoadedAbilities = new[] { ((ushort)2, (ushort)1), ((ushort)277, (ushort)50) }
         });
         await context.Database.ExecuteAsync(
+            $"UPDATE char_abilities SET slot=410 WHERE char_id={actor.CharId} AND slot=400; " +
             "INSERT INTO char_abilities(char_id,slot,ability_id,level,is_loaded) " +
             $"VALUES ({actor.CharId},400,{2565 << 7},2,0)");
         await actor.EnterWorldAsync();
