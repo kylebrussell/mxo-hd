@@ -122,6 +122,7 @@ public static partial class Scenarios
         new Scenario("quicksilver-pill", QuicksilverPillUse, StillNpcs),
         new Scenario("tactic-boost-consumables", TacticBoostConsumables, StillNpcs),
         new Scenario("inner-strength-booster", InnerStrengthBoosterUse, StillNpcs),
+        new Scenario("event-health-regen-items", EventHealthRegenItemsUse, HealthCallbackNpcs),
         new Scenario("ssr-gum", SsrGumUse, StillNpcs),
         new Scenario("andvaranaut-coupler", AndvaranautCouplerUse, StillNpcs),
         new Scenario("smith-rage-pill", SmithRagePillUse, StillNpcs, Timeout: TimeSpan.FromMinutes(7)),

@@ -114,6 +114,8 @@ namespace hds
             { 550, TacticBoostItems.Definition(550) },
             { 551, TacticBoostItems.Definition(551) },
             { InnerStrengthBooster.Ability, InnerStrengthBooster.Definition() },
+            { EventHealthRegenItems.Cookie, EventHealthRegenItems.Definition(EventHealthRegenItems.Cookie) },
+            { EventHealthRegenItems.Patcher, EventHealthRegenItems.Definition(EventHealthRegenItems.Patcher) },
             { SsrGum.Ability, SsrGum.Definition() },
             { BlueMarbles.Stage1, BlueMarbles.Definition(BlueMarbles.Stage1) },
             { BlueMarbles.Stage2, BlueMarbles.Definition(BlueMarbles.Stage2) },

@@ -243,7 +243,9 @@ namespace hds
                 // Both inventory paths interrupt compiling only after the pill passes its eligibility checks.
                 CraftingSession.End(client);
                 AbilityItem ability = DataLoader.getInstance().getAbilityByID(abilityId);
-                float castTime = ability != null ? ability.getCastingTime() : 0;
+                var definition = AbilityCatalog.Find(abilityId);
+                float castTime = definition?.Has("Ability/CastingTime") == true
+                    ? definition.CastSeconds : ability?.getCastingTime() ?? 0f;
                 UInt16 amount = (UInt16)Math.Max(1, ability != null ? ability.getValueFrom() : 1);
                 int world = data.worldGeneration, life = data.lifeGeneration;
                 var token = new ItemCast();
@@ -365,6 +367,8 @@ namespace hds
                 ServerPackets.SendPlayerAbilityEffect(client, BlueMarbles.ActivationFx(consumable.AbilityId));
             else if (consumable.AbilityId == AndvaranautCoupler.Ability)
                 ServerPackets.SendPlayerAbilityEffect(client, AndvaranautCoupler.ActivationFx);
+            else if (EventHealthRegenItems.Handles(consumable.AbilityId))
+                ServerPackets.SendPlayerAbilityEffect(client, EventHealthRegenItems.ActivationFx(consumable.AbilityId));
             else client.FlushQueue();
         }
 

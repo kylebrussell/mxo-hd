@@ -93,6 +93,8 @@ namespace hds
             { OptimizerConsumables.OverdriveItem, OptimizerConsumables.Consumable(OptimizerConsumables.Overdrive) },
             { AndvaranautCoupler.Item, new Consumable(AndvaranautCoupler.Ability, Effect.TimedBuff, 0, AndvaranautCoupler.Reuse) },
             { SmithRagePill.Item, new Consumable(SmithRagePill.Ability, Effect.TimedBuff, 0, 0) },
+            { EventHealthRegenItems.CookieItem, new Consumable(EventHealthRegenItems.Cookie, Effect.TimedBuff, 0, 0) },
+            { EventHealthRegenItems.PatcherItem, new Consumable(EventHealthRegenItems.Patcher, Effect.TimedBuff, 0, 0) },
         };
 
         public static bool TryGet(UInt32 goid, out Consumable consumable)

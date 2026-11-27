@@ -767,6 +767,38 @@ If no Give goal wants the item from that NPC, the server says "They don't want t
 
 **`5b <ItemHandle>`: picking up an item.** It is never sent. **`80 c6 <PillInvSlot u16>`** is sent only when the item check returns `0x95000014` (consumable grants an ability). Pills work through `80 b9`.
 
+### Event health regeneration items
+
+The shipped 7.6005 GOB maps Oracle's Anniversary Cookie (46995) to 1258
+and Patcher's Pill (47013) to 1263 via each item's `AbilityPrerequisite/ReqAbilityID`.
+The stored item flags mark both consumable and stackable. The source
+`resource/GameObjects/gameobjects.gob` SHA-256 is
+`3e47f11012f6f219a26c9f5decfa10cbc00726c397937d03c3068254e5424103`.
+The `Regen` and `StatModifier` components supply these effects.
+
+| Item | Source | Stat 112 bonus | Duration | Activation FX |
+|---|---:|---:|---:|---|
+| Oracle's Anniversary Cookie | 1258 | +75% | 60 s | `27 00 00 04` |
+| Patcher's Pill | 1263 | +30% | 300 s | `2a 00 00 04` |
+
+Both cast for 1.5 s, use the atomic owned-item spend, and have no stored
+reuse. Inventory casts use the shipped numeric cast time wherever the
+catalog has one. This prevents the legacy CSV value 1,5 from becoming
+15 s on a first direct item request, including Smith's Rage Pill.
+Both items raise natural health regeneration through stat 112 and can
+overlap. `SmithVirusTerm` and the Patcher Fly Virus immunity callbacks refer
+to infection events the emulator does not run. This support covers the
+regeneration effects.
+
+Use `event-health-regen-items` at Mara Central (17000,495,2300) with 100/1000
+HP at login. Stay standing and out of combat. Activate bag 5 (Cookie) and
+then bag 6 (Patcher's Pill), observing two ticks at each stage. At base
+1000 max HP, normal ticks heal 20 every two seconds, the Cookie raises
+that to 35 and the pair to 41. Bag 5 goes from two to one and bag 6 clears.
+After 60 s the Cookie's record removes and the Pill's remains. The
+headless replay also verifies +26 HP/tick with the Pill alone after Cookie
+expiry and clears the last modifier through death.
+
 ### Restorative pill consumption
 
 Health Pills, Antibiotics and Condition Sweep use the same owned bag-dose
