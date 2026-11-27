@@ -467,6 +467,21 @@ rifle into the hand using a constraint in the disposable fixture. Check
 that the revolver stays held. Equip the bag 4 weapon, then unequip it
 to confirm both committed moves and the paper-doll update.
 
+### Atomic clothing and appearance changes
+
+Ordinary clothing equip (`63`) and unequip (`64`) commit the inventory
+moves and saved RSI together. The server publishes the move replies and
+the wearer's and observers' appearance updates after commit. Replacing
+an outfit piece needs a free bag slot for the old piece. An unequip to
+slot `00` picks the first free bag slot. An occupied destination, full
+bag on replacement, or failed write preserves the outfit and the items,
+and sends a same-slot `65` and a visible reason.
+
+NativeQa mode **clothing-equipment-atomic** forces the RSI write for the
+bag 3 shirt to fail after the inventory moves. Verify the original outfit
+and both item slots stay intact. Equip the bag 4 shirt and then unequip
+it to check the committed moves and paper-doll appearance.
+
 ## Loot acknowledgements and closure
 
 Server `81 20` lists **claimed item identities to remove**, not the remaining items. Client `621e2bb0` passes each pair to `621cd6d0`, which removes the matching container row; an empty array removes none. Server `81 1a` closes the container window through `621ca200`. Mission Search now acknowledges exact original window pairs and closes only after all contents transfer. Full bags retain the icon and selection. NPC replies likewise acknowledge only transferred drops. See [evidence and checklist](MISSION-LOOT-CLAIM-CLOSE.md).
