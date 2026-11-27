@@ -610,7 +610,13 @@ namespace hds
         public static bool TacticalConflict(WorldClient client, ushort ability) =>
             ability == 9 && IsActive(client, 15) || ability == 15 && IsActive(client, 9);
 
-        public static bool Apply(WorldClient client, UInt16 abilityId, WorldClient caster = null)
+        public static bool Apply(WorldClient client, UInt16 abilityId, WorldClient caster = null) =>
+            Apply(client, abilityId, caster, null);
+
+        internal static bool ApplyOwnedHealthBoost(WorldClient client, ushort abilityId, Func<bool> commitDose) =>
+            Apply(client, abilityId, client, commitDose);
+
+        private static bool Apply(WorldClient client, ushort abilityId, WorldClient caster, Func<bool> commitDose)
         {
             // Capture before ANY activation/upgrade lock: reset owns the transport gate first.
             var drain=new DrainLifetime(client);
@@ -626,12 +632,12 @@ namespace hds
                 lock (drain.Data.upgradeSync)
                 {
                     if (!ReferenceEquals(client.playerData, drain.Data)) return false;
-                    return ApplyCore(client, abilityId, caster, drain);
+                    return ApplyCore(client, abilityId, caster, drain, commitDose);
                 }
             }
         }
 
-        private static bool ApplyCore(WorldClient client, UInt16 abilityId, WorldClient caster,DrainLifetime drain)
+        private static bool ApplyCore(WorldClient client, ushort abilityId, WorldClient caster, DrainLifetime drain, Func<bool> commitDose)
         {
             if (TacticalConflict(client, abilityId)) return false;
             if (!AbilityScaledBuffs.Resolve(caster ?? client, abilityId, out Buff buff))
@@ -649,6 +655,9 @@ namespace hds
                 Output.WriteDebugLog("[BUFF] " + abilityId + " refused: upgrade buffer full");
                 return false;
             }
+            // An unsuccessful owned dose cannot displace the currently active boost.
+            if (commitDose != null && !commitDose()) return false;
+
             ClientData data = client.playerData;
             List<UInt16> replaced = new List<UInt16>();
             lock (data.activeBuffs)

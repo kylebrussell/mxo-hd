@@ -281,10 +281,11 @@ namespace hds
                             CommitRsiPill(client, slot, goid);
                             return;
                         }
-                        byte[] removal = CommitDose(client, slot, goid);
+                        byte[] removal = CommitDose(client, slot, goid, out string refusal);
                         if (removal == null)
                         {
                             if (consumable.Seconds > 0) ReleaseReservation();
+                            ReportDoseRefusal(client, refusal);
                             return;
                         }
                         if (timedEffect)
@@ -319,23 +320,30 @@ namespace hds
             }
         }
 
-        private static byte[] CommitDose(WorldClient client, ushort slot, uint goid)
+        // Commit is separate from publication so buff admission can spend under its own lock.
+        internal static byte[] CommitDose(WorldClient client, ushort slot, uint goid, out string refusal)
         {
+            refusal = null;
             uint character = client.playerData.getCharID();
             int remaining;
             try { remaining = Store.dbManager.WorldDbHandler.ConsumeOwnedBagItem(character, slot, goid); }
             catch (System.Data.Common.DbException error)
             {
                 Output.WriteDebugLog($"[INVENTORY] Item use rolled back char={character} item={goid} slot={slot}: {error.Message}");
-                new ServerPackets().sendSystemChatMessage(client, "This item could not be used. Your item was kept.", "BROADCAST");
+                refusal = "This item could not be used. Your item was kept.";
                 return null;
             }
             if (remaining < 0)
             {
-                new ServerPackets().sendSystemChatMessage(client, "The item in that bag slot changed. Try again.", "BROADCAST");
+                refusal = "The item in that bag slot changed. Try again.";
                 return null;
             }
             return remaining == 0 ? ServerPackets.BuildInventoryItemDelete(slot) : ItemStacks.BuildStackCount(slot, remaining);
+        }
+
+        internal static void ReportDoseRefusal(WorldClient client, string refusal)
+        {
+            if (refusal != null) new ServerPackets().sendSystemChatMessage(client, refusal, "BROADCAST");
         }
 
         private static void ApplyTimedItemEffect(WorldClient client, uint goid, ConsumableItems.Consumable consumable)

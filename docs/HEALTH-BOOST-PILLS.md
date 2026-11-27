@@ -20,9 +20,16 @@ Each ability stores cast1s, CastDirectObjects1, CastValidTarget0, CastWhatHow3, 
 
 ## Authority and lifecycle
 
-Both inventory80b9 and pill80c6 resolve the actual owned slot and item. At cast start and finish, ready-world, life, normal control and character-level gates apply. A per-client cast token and world/life generations prevent late grants; moved items cancel without spending. A second item cast cannot overlap another cast. Successful completion applies the sourced caster buff, spends exactly one item with the existing `RemoveOne` API and starts the stored ability cooldown. Existing buff-buffer admission, record generations, expiry, dismiss/death/zone cleanup, vital recomputation and currentHP clamping are reused. Raising maximum HP does not grant a heal.
+Both inventory80b9 and pill80c6 resolve the actual owned slot and item. At cast start and finish, ready-world, life, normal control and character-level gates apply. A per-client cast token and world/life generations prevent late grants; moved items cancel without spending. A second item cast cannot overlap another cast. Successful completion commits exactly one owned bag dose under the buff admission lock, then applies the caster buff and starts the stored ability cooldown. A rejected inventory write leaves the existing boost in place and sends a visible refusal. Existing buff-buffer admission, record generations, expiry, dismiss/death/zone cleanup, vital recomputation and currentHP clamping are reused. Raising maximum HP does not grant a heal.
 
 ## Validation and native checklist
+
+The `health-boost-anti-stun-atomic` fixture seeds Health Boost 1.0 in bag 4,
+Health Boost 2.0 in bags 5/6, and Activity Facilitator 1.0 in bags 7/8.
+The disposable inventory constraint rejects decrements in 5/7 only. Activate
+4 to gain source 672 (+100 max HP). Activate 5 and verify 672 stays active and
+the stack stays at two. Activate 6 to replace it with 188 (+200 max HP for
+600 s) and start 30 s own reuse. The same fixture checks the Anti-Stun cure.
 
 Focused units cover every source mapping,600s modifier,30s own/group0 timers, maxHP changes without healing, simulated expiry with currentHP cap and family replacement. Fresh headless `health-boost-pills` exercises all five owned bag items, both wire entry points, free/wrong-item rejection, consumption after cast, cooldown denial, buff dismissal, level denial, moved/zoning cast cancellation and normal stun denial. Headless protocol assertions cannot establish acceptance by the real client.
 

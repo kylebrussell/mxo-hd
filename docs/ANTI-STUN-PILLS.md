@@ -38,6 +38,14 @@ dotnet tools/HeadlessClient/bin/Debug/net8.0/HeadlessClient.dll --parallel 1 --f
 
 The additional fresh `anti-stun-writer-interruption` scenario opens Write Code first, then activates an owned anti-stun pill. It verifies writer linked-off before the pill cast bar, no early consumption, consumption at landing and an inactive writer session afterward.
 
+The `health-boost-anti-stun-atomic` fixture rejects the decrement of the
+Activity Facilitator stack in bag 7. With Inventory open, use `?cd stun`
+to apply the disclosed fixture Stun, then activate the stack. The refusal
+keeps both doses and the Stun, with neither reuse record. Activate the
+single dose in bag 8 while still stunned. It commits before the cure and
+immunity refresh, starts the 900 s own and 600 s family timers, and
+disappears from the bag.
+
 ## Native review: Claude only
 
 Claude reported the native checklist passed on the original feature head. The integration below preserves that feature code, translating only `CompileSession.End` to the shared `CraftingSession.End`. The following procedure remains available for future regressions.

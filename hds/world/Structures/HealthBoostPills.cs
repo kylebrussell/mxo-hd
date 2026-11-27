@@ -54,8 +54,21 @@ namespace hds
                         if (!Ready(client, ability) || data.worldGeneration != world || data.lifeGeneration != life ||
                             data.castEndsAt != castEnd || Store.dbManager.WorldDbHandler.GetItemGOIDAtInventorySlot(slot) != goid)
                         { Output.WriteDebugLog("[HEALTHBOOST] Cast cancelled: item, life, world, control or cast changed"); return; }
-                        if (!AbilityBuffs.Apply(client, ability, client)) return;
-                        InventoryHandler.RemoveOne(client, slot);
+                        byte[] removal = null;
+                        string refusal = null;
+                        if (!AbilityBuffs.ApplyOwnedHealthBoost(client, ability, () =>
+                        {
+                            // The buffer check and this callback run under the same upgrade lock.
+                            if (!Ready(client, ability) || !ConsumableItems.CastMatches(data, world, life, castEnd))
+                                return false;
+                            removal = InventoryHandler.CommitDose(client, slot, goid, out refusal);
+                            return removal != null;
+                        }))
+                        {
+                            InventoryHandler.ReportDoseRefusal(client, refusal);
+                            return;
+                        }
+                        client.messageQueue.addRpcMessage(removal);
                         AbilityCooldowns.Start(client, ability, TimeUtils.GetSimTimeSeconds());
                         client.FlushQueue();
                         Output.WriteDebugLog("[HEALTHBOOST] Used " + ability + " from owned item " + goid);
