@@ -225,7 +225,7 @@ Open the stock inbox from Phone > Email. Retail also sent system mail for loot o
 | `5c` | Slot u16, PersonalInventoryItem: drop a luggable item into the world (a dragged bag item released over the world, 0x621e1d10). The client refuses anything else: "You can only drop luggable objects in the world." The other sender is never called | D | partial: shared light-luggable drop/pickup and persistence; heavy attachments absent (DATA-MINING.md) | low |
 | `60` | Compile stored code into an item (ObjectID, Slot u16, PersonalInventoryItem 0 = a code storage slot, InvSlotOfToolUsed, FromCrafting): the Compile window's button (`CfCo`, 0x620836b0) and the Loading Area storage window. The answer is `61 <ResultCode>` | D | partial: owned bits, fragments and supported ordinary item codes. Ability-code archive economy unresolved. | medium |
 | `66` | Slot u8, TargetID: a mission item dragged onto the NPC whose key it carries (0x621eb080). The client prints "You hand over the %s." itself | D | handled (new): the mission's Give goal, as the NPC menu's Give | medium |
-| `80 c6` | PillInvSlot: use a pill from the bag (callers in the inventory and hotbar menus) | D | partial: owned supported pill goes through existing effect/timer/removal path, including [RSI modification pills](#rsi-modification-pills), [Quicksilver Pill](#quicksilver-pill), [Tactic Boosts](#tactic-boost-consumables), the [IS Booster](#inner-strength-booster), [Blue Marbles](#blue-marble-consumables), [Health Inhalers](#health-inhalers), [Optimizer and Overdrive items](#optimizer-and-overdrive-consumables), [SSR Gum](#ssr-gum), and [Andvaranaut Coupler](#andvaranaut-coupler) | low |
+| `80 c6` | PillInvSlot: use a pill from the bag (callers in the inventory and hotbar menus) | D | partial: owned supported pill goes through existing effect/timer/removal path, including [RSI modification pills](#rsi-modification-pills), [Quicksilver Pill](#quicksilver-pill), [Tactic Boosts](#tactic-boost-consumables), the [IS Booster](#inner-strength-booster), [Blue Marbles](#blue-marble-consumables), [Health Inhalers](#health-inhalers), [Optimizer and Overdrive items](#optimizer-and-overdrive-consumables), [SSR Gum](#ssr-gum), [Andvaranaut Coupler](#andvaranaut-coupler), and [Smith's Rage Pill](#smiths-rage-pill) | low |
 | `81 0e` | Vendor buy (ItemTypeID, BuyBackLastItemSold) | D, C 40 | handled: ordinary purchase places the item and debits Info atomically; full bags are refused; Buy Back uses its separate last-sale receipt | high |
 | `81 11` | Vendor sell (Appraise, Slot) | D, C 5 | handled | high |
 | `81 10` | StringID, CloseUI, sent as `00 00 00 00 01`. Guess: closing the vendor window | C 9 | handled: CloseUI=1 invalidates active vendor session; listed-stock/session authority enforced | low |
@@ -929,6 +929,26 @@ At level 50 the values are +12 and +29. The template supplies activation FX
 Run `andvaranaut-coupler` at Mara Central (17000,495,2300). Use bag 5 once.
 Expect one dose left, instant activation and eight matching removals
 at expiry. A second attempt within 120 seconds keeps the remaining dose.
+
+### Smith's Rage Pill
+
+Item 46994 grants template 1257 through either owned-item request. The
+shipped template casts for 1.5 seconds, with no separate reuse field. It
+grants four damage bonuses, +20 Toughness and Enrage for 300 seconds.
+The damage bonuses use the native character-level value function with a
+base of 1 and a 0.20 coefficient, giving +11 at level 50 and +6 at level 25.
+The activation FX is 67108904.
+
+The item uses the shared Enrage state rules, including ordinary Withdraw
+suppression. Using another dose refreshes the same source records using
+the existing remove-then-add behavior. The item consumes one dose per
+completed cast.
+
+Run `smith-rage-pill` at Mara Central (17000,495,2300). Use bag 5 at rest,
+then open close combat with the Melee Dummy two metres east. Try Withdraw,
+use the remaining dose and check the existing records are replaced. Use
+`?die` in the disposable fixture to verify immediate cleanup. Headless also
+checks natural expiry.
 
 ## Prompts and FX tokens
 

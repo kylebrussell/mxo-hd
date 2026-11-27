@@ -122,6 +122,7 @@ public static partial class Scenarios
         new Scenario("inner-strength-booster", InnerStrengthBoosterUse, StillNpcs),
         new Scenario("ssr-gum", SsrGumUse, StillNpcs),
         new Scenario("andvaranaut-coupler", AndvaranautCouplerUse, StillNpcs),
+        new Scenario("smith-rage-pill", SmithRagePillUse, StillNpcs, Timeout: TimeSpan.FromMinutes(7)),
         new Scenario("modifier-datagram-cap", ModifierDatagramCap, StillNpcs),
         new Scenario("blue-marble-consumables", BlueMarbleConsumables, StillNpcs),
         new Scenario("optimizer-consumables", OptimizerConsumablesUse, StillNpcs),

@@ -331,6 +331,8 @@ namespace hds
                 AbilitySupport.Land(client, consumable.AbilityId, 2);
             else if (OptimizerConsumables.Handles(consumable.AbilityId))
                 OptimizerConsumables.Apply(client, consumable.AbilityId);
+            else if (consumable.AbilityId == SmithRagePill.Ability)
+                SmithRagePill.Apply(client);
             else
                 AbilityBuffs.Apply(client, consumable.AbilityId, client);
             if (consumable.Seconds > 0)
