@@ -63,25 +63,17 @@ namespace hds.databases
 
             var bag = ReadLockedBagStacks(tx, character);
             if (bag == null) return (0, 0, 0, "A bag slot is ambiguous. Your items were kept.");
-            using var hand = new MySqlCommand(
-                "SELECT invId FROM inventory WHERE charId=@character AND slot=@hand FOR UPDATE", connection, tx);
-            hand.Parameters.AddWithValue("@character", character);
-            hand.Parameters.AddWithValue("@hand", InventoryHandler.WeaponSlot);
-            uint? held = null;
-            using (var rows = hand.ExecuteReader())
-            {
-                if (rows.Read()) held = rows.GetUInt32(0);
-                if (rows.Read()) return (0, 0, 0, "The hand slot is ambiguous. Your items were kept.");
-            }
+            var held = ReadLockedWornItem(tx, character, InventoryHandler.WeaponSlot);
+            if (held.Ambiguous) return (0, 0, 0, "The hand slot is ambiguous. Your items were kept.");
 
             ushort FreeBagSlot() => TradeRules.FreeBagSlots(bag.Keys).FirstOrDefault();
             if (!equip)
             {
-                if (!held.HasValue) return (0, 0, 0, changed);
+                if (held.Id == 0) return (0, 0, 0, changed);
                 ushort destination = bagSlot == 0 ? FreeBagSlot() : bagSlot;
                 if (destination == 0) return (0, 0, 0, fullBag);
                 if (bag.ContainsKey(destination)) return (0, 0, 0, "Empty that bag slot first. Your items were kept.");
-                if (!MoveLockedInventoryRow(tx, held.Value, destination)) return (0, 0, 0, changed);
+                if (!MoveLockedInventoryRow(tx, held.Id, destination)) return (0, 0, 0, changed);
                 tx.Commit();
                 return (0, destination, 0, null);
             }
@@ -89,15 +81,28 @@ namespace hds.databases
             if (!bag.TryGetValue(bagSlot, out var row) || row.Item.Count != 1 || !RangedWeapons.IsGun(row.Item.Goid))
                 return (0, 0, 0, changed);
             ushort displacedSlot = 0;
-            if (held.HasValue)
+            if (held.Id != 0)
             {
                 displacedSlot = FreeBagSlot();
                 if (displacedSlot == 0) return (0, 0, 0, fullBag);
-                if (!MoveLockedInventoryRow(tx, held.Value, displacedSlot)) return (0, 0, 0, changed);
+                if (!MoveLockedInventoryRow(tx, held.Id, displacedSlot)) return (0, 0, 0, changed);
             }
             if (!MoveLockedInventoryRow(tx, row.Id, InventoryHandler.WeaponSlot)) return (0, 0, 0, changed);
             tx.Commit();
             return (row.Item.Goid, bagSlot, displacedSlot, null);
+        }
+
+        private static (uint Id, uint Goid, bool Ambiguous) ReadLockedWornItem(MySqlTransaction tx, uint character, ushort slot)
+        {
+            using var command = new MySqlCommand(
+                "SELECT invId,goid FROM inventory WHERE charId=@character AND slot=@slot FOR UPDATE", tx.Connection, tx);
+            command.Parameters.AddWithValue("@character", character);
+            command.Parameters.AddWithValue("@slot", slot);
+            using var rows = command.ExecuteReader();
+            if (!rows.Read()) return default;
+            uint id = rows.GetUInt32(0);
+            AbilityAcquisition.TryDescriptor(rows.GetInt64(1), out uint goid);
+            return (id, goid, rows.Read());
         }
 
         private static bool MoveLockedInventoryRow(MySqlTransaction tx, uint id, ushort destination)
