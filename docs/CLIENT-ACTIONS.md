@@ -225,7 +225,7 @@ Open the stock inbox from Phone > Email. Retail also sent system mail for loot o
 | `5c` | Slot u16, PersonalInventoryItem: drop a luggable item into the world (a dragged bag item released over the world, 0x621e1d10). The client refuses anything else: "You can only drop luggable objects in the world." The other sender is never called | D | partial: shared light-luggable drop/pickup and persistence; heavy attachments absent (DATA-MINING.md) | low |
 | `60` | Compile stored code into an item (ObjectID, Slot u16, PersonalInventoryItem 0 = a code storage slot, InvSlotOfToolUsed, FromCrafting): the Compile window's button (`CfCo`, 0x620836b0) and the Loading Area storage window. The answer is `61 <ResultCode>` | D | partial: owned bits, fragments and supported ordinary item codes. Ability-code archive economy unresolved. | medium |
 | `66` | Slot u8, TargetID: a mission item dragged onto the NPC whose key it carries (0x621eb080). The client prints "You hand over the %s." itself | D | handled (new): the mission's Give goal, as the NPC menu's Give | medium |
-| `80 c6` | PillInvSlot: use a pill from the bag (callers in the inventory and hotbar menus) | D | partial: owned supported pill goes through existing effect/timer/removal path, including [RSI modification pills](#rsi-modification-pills) [Quicksilver Pill](#quicksilver-pill), and [Tactic Boosts](#tactic-boost-consumables) | low |
+| `80 c6` | PillInvSlot: use a pill from the bag (callers in the inventory and hotbar menus) | D | partial: owned supported pill goes through existing effect/timer/removal path, including [RSI modification pills](#rsi-modification-pills) [Quicksilver Pill](#quicksilver-pill), [Tactic Boosts](#tactic-boost-consumables), and the [IS Booster](#inner-strength-booster) | low |
 | `81 0e` | Vendor buy (ItemTypeID, BuyBackLastItemSold) | D, C 40 | handled: ordinary purchase places the item and debits Info atomically; full bags are refused; Buy Back uses its separate last-sale receipt | high |
 | `81 11` | Vendor sell (Appraise, Slot) | D, C 5 | handled | high |
 | `81 10` | StringID, CloseUI, sent as `00 00 00 00 01`. Guess: closing the vendor window | C 9 | handled: CloseUI=1 invalidates active vendor session; listed-stock/session authority enforced | low |
@@ -824,6 +824,21 @@ Run `tactic-boost-consumables` at Mara Central (17000,495,2300). Use bag 5
 then bag 6, retry bag 5 while tier 2 is active, and continue through bags 7
 and 8. Check each one-second cast, stack/deletion update and the stat 163
 add/removal pair in DebugLog.
+
+### Inner Strength Booster
+
+The shipped item 47363 grants ability 1333. Both owned-item requests
+(`80 c6` and `80 b9`) cast for one second and spend one item to apply
+Inner Strength Regeneration Rate (114) +20 for 1,200 seconds. Existing
+regeneration uses the +20% rate and fractional carry. Five full
+out-of-combat ticks restore 48 IS at the unmodified rate baseline of
+eight points per tick. The shipped `ISBoosterFunc` plays FX 67108998 every
+four seconds. The callback grants no IS and the item has no separate reuse
+timer.
+
+Run `inner-strength-booster` at Mara Central (17000,495,2300) with IS below
+the cap. Compare normal +8 ticks with boosted +9/+10 ticks, verify one
+booster remains in bag 5, and check that the bonus clears on dismissal.
 
 ## Prompts and FX tokens
 

@@ -77,6 +77,7 @@ namespace hds
             { 8323, new Consumable(549, Effect.TimedBuff, 0, 0) },
             { 8324, new Consumable(550, Effect.TimedBuff, 0, 0) },
             { 8325, new Consumable(551, Effect.TimedBuff, 0, 0) },
+            { InnerStrengthBooster.Item, new Consumable(InnerStrengthBooster.Ability, Effect.TimedBuff, 0, 0) },
         };
 
         public static bool TryGet(UInt32 goid, out Consumable consumable)

@@ -908,6 +908,8 @@ namespace hds
             { Deny(AbilityID, "Use an owned Quicksilver Pill.", AbilityRefusals.RequiredItemCategory); return; }
             if (TacticBoostItems.Handles(AbilityID))
             { Deny(AbilityID, "Use an owned Tactic Booster.", AbilityRefusals.RequiredItemCategory); return; }
+            if (AbilityID == InnerStrengthBooster.Ability)
+            { Deny(AbilityID, "Use an owned Inner Strength Booster.", AbilityRefusals.RequiredItemCategory); return; }
 
             if (!ControlActions.CanUseAbilities(Store.currentClient))
             {
