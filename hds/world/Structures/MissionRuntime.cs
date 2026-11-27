@@ -838,28 +838,6 @@ namespace hds
             return 0;
         }
 
-        public static void OnInventoryItemMoved(WorldClient client, UInt16 fromSlot, UInt16 toSlot)
-        {
-            MissionPersistence.Mutate(client,()=>OnInventoryItemMovedCore(client, fromSlot, toSlot));
-        }
-
-        private static void OnInventoryItemMovedCore(WorldClient client, UInt16 fromSlot, UInt16 toSlot)
-        {
-            MissionProgress progress = client.playerData.missionProgress;
-            if (progress == null)
-            {
-                return;
-            }
-            foreach (var item in progress.itemSlots.ToList())
-            {
-                if (item.Value == fromSlot)
-                {
-                    progress.itemSlots[item.Key] = toSlot;
-                }
-            }
-            MissionPersistence.Save(client);
-        }
-
         private static bool TakeItem(WorldClient client, MissionProgress progress, UInt32 goId)
         {
             if (progress.itemSlots.TryGetValue(goId, out UInt16 slot))

@@ -378,6 +378,7 @@ public static partial class Scenarios
         new Scenario("subway-across-districts-and-refusals", SubwayAcrossDistrictsAndRefusals),
         new Scenario("split-and-merge-stacks", SplitAndMergeStacks),
         new Scenario("bag-stacks-atomic", AtomicBagStacks, StillNpcs),
+        new Scenario("bag-slot-swap-atomic", AtomicBagSlotSwap, StillNpcs),
         new Scenario("central-storage-store-relog-retrieve", CentralStorageStoreRelogRetrieve),
         new Scenario("central-storage-atomic", AtomicCentralStorage, StillNpcs),
         new Scenario("subway-platform-logins-keep-car-views", SubwayPlatformLoginsKeepCarViews),
@@ -877,13 +878,18 @@ VALUES (9000,1001,1,0,NOW()),(9000,999999,0,0,NOW());");
         await player.WaitForRpcAsync("80 99");
         player.SendRpc("80 9b 07 00 01");
         await player.WaitForRpcAsync("80 9e 00");
-        await EnterMissionArea(context, player);
         ViewCreation herschel = await VisitMissionNpc(context, player, "Herschel");
         player.SendRpc($"80 c7 {Le(herschel.ViewId)} {Le((ushort)herschel.SpawnId)} 0d 00");
         await player.WaitForRpcAsync("5e 01 00 a9 1a 00 00");
         player.SendRpc("65 01 00 05 00");
         await player.WaitForRpcAsync("65 01 00 05 00 00");
         await context.Database.ExecuteAsync($"INSERT INTO inventory (charId, goid, slot, count) VALUES ({player.CharId}, 7332, 1, 1)");
+        player.SendRpc("65 01 00 05 00");
+        await player.WaitForRpcAsync("65 01 00 01 00 00");
+        await player.WaitForTextAsync("That slot holds a mission item.");
+        player.SendRpc("65 05 00 01 00");
+        await player.WaitForRpcAsync("65 05 00 05 00 00");
+        await player.WaitForTextAsync("Your items were kept.");
         player.SendRpc("80 a6");
         await player.WaitForRpcAsync("5f 05 00 01");
         await player.WaitForRpcAsync("80 a2 08");
