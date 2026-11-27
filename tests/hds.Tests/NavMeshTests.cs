@@ -152,31 +152,46 @@ public class NavMeshTests
 
         // Cold NavMesh.Load(1) runs on RPC 05 under WorldClient.processLock. Edge normals must stay lazy
         // across untouched polygons so loading District 1 does not stall past FirstWorldSetupRetryMs.
+        // Parallel xUnit test classes also call NavMesh.UseDirectory(...) which clears districts, so
+        // retry if another test cleared or reloaded district 1 between Locate and the dictionary read.
         var flags = System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public;
         var districtsField = typeof(NavMesh).GetField("districts", flags)!;
         var districts = (System.Collections.IDictionary)districtsField.GetValue(null)!;
-        object district = districts[(ushort)1]!;
-        var sectorsField = district.GetType().GetField("sectors", flags)!;
-        var sectors = (System.Collections.IDictionary)sectorsField.GetValue(district)!;
 
         int totalPolygons = 0;
         int populatedNormals = 0;
-        System.Reflection.FieldInfo? regionsField = null;
-        System.Reflection.FieldInfo? normalsField = null;
-        foreach (System.Collections.DictionaryEntry entry in sectors)
+        for (int attempt = 0; attempt < 8; attempt++)
         {
-            object sector = entry.Value!;
-            regionsField ??= sector.GetType().GetField("regions", flags)!;
-            var regions = (System.Collections.IEnumerable)regionsField.GetValue(sector)!;
-            foreach (object region in regions)
+            if (attempt > 0)
             {
-                foreach (object poly in (System.Collections.IEnumerable)region)
+                Load();
+                Assert.True(NavMesh.Locate(1, 39913.7, 95.0, -21402.3, out _));
+            }
+            object? district = districts[(ushort)1];
+            if (district == null) continue;
+            var sectorsField = district.GetType().GetField("sectors", flags)!;
+            var sectors = (System.Collections.IDictionary)sectorsField.GetValue(district)!;
+
+            totalPolygons = 0;
+            populatedNormals = 0;
+            System.Reflection.FieldInfo? regionsField = null;
+            System.Reflection.FieldInfo? normalsField = null;
+            foreach (System.Collections.DictionaryEntry entry in sectors)
+            {
+                object sector = entry.Value!;
+                regionsField ??= sector.GetType().GetField("regions", flags)!;
+                var regions = (System.Collections.IEnumerable)regionsField.GetValue(sector)!;
+                foreach (object region in regions)
                 {
-                    totalPolygons++;
-                    normalsField ??= poly.GetType().GetField("edgeNormals", flags)!;
-                    if (normalsField.GetValue(poly) != null) populatedNormals++;
+                    foreach (object poly in (System.Collections.IEnumerable)region)
+                    {
+                        totalPolygons++;
+                        normalsField ??= poly.GetType().GetField("edgeNormals", flags)!;
+                        if (normalsField.GetValue(poly) != null) populatedNormals++;
+                    }
                 }
             }
+            if (populatedNormals >= 1) break;
         }
 
         Assert.True(totalPolygons > 100_000, $"Expected >100k polygons in district 1, got {totalPolygons}");
