@@ -114,6 +114,7 @@ namespace hds
             { 550, TacticBoostItems.Definition(550) },
             { 551, TacticBoostItems.Definition(551) },
             { InnerStrengthBooster.Ability, InnerStrengthBooster.Definition() },
+            { SsrGum.Ability, SsrGum.Definition() },
             { BlueMarbles.Stage1, BlueMarbles.Definition(BlueMarbles.Stage1) },
             { BlueMarbles.Stage2, BlueMarbles.Definition(BlueMarbles.Stage2) },
             { BlueMarbles.Stage3, BlueMarbles.Definition(BlueMarbles.Stage3) },
@@ -372,11 +373,12 @@ namespace hds
             if (stat == RunMovementStat)
             {
                 stanceScale += AbilityStats.Player(client, RunOwnerMovementBonusStat) / 100f;
-                // Quicksilver adds directly to Run without replacing the active movement buff.
+                // These items add directly to Run alongside the active movement buff.
                 lock (client.playerData.activeBuffs)
-                    if (client.playerData.activeBuffs.TryGetValue(QuicksilverPill.Ability, out var quicksilver) &&
-                        ActiveDefinition(quicksilver, out Buff pill))
-                        stanceScale += pill.Modifiers.Single(mod => mod.Stat == QuicksilverPill.MoveStat).Value / 100f;
+                    foreach (ushort id in DirectRunItemBuffs)
+                        if (client.playerData.activeBuffs.TryGetValue(id, out var active) &&
+                            ActiveDefinition(active, out Buff item))
+                            stanceScale += item.Modifiers.Single(mod => mod.Stat == RunMovementStat).Value / 100f;
             }
             // GOB 878 links to the owner percentage 1051. A stock Belt uses this channel.
             if (stealth?.Def.Ability == Stealth.InvisibilityGrantAbility)
@@ -426,8 +428,10 @@ namespace hds
         internal const ushort RunOwnerMovementBonusStat = 998;
         internal const ushort SneakOwnerMovementBonusStat = 1050;
         private const ushort InfiltratorUpgrade = 1115;
+        private static readonly ushort[] DirectRunItemBuffs = { QuicksilverPill.Ability, SsrGum.Ability };
+
         private static bool UsesStanceMovement(ushort id) =>
-            id == InfiltratorUpgrade || id == AbilityShadowPresentation.Child || id == QuicksilverPill.Ability;
+            id == InfiltratorUpgrade || id == AbilityShadowPresentation.Child || DirectRunItemBuffs.Contains(id);
 
         internal const ushort InvisibilityMovementBonusStat = 1051;
         private const ushort RunMovementStat = 115, SneakMovementStat = 877, InvisibleMovementStat = 878;
@@ -697,10 +701,8 @@ namespace hds
             {
                 EvasionShield.Applied(client,active.Generation);
             }
-            foreach (byte[] record in buff.EvadeShield && !EvasionShield.HasState(client) ? new List<byte[]>() : BuildRecords(abilityId, buff, active.RecordIds, false))
-            {
-                client.messageQueue.addRpcMessage(record);
-            }
+            if (!buff.EvadeShield || EvasionShield.HasState(client))
+                QueueModifierRecords(client, active, buff, off: false);
             RefreshVitals(client);
             float movementScale = buff.MovementScale > 0 ? WithTimedMovementDebuffs(client, MovementScaleFor(client, buff)) : 0f;
             if (abilityId == HyperSprint)
@@ -967,10 +969,22 @@ namespace hds
 
         private static void QueueRemovalRecords(WorldClient client, Active active, Buff buff)
         {
-            foreach (byte[] record in BuildRecords(active.AbilityId, buff, active.RecordIds, true))
-                client.messageQueue.addRpcMessage(record);
+            QueueModifierRecords(client, active, buff, off: true);
             if (buff.Exclusive)
                 client.messageQueue.addRpcMessage(BuildExclusive(active.AbilityId, false));
+        }
+
+        private static void QueueModifierRecords(WorldClient client, Active active, Buff buff, bool off)
+        {
+            var records = BuildRecords(active.AbilityId, buff, active.RecordIds, off);
+            if (active.AbilityId == SsrGum.Ability)
+            {
+                SsrGum.QueueRecords(client, records);
+                return;
+            }
+
+            foreach (byte[] record in records)
+                client.messageQueue.addRpcMessage(record);
         }
 
         /// <summary>

@@ -112,6 +112,7 @@ public static partial class Scenarios
         new Scenario("quicksilver-pill", QuicksilverPillUse, StillNpcs),
         new Scenario("tactic-boost-consumables", TacticBoostConsumables, StillNpcs),
         new Scenario("inner-strength-booster", InnerStrengthBoosterUse, StillNpcs),
+        new Scenario("ssr-gum", SsrGumUse, StillNpcs),
         new Scenario("blue-marble-consumables", BlueMarbleConsumables, StillNpcs),
         new Scenario("optimizer-consumables", OptimizerConsumablesUse, StillNpcs),
         new Scenario("heal-inhalers", HealInhalersUse, new Dictionary<string, string>(StillNpcs)
