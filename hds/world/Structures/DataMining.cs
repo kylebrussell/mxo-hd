@@ -233,6 +233,7 @@ namespace hds
                 " expectedSpawn="+v.spawnId+" entity="+v.entityId+" goid="+v.GoID+" use="+action;
             void Log(string outcome) => Output.WriteDebugLog(context+" "+outcome);
             if (receivedSpawn.HasValue && receivedSpawn.Value != v.spawnId) { Log("outcome=denied_handle db=unchanged"); return true; }
+            ushort pickedGoid;
             lock (sync)
             {
                 Load(); Ground g = ground.Find(g => g.Entity == v.entityId);
@@ -248,6 +249,7 @@ namespace hds
                 catch (Exception ex) { Log("outcome=db_exception type="+ex.GetType().Name); throw; }
                 if (slot == 0) { Log("outcome=no_bag_slot_or_missing_ground db=not_committed"); Say(c,"Your inventory is full."); return true; }
                 Log("outcome=success db=committed ground="+g.Id+" bagSlot="+slot);
+                pickedGoid = g.Goid;
                 ground.Remove(g);
                 new ServerPackets().sendInventoryItemAdd(slot,g.Goid,0,0,c);
                 foreach (WorldClient other in SocialHandler.OnlineWhere(p => p.playerData.getOnWorld()))
@@ -258,6 +260,7 @@ namespace hds
             // the shared ground-item lock: ending stealth may update views and acquire other state locks.
             Stealth.BreakForAction(c, "picked up a luggable");
             UtilityAbilities.StopFindDataNode(c);
+            DatamineTapEffects.OnPickup(c, pickedGoid);
             return true;
         }
         /// <summary>5c slot u16 + personal-inventory flag. Reject equipment/storage, stacks, arbitrary items and bad floor.</summary>
