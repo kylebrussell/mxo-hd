@@ -333,7 +333,7 @@ try
                 }
                 else if (action == "invite") actor.SendRpc(Invite(q.GetProperty("target").GetString()!));
                 else if (action == "accept") actor.SendRpc(Answer(q.GetProperty("inviter").GetString()!));
-                else if (action == "trade" && fixtureMode is NativeQa.Modes.SecureTradeMode)
+                else if (action == "trade" && fixtureMode is NativeQa.Modes.SecureTradeMode or NativeQa.Modes.AtomicSecureTradeMode)
                     await NativeQa.Modes.SecureTradeMode.SendPartnerActionAsync(actor, q);
                 else if (fixtureMode is NativeQa.Modes.SocialBreadthMode && action == "social")
                     result = await NativeQa.Modes.SocialBreadthMode.SendActionAsync(actor, q);

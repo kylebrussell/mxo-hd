@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Data.Common;
 using System.Linq;
 using hds.databases;
 using hds.shared;
@@ -76,21 +77,20 @@ namespace hds
                 refusal = TradePackets.RequestEquipped;
                 return null;
             }
-            UInt32 charId = client.playerData.getCharID();
-            MarketPlaceHandler.Db.GetInventoryItem(charId, slot, out UInt32 goid, out UInt32 purity);
-            int count = ItemStacks.CountFromDb(MarketPlaceHandler.Db.GetInventoryCount(charId, slot));
-            if (goid == 0 || quantity > count)
+            TradeItem owned = Store.dbManager.WorldDbHandler.GetTradeItem(client.playerData.getCharID(), slot);
+            if (owned == null || quantity > owned.Quantity)
             {
                 refusal = TradePackets.RequestNoSuchItem;
                 return null;
             }
-            if (DataMining.IsNonTradeable(goid))
+            if (DataMining.IsNonTradeable(owned.Goid))
             {
                 refusal = TradePackets.RequestNotTradeable;
                 return null;
             }
-            // The client leaves the quantity at 0 for a whole stack
-            return new TradeItem { Slot = slot, Goid = goid, Purity = purity, Quantity = quantity == 0 ? count : quantity };
+            // The client leaves the quantity at 0 for a whole stack.
+            if (quantity != 0) owned.Quantity = quantity;
+            return owned;
         }
 
         /// <summary>
@@ -341,151 +341,53 @@ namespace hds
             }
         }
 
-        /// <summary>Why this side can't hand over its offer now, or null. The bag may have changed since the offer.</summary>
-        private static string CheckOffer(WorldClient giver, TradeOffer offer)
-        {
-            if (giver == null)
-            {
-                return null;
-            }
-            if (offer.Info > giver.playerData.getInfo())
-            {
-                return NameOf(giver) + " does not have enough information.";
-            }
-            UInt32 charId = giver.playerData.getCharID();
-            foreach (TradeItem item in offer.Items.Values)
-            {
-                MarketPlaceHandler.Db.GetInventoryItem(charId, item.Slot, out UInt32 goid, out UInt32 ignored);
-                if (goid != item.Goid || ItemStacks.CountFromDb(MarketPlaceHandler.Db.GetInventoryCount(charId, item.Slot)) < item.Quantity)
-                {
-                    return NameOf(giver) + " no longer has an offered item.";
-                }
-            }
-            return null;
-        }
-
-        /// <summary>Bag slots the receiver has free once its own offered whole stacks are gone.</summary>
-        private static List<UInt16> FreeSlotsFor(WorldClient receiver, TradeOffer ownOffer)
-        {
-            if (receiver == null)
-            {
-                return TradeRules.FreeBagSlots(new HashSet<int>());
-            }
-            HashSet<int> occupied = new HashSet<int>();
-            foreach (Crafting.InventoryItem item in Store.dbManager.WorldDbHandler.GetInventoryItems(receiver.playerData.getCharID()))
-            {
-                bool leaves = ownOffer.Items.TryGetValue((byte)item.Slot, out TradeItem offered) &&
-                              offered.Quantity >= ItemStacks.CountFromDb(item.Count);
-                if (!leaves)
-                {
-                    occupied.Add(item.Slot);
-                }
-            }
-            return TradeRules.FreeBagSlots(occupied);
-        }
-
-        private static void TakeFrom(WorldClient giver, TradeItem item)
-        {
-            if (giver == null)
-            {
-                return;
-            }
-            UInt32 charId = giver.playerData.getCharID();
-            int count = ItemStacks.CountFromDb(MarketPlaceHandler.Db.GetInventoryCount(charId, item.Slot));
-            if (item.Quantity >= count)
-            {
-                MarketPlaceHandler.Db.RemoveInventoryItem(charId, item.Slot);
-                giver.messageQueue.addRpcMessage(ServerPackets.BuildInventoryItemDelete(item.Slot));
-            }
-            else
-            {
-                Store.dbManager.WorldDbHandler.SetInventoryCount(item.Slot, charId, count - item.Quantity);
-                giver.messageQueue.addRpcMessage(ItemStacks.BuildStackCount(item.Slot, count - item.Quantity));
-            }
-        }
-
-        private static void GiveTo(WorldClient receiver, TradeItem item, Queue<UInt16> freeSlots)
-        {
-            if (receiver == null)
-            {
-                return;
-            }
-            UInt32 charId = receiver.playerData.getCharID();
-            if (ItemStacks.IsStackable(item.Goid))
-            {
-                foreach (Crafting.InventoryItem existing in Store.dbManager.WorldDbHandler.GetInventoryItems(charId))
-                {
-                    int count = ItemStacks.CountFromDb(existing.Count);
-                    if (existing.Slot < FirstEquippedSlot && existing.Goid == item.Goid && count + item.Quantity <= ItemStacks.MaxStack)
-                    {
-                        Store.dbManager.WorldDbHandler.SetInventoryCount(existing.Slot, charId, count + item.Quantity);
-                        receiver.messageQueue.addRpcMessage(ItemStacks.BuildStackCount(existing.Slot, count + item.Quantity));
-                        return;
-                    }
-                }
-            }
-
-            UInt16 slot = freeSlots.Dequeue();
-            UInt32 descriptor = TradePackets.Descriptor(item.Purity, item.Quantity);
-            MarketPlaceHandler.Db.AddInventoryItem(charId, slot, item.Goid, item.Purity);
-            if (item.Quantity > 1)
-            {
-                Store.dbManager.WorldDbHandler.SetInventoryCount(slot, charId, item.Quantity);
-            }
-            receiver.messageQueue.addRpcMessage(ServerPackets.BuildInventoryItemAdd(slot, item.Goid,
-                (byte)((descriptor >> 16) & 0xff), (byte)(descriptor >> 24)));
-        }
-
-        /// <summary>Both accepted: re-check everything, then move the items and information and report to each side.</summary>
+        /// <summary>Both accepted: commit the exchange before publishing assets or completion.</summary>
         private static void Complete(TradeSession session)
         {
-            WorldClient a = session.Requester, b = session.Target;
-            TradeOffer offerA = session.RequesterOffer, offerB = session.TargetOffer;
+            WorldClient requester = session.Requester, target = session.Target;
             End(session);
-
-            List<UInt16> freeA = FreeSlotsFor(a, offerA), freeB = FreeSlotsFor(b, offerB);
-            string failure = CheckOffer(a, offerA) ?? CheckOffer(b, offerB);
-            if (failure == null && freeB.Count < offerA.Items.Count) failure = NameOf(b) + " does not have enough backpack space.";
-            if (failure == null && freeA.Count < offerB.Items.Count) failure = NameOf(a) + " does not have enough backpack space.";
-            if (failure != null)
+            TradeSettlement settlement;
+            try
             {
-                // The client has no message for these in the status record itself: say why, then close both windows
-                Output.WriteDebugLog("[TRADE] Aborted: " + failure);
-                foreach (WorldClient side in new[] { a, b }.Where(c => c != null))
+                settlement = Store.dbManager.WorldDbHandler.SettleTrade(
+                    requester.playerData.getCharID(), session.RequesterOffer,
+                    target?.playerData.getCharID() ?? 0, session.TargetOffer);
+            }
+            catch (Exception error) when (error is DbException || error is InvalidOperationException)
+            {
+                Output.WriteDebugLog($"[TRADE] Settlement rolled back: {error.Message}");
+                settlement = TradeSettlement.Denied("The exchange could not be saved. Your items and information were kept.");
+            }
+
+            if (settlement.Failure != null)
+            {
+                Output.WriteDebugLog($"[TRADE] Aborted: {settlement.Failure}");
+                foreach (WorldClient side in new[] { requester, target }.Where(client => client != null))
                 {
-                    new ServerPackets().sendSystemChatMessage(side, "Trade cancelled: " + failure, "SYSTEM");
+                    new ServerPackets().sendSystemChatMessage(side, "Trade cancelled: " + settlement.Failure, "BROADCAST");
                     Send(side, TradePackets.BuildStatus(TradePackets.StatusAborted));
                 }
                 return;
             }
 
-            Queue<UInt16> slotsA = new Queue<UInt16>(freeA), slotsB = new Queue<UInt16>(freeB);
-            foreach (TradeItem item in offerA.Items.Values) TakeFrom(a, item);
-            foreach (TradeItem item in offerB.Items.Values) TakeFrom(b, item);
-            foreach (TradeItem item in offerA.Items.Values) GiveTo(b, item, slotsB);
-            foreach (TradeItem item in offerB.Items.Values) GiveTo(a, item, slotsA);
-
-            long changeA = offerB.Info - offerA.Info;
-            ApplyInfo(a, changeA);
-            ApplyInfo(b, -changeA);
-
-            uint itemsA = (uint)offerA.Items.Values.Sum(i => i.Quantity), itemsB = (uint)offerB.Items.Values.Sum(i => i.Quantity);
-            Send(a, TradePackets.BuildStatus(TradePackets.StatusComplete, itemsA, itemsB, changeA));
-            Send(b, TradePackets.BuildStatus(TradePackets.StatusComplete, itemsB, itemsA, -changeA));
-            Output.WriteDebugLog("[TRADE] Complete: " + NameOf(a) + " gave " + itemsA + " items and " + offerA.Info + " info, " +
-                                 NameOf(b) + " gave " + itemsB + " items and " + offerB.Info + " info");
+            uint requested = (uint)session.RequesterOffer.Items.Values.Sum(item => item.Quantity);
+            uint offered = (uint)session.TargetOffer.Items.Values.Sum(item => item.Quantity);
+            PublishSettlement(requester, settlement.Requester, requested, offered);
+            PublishSettlement(target, settlement.Target, offered, requested);
+            Output.WriteDebugLog($"[TRADE] Complete: {NameOf(requester)} gave {requested} items and {session.RequesterOffer.Info} info, " +
+                                 $"{NameOf(target)} gave {offered} items and {session.TargetOffer.Info} info");
         }
 
-        private static void ApplyInfo(WorldClient client, long change)
+        private static void PublishSettlement(WorldClient client, TradeSettlement.Receipt receipt, uint given, uint received)
         {
-            if (client == null || change == 0)
+            if (client == null) return;
+            foreach (byte[] record in receipt.BagRecords) client.messageQueue.addRpcMessage(record);
+            if (receipt.InfoChange != 0)
             {
-                return;
+                client.playerData.setInfo(receipt.Balance);
+                client.messageQueue.addRpcMessage(ServerPackets.BuildInfoCurrent(receipt.Balance, MarketplacePackets.InfoReasonMarketplace));
             }
-            long info = client.playerData.getInfo() + change;
-            client.playerData.setInfo(info);
-            Store.dbManager.WorldDbHandler.SaveInfo(client, info);
-            client.messageQueue.addRpcMessage(ServerPackets.BuildInfoCurrent((UInt32)info, MarketplacePackets.InfoReasonMarketplace));
+            Send(client, TradePackets.BuildStatus(TradePackets.StatusComplete, given, received, receipt.InfoChange));
         }
 
         /// <summary>This player is leaving (disconnect, Loading Area, world reload, death): the trade ends for both.</summary>

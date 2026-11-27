@@ -16,6 +16,27 @@ No retail capture of a trade exists and none is expected, so this comes from `cl
 
 **Not checked in the real client:** a trade between two real players, so `81 82` (dropping an item on a player), resolving its TargetID to a player's view, `81 83`, and the partner's side of `81 84`/`81 86`/`81 87`. A second client is blocked by Windows Defender on this machine. `tools/HeadlessClient` plays all of those against the server (scenarios `secure-trade` and `trade-cancel-and-refusals`), which shows the server follows this document, not that the client accepts it. Also not exercised: reset accept (action 5, the bot accepts and the trade completes at once), the refusal statuses, and aborts when a partner leaves.
 
+## Atomic settlement
+
+When both players accept, the server locks the two character rows in
+character ID order and then their bag rows. It checks the offered inventory
+row IDs, descriptors and quantities again, and uses the current database
+balances. The bag updates and the two Info updates commit in one transaction.
+An incoming stack can join a compatible stack of the same item and purity
+up to 64. Otherwise it needs an available bag slot.
+
+An invalid offer, missing space or an execution error aborts the exchange.
+The server sends a visible reason and the native close status. It publishes
+bag changes, new balances and completion only after commit. A repeated
+Accept after completion or abort has no trade session to settle.
+
+The **secure-trade-atomic** fixture adds a disposable-database constraint on
+QAFriend's balance. A 200 Info offer makes the second wallet write fail
+after both inventory legs. The refusal closes the window and keeps the
+Code Bit and 1,000 Info with CSR. Reopening with a 250 Info offer succeeds.
+The headless regression also verifies both wallets, a split stack sent in
+the opposite direction, a stale item row and duplicate accepts.
+
 ## How it was recovered
 Every RPC class has a vtable (+8 = debug printer naming fields, reading [this+0x10]+offset) and a ctor that writes
 the opcode as a word (0x8381 = bytes 81 83), the fixed size, and field defaults. Field names, offsets and sizes come from those.

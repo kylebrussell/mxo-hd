@@ -179,6 +179,7 @@ namespace hds
 
     public sealed class TradeItem
     {
+        public uint InventoryId;
         public byte Slot;
         public UInt32 Goid;
         public UInt32 Purity;
