@@ -39,6 +39,24 @@ namespace hds
 
         internal int EndpointCacheCount => clientsByEndpoint.Count;
 
+        internal static bool HasActiveCharacter(UInt32 charId)
+        {
+            if (charId == 0) return false;
+            Dictionary<string, WorldClient> clients = Clients;
+            if (clients == null) return false;
+            lock (clients)
+            {
+                foreach (WorldClient client in clients.Values)
+                {
+                    if (client != null && client.playerData != null && client.playerData.getCharID() == charId)
+                    {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
         internal void PruneStaleEndpointCache()
         {
             staleEndpointScratch.Clear();

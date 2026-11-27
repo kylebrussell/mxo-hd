@@ -19,6 +19,7 @@ namespace hds
         private readonly object listLock = new object();
         List<MarginClient> clientList;
         List<Thread> threadList;
+        private Func<UInt32, bool> activeWorldCharacterCheck;
 
         private TcpListener tcpListener;
         private Thread listenThread;
@@ -30,9 +31,15 @@ namespace hds
             mainThreadWorking = true;
             clientList = new List<MarginClient>();
             threadList = new List<Thread>();
+            activeWorldCharacterCheck = WorldServer.HasActiveCharacter;
             tcpListener = new TcpListener(NetworkBind.Address, NetworkBind.MarginPort);
             Output.WriteLine("Margin server set and ready at port " + NetworkBind.MarginPort);
             listenThread = new Thread(new ThreadStart(ListenForClients));
+        }
+
+        internal void SetActiveWorldCharacterCheckForTesting(Func<UInt32, bool> check)
+        {
+            activeWorldCharacterCheck = check ?? WorldServer.HasActiveCharacter;
         }
 
         public void StartServer()
@@ -118,6 +125,12 @@ namespace hds
                 try
                 {
                     client.NoDelay = true;
+                    client.ReceiveTimeout = MarginClient.PreAuthReceiveTimeoutMs;
+                    client.SendTimeout = MarginClient.SendTimeoutMs;
+                    client.Client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.KeepAlive, true);
+                    client.Client.SetSocketOption(SocketOptionLevel.Tcp, SocketOptionName.TcpKeepAliveTime, 60);
+                    client.Client.SetSocketOption(SocketOptionLevel.Tcp, SocketOptionName.TcpKeepAliveInterval, 15);
+                    client.Client.SetSocketOption(SocketOptionLevel.Tcp, SocketOptionName.TcpKeepAliveRetryCount, 4);
                 }
                 catch
                 {
@@ -137,8 +150,21 @@ namespace hds
             }
         }
 
+        internal int ActiveClientCount
+        {
+            get
+            {
+                lock (listLock)
+                {
+                    return clientList.Count;
+                }
+            }
+        }
+
         internal void RegisterClient(MarginClient marClient, Thread clientThread = null)
         {
+            if (marClient == null) return;
+            marClient.AttachOwner(this);
             lock (listLock)
             {
                 if (clientThread != null)
@@ -147,7 +173,62 @@ namespace hds
                     threadList.Add(clientThread);
                 }
 
+                clientList.RemoveAll(c => c == null || !c.isWorking());
                 clientList.Add(marClient);
+            }
+        }
+
+        internal void UnregisterClient(MarginClient marClient)
+        {
+            if (marClient == null) return;
+            int threadId = marClient.marginThreadId;
+            lock (listLock)
+            {
+                clientList.Remove(marClient);
+                if (threadList != null)
+                {
+                    for (int i = threadList.Count - 1; i >= 0; i--)
+                    {
+                        Thread t = threadList[i];
+                        if (t == null || !t.IsAlive || (threadId != 0 && t.ManagedThreadId == threadId))
+                        {
+                            threadList.RemoveAt(i);
+                        }
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Atomically checks that no other live Margin connection or active World session holds
+        /// <paramref name="charId"/> and claims it for <paramref name="claimant"/> under <see cref="listLock"/>,
+        /// pruning dead Margin entries along the way.
+        /// </summary>
+        internal bool TryClaimCharacter(MarginClient claimant, UInt32 charId)
+        {
+            if (claimant == null || charId == 0 || !claimant.isWorking()) return false;
+            lock (listLock)
+            {
+                if (!claimant.isWorking()) return false;
+                for (int i = clientList.Count - 1; i >= 0; i--)
+                {
+                    MarginClient existing = clientList[i];
+                    if (existing == null || !existing.isWorking())
+                    {
+                        clientList.RemoveAt(i);
+                        continue;
+                    }
+                    if (!ReferenceEquals(existing, claimant) && existing.getCharID() == charId)
+                    {
+                        return false;
+                    }
+                }
+                if (activeWorldCharacterCheck != null && activeWorldCharacterCheck(charId))
+                {
+                    return false;
+                }
+                claimant.SetClaimedCharId(charId);
+                return true;
             }
         }
 
@@ -161,9 +242,15 @@ namespace hds
             MarginClient match = null;
             lock (listLock)
             {
-                foreach (MarginClient resultClient in clientList)
+                for (int i = clientList.Count - 1; i >= 0; i--)
                 {
-                    if (resultClient != null && resultClient.getCharID() == charID)
+                    MarginClient resultClient = clientList[i];
+                    if (resultClient == null || !resultClient.isWorking())
+                    {
+                        clientList.RemoveAt(i);
+                        continue;
+                    }
+                    if (resultClient.getCharID() == charID)
                     {
                         match = resultClient;
                         break;
@@ -189,15 +276,21 @@ namespace hds
         /// </summary>
         public byte[] SessionKeyForVerifiedCharacter(UInt32 charId)
         {
-            MarginClient[] snapshot;
             lock (listLock)
             {
-                snapshot = clientList.ToArray();
-            }
-
-            foreach (MarginClient resultClient in snapshot)
-            {
-                if (resultClient != null && resultClient.HoldsVerifiedCharacter(charId)) return resultClient.SessionKey;
+                for (int i = clientList.Count - 1; i >= 0; i--)
+                {
+                    MarginClient resultClient = clientList[i];
+                    if (resultClient == null || !resultClient.isWorking())
+                    {
+                        clientList.RemoveAt(i);
+                        continue;
+                    }
+                    if (resultClient.HoldsVerifiedCharacter(charId))
+                    {
+                        return resultClient.SessionKey;
+                    }
+                }
             }
             return null;
         }
@@ -206,12 +299,22 @@ namespace hds
         {
             lock (listLock)
             {
-                foreach (MarginClient resultClient in clientList)
+                for (int i = clientList.Count - 1; i >= 0; i--)
                 {
-                    if (resultClient != null && resultClient.getCharID() == charId)
+                    MarginClient resultClient = clientList[i];
+                    if (resultClient == null || !resultClient.isWorking())
+                    {
+                        clientList.RemoveAt(i);
+                        continue;
+                    }
+                    if (resultClient.getCharID() == charId)
                     {
                         return true;
                     }
+                }
+                if (activeWorldCharacterCheck != null && activeWorldCharacterCheck(charId))
+                {
+                    return true;
                 }
             }
 
@@ -220,29 +323,49 @@ namespace hds
 
         public void RemoveClientsByCharId(UInt32 charId)
         {
-            int threadIdToInterrupt = 0;
+            List<MarginClient> removedClients = null;
+            List<int> threadIds = null;
             lock (listLock)
             {
-                MarginClient removeClient = null;
-                foreach (MarginClient resultClient in clientList)
+                for (int i = clientList.Count - 1; i >= 0; i--)
                 {
-                    if (resultClient != null && resultClient.getCharID() == charId)
+                    MarginClient resultClient = clientList[i];
+                    if (resultClient == null)
                     {
-                        threadIdToInterrupt = resultClient.marginThreadId;
-                        removeClient = resultClient;
-                        break;
+                        clientList.RemoveAt(i);
+                        continue;
                     }
-                }
-
-                if (removeClient != null)
-                {
-                    clientList.Remove(removeClient);
+                    if (resultClient.getCharID() == charId)
+                    {
+                        clientList.RemoveAt(i);
+                        if (removedClients == null) removedClients = new List<MarginClient>(2);
+                        removedClients.Add(resultClient);
+                        if (resultClient.marginThreadId != 0)
+                        {
+                            if (threadIds == null) threadIds = new List<int>(2);
+                            threadIds.Add(resultClient.marginThreadId);
+                        }
+                    }
                 }
             }
 
-            if (threadIdToInterrupt != 0)
+            if (removedClients != null)
             {
-                RemoveThreadFromThreadList(threadIdToInterrupt);
+                for (int i = 0; i < removedClients.Count; i++)
+                {
+                    // Close the evicted socket so any blocked NetworkStream.Read unblocks immediately
+                    // instead of leaking the TCP connection and OS thread.
+                    removedClients[i].passiveClose();
+                    removedClients[i].forceClose();
+                }
+            }
+
+            if (threadIds != null)
+            {
+                for (int i = 0; i < threadIds.Count; i++)
+                {
+                    RemoveThreadFromThreadList(threadIds[i]);
+                }
             }
         }
 
@@ -251,6 +374,7 @@ namespace hds
             Thread toInterrupt = null;
             lock (listLock)
             {
+                if (threadList == null) return;
                 for (int i = threadList.Count - 1; i >= 0; i--)
                 {
                     Thread tempThread = threadList[i];

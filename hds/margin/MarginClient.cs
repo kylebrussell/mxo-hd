@@ -23,16 +23,21 @@ namespace hds{
         /// Crafting.BuildKnownRecipesBlock adds the Code Bit fragment and health pill recipes.
         /// </summary>
         public static readonly byte[] KnownRecipesBaseBlock = StringUtils.hexStringToBytes("04000000a7010000ac010000cc010000d1010000d60100001302000019020000650200006602000068020000b4020000b5020000b6020000bb020000bc020000c2020000c4020000d5020000d6020000de020000e2020000e3020000e6020000e7020000e90200003f03000086030000a0030000aa030000e3030000fc030000fe030000030400000604000008040000090400000a040000270400004c0400004e040000bb040000c2040000ce040000eb040000ec040000ee040000f5040000f6040000f7040000f9040000540900005f09000082090000be090000bf090000c1090000c4090000c7090000c8090000c9090000040a0000080a0000b0120000fa12000009130000691400008614000095140000e9140000ef140000f11400001c1500002d1500005b150000631500007815000080150000ab15000000160000011600001f1600002416000033160000611600006e160000731600008216000084160000871600009416000000170000241700002517000038170000451700005e1700007317000074170000f4170000f6170000fc1700004f1800005c1800001a1900002d1900003a1900005a1900005b1900006519000066190000121a0000181a0000281a0000341a0000451a0000471a0000621a00006e1a00007b1a00007c1a00007d1a0000e51a0000eb1a0000ec1a0000ed1a0000ee1a0000f01a0000f11a00000c1b00002d1c0000521c0000c31c00003a1d00003f1d0000501d0000521d0000551d0000671d0000d81d0000011e0000041e0000061e0000071e0000091e00000d1e00003b1e0000521e0000751e0000ae1e0000b41e0000c11e0000c21e0000c31e0000c41e0000c51e0000c61e0000c71e0000c81e0000c91e0000ca1e0000cb1e0000cc1e0000cd1e0000ce1e0000cf1e0000d01e0000d11e0000d21e0000d31e0000d41e0000d51e0000d61e0000d71e0000d81e0000da1e0000dd1e0000e61e0000e91e0000f51e0000fc1e0000fd1e0000001f0000031f00007a1f00007c1f0000821f0000a61f0000b91f0000302000003d200000492000005820000082200000832000008420000085200000a5200000be200000c4200000ce200000db200000e7200000eb200000152100007f2100008d210000972100009f210000a7210000b8210000e3210000022200000f2200001222000016220000582200005b2200007022000075220000782200007d2200008922000099220000a4220000ab220000b2220000be220000c9220000d5220000d6220000d72200001b2300001e2300001f23000023230000392300005a230000a7240000c1240000ea240000f924000008250000092500000a25000029250000a9250000cf250000e1250000662600006e260000d2260000b02800005131000070310000f6330000823400004c36000030390000743900009e390000a0390000f63b0000813d0000203e00004b3e0000cd3e0000f73e0000033f00000d3f00006f3f0000164000005b40000069400000f2410000d2420000eb4200002c4300004b430000584300005b4300005e4300009c4300009e4300009f430000b7430000d4430000094400001344000019440000c3440000994d0000804f0000b44f0000b3510000b5510000fb51000005520000b75300009e550000b2550000de5500000156000021560000fc5600006f5700007057000087570000dd570000fc570000105800002658000063580000dd5800000a5900001759000063590000925b0000ea5b0000fe5c000086600000a2640000136b0000306b00004f6f000023700000cc700000ba7100000473000057730000ee7300006e740000a8740000117500009e750000407600006a8800007a8800009388000015890000fc890000a58a0000b38a0000b68a0000b78a0000978b0000ac8b00003b8c0000758c0000a78c0000db8c0000138d0000728d0000548e0000a38e0000e68e0000128f0000f28f0000f88f0000fa8f0000109400005c9600005d960000ee990000ef990000f0990000f1990000f2990000f3990000f4990000f5990000f6990000689a00006a9a00006c9a00006e9a00006f9a00001e9d00004e9d00007b9d00000a9e00007d9e0000c49e0000f49e0000289f00008d9f0000919f0000b29f00001da000003fa0000073a0000097a0000009a100002ea1000045a1000074a10000cea10000d6a10000fba10000fca1000046a2000047a2000049a2000050a20000aca20000bca2000009a3000045a3000054a300005aa30000aba30000b5a3000020a4000021a4000025a4000027a400002ea40000bda500000ea6000011a600002da6000066a60000c1b100007fb20000beb20000cfb20000");
+        private static readonly byte[] KnownContactsBlock = StringUtils.hexStringToBytes("0700000001000800000000000a00000003000d00000000001c0000000100");
+        internal const int PreAuthReceiveTimeoutMs = 30_000;
+        internal const int SendTimeoutMs = 30_000;
 		
 		private int hashID;
 		private TcpClient tcpClient;
-		private bool working;
+		private volatile bool working;
 		private bool waitingForWorld;
 		private UInt32 userID;
         private UInt32 newCharID;
         private uint reservedCreationID;
         private ushort numCharacterReplies;
         private bool isNewCreatedChar;
+        private MarginServer ownerServer;
+        private readonly object sendLock = new object();
         public List<MarginAbilityItem> Abilities;
 		
 		private MarginEncryption marginEncr;
@@ -51,6 +56,16 @@ namespace hds{
 			marginEncr = MarginEncryption.ForNewSession();
 			 
 		}
+
+        internal void AttachOwner(MarginServer server)
+        {
+            ownerServer = server;
+        }
+
+        internal void SetClaimedCharId(UInt32 charId)
+        {
+            newCharID = charId;
+        }
 
 
 		public int getID(){
@@ -93,56 +108,75 @@ namespace hds{
 		}
 			
 		public void HandleClientComm(object client){
-  			tcpClient = (TcpClient)client;
-  			clientStream= tcpClient.GetStream();
-			
-			// Define an auth server processor per thread
-						
-  			byte[] message = new byte[2048];
-  			int bytesRead;
-			
-			Output.WriteLine("Margin client Connected.");
-  			
-	
-			// Receive TCP auth packets from the connected client.
-			while (working){
-    			bytesRead = 0;
+            try
+            {
+                tcpClient = (TcpClient)client;
+                if (tcpClient.ReceiveTimeout == 0)
+                {
+                    try { tcpClient.ReceiveTimeout = PreAuthReceiveTimeoutMs; } catch { }
+                }
+                if (tcpClient.SendTimeout == 0)
+                {
+                    try { tcpClient.SendTimeout = SendTimeoutMs; } catch { }
+                }
+                clientStream = tcpClient.GetStream();
 
-	    		try{ 
-					bytesRead = clientStream.Read(message, 0, 2048);
-				}
-				catch{ break; }
-	
-	    		if (bytesRead == 0){
-	            	Output.OptWriteLine("Margin: 0 Bytes received");
-					break;
-				}
-				
-				// Parse the received packet data
-				try{
-					
-					byte[] packet = new byte[bytesRead];
-					ArrayUtils.copy(message,0,packet,0,bytesRead);
-    				packetHandler(packet,clientStream);
-									
-				}catch(MarginException marEx){
-					Output.WriteLine(marEx);
-					break;
-				}catch(Exception ex){
-					Output.WriteLine("Margin client dropped (" + ex.GetType().Name + "): " + ex.Message);
-					break;
-				}
-				
-  			}
-			working = false;
-  			Output.WriteLine("Margin Client Disconnected");
-  			try { tcpClient?.Close(); } catch { }
-			try { clientStream?.Close(); } catch { }
+                // Define an auth server processor per thread
+                byte[] message = new byte[2048];
+                int bytesRead;
+
+                Output.WriteLine("Margin client Connected.");
+
+                // Receive TCP auth packets from the connected client.
+                while (working){
+                    bytesRead = 0;
+
+                    try{ 
+                        bytesRead = clientStream.Read(message, 0, 2048);
+                    }
+                    catch{ break; }
+
+                    if (bytesRead == 0){
+                        Output.OptWriteLine("Margin: 0 Bytes received");
+                        break;
+                    }
+
+                    // Parse the received packet data
+                    try{
+                        byte[] packet = new byte[bytesRead];
+                        ArrayUtils.copy(message,0,packet,0,bytesRead);
+                        packetHandler(packet,clientStream);
+                    }catch(MarginException marEx){
+                        Output.WriteLine(marEx);
+                        break;
+                    }catch(Exception ex){
+                        Output.WriteLine("Margin client dropped (" + ex.GetType().Name + "): " + ex.Message);
+                        break;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Output.WriteLine("Margin client setup failed (" + ex.GetType().Name + "): " + ex.Message);
+            }
+            finally
+            {
+                working = false;
+                (ownerServer ?? Store.margin)?.UnregisterClient(this);
+                Output.WriteLine("Margin Client Disconnected");
+                forceClose();
+            }
 		}	
 		
 		
 		public void packetHandler(byte[] packet, NetworkStream client )
         {
+            if (packet == null || packet.Length < 3)
+            {
+                working = false;
+                forceClose();
+                return;
+            }
             bool encrypted = true;
             byte opcode = packet[2];
             byte[] data = { };
@@ -178,8 +212,8 @@ namespace hds{
 	            if (decrypted == null)
 	            {
 		            // This shouldnt happen - but can happen
-		            tcpClient.Close();
-		            clientStream.Close();
+		            working = false;
+		            forceClose();
                     return;
 	            }
                 // Creation opts into exact declared payload; do not weaken its body parser or alter other Margin paths.
@@ -558,10 +592,13 @@ namespace hds{
 		
         private void loadCharacter(byte[] packet, NetworkStream client, UInt32 theCharId)
         {
-            byte[] charIDB = new byte[4];
-
             if (theCharId == 0)
-            {    
+            {
+                if (packet == null || packet.Length < 7)
+                {
+                    working = false; forceClose(); return;
+                }
+                byte[] charIDB = new byte[4];
                 ArrayUtils.copy(packet, 3, charIDB, 0, 4); //Offset for charID is 3 in request
                 uint charId = NumericalUtils.ByteArrayToUint32(charIDB, 1);
                 // Only this account's own characters, and only after a verified ticket.
@@ -570,50 +607,26 @@ namespace hds{
                     Output.WriteLine("Margin: refused to load character " + charId + " for account " + userID);
                     working = false; forceClose(); return;
                 }
-                // Remove current instances for this character
-                if (Store.margin.IsAnotherClientActive(charId))
+                // Atomically check and claim charId so two simultaneous logins cannot race and dead
+                // disconnected Margin sessions cannot lock out a character.
+                MarginServer server = ownerServer ?? Store.margin;
+                if (server != null)
                 {
-                    CharacterAlreadyInUseReply(client);
-                    return;
+                    if (!server.TryClaimCharacter(this, charId))
+                    {
+                        CharacterAlreadyInUseReply(client);
+                        return;
+                    }
                 }
-                newCharID = charId;
+                else
+                {
+                    newCharID = charId;
+                }
             }
 
 
-            charIDB = NumericalUtils.uint32ToByteArray(newCharID, 1);
-            
-			//New harcoded sessionID is: ac 53 02 00
-			//Old is: 28 A9 02 00
-			string [] marginValues = new string[0x0e];
-			marginValues[8]     ="000b10001e000700000001000800000000000a00000003000d00000000001c0000000100";
-            marginValues[0xc]   ="000e10000000";
-            marginValues[0xd]   ="010f10000000";			
-            
-            // Some Items
-            string itemData = "0170A7000000000010" + "020B8F00000000001803B80200000000001804EE9900000000000005F399000000000000065F0900000000100007C80900000000000008D59D000000000C0009EA040000000000480AD61E0000000000380BF21800000000001C0C66900000000000140DB30400000000001C0E04A80000000018000F3743000000000028108D2200000000002411441A00000000004415808C00000000004462EB0300000000001C63CC5A00000000004464ECB2000000000048651CB3000000000038663E9500000000006868EA0400000000001C";
-            byte[] inventory = StringUtils.hexStringToBytes(itemData);
-
-            // Loaded Abilities
-            string loadedAbs = "000032080080070000E400800B0000E002800C00006403800E0000340180110032B400801600322C0080290032D404802B0000DC04802F00322800803000323000803E0001E404804200322005805D0000E800805E0032D000805F00327C01806B00008801806F00001C0580990001280580A40000A40080A60000AC0080AC0000EC0080B00000000180B10000040180B80032240180BB0032300180BC00004C0180C50000A00080D80001EC0480DD00012C0580EA0001E80480F400013005800D01013405801D0101680780200132740580280100E004802C01013805803601018C05803801017805803A01325C0780490100840180520100D8088056010124";
-            byte[] loadAbilitys = StringUtils.hexStringToBytes(loadedAbs);
-
-            // Known Abilities
-            string abilityData = "0000320800800100014800800200017C0080030000080280040000140380050001300480060001B40080070000E4008008000018038009000F9400800A0000E002800B0000E002800C00006403800D00009000800E00003401800F00018C00801000006C0080110032B40080120000E402801300001003801400016400801500322004801600322C0080170001AC09801800012C008019000F9400801A0032C401801B00010800801C00018400801D0000F803801E001A3802801F00010400802000006C0280210001240580220032B40980230032640680240001680080250087DF11842600000400802700001C0080280032540480290032D404802A003210";
-            byte[] knownAbilitiys = StringUtils.hexStringToBytes(abilityData);
-
-
-            // Known Hardlines
-            //string hardlineData = "0207000000021f000000022300000002240000000225000000022600000002270000000229000000022b000000022f00000002300000000231000000023200000002340000000235000000023600000002370000000238000000023b000000023f000000024000000002410000000243000000024500000002480000000249000000024a000000024b000000024d000000024e000000024f000000025000000002510000000252000000025400000002550000000256000000025700000002580000000259000000025a000000025b000000025c000000025d000000025e000000025f000000026000000002610000000262000000026300000002640000000265000000026600000002670000000269000000026a000000026b000000026c000000026d000000026e000000026f000000027000000002710000000130000000013100000001370000000141000000014500000001480000000149000000014a000000014b000000014c000000014e000000014f0000000150000000015100000001520000000163000000016400000001650000000166000000016700000001680000000169000000016a000000016b000000016d000000016f00000001700000000171000000017200000001730000000174000000017700000001780000000179000000017a000000017b000000017c000000017d000000017e000000017f000000018000000001810000000182000000018300000001840000000185000000018600000001870000000188000000018a000000018b000000018c000000018d000000018e000000019000000001910000000192000000019300000001940000000195000000019600000001970000000198000000019900000003020000000303000000030400000003050000000306000000030700000003080000000309000000030a000000030b000000030c000000030d000000030e000000030f000000031000000003110000000312000000031300000003140000000315000000031600000003170000000318000000";
-            //string hardlineData = Store.dbManager.MarginDbHandler.loadAllHardlines();
             byte[] knownHardlines = HardlineRegistration.KnownCache(newCharID);
-
-
-            // Contacts
-            string missionContacts = "0700000001000800000000000a00000003000d00000000001c0000000100";
-            byte[] knownContacts = StringUtils.hexStringToBytes(missionContacts);
-
-            byte[] codeArchiveTest = StringUtils.hexStringToBytes("04000000A7010000AC010000CC010000D1010000D60100001302000019020000650200006602000068020000B4020000B5020000B6020000BB020000BC020000C2020000C4020000D5020000D6020000DE020000E2020000E3020000E6020000E7020000E90200003F03000086030000A0030000AA030000E3030000FC030000FE030000030400000604000008040000090400000A040000270400004C0400004E040000BB040000C2040000CE040000EB040000EC040000EE040000F5040000F6040000F7040000F9040000540900005F09000082090000BE090000BF090000C1090000C4090000C7090000C8090000C9090000040A0000080A0000B0120000");
-            byte[] empty = new byte[0];
+            byte[] empty = Array.Empty<byte>();
 
             // New Margin Method to send Data
 
@@ -647,22 +660,23 @@ namespace hds{
             //sendMarginCharData(codeArchiveTest, 0x0a, client);                // Code Storage
             SendMarginCharData(Crafting.BuildKnownRecipesBlock(KnownRecipesBaseBlock,
                 Store.dbManager.WorldDbHandler.GetLearnedRecipes(newCharID)), 0x0a, client,0, false);   // Known code recipes
-            SendMarginCharData(knownContacts, 0x0b, client,0, false);                    // Contacts
+            SendMarginCharData(KnownContactsBlock, 0x0b, client,0, false);                    // Contacts
             SendMarginCharData(empty, 0x0e, client,0, false);
 
-            // MotD has a special handling
-			DbParams _dbParams;
-			XmlParser.loadDBParams("Config.xml", out _dbParams);
-			string motd = _dbParams.Motd;
+            // MotD has a special handling: reuse already-loaded config rather than re-reading Config.xml on every login.
+            string motd = Store.config?.dbParams?.Motd;
+            if (motd == null)
+            {
+                DbParams _dbParams;
+                XmlParser.loadDBParams("Config.xml", out _dbParams);
+                motd = _dbParams?.Motd ?? "";
+            }
 
 			if (!motd.Equals("")){ // if MOTD not empty
 				DynamicArray announcement = new DynamicArray();
 				byte[] currentTime = TimeUtils.getUnixTime();
 				//Load motd from file
 				byte[] text = StringUtils.stringToBytes(motd);
-				byte[] size = NumericalUtils.uint16ToByteArrayShort((UInt16)(currentTime.Length+text.Length));
-				
-				//announcement.append(size);
 				announcement.append(currentTime);
 				announcement.append(text);
 				
@@ -718,10 +732,19 @@ namespace hds{
         }
 
         public void EstablishUDPSessionReplyExternal(){
+            NetworkStream stream = clientStream;
+            if (!working || stream == null) return;
             Console.WriteLine("Establish UDP Session Reply for CharID:" + newCharID);
             byte[] response = { 0x11, 0x00, 0x00, 0x00, 0x00, 0x01 };
-            byte[] encryptedResponse = marginEncr.encrypt(response);
-            sendTCPVariableLenPacket(encryptedResponse, clientStream);
+            try
+            {
+                byte[] encryptedResponse = marginEncr.encrypt(response);
+                sendTCPVariableLenPacket(encryptedResponse, stream);
+            }
+            catch (Exception ex)
+            {
+                Output.WriteDebugLog("Margin: EstablishUDPSessionReplyExternal failed for charId " + newCharID + ": " + ex.Message);
+            }
         }
 
         public void ConnectChallengeResponse(byte[] packet, NetworkStream client)
@@ -752,6 +775,11 @@ namespace hds{
 
         public void certConnectRequest(byte[] packet, NetworkStream client)
         {
+            if (packet == null || packet.Length < 7)
+            {
+                Output.WriteLine("Margin: refused a short ticket frame");
+                working = false; forceClose(); return;
+            }
             int firstnum = BitConverter.ToInt16(packet, 3);
             int authstart = BitConverter.ToInt16(packet, 5);
             if (firstnum != 3)
@@ -800,6 +828,9 @@ namespace hds{
                 working = false; forceClose(); return;
             }
 			userID = ticket.UserId;
+            // Authenticated retail clients keep Margin TCP open quietly while playing in World;
+            // clear the pre-auth handshake timeout now that the ticket is verified.
+            try { if (tcpClient != null) tcpClient.ReceiveTimeout = 0; } catch { }
 
             // Stripout Exponent and Modulus
 
@@ -835,37 +866,36 @@ namespace hds{
 
         public void sendTCPVariableLenPacket(byte[] packet, NetworkStream client)
         {
-
-
-            byte[] size = { };
-            byte[] bytesize = { };
-
-            if (packet.Length > 127){
-				//Do NOT reverse here :P
-				bytesize = NumericalUtils.uint16ToByteArray((UInt16)(packet.Length + 0x8000),0);
-            }
-            else{
-				bytesize = NumericalUtils.uint16ToByteArrayShort((ushort)packet.Length);
-            }
-           
-            byte[] finalPacket = new byte[packet.Length+bytesize.Length];
-
-            DynamicArray din = new DynamicArray();
-			din.append(bytesize);
-			din.append(packet);
-			            
-            finalPacket = din.getBytes();
-
-            try
+            int len = packet.Length;
+            byte[] finalPacket;
+            if (len > 127)
             {
-                client.Write(finalPacket, 0, finalPacket.Length);
+                finalPacket = new byte[2 + len];
+                ushort header = (ushort)(len + 0x8000);
+                finalPacket[0] = (byte)(header >> 8);
+                finalPacket[1] = (byte)(header & 0xFF);
+                Buffer.BlockCopy(packet, 0, finalPacket, 2, len);
             }
-            catch (Exception ex)
+            else
             {
-                Console.WriteLine("ERROR ex: " + ex);
-                throw;
+                finalPacket = new byte[1 + len];
+                finalPacket[0] = (byte)len;
+                Buffer.BlockCopy(packet, 0, finalPacket, 1, len);
             }
-            client.Flush();
+
+            lock (sendLock)
+            {
+                try
+                {
+                    client.Write(finalPacket, 0, finalPacket.Length);
+                    client.Flush();
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("ERROR ex: " + ex);
+                    throw;
+                }
+            }
         }
 
 		
