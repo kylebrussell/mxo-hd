@@ -38,12 +38,27 @@ namespace hds.databases
             using var q = Cmd(c, t, "INSERT INTO world_luggables(goid,district,x,y,z) VALUES(@g,@d,@x,@y,@z)", "@g", g.Goid, "@d", g.District, "@x", g.X, "@y", g.Y, "@z", g.Z);
             q.ExecuteNonQuery(); return (ulong)q.LastInsertedId;
         }
-        public static bool Drop(uint character, ushort slot, DataMining.Ground g)
+        public static bool Drop(uint character, ushort slot, DataMining.Ground ground) =>
+            Drop(character, new[] { (slot, ground) });
+
+        /// <summary>Move the exact bag rows to the ground atomically, including legacy count-zero single items.</summary>
+        public static bool Drop(uint character, IReadOnlyList<(ushort Slot, DataMining.Ground Ground)> drops)
         {
-            using var c = Open(); using var t = c.BeginTransaction();
-            using (var q = Cmd(c, t, "DELETE FROM inventory WHERE charId=@c AND slot=@s AND goid=@g AND count=1", "@c", character, "@s", slot, "@g", g.Goid))
-                if (q.ExecuteNonQuery() != 1) return false;
-            g.Id = Insert(c, t, g); t.Commit(); return true;
+            using var connection = Open();
+            using var transaction = connection.BeginTransaction();
+            var ids = new ulong[drops.Count];
+            for (int i = 0; i < drops.Count; i++)
+            {
+                var (slot, ground) = drops[i];
+                using var delete = Cmd(connection, transaction,
+                    "DELETE FROM inventory WHERE charId=@c AND slot=@s AND goid=@g AND count IN (0,1)",
+                    "@c", character, "@s", slot, "@g", ground.Goid);
+                if (delete.ExecuteNonQuery() != 1) return false;
+                ids[i] = Insert(connection, transaction, ground);
+            }
+            transaction.Commit();
+            for (int i = 0; i < drops.Count; i++) drops[i].Ground.Id = ids[i];
+            return true;
         }
         public static ushort Pickup(uint character, DataMining.Ground g)
         {

@@ -230,11 +230,16 @@ namespace hds
             Session s = sessions.GetOrCreateValue(c);
             s.OriginMap = c.playerData.getDistrictId(); s.OriginKey = c.playerData.getDistrict();
             s.OriginPosition = (byte[])c.playerInstance.Position.getValue().Clone();
-            Move(c, map, keys[map], NumericalUtils.doublesToLtVector3d(p.x, p.y, p.z));
-            return true;
+            return Move(c, map, keys[map], NumericalUtils.doublesToLtVector3d(p.x, p.y, p.z));
         }
-        private static void Move(WorldClient c, uint map, string key, byte[] position)
+        private static bool Move(WorldClient c, uint map, string key, byte[] position)
         {
+            if (!c.playerData.getOnWorld()) return false;
+            if (c.playerData.getDistrictId() != map && !DataMining.DropForArchiveTravel(c))
+            {
+                c.FlushQueue();
+                return false;
+            }
             DuelHandler.OnUnavailable(c);
             CombatManager.GetHandler(c).AbandonCombat();
             c.playerData.setOnWorld(false);
@@ -243,6 +248,7 @@ namespace hds
             Store.dbManager.WorldDbHandler.SavePlayer(c);
             c.messageQueue.addRpcMessage(new byte[] { 0x81, 0x07 });
             c.FlushQueue();
+            return true;
         }
         public static bool OnUse(WorldClient c, ClientView view, byte action)
         {

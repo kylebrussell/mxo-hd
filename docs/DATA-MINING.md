@@ -56,7 +56,27 @@ PR334 observed the green/cyan goggles aura and pickup cleanup. During PR448's st
 
 `world_luggables` is an InnoDB table in the selected server database. A drop transaction removes exactly one bag row and inserts a ground row; a pickup locks that ground row, finds a free slot, inserts the bag item and deletes the ground row in one transaction. Runtime serializes its transfers and visibility. Replayed requests cannot duplicate the item. A fresh server reloads ground objects. Carried items use normal inventory persistence. This covers one server per database, not cross-process shared-world synchronization.
 
-Still absent: heavy-luggable attachments/Hyper-Strength carrying, faction/crew binding and ownership, Unbind/UniqueID, luggable stat buffs/forced PvP, automatic drop on death or construct change, timed recovery/respawn and quest-specific luggable mechanics. Heavy carrying is explicitly refused. No full retail parity is claimed for these items.
+Still absent: heavy-luggable attachments/Hyper-Strength carrying, faction/crew binding and ownership, Unbind/UniqueID, luggable stat buffs/forced PvP, automatic drop on death, timed recovery/respawn and quest-specific luggable mechanics. Heavy carrying is explicitly refused. No full retail parity is claimed for these items.
+
+### Archive travel
+
+The GOB field `Luggable/DropOnInterConstructTeleport` opts individual light
+luggables into dropping when they cross an Archive boundary. Entry and return
+both release them on the source NAV floor before the existing world change.
+Unflagged items stay in the bag. One transaction moves the matched bag rows
+into `world_luggables` together. If there is no nearby floor or a transfer
+fails, the character and items stay at the source and the player gets a notice.
+The ground items use the same shared pickup rules as a manual drop. This covers
+the existing PvP Archive entry and return routes.
+
+The `archive-luggable-drop` fixture starts on the verified Sati NAV stand
+(14225,95,-5225) facing the Zion returner three metres ahead. Bag 5 and 6 hold
+flagged 561 and 562, bag 7 holds unflagged 565, and bag 8 holds a Health Pill.
+Use the normal returner interaction. On return to Richland, only slots 5 and 6
+should be empty. The two bag deletes precede `81 07`. The headless scenario
+also forces rejection of the second ground insert, retries the whole release,
+and picks up each item as a witness at the source floor. The existing
+`pvp-archive-transport` scene covers entry and the low-level refusal.
 
 ## Placements and missions
 
