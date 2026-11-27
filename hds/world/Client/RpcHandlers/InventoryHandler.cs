@@ -365,6 +365,8 @@ namespace hds
                 ServerPackets.SendPlayerAbilityEffect(client, BlueMarbles.ActivationFx(consumable.AbilityId));
             else if (consumable.AbilityId == AndvaranautCoupler.Ability)
                 ServerPackets.SendPlayerAbilityEffect(client, AndvaranautCoupler.ActivationFx);
+            else if (EventHealthRegenItems.Handles(consumable.AbilityId))
+                ServerPackets.SendPlayerAbilityEffect(client, EventHealthRegenItems.ActivationFx(consumable.AbilityId));
             else client.FlushQueue();
         }
 

@@ -922,6 +922,8 @@ namespace hds
             { Deny(AbilityID, "Use an owned Andvaranaut Coupler.", AbilityRefusals.RequiredItemCategory); return; }
             if (AbilityID == SmithRagePill.Ability)
             { Deny(AbilityID, "Use an owned Smith's Rage Pill.", AbilityRefusals.RequiredItemCategory); return; }
+            if (EventHealthRegenItems.Handles(AbilityID))
+            { Deny(AbilityID, "Use the corresponding owned consumable.", AbilityRefusals.RequiredItemCategory); return; }
 
             if (!ControlActions.CanUseAbilities(Store.currentClient))
             {
