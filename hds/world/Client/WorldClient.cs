@@ -167,7 +167,9 @@ namespace hds
                 //Output.WriteLine("[SEND PACKET] PSS: " + playerData.getPss().ToString() + " SSEQ : " + playerData.getSseq().ToString() + " CSEQ: " + playerData.getCseq().ToString());
                 try
                 {
-                    socket.BeginSendTo(data, 0, data.Length, SocketFlags.None, Remote, new AsyncCallback(FinalSendTo), Remote);
+                    // Synchronous UDP SendTo hands the datagram straight to the kernel send buffer in order,
+                    // avoiding per-packet AsyncCallback/IAsyncResult/IOCP completions and async reordering.
+                    socket.SendTo(data, 0, data.Length, SocketFlags.None, Remote);
                     return true;
                 }
                 catch (Exception ex)
@@ -177,18 +179,6 @@ namespace hds
                 }
             }
             return false;
-        }
-
-        private void FinalSendTo(IAsyncResult asyncResult)
-        {
-            try
-            {
-                socket.EndSend(asyncResult);
-            }
-            catch (Exception ex)
-            {
-                Output.WriteDebugLog("SendData Error: " + ex.Message);
-            }
         }
 
 

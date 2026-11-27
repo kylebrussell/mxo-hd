@@ -182,6 +182,16 @@ namespace hds
             serverport = NetworkBind.WorldPort;
             udplistener = new IPEndPoint(NetworkBind.Address, serverport);
             buffer = new byte[4096];
+            try
+            {
+                // Larger OS UDP rings prevent silent kernel drops under 200+ dense client bursts.
+                socket.ReceiveBufferSize = 1024 * 1024;
+                socket.SendBufferSize = 1024 * 1024;
+            }
+            catch (SocketException)
+            {
+                // Fall back to OS defaults if container/host caps socket buffer sizes.
+            }
             socket.Bind(udplistener);
     
             IPEndPoint sender = new IPEndPoint(IPAddress.Any, 0);

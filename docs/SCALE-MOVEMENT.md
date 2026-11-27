@@ -209,6 +209,33 @@ Server-side `LoadTest --authenticated --clients 200` (Release build, 30 s warmup
 
 \*Run 2 encountered a transient host CPU stall (`FlushProcessing` max 241.9 ms, `per-player` max 120.1 ms) while still holding `76.9%` Server CPU and `16 ms` median visibility; runs 1 and 3 on a quiet host matched at `10.53 / 10.52 ms` visibility mean (`1.76×` faster than `3bdc52c79`), with `contacts` **13.6×** faster (`1.52 -> 0.11 ms`), `subways` **10.4×** faster (`1.02 -> 0.10 ms`), `static-objects` **5.4–8.3×** faster (`1.22 -> 0.15 / 0.23 ms`), `per-player` **4.3–5.4×** faster (`1.19 -> 0.28 / 0.22 ms`), `snapshot` **2.2–2.3×** faster (`1.96 -> 0.90 / 0.85 ms`), `mob-motion` **1.9–2.4×** faster (`3.14 -> 1.65 / 1.33 ms`), and Echo RTT dropping to `35.4 / 34.4 ms`.
 
+## Synchronous UDP send, parallelized `FlushThread`, and compact visibility indexes (follow-up)
+
+After lock-free `FindViewForEntity` and partitioned `ViewList` indexes (`6c4318a62`), `FlushProcessing` accounted for ~83% of remaining server CPU (`38.3–42.2 s` over 60 s on the single `FlushThread` — ~64% saturation of one core):
+
+1. **Single-threaded flush sweep and sleep drift (`FlushThread.cs`).** `FlushThreadProcess` iterated all 200 clients sequentially on one thread (~35–40 ms) and then slept a full `50 ms`, stretching the effective flush cadence to ~85–90 ms and pushing `Echo RTT` P95, `RpcFirstSend` P95, and `ObjectFirstSend` P95 to `128 ms` (`RpcRetainedMax` 51–134).
+2. **Per-datagram async UDP allocations and IOCP overhead (`WorldClient.cs`, `WorldServer.cs`).** `WorldClient.sendPacket` called `socket.BeginSendTo(..., new AsyncCallback(FinalSendTo), Remote)` on every outbound datagram (~300k/min `AsyncCallback` + `IAsyncResult`/IOCP completions), and `WorldServer` relied on the OS default 64 KB UDP socket buffers.
+3. **Indirect view lookups and Gen2 mob chasing (`ViewManager.cs`, `ViewVisibleThread.cs`).** `ViewList` stored every single-view entity behind a `List<ClientView>`, `ReconcileMobViews` looked up every nearby mob twice, and `CheckPlayerMobViews` chased scattered Gen2 `Mob` objects across ~60,000 neighbor checks per pass.
+
+Changes:
+
+- **Synchronous UDP `SendTo` and 1 MB socket rings (`WorldClient.cs`, `WorldServer.cs`).** Replaced `socket.BeginSendTo` + `new AsyncCallback(FinalSendTo)` with direct synchronous `socket.SendTo` (zero per-packet async allocations, strict in-order UDP dispatch) and raised UDP `ReceiveBufferSize`/`SendBufferSize` to 1 MB with graceful fallback on constrained hosts.
+- **Parallel, drift-compensated `FlushThread` (`FlushThread.cs`).** Reuses the client snapshot list, subtracts elapsed sweep time from `FlushIntervalMs` (clamped to `>= 1 ms`), and fans out `TickFlush()` via bounded `Parallel.For` (`MaxDegreeOfParallelism` 2–4) with per-client fault isolation once `clients.Count >= 16`.
+- **Single-hop `ViewList` direct entity map & compact `MobEntry` sweeps (`ViewManager.cs`, `ViewVisibleThread.cs`).** Replaced `ViewList.byEntity` with `directByEntity` (`Dictionary<ulong, ClientView>`) plus a lazy `multiByEntity` overflow dictionary only when duplicate entityIds exist; split `nonIntroducibleNearby` from `introducibleMobs` for single-lookup `ReconcileMobViews`; cached compact `MobEntry` structs indexed by `SpatialGrid<int>` in `MobVisibilityCache` and passed a single `List<PlayerSample>` into `ReconcilePlayerSamples`.
+
+Server-side `LoadTest --authenticated --clients 200` (Release build, 30 s warmup + 60 s measure, run serially on 2026-11-27):
+
+| Case | Status | Server CPU % | Echo RTT mean / P95 / max ms | RpcFirstSend mean / P95 / max ms | ObjectFirstSend mean / P95 ms | RpcRetainedMax | mob-views P50 ms |
+|---|---|---:|---|---|---|---|---:|
+| move 200 + world NPCs, master `6c4318a62` (run 1) | PASS | 75.8 | 35.4 / 128 / 110.1 | 22.1 / 128 / 105.6 | 33.1 / 128 | 51 | 4 |
+| move 200 + world NPCs, master `6c4318a62` (run 3) | PASS | 77.0 | 34.4 / 128 / 167.6 | 20.8 / 128 / 104.6 | 34.1 / 128 | 134 | 4 |
+| move 200 + world NPCs, this change (run 1) | PASS | 78.4 | **33.9 / 64 / 125.0** | **19.4 / 64 / 111.0** | **29.1 / 64** | **4** | **2** |
+| move 200 + world NPCs, this change (run 2) | PASS | **71.1** | 36.8 / **64 / 124.9** | 22.8 / **64 / 79.5** | **27.8** / 128 | **36** | **2** |
+| move 200 (test catalog), master `6c4318a62` | PASS | 69.7 | 33.4 / 128 / 108.9 | 19.5 / 64 / 148.8 | 30.9 / 128 | 78 | 0.25 |
+| move 200 (test catalog), this change | PASS | 72.1 | **31.9** / 128 / 170.6 | **17.1 / 64 / 124.6** | **24.1 / 64** | **6** | 0.25 |
+
+Under 200 dense moving clients with the full world NPC catalog (~9.2 million object updates/60 s, 0 failures, 0 timeouts), holding a crisp 50 ms parallel flush cadence cuts **Echo RTT P95** (`128 -> 64 ms`), **RpcFirstSend P95** (`128 -> 64 ms`), and **mob-views P50** (`4 -> 2 ms`) in half, drops **ObjectFirstSend** mean by ~15–18% (`33.1–34.1 -> 27.8–29.1 ms`), and reduces peak RPC backlog (`RpcRetainedMax`) from `51–134` down to `4–36` (`6` on the test catalog).
+
 ## Reproduce
 
 Build Release last, because the tool refuses to run when a newer Debug server DLL exists. Then run each case serially:

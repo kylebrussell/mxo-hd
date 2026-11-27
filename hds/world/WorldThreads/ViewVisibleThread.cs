@@ -18,15 +18,28 @@ namespace hds
         private static Dictionary<ushort, SpatialGrid<Subway>> subwaysByDistrict;
         private static int subwayIndexCount;
 
+        // Compact value-type record so CheckPlayerMobViews checks spawn/distance/introducibility from a
+        // contiguous array without chasing scattered Gen2 Mob objects for out-of-range neighbors.
+        private struct MobEntry
+        {
+            public Mob Mob;
+            public float X;
+            public float Z;
+            public ushort District;
+            public long CellKey;
+            public bool Spawned;
+            public bool CanIntroduce;
+        }
+
         // Single-threaded cache owned by ViewVisibleThread so the ~7,000 world mobs are not copied and
         // re-bucketed into fresh dictionaries/lists every 500 ms pass when only a handful wander.
         private sealed class MobVisibilityCache
         {
             public readonly List<Mob> Mobs = new List<Mob>();
-            public readonly List<ushort> Districts = new List<ushort>();
-            public readonly List<long> CellKeys = new List<long>();
+            public MobEntry[] Entries = Array.Empty<MobEntry>();
             public readonly Dictionary<ulong, Mob> ByEntity = new Dictionary<ulong, Mob>();
             public readonly Dictionary<ushort, SpatialGrid<Mob>> Grids = new Dictionary<ushort, SpatialGrid<Mob>>();
+            public readonly Dictionary<ushort, SpatialGrid<int>> IndexGrids = new Dictionary<ushort, SpatialGrid<int>>();
 
             public void UpdateFromWorld()
             {
@@ -67,23 +80,36 @@ namespace hds
                     return;
                 }
 
-                // Fast path: membership unchanged; only move mobs whose district or grid cell changed.
+                // Fast path: membership unchanged; refresh compact entries and only move mobs whose district/cell changed.
+                MobEntry[] entries = Entries;
                 for (int i = 0; i < Mobs.Count; i++)
                 {
                     Mob mob = Mobs[i];
                     if (mob == null) continue;
+                    ref MobEntry e = ref entries[i];
+                    float x = (float)mob.getXPos();
+                    float z = (float)mob.getZPos();
                     ushort district = mob.getDistrict();
+                    e.X = x;
+                    e.Z = z;
+                    e.Spawned = mob.getIsSpawned();
+                    e.CanIntroduce = DeathPresentation.CanIntroduceNpc(mob);
                     SpatialGrid<Mob> grid = GetOrCreateGrid(district);
-                    long cellKey = grid.GetCellKey((float)mob.getXPos(), (float)mob.getZPos());
-                    if (Districts[i] != district || CellKeys[i] != cellKey)
+                    long cellKey = grid.GetCellKey(x, z);
+                    if (e.District != district || e.CellKey != cellKey)
                     {
-                        if (Grids.TryGetValue(Districts[i], out SpatialGrid<Mob> oldGrid))
+                        if (Grids.TryGetValue(e.District, out SpatialGrid<Mob> oldGrid))
                         {
-                            oldGrid.RemoveFromCell(CellKeys[i], mob);
+                            oldGrid.RemoveFromCell(e.CellKey, mob);
+                        }
+                        if (IndexGrids.TryGetValue(e.District, out SpatialGrid<int> oldIndexGrid))
+                        {
+                            oldIndexGrid.RemoveFromCell(e.CellKey, i);
                         }
                         grid.AddToCell(cellKey, mob);
-                        Districts[i] = district;
-                        CellKeys[i] = cellKey;
+                        GetOrCreateIndexGrid(district).AddToCell(cellKey, i);
+                        e.District = district;
+                        e.CellKey = cellKey;
                     }
                 }
             }
@@ -98,32 +124,54 @@ namespace hds
                 return grid;
             }
 
+            private SpatialGrid<int> GetOrCreateIndexGrid(ushort district)
+            {
+                if (!IndexGrids.TryGetValue(district, out SpatialGrid<int> grid))
+                {
+                    grid = new SpatialGrid<int>(ViewRange);
+                    IndexGrids.Add(district, grid);
+                }
+                return grid;
+            }
+
             private void Rebuild()
             {
                 ByEntity.Clear();
                 foreach (SpatialGrid<Mob> g in Grids.Values) g.Clear();
-                Districts.Clear();
-                CellKeys.Clear();
-                if (Districts.Capacity < Mobs.Count) Districts.Capacity = Mobs.Count;
-                if (CellKeys.Capacity < Mobs.Count) CellKeys.Capacity = Mobs.Count;
+                foreach (SpatialGrid<int> g in IndexGrids.Values) g.Clear();
+                if (Entries.Length < Mobs.Count)
+                {
+                    Entries = new MobEntry[Mobs.Count];
+                }
 
+                MobEntry[] entries = Entries;
                 for (int i = 0; i < Mobs.Count; i++)
                 {
                     Mob mob = Mobs[i];
                     if (mob == null)
                     {
-                        Districts.Add(0);
-                        CellKeys.Add(0);
+                        entries[i] = default;
                         continue;
                     }
 
                     ByEntity[mob.getEntityId()] = mob;
+                    float x = (float)mob.getXPos();
+                    float z = (float)mob.getZPos();
                     ushort district = mob.getDistrict();
                     SpatialGrid<Mob> grid = GetOrCreateGrid(district);
-                    long cellKey = grid.GetCellKey((float)mob.getXPos(), (float)mob.getZPos());
+                    long cellKey = grid.GetCellKey(x, z);
                     grid.AddToCell(cellKey, mob);
-                    Districts.Add(district);
-                    CellKeys.Add(cellKey);
+                    GetOrCreateIndexGrid(district).AddToCell(cellKey, i);
+                    entries[i] = new MobEntry
+                    {
+                        Mob = mob,
+                        X = x,
+                        Z = z,
+                        District = district,
+                        CellKey = cellKey,
+                        Spawned = mob.getIsSpawned(),
+                        CanIntroduce = DeathPresentation.CanIntroduceNpc(mob)
+                    };
                 }
             }
         }
@@ -180,7 +228,7 @@ namespace hds
 
                 CheckPlayerViews(aliveClients, clientGrids, clientsByEntity);
                 stage=ScaleDiagnostics.Stage("player-views",stage);
-                CheckPlayerMobViews(aliveClients, mobGrids, mobsByEntity);
+                CheckPlayerMobViews(aliveClients, mobCache);
                 stage=ScaleDiagnostics.Stage("mob-views",stage);
                 MobMotion.Tick(aliveClients,mobsByEntity,TimeUtils.GetSimTimeSeconds());
                 stage=ScaleDiagnostics.Stage("mob-motion",stage);
@@ -665,13 +713,15 @@ namespace hds
             }
         }
 
-        private static void CheckPlayerMobViews(List<WorldClient> clients, Dictionary<ushort, SpatialGrid<Mob>> mobGrids,
-            Dictionary<ulong, Mob> mobsByEntity)
+        private static void CheckPlayerMobViews(List<WorldClient> clients, MobVisibilityCache mobCache)
         {
-            const double viewRangeSq = (double)ViewRange * ViewRange;
-            var nearbyMobs = new List<Mob>();
+            const float viewRangeSq = ViewRange * ViewRange;
+            MobEntry[] entries = mobCache.Entries;
+            Dictionary<ushort, SpatialGrid<int>> indexGrids = mobCache.IndexGrids;
+            Dictionary<ulong, Mob> mobsByEntity = mobCache.ByEntity;
+            var nonIntroducibleMobs = new List<Mob>();
             var introducibleMobs = new List<Mob>();
-            var neighborCells = new List<List<Mob>>(9);
+            var neighborCells = new List<List<int>>(9);
             var mobsToSpawn = new List<(Mob Mob, ClientView View)>();
             var petsToRefresh = new List<(Mob Mob, ClientView View)>();
             var viewsToDelete = new List<(ClientView View, Mob Mob)>();
@@ -689,7 +739,7 @@ namespace hds
                 }
 
                 ushort districtId = (ushort)thisclient.playerData.getDistrictId();
-                if (!mobGrids.TryGetValue(districtId, out SpatialGrid<Mob> grid))
+                if (!indexGrids.TryGetValue(districtId, out SpatialGrid<int> grid))
                 {
                     continue;
                 }
@@ -702,44 +752,43 @@ namespace hds
                 float px = (float)playerX;
                 float pz = (float)playerZ;
 
-                nearbyMobs.Clear();
+                nonIntroducibleMobs.Clear();
                 introducibleMobs.Clear();
                 grid.CollectNeighborCells(px, pz, ViewRange, neighborCells);
                 for (int c = 0; c < neighborCells.Count; c++)
                 {
-                    List<Mob> cell = neighborCells[c];
+                    List<int> cell = neighborCells[c];
                     for (int m = 0; m < cell.Count; m++)
                     {
-                        Mob thismob = cell[m];
+                        ref readonly MobEntry e = ref entries[cell[m]];
                         // Unspawned NPCs (corpse gone, waiting to respawn) aren't nearby, so their views get deleted below
-                        if (thismob == null || !thismob.getIsSpawned())
+                        if (!e.Spawned)
                         {
                             continue;
                         }
 
-                        double dx = px - (float)thismob.getXPos();
-                        double dz = pz - (float)thismob.getZPos();
+                        float dx = px - e.X;
+                        float dz = pz - e.Z;
                         if (dx * dx + dz * dz > viewRangeSq)
                         {
                             continue;
                         }
 
-                        nearbyMobs.Add(thismob);
-
                         // Ordinary corpses stay with their existing viewers. Scripted mission bodies are introduced
                         // with their dead attributes and sourced pose. GetViewForEntityAndGo hands out a view id,
                         // and one the client never sees spawned puts every later view id one off.
-                        if (!DeathPresentation.CanIntroduceNpc(thismob) && !MissionPersistence.PendingLootOwner(thisclient, thismob))
+                        if (!e.CanIntroduce && !MissionPersistence.PendingLootOwner(thisclient, e.Mob))
                         {
+                            nonIntroducibleMobs.Add(e.Mob);
                             continue;
                         }
 
-                        introducibleMobs.Add(thismob);
+                        introducibleMobs.Add(e.Mob);
                     }
                 }
 
                 thisclient.viewMan.ReconcileMobViews(
-                    districtId, nearbyMobs, introducibleMobs, mobsByEntity,
+                    districtId, nonIntroducibleMobs, introducibleMobs, mobsByEntity,
                     mobsToSpawn, petsToRefresh, viewsToDelete);
 
                 for (int i = 0; i < mobsToSpawn.Count; i++)
@@ -801,7 +850,7 @@ namespace hds
         /// One player's state as this pass reads it: decoded once per pass instead of once per pair (at 200 dense
         /// players the pair loop decoded 40,000 positions and goids a pass, each allocating).
         /// </summary>
-        private sealed class PlayerSample
+        internal sealed class PlayerSample
         {
             public WorldClient Client;
             public bool Eligible, Hidden;
@@ -903,9 +952,7 @@ namespace hds
 
             const double viewRangeSq = (double)ViewRange * ViewRange;
             var neighborCells = new List<List<WorldClient>>(9);
-            var nearbyClients = new List<WorldClient>(clients.Count);
-            var nearbyEntities = new List<ulong>(clients.Count);
-            var nearbyGoids = new List<UInt16>(clients.Count);
+            var nearbySamples = new List<PlayerSample>(clients.Count);
             var toSpawn = new List<(WorldClient Other, ClientView View)>();
             var toDelete = new List<ClientView>();
 
@@ -937,9 +984,7 @@ namespace hds
                 float currentPlayerX = (float)current.X;
                 float currentPlayerZ = (float)current.Z;
 
-                nearbyClients.Clear();
-                nearbyEntities.Clear();
-                nearbyGoids.Clear();
+                nearbySamples.Clear();
                 List<WorldClient> nearList = hasEvaluated ? seen.Near : new List<WorldClient>();
                 nearList.Clear();
 
@@ -985,15 +1030,12 @@ namespace hds
                             continue;
                         }
 
-                        nearbyClients.Add(otherClient);
-                        nearbyEntities.Add(other.Entity);
-                        nearbyGoids.Add(other.Goid);
+                        nearbySamples.Add(other);
                     }
                 }
 
-                long version = currentClient.viewMan.ReconcilePlayerViews(
-                    nearbyClients, nearbyEntities, nearbyGoids,
-                    current.Goid, toSpawn, toDelete);
+                long version = currentClient.viewMan.ReconcilePlayerSamples(
+                    nearbySamples, current.Goid, toSpawn, toDelete);
 
                 if (toSpawn.Count > 0)
                 {

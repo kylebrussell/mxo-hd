@@ -145,8 +145,7 @@ namespace hds
                 for (int i = 0; i < nearbyCount; i++)
                 {
                     ulong entityId = nearbyEntities[i];
-                    List<ClientView> entityViews = views.ViewsForEntity(entityId);
-                    ClientView view = entityViews != null && entityViews.Count > 0 ? entityViews[0] : null;
+                    ClientView view = views.FirstForEntity(entityId);
                     if (view == null || view.ViewID == 0)
                     {
                         view = addView(entityId, nearbyGoids[i]);
@@ -155,18 +154,70 @@ namespace hds
                     else
                     {
                         view.ReconcileStamp = stamp;
-                        if (entityViews.Count > 1)
+                        if (views.HasMultiEntity)
                         {
-                            for (int j = 1; j < entityViews.Count; j++)
-                            {
-                                entityViews[j].ReconcileStamp = stamp;
-                            }
+                            views.StampExtraEntityViews(entityId, stamp);
                         }
                     }
 
                     if (!view.viewCreated)
                     {
                         toSpawn.Add((nearbyClients[i], view));
+                    }
+                }
+
+                List<ClientView> playerViews = views.ViewsWithGoId(playerGoId);
+                if (playerViews != null)
+                {
+                    for (int i = 0; i < playerViews.Count; i++)
+                    {
+                        ClientView view = playerViews[i];
+                        if (view != null && view.viewCreated && view.ReconcileStamp != stamp)
+                        {
+                            toDelete.Add(view);
+                        }
+                    }
+                }
+
+                return views.Version;
+            }
+        }
+
+        internal long ReconcilePlayerSamples(
+            List<WorldThreads.PlayerSample> nearbySamples,
+            UInt16 playerGoId,
+            List<(WorldClient Other, ClientView View)> toSpawn,
+            List<ClientView> toDelete)
+        {
+            toSpawn.Clear();
+            toDelete.Clear();
+            lock (views)
+            {
+                long stamp = ++reconcileStamp;
+                bool hasMulti = views.HasMultiEntity;
+                int nearbyCount = nearbySamples.Count;
+                for (int i = 0; i < nearbyCount; i++)
+                {
+                    WorldThreads.PlayerSample sample = nearbySamples[i];
+                    ulong entityId = sample.Entity;
+                    ClientView view = views.FirstForEntity(entityId);
+                    if (view == null || view.ViewID == 0)
+                    {
+                        view = addView(entityId, sample.Goid);
+                        view.ReconcileStamp = stamp;
+                    }
+                    else
+                    {
+                        view.ReconcileStamp = stamp;
+                        if (hasMulti)
+                        {
+                            views.StampExtraEntityViews(entityId, stamp);
+                        }
+                    }
+
+                    if (!view.viewCreated)
+                    {
+                        toSpawn.Add((sample.Client, view));
                     }
                 }
 
@@ -289,12 +340,12 @@ namespace hds
         }
 
         /// <summary>
-        /// Stamp-based mob view reconciliation (zero HashSet): stamps all nearby mobs (including non-introducible
-        /// corpses so they stay alive in range), reconciles introducible mobs, and scans only non-player views.
+        /// Stamp-based mob view reconciliation (zero HashSet): stamps non-introducible nearby corpses so they
+        /// stay alive in range, reconciles introducible mobs in a single lookup, and scans only non-player views.
         /// </summary>
         internal void ReconcileMobViews(
             ushort districtId,
-            List<Mob> nearbyMobs,
+            List<Mob> nonIntroducibleNearby,
             List<Mob> introducibleMobs,
             Dictionary<ulong, Mob> mobsByEntity,
             List<(Mob Mob, ClientView View)> toSpawn,
@@ -307,15 +358,15 @@ namespace hds
             lock (views)
             {
                 long stamp = ++reconcileStamp;
-                for (int i = 0; i < nearbyMobs.Count; i++)
+                bool hasMulti = views.HasMultiEntity;
+                for (int i = 0; i < nonIntroducibleNearby.Count; i++)
                 {
-                    List<ClientView> entityViews = views.ViewsForEntity(nearbyMobs[i].getEntityId());
-                    if (entityViews != null)
+                    ulong entityId = nonIntroducibleNearby[i].getEntityId();
+                    ClientView existing = views.FirstForEntity(entityId);
+                    if (existing != null)
                     {
-                        for (int j = 0; j < entityViews.Count; j++)
-                        {
-                            entityViews[j].ReconcileStamp = stamp;
-                        }
+                        existing.ReconcileStamp = stamp;
+                        if (hasMulti) views.StampExtraEntityViews(entityId, stamp);
                     }
                 }
 
@@ -328,6 +379,10 @@ namespace hds
                     if (view == null || view.ViewID == 0)
                     {
                         view = addView(entityId, NumericalUtils.ByteArrayToUint16(mob.getGoId(), 1));
+                    }
+                    else if (hasMulti)
+                    {
+                        views.StampExtraEntityViews(entityId, stamp);
                     }
                     view.ReconcileStamp = stamp;
                     if (!view.viewCreated)
@@ -414,7 +469,10 @@ namespace hds
     public sealed class ViewList : System.Collections.ObjectModel.Collection<ClientView>
     {
         internal const UInt32 PlayerGoId = 12;
-        private readonly Dictionary<UInt64, List<ClientView>> byEntity = new Dictionary<UInt64, List<ClientView>>();
+        // Single-hop direct index for the 99.99% case of one view per entity; multiByEntity is allocated
+        // lazily only if a duplicate entityId is ever inserted, preserving exact first-match list order.
+        private readonly Dictionary<UInt64, ClientView> directByEntity = new Dictionary<UInt64, ClientView>();
+        private Dictionary<UInt64, List<ClientView>> multiByEntity;
         private readonly ConcurrentDictionary<UInt64, ClientView> firstByEntity = new ConcurrentDictionary<UInt64, ClientView>();
         private readonly Dictionary<UInt16, List<ClientView>> byViewId = new Dictionary<UInt16, List<ClientView>>();
         private readonly Dictionary<UInt32, List<ClientView>> byGoId = new Dictionary<UInt32, List<ClientView>>();
@@ -422,18 +480,27 @@ namespace hds
 
         internal List<ClientView> BackingList => (List<ClientView>)Items;
         internal List<ClientView> NonPlayerViews => nonPlayerViews;
+        internal bool HasMultiEntity => multiByEntity != null && multiByEntity.Count > 0;
 
         /// <summary>Bumped by every add, remove, replace and clear: the visibility pass skips a player whose views and surroundings are unchanged.</summary>
         public long Version { get; private set; }
 
         public ClientView FirstForEntity(UInt64 entityId) =>
-            byEntity.TryGetValue(entityId, out var list) && list.Count > 0 ? list[0] : null;
+            directByEntity.TryGetValue(entityId, out ClientView view) ? view : null;
 
         internal ClientView FirstForEntityLockFree(UInt64 entityId) =>
             firstByEntity.TryGetValue(entityId, out ClientView view) ? view : null;
 
-        internal List<ClientView> ViewsForEntity(UInt64 entityId) =>
-            byEntity.TryGetValue(entityId, out var list) ? list : null;
+        internal void StampExtraEntityViews(UInt64 entityId, long stamp)
+        {
+            if (multiByEntity != null && multiByEntity.TryGetValue(entityId, out List<ClientView> list))
+            {
+                for (int i = 1; i < list.Count; i++)
+                {
+                    list[i].ReconcileStamp = stamp;
+                }
+            }
+        }
 
         internal List<ClientView> ViewsWithGoId(UInt32 goId) =>
             byGoId.TryGetValue(goId, out var list) ? list : null;
@@ -479,7 +546,8 @@ namespace hds
         {
             base.ClearItems();
             Version++;
-            byEntity.Clear();
+            directByEntity.Clear();
+            multiByEntity?.Clear();
             firstByEntity.Clear();
             byViewId.Clear();
             byGoId.Clear();
@@ -488,54 +556,96 @@ namespace hds
 
         private void Rebuild()
         {
-            byEntity.Clear();
+            directByEntity.Clear();
+            multiByEntity?.Clear();
             byViewId.Clear();
             byGoId.Clear();
             nonPlayerViews.Clear();
             foreach (ClientView view in this)
             {
                 if (view == null) continue;
-                Append(byEntity, view.entityId, view);
+                AppendEntityDirectOnly(view.entityId, view);
                 Append(byViewId, view.ViewID, view);
                 Append(byGoId, view.GoID, view);
                 if (view.GoID != PlayerGoId) nonPlayerViews.Add(view);
             }
 
-            foreach (KeyValuePair<UInt64, List<ClientView>> kv in byEntity)
+            foreach (KeyValuePair<UInt64, ClientView> kv in directByEntity)
             {
-                firstByEntity[kv.Key] = kv.Value[0];
+                firstByEntity[kv.Key] = kv.Value;
             }
             foreach (UInt64 existing in firstByEntity.Keys)
             {
-                if (!byEntity.ContainsKey(existing))
+                if (!directByEntity.ContainsKey(existing))
                 {
                     firstByEntity.TryRemove(existing, out _);
                 }
             }
         }
 
+        private void AppendEntityDirectOnly(UInt64 entityId, ClientView item)
+        {
+            if (!directByEntity.TryGetValue(entityId, out ClientView first))
+            {
+                directByEntity[entityId] = item;
+                return;
+            }
+
+            if (multiByEntity == null) multiByEntity = new Dictionary<UInt64, List<ClientView>>();
+            if (!multiByEntity.TryGetValue(entityId, out List<ClientView> list))
+            {
+                list = new List<ClientView>(2) { first };
+                multiByEntity[entityId] = list;
+            }
+            list.Add(item);
+        }
+
         private void AppendEntity(UInt64 entityId, ClientView item)
         {
-            if (!byEntity.TryGetValue(entityId, out var list))
+            if (!directByEntity.TryGetValue(entityId, out ClientView first))
             {
-                byEntity[entityId] = list = new List<ClientView>(1);
+                directByEntity[entityId] = item;
                 firstByEntity[entityId] = item;
+                return;
+            }
+
+            if (multiByEntity == null) multiByEntity = new Dictionary<UInt64, List<ClientView>>();
+            if (!multiByEntity.TryGetValue(entityId, out List<ClientView> list))
+            {
+                list = new List<ClientView>(2) { first };
+                multiByEntity[entityId] = list;
             }
             list.Add(item);
         }
 
         private void UnindexEntity(UInt64 entityId, ClientView item)
         {
-            if (!byEntity.TryGetValue(entityId, out var list)) return;
-            list.Remove(item);
-            if (list.Count == 0)
+            if (multiByEntity != null && multiByEntity.TryGetValue(entityId, out List<ClientView> list))
             {
-                byEntity.Remove(entityId);
-                firstByEntity.TryRemove(entityId, out _);
+                list.Remove(item);
+                if (list.Count == 0)
+                {
+                    multiByEntity.Remove(entityId);
+                    directByEntity.Remove(entityId);
+                    firstByEntity.TryRemove(entityId, out _);
+                }
+                else
+                {
+                    ClientView nextFirst = list[0];
+                    directByEntity[entityId] = nextFirst;
+                    firstByEntity[entityId] = nextFirst;
+                    if (list.Count == 1)
+                    {
+                        multiByEntity.Remove(entityId);
+                    }
+                }
+                return;
             }
-            else
+
+            if (directByEntity.TryGetValue(entityId, out ClientView current) && ReferenceEquals(current, item))
             {
-                firstByEntity[entityId] = list[0];
+                directByEntity.Remove(entityId);
+                firstByEntity.TryRemove(entityId, out _);
             }
         }
 

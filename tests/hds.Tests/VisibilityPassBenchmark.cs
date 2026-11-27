@@ -191,8 +191,10 @@ public class VisibilityPassBenchmark
         Assert.Single(dmList);
         Assert.Same(dmView, dmList[0]);
 
-        // Removing the first view for entity 200 promotes the second view in lock-free lookup.
+        // Removing the first view for entity 200 promotes the second view in lock-free lookup and collapses multiByEntity.
+        Assert.True(vm.views.HasMultiEntity);
         vm.removeViewByViewId(boothView.ViewID);
+        Assert.False(vm.views.HasMultiEntity);
         Assert.Same(secondForEntity, vm.FindViewForEntity(200UL));
         vm.removeViewByViewId(secondForEntity.ViewID);
         Assert.Null(vm.FindViewForEntity(200UL));
@@ -246,13 +248,13 @@ public class VisibilityPassBenchmark
             [otherDistrictMob.getEntityId()] = otherDistrictMob,
         };
         // corpseMob is nearby but NOT introducible (already spawned corpse); freshMob is both nearby and introducible.
-        var nearby = new List<Mob> { corpseMob, freshMob };
+        var nonIntroducible = new List<Mob> { corpseMob };
         var introducible = new List<Mob> { freshMob };
         var toSpawn = new List<(Mob Mob, ClientView View)>();
         var pets = new List<(Mob Mob, ClientView View)>();
         var toDelete = new List<(ClientView View, Mob Mob)>();
 
-        viewer.viewMan.ReconcileMobViews(1, nearby, introducible, mobsByEntity, toSpawn, pets, toDelete);
+        viewer.viewMan.ReconcileMobViews(1, nonIntroducible, introducible, mobsByEntity, toSpawn, pets, toDelete);
 
         Assert.Single(toSpawn);
         Assert.Same(freshMob, toSpawn[0].Mob);
@@ -289,6 +291,42 @@ public class VisibilityPassBenchmark
         grid.Clear();
         grid.CollectNeighborCells(100f, 100f, 5000f, cells);
         Assert.Empty(cells);
+    }
+
+    [Fact]
+    public void FlushClientBatchHandlesSequentialParallelAndFaultIsolation()
+    {
+        // Build 24 bot clients (exceeding ParallelFlushThreshold = 16) plus a null slot and a broken client
+        // with null messageQueue whose TickFlush throws: every healthy bot must still drain its queued messages.
+        var isBotField = typeof(WorldClient).GetField("<IsBot>k__BackingField",
+            System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!;
+        var clients = new List<WorldClient>();
+        for (int i = 0; i < 24; i++)
+        {
+            var bot = Player(i);
+            isBotField.SetValue(bot, true);
+            bot.messageQueue.addObjectMessage(new byte[] { 0x01, 0x02 }, false);
+            clients.Add(bot);
+        }
+        var broken = (WorldClient)System.Runtime.CompilerServices.RuntimeHelpers.GetUninitializedObject(typeof(WorldClient));
+        clients.Insert(0, null!);
+        clients.Insert(5, broken);
+
+        // Parallel path (>= 16 clients)
+        WorldThreads.FlushClientBatch(clients);
+        Assert.All(clients.Where(c => c?.messageQueue != null),
+            c => Assert.Empty(c.messageQueue.ObjectMessagesQueue));
+
+        // Sequential path (< 16 clients)
+        var small = clients.Where(c => c?.messageQueue != null).Take(4).ToList();
+        foreach (var c in small)
+        {
+            c.messageQueue.addObjectMessage(new byte[] { 0x03, 0x04 }, false);
+        }
+        small.Insert(1, broken);
+        WorldThreads.FlushClientBatch(small);
+        Assert.All(small.Where(c => c?.messageQueue != null),
+            c => Assert.Empty(c.messageQueue.ObjectMessagesQueue));
     }
 
     [Fact]
