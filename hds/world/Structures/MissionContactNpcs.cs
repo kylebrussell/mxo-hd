@@ -39,6 +39,11 @@ namespace hds
 
         private static readonly object loadLock = new object();
         private static List<MissionContactSpot> spots;
+        private static List<MissionContactSpot> cachedDistrictSpots;
+        private static IReadOnlyList<MissionContact> cachedDistrictContacts;
+        private static Dictionary<UInt16, (MissionContactSpot Spot, MissionContact Contact)[]> cachedByDistrict;
+        private const double SpawnRangeSq = SpawnRange * SpawnRange;
+        private const double DespawnRangeSq = DespawnRange * DespawnRange;
 
         public static IReadOnlyList<MissionContactSpot> All
         {
@@ -120,16 +125,77 @@ namespace hds
             return obj;
         }
 
+        private static Dictionary<UInt16, (MissionContactSpot Spot, MissionContact Contact)[]> GetSpotsByDistrict()
+        {
+            Load();
+            List<MissionContactSpot> currentSpots = spots;
+            IReadOnlyList<MissionContact> currentContacts = MissionContacts.All;
+            Dictionary<UInt16, (MissionContactSpot Spot, MissionContact Contact)[]> cached = cachedByDistrict;
+            if (cached != null && ReferenceEquals(cachedDistrictSpots, currentSpots) &&
+                ReferenceEquals(cachedDistrictContacts, currentContacts))
+            {
+                return cached;
+            }
+
+            lock (loadLock)
+            {
+                currentSpots = spots;
+                currentContacts = MissionContacts.All;
+                if (cachedByDistrict != null && ReferenceEquals(cachedDistrictSpots, currentSpots) &&
+                    ReferenceEquals(cachedDistrictContacts, currentContacts))
+                {
+                    return cachedByDistrict;
+                }
+
+                var contactById = new Dictionary<UInt32, MissionContact>(currentContacts.Count);
+                for (int i = 0; i < currentContacts.Count; i++)
+                {
+                    MissionContact c = currentContacts[i];
+                    if (c != null && !contactById.ContainsKey(c.id))
+                    {
+                        contactById[c.id] = c;
+                    }
+                }
+
+                var grouped = new Dictionary<UInt16, List<(MissionContactSpot Spot, MissionContact Contact)>>();
+                for (int i = 0; i < currentSpots.Count; i++)
+                {
+                    MissionContactSpot spot = currentSpots[i];
+                    if (spot == null || !contactById.TryGetValue(spot.contactId, out MissionContact contact))
+                    {
+                        continue;
+                    }
+
+                    if (!grouped.TryGetValue(spot.metrId, out var list))
+                    {
+                        list = new List<(MissionContactSpot Spot, MissionContact Contact)>();
+                        grouped[spot.metrId] = list;
+                    }
+                    list.Add((spot, contact));
+                }
+
+                var built = new Dictionary<UInt16, (MissionContactSpot Spot, MissionContact Contact)[]>(grouped.Count);
+                foreach (var kv in grouped)
+                {
+                    built[kv.Key] = kv.Value.ToArray();
+                }
+
+                cachedDistrictSpots = currentSpots;
+                cachedDistrictContacts = currentContacts;
+                cachedByDistrict = built;
+                return built;
+            }
+        }
+
         /// <summary>Spawns the contacts near each player and takes away those out of range. Called by the view thread.</summary>
         public static void CheckViews(List<WorldClient> clients)
         {
-            // This pass's spots with a contact, by district: resolved once instead of per player and spot
-            // (MissionContacts.ById is a linear search).
-            var byDistrict = new Dictionary<UInt16, (MissionContactSpot, MissionContact)[]>();
-            foreach (var group in All.Select(s => (spot: s, contact: s.Contact)).Where(p => p.contact != null).GroupBy(p => p.spot.metrId))
-                byDistrict[group.Key] = group.Select(p => (p.spot, p.contact)).ToArray();
-            foreach (WorldClient client in clients)
+            var byDistrict = GetSpotsByDistrict();
+            var keep = new HashSet<UInt64>();
+            var stale = new List<ClientView>();
+            for (int ci = 0; ci < clients.Count; ci++)
             {
+                WorldClient client = clients[ci];
                 if (client == null || !client.Alive || !client.playerData.getOnWorld() || client.playerData.waitForRPCShutDown)
                 {
                     continue;
@@ -138,33 +204,37 @@ namespace hds
                 double px = 0, py = 0, pz = 0;
                 NumericalUtils.LtVector3dToDoubles(client.playerInstance.Position.getValue(), ref px, ref py, ref pz);
                 UInt16 district = (UInt16)client.playerData.getDistrictId();
-                HashSet<UInt64> keep = new HashSet<UInt64>();
-                if (!byDistrict.TryGetValue(district, out var districtSpots)) districtSpots = Array.Empty<(MissionContactSpot, MissionContact)>();
-                foreach (var (spot, contact) in districtSpots)
+                keep.Clear();
+                if (byDistrict.TryGetValue(district, out var districtSpots))
                 {
-                    double dx = spot.x - px, dz = spot.z - pz, distance = Math.Sqrt(dx * dx + dz * dz);
-                    if (distance > DespawnRange)
+                    for (int i = 0; i < districtSpots.Length; i++)
                     {
-                        continue; // neither kept nor spawned: no view lookup needed
-                    }
+                        MissionContactSpot spot = districtSpots[i].Spot;
+                        double dx = spot.x - px, dz = spot.z - pz, distSq = dx * dx + dz * dz;
+                        if (distSq > DespawnRangeSq)
+                        {
+                            continue; // neither kept nor spawned: no view lookup needed
+                        }
 
-                    UInt64 entity = EntityId(spot);
-                    ClientView existing = client.viewMan.FindViewForEntity(entity);
-                    if (distance <= DespawnRange && existing != null && existing.viewCreated)
-                    {
-                        keep.Add(entity);
-                    }
-                    else if (distance <= SpawnRange)
-                    {
-                        keep.Add(entity);
-                        new ServerPackets().SendSpawnGameObject(client, BuildContactObject(spot), entity);
+                        UInt64 entity = EntityId(spot);
+                        ClientView existing = client.viewMan.FindViewForEntity(entity);
+                        if (existing != null && existing.viewCreated)
+                        {
+                            keep.Add(entity);
+                        }
+                        else if (distSq <= SpawnRangeSq)
+                        {
+                            keep.Add(entity);
+                            new ServerPackets().SendSpawnGameObject(client, BuildContactObject(spot), entity);
+                        }
                     }
                 }
 
-                foreach (ClientView view in client.viewMan.Snapshot())
+                client.viewMan.CollectStaleViewsByGoId(ContactGoid, keep, stale);
+                for (int i = 0; i < stale.Count; i++)
                 {
-                    if (view.viewCreated && view.GoID == ContactGoid && view.entityId >= EntityBase &&
-                        view.entityId < EntityBase + 100000 && !keep.Contains(view.entityId))
+                    ClientView view = stale[i];
+                    if (view.entityId >= EntityBase && view.entityId < EntityBase + 100000)
                     {
                         new ServerPackets().sendDeleteViewPacket(client, view.ViewID);
                         client.viewMan.removeViewByViewId(view.ViewID);

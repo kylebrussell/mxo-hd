@@ -176,6 +176,39 @@ Server-side `LoadTest --authenticated --clients 200` (Release build, 30 s warmup
 
 Under 200 dense moving clients with the full world NPC catalog (~9.1–9.2 million object updates per 60 s window, 0 failures, 0 ping timeouts), `mob-motion` drops **5.0×** in mean (`15.62 ms` -> `3.14 / 3.20 ms`), **8×** in P95 (`64 ms` -> `8 ms`), and **4.5–8.1×** in max (`158.1 ms` -> `35.4 / 19.4 ms`), bringing overall visibility max from `179.2 ms` down to `97.6 / 71.0 ms` and Echo RTT max from `203.7 ms` down to `157.0 / 155.2 ms`.
 
+## Lock-free view lookup, partitioned `ViewList` indexes, and incremental mob snapshot (follow-up)
+
+Profiling `move 200 --world-mobs` on master `3bdc52c79` (`18.53 ms` visibility mean / `136.3 ms` max, `83.8%` CPU) showed the remaining non-flush costs concentrated in view lock contention and per-pass view/grid scans:
+
+1. **Cross-thread `viewMan.views` lock contention and UDP endpoint string churn (`ViewManager`, `WorldServer`).** `SendMovementUpdateToAllPlayers` called `client.viewMan.FindViewForEntity(entityId)` ~160,000 times/s under 200 moving players, acquiring `lock(views)` across every viewer on the mover's packet thread and contending with `ViewVisibleThread`. `WorldServer.ProcessDatagram` also formatted `Remote.ToString()` and locked `WorldServer.Clients` on every inbound UDP packet.
+2. **Scanning ~200 player views in non-player visibility stages (`ViewManager`, `ViewVisibleThread`, `MissionContactNpcs`, `DataMining`).** In a 200-player crowd each client holds ~199 `GoID == 12` player views and only ~8 non-player views, yet `ReconcileMobViews` (`3.81 ms`), `CollectVisibleMobs` (`mob-motion`, `3.14 ms`), `CollectStaleViewsByGoId` (`static-objects 1.22 ms`, `subways 1.02 ms`), `MissionContactNpcs.CheckViews` (`1.52 ms`, calling `Snapshot()` + `GroupBy` + `Math.Sqrt`), and `DataMining.Check` (`per-player 1.19 ms`, calling `Snapshot().Where(...).ToList()`) scanned or copied all ~210 views per client on every 500 ms pass.
+3. **Full 7,000-mob grid rebuilds and `HashSet<ulong>` reconciliation (`ViewVisibleThread`, `SpatialGrid`).** `snapshot` (`1.96 ms`) copied all ~7,000 world mobs and rebuilt fresh `SpatialGrid<Mob>` / `Dictionary<ulong, Mob>` structures every 500 ms even when only a handful of visible mobs wandered, and `CheckPlayerViews` / `CheckPlayerMobViews` built and queried `HashSet<ulong>` sets on every pass.
+
+Changes:
+
+- **Lock-free `FindViewForEntity` and partitioned `ViewList` indexes (`ViewManager.cs`, `ClientView.cs`).** `ViewList` maintains a lock-step `ConcurrentDictionary<ulong, ClientView>` for first-match lock-free `FindViewForEntity`, plus `byGoId` (`Dictionary<uint, List<ClientView>>`) and `nonPlayerViews` (`GoID != 12`). `ReconcilePlayerViews` and `ReconcileMobViews` use a per-`ViewManager` `ReconcileStamp` instead of `HashSet<ulong>`, `CollectStaleViewsByGoId` scans only `byGoId[goId]`, and mob/DataMining scans touch only `nonPlayerViews`.
+- **Incremental mob visibility cache and zero-alloc stages (`ViewVisibleThread.cs`, `SpatialGrid.cs`, `MissionContactNpcs.cs`, `DataMining.cs`).** Added `SpatialGrid<T>.AddToCell`/`RemoveFromCell`/`Clear` and `MobVisibilityCache` to update moved mobs in place without reallocating 7,000-mob grids/dictionaries when membership is unchanged; cached `MissionContactNpcs` district buckets with squared-distance checks and `CollectStaleViewsByGoId`; replaced `DataMining.Check` LINQ/`Snapshot()` copies with scratch lists and `CollectNonPlayerViewsInEntityRange`; checked lock-free `FindViewForEntity` before locking for already-spawned booths/subways.
+- **Single-receive-thread UDP endpoint cache (`WorldServer.cs`).** Caches active `EndPoint -> WorldClient` entries in `ProcessDatagram`, skipping `Remote.ToString()` and `lock(Clients)` on steady-state datagrams while falling back to the locked registry on miss, disconnect, or dictionary swap.
+
+In-process `VisibilityPassBenchmark` (Release, 200 dense players in Mara):
+
+| Stage (ms per pass) | master `3bdc52c79` | this change |
+|---|---:|---:|
+| player-views, everyone moving | 4.19 mean / 7.19 max | **3.45 mean / 5.26 max** |
+| contacts, everyone moving | 1.1–1.2 mean / 2.1–2.5 max | **0.34 mean / 1.09 max** |
+
+Server-side `LoadTest --authenticated --clients 200` (Release build, 30 s warmup + 60 s measure, run serially on 2026-11-27):
+
+| Case | Status | Ramp s | Server CPU % | Echo RTT mean / max ms | Visibility mean / P50 / max ms | snapshot ms | mob-motion ms | contacts / static / subways / per-player ms |
+|---|---|---:|---:|---|---|---|---|---|
+| move 200 + world NPCs, master `3bdc52c79` | PASS | 18.7 | 83.8 | 42.6 / 260.7 | 18.53 / 32 / 136.3 | 1.96 | 3.14 | 1.52 / 1.22 / 1.02 / 1.19 |
+| move 200 + world NPCs, this change (run 1) | PASS | 16.2 | **75.8** | **35.4 / 110.1** | **10.53 / 16 / 64.3** | **0.90** | **1.65** | **0.11 / 0.15 / 0.10 / 0.28** |
+| move 200 + world NPCs, this change (run 2\*) | PASS | 16.2 | **76.9** | 47.6 / 385.7 | 21.35 / **16** / 197.1 | 1.84 | 5.39 | **0.14 / 0.22 / 0.13** / 1.67 |
+| move 200 + world NPCs, this change (run 3) | PASS | 16.5 | **77.0** | **34.4 / 167.6** | **10.52 / 16 / 29.2** | **0.85** | **1.33** | **0.11 / 0.23 / 0.10 / 0.22** |
+| move 200 (test catalog), this change | PASS | 20.9 | **69.7** | **33.4 / 108.9** | **8.61 / 8 / 27.9** | **0.29** | **0.05** | **0.11 / 0.37 / 0.11 / 0.40** |
+
+\*Run 2 encountered a transient host CPU stall (`FlushProcessing` max 241.9 ms, `per-player` max 120.1 ms) while still holding `76.9%` Server CPU and `16 ms` median visibility; runs 1 and 3 on a quiet host matched at `10.53 / 10.52 ms` visibility mean (`1.76×` faster than `3bdc52c79`), with `contacts` **13.6×** faster (`1.52 -> 0.11 ms`), `subways` **10.4×** faster (`1.02 -> 0.10 ms`), `static-objects` **5.4–8.3×** faster (`1.22 -> 0.15 / 0.23 ms`), `per-player` **4.3–5.4×** faster (`1.19 -> 0.28 / 0.22 ms`), `snapshot` **2.2–2.3×** faster (`1.96 -> 0.90 / 0.85 ms`), `mob-motion` **1.9–2.4×** faster (`3.14 -> 1.65 / 1.33 ms`), and Echo RTT dropping to `35.4 / 34.4 ms`.
+
 ## Reproduce
 
 Build Release last, because the tool refuses to run when a newer Debug server DLL exists. Then run each case serially:

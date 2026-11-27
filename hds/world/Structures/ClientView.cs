@@ -12,6 +12,8 @@ namespace hds
         public uint spawnId = 0; // Spawn Counter 
         public bool viewCreated = false;  // To define if the view Packet was successful created
         public bool viewNeedsToBeDeleted = false; // set it to true if views needs to be "cleaned" up
+        // Visibility-pass stamp guarded by ViewManager.views lock for zero-HashSet stale-view reconciliation.
+        internal long ReconcileStamp;
         internal (byte Organization, uint Flags)? SimulacrumPresentation;
         public GameObject gameObject;
         public StaticWorldObject staticObject; // set for views of static objects, e.g. hardline booths

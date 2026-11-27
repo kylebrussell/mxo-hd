@@ -18,9 +18,124 @@ namespace hds
         private static Dictionary<ushort, SpatialGrid<Subway>> subwaysByDistrict;
         private static int subwayIndexCount;
 
+        // Single-threaded cache owned by ViewVisibleThread so the ~7,000 world mobs are not copied and
+        // re-bucketed into fresh dictionaries/lists every 500 ms pass when only a handful wander.
+        private sealed class MobVisibilityCache
+        {
+            public readonly List<Mob> Mobs = new List<Mob>();
+            public readonly List<ushort> Districts = new List<ushort>();
+            public readonly List<long> CellKeys = new List<long>();
+            public readonly Dictionary<ulong, Mob> ByEntity = new Dictionary<ulong, Mob>();
+            public readonly Dictionary<ushort, SpatialGrid<Mob>> Grids = new Dictionary<ushort, SpatialGrid<Mob>>();
+
+            public void UpdateFromWorld()
+            {
+                bool membershipChanged = false;
+                lock (WorldServer.mobs.SyncRoot)
+                {
+                    int worldCount = WorldServer.mobs.Count;
+                    if (worldCount != Mobs.Count)
+                    {
+                        membershipChanged = true;
+                    }
+                    else
+                    {
+                        for (int i = 0; i < worldCount; i++)
+                        {
+                            if (!ReferenceEquals(WorldServer.mobs[i], Mobs[i]))
+                            {
+                                membershipChanged = true;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (membershipChanged)
+                    {
+                        Mobs.Clear();
+                        if (Mobs.Capacity < worldCount) Mobs.Capacity = worldCount;
+                        for (int i = 0; i < worldCount; i++)
+                        {
+                            Mobs.Add(WorldServer.mobs[i] as Mob);
+                        }
+                    }
+                }
+
+                if (membershipChanged)
+                {
+                    Rebuild();
+                    return;
+                }
+
+                // Fast path: membership unchanged; only move mobs whose district or grid cell changed.
+                for (int i = 0; i < Mobs.Count; i++)
+                {
+                    Mob mob = Mobs[i];
+                    if (mob == null) continue;
+                    ushort district = mob.getDistrict();
+                    SpatialGrid<Mob> grid = GetOrCreateGrid(district);
+                    long cellKey = grid.GetCellKey((float)mob.getXPos(), (float)mob.getZPos());
+                    if (Districts[i] != district || CellKeys[i] != cellKey)
+                    {
+                        if (Grids.TryGetValue(Districts[i], out SpatialGrid<Mob> oldGrid))
+                        {
+                            oldGrid.RemoveFromCell(CellKeys[i], mob);
+                        }
+                        grid.AddToCell(cellKey, mob);
+                        Districts[i] = district;
+                        CellKeys[i] = cellKey;
+                    }
+                }
+            }
+
+            private SpatialGrid<Mob> GetOrCreateGrid(ushort district)
+            {
+                if (!Grids.TryGetValue(district, out SpatialGrid<Mob> grid))
+                {
+                    grid = new SpatialGrid<Mob>(ViewRange);
+                    Grids.Add(district, grid);
+                }
+                return grid;
+            }
+
+            private void Rebuild()
+            {
+                ByEntity.Clear();
+                foreach (SpatialGrid<Mob> g in Grids.Values) g.Clear();
+                Districts.Clear();
+                CellKeys.Clear();
+                if (Districts.Capacity < Mobs.Count) Districts.Capacity = Mobs.Count;
+                if (CellKeys.Capacity < Mobs.Count) CellKeys.Capacity = Mobs.Count;
+
+                for (int i = 0; i < Mobs.Count; i++)
+                {
+                    Mob mob = Mobs[i];
+                    if (mob == null)
+                    {
+                        Districts.Add(0);
+                        CellKeys.Add(0);
+                        continue;
+                    }
+
+                    ByEntity[mob.getEntityId()] = mob;
+                    ushort district = mob.getDistrict();
+                    SpatialGrid<Mob> grid = GetOrCreateGrid(district);
+                    long cellKey = grid.GetCellKey((float)mob.getXPos(), (float)mob.getZPos());
+                    grid.AddToCell(cellKey, mob);
+                    Districts.Add(district);
+                    CellKeys.Add(cellKey);
+                }
+            }
+        }
+
         public void ViewVisibleThread()
         {
             Output.WriteLine("[WORLD SERVER]View Visible Thread started");
+            MobVisibilityCache mobCache = new MobVisibilityCache();
+            List<WorldClient> deadClients = new List<WorldClient>();
+            List<WorldClient> aliveClients = new List<WorldClient>();
+            Dictionary<uint, SpatialGrid<WorldClient>> clientGrids = new Dictionary<uint, SpatialGrid<WorldClient>>();
+            Dictionary<ulong, WorldClient> clientsByEntity = new Dictionary<ulong, WorldClient>();
             while (true)
             {
               long scaleStart=ScaleDiagnostics.Start;
@@ -29,12 +144,13 @@ namespace hds
               {
                 long stage=scaleStart;
                 List<WorldClient> clients = SnapshotClients();
-                List<Mob> mobs = SnapshotMobs();
+                mobCache.UpdateFromWorld();
                 List<Subway> subways = SnapshotSubways();
 
-                List<WorldClient> deadClients = new List<WorldClient>();
-                foreach (WorldClient client in clients)
+                deadClients.Clear();
+                for (int i = 0; i < clients.Count; i++)
                 {
+                    WorldClient client = clients[i];
                     if (client != null && client.Alive == false)
                     {
                         deadClients.Add(client);
@@ -46,19 +162,20 @@ namespace hds
                     CleanDeadPlayers(deadClients, clients);
                 }
 
-                List<WorldClient> aliveClients = new List<WorldClient>();
-                foreach (WorldClient client in clients)
+                aliveClients.Clear();
+                for (int i = 0; i < clients.Count; i++)
                 {
+                    WorldClient client = clients[i];
                     if (client != null && client.Alive)
                     {
                         aliveClients.Add(client);
                     }
                 }
 
-                Dictionary<uint, SpatialGrid<WorldClient>> clientGrids = BuildClientGrids(aliveClients);
-                Dictionary<ushort, SpatialGrid<Mob>> mobGrids = BuildMobGrids(mobs);
-                Dictionary<ulong, WorldClient> clientsByEntity = BuildClientByEntity(aliveClients);
-                Dictionary<ulong, Mob> mobsByEntity = BuildMobByEntity(mobs);
+                PopulateClientGrids(aliveClients, clientGrids);
+                PopulateClientByEntity(aliveClients, clientsByEntity);
+                Dictionary<ushort, SpatialGrid<Mob>> mobGrids = mobCache.Grids;
+                Dictionary<ulong, Mob> mobsByEntity = mobCache.ByEntity;
                 stage=ScaleDiagnostics.Stage("snapshot",stage);
 
                 CheckPlayerViews(aliveClients, clientGrids, clientsByEntity);
@@ -164,8 +281,16 @@ namespace hds
         internal static Dictionary<uint, SpatialGrid<WorldClient>> BuildClientGrids(List<WorldClient> clients)
         {
             Dictionary<uint, SpatialGrid<WorldClient>> grids = new Dictionary<uint, SpatialGrid<WorldClient>>();
-            foreach (WorldClient client in clients)
+            PopulateClientGrids(clients, grids);
+            return grids;
+        }
+
+        private static void PopulateClientGrids(List<WorldClient> clients, Dictionary<uint, SpatialGrid<WorldClient>> grids)
+        {
+            foreach (SpatialGrid<WorldClient> g in grids.Values) g.Clear();
+            for (int i = 0; i < clients.Count; i++)
             {
+                WorldClient client = clients[i];
                 if (client == null || client.playerData.getOnWorld() == false || client.playerData.waitForRPCShutDown)
                 {
                     continue;
@@ -184,8 +309,6 @@ namespace hds
                 NumericalUtils.LtVector3dToDoubles(client.playerInstance.Position.getValue(), ref x, ref y, ref z);
                 grid.Add((float)x, (float)z, client);
             }
-
-            return grids;
         }
 
         private static Dictionary<ushort, SpatialGrid<Mob>> BuildMobGrids(List<Mob> mobs)
@@ -214,6 +337,13 @@ namespace hds
         internal static Dictionary<ulong, WorldClient> BuildClientByEntity(List<WorldClient> clients)
         {
             Dictionary<ulong, WorldClient> lookup = new Dictionary<ulong, WorldClient>(clients.Count);
+            PopulateClientByEntity(clients, lookup);
+            return lookup;
+        }
+
+        private static void PopulateClientByEntity(List<WorldClient> clients, Dictionary<ulong, WorldClient> lookup)
+        {
+            lookup.Clear();
             for (int i = 0; i < clients.Count; i++)
             {
                 WorldClient client = clients[i];
@@ -224,8 +354,6 @@ namespace hds
 
                 lookup[client.playerData.getEntityId()] = client;
             }
-
-            return lookup;
         }
 
         private static Dictionary<ulong, Mob> BuildMobByEntity(List<Mob> mobs)
@@ -398,15 +526,18 @@ namespace hds
                         UInt64 entityStaticId = GetSubwayEntityId(thisSubway);
                         nearbySubwayEntities.Add(entityStaticId);
 
-                        ClientView view = thisclient.viewMan.GetViewForEntityAndGo(entityStaticId,
-                            NumericalUtils.ByteArrayToUint16(thisSubway.worldObject.type, 1));
-
-                        if (!view.viewCreated && thisclient.playerData.getOnWorld())
+                        ClientView view = thisclient.viewMan.FindViewForEntity(entityStaticId);
+                        if (view == null || !view.viewCreated)
                         {
-                            ServerPackets pak = new ServerPackets();
-                            pak.SendSpawnGameObject(thisclient, thisSubway.gameObjectData, entityStaticId);
-                            view.spawnId = thisclient.playerData.spawnViewUpdateCounter;
-                            view.viewCreated = true;
+                            view = thisclient.viewMan.GetViewForEntityAndGo(entityStaticId,
+                                NumericalUtils.ByteArrayToUint16(thisSubway.worldObject.type, 1));
+                            if (!view.viewCreated && thisclient.playerData.getOnWorld())
+                            {
+                                ServerPackets pak = new ServerPackets();
+                                pak.SendSpawnGameObject(thisclient, thisSubway.gameObjectData, entityStaticId);
+                                view.spawnId = thisclient.playerData.spawnViewUpdateCounter;
+                                view.viewCreated = true;
+                            }
                         }
                     }
                 }
@@ -477,14 +608,18 @@ namespace hds
                                 case HardlineBooths.PhoneBoothType:
                                     UInt64 boothEntity = HardlineBooths.EntityId(staticWorldObject);
                                     nearbyBooths.Add(boothEntity);
-                                    ClientView boothView = thisclient.viewMan.GetViewForEntityAndGo(boothEntity, typeId);
-                                    if (!boothView.viewCreated)
+                                    ClientView boothView = thisclient.viewMan.FindViewForEntity(boothEntity);
+                                    if (boothView == null || !boothView.viewCreated)
                                     {
-                                        boothView.staticObject = staticWorldObject;
-                                        // SendSpawnGameObject takes the current spawn counter for the creation
-                                        boothView.spawnId = thisclient.playerData.spawnViewUpdateCounter;
-                                        new ServerPackets().SendSpawnGameObject(thisclient,
-                                            HardlineBooths.BuildBoothObject(staticWorldObject), boothEntity);
+                                        boothView = thisclient.viewMan.GetViewForEntityAndGo(boothEntity, typeId);
+                                        if (!boothView.viewCreated)
+                                        {
+                                            boothView.staticObject = staticWorldObject;
+                                            // SendSpawnGameObject takes the current spawn counter for the creation
+                                            boothView.spawnId = thisclient.playerData.spawnViewUpdateCounter;
+                                            new ServerPackets().SendSpawnGameObject(thisclient,
+                                                HardlineBooths.BuildBoothObject(staticWorldObject), boothEntity);
+                                        }
                                     }
                                     break;
 
@@ -534,7 +669,7 @@ namespace hds
             Dictionary<ulong, Mob> mobsByEntity)
         {
             const double viewRangeSq = (double)ViewRange * ViewRange;
-            var nearbyMobEntities = new HashSet<ulong>();
+            var nearbyMobs = new List<Mob>();
             var introducibleMobs = new List<Mob>();
             var neighborCells = new List<List<Mob>>(9);
             var mobsToSpawn = new List<(Mob Mob, ClientView View)>();
@@ -567,7 +702,7 @@ namespace hds
                 float px = (float)playerX;
                 float pz = (float)playerZ;
 
-                nearbyMobEntities.Clear();
+                nearbyMobs.Clear();
                 introducibleMobs.Clear();
                 grid.CollectNeighborCells(px, pz, ViewRange, neighborCells);
                 for (int c = 0; c < neighborCells.Count; c++)
@@ -589,7 +724,7 @@ namespace hds
                             continue;
                         }
 
-                        nearbyMobEntities.Add(thismob.getEntityId());
+                        nearbyMobs.Add(thismob);
 
                         // Ordinary corpses stay with their existing viewers. Scripted mission bodies are introduced
                         // with their dead attributes and sourced pose. GetViewForEntityAndGo hands out a view id,
@@ -604,7 +739,7 @@ namespace hds
                 }
 
                 thisclient.viewMan.ReconcileMobViews(
-                    districtId, introducibleMobs, nearbyMobEntities, mobsByEntity,
+                    districtId, nearbyMobs, introducibleMobs, mobsByEntity,
                     mobsToSpawn, petsToRefresh, viewsToDelete);
 
                 for (int i = 0; i < mobsToSpawn.Count; i++)
@@ -771,7 +906,6 @@ namespace hds
             var nearbyClients = new List<WorldClient>(clients.Count);
             var nearbyEntities = new List<ulong>(clients.Count);
             var nearbyGoids = new List<UInt16>(clients.Count);
-            var nearbyPlayerEntities = new HashSet<ulong>(clients.Count);
             var toSpawn = new List<(WorldClient Other, ClientView View)>();
             var toDelete = new List<ClientView>();
 
@@ -806,7 +940,6 @@ namespace hds
                 nearbyClients.Clear();
                 nearbyEntities.Clear();
                 nearbyGoids.Clear();
-                nearbyPlayerEntities.Clear();
                 List<WorldClient> nearList = hasEvaluated ? seen.Near : new List<WorldClient>();
                 nearList.Clear();
 
@@ -852,7 +985,6 @@ namespace hds
                             continue;
                         }
 
-                        nearbyPlayerEntities.Add(other.Entity);
                         nearbyClients.Add(otherClient);
                         nearbyEntities.Add(other.Entity);
                         nearbyGoids.Add(other.Goid);
@@ -860,7 +992,7 @@ namespace hds
                 }
 
                 long version = currentClient.viewMan.ReconcilePlayerViews(
-                    nearbyClients, nearbyEntities, nearbyGoids, nearbyPlayerEntities,
+                    nearbyClients, nearbyEntities, nearbyGoids,
                     current.Goid, toSpawn, toDelete);
 
                 if (toSpawn.Count > 0)

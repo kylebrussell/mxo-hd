@@ -41,6 +41,8 @@ namespace hds
         }
         private static readonly object sync = new object();
         private static List<Ground> ground;
+        private static readonly List<Ground> visibleScratch = new List<Ground>();
+        private static readonly List<ClientView> viewScratch = new List<ClientView>();
         private static readonly ConditionalWeakTable<WorldClient, Search> searches = new ConditionalWeakTable<WorldClient, Search>();
         private sealed class MissionReveal
         {
@@ -123,11 +125,36 @@ namespace hds
             {
                 Load(); Position(c, out double x, out double y, out double z);
                 ushort district = (ushort)c.playerData.getDistrictId();
-                var visible = ground.Where(g => !g.Node && InRange(g, district, x, y, z, 5000)).ToList();
-                foreach (Ground g in visible) Spawn(c, g);
-                foreach (ClientView v in c.viewMan.Snapshot().Where(v => v.entityId >= 982000000000UL && v.entityId < 983000000000UL).ToList())
-                    if (!visible.Any(g => g.Entity == v.entityId)) Delete(c, v);
+                visibleScratch.Clear();
+                for (int i = 0; i < ground.Count; i++)
+                {
+                    Ground g = ground[i];
+                    if (!g.Node && InRange(g, district, x, y, z, 5000))
+                    {
+                        visibleScratch.Add(g);
+                    }
+                }
+                for (int i = 0; i < visibleScratch.Count; i++)
+                {
+                    Spawn(c, visibleScratch[i]);
+                }
+                c.viewMan.CollectNonPlayerViewsInEntityRange(982000000000UL, 983000000000UL, viewScratch);
+                for (int i = 0; i < viewScratch.Count; i++)
+                {
+                    ClientView v = viewScratch[i];
+                    bool stillVisible = false;
+                    for (int j = 0; j < visibleScratch.Count; j++)
+                    {
+                        if (visibleScratch[j].Entity == v.entityId)
+                        {
+                            stillVisible = true;
+                            break;
+                        }
+                    }
+                    if (!stillVisible) Delete(c, v);
+                }
                 if (!searches.TryGetValue(c, out var s)) return;
+                var visible = visibleScratch;
                 if (c.playerData.isDead || district != s.District || UtilityAbilities.Level(c, s.Ability) <= 0 ||
                     UtilityAbilities.Level(c, UtilityAbilities.LocatorRequirement(s.Tool)) <= 0 ||
                     !Store.dbManager.WorldDbHandler.GetInventoryItems(c.playerData.getCharID()).Any(i => i.Slot >= 1 && i.Slot <= 96 && i.Goid == s.Tool))
