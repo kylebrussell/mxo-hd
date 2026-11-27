@@ -156,8 +156,9 @@ public static partial class Scenarios
 
         // 81 fc <id> <items offset>, there count then 00 <class u32> <instance u32>
         bob.SendRpc($"81 fc {Le(id)} 08 00 01 00 00 {Le(NpcLoot.CodeBit1)} {Le(instance)}");
-        await bob.WaitForRpcAsync($"81 fd {MailSuccess}");
+        RpcRecord claimed = await bob.WaitForRpcAsync($"81 fd {MailSuccess}");
         RpcRecord added = bob.Received("5e").Single();
+        CheckClaimBatch(claimed, added);
         Check.Equal(NpcLoot.CodeBit1, BitConverter.ToUInt32(added.Bytes, 3), "The item Bob took");
         Check.Equal(1L, await context.Database.LongAsync($"SELECT COUNT(*) FROM inventory WHERE charId={bob.CharId} AND goid={NpcLoot.CodeBit1}"), "Bob's Code Bit in the database");
         Check.Equal("", await context.Database.ScalarAsync($"SELECT items FROM mail WHERE id={id}"), "The message has no attachments left");
@@ -226,8 +227,8 @@ public static partial class Scenarios
         uint bitDescriptor = TradePackets.Descriptor(purity, 3), pillDescriptor = TradePackets.Descriptor(0, 1);
         string take = $"81 fc {Le(id)} 08 00 02 00 00 {Le(7332u)} {Le(bitDescriptor)} 00 {Le(2399u)} {Le(pillDescriptor)}";
         receiver.SendRpc(take);
-        await receiver.WaitForTextAsync("Your inventory is full. The attachments are still in the message.");
         await receiver.WaitForRpcAsync("81 fd ca 02 00 0c");
+        await receiver.WaitForTextAsync("Your inventory is full. The attachments are still in the message.");
         Check.Equal(stored, await db.ScalarAsync($"SELECT items FROM mail WHERE id={id}"), "Full-bag refusal retains the attachments");
         Check.Equal(0L, await ReceiverItems(), "Full-bag refusal grants no items");
 
@@ -246,8 +247,10 @@ public static partial class Scenarios
         await db.ExecuteAsync(fixtureDdl + "ALTER TABLE inventory DROP CONSTRAINT reject_second_attachment");
 
         receiver.SendRpc(take);
-        await receiver.WaitForRpcAsync("5e 0b 00 a4 1c 00 00 34 12 08 0c 01");
-        await receiver.WaitForRpcAsync($"81 fd {MailSuccess}");
+        var bit = await receiver.WaitForRpcAsync("5e 0b 00 a4 1c 00 00 34 12 08 0c 01");
+        var pill = await receiver.WaitForRpcAsync("5e 0c 00 5f 09 00 00 00 00 00 0c 01");
+        var claimed = await receiver.WaitForRpcAsync($"81 fd {MailSuccess}");
+        CheckClaimBatch(claimed, bit, pill);
         Check.Equal(2L, await ReceiverItems(), "Claim retry grants both attachments exactly once");
         Check.Equal("", await db.ScalarAsync($"SELECT items FROM mail WHERE id={id}"), "Claim emptied the message");
         Check.Equal(3L, await db.LongAsync($"SELECT count FROM inventory WHERE charId={receiver.CharId} AND goid=7332"), "Claim preserves stack size");
@@ -255,5 +258,14 @@ public static partial class Scenarios
         await receiver.WaitForRpcAsync("81 fd 77 00 00 0e");
         Check.Equal(2L, await ReceiverItems(), "Repeated claim cannot grant either attachment again");
         Check.Equal(250L, await Cash(receiver), "Claim and replay do not repeat the Info credit");
+    }
+
+    private static void CheckClaimBatch(RpcRecord claimed, params RpcRecord[] items)
+    {
+        Check.That(claimed.DatagramSequence.HasValue &&
+            items.All(item => item.DatagramSequence == claimed.DatagramSequence && item.ListCounter == claimed.ListCounter),
+            "The bag adds and 81 fd are in the same server RPC list");
+        for (int i = 0; i < items.Length; i++)
+            Check.Equal(claimed.Index - items.Length + i, items[i].Index, "Bag adds immediately precede the claim result");
     }
 }

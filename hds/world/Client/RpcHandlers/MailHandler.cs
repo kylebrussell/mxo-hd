@@ -16,8 +16,8 @@ namespace hds
 
         string HandleOf(UInt32 charId);
 
-        /// <summary>Sends a record to the character if it is online.</summary>
-        void Send(UInt32 charId, byte[] record);
+        /// <summary>Queues records together before flushing to the online character.</summary>
+        void Send(UInt32 charId, params byte[][] records);
 
         bool IsDead(UInt32 charId);
 
@@ -279,9 +279,9 @@ namespace hds
             }
             catch (Refusal error)
             {
+                host.Send(character, MailPackets.BuildStatus(0xfd, error.Status));
                 if (error.Status == MailPackets.PersonalInventoryFull)
                     Notice(character, "Your inventory is full. The attachments are still in the message.");
-                host.Send(character, MailPackets.BuildStatus(0xfd, error.Status));
                 return;
             }
             catch (Exception error) when (error is DbException || error is InvalidOperationException || error is OverflowException)
@@ -292,9 +292,10 @@ namespace hds
                 return;
             }
 
-            foreach (var (slot, item) in delivered)
-                host.Send(character, ServerPackets.BuildInventoryItemAdd(slot, item.Goid, item.InstanceData));
-            host.Send(character, MailPackets.BuildStatus(0xfd, MailPackets.Success));
+            // Like master, queue bag adds followed by the claim result before a single flush.
+            host.Send(character, delivered.Select(row =>
+                ServerPackets.BuildInventoryItemAdd(row.Slot, row.Item.Goid, row.Item.InstanceData))
+                .Append(MailPackets.BuildStatus(0xfd, MailPackets.Success)).ToArray());
             Output.WriteDebugLog($"[MAIL] Claimed char={character} id={take.Id} items={delivered.Count}");
         }
 
@@ -490,12 +491,14 @@ namespace hds
             return MySqlMailStore.HandleByCharId(charId) ?? charId.ToString();
         }
 
-        public void Send(UInt32 charId, byte[] record)
+        public void Send(UInt32 charId, params byte[][] records)
         {
             WorldClient client = MailClient(charId);
             if (client != null)
             {
-                client.messageQueue.addRpcMessage(record);
+                lock (client.messageQueue.RPCMessagesQueue.SyncRoot)
+                    foreach (byte[] record in records)
+                        client.messageQueue.addRpcMessage(record);
                 client.FlushQueue();
             }
         }

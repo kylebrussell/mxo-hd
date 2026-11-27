@@ -32,7 +32,7 @@ public sealed class MailAtomicTransfersMode : NativeQaMode
         environmentOverrides: new() { ["MXO_AGGRO"] = "0", ["MXO_MOB_WANDER"] = "0" },
         readyMessages: new[] {
             "Fresh login at Mara Central (17000,495,2300). Open Phone > Email and click New before opening or claiming either attachment. The stock Compose window should open locally. If it does not, select Delivery Check and try Reply before any claim. Record whether either window appears.",
-            "In Compose, enter QAFriend, subject Gift and a short body. Attach Code Bit 1 from bag slot 3 and 200 Info. Send and expect 81 e6 success, slot 3 empty and 300 Info.",
+            "Right-click Code Bit 1 in bag slot 3 and choose Email this item. In Compose, type QAFriend, Gift and a nonempty message body. Attach 200 Info. Send and expect 81 e6 success, slot 3 empty and 300 Info.",
             """Submit {"actor":"QAFriend","action":"mail-verify"}. QAFriend reads Gift, verifies 250 Info and claims one Code Bit 1. Then open Delivery Check on CSR and Take All. Expect 81 fd success and the first Health Pill in slot 3.""",
             """Open Bag Check and Take All with the bag full again. Expect 81 fd ca 02 00 0c and chat explaining the pill stayed attached. Dismiss the Mail popup with OK, even if it has an empty body. Submit {"actor":"QAFriend","action":"mail-verify","step":"full"} to confirm exactly one pill in CSR's bag and the second still attached."""
         });

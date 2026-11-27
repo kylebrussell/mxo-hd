@@ -119,11 +119,11 @@ public class MailTests
 
         public UInt32 CharIdByHandle(string handle) => Handles.TryGetValue(handle, out UInt32 id) ? id : 0;
         public string HandleOf(UInt32 charId) => Handles.First(h => h.Value == charId).Key;
-        public void Send(UInt32 charId, byte[] record)
+        public void Send(UInt32 charId, params byte[][] records)
         {
             if (!Online.Contains(charId)) return;
             if (!Sent.TryGetValue(charId, out var list)) Sent[charId] = list = new List<byte[]>();
-            list.Add(record);
+            list.AddRange(records);
         }
         public bool IsDead(UInt32 charId) => false;
         public void PublishCash(uint charId, uint cash) { }
@@ -279,7 +279,8 @@ public class MailTests
 
         host.Free = 0;
         mail.OnTake(2, new MailRequests.Take { Id = gift.Id, Items = { (attached.ClassData, attached.InstanceData) } });
-        Assert.Equal(H(MailPackets.BuildStatus(0xfd, MailPackets.PersonalInventoryFull)), host.Records(2).Last());
+        Assert.Equal(H(MailPackets.BuildStatus(0xfd, MailPackets.PersonalInventoryFull)), host.Records(2)[^2]);
+        Assert.StartsWith("2ec7", host.Records(2)[^1]);
 
         host.Free = 10;
         MailMessage staleMetadata = store.Get(2, gift.Id)!;

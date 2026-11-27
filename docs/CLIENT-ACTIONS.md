@@ -331,8 +331,9 @@ Run `mail-atomic-transfers` at Mara Central (17000,495,2300).
 
 1. On a fresh login, open Phone > Email and click **New** before any claim.
    If New does not open Compose, select **Delivery Check** and try **Reply**.
-2. Send **Gift** to QAFriend with Code Bit 1 from slot 3 and 200 Info. Expect
-   300 Info and an empty slot 3. Submit
+2. Right-click Code Bit 1 in slot 3 and choose **Email this item**. Send
+   **Gift** to QAFriend with a nonempty body and 200 Info. Expect 300 Info and
+   an empty slot 3. Submit
    `{"actor":"QAFriend","action":"mail-verify"}`. The helper reads Gift,
    confirms 250 Info, and claims one Code Bit.
 3. Take the pill from **Delivery Check** into slot 3. Then try the pill in
@@ -350,13 +351,17 @@ map. Reply also requires a selected message and fills the recipient locally.
 Opening the view emits no RPC. The Compose route reads no server feature,
 inbox limit, or mail-cost setting. `81 e5` is sent when the player submits.
 
-On a failed claim, `621f88e7` reads the `81 fd` status, looks up the reason
-text through `6224c0e0`, then passes it to the Mail modal at `621f7460`.
-PR1230's blocked run received that failure and showed an empty modal before
-New and Reply were tried. Master at `75be38de` sends the same failure code and
-the same inbox records. Earlier stock-client QA confirmed that Compose and
-Reply worked on `59747aa`, an ancestor of master. A fresh master control can
-use Phone > Email > New before any claim. [Original native mail retest](https://github.com/kylebrussell/mxo-hd/pull/96#issuecomment-6805218597)
+On a claim result, `621f88e7` reads the `81 fd` status. Success displays a
+local Mail modal. The failure branch looks up the reason through `6224c0e0`
+and opens the Mail modal at `621f7460`. Claude verified that Phone > Email >
+New opens normally on a fresh login to master `75be38de`, before any claim.
+
+Master queues the bag adds and `81 fd 84 00 00 8e` together. In PR1230's
+first successful native claim the same records went in separate datagrams.
+The claim now queues the records before one flush. The full-bag reply
+`81 fd ca 02 00 0c` precedes the additional refusal chat. The retained retail
+mail session has no framed claim exchange, so it supplies no evidence for
+an unsolicited header or message refresh after `81 fd`.
 
 ### Dev helpers (`MXO_DEV_COMMANDS=1`)
 
