@@ -145,6 +145,16 @@ and requested another ACK. The ordinary server reply now carries the
 seven history bits. The replay also covers the stock client's repeated
 idle ACK with PSS `0xff` and verifies the server replies with `0x7f`.
 
+PR1244's native SSR Gum run stalled on a batch of twelve `80 bc` records.
+Six per datagram cleared the stock-client stall. The limit now applies at
+world-packet assembly for both fresh sends and retries. Producers share it
+across active buffs and item effects, passives and combat styles at login
+and zone-in, ability grants, timed effects, and death and expiry cleanup.
+Live timed buffs are held in memory. Re-entry publishes the passive and
+style snapshot from the character's loaded abilities. Retries preserve
+the original RPC block boundaries and can share a datagram only if their
+combined modifier count fits the same budget.
+
 OUR policy for a silent peer keeps the existing 30-second session reap. After
 four reliable retry cycles without an advancing server acknowledgment and at
 least five seconds without an inbound datagram, the retry interval rises from

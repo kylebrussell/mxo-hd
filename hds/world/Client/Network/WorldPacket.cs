@@ -23,6 +23,20 @@ namespace hds
         /// <summary>Minimum gap between two sim-time stamped (0x82) packets.</summary>
         public const float SimTimeIntervalSeconds = 3.0f;
 
+        // Keep modifier bursts small on both first sends and retries. In native QA a
+        // twelve-record SSR Gum datagram stalled until retries reached the client.
+        private const int MaxModifierRpcs = 6;
+        private int modifierRpcCount;
+
+        // QueueRpc has already prefixed the record with its one- or two-byte length.
+        private static bool IsModifierRpc(SequencedMessage message)
+        {
+            byte[] record = message.content;
+            if (record.Length < 3) return false;
+            int opcode = (record[0] & 0x80) == 0 ? 1 : 2;
+            return record.Length > opcode + 1 && record[opcode] == 0x80 && record[opcode + 1] == 0xbc;
+        }
+
         public WorldPacket(ClientData _playerData)
         {
             this.playerData = _playerData;
@@ -39,6 +53,8 @@ namespace hds
         // carries its RPC count in one. An empty packet takes any message, however large.
         public bool addRPCContent(SequencedMessage rpcMessage)
         {
+            bool modifier = IsModifierRpc(rpcMessage);
+            if (modifier && modifierRpcCount == MaxModifierRpcs) return false;
             if (!IsEmpty && (RPCMessages.Count >= 255 || checkIfBufferIsFull(rpcMessage.content.Length + 2)))
             {
                 return false;
@@ -53,6 +69,7 @@ namespace hds
             }
 
             this.RPCMessages.Add(rpcMessage);
+            if (modifier) modifierRpcCount++;
             bufferSize = (UInt16)Math.Min(UInt16.MaxValue, bufferSize + rpcMessage.content.Length + 2);
             return true;
         }
@@ -65,12 +82,17 @@ namespace hds
         {
             if (block == null || block.Count == 0) return true;
             int totalBytes = IsEmpty ? 0 : 3;
+            int blockModifiers = 0;
             bool hasTimedView = false;
             for (int i = 0; i < block.Count; i++)
             {
                 totalBytes += block[i].content.Length + 2;
+                if (IsModifierRpc(block[i])) blockModifiers++;
                 if (block[i].TimedViewWithRpc != null) hasTimedView = true;
             }
+            // Fresh blocks are assigned only after packet packing, so each immutable
+            // block fits alone. Check the total before combining it with other blocks.
+            if (modifierRpcCount + blockModifiers > MaxModifierRpcs) return false;
             if (!IsEmpty && (hasTimedView || RPCMessages.Count + block.Count > 255 || checkIfBufferIsFull(totalBytes)))
             {
                 return false;
@@ -85,6 +107,7 @@ namespace hds
                 }
                 this.RPCMessages.Add(message);
             }
+            modifierRpcCount += blockModifiers;
             bufferSize = (UInt16)Math.Min(UInt16.MaxValue, bufferSize + totalBytes);
             return true;
         }
@@ -117,6 +140,7 @@ namespace hds
             RPCMessages.RemoveAll(message =>
             {
                 if (!message.DiscardUnassignedWorldRpc(world, transport)) return false;
+                if (IsModifierRpc(message)) modifierRpcCount--;
                 if (message.TimedViewWithRpc is { } view) ObjectMessages.Remove(view);
                 return true;
             });
