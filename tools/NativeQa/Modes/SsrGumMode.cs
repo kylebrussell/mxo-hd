@@ -19,7 +19,8 @@ public sealed class SsrGumMode : NativeQaMode
             "Mara Central (17000,495,2300), no teleport or target. Stay out of combat. Activate SSR Gum in bag 5 via the Inventory item menu.",
             "Expect a 1 s cast and one gum left. PacketLog: 80 c6 05 00 or 80 b9 2d 05 with bag 5/item flag, 80 ac 2d 05, 69 01 05 00, self Run scale 02 80 08 cd cc 4c 3d. Gum has no separate reuse timer.",
             "Expect [BUFF] 1325 on for 60 s and [MODIFIER] char=110 source=1325 adds for 60 s: 524 +1, 564 -1, 638 +10, 575 -1, 519 +2, 1044 +1, 522 +1, 209 -5, 115 +5, 1032 +1, 342 +1, 157 -4. Look for the gum FX every 4 s (84 00 00 04 in the self view).",
-            "While gum is active, activate Quicksilver Pill in bag 6. Run scale goes to .15 (9a 99 19 3e). Let gum expire after 60 s. All twelve gum records remove and the gum FX stops. Run scale drops to .10 (cd cc cc 3d) while Quicksilver stays active."
+            "While gum is active, activate Quicksilver Pill in bag 6. Run scale goes to .15 (9a 99 19 3e). Let gum expire after 60 s. All twelve gum records remove and the gum FX stops. Run scale drops to .10 (cd cc cc 3d) while Quicksilver stays active.",
+            "Check that the gum icon clears and chat keeps working after expiry. PacketLog should have separate apply and expiry batches with up to six gum records each. Check the client ACKs them without a sustained resend run."
         });
 
     public override async Task<byte[]> AfterStartAsync(NativeQaBootstrapContext context)

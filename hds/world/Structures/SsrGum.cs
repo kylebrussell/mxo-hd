@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 
 namespace hds
@@ -6,6 +7,19 @@ namespace hds
     {
         internal const uint Item = 47360;
         internal const ushort Ability = 1325;
+        private const int RecordsPerBatch = 6;
+
+        internal static void QueueRecords(WorldClient client, IReadOnlyList<byte[]> records)
+        {
+            // Native QA eventually acknowledged both large blocks, after 7 and 34 sends.
+            // Publish the same records in smaller batches while the buff itself changes atomically.
+            for (int i = 0; i < records.Count; i++)
+            {
+                if (i > 0 && i % RecordsPerBatch == 0)
+                    client.FlushQueue(force: true);
+                client.messageQueue.addRpcMessage(records[i]);
+            }
+        }
 
         internal static AbilityBuffs.Buff Definition()
         {

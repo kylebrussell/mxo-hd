@@ -35,6 +35,8 @@ public static partial class Scenarios
 
         await CheckModifiers(off: true);
         await CheckMovement("cd cc cc 3d");
+        actor.SendRpc("81 48");
+        await actor.WaitForRpcAsync("81 49");
 
         Cast(actor, ability);
         var refusal = await actor.WaitForRpcAsync("80 ba 2d 05");
@@ -61,8 +63,15 @@ public static partial class Scenarios
             await actor.WaitUntilAsync(() => patterns.All(pattern => actor.Received(pattern).Count > 0),
                 off ? "all twelve gum removals at expiry" : "all twelve gum adds for 60 seconds",
                 TimeSpan.FromSeconds(off ? 65 : 5));
-            foreach (var pattern in patterns)
-                Check.Equal(1, actor.Received(pattern).Count, $"One SSR Gum modifier record {pattern}");
+            var records = patterns.Select(pattern => actor.Received(pattern).Single()).ToArray();
+            foreach (var datagram in records.GroupBy(record => record.DatagramSequence))
+            {
+                Check.That(datagram.Key.HasValue && datagram.Count() <= 6,
+                    $"A datagram carries at most six gum records, got {datagram.Count()}");
+            }
+            var counts = records.GroupBy(record => record.ListCounter).Select(list => list.Count()).ToArray();
+            Check.That(counts.Length > 1 && counts.All(count => count <= 6),
+                $"Gum {(off ? "expiry" : "apply")} spans separate reliable blocks");
         }
     }
 }
