@@ -16,6 +16,12 @@ namespace hds
         private static bool ItemReady(WorldClient client) => client.Alive && client.playerData.getOnWorld() &&
             !client.playerData.worldChangePending && !client.playerData.DistrictIsLA() && ControlActions.CanUseAbilities(client);
 
+        private static bool OutsideCombat(WorldClient client)
+        {
+            var combat = CombatManager.GetHandler(client);
+            return !combat.isCombatRunning && !combat.HasActiveInterlock;
+        }
+
         public void processItemMove(ref byte[] packet)
         {
             byte[] sourceSlot = {packet[0], packet[1]};
@@ -160,6 +166,8 @@ namespace hds
                 if (!ConsumableItems.TryGet(goid, out ConsumableItems.Consumable consumable) || consumable.AbilityId != abilityId)
                     return false;
                 bool appearance = consumable.Effect == ConsumableItems.Effect.Appearance;
+                bool blueMarble = BlueMarbles.Handles(abilityId);
+                bool requiresOutsideCombat = appearance || blueMarble;
                 bool timedBuff = consumable.Effect == ConsumableItems.Effect.TimedBuff;
                 if ((appearance || timedBuff) && (slot < 1 || slot > 96))
                     return false;
@@ -188,13 +196,22 @@ namespace hds
                         ClientActionsHandler.Notice(client, "This RSI pill is not compatible with your character.");
                         return true;
                     }
-                    if (!RsiPills.OutsideCombat(client))
-                    {
-                        client.messageQueue.addRpcMessage(AbilityRefusals.Encode(
-                            new AbilityRefusals.Record(abilityId, AbilityRefusals.MustBeOutsideCombat)));
-                        client.FlushQueue();
-                        return true;
-                    }
+                }
+                if (requiresOutsideCombat && !OutsideCombat(client))
+                {
+                    client.messageQueue.addRpcMessage(AbilityRefusals.Encode(
+                        new AbilityRefusals.Record(abilityId, AbilityRefusals.MustBeOutsideCombat)));
+                    client.FlushQueue();
+                    return true;
+                }
+                int requiredRank = blueMarble ? BlueMarbles.RequiredAwakenedRank(abilityId) : 0;
+                if (requiredRank > 0 && AbilityPassives.Level(client, AbilityProgression.AwakenedAbility) < requiredRank)
+                {
+                    client.messageQueue.addRpcMessage(AbilityRefusals.Encode(
+                        new AbilityRefusals.Record(abilityId, AbilityRefusals.NoClientMessage)));
+                    ClientActionsHandler.Notice(client, $"This Blue Marble requires Awakened rank {requiredRank}.");
+                    client.FlushQueue();
+                    return true;
                 }
                 double now = TimeUtils.GetSimTimeSeconds();
                 bool busy = !ItemReady(client) || itemCasts.TryGetValue(client, out _) || AbilityCooldowns.IsCasting(data, now);
@@ -245,7 +262,7 @@ namespace hds
                         itemCasts.Remove(client);
                         if (client.playerData != data || !ItemReady(client) ||
                             !ConsumableItems.CastMatches(data, world, life, castEnd) ||
-                            (appearance && !RsiPills.OutsideCombat(client)) ||
+                            (requiresOutsideCombat && !OutsideCombat(client)) ||
                             Store.dbManager.WorldDbHandler.GetItemGOIDAtInventorySlot(slot) != goid)
                         {
                             ReleaseReservation();
@@ -309,6 +326,8 @@ namespace hds
                     TimeUtils.GetSimTimeSeconds());
             if (TacticBoostItems.Handles(consumable.AbilityId))
                 ServerPackets.SendPlayerAbilityEffect(client, TacticBoostItems.ActivationFx);
+            else if (BlueMarbles.Handles(consumable.AbilityId))
+                ServerPackets.SendPlayerAbilityEffect(client, BlueMarbles.ActivationFx(consumable.AbilityId));
             else client.FlushQueue();
             return true;
         }

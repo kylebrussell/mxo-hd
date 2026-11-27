@@ -112,6 +112,7 @@ public static partial class Scenarios
         new Scenario("quicksilver-pill", QuicksilverPillUse, StillNpcs),
         new Scenario("tactic-boost-consumables", TacticBoostConsumables, StillNpcs),
         new Scenario("inner-strength-booster", InnerStrengthBoosterUse, StillNpcs),
+        new Scenario("blue-marble-consumables", BlueMarbleConsumables, StillNpcs),
         new Scenario("consumable-sweep-permissions", ConsumableSweepPermissions, StillNpcs),
         new Scenario("health-boost-pills", HealthBoostPillUse, HealthCallbackNpcs),
         new Scenario("prison-devices", PrisonDeviceUse, new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="1"}),

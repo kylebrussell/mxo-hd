@@ -78,6 +78,9 @@ namespace hds
             { 8324, new Consumable(550, Effect.TimedBuff, 0, 0) },
             { 8325, new Consumable(551, Effect.TimedBuff, 0, 0) },
             { InnerStrengthBooster.Item, new Consumable(InnerStrengthBooster.Ability, Effect.TimedBuff, 0, 0) },
+            { BlueMarbles.Item1, BlueMarbles.Consumable(BlueMarbles.Stage1) },
+            { BlueMarbles.Item2, BlueMarbles.Consumable(BlueMarbles.Stage2) },
+            { BlueMarbles.Item3, BlueMarbles.Consumable(BlueMarbles.Stage3) },
         };
 
         public static bool TryGet(UInt32 goid, out Consumable consumable)
@@ -104,6 +107,9 @@ namespace hds
         public static int RequiredLevel(UInt32 goid)
         {
             if (goid == QuicksilverPill.Item) return QuicksilverPill.RequiredLevel;
+            // These character level requirements are on the items, in addition to the granted ability's Awakened rank.
+            if (goid == BlueMarbles.Item2) return 40;
+            if (goid == BlueMarbles.Item3) return 50;
             if (goid >= TacticBoostItems.FirstItem && goid <= TacticBoostItems.LastItem)
                 return TacticBoostItems.RequiredLevel(goid);
             return goid >= 39407 && goid <= 39410 ? (int)(goid - 39406) * 10 : 0;

@@ -114,6 +114,9 @@ namespace hds
             { 550, TacticBoostItems.Definition(550) },
             { 551, TacticBoostItems.Definition(551) },
             { InnerStrengthBooster.Ability, InnerStrengthBooster.Definition() },
+            { BlueMarbles.Stage1, BlueMarbles.Definition(BlueMarbles.Stage1) },
+            { BlueMarbles.Stage2, BlueMarbles.Definition(BlueMarbles.Stage2) },
+            { BlueMarbles.Stage3, BlueMarbles.Definition(BlueMarbles.Stage3) },
         };
 
         /// <summary>Ability id to the buff it gives; records, values and times from the first retail use found.</summary>
