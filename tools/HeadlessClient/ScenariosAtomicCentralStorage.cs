@@ -18,9 +18,15 @@ public static partial class Scenarios
             Items = new[] { (3, StorageTestBit, 10), (4, 7333u, 3) },
             OwnedLoadedAbilities = new[] { ((ushort)2, (ushort)1) }
         });
+        // Imported saves can share an unrelated archive slot. Neither row is safe to move.
+        await context.Database.ExecuteAsync("INSERT INTO char_abilities (char_id,slot,ability_id,level,is_loaded) VALUES " +
+            $"({player.CharId},2,-2147466240,1,0),({player.CharId},2,-2147466240,2,0)");
         await context.Database.ExecuteAsync(CentralStorageUploadFaultSql(player.CharId));
         await player.EnterWorldAsync();
         await ProveAtomicCentralStorageAsync(player, context.Database);
+        Check.Equal(2L, await context.Database.LongAsync(
+            $"SELECT COUNT(*) FROM char_abilities WHERE char_id={player.CharId} AND slot=2 AND ability_id=-2147466240"),
+            "Unrelated ambiguous archive rows are preserved");
     }
 
     public static async Task ProveAtomicCentralStorageAsync(HeadlessPlayer player, ThrowawayDatabase db)

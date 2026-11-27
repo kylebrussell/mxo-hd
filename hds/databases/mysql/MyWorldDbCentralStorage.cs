@@ -35,7 +35,7 @@ namespace hds.databases
 
                 var bag = move == null ? null : ReadLockedBagStacks(tx, character);
                 var archive = ReadLockedArchive(tx, character);
-                if ((move != null && bag == null) || archive == null) return Failed();
+                if (move != null && bag == null) return Failed();
 
                 CentralStorage.Entry StoredAt(int slot) => archive.TryGetValue(slot, out var row) ? row.Entry : default;
                 StackMoves.Stack BagAt(int slot) => bag.TryGetValue(slot, out var row) ? row.Item : default;
@@ -118,7 +118,10 @@ namespace hds.databases
                 var entry = CodeStorage.IsCode(value) && goid != 0 && level >= 0 && level < CodeStorage.MaxCount
                     ? CentralStorage.Entry.Code(goid, (int)level + 1)
                     : CentralStorage.Entry.Ability;
-                if (!archive.TryAdd(slot, (rows.GetUInt32(0), value, entry))) return null;
+                // Legacy characters can have repeated known slots. Reserve an ambiguous slot
+                // without letting it block an unrelated move or select an arbitrary row.
+                if (!archive.TryAdd(slot, (rows.GetUInt32(0), value, entry)))
+                    archive[slot] = (0, 0, CentralStorage.Entry.Ability);
             }
             return archive;
         }
