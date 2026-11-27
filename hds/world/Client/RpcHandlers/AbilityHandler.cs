@@ -904,6 +904,8 @@ namespace hds
             { HealthBoostPills.Deny(Store.currentClient, AbilityID); return; }
             if (AbilityID == RsiPills.Ability)
             { Deny(AbilityID, "Use an owned RSI modification pill.", AbilityRefusals.RequiredItemCategory); return; }
+            if (AbilityID == QuicksilverPill.Ability)
+            { Deny(AbilityID, "Use an owned Quicksilver Pill.", AbilityRefusals.RequiredItemCategory); return; }
 
             if (!ControlActions.CanUseAbilities(Store.currentClient))
             {

@@ -25,7 +25,8 @@ namespace hds
             ConditionSweep,
             AntiStun,
             /// <summary>Changes one owned avatar appearance component permanently.</summary>
-            Appearance
+            Appearance,
+            Quicksilver
         }
 
         public struct Consumable
@@ -71,6 +72,7 @@ namespace hds
             { 39413, new Consumable(189, Effect.MaxHealthBoost, 0, 30) },  // Health Boost 3.0 -> PillBolsterHealth3Ability
             { 39414, new Consumable(673, Effect.MaxHealthBoost, 0, 30) },  // Health Boost 4.0 -> PillBolsterHealth4Ability
             { 38539, new Consumable(659, Effect.ConditionSweep, HealPill, 10) },  // ConditionSweepGrant -> PillConditionSweep1Ability
+            { QuicksilverPill.Item, new Consumable(QuicksilverPill.Ability, Effect.Quicksilver, 0, QuicksilverPill.Reuse) },
         };
 
         public static bool TryGet(UInt32 goid, out Consumable consumable)
@@ -86,7 +88,7 @@ namespace hds
         {
             return consumable.Effect == Effect.Heal || consumable.Effect == Effect.Cure ||
                 consumable.Effect == Effect.ConditionSweep || consumable.Effect == Effect.MaxHealthBoost ||
-                consumable.Effect == Effect.Appearance;
+                consumable.Effect == Effect.Appearance || consumable.Effect == Effect.Quicksilver;
         }
 
         // A death/revival or leave/re-entry into the same district invalidates the original cast too.
@@ -94,7 +96,8 @@ namespace hds
             data.worldGeneration == world && data.lifeGeneration == life && data.castEndsAt == castEnd;
 
         /// <summary>Stored CharStatsPrerequisite/ReqCharLevel on the antibiotic item records.</summary>
-        public static int RequiredLevel(UInt32 goid) => goid >= 39407 && goid <= 39410 ? (int)(goid - 39406) * 10 : 0;
+        public static int RequiredLevel(UInt32 goid) => goid == QuicksilverPill.Item ? QuicksilverPill.RequiredLevel
+            : goid >= 39407 && goid <= 39410 ? (int)(goid - 39406) * 10 : 0;
 
         /// <summary>
         /// The bag slot a 80 b9 ability request uses an item from, or null. The request body (after the header)

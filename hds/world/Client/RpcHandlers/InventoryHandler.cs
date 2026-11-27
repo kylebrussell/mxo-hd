@@ -160,7 +160,8 @@ namespace hds
                 if (!ConsumableItems.TryGet(goid, out ConsumableItems.Consumable consumable) || consumable.AbilityId != abilityId)
                     return false;
                 bool appearance = consumable.Effect == ConsumableItems.Effect.Appearance;
-                if (appearance && (slot < 1 || slot > 96))
+                bool quicksilver = consumable.Effect == ConsumableItems.Effect.Quicksilver;
+                if ((appearance || quicksilver) && (slot < 1 || slot > 96))
                     return false;
                 if (Stealth.IsOn(client, Stealth.MasterShadowAbility) && AbilityCatalog.Find(abilityId)?.CastSeconds > 0)
                 {
@@ -238,19 +239,18 @@ namespace hds
                             (appearance && !RsiPills.OutsideCombat(client)) ||
                             Store.dbManager.WorldDbHandler.GetItemGOIDAtInventorySlot(slot) != goid)
                         {
-                            lock (data.cooldownEndsAt)
-                            {
-                                if (data.cooldownEndsAt.TryGetValue((UInt16)goid, out double itemEnd) && itemEnd == reservedUntil)
-                                    data.cooldownEndsAt.Remove((UInt16)goid);
-                                if (consumable.Group != 0 && data.cooldownEndsAt.TryGetValue(consumable.Group, out double groupEnd) && groupEnd == reservedUntil)
-                                    data.cooldownEndsAt.Remove(consumable.Group);
-                            }
+                            ReleaseReservation();
                             Output.WriteDebugLog("[INVENTORY] Item " + goid + " cast cancelled (slot, life, control, cast or world changed); not used");
                             return;
                         }
                         if (appearance)
                         {
                             CommitRsiPill(client, slot, goid);
+                            return;
+                        }
+                        if (quicksilver)
+                        {
+                            if (!CommitQuicksilver(client, slot, consumable)) ReleaseReservation();
                             return;
                         }
                         AbilityCooldowns.StartItem(client, (UInt16)goid, consumable.Group, consumable.Seconds, TimeUtils.GetSimTimeSeconds());
@@ -265,7 +265,39 @@ namespace hds
                     }
                 });
                 return true;
+
+                void ReleaseReservation()
+                {
+                    lock (data.cooldownEndsAt)
+                    {
+                        if (data.cooldownEndsAt.TryGetValue((UInt16)goid, out double itemEnd) && itemEnd == reservedUntil)
+                            data.cooldownEndsAt.Remove((UInt16)goid);
+                        if (consumable.Group != 0 && data.cooldownEndsAt.TryGetValue(consumable.Group, out double groupEnd) && groupEnd == reservedUntil)
+                            data.cooldownEndsAt.Remove(consumable.Group);
+                    }
+                }
             }
+        }
+
+        private static bool CommitQuicksilver(WorldClient client, ushort slot, ConsumableItems.Consumable consumable)
+        {
+            uint character = client.playerData.getCharID();
+            int remaining;
+            try { remaining = Store.dbManager.WorldDbHandler.ConsumeOwnedBagItem(character, slot, QuicksilverPill.Item); }
+            catch (System.Data.Common.DbException error)
+            {
+                Output.WriteDebugLog($"[QUICKSILVER] Rolled back char={character}: {error.Message}");
+                ClientActionsHandler.Notice(client, "The Quicksilver Pill could not be used. Your pill was kept.");
+                return false;
+            }
+            if (remaining < 0) return false;
+            client.messageQueue.addRpcMessage(remaining == 0 ? ServerPackets.BuildInventoryItemDelete(slot)
+                : ItemStacks.BuildStackCount(slot, remaining));
+            AbilityBuffs.Apply(client, QuicksilverPill.Ability, client);
+            AbilityCooldowns.StartItem(client, (ushort)QuicksilverPill.Item, consumable.Group, consumable.Seconds,
+                TimeUtils.GetSimTimeSeconds());
+            client.FlushQueue();
+            return true;
         }
 
         private static void CommitRsiPill(WorldClient client, ushort slot, uint goid)

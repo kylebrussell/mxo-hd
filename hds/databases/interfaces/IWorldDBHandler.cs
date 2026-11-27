@@ -55,6 +55,7 @@ namespace hds.databases.interfaces{
         void SetPlayerValues();
         void SetRsiValues();
         (int[] Rsi, int Remaining) ConsumeRsiPill(uint charId, ushort slot, uint goid);
+        int ConsumeOwnedBagItem(uint charId, ushort slot, uint goid);
         void SetOnlineStatus(UInt32 charId, ushort isOnline);
         void ResetOnlineStatus();
         void SavePlayer(WorldClient client);
