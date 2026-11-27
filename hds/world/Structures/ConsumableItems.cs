@@ -91,6 +91,7 @@ namespace hds
             { OptimizerConsumables.InhalerItem, OptimizerConsumables.Consumable(OptimizerConsumables.Inhaler) },
             { OptimizerConsumables.HypoItem, OptimizerConsumables.Consumable(OptimizerConsumables.Hypo) },
             { OptimizerConsumables.OverdriveItem, OptimizerConsumables.Consumable(OptimizerConsumables.Overdrive) },
+            { AndvaranautCoupler.Item, new Consumable(AndvaranautCoupler.Ability, Effect.TimedBuff, 0, AndvaranautCoupler.Reuse) },
         };
 
         public static bool TryGet(UInt32 goid, out Consumable consumable)
