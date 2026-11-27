@@ -58,42 +58,93 @@ namespace ManyMonkeys.Cryptography
 		-****************************************************************************/
 		private static uint f32(uint x,ref uint[] k32,int keyLen)
 		{
-			byte[]  b = {b0(x),b1(x),b2(x),b3(x)};
+			byte b0v = b0(x);
+			byte b1v = b1(x);
+			byte b2v = b2(x);
+			byte b3v = b3(x);
 		
 			/* Run each byte thru 8x8 S-boxes, xoring with key byte at each stage. */
 			/* Note that each byte goes through a different combination of S-boxes.*/
 
-			//*((DWORD *)b) = Bswap(x);	/* make b[0] = LSB, b[3] = MSB */
 			switch (((keyLen + 63)/64) & 3)
 			{
 				case 0:		/* 256 bits of key */
-				b[0] = (byte)(P8x8[P_04,b[0]] ^ b0(k32[3]));
-				b[1] = (byte)(P8x8[P_14,b[1]] ^ b1(k32[3]));
-				b[2] = (byte)(P8x8[P_24,b[2]] ^ b2(k32[3]));
-				b[3] = (byte)(P8x8[P_34,b[3]] ^ b3(k32[3]));
-				/* fall thru, having pre-processed b[0]..b[3] with k32[3] */
+				b0v = (byte)(P8x8[P_04,b0v] ^ b0(k32[3]));
+				b1v = (byte)(P8x8[P_14,b1v] ^ b1(k32[3]));
+				b2v = (byte)(P8x8[P_24,b2v] ^ b2(k32[3]));
+				b3v = (byte)(P8x8[P_34,b3v] ^ b3(k32[3]));
+				/* fall thru, having pre-processed b0v..b3v with k32[3] */
 				goto case 3;
 				case 3:		/* 192 bits of key */
-				b[0] = (byte)(P8x8[P_03,b[0]] ^ b0(k32[2]));
-				b[1] = (byte)(P8x8[P_13,b[1]] ^ b1(k32[2]));
-				b[2] = (byte)(P8x8[P_23,b[2]] ^ b2(k32[2]));
-				b[3] = (byte)(P8x8[P_33,b[3]] ^ b3(k32[2]));
-				/* fall thru, having pre-processed b[0]..b[3] with k32[2] */
+				b0v = (byte)(P8x8[P_03,b0v] ^ b0(k32[2]));
+				b1v = (byte)(P8x8[P_13,b1v] ^ b1(k32[2]));
+				b2v = (byte)(P8x8[P_23,b2v] ^ b2(k32[2]));
+				b3v = (byte)(P8x8[P_33,b3v] ^ b3(k32[2]));
+				/* fall thru, having pre-processed b0v..b3v with k32[2] */
 				goto case 2;
 				case 2:		/* 128 bits of key */
-				b[0] = P8x8[P_00, P8x8[P_01, P8x8[P_02, b[0]] ^ b0(k32[1])] ^ b0(k32[0])];
-				b[1] = P8x8[P_10, P8x8[P_11, P8x8[P_12, b[1]] ^ b1(k32[1])] ^ b1(k32[0])];
-				b[2] = P8x8[P_20, P8x8[P_21, P8x8[P_22, b[2]] ^ b2(k32[1])] ^ b2(k32[0])];
-				b[3] = P8x8[P_30, P8x8[P_31, P8x8[P_32, b[3]] ^ b3(k32[1])] ^ b3(k32[0])];
+				b0v = P8x8[P_00, P8x8[P_01, P8x8[P_02, b0v] ^ b0(k32[1])] ^ b0(k32[0])];
+				b1v = P8x8[P_10, P8x8[P_11, P8x8[P_12, b1v] ^ b1(k32[1])] ^ b1(k32[0])];
+				b2v = P8x8[P_20, P8x8[P_21, P8x8[P_22, b2v] ^ b2(k32[1])] ^ b2(k32[0])];
+				b3v = P8x8[P_30, P8x8[P_31, P8x8[P_32, b3v] ^ b3(k32[1])] ^ b3(k32[0])];
 				break;
 			}
 
 
 			/* Now perform the MDS matrix multiply inline. */
-			return	(uint)((M00(b[0]) ^ M01(b[1]) ^ M02(b[2]) ^ M03(b[3]))) ^
-			(uint)((M10(b[0]) ^ M11(b[1]) ^ M12(b[2]) ^ M13(b[3])) <<  8) ^
-			(uint)((M20(b[0]) ^ M21(b[1]) ^ M22(b[2]) ^ M23(b[3])) << 16) ^
-			(uint)((M30(b[0]) ^ M31(b[1]) ^ M32(b[2]) ^ M33(b[3])) << 24) ;
+			return	(uint)((M00(b0v) ^ M01(b1v) ^ M02(b2v) ^ M03(b3v))) ^
+			(uint)((M10(b0v) ^ M11(b1v) ^ M12(b2v) ^ M13(b3v)) <<  8) ^
+			(uint)((M20(b0v) ^ M21(b1v) ^ M22(b2v) ^ M23(b3v)) << 16) ^
+			(uint)((M30(b0v) ^ M31(b1v) ^ M32(b2v) ^ M33(b3v)) << 24) ;
+		}
+
+		private readonly uint[] sbox0 = new uint[256];
+		private readonly uint[] sbox1 = new uint[256];
+		private readonly uint[] sbox2 = new uint[256];
+		private readonly uint[] sbox3 = new uint[256];
+
+		private void BuildSboxTables(int keyLen)
+		{
+			int keyMode = ((keyLen + 63) / 64) & 3;
+			byte k00 = b0(sboxKeys[0]), k01 = b1(sboxKeys[0]), k02 = b2(sboxKeys[0]), k03 = b3(sboxKeys[0]);
+			byte k10 = b0(sboxKeys[1]), k11 = b1(sboxKeys[1]), k12 = b2(sboxKeys[1]), k13 = b3(sboxKeys[1]);
+			byte k20 = b0(sboxKeys[2]), k21 = b1(sboxKeys[2]), k22 = b2(sboxKeys[2]), k23 = b3(sboxKeys[2]);
+			byte k30 = b0(sboxKeys[3]), k31 = b1(sboxKeys[3]), k32 = b2(sboxKeys[3]), k33 = b3(sboxKeys[3]);
+
+			for (int v = 0; v < 256; v++)
+			{
+				byte y0 = (byte)v;
+				byte y1 = (byte)v;
+				byte y2 = (byte)v;
+				byte y3 = (byte)v;
+
+				switch (keyMode)
+				{
+					case 0:
+						y0 = (byte)(P8x8[P_04, y0] ^ k30);
+						y1 = (byte)(P8x8[P_14, y1] ^ k31);
+						y2 = (byte)(P8x8[P_24, y2] ^ k32);
+						y3 = (byte)(P8x8[P_34, y3] ^ k33);
+						goto case 3;
+					case 3:
+						y0 = (byte)(P8x8[P_03, y0] ^ k20);
+						y1 = (byte)(P8x8[P_13, y1] ^ k21);
+						y2 = (byte)(P8x8[P_23, y2] ^ k22);
+						y3 = (byte)(P8x8[P_33, y3] ^ k23);
+						goto case 2;
+					case 2:
+						y0 = P8x8[P_00, P8x8[P_01, P8x8[P_02, y0] ^ k10] ^ k00];
+						y1 = P8x8[P_10, P8x8[P_11, P8x8[P_12, y1] ^ k11] ^ k01];
+						y2 = P8x8[P_20, P8x8[P_21, P8x8[P_22, y2] ^ k12] ^ k02];
+						y3 = P8x8[P_30, P8x8[P_31, P8x8[P_32, y3] ^ k13] ^ k03];
+						break;
+				}
+
+				sbox0[v] = (uint)M00(y0) ^ ((uint)M10(y0) << 8) ^ ((uint)M20(y0) << 16) ^ ((uint)M30(y0) << 24);
+				sbox1[v] = (uint)M01(y1) ^ ((uint)M11(y1) << 8) ^ ((uint)M21(y1) << 16) ^ ((uint)M31(y1) << 24);
+				sbox2[v] = (uint)M02(y2) ^ ((uint)M12(y2) << 8) ^ ((uint)M22(y2) << 16) ^ ((uint)M32(y2) << 24);
+				sbox3[v] = (uint)M03(y3) ^ ((uint)M13(y3) << 8) ^ ((uint)M23(y3) << 16) ^ ((uint)M33(y3) << 24);
+			}
 		}
 
 		/*
@@ -141,101 +192,116 @@ namespace ManyMonkeys.Cryptography
 				subKeys[2*i+1] = ROL(A+2*B,SK_ROTL);
 			}
 
+			BuildSboxTables(keyLen);
 			return true;
+		}
+
+		protected void blockDecrypt(ref uint x0, ref uint x1, ref uint x2, ref uint x3)
+		{
+			uint[] s0 = sbox0, s1 = sbox1, s2 = sbox2, s3 = sbox3, sk = subKeys;
+			uint c0 = x0, c1 = x1, c2 = x2, c3 = x3;
+
+			x0 ^= sk[4];
+			x1 ^= sk[5];
+			x2 ^= sk[6];
+			x3 ^= sk[7];
+
+			for (int r = rounds - 1; r >= 0; r--)
+			{
+				uint t0 = s0[x0 & 0xFF] ^ s1[(x0 >> 8) & 0xFF] ^ s2[(x0 >> 16) & 0xFF] ^ s3[x0 >> 24];
+				uint t1 = s0[x1 >> 24] ^ s1[x1 & 0xFF] ^ s2[(x1 >> 8) & 0xFF] ^ s3[(x1 >> 16) & 0xFF];
+				uint sum = t0 + t1;
+				int rk = 8 + (r << 1);
+
+				x2 = (x2 << 1) | (x2 >> 31);
+				x2 ^= sum + sk[rk];
+				x3 ^= sum + t1 + sk[rk + 1];
+				x3 = (x3 >> 1) | (x3 << 31);
+
+				if (r > 0)
+				{
+					uint tmp = x0; x0 = x2; x2 = tmp;
+					tmp = x1; x1 = x3; x3 = tmp;
+				}
+			}
+
+			x0 ^= sk[0];
+			x1 ^= sk[1];
+			x2 ^= sk[2];
+			x3 ^= sk[3];
+			if (cipherMode == CipherMode.CBC)
+			{
+				x0 ^= IV[0];
+				x1 ^= IV[1];
+				x2 ^= IV[2];
+				x3 ^= IV[3];
+				IV[0] = c0;
+				IV[1] = c1;
+				IV[2] = c2;
+				IV[3] = c3;
+			}
+		}
+
+		protected void blockEncrypt(ref uint x0, ref uint x1, ref uint x2, ref uint x3)
+		{
+			uint[] s0 = sbox0, s1 = sbox1, s2 = sbox2, s3 = sbox3, sk = subKeys;
+
+			x0 ^= sk[0];
+			x1 ^= sk[1];
+			x2 ^= sk[2];
+			x3 ^= sk[3];
+			if (cipherMode == CipherMode.CBC)
+			{
+				x0 ^= IV[0];
+				x1 ^= IV[1];
+				x2 ^= IV[2];
+				x3 ^= IV[3];
+			}
+
+			for (int r = 0; r < rounds; r++)
+			{
+				uint t0 = s0[x0 & 0xFF] ^ s1[(x0 >> 8) & 0xFF] ^ s2[(x0 >> 16) & 0xFF] ^ s3[x0 >> 24];
+				uint t1 = s0[x1 >> 24] ^ s1[x1 & 0xFF] ^ s2[(x1 >> 8) & 0xFF] ^ s3[(x1 >> 16) & 0xFF];
+				uint sum = t0 + t1;
+				int rk = 8 + (r << 1);
+
+				x3 = (x3 << 1) | (x3 >> 31);
+				x2 ^= sum + sk[rk];
+				x3 ^= sum + t1 + sk[rk + 1];
+				x2 = (x2 >> 1) | (x2 << 31);
+
+				if (r < rounds - 1)
+				{
+					uint tmp = x0; x0 = x2; x2 = tmp;
+					tmp = x1; x1 = x3; x3 = tmp;
+				}
+			}
+
+			x0 ^= sk[4];
+			x1 ^= sk[5];
+			x2 ^= sk[6];
+			x3 ^= sk[7];
+			if (cipherMode == CipherMode.CBC)
+			{
+				IV[0] = x0;
+				IV[1] = x1;
+				IV[2] = x2;
+				IV[3] = x3;
+			}
 		}
 
 		protected void blockDecrypt(ref uint[] x)
 		{
-			uint t0,t1;
-			uint[] xtemp = new uint[4];
-
-			if (cipherMode == CipherMode.CBC)
-			{
-				x.CopyTo(xtemp,0);
-			}
-
-			for (int i=0;i<BLOCK_SIZE/32;i++)	/* copy in the block, add whitening */
-				x[i] ^= subKeys[OUTPUT_WHITEN+i];
-
-			for (int r=rounds-1;r>=0;r--)			/* main Twofish decryption loop */
-			{
-				t0	 = f32(    x[0]   ,ref sboxKeys,keyLength);
-				t1	 = f32(ROL(x[1],8),ref sboxKeys,keyLength);
-
-				x[2] = ROL(x[2],1);
-				x[2]^= t0 +   t1 + subKeys[ROUND_SUBKEYS+2*r  ]; /* PHT, round keys */
-				x[3]^= t0 + 2*t1 + subKeys[ROUND_SUBKEYS+2*r+1];
-				x[3] = ROR(x[3],1);
-
-				if (r>0)									/* unswap, except for last round */
-				{
-					t0   = x[0]; x[0]= x[2]; x[2] = t0;	
-					t1   = x[1]; x[1]= x[3]; x[3] = t1;
-				}
-			}
-
-			for (int i=0;i<BLOCK_SIZE/32;i++)	/* copy out, with whitening */
-			{
-				x[i] ^= subKeys[INPUT_WHITEN+i];
-				if (cipherMode == CipherMode.CBC)
-				{
-					x[i] ^= IV[i];
-					IV[i] = xtemp[i]; 
-				}
-			}
+			uint x0 = x[0], x1 = x[1], x2 = x[2], x3 = x[3];
+			blockDecrypt(ref x0, ref x1, ref x2, ref x3);
+			x[0] = x0; x[1] = x1; x[2] = x2; x[3] = x3;
 		}
 
 		protected void blockEncrypt(ref uint[] x)
 		{
-			uint t0,t1,tmp;
-			
-			for (int i=0;i<BLOCK_SIZE/32;i++)	/* copy in the block, add whitening */
-			{
-				x[i] ^= subKeys[INPUT_WHITEN+i];
-				if (cipherMode == CipherMode.CBC)
-					x[i] ^= IV[i];
-			}
-
-			for (int r=0;r<rounds;r++)			/* main Twofish encryption loop */ // 16==rounds
-			{	
-#if FEISTEL
-				t0	 = f32(ROR(x[0],  (r+1)/2),ref sboxKeys,keyLength);
-				t1	 = f32(ROL(x[1],8+(r+1)/2),ref sboxKeys,keyLength);
-											/* PHT, round keys */
-				x[2]^= ROL(t0 +   t1 + subKeys[ROUND_SUBKEYS+2*r  ], r    /2);
-				x[3]^= ROR(t0 + 2*t1 + subKeys[ROUND_SUBKEYS+2*r+1],(r+2) /2);
-
-#else
-				t0	 = f32(    x[0]   ,ref sboxKeys,keyLength);
-				t1	 = f32(ROL(x[1],8),ref sboxKeys,keyLength);
-
-				x[3] = ROL(x[3],1);
-				x[2]^= t0 +   t1 + subKeys[ROUND_SUBKEYS+2*r  ]; /* PHT, round keys */
-				x[3]^= t0 + 2*t1 + subKeys[ROUND_SUBKEYS+2*r+1];
-				x[2] = ROR(x[2],1);
-
-#endif
-				if (r < rounds-1)						/* swap for next round */
-				{
-					tmp = x[0]; x[0]= x[2]; x[2] = tmp;
-					tmp = x[1]; x[1]= x[3]; x[3] = tmp;
-				}
-			}
-#if FEISTEL
-			x[0] = ROR(x[0],8);                     /* "final permutation" */
-			x[1] = ROL(x[1],8);
-			x[2] = ROR(x[2],8);
-			x[3] = ROL(x[3],8);
-#endif
-			for (int i=0;i<BLOCK_SIZE/32;i++)	/* copy out, with whitening */
-			{
-				x[i] ^= subKeys[OUTPUT_WHITEN+i];
-				if (cipherMode == CipherMode.CBC)
-				{
-					IV[i] = x[i];
-				}
-			}
-
+			uint x0 = x[0], x1 = x[1], x2 = x[2], x3 = x[3];
+			blockEncrypt(ref x0, ref x1, ref x2, ref x3);
+			x[0] = x0; x[1] = x1; x[2] = x2; x[3] = x3;
 		}
 
 		private int[] numRounds = {0,ROUNDS_128,ROUNDS_192,ROUNDS_256};

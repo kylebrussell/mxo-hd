@@ -68,6 +68,7 @@ namespace hds
         public MessageQueue messageQueue;
         public ViewManager viewMan { get; set; }
         public PlayerCharacter playerInstance { get; set; }
+        internal int VisibilitySampleIndex = -1;
 
         public WorldClient(EndPoint _Remote, Socket _socket, string _key)
         {
@@ -600,27 +601,17 @@ namespace hds
 
         public byte[] DecryptReceivedPacket(byte[] packet)
         {
-            byte[] processedPacket;
-            byte[] temp;
-
-            ArrayList decValues;
-
-            // Here we check if the first byte is "1" which means that the packet is encrypted or not
-
-            processedPacket = new byte[packet.Length - 1];
-            ArrayUtils.copy(packet, 1, processedPacket, 0, packet.Length - 1);
-            decValues = new ArrayList();
-            decValues = cypher.decrypt(packet, packet.Length);
+            ArrayList decValues = cypher.decrypt(packet, packet.Length);
             if (decValues == null)
             {
                 return null; // corrupt packet, already logged
             }
-            processedPacket = (byte[]) decValues[0];
+            byte[] processedPacket = (byte[]) decValues[0];
 
 
             if (processedPacket[0] == 0x82) //It's a timed data packet
             {
-                temp = new byte[processedPacket.Length - 4];
+                byte[] temp = new byte[processedPacket.Length - 4];
                 temp[0] = (byte) 0x02;
                 ArrayUtils.copy(processedPacket, 5, temp, 1, processedPacket.Length - 4);
                 processedPacket = temp;

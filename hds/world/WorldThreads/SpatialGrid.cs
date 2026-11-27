@@ -27,6 +27,27 @@ namespace hds
             list.Add(item);
         }
 
+        public void CollectNeighborCells(float x, float z, float radius, List<List<T>> destination)
+        {
+            destination.Clear();
+            int minX = CellCoord(x - radius);
+            int maxX = CellCoord(x + radius);
+            int minZ = CellCoord(z - radius);
+            int maxZ = CellCoord(z + radius);
+
+            for (int cx = minX; cx <= maxX; cx++)
+            {
+                for (int cz = minZ; cz <= maxZ; cz++)
+                {
+                    long key = MakeKey(cx, cz);
+                    if (cells.TryGetValue(key, out List<T> list))
+                    {
+                        destination.Add(list);
+                    }
+                }
+            }
+        }
+
         public IEnumerable<List<T>> GetNeighborCells(float x, float z, float radius)
         {
             int minX = CellCoord(x - radius);

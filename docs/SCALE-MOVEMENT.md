@@ -120,6 +120,37 @@ Server-side `LoadTest --authenticated` (Release build, 200 dense clients, 30 s w
 
 `pvp-archives` drops from `77.7 / 17.9 ms` to `0.13 / 0.29 ms` under movement, `snapshot` stays at `0.53 / 0.60 ms`, both moving runs pass with 0 ping timeouts and steadier echo RTT (`89.0 / 81.1 ms`), and `view-range-lifecycle` + `VisibilityPassBenchmark` remain green.
 
+## Twofish packet crypto and player-views batching (follow-up)
+
+After movement coalescing and the `PvpArchives` fast path, profiling `move 200` on master `0654b9366` showed two dominant remaining costs:
+
+1. **Per-datagram Twofish and packet-framing overhead (`Server CPU 342.3%`, `FlushProcessing 4.63 ms` mean, `366.8 s` total flush time over 60 s).** `MxoTwofish.Encrypt` and `Decrypt` recreated `TwofishEncryption` and ran `reKey()` from scratch on every UDP packet. Inside `TwofishBase`, every 16-byte block allocated `new uint[4]` and called `f32` 32 times per block, with every `f32` call allocating `new byte[4]` and executing 16 inline GF(256) multiplies (~2,700 heap allocations per 1,300-byte packet). `WorldEncryption.encrypt` also built three `PacketContent`/`MemoryStream` objects and called `ToArray()` six times per packet, `WorldClient.DecryptReceivedPacket` copied the packet into a discarded buffer before calling `decrypt`, and `DynamicArray.append(byte)` allocated a 1-byte array per byte.
+2. **Visibility pass lock and scan overhead (`Visibility 40.0 ms` mean / `178.4 ms` max; `player-views 21.67 ms` mean / `126.2 ms` max — over half the pass).** `Maths.IsInCircle` called `Math.Pow(dx, 2)` twice per pair (~80,000 `Math.Pow` calls/pass). `CheckPlayerViews` acquired `lock(views)` ~39,800 times/pass inside the inner pair loop (`GetViewForEntityAndGo`), allocated a fresh `HashSet<ulong>` and copied the full view list via `Snapshot()` per player, and ran a second full 9-cell scan (`Near`) per player. `CheckPlayerMobViews`, `CheckForStaticObjectsViewsInRange`, and `CheckForStaticSubways` also allocated `yield return` grid iterators, per-player `HashSet`s, and `Snapshot()` copies every pass.
+
+Changes:
+
+- **Precomputed Twofish S-box tables and keyed cipher reuse (`TwofishBase`, `TwofishEncryption`, `MxoTwofish`).** `reKey` precomputes the four 256×32-bit keyed S-box/MDS tables once per key so `blockEncrypt` and `blockDecrypt` run with four table lookups, three XORs, and stack scalar registers (zero per-block heap allocations). `MxoTwofish` caches the keyed `TwofishEncryption` across IV changes and invalidates it on `SetKey`, verified bit-for-bit against the official Schneier Twofish-128/192/256 ECB test vectors.
+- **Single-buffer `WorldEncryption` and hot-path allocation cleanup (`WorldEncryption`, `Crc32`, `WorldClient`, `DynamicArray`).** `WorldEncryption.encrypt` and `decrypt` assemble/verify packets in a single `ArrayPool<byte>` work buffer using `BinaryPrimitives` and `Crc32.checksum(byte[], int, int)`, preserving exact wire layout and `IV[4] != 0x00` while dropping outbound `encrypt` to one allocation (the returned wire buffer). Removed the discarded copy in `WorldClient.DecryptReceivedPacket` and switched `DynamicArray.append(byte)` to `MemoryStream.WriteByte`.
+- **Single-lock visibility reconciliation (`ViewManager`, `ViewVisibleThread`, `SpatialGrid`, `Maths`).** Replaced `Math.Pow` in `Maths.IsInCircle` with direct double multiplication, added `SpatialGrid<T>.CollectNeighborCells`, indexed per-pass `PlayerSample`s directly on `WorldClient.VisibilitySampleIndex` (verified by reference), eliminated the duplicate `Near` scan and per-player `HashSet`/`Snapshot()` allocations, and reconciled each player's views under a single `lock(views)` acquisition (`ReconcilePlayerViews`) before spawning or deleting outside the lock. Applied the same non-copying stale-view scan to mob, booth, and subway checks.
+
+In-process `VisibilityPassBenchmark` (Release, 200 dense players in Mara):
+
+| Stage (ms per pass) | master `0654b9366` | this change |
+|---|---:|---:|
+| player-views, everyone moving | 10.29 mean / 13.67 max | **4.19 mean / 7.19 max** |
+| player-views, nobody moving | 1.588 mean / 2.030 max | **0.914 mean / 1.125 max** |
+
+Server-side `LoadTest --authenticated` (Release build, 200 dense clients, 30 s warmup + 60 s measure, run serially on 2026-11-26):
+
+| Case | Status | Ramp s | Server CPU % | Echo RTT mean / max ms | Flush mean / max ms | ObjectFirstSend mean ms | Visibility mean / max ms | player-views mean / max ms | mob / static / subways mean ms |
+|---|---|---:|---:|---|---:|---:|---|---|---|
+| move 200, master `0654b9366` | PASS | 22.5 | 342.3 | 67.2 / 442.0 | 4.63 / 62.9 | 103.8 | 40.0 / 178.4 | 21.67 / 126.2 | 3.15 / 3.07 / 2.79 |
+| move 200, this change (run 1) | PASS | 16.1 | **71.7** | **39.8 / 249.0** | **0.23 / 30.3** | **36.3** | **11.8 / 66.2** | **4.71 / 18.9** | **1.32 / 0.84 / 0.64** |
+| move 200, this change (run 2) | PASS | 16.2 | **73.8** | **34.3 / 124.5** | **0.32 / 31.4** | **32.1** | **11.0 / 50.0** | **4.55 / 22.2** | **1.11 / 0.64 / 0.59** |
+| idle 200, this change | PASS | 15.8 | **5.8** | **15.7 / 79.4** | **0.03 / 3.7** | — | **5.9 / 10.9** | **1.13 / 1.9** | **1.04 / 0.53 / 0.50** |
+
+Under 200 dense moving clients (~9.0–9.2 million object updates delivered per 60 s window, 0 failures, 0 ping timeouts), server CPU drops by **4.7×** (from `342.3%` down to `71.7% / 73.8%`, less than one logical core), `FlushProcessing` drops **15–20×** (`4.63 ms` -> `0.23 / 0.32 ms`), `ObjectFirstSend` drops **3×** (`103.8 ms` -> `36.3 / 32.1 ms`), Echo RTT drops to `39.8 / 34.3 ms`, and `player-views` drops **4.7×** (`21.67 ms` -> `4.71 / 4.55 ms`).
+
 ## Reproduce
 
 Build Release last, because the tool refuses to run when a newer Debug server DLL exists. Then run each case serially:

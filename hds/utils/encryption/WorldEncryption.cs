@@ -1,9 +1,8 @@
 ﻿using System;
+using System.Buffers;
+using System.Buffers.Binary;
 using System.Collections;
-using System.Drawing.Printing;
-using System.IO;
 using System.Security.Cryptography;
-using ManyMonkeys.Cryptography;
 
 namespace hds
 {
@@ -44,118 +43,111 @@ namespace hds
         
         public byte[] encrypt(byte[] plainData, int length, ushort pss, ushort cseq, ushort sseq)
         {
-            UInt32 seqValue = (uint)pss << 24 | (uint)cseq << 12 | (uint)sseq;
-      
-            // Create the packet that needs to be CRC32 checksummed
-            PacketContent packet = new PacketContent();
-            packet.AddUint16((UInt16)(plainData.Length + 4),1);
-            packet.AddByteArray(TimeUtils.getCurrentTime());
-            packet.AddUint32(seqValue,0);
-            packet.AddByteArray(plainData);
+            int payloadLen = plainData.Length;
+            int bodyLen = 10 + payloadLen;
+            int totalWithoutPad = 4 + bodyLen;
+            int padding = 16 - (totalWithoutPad % 16);
+            int paddedLen = totalWithoutPad + padding;
 
-            byte[] paddingBytes = getPaddedBytes(packet.ReturnFinalPacket());
-            
-            // Final Packet which needs to be encrypted
-            PacketContent packetWithCrc = new PacketContent();
-            packetWithCrc.AddByteArray(crc32.checksumB(packet.ReturnFinalPacket(),1));
-            packetWithCrc.AddByteArray(packet.ReturnFinalPacket());
-            packetWithCrc.AddByteArray(paddingBytes);
+            UInt32 seqValue = ((uint)pss << 24) | ((uint)cseq << 12) | sseq;
+            UInt32 unixTime = (UInt32)DateTimeOffset.UtcNow.ToUnixTimeSeconds();
 
-            // Stock client.dll's CThreadedUDPDriver::GetPacket (0x623C096F..0x623C098A) checks raw_packet[5] == 0
-            // without checking (raw_packet[0] & 1) == 0, calls HandleDriverPacket (which returns false for 0x01
-            // encrypted datagrams), and then unconditionally drops the packet. On an encrypted packet (0x01 +
-            // 16-byte IV + ciphertext), raw_packet[5] is IV[4]. Generate a fresh CSPRNG IV per outbound datagram
-            // with IV[4] != 0x00 so no outgoing packet is dropped and client IVs are never echoed back.
-            byte[] outboundIv = GenerateOutboundIv();
-            byte[] encrypted = new byte[packetWithCrc.ReturnFinalPacket().Length];
-            PacketContent encryptedPacket = new PacketContent();
-            lock (cipherLock)
+            byte[] workBuf = ArrayPool<byte>.Shared.Rent(paddedLen);
+            try
             {
-                tf.SetIV(outboundIv);
-                tf.Encrypt(packetWithCrc.ReturnFinalPacket(), encrypted);
-            }
-            encryptedPacket.AddByte(0x01);
-            encryptedPacket.AddByteArray(outboundIv);
-            encryptedPacket.AddByteArray(encrypted);
-            return encryptedPacket.ReturnFinalPacket();
-        }
+                BinaryPrimitives.WriteUInt16LittleEndian(workBuf.AsSpan(4, 2), (UInt16)(payloadLen + 4));
+                BinaryPrimitives.WriteUInt32LittleEndian(workBuf.AsSpan(6, 4), unixTime);
+                BinaryPrimitives.WriteUInt32BigEndian(workBuf.AsSpan(10, 4), seqValue);
+                Buffer.BlockCopy(plainData, 0, workBuf, 14, payloadLen);
 
-        private static byte[] GenerateOutboundIv()
-        {
-            byte[] iv = RandomNumberGenerator.GetBytes(16);
-            if (iv[4] == 0)
-            {
-                iv[4] = (byte)(1 + RandomNumberGenerator.GetInt32(255));
+                UInt32 crc = crc32.checksum(workBuf, 4, bodyLen);
+                BinaryPrimitives.WriteUInt32LittleEndian(workBuf.AsSpan(0, 4), crc);
+                workBuf.AsSpan(totalWithoutPad, padding).Fill((byte)padding);
+
+                // Stock client.dll's CThreadedUDPDriver::GetPacket (0x623C096F..0x623C098A) checks raw_packet[5] == 0
+                // without checking (raw_packet[0] & 1) == 0, calls HandleDriverPacket (which returns false for 0x01
+                // encrypted datagrams), and then unconditionally drops the packet. On an encrypted packet (0x01 +
+                // 16-byte IV + ciphertext), raw_packet[5] is IV[4]. Generate a fresh CSPRNG IV per outbound datagram
+                // with IV[4] != 0x00 so no outgoing packet is dropped and client IVs are never echoed back.
+                byte[] wire = new byte[1 + 16 + paddedLen];
+                wire[0] = 0x01;
+                RandomNumberGenerator.Fill(wire.AsSpan(1, 16));
+                if (wire[5] == 0)
+                {
+                    wire[5] = (byte)(1 + RandomNumberGenerator.GetInt32(255));
+                }
+
+                lock (cipherLock)
+                {
+                    tf.Encrypt(wire, 1, workBuf, 0, wire, 17, paddedLen);
+                }
+
+                return wire;
             }
-            return iv;
+            finally
+            {
+                ArrayPool<byte>.Shared.Return(workBuf);
+            }
         }
 
         public ArrayList decrypt(byte[] encryptedData, int length)
         {
-            ArrayList response = new ArrayList();
-
-            PacketReader readerEncrypted = new PacketReader(encryptedData);
-            readerEncrypted.IncrementOffsetByValue(1); // skip 0x01
-            byte[] packetIv = readerEncrypted.ReadBytes(16);
-
-            // Read the whole Data
-            byte[] decryptedPacket = new byte[encryptedData.Length - 17];
-            byte[] decryptBuffer = readerEncrypted.ReadBytes(encryptedData.Length - 17);
-            lock (cipherLock)
+            if (encryptedData == null || encryptedData.Length < 33 || ((encryptedData.Length - 17) & 15) != 0)
             {
-                tf.SetIV(packetIv);
-                tf.Decrypt(decryptBuffer, decryptedPacket);
-            }
-
-            PacketReader reader = new PacketReader(decryptedPacket);
-            UInt32 crc32fromPacket = reader.ReadUInt32(1);
-            UInt16 decryptionLen = (ushort) ((reader.ReadUInt16(1)) - 4 + 10);
-            reader.SetOffsetOverrideValue(4);
-
-            byte[] crc32FromPacketBytes = NumericalUtils.uint32ToByteArray(crc32fromPacket, 1); // ToDo: Remove when working
-
-            // A corrupt or foreign datagram can declare a length past the end of the buffer; reading it used to
-            // throw inside the receive callback and take the whole server down.
-            if (decryptionLen > decryptedPacket.Length - 4)
-            {
-                Output.WriteLine("Dropping packet: declared length " + decryptionLen + " exceeds " + (decryptedPacket.Length - 4) + " bytes");
                 return null;
             }
 
-            // Verify CRC32 Data part
-            byte[] packetCheckData = reader.ReadBytes(decryptionLen);
-            UInt32 crc32plainDataToCompare = NumericalUtils.ByteArrayToUint32(crc32.checksumB(packetCheckData,1),1);
-
-            if (crc32plainDataToCompare != crc32fromPacket)
+            int cipherLen = encryptedData.Length - 17;
+            byte[] workBuf = ArrayPool<byte>.Shared.Rent(cipherLen);
+            try
             {
-                Output.WriteLine("Dropping packet: CRC didn't match (from packet: " + StringUtils.bytesToString(crc32FromPacketBytes) +" generated: " + StringUtils.bytesToString(crc32.checksumB(packetCheckData,1)) + ") wire " + encryptedData.Length +
-                                 " bytes, decrypted head " + StringUtils.bytesToString(decryptedPacket.Length > 32 ? ArraySegmentCopy(decryptedPacket, 32) : decryptedPacket) +
-                                 " wire head " + StringUtils.bytesToString(ArraySegmentCopy(encryptedData, Math.Min(24, encryptedData.Length))));
-                return null;
+                lock (cipherLock)
+                {
+                    tf.Decrypt(encryptedData, 1, encryptedData, 17, workBuf, 0, cipherLen);
+                }
+
+                UInt32 crc32fromPacket = BinaryPrimitives.ReadUInt32LittleEndian(workBuf.AsSpan(0, 4));
+                UInt16 packetSize = BinaryPrimitives.ReadUInt16LittleEndian(workBuf.AsSpan(4, 2));
+                int decryptionLen = packetSize - 4 + 10;
+
+                // A corrupt or foreign datagram can declare a length past the end of the buffer; reading it used to
+                // throw inside the receive callback and take the whole server down.
+                if (packetSize < 4 || decryptionLen > cipherLen - 4)
+                {
+                    Output.WriteLine("Dropping packet: declared length " + decryptionLen + " exceeds " + (cipherLen - 4) + " bytes");
+                    return null;
+                }
+
+                UInt32 crc32plainDataToCompare = crc32.checksum(workBuf, 4, decryptionLen);
+                if (crc32plainDataToCompare != crc32fromPacket)
+                {
+                    byte[] crcFromBytes = NumericalUtils.uint32ToByteArray(crc32fromPacket, 1);
+                    byte[] crcGenBytes = NumericalUtils.uint32ToByteArray(crc32plainDataToCompare, 1);
+                    Output.WriteLine("Dropping packet: CRC didn't match (from packet: " + StringUtils.bytesToString(crcFromBytes) + " generated: " + StringUtils.bytesToString(crcGenBytes) + ") wire " + encryptedData.Length +
+                                     " bytes, decrypted head " + StringUtils.bytesToString(ArraySegmentCopy(workBuf, Math.Min(32, cipherLen))) +
+                                     " wire head " + StringUtils.bytesToString(ArraySegmentCopy(encryptedData, Math.Min(24, encryptedData.Length))));
+                    return null;
+                }
+
+                UInt32 seqValues = BinaryPrimitives.ReadUInt32BigEndian(workBuf.AsSpan(10, 4));
+                UInt16 cseq = (UInt16)(seqValues & 0xFFF);
+                UInt16 sseq = (UInt16)((seqValues >> 12) & 0xFFF);
+                UInt16 pss = (ushort)((seqValues >> 24) & 0xFF);
+
+                byte[] payload = new byte[packetSize - 4];
+                Buffer.BlockCopy(workBuf, 14, payload, 0, payload.Length);
+
+                ArrayList response = new ArrayList(4);
+                response.Add(payload);
+                response.Add(pss);
+                response.Add(cseq);
+                response.Add(sseq);
+                return response;
             }
-            
-            // as we read the whole packet for verifiy we reset the offset to read the other things
-            reader.SetOffsetOverrideValue(4);
-            UInt16 packetSize = reader.ReadUInt16(1);
-//            UInt32 timeStamp = reader.readUInt32(1); // Well we didnt need it - but just read it as uint32
-            reader.SetOffsetOverrideValue(10);
-            UInt32 seqValues = reader.ReadUInt32(0);
-
-            UInt16 pss=0;
-            UInt16 cseq=0;
-            UInt16 sseq=0;
-            
-            cseq = (UInt16)(seqValues&0xFFF);
-            sseq = (UInt16) (seqValues >> 12&0xFFF);
-            pss = (ushort) (seqValues >> 24&0xFF);
-
-            // Finally add our responses and read the rest of the packet
-            response.Add(reader.ReadBytes(packetSize-4));
-            response.Add(pss);
-            response.Add(cseq);
-            response.Add(sseq);
-			
-            return response;
+            finally
+            {
+                ArrayPool<byte>.Shared.Return(workBuf);
+            }
         }
 
         private static byte[] ArraySegmentCopy(byte[] source, int count)

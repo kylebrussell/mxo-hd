@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -111,6 +111,102 @@ namespace hds
             }
         }
 
+        /// <summary>
+        /// Reconciles nearby player entities against this client's views under a single lock acquisition.
+        /// Creates missing ClientView slots, appends uncreated nearby views to <paramref name="toSpawn"/>,
+        /// appends stale created player views not in <paramref name="nearbySet"/> to <paramref name="toDelete"/>,
+        /// and returns the current view-list version without allocating in the steady state.
+        /// </summary>
+        internal long ReconcilePlayerViews(
+            List<WorldClient> nearbyClients,
+            List<ulong> nearbyEntities,
+            List<UInt16> nearbyGoids,
+            HashSet<ulong> nearbySet,
+            UInt16 playerGoId,
+            List<(WorldClient Other, ClientView View)> toSpawn,
+            List<ClientView> toDelete)
+        {
+            toSpawn.Clear();
+            toDelete.Clear();
+            lock (views)
+            {
+                int nearbyCount = nearbyClients.Count;
+                for (int i = 0; i < nearbyCount; i++)
+                {
+                    ulong entityId = nearbyEntities[i];
+                    ClientView view = views.FirstForEntity(entityId);
+                    if (view == null || view.ViewID == 0)
+                    {
+                        view = addView(entityId, nearbyGoids[i]);
+                    }
+                    if (!view.viewCreated)
+                    {
+                        toSpawn.Add((nearbyClients[i], view));
+                    }
+                }
+
+                List<ClientView> backing = views.BackingList;
+                for (int i = 0; i < backing.Count; i++)
+                {
+                    ClientView view = backing[i];
+                    if (view != null && view.viewCreated && view.GoID == playerGoId && !nearbySet.Contains(view.entityId))
+                    {
+                        toDelete.Add(view);
+                    }
+                }
+
+                return views.Version;
+            }
+        }
+
+        /// <summary>
+        /// Collects created views matching <paramref name="goId"/> whose entity is not in <paramref name="nearbySet"/>
+        /// under a single lock without copying the entire view list.
+        /// </summary>
+        internal void CollectStaleViewsByGoId(UInt32 goId, HashSet<ulong> nearbySet, List<ClientView> toDelete)
+        {
+            toDelete.Clear();
+            lock (views)
+            {
+                List<ClientView> backing = views.BackingList;
+                for (int i = 0; i < backing.Count; i++)
+                {
+                    ClientView view = backing[i];
+                    if (view != null && view.viewCreated && view.GoID == goId && !nearbySet.Contains(view.entityId))
+                    {
+                        toDelete.Add(view);
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Collects created mob views whose entity is in <paramref name="mobsByEntity"/> and either not in
+        /// <paramref name="nearbySet"/> or in another district, without copying the entire view list.
+        /// </summary>
+        internal void CollectStaleMobViews(
+            ushort districtId,
+            HashSet<ulong> nearbySet,
+            Dictionary<ulong, Mob> mobsByEntity,
+            List<(ClientView View, Mob Mob)> toDelete)
+        {
+            toDelete.Clear();
+            lock (views)
+            {
+                List<ClientView> backing = views.BackingList;
+                for (int i = 0; i < backing.Count; i++)
+                {
+                    ClientView view = backing[i];
+                    if (view == null || !view.viewCreated) continue;
+                    if (!mobsByEntity.TryGetValue(view.entityId, out Mob mob)) continue;
+                    if (!nearbySet.Contains(view.entityId) || mob.getDistrict() != districtId)
+                    {
+                        toDelete.Add((view, mob));
+                    }
+                }
+            }
+        }
+
     }
     /// <summary>
     /// The view list with entity and view-id indexes kept in step with every add and remove, so the first view
@@ -120,6 +216,8 @@ namespace hds
     {
         private readonly Dictionary<UInt64, List<ClientView>> byEntity = new Dictionary<UInt64, List<ClientView>>();
         private readonly Dictionary<UInt16, List<ClientView>> byViewId = new Dictionary<UInt16, List<ClientView>>();
+
+        internal List<ClientView> BackingList => (List<ClientView>)Items;
 
         /// <summary>Bumped by every add, remove, replace and clear: the visibility pass skips a player whose views and surroundings are unchanged.</summary>
         public long Version { get; private set; }

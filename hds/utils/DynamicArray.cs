@@ -23,8 +23,7 @@ namespace hds
 		}
 		
 		public void append(byte data){
-			byte[] d = {data};
-			append(d);
+			storage.WriteByte(data);
 		}
 		
 		public void append(byte [] newData){

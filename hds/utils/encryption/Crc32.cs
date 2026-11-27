@@ -5,11 +5,10 @@ namespace hds
 {
 	public class Crc32
 	{
-		ulong [] table;
+		private static readonly uint[] SharedTable = BuildTable();
+		private readonly uint[] table = SharedTable;
 
 		public Crc32(){
-			this.table = new ulong[256];
-			generateTable();
 		}
 		
 		public byte[] checksumB(byte[]block, int reversed){
@@ -18,34 +17,38 @@ namespace hds
 		}
 		
 		public UInt32 checksum(byte[] block){
-			ulong crc;
-   			int i;
-			int length = block.Length;
+			return checksum(block, 0, block.Length);
+		}
 
-   			crc = 0xFFFFFFFF;
-   			for (i = 0; i < length; i++){
-      			crc = ((crc >> 8) & 0x00FFFFFF) ^ table[(crc ^ block[i]) & 0xFF];
-   			}
-   			return (UInt32)(crc ^ 0xFFFFFFFF);
+		public UInt32 checksum(byte[] block, int offset, int length){
+			uint crc = 0xFFFFFFFFu;
+			uint[] t = table;
+			int end = offset + length;
+			for (int i = offset; i < end; i++){
+				crc = (crc >> 8) ^ t[(crc ^ block[i]) & 0xFF];
+			}
+			return crc ^ 0xFFFFFFFFu;
+		}
+
+		private static uint[] BuildTable(){
+			uint[] t = new uint[256];
+			const uint poly = 0xEDB88320u;
+			for (int i = 0; i < 256; i++){
+				uint crc = (uint)i;
+				for (int j = 8; j > 0; j--){
+					if ((crc & 1) == 1){
+						crc = (crc >> 1) ^ poly;
+					}
+					else{
+						crc >>= 1;
+					}
+				}
+				t[i] = crc;
+			}
+			return t;
 		}
 		
 		public void generateTable(){
-			ulong crc, poly;
-   			int i, j;
-			
-   			poly = 0xEDB88320L;
-   			for (i = 0; i < 256; i++){
-      			crc = (ulong)i;
-      			for (j = 8; j > 0; j--){
-	 				if ((crc & 1)==1){
-	    				crc = (crc >> 1) ^ poly;
-					}
-					else{
-	    				crc >>= 1;
-	 				}
-      			}
-      			table[i] = crc;
-   			}
 		}
 		
 		
