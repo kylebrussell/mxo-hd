@@ -165,9 +165,9 @@ namespace hds
         }
 
         // This method sends one packet at a time to the game client 
-        private bool sendPacket(byte[] data) => sendPacket(data, data.Length);
+        private bool sendPacket(byte[] data) => sendPacketSlice(data, data.Length);
 
-        private bool sendPacket(byte[] data, int length)
+        private bool sendPacketSlice(byte[] data, int length)
         {
             if (this.deadSignals == 0)
             {
@@ -572,7 +572,7 @@ namespace hds
                             }
                             else
                             {
-                                bool dispatched = sendPacket(wireBuf, wireLen);
+                                bool dispatched = sendPacketSlice(wireBuf, wireLen);
                                 if (dispatched) thePacket.RecordDispatchedObjectReceipts(messageQueue);
                                 if (dispatched && ScaleDiagnostics.Enabled)
                                 {
