@@ -101,17 +101,7 @@ namespace hds{
                     Store.currentClient.playerData.openDoors.Clear(); // their views went with the old world
                 }
                 PlayerHandler handler = new PlayerHandler();
-                if (resetClient.playerData.DistrictIsLA())
-                {
-                    // Send the LA batch before potentially long friend and ignore lists.
-                    handler.processPlayerSetup();
-                    handler.processAttributes();
-                }
-                else
-                {
-                    handler.processAttributes();
-                    handler.processPlayerSetup();
-                }
+                QueueWorldSetup(handler, attributesFirst: !resetClient.playerData.DistrictIsLA());
                 }
                 finally { resetClient.TransportFence.Resume(resetEpoch); }
             }
@@ -185,8 +175,7 @@ namespace hds{
 		            Output.WriteUnencryptedPacketLog(packetData,"CLIENT");
 		            Store.currentClient.playerData.setUDPSessionEstablished(true);
 		            Store.currentClient.playerData.setPss(0x00);
-		            tempIniHelper.processPlayerSetup();
-		            tempIniHelper.processAttributes();
+		            QueueWorldSetup(tempIniHelper, attributesFirst: false);
 		            return;    
 	            }
                 
@@ -202,6 +191,17 @@ namespace hds{
             ParseContent(ref packetData);
 
 		}
+
+        private static void QueueWorldSetup(PlayerHandler handler, bool attributesFirst)
+        {
+            Store.currentClient.messageQueue.QueueWorldSetup(() =>
+            {
+                // The LA and initial handshake send the world command before the friend and ignore lists.
+                if (attributesFirst) handler.processAttributes();
+                handler.processPlayerSetup();
+                if (!attributesFirst) handler.processAttributes();
+            });
+        }
 		
 		
 	}

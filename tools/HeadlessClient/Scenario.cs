@@ -96,7 +96,7 @@ SELECT {id},'{username}',publicExponent,publicModulus,privateExponent,0,password
     }
 
     /// <summary>Adds an account and character to the database, then logs in with it (not yet in the world).</summary>
-    public async Task<HeadlessPlayer> AddPlayerAsync(CharacterSeed seed)
+    public async Task<HeadlessPlayer> AddPlayerAsync(CharacterSeed seed, bool holdWorldSetupAcks = false)
     {
         int id = Interlocked.Increment(ref nextId);
         string username = "user" + id;
@@ -146,7 +146,8 @@ INSERT INTO char_abilities (char_id, slot, ability_id, level, is_loaded, ability
         if(seed.AttributeValues!=null)
             attributeRowsBeforeLogin[(uint)id]=await Database.ScalarAsync($"SELECT id,slot,ability_id,level,is_loaded FROM char_abilities WHERE char_id={id} AND slot IN (598,599,601,602,604) ORDER BY slot,id");
 
-        HeadlessPlayer player = await HeadlessPlayer.LoginAsync(Server.Address, username, seed.Handle);
+        HeadlessPlayer player = await HeadlessPlayer.LoginAsync(Server.Address, username, seed.Handle,
+            holdWorldSetupAcks: holdWorldSetupAcks);
         lock (players)
         {
             players.Add(player);

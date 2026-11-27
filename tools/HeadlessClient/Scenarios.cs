@@ -326,6 +326,7 @@ public static partial class Scenarios
             ["MXO_MOBS"] = "world", ["MXO_MOB_WANDER"] = "0", ["MXO_AGGRO"] = "0"
         }),
         new Scenario("login", Login),
+        new Scenario("startup-rpc-ack-grace", StartupRpcAckGrace, StillNpcs),
         new Scenario("login-with-orphaned-crew-member", LoginWithOrphanedCrewMember),
         new Scenario("organization-reputation", OrganizationReputation),
         new Scenario("ordered-rpc-burst", OrderedRpcBurst, StillNpcs),
