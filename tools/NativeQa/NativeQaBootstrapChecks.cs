@@ -82,7 +82,7 @@ public static class NativeQaBootstrapChecks
         {
             if (characterUi != null || plan.AllowManualHotbarSetup || plan.LoadAbilityAncestors ||
                 mode is Modes.AbilityParityOperativeSweep2Mode or Modes.MartialPlayerControlMode or Modes.StarterDecompileCleanUiMode or
-                    Modes.TransmitCodeMode or Modes.ShadowReadyPresentationMode or Modes.MultiNpcAggroMode)
+                    Modes.TransmitCodeMode or Modes.ShadowReadyPresentationMode or Modes.MultiNpcAggroMode or Modes.DatamineTapTransferRulesMode)
             {
                 probe = await HeadlessPlayer.LoginAsync(server.Address, "CSR_AbilityQA", "CSR_Tester", stockCharacterLoad: true);
                 Check.Equal(110u, probe.CharId, "Ability-sweep UI seed is delivered only to the owned CSR");

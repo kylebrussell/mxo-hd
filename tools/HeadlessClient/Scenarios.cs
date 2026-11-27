@@ -282,6 +282,7 @@ public static partial class Scenarios
         new Scenario("data-mining-luggable-persistence", DataMiningLuggables, StillNpcs),
         new Scenario("datamine-tap-shadow", DatamineTapShadow, StillNpcs),
         new Scenario("datamine-tap-carry-fx", DatamineTapCarryFx, StillNpcs),
+        new Scenario("datamine-tap-transfer-rules", DatamineTapTransferRules, StillNpcs),
         new Scenario("sati-partial-world", SatiPartialWorld, StillNpcs),
         new Scenario("sati-door-diagnostic", SatiDoorDiagnostic, StillNpcs),
         new Scenario("sati-prefab-door", SatiPrefabDoorDiagnostic, new Dictionary<string,string>{["MXO_DEV_COMMANDS"]="0",["MXO_MOBS"]=""}),

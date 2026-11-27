@@ -19,7 +19,7 @@ public sealed class DatamineTapCarryFxMode : NativeQaMode
             "Mara street NAV (17000,495,6400). No teleport, target, or dev command. Bag 5 is Datamine Tap 1, bag 6 is a different light luggable.",
             "Enter world and wait for two pulses. Expect a repeating tap effect on CSR about four seconds apart, [DATA-MINING] tap FX char=110 effect=0x04000078, and self-view FX bytes 78 00 00 04.",
             "Drag bag 5 out onto the street. Expect 5c 05 00 01, 5f 05 00 01, and the ground tap. Leave bag 6 alone. Wait at least six seconds and check there are no more tap pulses.",
-            "Select the ground tap and use its Pick Up radial. Step aside and turn to see it if it landed under CSR, staying within reach. Expect 80 c7 with action 04 and a 5e add for ac b8 00 00. Wait for two more pulses four seconds apart."
+            "Select the ground tap and use its Take radial. Step aside and turn to see it if it landed under CSR, staying within reach. Expect 80 c7 with action 04 and a 5e add for ac b8 00 00. Wait for two more pulses four seconds apart."
         });
 
     public override async Task<byte[]> AfterStartAsync(NativeQaBootstrapContext context)

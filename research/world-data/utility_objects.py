@@ -24,7 +24,7 @@ for row in catalog['abilities']:
         rows.append(dict(goid=row['id'], name=row['name'],
                          pickup_use=next((i for i, c in enumerate(row['components']) if c['name'] == 'Usable'), -1),
                          fields={k: v for k, v in f.items() if k.startswith((
-                             'Luggable/', 'CharStatsPrerequisite/', 'Usable/', 'InvItem/Singleton',
+                             'Luggable/', 'CharStatsPrerequisite/', 'Usable/', 'InvItem/Singleton', 'InvItem/NonTradeable',
                              'InvItem/PickupExclusive', 'Model/HalfExtents', 'Model/Orientation',
                              'FX/FXID', 'DataNode/', 'Normal/HalfExtents'))}))
 opts.output.write_text(json.dumps(dict(source=catalog['source'], gob_sha256=catalog['gob_sha256'],

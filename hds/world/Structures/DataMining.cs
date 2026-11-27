@@ -18,7 +18,7 @@ namespace hds
         {
             public ushort Goid;
             public int PickupUse, Level, Size;
-            public bool Singleton, DropOnConstructChange;
+            public bool Singleton, DropOnConstructChange, NonTradeable;
             public double Reach = 100;
             public string HalfExtents;
             public uint[] Exclusive = Array.Empty<uint>();
@@ -63,13 +63,15 @@ namespace hds
                 return new Definition { Goid = row.GetProperty("goid").GetUInt16(), PickupUse = row.GetProperty("pickup_use").GetInt32(),
                     Level = Number("CharStatsPrerequisite/ReqCharLevel"), Size = Number("Luggable/Size"),
                     DropOnConstructChange = Number("Luggable/DropOnInterConstructTeleport") != 0,
-                    Singleton = Number("InvItem/Singleton") != 0, HalfExtents = String("Model/HalfExtents") ?? String("Normal/HalfExtents"),
+                    Singleton = Number("InvItem/Singleton") != 0, NonTradeable = Number("InvItem/NonTradeable") != 0,
+                    HalfExtents = String("Model/HalfExtents") ?? String("Normal/HalfExtents"),
                     Reach = f.TryGetProperty("Usable/MaxDistance", out var reach) ? reach.GetDouble() : 100,
                     Exclusive = f.EnumerateObject().Where(p => p.Name.StartsWith("Usable/PickupExclusive", StringComparison.Ordinal)).Select(p => p.Value.GetUInt32()).ToArray() };
             }).ToDictionary(d => d.Goid);
         });
         public static Definition Find(ushort goid) => definitions.Value.TryGetValue(goid, out var d) ? d : null;
         public static bool IsLight(ushort goid) => goid != 606 && Find(goid)?.Size == 0;
+        internal static bool IsNonTradeable(uint goid) => goid <= ushort.MaxValue && Find((ushort)goid)?.NonTradeable == true;
         public static bool InRange(Ground g, ushort district, double x, double y, double z, double range) =>
             g.District == district && Math.Abs(g.Y - y) <= 250 &&
             (g.X - x) * (g.X - x) + (g.Z - z) * (g.Z - z) <= range * range;

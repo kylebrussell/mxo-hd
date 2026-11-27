@@ -662,6 +662,7 @@
       "pickup_use": 4,
       "fields": {
         "CharStatsPrerequisite/ReqCharLevel": 1,
+        "InvItem/NonTradeable": 1,
         "InvItem/Singleton": 1,
         "Luggable/DropOnInterConstructTeleport": 1,
         "Luggable/LuggableType": 0,
@@ -684,6 +685,7 @@
       "pickup_use": 4,
       "fields": {
         "CharStatsPrerequisite/ReqCharLevel": 1,
+        "InvItem/NonTradeable": 1,
         "InvItem/Singleton": 1,
         "Luggable/DropOnInterConstructTeleport": 1,
         "Luggable/LuggableType": 0,
@@ -706,6 +708,7 @@
       "pickup_use": 4,
       "fields": {
         "CharStatsPrerequisite/ReqCharLevel": 1,
+        "InvItem/NonTradeable": 1,
         "InvItem/Singleton": 1,
         "Luggable/DropOnInterConstructTeleport": 1,
         "Luggable/LuggableType": 0,
@@ -728,6 +731,7 @@
       "pickup_use": 4,
       "fields": {
         "CharStatsPrerequisite/ReqCharLevel": 1,
+        "InvItem/NonTradeable": 1,
         "InvItem/Singleton": 1,
         "Luggable/DropOnInterConstructTeleport": 1,
         "Luggable/LuggableType": 0,

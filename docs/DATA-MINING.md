@@ -85,7 +85,18 @@ no tap effect. This is a one-shot view effect, independent of Master Shadow.
 
 The `datamine-tap-carry-fx` mode seeds the same bag items on a clear Mara
 street stand. Watch two pulses, drag bag 5 to the street, wait through an
-interval, and use Pick Up on the ground tap. Pulses resume after pickup.
+interval, and use **Take** on the ground tap. Pulses resume after pickup.
+
+### Non-tradeable taps
+
+The shipped `InvItem/NonTradeable` flag is set on all four taps and is
+exported with the luggable data. A tap offered to open Secure Trade gets
+the stock non-tradeable result (`81 83`, status `0x18000004`). Adding it to
+an open offer leaves both offers intact and shows a notice. Mail also
+refuses to move a flagged luggable from its locked bag row. The refusal
+keeps the draft's items and Info in the sender's inventory and balance,
+even when the draft also includes a tradeable item. Drop and **Take** are
+still available for moving the tap through the world.
 
 ### Archive travel
 
