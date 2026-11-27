@@ -24,6 +24,19 @@ internal sealed class WorldSendFence
             return true;
         }
     }
+    /// <summary>Closure-free equivalent of <see cref="TryRun"/> for hot flush paths; pair with <see cref="Exit"/> in finally.</summary>
+    public bool TryEnter(long expected, out bool lockTaken)
+    {
+        lockTaken = false;
+        Monitor.Enter(sync, ref lockTaken);
+        if (expected != epoch || resetPending)
+        {
+            Monitor.Exit(sync);
+            lockTaken = false;
+            return false;
+        }
+        return true;
+    }
     public void PublishIncoming(bool reset, Action publish)
     {
         lock (sync)
@@ -31,6 +44,17 @@ internal sealed class WorldSendFence
             if (reset) { epoch++; resetPending = true; }
             publish();
         }
+    }
+    /// <summary>Closure-free equivalent of <see cref="PublishIncoming"/> for hot decrypt paths; pair with <see cref="Exit"/> in finally.</summary>
+    public void EnterIncoming(bool reset, out bool lockTaken)
+    {
+        lockTaken = false;
+        Monitor.Enter(sync, ref lockTaken);
+        if (reset) { epoch++; resetPending = true; }
+    }
+    public void Exit(bool lockTaken)
+    {
+        if (lockTaken) Monitor.Exit(sync);
     }
     public bool ApplyReset(long expected, Action reset)
     {

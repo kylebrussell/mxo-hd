@@ -62,7 +62,10 @@ namespace hds
         private readonly MultiProtocolManager protocolManager;
         private readonly object processLock = new object();
         private readonly Queue<byte[]> receivedPackets = new Queue<byte[]>();
+        // Parallel queue encoding pooled ingress length (>= 0 means rented from ArrayPool<byte>.Shared; -1 means unpooled).
+        private Queue<int> receivedPacketLengths;
         private bool packetWorkerRunning;
+        private static readonly WaitCallback ProcessQueuedPacketsCallback = state => ((WorldClient)state).ProcessQueuedPackets();
         private readonly object flushLock = new object();
         internal WorldSendFence TransportFence { get; } = new WorldSendFence();
         private long lastFlushTick;
@@ -74,6 +77,12 @@ namespace hds
         public ViewManager viewMan { get; set; }
         public PlayerCharacter playerInstance { get; set; }
         internal int VisibilitySampleIndex = -1;
+        internal long VisibilityCurrentPassId;
+        internal long VisibilityLastPassId;
+        internal WorldThreads.PlayerSample LastPlayerSample;
+        internal bool HasEvaluatedPlayerViews;
+        internal long LastEvaluatedViewVersion;
+        internal List<WorldClient> LastNearPlayers;
 
         public WorldClient(EndPoint _Remote, Socket _socket, string _key)
         {
@@ -331,7 +340,8 @@ namespace hds
 
             packet = RentFlushPacket();
 
-            if (!TransportFence.TryRun(outgoingEpoch, () =>
+            if (!TransportFence.TryEnter(outgoingEpoch, out bool prepFenceTaken)) { flushPending = true; return; }
+            try
             {
             // Init encrypted Packet if we have MPM Messages
             if (messageQueue.RPCMessagesQueue.Count > 0 || messageQueue.ObjectMessagesQueue.Count > 0)
@@ -524,7 +534,11 @@ namespace hds
             }
 
 
-            })) { flushPending = true; return; }
+            }
+            finally
+            {
+                TransportFence.Exit(prepFenceTaken);
+            }
 
             // We have now PacketObjects - time to send them
             if (worldPackets.Count > 0)
@@ -535,14 +549,15 @@ namespace hds
                 for (int pi = 0; pi < worldPackets.Count; pi++)
                 {
                     WorldPacket thePacket = worldPackets[pi];
-                    if (!TransportFence.TryRun(outgoingEpoch, () =>
+                    if (!TransportFence.TryEnter(outgoingEpoch, out bool sendFenceTaken)) { flushPending = true; continue; }
+                    try
                     {
                     // A world generation can change after preparation. Drop only unnumbered producer-owned records.
                     thePacket.PruneUnassignedWorldRpcs(playerData.worldGeneration,outgoingEpoch);
                     messageQueue.PruneUnassignedWorldRpcs(playerData.worldGeneration,outgoingEpoch);
                     // A bare reset ACK can arrive after the client resets its sequence history.
                     // The reliable reset RPC already acknowledges the last request.
-                    if (thePacket.IsEmpty && playerData.waitForRPCShutDown) return;
+                    if (thePacket.IsEmpty && playerData.waitForRPCShutDown) continue;
 
                     IWorldEncryption activeCypher = cypher;
                     if (activeCypher is WorldEncryption worldCrypto)
@@ -636,7 +651,11 @@ namespace hds
                                 Stopwatch.GetElapsedTime(encryptStart).TotalMilliseconds.ToString(), "ENCRYPT");
                         }
                     }
-                    })) flushPending = true;
+                    }
+                    finally
+                    {
+                        TransportFence.Exit(sendFenceTaken);
+                    }
                 }
             }
 
@@ -760,6 +779,11 @@ namespace hds
 
         public byte[] DecryptReceivedPacket(byte[] packet)
         {
+            return DecryptReceivedPacketSlice(packet, packet.Length);
+        }
+
+        private byte[] DecryptReceivedPacketSlice(byte[] packet, int length)
+        {
             byte[] processedPacket;
             ushort pss;
             ushort cseq;
@@ -768,14 +792,20 @@ namespace hds
             IWorldEncryption activeCypher = cypher;
             if (activeCypher is WorldEncryption worldCrypto)
             {
-                if (!worldCrypto.TryDecrypt(packet, packet.Length, out processedPacket, out pss, out cseq, out ackSeq, stripTimedHeader: true))
+                if (!worldCrypto.TryDecrypt(packet, length, out processedPacket, out pss, out cseq, out ackSeq, stripTimedHeader: true))
                 {
                     return null; // corrupt packet, already logged
                 }
             }
             else
             {
-                ArrayList decValues = activeCypher.decrypt(packet, packet.Length);
+                byte[] exactPacket = packet;
+                if (packet.Length != length)
+                {
+                    exactPacket = new byte[length];
+                    Buffer.BlockCopy(packet, 0, exactPacket, 0, length);
+                }
+                ArrayList decValues = activeCypher.decrypt(exactPacket, length);
                 if (decValues == null)
                 {
                     return null; // corrupt packet, already logged
@@ -796,30 +826,36 @@ namespace hds
 
             // Fence reset before publishing its new envelope headers, not later in Parse.
             bool resetReceived = (processedPacket[0] & 0x40) != 0;
-            TransportFence.PublishIncoming(resetReceived, () =>
+            bool incomingFenceTaken = false;
+            try
             {
-            if (resetReceived)
-            {
-                // The RESETDONE envelope still carries the old epoch's sequence numbers.
-                messageQueue.ClientReceipts.Reset();
-                messageQueue.ResendBackoff.Reset();
-            }
-            else
-            {
-                messageQueue.ClientReceipts.Observe(cseq);
-                messageQueue.ResendBackoff.ObserveAck(ackSeq);
-            }
-            playerData.setPss(pss);
-            playerData.setCseq(cseq);
-            playerData.setACK(ackSeq);
+                TransportFence.EnterIncoming(resetReceived, out incomingFenceTaken);
+                if (resetReceived)
+                {
+                    // The RESETDONE envelope still carries the old epoch's sequence numbers.
+                    messageQueue.ClientReceipts.Reset();
+                    messageQueue.ResendBackoff.Reset();
+                }
+                else
+                {
+                    messageQueue.ClientReceipts.Observe(cseq);
+                    messageQueue.ResendBackoff.ObserveAck(ackSeq);
+                }
+                playerData.setPss(pss);
+                playerData.setCseq(cseq);
+                playerData.setACK(ackSeq);
 
-            if (DropTest.Enabled)
-            {
-                Output.WriteDebugLog("[NET] Client acks sseq " + ackSeq);
-            }
+                if (DropTest.Enabled)
+                {
+                    Output.WriteDebugLog("[NET] Client acks sseq " + ackSeq);
+                }
 
-            this.DeletedAckedPackets(ackSeq); // REMOVING FROM ACK QUEUE
-            });
+                this.DeletedAckedPackets(ackSeq); // REMOVING FROM ACK QUEUE
+            }
+            finally
+            {
+                TransportFence.Exit(incomingFenceTaken);
+            }
             return processedPacket;
         }
 
@@ -832,21 +868,66 @@ namespace hds
             lock (receivedPackets)
             {
                 receivedPackets.Enqueue(packet);
+                if (receivedPacketLengths != null) receivedPacketLengths.Enqueue(-1);
                 if (packetWorkerRunning)
                 {
                     return;
                 }
                 packetWorkerRunning = true;
             }
-            ThreadPool.QueueUserWorkItem(_ => ProcessQueuedPackets());
+            ThreadPool.UnsafeQueueUserWorkItem(ProcessQueuedPacketsCallback, this);
+        }
+
+        /// <summary>Zero-alloc pooled UDP ingress: owns <paramref name="packet"/> and returns it to <see cref="ArrayPool{T}.Shared"/>.</summary>
+        internal void QueuePooledPacket(byte[] packet, int length)
+        {
+            if (!NoteIngress())
+            {
+                if (packet != null) ArrayPool<byte>.Shared.Return(packet);
+                return;
+            }
+            lock (receivedPackets)
+            {
+                if (receivedPacketLengths == null)
+                {
+                    receivedPacketLengths = new Queue<int>(Math.Max(4, receivedPackets.Count + 1));
+                    for (int i = 0; i < receivedPackets.Count; i++) receivedPacketLengths.Enqueue(-1);
+                }
+                receivedPackets.Enqueue(packet);
+                receivedPacketLengths.Enqueue(length);
+                if (packetWorkerRunning)
+                {
+                    return;
+                }
+                packetWorkerRunning = true;
+            }
+            ThreadPool.UnsafeQueueUserWorkItem(ProcessQueuedPacketsCallback, this);
         }
 
         private void ProcessQueuedPackets()
         {
             while (true)
             {
-                if(Terminal){lock(receivedPackets){receivedPackets.Clear();packetWorkerRunning=false;}return;}
+                if (Terminal)
+                {
+                    lock (receivedPackets)
+                    {
+                        while (receivedPackets.Count > 0)
+                        {
+                            byte[] dropped = receivedPackets.Dequeue();
+                            int droppedLen = receivedPacketLengths != null && receivedPacketLengths.Count > 0
+                                ? receivedPacketLengths.Dequeue()
+                                : -1;
+                            if (droppedLen >= 0 && dropped != null) ArrayPool<byte>.Shared.Return(dropped);
+                        }
+                        receivedPacketLengths?.Clear();
+                        packetWorkerRunning = false;
+                    }
+                    return;
+                }
                 byte[] packet;
+                int length;
+                bool pooled;
                 lock (receivedPackets)
                 {
                     if (receivedPackets.Count == 0)
@@ -855,8 +936,20 @@ namespace hds
                         return;
                     }
                     packet = receivedPackets.Dequeue();
+                    int encodedLen = receivedPacketLengths != null && receivedPacketLengths.Count > 0
+                        ? receivedPacketLengths.Dequeue()
+                        : -1;
+                    pooled = encodedLen >= 0;
+                    length = pooled ? encodedLen : packet.Length;
                 }
-                ProcessPacketCore(packet);
+                try
+                {
+                    ProcessPacketCore(packet, length);
+                }
+                finally
+                {
+                    if (pooled && packet != null) ArrayPool<byte>.Shared.Return(packet);
+                }
             }
         }
         internal int PendingPacketCount {get {lock(receivedPackets)return receivedPackets.Count;}}
@@ -864,9 +957,9 @@ namespace hds
         public void processPacket(byte[] packet)
         {
             // Preserve the direct entry's raw-arrival contract; queued work was stamped at ingress.
-            if(NoteIngress())ProcessPacketCore(packet);
+            if(NoteIngress())ProcessPacketCore(packet, packet.Length);
         }
-        private void ProcessPacketCore(byte[] packet)
+        private void ProcessPacketCore(byte[] packet, int length)
         {
             lock (processLock)
             {
@@ -879,12 +972,20 @@ namespace hds
                     bool encrypted = false;
 
                     byte[] processedPacket = null;
-                    if (packet.Length > 0)
+                    if (length > 0)
                     {
                         if (packet[0] == 0x00)
                         {
                             // Plain text packet
-                            processedPacket = packet;
+                            if (packet.Length == length)
+                            {
+                                processedPacket = packet;
+                            }
+                            else
+                            {
+                                processedPacket = new byte[length];
+                                Buffer.BlockCopy(packet, 0, processedPacket, 0, length);
+                            }
                             if (Output.PacketLogsEnabled)
                             {
                                 Output.WritePacketLog(processedPacket, "CLIENT",
@@ -896,7 +997,7 @@ namespace hds
                         {
                             encrypted = true;
                             long decryptStart = Output.PacketLogsEnabled ? Stopwatch.GetTimestamp() : 0;
-                            processedPacket = DecryptReceivedPacket(packet);
+                            processedPacket = DecryptReceivedPacketSlice(packet, length);
                             if (processedPacket == null)
                             {
                                 return;

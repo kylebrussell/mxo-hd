@@ -419,6 +419,124 @@ public class WorldEncryptionTests
         Assert.Equal(MessageQueue.BuildViewUpdateFast(42, forwarded), msg.content);
     }
 
+    [Fact]
+    public void Crc32SlicingBy8MatchesByteReferenceAcrossLengthsAndOffsets()
+    {
+        static uint ReferenceCrc32(byte[] data, int offset, int length)
+        {
+            uint crc = 0xFFFFFFFFu;
+            for (int i = offset; i < offset + length; i++)
+            {
+                crc ^= data[i];
+                for (int bit = 0; bit < 8; bit++)
+                {
+                    crc = (crc & 1) != 0 ? (crc >> 1) ^ 0xEDB88320u : (crc >> 1);
+                }
+            }
+            return crc ^ 0xFFFFFFFFu;
+        }
+
+        var crc = new Crc32();
+        var rng = new Random(0x5EED1234);
+        byte[] buf = new byte[540];
+        rng.NextBytes(buf);
+
+        for (int len = 0; len <= 512; len++)
+        {
+            int offset = len % 17;
+            uint expected = ReferenceCrc32(buf, offset, len);
+            uint actual = crc.checksum(buf, offset, len);
+            Assert.Equal(expected, actual);
+        }
+
+        // Standard IEEE 802.3 check vector "123456789" -> 0xCBF43926
+        byte[] ascii = System.Text.Encoding.ASCII.GetBytes("123456789");
+        Assert.Equal(0xCBF43926u, crc.checksum(ascii));
+        Assert.Equal(ReferenceCrc32(new byte[64], 0, 64), crc.checksum(new byte[64]));
+        byte[] allOnes = Enumerable.Repeat((byte)0xFF, 73).ToArray();
+        Assert.Equal(ReferenceCrc32(allOnes, 0, allOnes.Length), crc.checksum(allOnes));
+    }
+
+    [Fact]
+    public void TryDecryptHonorsExplicitLengthOnOversizedPooledBuffer()
+    {
+        byte[] sessionKey = Enumerable.Range(1, 16).Select(i => (byte)(i * 13)).ToArray();
+        var peer = new WorldEncryption(sessionKey);
+        var server = new WorldEncryption(sessionKey);
+
+        byte[] plain = { 0x82, 0x01, 0x02, 0x03, 0x04, 0x03, 0x02, 0x00, 0x01, 0x08, 0, 0, 0, 0 };
+        byte[] exactWire = peer.encrypt(plain, plain.Length, 0x3F, 42, 7);
+
+        byte[] pooled = System.Buffers.ArrayPool<byte>.Shared.Rent(exactWire.Length + 256);
+        try
+        {
+            Array.Fill(pooled, (byte)0xAA);
+            Buffer.BlockCopy(exactWire, 0, pooled, 0, exactWire.Length);
+
+            Assert.True(server.TryDecrypt(pooled, exactWire.Length, out byte[] rawOut, out ushort pss, out ushort cseq, out ushort sseq, stripTimedHeader: false));
+            Assert.Equal(plain, rawOut);
+            Assert.Equal((ushort)0x3F, pss);
+            Assert.Equal((ushort)7, cseq);
+            Assert.Equal((ushort)42, sseq);
+
+            Assert.True(server.TryDecrypt(pooled, exactWire.Length, out byte[] strippedOut, out _, out _, out _, stripTimedHeader: true));
+            Assert.Equal((byte)0x02, strippedOut[0]);
+            Assert.Equal(plain[5..], strippedOut[1..]);
+
+            // Reject invalid explicit lengths even when backing array is large.
+            Assert.False(server.TryDecrypt(pooled, 32, out _, out _, out _, out _));
+            Assert.False(server.TryDecrypt(pooled, exactWire.Length + 1, out _, out _, out _, out _));
+            Assert.False(server.TryDecrypt(pooled, pooled.Length + 16, out _, out _, out _, out _));
+        }
+        finally
+        {
+            System.Buffers.ArrayPool<byte>.Shared.Return(pooled);
+        }
+    }
+
+    [Fact]
+    public void DirectSelfViewUpdateMovementCoalescingAndLtVectorsMatchByteLayout()
+    {
+        byte[] raw1 = { SelfViewUpdate.FlagAction | SelfViewUpdate.Flag20, 0x05, 0x3e };
+        byte[] raw2 = { SelfViewUpdate.FlagYaw | SelfViewUpdate.FlagPosition, 0x44,
+            0x00, 0x00, 0x80, 0x3f, 0x00, 0x00, 0x00, 0xc0, 0xcd, 0xcc, 0x4c, 0x42 };
+        Assert.True(SelfViewUpdate.TryParse(raw1, 0, out SelfViewUpdate u1));
+        Assert.True(SelfViewUpdate.TryParse(raw2, 0, out SelfViewUpdate u2));
+
+        var qLegacy = new MessageQueue();
+        qLegacy.AddOrCoalesceMovement(42, u1, u1.ToForwardedUpdate(raw1));
+        qLegacy.AddOrCoalesceMovement(42, u2, u2.ToForwardedUpdate(raw2));
+
+        var qDirect = new MessageQueue();
+        qDirect.AddOrCoalesceMovement(42, u1);
+        qDirect.AddOrCoalesceMovement(42, u2);
+
+        var mLegacy = (SequencedMessage)qLegacy.ObjectMessagesQueue[0]!;
+        var mDirect = (SequencedMessage)qDirect.ObjectMessagesQueue[0]!;
+        Assert.Equal(mLegacy.content, mDirect.content);
+
+        byte[] dBytes = NumericalUtils.doublesToLtVector3d(17020.25, 495.5, -2693.75);
+        Assert.Equal(24, dBytes.Length);
+        double dx = 0, dy = 0, dz = 0;
+        NumericalUtils.LtVector3dToDoubles(dBytes, ref dx, ref dy, ref dz);
+        Assert.Equal(17020.25, dx);
+        Assert.Equal(495.5, dy);
+        Assert.Equal(-2693.75, dz);
+
+        byte[] fBytes = NumericalUtils.floatsToLtVector3f(1.5f, -2.25f, 3.75f);
+        Assert.Equal(12, fBytes.Length);
+        float fx = 0, fy = 0, fz = 0;
+        NumericalUtils.LtVector3fToFloats(fBytes, ref fx, ref fy, ref fz);
+        Assert.Equal(1.5f, fx);
+        Assert.Equal(-2.25f, fy);
+        Assert.Equal(3.75f, fz);
+
+        byte[] qBytes = NumericalUtils.floatsToQuaternion(1f, 2f, 3f, 4f);
+        Assert.Equal(16, qBytes.Length);
+        Assert.Equal(1f, BitConverter.ToSingle(qBytes, 0));
+        Assert.Equal(4f, BitConverter.ToSingle(qBytes, 12));
+    }
+
     private static byte[] EncryptWithExplicitIv(byte[] key, byte[] iv, byte[] plainData, ushort pss, ushort cseq, ushort sseq)
     {
         uint seqValue = ((uint)pss << 24) | ((uint)cseq << 12) | sseq;

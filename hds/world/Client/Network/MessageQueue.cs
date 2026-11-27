@@ -4,6 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 
 namespace hds
 {
@@ -20,6 +21,10 @@ namespace hds
             new Dictionary<ushort, SequencedMessage>();
         private Stack<SequencedMessage> movementPool;
         private const int MaxPooledMovementMessages = 512;
+        // Reusable scratch buffers for TakeRpcsToSend (guarded by RPCMessagesQueue.SyncRoot).
+        private List<SequencedMessage> rpcSentScratch;
+        private List<SequencedMessage> rpcFreshScratch;
+        private static readonly List<SequencedMessage> EmptyRpcList = new List<SequencedMessage>(0);
         internal int FirstUnsentObjectIndex;
         internal int ReliableObjectCount;
         // Receipt and retry snapshots are published under the WorldClient transport fence.
@@ -30,6 +35,8 @@ namespace hds
         internal const long FirstWorldSetupRetryMs = 1000;
         private readonly object receiptSync=new object();
         private readonly System.Collections.Generic.HashSet<ObjectMessageReceipt> receipts=new System.Collections.Generic.HashSet<ObjectMessageReceipt>();
+        private int activeReceiptCount;
+        private int hasUnassignedWorldRpcs;
         private bool receiptSequenceKnown;
         private ushort receiptLastSequence;
         private long receiptLogicalSequence;
@@ -43,23 +50,58 @@ namespace hds
                 if(receiptSequenceKnown)
                 {
                     int delta=(sequence-receiptLastSequence)&0xfff;
-                    if(delta==0){receipts.RemoveWhere(r=>r.Finished);return;}
-                    if(delta>=0x800){foreach(var r in receipts)r.Cancel();receipts.Clear();receiptLogicalSequence=0;}
+                    if(delta==0)
+                    {
+                        if(receipts.Count>0)
+                        {
+                            receipts.RemoveWhere(r=>r.Finished);
+                            Volatile.Write(ref activeReceiptCount, receipts.Count);
+                        }
+                        return;
+                    }
+                    if(delta>=0x800)
+                    {
+                        if(receipts.Count>0)
+                        {
+                            foreach(var r in receipts)r.Cancel();
+                            receipts.Clear();
+                            Volatile.Write(ref activeReceiptCount, 0);
+                        }
+                        receiptLogicalSequence=0;
+                    }
                     else receiptLogicalSequence+=delta;
                 }
                 receiptSequenceKnown=true;receiptLastSequence=sequence;
+                if(receipts.Count==0) return;
                 foreach(var r in receipts)r.Advance(receiptLogicalSequence);
                 foreach(var message in messages)message.ObjectReceipt?.Dispatched(sequence,receiptLogicalSequence);
                 receipts.RemoveWhere(r=>r.Finished);
+                Volatile.Write(ref activeReceiptCount, receipts.Count);
             }
         }
         internal void ObserveObjectReceipts(ushort ack,ushort bits)
         {
+            if (Volatile.Read(ref activeReceiptCount) == 0) return;
             var exact=SequencedMessage.AckedSequences(ack,bits);
-            lock(receiptSync){foreach(var receipt in receipts)receipt.Observe(exact);receipts.RemoveWhere(r=>r.Finished);}
+            lock(receiptSync)
+            {
+                if(receipts.Count==0){Volatile.Write(ref activeReceiptCount, 0);return;}
+                foreach(var receipt in receipts)receipt.Observe(exact);
+                receipts.RemoveWhere(r=>r.Finished);
+                Volatile.Write(ref activeReceiptCount, receipts.Count);
+            }
         }
         internal void CancelObjectReceipts()
-        {lock(receiptSync){foreach(var receipt in receipts)receipt.Cancel();receipts.Clear();receiptSequenceKnown=false;receiptLogicalSequence=0;}}
+        {
+            lock(receiptSync)
+            {
+                foreach(var receipt in receipts)receipt.Cancel();
+                receipts.Clear();
+                Volatile.Write(ref activeReceiptCount, 0);
+                receiptSequenceKnown=false;
+                receiptLogicalSequence=0;
+            }
+        }
 
         public MessageQueue()
         {
@@ -94,20 +136,24 @@ namespace hds
 
         private void QueueRpc(byte[] messageBlock,int? world,long transport, SequencedMessage timedView = null)
         {
-            byte[] rpcSizeByte;
-            if (messageBlock.Length > 127)
+            int len = messageBlock.Length;
+            byte[] framed;
+            if (len > 127)
             {
-                rpcSizeByte = NumericalUtils.uint16ToByteArray((UInt16)(messageBlock.Length + 0x8000), 0);
+                framed = new byte[2 + len];
+                ushort header = (ushort)(len + 0x8000);
+                framed[0] = (byte)(header >> 8);
+                framed[1] = (byte)(header & 0xFF);
+                Buffer.BlockCopy(messageBlock, 0, framed, 2, len);
             }
             else
             {
-                rpcSizeByte = NumericalUtils.uint16ToByteArrayShort((UInt16)messageBlock.Length);
+                framed = new byte[1 + len];
+                framed[0] = (byte)len;
+                Buffer.BlockCopy(messageBlock, 0, framed, 1, len);
             }
-            DynamicArray content = new DynamicArray();
-            content.append(rpcSizeByte);
-            content.append(messageBlock);
 
-            SequencedMessage message = new SequencedMessage(content.getBytes())
+            SequencedMessage message = new SequencedMessage(framed)
             {
                 RpcWorldGeneration = world, RpcTransportEpoch = transport, TimedViewWithRpc = timedView,
                 WorldSetupRpc = worldSetupQueue == this
@@ -117,6 +163,7 @@ namespace hds
             lock (RPCMessagesQueue.SyncRoot)
             {
                 RPCMessagesQueue.Add(message);
+                if (world.HasValue) Volatile.Write(ref hasUnassignedWorldRpcs, 1);
             }
         }
 
@@ -145,58 +192,100 @@ namespace hds
         internal System.Collections.Generic.List<SequencedMessage> TakeRpcsToSend(long nowTickMs, UInt16 nextCounter, out RpcResend resend,
             long? lastIngressTickMs = null)
         {
-            var sent = new System.Collections.Generic.List<SequencedMessage>();
-            var fresh = new System.Collections.Generic.List<SequencedMessage>();
-            SequencedMessage protectedRpc = null;
             lock (RPCMessagesQueue.SyncRoot)
             {
-                foreach (SequencedMessage message in RPCMessagesQueue)
+                if (RPCMessagesQueue.Count == 0)
                 {
-                    if (message.rpcNumber >= 0)
+                    resend = default;
+                    return EmptyRpcList;
+                }
+
+                List<SequencedMessage> sent = rpcSentScratch;
+                if (sent == null) rpcSentScratch = sent = new List<SequencedMessage>(8);
+                List<SequencedMessage> fresh = rpcFreshScratch;
+                if (fresh == null) rpcFreshScratch = fresh = new List<SequencedMessage>(8);
+                sent.Clear();
+                fresh.Clear();
+
+                try
+                {
+                    SequencedMessage protectedRpc = null;
+                    for (int i = 0; i < RPCMessagesQueue.Count; i++)
                     {
-                        sent.Add(message);
-                        if (message.WorldSetupRpc && message.sendCounter == 1 &&
-                            nowTickMs - message.lastRpcSendTick < FirstWorldSetupRetryMs &&
-                            (protectedRpc == null || Behind(message, nextCounter) > Behind(protectedRpc, nextCounter)))
-                            protectedRpc = message;
+                        SequencedMessage message = (SequencedMessage)RPCMessagesQueue[i];
+                        if (message.rpcNumber >= 0)
+                        {
+                            sent.Add(message);
+                            if (message.WorldSetupRpc && message.sendCounter == 1 &&
+                                nowTickMs - message.lastRpcSendTick < FirstWorldSetupRetryMs &&
+                                (protectedRpc == null || Behind(message, nextCounter) > Behind(protectedRpc, nextCounter)))
+                                protectedRpc = message;
+                        }
+                        else fresh.Add(message);
                     }
-                    else fresh.Add(message);
+
+                    // Oldest first, across the 16-bit wrap: the oldest is the furthest behind the next counter.
+                    if (sent.Count > 1)
+                    {
+                        // Insertion sort avoids per-call closure + Comparison delegate allocation for small in-flight sets.
+                        for (int i = 1; i < sent.Count; i++)
+                        {
+                            SequencedMessage key = sent[i];
+                            int keyBehind = Behind(key, nextCounter);
+                            int j = i - 1;
+                            while (j >= 0 && Behind(sent[j], nextCounter) < keyBehind)
+                            {
+                                sent[j + 1] = sent[j];
+                                j--;
+                            }
+                            sent[j + 1] = key;
+                        }
+                    }
+
+                    long interval = lastIngressTickMs.HasValue
+                        ? ResendBackoff.Interval(nowTickMs, lastIngressTickMs.Value) : SequencedMessage.RpcResendIntervalMs;
+                    int eligible = sent.Count;
+                    if (protectedRpc != null && interval < FirstWorldSetupRetryMs)
+                    {
+                        // A later live RPC becoming due must not pull an earlier setup RPC into its first retry.
+                        // If the original block mixed setup and other records, wait for the whole block.
+                        eligible = sent.IndexOf(protectedRpc);
+                        int block = protectedRpc.rpcBlockStart;
+                        while (eligible > 0 && block >= 0 && sent[eligible - 1].rpcBlockStart == block) eligible--;
+                    }
+                    int due = -1;
+                    for (int i = eligible - 1; i >= 0; i--)
+                    {
+                        if (nowTickMs - sent[i].lastRpcSendTick >= interval) { due = i; break; }
+                    }
+                    if (due >= 0 && sent[due].rpcBlockStart >= 0)
+                    {
+                        int blockStart = sent[due].rpcBlockStart;
+                        while (due + 1 < sent.Count && sent[due + 1].rpcBlockStart == blockStart) due++;
+                    }
+                    if (due >= 0 && lastIngressTickMs.HasValue) ResendBackoff.RecordRetry();
+
+                    int span = sent.Count == 0 ? 0 : Behind(sent[0], nextCounter);
+                    int room = Math.Max(0, MaxRpcsInFlight - span);
+                    int freshToTake = Math.Min(fresh.Count, room);
+                    int total = (due + 1) + freshToTake;
+                    resend = due < 0 ? default : new RpcResend(sent[0].rpcNumber, sent[due].rpcNumber, due + 1, sent[0].sendCounter);
+                    if (total == 0)
+                    {
+                        return EmptyRpcList;
+                    }
+
+                    var result = new System.Collections.Generic.List<SequencedMessage>(total);
+                    for (int i = 0; i <= due; i++) result.Add(sent[i]);
+                    for (int i = 0; i < freshToTake; i++) result.Add(fresh[i]);
+                    return result;
+                }
+                finally
+                {
+                    sent.Clear();
+                    fresh.Clear();
                 }
             }
-
-            // Oldest first, across the 16-bit wrap: the oldest is the furthest behind the next counter.
-            sent.Sort((a, b) => Behind(b, nextCounter).CompareTo(Behind(a, nextCounter)));
-            long interval = lastIngressTickMs.HasValue
-                ? ResendBackoff.Interval(nowTickMs, lastIngressTickMs.Value) : SequencedMessage.RpcResendIntervalMs;
-            int eligible = sent.Count;
-            if (protectedRpc != null && interval < FirstWorldSetupRetryMs)
-            {
-                // A later live RPC becoming due must not pull an earlier setup RPC into its first retry.
-                // If the original block mixed setup and other records, wait for the whole block.
-                eligible = sent.IndexOf(protectedRpc);
-                int block = protectedRpc.rpcBlockStart;
-                while (eligible > 0 && block >= 0 && sent[eligible - 1].rpcBlockStart == block) eligible--;
-            }
-            int due = -1;
-            for (int i = eligible - 1; i >= 0; i--)
-            {
-                if (nowTickMs - sent[i].lastRpcSendTick >= interval) { due = i; break; }
-            }
-            if (due >= 0 && sent[due].rpcBlockStart >= 0)
-            {
-                int blockStart = sent[due].rpcBlockStart;
-                while (due + 1 < sent.Count && sent[due + 1].rpcBlockStart == blockStart) due++;
-            }
-            if (due >= 0 && lastIngressTickMs.HasValue) ResendBackoff.RecordRetry();
-
-            var result = new System.Collections.Generic.List<SequencedMessage>(due + 1 + fresh.Count);
-            for (int i = 0; i <= due; i++) result.Add(sent[i]);
-            resend = due < 0 ? default : new RpcResend(sent[0].rpcNumber, sent[due].rpcNumber, due + 1, sent[0].sendCounter);
-
-            int span = sent.Count == 0 ? 0 : Behind(sent[0], nextCounter);
-            int room = Math.Max(0, MaxRpcsInFlight - span);
-            for (int i = 0; i < fresh.Count && i < room; i++) result.Add(fresh[i]);
-            return result;
         }
 
         /// <summary>How many counters before nextCounter this RPC's is: 1 for the newest sent one.</summary>
@@ -205,9 +294,18 @@ namespace hds
         // Called only within the existing transport admission gate, BEFORE any new RPC counter is assigned.
         internal void PruneUnassignedWorldRpcs(int world,long transport)
         {
+            if (Volatile.Read(ref hasUnassignedWorldRpcs) == 0) return;
             lock(RPCMessagesQueue.SyncRoot)
+            {
+                bool anyRemaining = false;
                 for(int i=RPCMessagesQueue.Count-1;i>=0;i--)
-                    if(((SequencedMessage)RPCMessagesQueue[i]).DiscardUnassignedWorldRpc(world,transport)) RPCMessagesQueue.RemoveAt(i);
+                {
+                    SequencedMessage msg = (SequencedMessage)RPCMessagesQueue[i];
+                    if(msg.DiscardUnassignedWorldRpc(world,transport)) RPCMessagesQueue.RemoveAt(i);
+                    else if(msg.RpcWorldGeneration.HasValue && msg.rpcNumber < 0) anyRemaining = true;
+                }
+                if(!anyRemaining) Volatile.Write(ref hasUnassignedWorldRpcs, 0);
+            }
         }
 
         public void addObjectMessage(byte[]messageBlock,bool isTimed)
@@ -218,7 +316,7 @@ namespace hds
         internal SequencedMessage AddReliableObject(byte[] messageBlock, int world, long transport,
             SequencedMessage prerequisite = null, ObjectMessageReceipt receipt = null)
         {
-            if (receipt != null) lock (receiptSync) { receipts.RemoveWhere(r => r.Finished); receipts.Add(receipt); }
+            if (receipt != null) lock (receiptSync) { receipts.RemoveWhere(r => r.Finished); receipts.Add(receipt); Volatile.Write(ref activeReceiptCount, receipts.Count); }
             SequencedMessage message = new SequencedMessage(messageBlock)
             {
                 ObjectReceipt = receipt,
@@ -236,6 +334,7 @@ namespace hds
         }
         internal void PruneStaleReliableObjects(int world, long transport)
         {
+            if (Volatile.Read(ref ReliableObjectCount) == 0) return;
             lock (ObjectMessagesQueue.SyncRoot)
             {
                 if (ReliableObjectCount == 0) return;
@@ -261,7 +360,7 @@ namespace hds
         private void AddObject(byte[] messageBlock,bool isTimed,ObjectMessageReceipt receipt)
         {
             if(MissionOutput.Stage(this,messageBlock,true,isTimed,receipt))return;
-            if(receipt!=null)lock(receiptSync){receipts.RemoveWhere(r=>r.Finished);receipts.Add(receipt);}
+            if(receipt!=null)lock(receiptSync){receipts.RemoveWhere(r=>r.Finished);receipts.Add(receipt);Volatile.Write(ref activeReceiptCount, receipts.Count);}
             SequencedMessage message = new SequencedMessage(messageBlock) {ObjectReceipt=receipt};
             message.isTimed = isTimed;
             lock (ObjectMessagesQueue.SyncRoot)
@@ -323,6 +422,30 @@ namespace hds
                 pos2 = BinaryPrimitives.ReadUInt32LittleEndian(posSpan.Slice(8, 4));
             }
 
+            AddOrCoalesceMovementCore(viewId, newFlags, state.Action, state.Yaw, hasPos, pos0, pos1, pos2);
+        }
+
+        /// <summary>Zero-allocation overload reading float coordinate bits directly from <see cref="SelfViewUpdate"/>.</summary>
+        internal void AddOrCoalesceMovement(ushort viewId, SelfViewUpdate state)
+        {
+            if (state == null) return;
+            byte newFlags = (byte)(state.Flags & ~SelfViewUpdate.Flag20);
+            if (newFlags == 0) return;
+
+            uint pos0 = 0, pos1 = 0, pos2 = 0;
+            bool hasPos = state.HasPosition;
+            if (hasPos)
+            {
+                pos0 = BitConverter.SingleToUInt32Bits(state.X);
+                pos1 = BitConverter.SingleToUInt32Bits(state.Y);
+                pos2 = BitConverter.SingleToUInt32Bits(state.Z);
+            }
+
+            AddOrCoalesceMovementCore(viewId, newFlags, state.Action, state.Yaw, hasPos, pos0, pos1, pos2);
+        }
+
+        private void AddOrCoalesceMovementCore(ushort viewId, byte newFlags, byte? action, byte? yaw, bool hasPos, uint pos0, uint pos1, uint pos2)
+        {
             lock (ObjectMessagesQueue.SyncRoot)
             {
                 if (ObjectMessagesQueue.Count == 0 && pendingMovementByView.Count > 0)
@@ -334,8 +457,8 @@ namespace hds
                 if (pendingMovementByView.TryGetValue(viewId, out SequencedMessage existing) && !existing.isSent)
                 {
                     existing.MovementFlags = (byte)(existing.MovementFlags | newFlags);
-                    if (state.Action.HasValue) existing.MovementAction = state.Action.Value;
-                    if (state.Yaw.HasValue) existing.MovementYaw = state.Yaw.Value;
+                    if (action.HasValue) existing.MovementAction = action.Value;
+                    if (yaw.HasValue) existing.MovementYaw = yaw.Value;
                     if (hasPos)
                     {
                         existing.MovementPos0 = pos0;
@@ -350,7 +473,7 @@ namespace hds
                 if (movementPool != null && movementPool.Count > 0)
                 {
                     message = movementPool.Pop();
-                    message.ResetForMovement(viewId, newFlags, state.Action ?? 0, state.Yaw ?? 0, pos0, pos1, pos2);
+                    message.ResetForMovement(viewId, newFlags, action ?? 0, yaw ?? 0, pos0, pos1, pos2);
                 }
                 else
                 {
@@ -358,8 +481,8 @@ namespace hds
                     {
                         MovementViewId = viewId,
                         MovementFlags = newFlags,
-                        MovementAction = state.Action ?? 0,
-                        MovementYaw = state.Yaw ?? 0,
+                        MovementAction = action ?? 0,
+                        MovementYaw = yaw ?? 0,
                         MovementPos0 = pos0,
                         MovementPos1 = pos1,
                         MovementPos2 = pos2

@@ -1,4 +1,5 @@
 using System;
+using System.Buffers;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel.Design;
@@ -102,12 +103,14 @@ namespace hds
             
             int msgLen = 0;
             WorldClient currentClient = null;
+            byte[] pooledMessage = null;
+            bool handedOff = false;
 
             try
             {
                 msgLen = recvSocket.EndReceiveFrom(iar, ref Remote);
-                byte[] finalMessage = new byte[msgLen];
-                ArrayUtils.fastCopy(buffer, finalMessage, msgLen);
+                pooledMessage = ArrayPool<byte>.Shared.Rent(msgLen);
+                Buffer.BlockCopy(buffer, 0, pooledMessage, 0, msgLen);
 
                 // Fast path on the single receive thread: avoid Remote.ToString() allocation and lock(Clients)
                 // while the client is active and still belongs to the same Clients dictionary.
@@ -143,7 +146,8 @@ namespace hds
 
                 if (currentClient != null)
                 {
-                    currentClient.QueuePacket(finalMessage);
+                    currentClient.QueuePooledPacket(pooledMessage, msgLen);
+                    handedOff = true;
                 }
 
             }
@@ -163,6 +167,13 @@ namespace hds
             {
                 // One bad datagram must not stop the receive loop.
                 Output.WriteLine("[WORLD] Datagram handling failed: " + ex.GetType().Name + " " + ex.Message);
+            }
+            finally
+            {
+                if (!handedOff && pooledMessage != null)
+                {
+                    ArrayPool<byte>.Shared.Return(pooledMessage);
+                }
             }
         }
 
@@ -419,6 +430,11 @@ namespace hds
         /// </summary>
         internal void SendMovementUpdateToAllPlayers(SelfViewUpdate state, byte[] forwardedData, UInt32 charId, UInt64 entityId)
         {
+            SendMovementUpdateToAllPlayers(state, charId, entityId);
+        }
+
+        internal void SendMovementUpdateToAllPlayers(SelfViewUpdate state, UInt32 charId, UInt64 entityId)
+        {
             List<WorldClient> recipients = movementBroadcastScratch;
             if (recipients == null)
             {
@@ -452,7 +468,7 @@ namespace hds
                         continue;
                     }
 
-                    client.messageQueue.AddOrCoalesceMovement(view.ViewID, state, forwardedData);
+                    client.messageQueue.AddOrCoalesceMovement(view.ViewID, state);
                     client.MarkFlushPending();
                 }
             }

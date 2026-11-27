@@ -264,6 +264,35 @@ Server-side `LoadTest --authenticated --clients 200` (Release build, 30 s warmup
 
 Under 200 dense moving clients (~9.23–9.27 million object updates/60 s, 0 failures, 0 timeouts), cumulative `FlushProcessing` drops **2.1–2.2×** (`55.8–56.2 s -> 25.3–26.0 s`, mean `0.343–0.348 -> 0.141–0.154 ms`), peak `Visibility` pauses fall **3.9–6.4×** (`64–149 -> 16–23 ms` with world NPCs, `136.9 -> 10.9 ms` on the test catalog), **Echo RTT P95** holds at **64 ms** across all runs, and **Server CPU** drops from `72–89%` down to `57.5–70.1%` (with working set down ~150 MB).
 
+### Slicing-by-8 CRC32, closure-free fence, pooled UDP ingress, and parallel visibility (follow-up)
+
+On `5dc8af696` (`move 200 --world-mobs`), `player-views` (`3.27–4.55 ms` mean, `4 ms` P50) and `mob-views` (`1.88–2.31 ms` mean, `2 ms` P50) accounted for ~67% of the remaining visibility pass (`7.71–10.27 ms`), while the flush and ingress paths still paid per-datagram byte-by-byte CRC32, `TransportFence` lambda/closure allocations (~580k/min), per-packet `ObserveObjectReceipts` `HashSet<ushort>` allocations (~150k/min), `ArrayPool`-unpooled UDP receive copies, and redundant steady-state queue locks:
+
+Changes:
+
+- **Slicing-by-8 IEEE 802.3 CRC32 (`Crc32.cs`).** Replaced the byte-by-byte loop with 8×256 `uint` L1-resident tables reading 8 bytes per step via `BinaryPrimitives.ReadUInt32LittleEndian`, bit-for-bit identical across all lengths and offsets.
+- **Closure-free `WorldSendFence` & hot-path queue cleanup (`WorldSendFence.cs`, `WorldClient.cs`, `MessageQueue.cs`).** Added `TryEnter` / `EnterIncoming` / `Exit` (`Monitor.Enter`/`Exit`) to eliminate per-flush and per-packet closure allocations in `FlushQueue` and `DecryptReceivedPacket`; cached the `WaitCallback` via `ThreadPool.UnsafeQueueUserWorkItem`; guarded `ObserveObjectReceipts`, `RecordDispatchedReceipts`, `PruneStaleReliableObjects`, and `PruneUnassignedWorldRpcs` with volatile fast paths so steady-state traffic skips `HashSet<ushort>` allocations and empty-queue locks; reused `TakeRpcsToSend` scratch lists and removed `DynamicArray` from `QueueRpc`.
+- **Pooled UDP ingress & direct movement/vector encoding (`WorldServer.cs`, `WorldClient.cs`, `WorldEncryption.cs`, `PlayerCharacter.cs`, `NumericalUtils.cs`).** `WorldServer.ProcessDatagram` rents inbound datagrams from `ArrayPool<byte>.Shared` and hands them to `WorldClient.QueuePooledPacket` (returned in `finally` and on terminal drain), with `WorldEncryption.TryDecrypt` honoring explicit `length`; `PlayerCharacter.parseAutoView` forwards directly from `SelfViewUpdate` without allocating a `ToForwardedUpdate` array; `NumericalUtils` vector helpers write directly via `BinaryPrimitives`.
+- **Compact value-struct `PlayerSample` and parallel `CheckPlayerViews` / `CheckPlayerMobViews` (`ViewVisibleThread.cs`, `WorldClient.cs`).** Switched `PlayerSample` to a contiguous value-type array, moved per-client skip caches onto `WorldClient` (eliminating static dictionaries and pruning), and parallelized read-only spatial scans + per-client `ViewManager` reconciliation (`Parallel.For`, 2–4 workers at `>= 32` clients, `[ThreadStatic]` scratch) while applying any actual spawns, pet refreshes, and view deletes sequentially in deterministic client order.
+
+In-process `VisibilityPassBenchmark` (Release, 200 dense players in Mara):
+
+| Stage (ms per pass) | master `5dc8af696` | this change |
+|---|---:|---:|
+| player-views, everyone moving | 3.45 mean / 5.26 max | **1.88 mean** |
+| player-views, nobody moving | 0.914 mean / 1.125 max | **0.661 mean / 0.707 max** |
+
+Server-side `LoadTest --authenticated --clients 200 --move --world-mobs` (Release build, 30 s warmup + 60 s measure, run serially on 2026-11-27):
+
+| Case | Status | Server CPU % | FlushProcessing mean / sum | Visibility mean / P50 / max ms | player-views mean / P50 / P95 ms | mob-views mean / P50 ms | ObjectFirstSend P95 ms |
+|---|---|---:|---|---|---|---|---:|
+| move 200 + world NPCs, master `5dc8af696` (run 1) | PASS | 62.6 | 0.141 ms / 24.5 s | 7.71 / 8 / 33.5 | 3.27 / 4 / 8 | 1.88 / 2 | 64 |
+| move 200 + world NPCs, master `5dc8af696` (run 2) | PASS | 73.4 | 0.165 ms / 26.8 s | 10.27 / 16 / 26.3 | 4.55 / 4 / 16 | 2.31 / 2 | 128 |
+| move 200 + world NPCs, this change (run 1) | PASS | **57.4** | **0.113 ms / 21.7 s** | **5.09 / 8 / 12.9** | **1.56 / 2 / 4** | **0.90 / 1** | **64** |
+| move 200 + world NPCs, this change (run 2) | PASS | 75.4 | **0.132 ms / 25.6 s** | **7.80 / 8** / 78.2 | **2.49 / 2 / 8** | **1.49 / 1** | **64** |
+
+Under 200 dense moving clients with the full world NPC catalog (~9.1–9.2 million object updates/60 s, 0 failures, 0 timeouts), `player-views` drops **1.8–2.1×** (P50 `4 -> 2 ms`, P95 `8–16 -> 4–8 ms`), `mob-views` drops **1.6–2.1×** (P50 `2 -> 1 ms`), `Visibility` mean drops to `5.09 / 7.80 ms` (`12.9 ms` max on quiet run 1, P50 `8 ms` on both), and `FlushProcessing` mean per client flush drops another **20%** (`0.141–0.165 -> 0.113–0.132 ms`).
+
 ## Reproduce
 
 Build Release last, because the tool refuses to run when a newer Debug server DLL exists. Then run each case serially:

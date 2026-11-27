@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Linq;
 using hds.shared;
 using hds.world.Structures;
@@ -11,6 +12,11 @@ namespace hds
     {
         private const float ViewRange = 5000f;
         private const ushort SubwayTypeId = 6568;
+        private const int ParallelVisibilityClientThreshold = 32;
+        private static readonly ParallelOptions VisibilityParallelOptions = new ParallelOptions
+        {
+            MaxDegreeOfParallelism = Math.Min(4, Math.Max(2, Environment.ProcessorCount / 2))
+        };
         private static readonly object StaticIndexLock = new object();
         private static readonly object SubwayIndexLock = new object();
         private static Dictionary<ushort, SpatialGrid<StaticWorldObject>> staticObjectsByDistrict;
@@ -713,84 +719,129 @@ namespace hds
             }
         }
 
-        private static void CheckPlayerMobViews(List<WorldClient> clients, MobVisibilityCache mobCache)
+        private sealed class MobViewWorkerScratch
         {
-            const float viewRangeSq = ViewRange * ViewRange;
-            MobEntry[] entries = mobCache.Entries;
-            Dictionary<ushort, SpatialGrid<int>> indexGrids = mobCache.IndexGrids;
-            Dictionary<ulong, Mob> mobsByEntity = mobCache.ByEntity;
-            var nonIntroducibleMobs = new List<Mob>();
-            var introducibleMobs = new List<Mob>();
-            var neighborCells = new List<List<int>>(9);
-            var mobsToSpawn = new List<(Mob Mob, ClientView View)>();
-            var petsToRefresh = new List<(Mob Mob, ClientView View)>();
-            var viewsToDelete = new List<(ClientView View, Mob Mob)>();
-            for (int ci = 0; ci < clients.Count; ci++)
+            public readonly List<Mob> NonIntroducibleMobs = new List<Mob>(16);
+            public readonly List<Mob> IntroducibleMobs = new List<Mob>(32);
+            public readonly List<List<int>> NeighborCells = new List<List<int>>(9);
+            public readonly List<(Mob Mob, ClientView View)> MobsToSpawn = new List<(Mob Mob, ClientView View)>();
+            public readonly List<(Mob Mob, ClientView View)> PetsToRefresh = new List<(Mob Mob, ClientView View)>();
+            public readonly List<(ClientView View, Mob Mob)> ViewsToDelete = new List<(ClientView View, Mob Mob)>();
+        }
+
+        [ThreadStatic] private static MobViewWorkerScratch threadMobViewScratch;
+
+        private static MobViewWorkerScratch GetThreadMobViewScratch()
+        {
+            MobViewWorkerScratch scratch = threadMobViewScratch;
+            if (scratch == null)
             {
-                WorldClient thisclient = clients[ci];
-                if (thisclient == null || thisclient.Alive == false)
-                {
-                    continue;
-                }
+                scratch = new MobViewWorkerScratch();
+                threadMobViewScratch = scratch;
+            }
+            return scratch;
+        }
 
-                if (thisclient.playerData.getOnWorld() == false || thisclient.playerData.waitForRPCShutDown)
-                {
-                    continue;
-                }
+        private struct DeferredMobViewActions
+        {
+            public int ClientIndex;
+            public WorldClient Client;
+            public ushort DistrictId;
+            public List<(Mob Mob, ClientView View)> MobsToSpawn;
+            public List<(Mob Mob, ClientView View)> PetsToRefresh;
+            public List<(ClientView View, Mob Mob)> ViewsToDelete;
+        }
 
-                ushort districtId = (ushort)thisclient.playerData.getDistrictId();
-                if (!indexGrids.TryGetValue(districtId, out SpatialGrid<int> grid))
-                {
-                    continue;
-                }
+        private static void EvaluateClientMobViews(
+            WorldClient thisclient,
+            MobEntry[] entries,
+            Dictionary<ushort, SpatialGrid<int>> indexGrids,
+            Dictionary<ulong, Mob> mobsByEntity,
+            MobViewWorkerScratch scratch,
+            out ushort districtId)
+        {
+            districtId = 0;
+            scratch.MobsToSpawn.Clear();
+            scratch.PetsToRefresh.Clear();
+            scratch.ViewsToDelete.Clear();
 
-                double playerX = 0;
-                double playerY = 0;
-                double playerZ = 0;
-                NumericalUtils.LtVector3dToDoubles(thisclient.playerInstance.Position.getValue(),
-                    ref playerX, ref playerY, ref playerZ);
-                float px = (float)playerX;
-                float pz = (float)playerZ;
+            if (thisclient == null || thisclient.Alive == false)
+            {
+                return;
+            }
 
-                nonIntroducibleMobs.Clear();
-                introducibleMobs.Clear();
-                grid.CollectNeighborCells(px, pz, ViewRange, neighborCells);
-                for (int c = 0; c < neighborCells.Count; c++)
+            if (thisclient.playerData.getOnWorld() == false || thisclient.playerData.waitForRPCShutDown)
+            {
+                return;
+            }
+
+            districtId = (ushort)thisclient.playerData.getDistrictId();
+            if (!indexGrids.TryGetValue(districtId, out SpatialGrid<int> grid))
+            {
+                return;
+            }
+
+            const float viewRangeSq = ViewRange * ViewRange;
+            double playerX = 0;
+            double playerY = 0;
+            double playerZ = 0;
+            NumericalUtils.LtVector3dToDoubles(thisclient.playerInstance.Position.getValue(),
+                ref playerX, ref playerY, ref playerZ);
+            float px = (float)playerX;
+            float pz = (float)playerZ;
+
+            List<Mob> nonIntroducibleMobs = scratch.NonIntroducibleMobs;
+            List<Mob> introducibleMobs = scratch.IntroducibleMobs;
+            List<List<int>> neighborCells = scratch.NeighborCells;
+            nonIntroducibleMobs.Clear();
+            introducibleMobs.Clear();
+            grid.CollectNeighborCells(px, pz, ViewRange, neighborCells);
+            for (int c = 0; c < neighborCells.Count; c++)
+            {
+                List<int> cell = neighborCells[c];
+                for (int m = 0; m < cell.Count; m++)
                 {
-                    List<int> cell = neighborCells[c];
-                    for (int m = 0; m < cell.Count; m++)
+                    ref readonly MobEntry e = ref entries[cell[m]];
+                    // Unspawned NPCs (corpse gone, waiting to respawn) aren't nearby, so their views get deleted below
+                    if (!e.Spawned)
                     {
-                        ref readonly MobEntry e = ref entries[cell[m]];
-                        // Unspawned NPCs (corpse gone, waiting to respawn) aren't nearby, so their views get deleted below
-                        if (!e.Spawned)
-                        {
-                            continue;
-                        }
-
-                        float dx = px - e.X;
-                        float dz = pz - e.Z;
-                        if (dx * dx + dz * dz > viewRangeSq)
-                        {
-                            continue;
-                        }
-
-                        // Ordinary corpses stay with their existing viewers. Scripted mission bodies are introduced
-                        // with their dead attributes and sourced pose. GetViewForEntityAndGo hands out a view id,
-                        // and one the client never sees spawned puts every later view id one off.
-                        if (!e.CanIntroduce && !MissionPersistence.PendingLootOwner(thisclient, e.Mob))
-                        {
-                            nonIntroducibleMobs.Add(e.Mob);
-                            continue;
-                        }
-
-                        introducibleMobs.Add(e.Mob);
+                        continue;
                     }
+
+                    float dx = px - e.X;
+                    float dz = pz - e.Z;
+                    if (dx * dx + dz * dz > viewRangeSq)
+                    {
+                        continue;
+                    }
+
+                    // Ordinary corpses stay with their existing viewers. Scripted mission bodies are introduced
+                    // with their dead attributes and sourced pose. GetViewForEntityAndGo hands out a view id,
+                    // and one the client never sees spawned puts every later view id one off.
+                    if (!e.CanIntroduce && !MissionPersistence.PendingLootOwner(thisclient, e.Mob))
+                    {
+                        nonIntroducibleMobs.Add(e.Mob);
+                        continue;
+                    }
+
+                    introducibleMobs.Add(e.Mob);
                 }
+            }
 
-                thisclient.viewMan.ReconcileMobViews(
-                    districtId, nonIntroducibleMobs, introducibleMobs, mobsByEntity,
-                    mobsToSpawn, petsToRefresh, viewsToDelete);
+            thisclient.viewMan.ReconcileMobViews(
+                districtId, nonIntroducibleMobs, introducibleMobs, mobsByEntity,
+                scratch.MobsToSpawn, scratch.PetsToRefresh, scratch.ViewsToDelete);
+        }
 
+        private static void ApplyMobViewActions(
+            WorldClient thisclient,
+            ushort districtId,
+            List<(Mob Mob, ClientView View)> mobsToSpawn,
+            List<(Mob Mob, ClientView View)> petsToRefresh,
+            List<(ClientView View, Mob Mob)> viewsToDelete)
+        {
+            if (mobsToSpawn != null)
+            {
                 for (int i = 0; i < mobsToSpawn.Count; i++)
                 {
                     Mob thismob = mobsToSpawn[i].Mob;
@@ -814,7 +865,10 @@ namespace hds
                         thismob.DoMobUpdate(thismob);
                     }
                 }
+            }
 
+            if (petsToRefresh != null)
+            {
                 for (int i = 0; i < petsToRefresh.Count; i++)
                 {
                     Mob thismob = petsToRefresh[i].Mob;
@@ -825,7 +879,10 @@ namespace hds
                         CoderPets.RefreshPresentation(thismob.pet, thisclient, mobView);
                     }
                 }
+            }
 
+            if (viewsToDelete != null)
+            {
                 for (int i = 0; i < viewsToDelete.Count; i++)
                 {
                     ClientView view = viewsToDelete[i].View;
@@ -846,11 +903,75 @@ namespace hds
             }
         }
 
+        private static void CheckPlayerMobViews(List<WorldClient> clients, MobVisibilityCache mobCache)
+        {
+            MobEntry[] entries = mobCache.Entries;
+            Dictionary<ushort, SpatialGrid<int>> indexGrids = mobCache.IndexGrids;
+            Dictionary<ulong, Mob> mobsByEntity = mobCache.ByEntity;
+
+            if (clients.Count < ParallelVisibilityClientThreshold)
+            {
+                MobViewWorkerScratch scratch = GetThreadMobViewScratch();
+                for (int ci = 0; ci < clients.Count; ci++)
+                {
+                    WorldClient thisclient = clients[ci];
+                    EvaluateClientMobViews(thisclient, entries, indexGrids, mobsByEntity, scratch, out ushort districtId);
+                    if (scratch.MobsToSpawn.Count > 0 || scratch.PetsToRefresh.Count > 0 || scratch.ViewsToDelete.Count > 0)
+                    {
+                        ApplyMobViewActions(thisclient, districtId, scratch.MobsToSpawn, scratch.PetsToRefresh, scratch.ViewsToDelete);
+                    }
+                }
+                return;
+            }
+
+            // Parallel read-only spatial scan + per-client ViewManager reconciliation; any actual spawns,
+            // pet refreshes, or view deletes are applied sequentially in deterministic client order below.
+            List<DeferredMobViewActions> deferred = null;
+            object deferredLock = new object();
+
+            Parallel.For(0, clients.Count, VisibilityParallelOptions,
+                GetThreadMobViewScratch,
+                (ci, state, scratch) =>
+                {
+                    WorldClient thisclient = clients[ci];
+                    EvaluateClientMobViews(thisclient, entries, indexGrids, mobsByEntity, scratch, out ushort districtId);
+                    if (scratch.MobsToSpawn.Count > 0 || scratch.PetsToRefresh.Count > 0 || scratch.ViewsToDelete.Count > 0)
+                    {
+                        var action = new DeferredMobViewActions
+                        {
+                            ClientIndex = ci,
+                            Client = thisclient,
+                            DistrictId = districtId,
+                            MobsToSpawn = scratch.MobsToSpawn.Count > 0 ? new List<(Mob Mob, ClientView View)>(scratch.MobsToSpawn) : null,
+                            PetsToRefresh = scratch.PetsToRefresh.Count > 0 ? new List<(Mob Mob, ClientView View)>(scratch.PetsToRefresh) : null,
+                            ViewsToDelete = scratch.ViewsToDelete.Count > 0 ? new List<(ClientView View, Mob Mob)>(scratch.ViewsToDelete) : null
+                        };
+                        lock (deferredLock)
+                        {
+                            if (deferred == null) deferred = new List<DeferredMobViewActions>();
+                            deferred.Add(action);
+                        }
+                    }
+                    return scratch;
+                },
+                _ => { });
+
+            if (deferred != null)
+            {
+                deferred.Sort((a, b) => a.ClientIndex.CompareTo(b.ClientIndex));
+                for (int i = 0; i < deferred.Count; i++)
+                {
+                    DeferredMobViewActions action = deferred[i];
+                    ApplyMobViewActions(action.Client, action.DistrictId, action.MobsToSpawn, action.PetsToRefresh, action.ViewsToDelete);
+                }
+            }
+        }
+
         /// <summary>
-        /// One player's state as this pass reads it: decoded once per pass instead of once per pair (at 200 dense
-        /// players the pair loop decoded 40,000 positions and goids a pass, each allocating).
+        /// One player's state as this pass reads it: decoded once per pass into a contiguous value-type array
+        /// instead of once per pair (at 200 dense players the pair loop decoded 40,000 positions and goids a pass).
         /// </summary>
-        internal sealed class PlayerSample
+        internal struct PlayerSample
         {
             public WorldClient Client;
             public bool Eligible, Hidden;
@@ -859,16 +980,46 @@ namespace hds
             public ulong Entity;
             public UInt16 Goid;
             /// <summary>Different from the previous pass (or new): position, liveness, district or stealth.</summary>
-            public bool Changed = true;
-            public bool SameAs(PlayerSample o) => o != null && o.Eligible == Eligible && o.Hidden == Hidden && o.District == District &&
+            public bool Changed;
+            public bool SameAs(in PlayerSample o) => o.Client != null && o.Eligible == Eligible && o.Hidden == Hidden && o.District == District &&
                 o.X == X && o.Z == Z && o.Entity == Entity && o.Goid == Goid;
         }
 
-        // The previous pass's samples and each player's view-list version after it was last evaluated. Only the
-        // visibility thread (and tests calling it directly) runs CheckPlayerViews.
-        private static Dictionary<WorldClient, PlayerSample> previousSamples;
-        private static readonly Dictionary<WorldClient, (long Views, List<WorldClient> Near)> evaluatedViews =
-            new Dictionary<WorldClient, (long Views, List<WorldClient> Near)>(ReferenceEqualityComparer.Instance);
+        private sealed class PlayerViewWorkerScratch
+        {
+            public readonly List<List<WorldClient>> NeighborCells = new List<List<WorldClient>>(9);
+            public readonly List<PlayerSample> NearbySamples = new List<PlayerSample>(64);
+            public readonly List<(WorldClient Other, ClientView View)> ToSpawn = new List<(WorldClient Other, ClientView View)>();
+            public readonly List<ClientView> ToDelete = new List<ClientView>();
+            public int Skipped;
+        }
+
+        [ThreadStatic] private static PlayerViewWorkerScratch threadPlayerViewScratch;
+
+        private static PlayerViewWorkerScratch GetThreadPlayerViewScratch()
+        {
+            PlayerViewWorkerScratch scratch = threadPlayerViewScratch;
+            if (scratch == null)
+            {
+                scratch = new PlayerViewWorkerScratch();
+                threadPlayerViewScratch = scratch;
+            }
+            scratch.Skipped = 0;
+            return scratch;
+        }
+
+        private struct DeferredPlayerViewActions
+        {
+            public int SampleIndex;
+            public WorldClient Client;
+            public List<(WorldClient Other, ClientView View)> ToSpawn;
+            public List<ClientView> ToDelete;
+        }
+
+        // Monotonic pass id (starts at 1 so first pass = 2 never matches default 0 on freshly constructed/uninitialized WorldClient).
+        private static long playerViewPassCounter = 1;
+        private static int previousPlayerSampleCount = -1;
+        private static PlayerSample[] reusablePlayerSamples = Array.Empty<PlayerSample>();
         internal static int SkippedPlayerEvaluations;
 
         private static PlayerSample SampleSingle(WorldClient client)
@@ -883,224 +1034,307 @@ namespace hds
                 District = client.playerData.getDistrictId(),
                 X = x, Z = z,
                 Entity = client.playerData.getEntityId(),
-                Goid = NumericalUtils.ByteArrayToUint16(client.playerInstance.GetGoid(), 1)
+                Goid = NumericalUtils.ByteArrayToUint16(client.playerInstance.GetGoid(), 1),
+                Changed = true
             };
         }
 
-        private static Dictionary<WorldClient, PlayerSample> SamplePlayers(List<WorldClient> clients, List<PlayerSample> sampleList)
-        {
-            var samples = new Dictionary<WorldClient, PlayerSample>(clients.Count, ReferenceEqualityComparer.Instance);
-            for (int i = 0; i < clients.Count; i++)
-            {
-                WorldClient client = clients[i];
-                if (client == null || samples.ContainsKey(client)) continue;
-                PlayerSample sample = SampleSingle(client);
-                client.VisibilitySampleIndex = sampleList.Count;
-                sampleList.Add(sample);
-                samples[client] = sample;
-            }
-            return samples;
-        }
-
-        private static PlayerSample LookupSample(WorldClient client, List<PlayerSample> sampleList, Dictionary<WorldClient, PlayerSample> samples)
+        private static bool TryLookupSample(WorldClient client, PlayerSample[] sampleArray, int sampleCount, out PlayerSample sample)
         {
             int idx = client.VisibilitySampleIndex;
-            if ((uint)idx < (uint)sampleList.Count && ReferenceEquals(sampleList[idx].Client, client))
+            if ((uint)idx < (uint)sampleCount && ReferenceEquals(sampleArray[idx].Client, client))
             {
-                return sampleList[idx];
+                sample = sampleArray[idx];
+                return true;
             }
-            return samples.TryGetValue(client, out PlayerSample s) ? s : null;
+            sample = default;
+            return false;
+        }
+
+        private static void EvaluateSinglePlayerViews(
+            in PlayerSample current,
+            PlayerSample[] sampleArray,
+            int sampleCount,
+            bool canSkip,
+            Dictionary<uint, SpatialGrid<WorldClient>> clientGrids,
+            PlayerViewWorkerScratch scratch)
+        {
+            scratch.ToSpawn.Clear();
+            scratch.ToDelete.Clear();
+
+            if (!current.Eligible)
+            {
+                return;
+            }
+
+            WorldClient currentClient = current.Client;
+            uint districtId = current.District;
+            if (!clientGrids.TryGetValue(districtId, out SpatialGrid<WorldClient> grid))
+            {
+                return;
+            }
+
+            List<List<WorldClient>> neighborCells = scratch.NeighborCells;
+            if (canSkip && !current.Changed && currentClient.HasEvaluatedPlayerViews &&
+                currentClient.LastEvaluatedViewVersion == currentClient.viewMan.Version &&
+                !NeighbourChanged(grid, in current, currentClient.LastNearPlayers, sampleArray, sampleCount, neighborCells))
+            {
+                scratch.Skipped++;
+                return;
+            }
+
+            const double viewRangeSq = (double)ViewRange * ViewRange;
+            float currentPlayerX = (float)current.X;
+            float currentPlayerZ = (float)current.Z;
+
+            List<PlayerSample> nearbySamples = scratch.NearbySamples;
+            nearbySamples.Clear();
+            List<WorldClient> nearList = currentClient.LastNearPlayers;
+            if (nearList == null)
+            {
+                nearList = new List<WorldClient>();
+                currentClient.LastNearPlayers = nearList;
+            }
+            nearList.Clear();
+
+            grid.CollectNeighborCells(currentPlayerX, currentPlayerZ, ViewRange, neighborCells);
+            for (int cellIdx = 0; cellIdx < neighborCells.Count; cellIdx++)
+            {
+                List<WorldClient> cell = neighborCells[cellIdx];
+                for (int oi = 0; oi < cell.Count; oi++)
+                {
+                    WorldClient otherClient = cell[oi];
+                    if (otherClient == null || ReferenceEquals(otherClient, currentClient))
+                    {
+                        continue;
+                    }
+
+                    nearList.Add(otherClient);
+
+                    // A client the grid holds but this pass didn't sample (added since the snapshot) is read live.
+                    if (!TryLookupSample(otherClient, sampleArray, sampleCount, out PlayerSample other))
+                    {
+                        other = SampleSingle(otherClient);
+                    }
+
+                    if (!other.Eligible || other.District != districtId)
+                    {
+                        continue;
+                    }
+
+                    double dx = currentPlayerX - (float)other.X;
+                    double dz = currentPlayerZ - (float)other.Z;
+                    if (dx * dx + dz * dz > viewRangeSq)
+                    {
+                        continue;
+                    }
+
+                    // A sneaking or invisible enemy stays out of this player's sight (docs/STEALTH.md)
+                    if (other.Hidden && Stealth.HiddenFrom(currentClient, otherClient))
+                    {
+                        continue;
+                    }
+
+                    nearbySamples.Add(other);
+                }
+            }
+
+            long version = currentClient.viewMan.ReconcilePlayerSamples(
+                nearbySamples, current.Goid, scratch.ToSpawn, scratch.ToDelete);
+            currentClient.LastEvaluatedViewVersion = version;
+            currentClient.HasEvaluatedPlayerViews = true;
+        }
+
+        private static void ApplyPlayerViewActions(
+            WorldClient currentClient,
+            Dictionary<ulong, WorldClient> clientsByEntity,
+            List<(WorldClient Other, ClientView View)> toSpawn,
+            List<ClientView> toDelete)
+        {
+            if (toSpawn != null && toSpawn.Count > 0)
+            {
+                for (int s = 0; s < toSpawn.Count; s++)
+                {
+                    WorldClient otherClient = toSpawn[s].Other;
+                    ClientView clientView = toSpawn[s].View;
+                    if (clientView.viewCreated == false &&
+                        currentClient.playerData.getDistrictId() == otherClient.playerData.getDistrictId() &&
+                        otherClient.playerData.getOnWorld() && currentClient.playerData.getOnWorld())
+                    {
+                        // Spawn player
+                        ServerPackets pak = new ServerPackets();
+                        pak.sendSystemChatMessage(currentClient,
+                            "Player " + StringUtils.charBytesToString_NZ(otherClient.playerInstance
+                                .CharacterName.getValue()) + " with new View ID " +
+                            clientView.ViewID + " jacked in", "BROADCAST");
+                        // The spawn id is the creation record's counter byte: with the view id it is the handle the
+                        // client names this player by (combat, duels, trade). This used to store the next counter value.
+                        clientView.spawnId = pak.SendPlayerSpawn(currentClient, otherClient, clientView.ViewID);
+                        clientView.viewCreated = true;
+                        Stealth.AfterSpawn(currentClient, otherClient, clientView.ViewID);
+                        EvasionShield.AfterSpawn(currentClient, otherClient, clientView.ViewID);
+                        StealthShieldAbilities.AfterSpawn(currentClient, otherClient, clientView.ViewID);
+                    }
+                }
+            }
+
+            if (toDelete != null && toDelete.Count > 0)
+            {
+                for (int d = 0; d < toDelete.Count; d++)
+                {
+                    ClientView view = toDelete[d];
+                    ServerPackets packets = new ServerPackets();
+                    if (clientsByEntity.TryGetValue(view.entityId, out WorldClient otherClient))
+                    {
+                        packets.sendSystemChatMessage(currentClient,
+                            "Player " + StringUtils.charBytesToString_NZ(otherClient.playerInstance
+                                .CharacterName.getValue()) + " with View ID " + view.ViewID +
+                            " jacked out!", "MODAL");
+                    }
+                    else
+                    {
+                        packets.sendSystemChatMessage(currentClient,
+                            "Player with View ID " + view.ViewID + " jacked out!", "MODAL");
+                    }
+
+                    packets.sendDeleteViewPacket(currentClient, view.ViewID);
+                    currentClient.viewMan.removeViewByViewId(view.ViewID);
+                }
+                currentClient.LastEvaluatedViewVersion = currentClient.viewMan.Version;
+            }
         }
 
         internal static void CheckPlayerViews(List<WorldClient> clients,
             Dictionary<uint, SpatialGrid<WorldClient>> clientGrids,
             Dictionary<ulong, WorldClient> clientsByEntity)
         {
-            var sampleList = new List<PlayerSample>(clients.Count);
-            Dictionary<WorldClient, PlayerSample> samples = SamplePlayers(clients, sampleList);
-            Dictionary<WorldClient, PlayerSample> previous = previousSamples;
+            long currentPass = ++playerViewPassCounter;
+            long prevPass = currentPass - 1;
+            if (reusablePlayerSamples.Length < clients.Count)
+            {
+                reusablePlayerSamples = new PlayerSample[Math.Max(clients.Count, 64)];
+            }
+
+            PlayerSample[] sampleArray = reusablePlayerSamples;
+            int sampleCount = 0;
             // A player's outcome depends only on its own sample, its views and the samples near it, so when none of
             // those changed it is skipped. Any join, leave or hidden player (stealth visibility also depends on PvP
             // state, which a sample doesn't carry) makes this a full pass.
-            bool canSkip = previous != null && previous.Count == samples.Count;
-            for (int i = 0; i < sampleList.Count; i++)
+            bool canSkip = previousPlayerSampleCount >= 0;
+
+            for (int i = 0; i < clients.Count; i++)
             {
-                PlayerSample sample = sampleList[i];
+                WorldClient client = clients[i];
+                if (client == null || client.VisibilityCurrentPassId == currentPass) continue;
+                client.VisibilityCurrentPassId = currentPass;
+
+                PlayerSample sample = SampleSingle(client);
                 if (sample.Hidden) canSkip = false;
-                if (previous == null || !previous.TryGetValue(sample.Client, out PlayerSample before)) { canSkip = false; continue; }
-                sample.Changed = !sample.SameAs(before);
-                // Leaving the world or the district takes a player out of the grid, where neighbours wouldn't see it.
-                if (before.Eligible != sample.Eligible || before.District != sample.District) canSkip = false;
+
+                if (client.VisibilityLastPassId != prevPass)
+                {
+                    canSkip = false;
+                    sample.Changed = true;
+                }
+                else
+                {
+                    PlayerSample before = client.LastPlayerSample;
+                    sample.Changed = !sample.SameAs(in before);
+                    // Leaving the world or the district takes a player out of the grid, where neighbours wouldn't see it.
+                    if (before.Eligible != sample.Eligible || before.District != sample.District)
+                    {
+                        canSkip = false;
+                    }
+                }
+
+                client.LastPlayerSample = sample;
+                client.VisibilityLastPassId = currentPass;
+                client.VisibilitySampleIndex = sampleCount;
+                sampleArray[sampleCount++] = sample;
             }
-            previousSamples = samples;
-            if (evaluatedViews.Count > 0)
+
+            if (sampleCount != previousPlayerSampleCount)
             {
-                List<WorldClient> goneClients = null;
-                foreach (WorldClient c in evaluatedViews.Keys)
+                canSkip = false;
+            }
+            previousPlayerSampleCount = sampleCount;
+
+            if (sampleCount < ParallelVisibilityClientThreshold)
+            {
+                PlayerViewWorkerScratch scratch = GetThreadPlayerViewScratch();
+                for (int si = 0; si < sampleCount; si++)
                 {
-                    if (!samples.ContainsKey(c))
+                    ref readonly PlayerSample current = ref sampleArray[si];
+                    EvaluateSinglePlayerViews(in current, sampleArray, sampleCount, canSkip, clientGrids, scratch);
+                    if (scratch.ToSpawn.Count > 0 || scratch.ToDelete.Count > 0)
                     {
-                        if (goneClients == null) goneClients = new List<WorldClient>();
-                        goneClients.Add(c);
+                        ApplyPlayerViewActions(current.Client, clientsByEntity, scratch.ToSpawn, scratch.ToDelete);
                     }
                 }
-                if (goneClients != null)
+                if (scratch.Skipped > 0)
                 {
-                    for (int i = 0; i < goneClients.Count; i++) evaluatedViews.Remove(goneClients[i]);
+                    Interlocked.Add(ref SkippedPlayerEvaluations, scratch.Skipped);
                 }
+                return;
             }
 
-            const double viewRangeSq = (double)ViewRange * ViewRange;
-            var neighborCells = new List<List<WorldClient>>(9);
-            var nearbySamples = new List<PlayerSample>(clients.Count);
-            var toSpawn = new List<(WorldClient Other, ClientView View)>();
-            var toDelete = new List<ClientView>();
+            // Parallel read-only spatial scan + per-client ViewManager reconciliation; spawns and deletes
+            // run sequentially in deterministic client order after Parallel.For finishes.
+            List<DeferredPlayerViewActions> deferred = null;
+            object deferredLock = new object();
 
-            for (int ci = 0; ci < clients.Count; ci++)
+            Parallel.For(0, sampleCount, VisibilityParallelOptions,
+                GetThreadPlayerViewScratch,
+                (si, state, scratch) =>
+                {
+                    ref readonly PlayerSample current = ref sampleArray[si];
+                    EvaluateSinglePlayerViews(in current, sampleArray, sampleCount, canSkip, clientGrids, scratch);
+                    if (scratch.ToSpawn.Count > 0 || scratch.ToDelete.Count > 0)
+                    {
+                        var action = new DeferredPlayerViewActions
+                        {
+                            SampleIndex = si,
+                            Client = current.Client,
+                            ToSpawn = scratch.ToSpawn.Count > 0 ? new List<(WorldClient Other, ClientView View)>(scratch.ToSpawn) : null,
+                            ToDelete = scratch.ToDelete.Count > 0 ? new List<ClientView>(scratch.ToDelete) : null
+                        };
+                        lock (deferredLock)
+                        {
+                            if (deferred == null) deferred = new List<DeferredPlayerViewActions>();
+                            deferred.Add(action);
+                        }
+                    }
+                    return scratch;
+                },
+                scratch =>
+                {
+                    if (scratch.Skipped > 0)
+                    {
+                        Interlocked.Add(ref SkippedPlayerEvaluations, scratch.Skipped);
+                    }
+                });
+
+            if (deferred != null)
             {
-                WorldClient currentClient = clients[ci];
-                if (currentClient == null) continue;
-                PlayerSample current = LookupSample(currentClient, sampleList, samples);
-                if (current == null || !current.Eligible)
+                deferred.Sort((a, b) => a.SampleIndex.CompareTo(b.SampleIndex));
+                for (int i = 0; i < deferred.Count; i++)
                 {
-                    continue;
+                    DeferredPlayerViewActions action = deferred[i];
+                    ApplyPlayerViewActions(action.Client, clientsByEntity, action.ToSpawn, action.ToDelete);
                 }
-
-                uint districtId = current.District;
-                if (!clientGrids.TryGetValue(districtId, out SpatialGrid<WorldClient> grid))
-                {
-                    continue;
-                }
-
-                bool hasEvaluated = evaluatedViews.TryGetValue(currentClient, out var seen);
-                if (canSkip && !current.Changed && hasEvaluated &&
-                    seen.Views == currentClient.viewMan.Version &&
-                    !NeighbourChanged(grid, current, seen.Near, sampleList, samples, neighborCells))
-                {
-                    SkippedPlayerEvaluations++;
-                    continue;
-                }
-
-                float currentPlayerX = (float)current.X;
-                float currentPlayerZ = (float)current.Z;
-
-                nearbySamples.Clear();
-                List<WorldClient> nearList = hasEvaluated ? seen.Near : new List<WorldClient>();
-                nearList.Clear();
-
-                grid.CollectNeighborCells(currentPlayerX, currentPlayerZ, ViewRange, neighborCells);
-                for (int cellIdx = 0; cellIdx < neighborCells.Count; cellIdx++)
-                {
-                    List<WorldClient> cell = neighborCells[cellIdx];
-                    for (int oi = 0; oi < cell.Count; oi++)
-                    {
-                        WorldClient otherClient = cell[oi];
-                        if (otherClient == null || ReferenceEquals(otherClient, currentClient))
-                        {
-                            continue;
-                        }
-
-                        nearList.Add(otherClient);
-
-                        // A client the grid holds but this pass didn't sample (added since the snapshot) is read live.
-                        PlayerSample other = LookupSample(otherClient, sampleList, samples);
-                        if (other == null)
-                        {
-                            other = SampleSingle(otherClient);
-                            otherClient.VisibilitySampleIndex = sampleList.Count;
-                            sampleList.Add(other);
-                            samples[otherClient] = other;
-                        }
-
-                        if (!other.Eligible || other.District != districtId)
-                        {
-                            continue;
-                        }
-
-                        double dx = currentPlayerX - (float)other.X;
-                        double dz = currentPlayerZ - (float)other.Z;
-                        if (dx * dx + dz * dz > viewRangeSq)
-                        {
-                            continue;
-                        }
-
-                        // A sneaking or invisible enemy stays out of this player's sight (docs/STEALTH.md)
-                        if (other.Hidden && Stealth.HiddenFrom(currentClient, otherClient))
-                        {
-                            continue;
-                        }
-
-                        nearbySamples.Add(other);
-                    }
-                }
-
-                long version = currentClient.viewMan.ReconcilePlayerSamples(
-                    nearbySamples, current.Goid, toSpawn, toDelete);
-
-                if (toSpawn.Count > 0)
-                {
-                    for (int s = 0; s < toSpawn.Count; s++)
-                    {
-                        WorldClient otherClient = toSpawn[s].Other;
-                        ClientView clientView = toSpawn[s].View;
-                        if (clientView.viewCreated == false &&
-                            currentClient.playerData.getDistrictId() == otherClient.playerData.getDistrictId() &&
-                            otherClient.playerData.getOnWorld() && currentClient.playerData.getOnWorld())
-                        {
-                            // Spawn player
-                            ServerPackets pak = new ServerPackets();
-                            pak.sendSystemChatMessage(currentClient,
-                                "Player " + StringUtils.charBytesToString_NZ(otherClient.playerInstance
-                                    .CharacterName.getValue()) + " with new View ID " +
-                                clientView.ViewID + " jacked in", "BROADCAST");
-                            // The spawn id is the creation record's counter byte: with the view id it is the handle the
-                            // client names this player by (combat, duels, trade). This used to store the next counter value.
-                            clientView.spawnId = pak.SendPlayerSpawn(currentClient, otherClient, clientView.ViewID);
-                            clientView.viewCreated = true;
-                            Stealth.AfterSpawn(currentClient, otherClient, clientView.ViewID);
-                            EvasionShield.AfterSpawn(currentClient, otherClient, clientView.ViewID);
-                            StealthShieldAbilities.AfterSpawn(currentClient, otherClient, clientView.ViewID);
-                        }
-                    }
-                }
-
-                if (toDelete.Count > 0)
-                {
-                    for (int d = 0; d < toDelete.Count; d++)
-                    {
-                        ClientView view = toDelete[d];
-                        ServerPackets packets = new ServerPackets();
-                        if (clientsByEntity.TryGetValue(view.entityId, out WorldClient otherClient))
-                        {
-                            packets.sendSystemChatMessage(currentClient,
-                                "Player " + StringUtils.charBytesToString_NZ(otherClient.playerInstance
-                                    .CharacterName.getValue()) + " with View ID " + view.ViewID +
-                                " jacked out!", "MODAL");
-                        }
-                        else
-                        {
-                            packets.sendSystemChatMessage(currentClient,
-                                "Player with View ID " + view.ViewID + " jacked out!", "MODAL");
-                        }
-
-                        packets.sendDeleteViewPacket(currentClient, view.ViewID);
-                        currentClient.viewMan.removeViewByViewId(view.ViewID);
-                    }
-                    version = currentClient.viewMan.Version;
-                }
-
-                evaluatedViews[currentClient] = (version, nearList);
             }
         }
 
         /// <summary>Whether anyone in the player's neighbour cells now, or in them at its last evaluation, changed.</summary>
-        private static bool NeighbourChanged(SpatialGrid<WorldClient> grid, PlayerSample current, List<WorldClient> near,
-            List<PlayerSample> sampleList, Dictionary<WorldClient, PlayerSample> samples, List<List<WorldClient>> neighborCells)
+        private static bool NeighbourChanged(SpatialGrid<WorldClient> grid, in PlayerSample current, List<WorldClient> near,
+            PlayerSample[] sampleArray, int sampleCount, List<List<WorldClient>> neighborCells)
         {
-            for (int i = 0; i < near.Count; i++)
+            if (near != null)
             {
-                PlayerSample s = LookupSample(near[i], sampleList, samples);
-                if (s == null || s.Changed) return true;
+                for (int i = 0; i < near.Count; i++)
+                {
+                    if (!TryLookupSample(near[i], sampleArray, sampleCount, out PlayerSample s) || s.Changed) return true;
+                }
             }
             grid.CollectNeighborCells((float)current.X, (float)current.Z, ViewRange, neighborCells);
             for (int c = 0; c < neighborCells.Count; c++)
@@ -1111,8 +1345,7 @@ namespace hds
                     WorldClient other = cell[i];
                     if (other != null)
                     {
-                        PlayerSample s = LookupSample(other, sampleList, samples);
-                        if (s == null || s.Changed) return true;
+                        if (!TryLookupSample(other, sampleArray, sampleCount, out PlayerSample s) || s.Changed) return true;
                     }
                 }
             }

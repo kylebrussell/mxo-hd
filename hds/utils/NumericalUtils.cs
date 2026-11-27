@@ -254,17 +254,11 @@ namespace hds
 		}
 		
 		static public void LtVector3fToFloats(byte[] LtVector3f,ref float x,ref float y, ref float z){
-			byte[] tempX = {0x00,0x00,0x00,0x00};
-			byte[] tempY = {0x00,0x00,0x00,0x00};
-			byte[] tempZ = {0x00,0x00,0x00,0x00};
-			for(int i = 0;i<4;i++){
-				tempX[i] = LtVector3f[i];
-				tempY[i] = LtVector3f[i+4];
-				tempZ[i] = LtVector3f[i+8];
-			}
-			x = NumericalUtils.byteArrayToFloat(tempX,1);
-			y = NumericalUtils.byteArrayToFloat(tempY,1);
-			z = NumericalUtils.byteArrayToFloat(tempZ,1);
+			if(LtVector3f.Length<12) throw new IndexOutOfRangeException();
+			ReadOnlySpan<byte> v=LtVector3f;
+			x = System.Buffers.Binary.BinaryPrimitives.ReadSingleLittleEndian(v.Slice(0,4));
+			y = System.Buffers.Binary.BinaryPrimitives.ReadSingleLittleEndian(v.Slice(4,4));
+			z = System.Buffers.Binary.BinaryPrimitives.ReadSingleLittleEndian(v.Slice(8,4));
 		}
 		
 		static public void LtVector3dToDoubles(byte[] LtVector3d,ref double x,ref double y, ref double z){
@@ -278,28 +272,31 @@ namespace hds
 		}
 		
 		static public byte[] floatsToLtVector3f(float x,float y,float z){
-			DynamicArray din = new DynamicArray();
-			din.append(NumericalUtils.floatToByteArray(x,1));
-			din.append(NumericalUtils.floatToByteArray(y,1));
-			din.append(NumericalUtils.floatToByteArray(z,1));
-			return din.getBytes();
+			byte[] res = new byte[12];
+			Span<byte> span = res;
+			System.Buffers.Binary.BinaryPrimitives.WriteSingleLittleEndian(span.Slice(0, 4), x);
+			System.Buffers.Binary.BinaryPrimitives.WriteSingleLittleEndian(span.Slice(4, 4), y);
+			System.Buffers.Binary.BinaryPrimitives.WriteSingleLittleEndian(span.Slice(8, 4), z);
+			return res;
 		}
 		
 		static public byte[] floatsToQuaternion(float w,float x,float y, float z){
-			DynamicArray din = new DynamicArray();
-			din.append(NumericalUtils.floatToByteArray(w,1));
-			din.append(NumericalUtils.floatToByteArray(x,1));
-			din.append(NumericalUtils.floatToByteArray(y,1));
-			din.append(NumericalUtils.floatToByteArray(z,1));
-			return din.getBytes();
+			byte[] res = new byte[16];
+			Span<byte> span = res;
+			System.Buffers.Binary.BinaryPrimitives.WriteSingleLittleEndian(span.Slice(0, 4), w);
+			System.Buffers.Binary.BinaryPrimitives.WriteSingleLittleEndian(span.Slice(4, 4), x);
+			System.Buffers.Binary.BinaryPrimitives.WriteSingleLittleEndian(span.Slice(8, 4), y);
+			System.Buffers.Binary.BinaryPrimitives.WriteSingleLittleEndian(span.Slice(12, 4), z);
+			return res;
 		}
 		
 		static public byte[] doublesToLtVector3d(double x,double y,double z){
-			DynamicArray din = new DynamicArray();
-			din.append(NumericalUtils.doubleToByteArray(x,1));
-			din.append(NumericalUtils.doubleToByteArray(y,1));
-			din.append(NumericalUtils.doubleToByteArray(z,1));
-			return din.getBytes();
+			byte[] res = new byte[24];
+			Span<byte> span = res;
+			System.Buffers.Binary.BinaryPrimitives.WriteDoubleLittleEndian(span.Slice(0, 8), x);
+			System.Buffers.Binary.BinaryPrimitives.WriteDoubleLittleEndian(span.Slice(8, 8), y);
+			System.Buffers.Binary.BinaryPrimitives.WriteDoubleLittleEndian(span.Slice(16, 8), z);
+			return res;
 		}
 
         static public BitArray byteToBitArray(byte input)
