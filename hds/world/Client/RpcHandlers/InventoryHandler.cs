@@ -163,8 +163,10 @@ namespace hds
             {
                 ServerPackets pak = new ServerPackets();
                 UInt32 goid = Store.dbManager.WorldDbHandler.GetItemGOIDAtInventorySlot(slot);
-                if (!ConsumableItems.TryGet(goid, out ConsumableItems.Consumable consumable) || consumable.AbilityId != abilityId)
+                if (!ConsumableItems.TryGet(goid, out ConsumableItems.Consumable consumable) ||
+                    consumable.AbilityId != abilityId && !OptimizerConsumables.MatchesItemAlias(goid, abilityId))
                     return false;
+                abilityId = consumable.AbilityId;
                 bool appearance = consumable.Effect == ConsumableItems.Effect.Appearance;
                 bool blueMarble = BlueMarbles.Handles(abilityId);
                 bool requiresOutsideCombat = appearance || blueMarble;
@@ -323,6 +325,8 @@ namespace hds
                 : ItemStacks.BuildStackCount(slot, remaining));
             if (consumable.Effect == ConsumableItems.Effect.HealOverTime)
                 AbilitySupport.Land(client, consumable.AbilityId, 2);
+            else if (OptimizerConsumables.Handles(consumable.AbilityId))
+                OptimizerConsumables.Apply(client, consumable.AbilityId);
             else
                 AbilityBuffs.Apply(client, consumable.AbilityId, client);
             if (consumable.Seconds > 0)

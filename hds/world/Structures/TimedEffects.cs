@@ -39,6 +39,7 @@ namespace hds
             internal Action<Subject, Active,double> OnExpiredAt;
             internal Func<bool> CallbackCurrent,CallbackStateCurrent;
             internal bool UpdatesNpcEnrage;
+            internal uint InterlockFx;
             public UInt16 Kind;
             public UInt16 Target;
             public Int32 Value;
@@ -70,7 +71,7 @@ namespace hds
                 get
                 {
                     double at = (Ticks + 1) * Interval;
-                    return (UpdatesNpcEnrage || Proc == TempMods.Proc.Dot || Proc == TempMods.Proc.Hot ||
+                    return (UpdatesNpcEnrage || InterlockFx != 0 || Proc == TempMods.Proc.Dot || Proc == TempMods.Proc.Hot ||
                         Proc == TempMods.Proc.Pulse || Proc == TempMods.Proc.SeverState) &&
                         Interval > 0 && at < Seconds - 1e-6 ? Start + at : double.PositiveInfinity;
                 }
@@ -646,6 +647,17 @@ namespace hds
         private static readonly ConditionalWeakTable<WorldClient, PlayerEffects> players = new ConditionalWeakTable<WorldClient, PlayerEffects>();
         private static readonly ConditionalWeakTable<Mob, MobEffects> mobs = new ConditionalWeakTable<Mob, MobEffects>();
 
+        // PlayUpdateFXIfInInterlock on a current modifier. It never changes the modifier's stat value.
+        internal static void PlayInterlockFx(WorldClient client, Active mod)
+        {
+            if (mod.InterlockFx == 0 || !client.Alive || !client.IsCurrentEndpointOwner ||
+                !client.playerData.getOnWorld() || client.playerData.worldChangePending ||
+                client.playerData.isDead || client.playerData.duelDeath ||
+                CombatManager.FindHandler(client)?.HasActiveInterlock != true ||
+                !ForPlayer(client).Effects.IsCurrent(mod, TimeUtils.GetSimTimeSeconds())) return;
+            ServerPackets.SendPlayerAbilityEffect(client, mod.InterlockFx);
+        }
+
         public static PlayerEffects ForPlayer(WorldClient client)
         {
             return players.GetValue(client, c => new PlayerEffects(c));
@@ -989,6 +1001,11 @@ namespace hds
             if (client.playerData.isDead || client.playerData.duelDeath)
             {
                 return false;
+            }
+            if (mod.InterlockFx != 0)
+            {
+                TimedEffects.PlayInterlockFx(client, mod);
+                return true;
             }
             if (mod.Proc == TempMods.Proc.Pulse)
             {
