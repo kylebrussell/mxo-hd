@@ -486,6 +486,19 @@ it to check the committed moves and paper-doll appearance.
 
 Server `81 20` lists **claimed item identities to remove**, not the remaining items. Client `621e2bb0` passes each pair to `621cd6d0`, which removes the matching container row; an empty array removes none. Server `81 1a` closes the container window through `621ca200`. Mission Search now acknowledges exact original window pairs and closes only after all contents transfer. Full bags retain the icon and selection. NPC replies likewise acknowledge only transferred drops. See [evidence and checklist](MISSION-LOOT-CLAIM-CLOSE.md).
 
+### Atomic ordinary corpse Take All
+
+An ordinary corpse's `81 1f` credits Info and the items that fit in one
+transaction. The cache removes only committed items, and `81 20` names
+those rows. If the bag fills, the remaining rows stay on the corpse.
+If a database write fails, the client receives a visible reason and
+the unchanged loot window is reopened for retry.
+
+NativeQa mode **corpse-take-all-atomic** gives its disposable NPC 25 Info,
+one Code Bit and one Antibiotic. The disposable SQL constraint blocks
+the Antibiotic in bag 4 after writing the wallet and the Bit stack.
+Move the item in bag 2 to bag 5, then retry to put the pill into bag 2.
+
 ## Looting single items
 
 The 7.6005 client can't take one item from a corpse or container. Its container window (`viewcontainer.cpp`) handles three events: `CTAl` (Take All: `81 1f`), `CCls` (close: `81 1a`) and `MLUp` (a bag item dropped onto the window: `81 21 <slot>`). The single-item request `81 1b` and the take-the-information request `81 1d` are compiled in, but nothing in client.dll constructs or sends them: their constructors and senders have no calls, jumps, or pointers in code or data. The stock client therefore loots only through Take All. For other clients (the browser client) the server also accepts `81 1b` (`NpcLoot.TryTakeOne`, OURS): ObjectID is read as the item's GOID and InstanceData as the window row's leading u32, whose `0x08` top byte marks the mission item. One matching item is granted if it fits and answered with the same `81 20` claimed identity Take All uses; the corpse's Information stays for Take All, as `81 1d` is unhandled.

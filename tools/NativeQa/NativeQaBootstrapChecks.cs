@@ -80,7 +80,7 @@ public static class NativeQaBootstrapChecks
         HeadlessPlayer? probe = null;
         try
         {
-            if (characterUi != null || plan.AllowManualHotbarSetup || plan.LoadAbilityAncestors ||
+            if (characterUi != null || plan.AllowManualHotbarSetup || plan.LoadAbilityAncestors || mode is Modes.AtomicCorpseTakeAllMode ||
                 mode is Modes.AbilityParityOperativeSweep2Mode or Modes.MartialPlayerControlMode or Modes.StarterDecompileCleanUiMode or
                     Modes.TransmitCodeMode or Modes.ShadowReadyPresentationMode or Modes.MultiNpcAggroMode or
                     Modes.DatamineTapTransferRulesMode or Modes.AtomicSecureTradeMode or Modes.AtomicBagStacksMode or
