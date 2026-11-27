@@ -327,6 +327,98 @@ public class WorldEncryptionTests
         }
     }
 
+    [Fact]
+    public void PooledEncryptFromWorkBufferAndTryDecryptRoundTripWithNonZeroWire5AndStripTimed()
+    {
+        byte[] sessionKey = Enumerable.Range(1, 16).Select(i => (byte)(i * 11)).ToArray();
+        var server = new WorldEncryption(sessionKey);
+        var client = new WorldEncryption(sessionKey);
+
+        // Exercise > 256 datagrams so the thread-local 4 KB CSPRNG IV pool refills multiple times.
+        var seenIvs = new HashSet<string>();
+        for (int i = 0; i < 600; i++)
+        {
+            byte[] plain = new byte[1 + (i % 180)];
+            plain[0] = (i % 3 == 0 && plain.Length >= 6) ? (byte)0x82 : (byte)0x02;
+            for (int j = 1; j < plain.Length; j++) plain[j] = (byte)((i + j * 7) & 0xFF);
+
+            byte[] workBuf = System.Buffers.ArrayPool<byte>.Shared.Rent(14 + plain.Length + 16);
+            byte[]? wireBuf = null;
+            try
+            {
+                Buffer.BlockCopy(plain, 0, workBuf, 14, plain.Length);
+                ushort pss = (ushort)(i & 0x7F);
+                ushort cseq = (ushort)(i & 0xFFF);
+                ushort sseq = (ushort)((i + 17) & 0xFFF);
+                server.EncryptFromWorkBuffer(workBuf, plain.Length, pss, cseq, sseq, out wireBuf, out int wireLen);
+
+                Assert.Equal(0x01, wireBuf[0]);
+                Assert.NotEqual(0x00, wireBuf[5]);
+                seenIvs.Add(Convert.ToHexString(wireBuf, 1, 16));
+
+                byte[] exactWire = new byte[wireLen];
+                Buffer.BlockCopy(wireBuf, 0, exactWire, 0, wireLen);
+
+                Assert.True(client.TryDecrypt(exactWire, exactWire.Length, out byte[] rawOut, out ushort outPss, out ushort outCseq, out ushort outSseq, stripTimedHeader: false));
+                Assert.Equal(plain, rawOut);
+                Assert.Equal(pss, outPss);
+                // encrypt() places cseq in bits 12..23 and sseq in bits 0..11; decrypt() unpacks bits 0..11 as cseq and 12..23 as sseq.
+                Assert.Equal(sseq, outCseq);
+                Assert.Equal(cseq, outSseq);
+
+                Assert.True(client.TryDecrypt(exactWire, exactWire.Length, out byte[] strippedOut, out _, out _, out _, stripTimedHeader: true));
+                if (plain.Length >= 5 && plain[0] == 0x82)
+                {
+                    Assert.Equal(plain.Length - 4, strippedOut.Length);
+                    Assert.Equal(0x02, strippedOut[0]);
+                    Assert.Equal(plain[5..], strippedOut[1..]);
+                }
+                else
+                {
+                    Assert.Equal(plain, strippedOut);
+                }
+            }
+            finally
+            {
+                if (wireBuf != null) System.Buffers.ArrayPool<byte>.Shared.Return(wireBuf);
+                System.Buffers.ArrayPool<byte>.Shared.Return(workBuf);
+            }
+        }
+        Assert.Equal(600, seenIvs.Count);
+    }
+
+    [Fact]
+    public void WorldPacketWriteFinalDataMatchesGetFinalDataAndInlineMovementPayload()
+    {
+        var queue = new MessageQueue();
+        byte[] rawMove = { SelfViewUpdate.FlagAction | SelfViewUpdate.FlagYaw | SelfViewUpdate.FlagPosition, 0x3e, 0x40,
+            0, 0, 0x80, 0x3f, 0, 0, 0x00, 0x40, 0, 0, 0x40, 0x40 };
+        Assert.True(SelfViewUpdate.TryParse(rawMove, 0, out SelfViewUpdate update));
+        byte[] forwarded = update.ToForwardedUpdate(rawMove);
+        queue.AddOrCoalesceMovement(42, update, forwarded);
+
+        var msg = (SequencedMessage)queue.ObjectMessagesQueue[0]!;
+        var dataA = new ClientData();
+        dataA.lastSimTimeUpdate = 1;
+        dataA.lastSimTimeSeconds = TimeUtils.GetSimTimeSeconds();
+        var pktA = new WorldPacket(dataA);
+        Assert.True(pktA.addObjectContent(msg));
+
+        byte[] workBuf = new byte[14 + pktA.EstimateMaxPlaintextSize() + 16];
+        int writtenLen = pktA.WriteFinalData(dataA, workBuf, 14);
+        byte[] directBytes = workBuf[14..(14 + writtenLen)];
+
+        var dataB = new ClientData();
+        dataB.lastSimTimeUpdate = 1;
+        dataB.lastSimTimeSeconds = dataA.lastSimTimeSeconds;
+        var pktB = new WorldPacket(dataB);
+        Assert.True(pktB.addObjectContent(msg));
+        byte[] legacyBytes = pktB.getFinalData(dataB);
+
+        Assert.Equal(legacyBytes, directBytes);
+        Assert.Equal(MessageQueue.BuildViewUpdateFast(42, forwarded), msg.content);
+    }
+
     private static byte[] EncryptWithExplicitIv(byte[] key, byte[] iv, byte[] plainData, ushort pss, ushort cseq, ushort sseq)
     {
         uint seqValue = ((uint)pss << 24) | ((uint)cseq << 12) | sseq;

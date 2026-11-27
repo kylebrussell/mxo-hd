@@ -409,6 +409,9 @@ namespace hds
             }
         }
 
+        // Thread-local broadcast snapshot scratch avoiding new WorldClient[N] array allocations on every movement fan-out.
+        [ThreadStatic] private static List<WorldClient> movementBroadcastScratch;
+
         /// <summary>
         /// Forwards a player's own-view movement update (<c>01 &lt;flags&gt; &lt;fields&gt;</c>) to every viewer that
         /// currently sees them, coalescing unsent updates per viewer/entity in place and deferring UDP send to the
@@ -416,21 +419,46 @@ namespace hds
         /// </summary>
         internal void SendMovementUpdateToAllPlayers(SelfViewUpdate state, byte[] forwardedData, UInt32 charId, UInt64 entityId)
         {
-            foreach (WorldClient client in ClientSnapshot())
+            List<WorldClient> recipients = movementBroadcastScratch;
+            if (recipients == null)
             {
-                if (client == null || client.IsBot || client.playerData.getCharID() == charId)
+                recipients = new List<WorldClient>(256);
+                movementBroadcastScratch = recipients;
+            }
+            recipients.Clear();
+            lock (Clients)
+            {
+                if (recipients.Capacity < Clients.Count) recipients.Capacity = Clients.Count;
+                foreach (WorldClient c in Clients.Values)
                 {
-                    continue;
+                    recipients.Add(c);
                 }
+            }
 
-                ClientView view = client.viewMan.FindViewForEntity(entityId);
-                if (view == null || !view.viewCreated)
+            try
+            {
+                int count = recipients.Count;
+                for (int i = 0; i < count; i++)
                 {
-                    continue;
-                }
+                    WorldClient client = recipients[i];
+                    if (client == null || client.IsBot || client.playerData.getCharID() == charId)
+                    {
+                        continue;
+                    }
 
-                client.messageQueue.AddOrCoalesceMovement(view.ViewID, state, forwardedData);
-                client.MarkFlushPending();
+                    ClientView view = client.viewMan.FindViewForEntity(entityId);
+                    if (view == null || !view.viewCreated)
+                    {
+                        continue;
+                    }
+
+                    client.messageQueue.AddOrCoalesceMovement(view.ViewID, state, forwardedData);
+                    client.MarkFlushPending();
+                }
+            }
+            finally
+            {
+                recipients.Clear();
             }
         }
 

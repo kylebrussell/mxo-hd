@@ -236,6 +236,34 @@ Server-side `LoadTest --authenticated --clients 200` (Release build, 30 s warmup
 
 Under 200 dense moving clients with the full world NPC catalog (~9.2 million object updates/60 s, 0 failures, 0 timeouts), holding a crisp 50 ms parallel flush cadence cuts **Echo RTT P95** (`128 -> 64 ms`), **RpcFirstSend P95** (`128 -> 64 ms`), and **mob-views P50** (`4 -> 2 ms`) in half, drops **ObjectFirstSend** mean by ~15–18% (`33.1–34.1 -> 27.8–29.1 ms`), and reduces peak RPC backlog (`RpcRetainedMax`) from `51–134` down to `4–36` (`6` on the test catalog).
 
+### Zero-allocation outbound flush, pooled encryption, and inline movement fan-out (follow-up)
+
+On `9364cf461` (`move 200 --world-mobs`), `FlushProcessing` still consumed `55.8–56.2 s` of cumulative flush time over 60 s (~`0.343–0.348 ms` mean per client flush) while movement fan-out and per-datagram serialization allocated ~28 million short-lived objects per minute (driving GC pauses up to `64–149 ms` on visibility passes):
+
+1. **Per-datagram serialization, encryption, and CSPRNG syscalls (`WorldClient.cs`, `WorldPacket.cs`, `WorldEncryption.cs`).** Every outbound datagram allocated `WorldPacket`, `List<SequencedMessage>` × 2, `DynamicArray`, `byte[] finalData`, and `byte[] wire`, and invoked `RandomNumberGenerator.Fill` per packet (~5,000 OS CSPRNG syscalls/s).
+2. **Per-viewer movement allocations (`SequencedMessage.cs`, `MessageQueue.cs`, `WorldServer.cs`).** Every one of ~9.2 million movement forwards/min allocated an unused `HashSet<ushort>` (`rpcPackets`), a `byte[12]` position copy, a `byte[16]` payload, and a new `SequencedMessage`; `SendMovementUpdateToAllPlayers` allocated `new WorldClient[N]` 800 times/s.
+3. **Inbound decrypt/parse and Twofish block loop (`WorldEncryption.cs`, `TwofishBase.cs`, `TwofishEncryption.cs`, `MultiProtocolManager.cs`, `SelfViewUpdate.cs`).** `decrypt` boxed sequences into `ArrayList`, `DecryptReceivedPacket` allocated a second buffer to strip `0x82`, `MultiProtocolManager.ParseContent` allocated a `BitArray` per packet, and `SelfViewUpdate.ReadSingle` allocated `byte[4]` per coordinate.
+
+Changes:
+
+- **Pooled direct-to-work-buffer outbound path (`WorldPacket.cs`, `WorldEncryption.cs`, `WorldClient.cs`).** `WorldPacket.WriteFinalData` serializes directly into `ArrayPool<byte>` `workBuf[14..]` (with a zero-LINQ single-block RPC fast path); `WorldEncryption.EncryptFromWorkBuffer` encrypts into a pooled `wireBuf` using a `[ThreadStatic]` 4 KB CSPRNG IV pool (256× fewer OS syscalls, fresh non-reused CSPRNG IVs with `wire[5] != 0`) and returns both buffers immediately after synchronous `socket.SendTo`. `WorldClient.FlushQueue` recycles `WorldPacket` instances.
+- **Unrolled Twofish-128 CBC (`TwofishBase.cs`, `TwofishEncryption.cs`).** Unrolled the 16-round Feistel loop in even/odd pairs to remove swap branches and hoisted `Span<byte>` slicing out of the block loop.
+- **Zero-allocation movement fan-out (`SequencedMessage.cs`, `MessageQueue.cs`, `WorldServer.cs`).** Made `rpcPackets` lazy-allocated, stored movement fields inline (`MovementPos0..2`) with direct write into `workBuf` (preserving lazy `content` materialization for tests), recycled ACKed movement shells per `MessageQueue`, and reused a `[ThreadStatic]` recipient scratch list in `SendMovementUpdateToAllPlayers`.
+- **Allocation-free inbound decrypt & MPM parse (`WorldEncryption.cs`, `WorldClient.cs`, `MultiProtocolManager.cs`, `SelfViewUpdate.cs`).** Added `WorldEncryption.TryDecrypt(..., stripTimedHeader: true)`, replaced `BitArray` with bitmask checks and `BinaryPrimitives` reads in `MultiProtocolManager` and `SelfViewUpdate`.
+
+Server-side `LoadTest --authenticated --clients 200` (Release build, 30 s warmup + 60 s measure, run serially on 2026-11-27):
+
+| Case | Status | Server CPU % | FlushProcessing sum / mean ms | Visibility mean / max ms | Echo RTT mean / P95 / max ms | RpcFirstSend mean / max ms | ObjectFirstSend P95 ms |
+|---|---|---:|---|---|---|---|---:|
+| move 200 + world NPCs, master `9364cf461` (run 1) | PASS | 76.7 | 55,811 / 0.343 | 13.64 / 148.7 | 36.9 / 128 / 139.8 | 21.5 / 109.5 | 128 |
+| move 200 + world NPCs, master `9364cf461` (run 2) | PASS | 72.0 | 56,168 / 0.348 | 12.81 / 64.2 | 39.6 / 128 / 122.9 | 23.6 / 135.2 | 64 |
+| move 200 + world NPCs, this change (run 1) | PASS | **57.5** | **25,337 / 0.141** | **9.01 / 23.3** | **33.9 / 64** / 172.4 | **20.4** / 144.9 | **64** |
+| move 200 + world NPCs, this change (run 2) | PASS | **70.1** | **26,031 / 0.154** | **7.05 / 16.3** | **31.4 / 64 / 124.6** | **16.6 / 70.1** | **64** |
+| move 200 (test catalog), master `9364cf461` | PASS | 89.4 | 48,167 / 0.233 | 11.67 / 136.9 | 45.5 / 128 / 228.2 | 28.1 / 183.9 | 128 |
+| move 200 (test catalog), this change | PASS | **68.2** | **22,902 / 0.128** | **3.94 / 10.9** | **34.0 / 64 / 81.6** | **19.5 / 70.7** | **64** |
+
+Under 200 dense moving clients (~9.23–9.27 million object updates/60 s, 0 failures, 0 timeouts), cumulative `FlushProcessing` drops **2.1–2.2×** (`55.8–56.2 s -> 25.3–26.0 s`, mean `0.343–0.348 -> 0.141–0.154 ms`), peak `Visibility` pauses fall **3.9–6.4×** (`64–149 -> 16–23 ms` with world NPCs, `136.9 -> 10.9 ms` on the test catalog), **Echo RTT P95** holds at **64 ms** across all runs, and **Server CPU** drops from `72–89%` down to `57.5–70.1%` (with working set down ~150 MB).
+
 ## Reproduce
 
 Build Release last, because the tool refuses to run when a newer Debug server DLL exists. Then run each case serially:

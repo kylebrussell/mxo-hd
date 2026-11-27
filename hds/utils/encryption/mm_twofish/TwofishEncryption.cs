@@ -40,39 +40,37 @@ namespace ManyMonkeys.Cryptography
 
 		internal void EncryptBlocks(byte[] inputBuffer, int inputOffset, byte[] outputBuffer, int outputOffset, int length)
 		{
-			int blocks = length >> 4;
-			for (int i = 0; i < blocks; i++)
+			ReadOnlySpan<byte> src = inputBuffer.AsSpan(inputOffset, length);
+			Span<byte> dst = outputBuffer.AsSpan(outputOffset, length);
+			for (int pos = 0; pos + 16 <= length; pos += 16)
 			{
-				int src = inputOffset + (i << 4);
-				int dst = outputOffset + (i << 4);
-				uint x0 = BinaryPrimitives.ReadUInt32LittleEndian(inputBuffer.AsSpan(src, 4));
-				uint x1 = BinaryPrimitives.ReadUInt32LittleEndian(inputBuffer.AsSpan(src + 4, 4));
-				uint x2 = BinaryPrimitives.ReadUInt32LittleEndian(inputBuffer.AsSpan(src + 8, 4));
-				uint x3 = BinaryPrimitives.ReadUInt32LittleEndian(inputBuffer.AsSpan(src + 12, 4));
+				uint x0 = BinaryPrimitives.ReadUInt32LittleEndian(src.Slice(pos, 4));
+				uint x1 = BinaryPrimitives.ReadUInt32LittleEndian(src.Slice(pos + 4, 4));
+				uint x2 = BinaryPrimitives.ReadUInt32LittleEndian(src.Slice(pos + 8, 4));
+				uint x3 = BinaryPrimitives.ReadUInt32LittleEndian(src.Slice(pos + 12, 4));
 				blockEncrypt(ref x0, ref x1, ref x2, ref x3);
-				BinaryPrimitives.WriteUInt32LittleEndian(outputBuffer.AsSpan(dst, 4), x0);
-				BinaryPrimitives.WriteUInt32LittleEndian(outputBuffer.AsSpan(dst + 4, 4), x1);
-				BinaryPrimitives.WriteUInt32LittleEndian(outputBuffer.AsSpan(dst + 8, 4), x2);
-				BinaryPrimitives.WriteUInt32LittleEndian(outputBuffer.AsSpan(dst + 12, 4), x3);
+				BinaryPrimitives.WriteUInt32LittleEndian(dst.Slice(pos, 4), x0);
+				BinaryPrimitives.WriteUInt32LittleEndian(dst.Slice(pos + 4, 4), x1);
+				BinaryPrimitives.WriteUInt32LittleEndian(dst.Slice(pos + 8, 4), x2);
+				BinaryPrimitives.WriteUInt32LittleEndian(dst.Slice(pos + 12, 4), x3);
 			}
 		}
 
 		internal void DecryptBlocks(byte[] inputBuffer, int inputOffset, byte[] outputBuffer, int outputOffset, int length)
 		{
-			int blocks = length >> 4;
-			for (int i = 0; i < blocks; i++)
+			ReadOnlySpan<byte> src = inputBuffer.AsSpan(inputOffset, length);
+			Span<byte> dst = outputBuffer.AsSpan(outputOffset, length);
+			for (int pos = 0; pos + 16 <= length; pos += 16)
 			{
-				int src = inputOffset + (i << 4);
-				int dst = outputOffset + (i << 4);
-				uint x0 = BinaryPrimitives.ReadUInt32LittleEndian(inputBuffer.AsSpan(src, 4));
-				uint x1 = BinaryPrimitives.ReadUInt32LittleEndian(inputBuffer.AsSpan(src + 4, 4));
-				uint x2 = BinaryPrimitives.ReadUInt32LittleEndian(inputBuffer.AsSpan(src + 8, 4));
-				uint x3 = BinaryPrimitives.ReadUInt32LittleEndian(inputBuffer.AsSpan(src + 12, 4));
+				uint x0 = BinaryPrimitives.ReadUInt32LittleEndian(src.Slice(pos, 4));
+				uint x1 = BinaryPrimitives.ReadUInt32LittleEndian(src.Slice(pos + 4, 4));
+				uint x2 = BinaryPrimitives.ReadUInt32LittleEndian(src.Slice(pos + 8, 4));
+				uint x3 = BinaryPrimitives.ReadUInt32LittleEndian(src.Slice(pos + 12, 4));
 				blockDecrypt(ref x0, ref x1, ref x2, ref x3);
-				BinaryPrimitives.WriteUInt32LittleEndian(outputBuffer.AsSpan(dst, 4), x0);
-				BinaryPrimitives.WriteUInt32LittleEndian(outputBuffer.AsSpan(dst + 4, 4), x1);
-				BinaryPrimitives.WriteUInt32LittleEndian(outputBuffer.AsSpan(dst + 8, 4), x2);
-				BinaryPrimitives.WriteUInt32LittleEndian(outputBuffer.AsSpan(dst + 12, 4), x3);
+				BinaryPrimitives.WriteUInt32LittleEndian(dst.Slice(pos, 4), x0);
+				BinaryPrimitives.WriteUInt32LittleEndian(dst.Slice(pos + 4, 4), x1);
+				BinaryPrimitives.WriteUInt32LittleEndian(dst.Slice(pos + 8, 4), x2);
+				BinaryPrimitives.WriteUInt32LittleEndian(dst.Slice(pos + 12, 4), x3);
 			}
 		}
 

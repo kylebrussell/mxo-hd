@@ -1,4 +1,5 @@
 using System;
+using System.Buffers.Binary;
 using System.Collections.Generic;
 
 namespace hds
@@ -106,24 +107,19 @@ namespace hds
         /// </summary>
         public byte[] ToForwardedUpdate(byte[] buffer)
         {
-            List<byte> update = new List<byte> { SelfViewEntry.PartState, (byte)(Flags & ~Flag20) };
+            byte forwardedFlags = (byte)(Flags & ~Flag20);
+            if (forwardedFlags == 0) return null;
             int from = Start + 1 + (Unknown20.HasValue ? 1 : 0);
-            for (int i = from; i < End; i++)
-            {
-                update.Add(buffer[i]);
-            }
-            return update[1] == 0 ? null : update.ToArray();
+            int payloadLen = End - from;
+            byte[] update = new byte[2 + payloadLen];
+            update[0] = SelfViewEntry.PartState;
+            update[1] = forwardedFlags;
+            if (payloadLen > 0) Buffer.BlockCopy(buffer, from, update, 2, payloadLen);
+            return update;
         }
 
-        private static float ReadSingle(byte[] buffer, int pos)
-        {
-            byte[] value = { buffer[pos], buffer[pos + 1], buffer[pos + 2], buffer[pos + 3] };
-            if (!BitConverter.IsLittleEndian)
-            {
-                Array.Reverse(value);
-            }
-            return BitConverter.ToSingle(value, 0);
-        }
+        private static float ReadSingle(byte[] buffer, int pos) =>
+            BinaryPrimitives.ReadSingleLittleEndian(buffer.AsSpan(pos, 4));
     }
 
     /// <summary>
