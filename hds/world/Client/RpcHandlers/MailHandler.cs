@@ -239,7 +239,12 @@ namespace hds
         private sealed class Refusal : Exception
         {
             public readonly uint Status;
-            public Refusal(uint status) { Status = status; }
+            public readonly string Notice;
+            public Refusal(uint status, string notice = null)
+            {
+                Status = status;
+                Notice = notice;
+            }
         }
 
         /// <summary>Client 81 fc: move attachments from one owned message into the bag.</summary>
@@ -389,6 +394,8 @@ namespace hds
                     {
                         var matches = bag[attachment.Slot].ToArray();
                         if (matches.Length != 1 || matches[0].Goid == 0) throw new Refusal(MailPackets.BadData);
+                        if (DataMining.IsNonTradeable(matches[0].Goid))
+                            throw new Refusal(MailPackets.BadData, "This item cannot be attached to mail.");
                         items.Add(matches[0]);
                         slots.Add((ushort)attachment.Slot);
                     }
@@ -416,7 +423,7 @@ namespace hds
             catch (Refusal error)
             {
                 if (error.Status == MailPackets.BadData)
-                    Notice(character, "Mail could not be sent. Check the attached items and information.");
+                    Notice(character, error.Notice ?? "Mail could not be sent. Check the attached items and information.");
                 host.Send(character, MailPackets.BuildSendResult(0, error.Status));
                 if (error.Status == MailPackets.RecipientUnknown)
                 {

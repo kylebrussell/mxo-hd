@@ -84,6 +84,11 @@ namespace hds
                 refusal = TradePackets.RequestNoSuchItem;
                 return null;
             }
+            if (DataMining.IsNonTradeable(goid))
+            {
+                refusal = TradePackets.RequestNotTradeable;
+                return null;
+            }
             // The client leaves the quantity at 0 for a whole stack
             return new TradeItem { Slot = slot, Goid = goid, Purity = purity, Quantity = quantity == 0 ? count : quantity };
         }
@@ -284,6 +289,8 @@ namespace hds
             if (item == null)
             {
                 Output.WriteDebugLog("[TRADE] Item refused: " + refusal.ToString("x8"));
+                if (refusal == TradePackets.RequestNotTradeable)
+                    Send(client, ServerPackets.BuildSystemChatMessage("This item cannot be traded.", "BROADCAST"));
                 return;
             }
             offer.Items[item.Slot] = item;
