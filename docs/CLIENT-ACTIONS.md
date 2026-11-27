@@ -451,6 +451,22 @@ Antibiotics first. A constraint in the disposable fixture rejects the
 second write. Check the two unchanged slots and cleared cursor, then
 drag the Lock Pick onto the Code Analyser for a successful swap.
 
+### Atomic weapon equip and unequip
+
+Weapon equip (`63`) and unequip (`64`) use hand slot `69`. Replacing a
+held weapon moves it to the first free bag slot and brings the selected
+weapon into the hand in one transaction. The item moves, Free Attack
+inventory refresh when needed, and equipped-item views follow the commit.
+Unequip requires an empty destination. Unequipping to slot `00` picks
+the first free bag slot. A failed write, full bag on replacement, or
+occupied unequip destination keeps the current equipment and sends a
+same-slot `65` and a visible reason.
+
+NativeQa mode **weapon-equipment-atomic** blocks the move of the bag 3
+rifle into the hand using a constraint in the disposable fixture. Check
+that the revolver stays held. Equip the bag 4 weapon, then unequip it
+to confirm both committed moves and the paper-doll update.
+
 ## Loot acknowledgements and closure
 
 Server `81 20` lists **claimed item identities to remove**, not the remaining items. Client `621e2bb0` passes each pair to `621cd6d0`, which removes the matching container row; an empty array removes none. Server `81 1a` closes the container window through `621ca200`. Mission Search now acknowledges exact original window pairs and closes only after all contents transfer. Full bags retain the icon and selection. NPC replies likewise acknowledge only transferred drops. See [evidence and checklist](MISSION-LOOT-CLAIM-CLOSE.md).

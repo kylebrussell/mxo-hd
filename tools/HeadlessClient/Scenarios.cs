@@ -379,6 +379,7 @@ public static partial class Scenarios
         new Scenario("split-and-merge-stacks", SplitAndMergeStacks),
         new Scenario("bag-stacks-atomic", AtomicBagStacks, StillNpcs),
         new Scenario("bag-slot-swap-atomic", AtomicBagSlotSwap, StillNpcs),
+        new Scenario("weapon-equipment-atomic", AtomicWeaponEquipment, StillNpcs),
         new Scenario("central-storage-store-relog-retrieve", CentralStorageStoreRelogRetrieve),
         new Scenario("central-storage-atomic", AtomicCentralStorage, StillNpcs),
         new Scenario("subway-platform-logins-keep-car-views", SubwayPlatformLoginsKeepCarViews),

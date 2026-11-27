@@ -82,8 +82,8 @@ namespace hds
             if (weapon == "unarmed")
             {
                 CombatManager.GetHandler(caller).LeaveOtherFights();
-                if (SharpshooterFreeFire.EquippedWeapon(caller) != 0)
-                    InventoryHandler.UnequipWeapon(0);
+                if (SharpshooterFreeFire.EquippedWeapon(caller) != 0 && !InventoryHandler.UnequipWeapon(0))
+                    return "Couldn't unequip the fixture weapon.";
                 return "Fixture equipped unarmed (0).";
             }
             uint goid = weapon switch

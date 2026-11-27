@@ -111,16 +111,14 @@ namespace hds
             new ServerPackets().sendInventoryItemMove(staging, InventoryHandler.WeaponSlot, client);
         }
 
-        internal static bool PrepareEquip(WorldClient client, byte bagSlot, uint goid)
+        internal static bool PrepareEquip(WorldClient client, uint goid)
         {
             var data = client.playerData;
             if (data.freeAttackBootstrapStagingSlot != 0)
                 RestoreHand(client, data.freeAttackBootstrapStagingSlot, data.freeAttackBootstrapStagingWorld);
-            if (!data.freeAttackChoiceEmpty || data.freeAttackItemReported || !data.freeAttackBootstrapWorldReady || !InWorld(client) ||
-                RangedWeapons.GetStats(goid) == null) return false;
-            var source = Store.dbManager.WorldDbHandler.GetInventoryItems(data.getCharID())
-                .FindAll(row => row.Slot == bagSlot);
-            return source.Count == 1 && source[0].Goid == goid && source[0].Count == 1;
+            // The committed equip already validated the source row and count.
+            return data.freeAttackChoiceEmpty && !data.freeAttackItemReported && data.freeAttackBootstrapWorldReady &&
+                InWorld(client) && RangedWeapons.GetStats(goid) != null;
         }
 
         // Queue with the ordinary moves after the persisted equip has succeeded.
