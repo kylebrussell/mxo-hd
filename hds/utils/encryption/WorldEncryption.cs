@@ -161,12 +161,12 @@ namespace hds
             pss = 0;
             cseq = 0;
             sseq = 0;
-            if (encryptedData == null || encryptedData.Length < 33 || ((encryptedData.Length - 17) & 15) != 0)
+            if (encryptedData == null || length < 33 || length > encryptedData.Length || ((length - 17) & 15) != 0)
             {
                 return false;
             }
 
-            int cipherLen = encryptedData.Length - 17;
+            int cipherLen = length - 17;
             byte[] workBuf = ArrayPool<byte>.Shared.Rent(cipherLen);
             try
             {
@@ -192,9 +192,9 @@ namespace hds
                 {
                     byte[] crcFromBytes = NumericalUtils.uint32ToByteArray(crc32fromPacket, 1);
                     byte[] crcGenBytes = NumericalUtils.uint32ToByteArray(crc32plainDataToCompare, 1);
-                    Output.WriteLine("Dropping packet: CRC didn't match (from packet: " + StringUtils.bytesToString(crcFromBytes) + " generated: " + StringUtils.bytesToString(crcGenBytes) + ") wire " + encryptedData.Length +
+                    Output.WriteLine("Dropping packet: CRC didn't match (from packet: " + StringUtils.bytesToString(crcFromBytes) + " generated: " + StringUtils.bytesToString(crcGenBytes) + ") wire " + length +
                                      " bytes, decrypted head " + StringUtils.bytesToString(ArraySegmentCopy(workBuf, Math.Min(32, cipherLen))) +
-                                     " wire head " + StringUtils.bytesToString(ArraySegmentCopy(encryptedData, Math.Min(24, encryptedData.Length))));
+                                     " wire head " + StringUtils.bytesToString(ArraySegmentCopy(encryptedData, Math.Min(24, length))));
                     return false;
                 }
 

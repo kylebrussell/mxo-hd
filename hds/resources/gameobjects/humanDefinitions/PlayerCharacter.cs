@@ -86,12 +86,11 @@ namespace hds
                     MissionProxyIntroduction.AcceptedPosition(Store.currentClient,state.X,state.Y,state.Z);
 				}
 
-				// Other players see this player through a view of their own; the update goes there unchanged.
-				// This used to copy to the end of the packet, which also forwarded the client's RPCs.
-				byte[] forwarded = state.ToForwardedUpdate(buffer);
-				if (forwarded != null)
+				// Other players see this player through a view of their own; the update goes there unchanged
+				// (less the echoed 0x20 counter). Forward directly from SelfViewUpdate without allocating byte[].
+				if ((state.Flags & ~SelfViewUpdate.Flag20) != 0)
 				{
-					ForwardStateToOthers(state, forwarded);
+					ForwardStateToOthers(state);
 				}
 			}
 
@@ -105,9 +104,9 @@ namespace hds
 			return entry.End;
 		}
 
-		private static void ForwardStateToOthers(SelfViewUpdate state, byte[] stateData)
+		private static void ForwardStateToOthers(SelfViewUpdate state)
 		{
-			Store.world.SendMovementUpdateToAllPlayers(state, stateData, Store.currentClient.playerData.getCharID(), Store.currentClient.playerData.getEntityId());
+			Store.world.SendMovementUpdateToAllPlayers(state, Store.currentClient.playerData.getCharID(), Store.currentClient.playerData.getEntityId());
 		}
 		
         internal byte[] GetFullSelfViewAttributeGroups()

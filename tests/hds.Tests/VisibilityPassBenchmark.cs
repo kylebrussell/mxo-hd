@@ -118,6 +118,45 @@ public class VisibilityPassBenchmark
     }
 
     [Fact]
+    public void ParallelCheckPlayerViewsMatchesSequentialParityAndSkipCounter()
+    {
+        // >= 32 clients exercises the parallel CheckPlayerViews worker path.
+        var clients = Steady(64);
+        for (int pass = 0; pass < 3; pass++)
+        {
+            for (int i = 0; i < clients.Count; i++) Place(clients[i], i, pass * .1);
+            Pass(clients);
+        }
+        Assert.Equal(0, Queued(clients));
+        Assert.All(clients, c => Assert.Equal(63, c.viewMan.Snapshot().Count(v => v.GoID == 12 && v.viewCreated)));
+
+        // Still pass: every client must be skipped and tallied accurately via Interlocked.Add.
+        Pass(clients);
+        int skipped = WorldThreads.SkippedPlayerEvaluations;
+        Pass(clients);
+        Assert.Equal(64, WorldThreads.SkippedPlayerEvaluations - skipped);
+
+        // One far mover: all 64 evaluated, mover loses all 63 views and all 63 others drop the mover.
+        clients[7].playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(100000, 495, 100000));
+        skipped = WorldThreads.SkippedPlayerEvaluations;
+        Pass(clients);
+        Assert.Equal(0, WorldThreads.SkippedPlayerEvaluations - skipped);
+        Assert.All(clients.Where((c, i) => i != 7), c => Assert.Null(c.viewMan.FindViewForEntity(clients[7].playerData.getEntityId())));
+        Assert.Empty(clients[7].viewMan.Snapshot().Where(v => v.GoID == 12));
+
+        // Leaving world removes views from all remaining eligible players; subsequent still pass skips all 63.
+        Pass(clients);
+        clients[12].playerData.setOnWorld(false);
+        Pass(clients);
+        Assert.All(clients.Where((c, i) => i != 12 && i != 7), c => Assert.Null(c.viewMan.FindViewForEntity(clients[12].playerData.getEntityId())));
+
+        Pass(clients);
+        skipped = WorldThreads.SkippedPlayerEvaluations;
+        Pass(clients);
+        Assert.Equal(63, WorldThreads.SkippedPlayerEvaluations - skipped);
+    }
+
+    [Fact]
     public void IsInCircleAndGridCollectAndBatchReconcileMatchExpectedSemantics()
     {
         var maths = new Maths();

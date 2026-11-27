@@ -254,4 +254,61 @@ public class WorldClientResetTests
         Assert.Equal(new[]{7,8},rpc.Select(r=>(int)r.ListCounter+r.Index));Assert.Equal((ushort)9,data.getRPCCounter());
     }
 
+    [Fact]
+    public void WorldSendFenceTryEnterAndEnterIncomingMatchTryRunAndPublishIncoming()
+    {
+        var fence = new WorldSendFence();
+        long initial = fence.Capture();
+
+        Assert.True(fence.TryEnter(initial, out bool taken));
+        Assert.True(taken);
+        fence.Exit(taken);
+
+        // Stale epoch is rejected and releases lock cleanly.
+        Assert.False(fence.TryEnter(initial + 1, out bool staleTaken));
+        Assert.False(staleTaken);
+
+        // Non-reset incoming keeps epoch and allows TryEnter afterward.
+        bool incomingTaken = false;
+        try
+        {
+            fence.EnterIncoming(false, out incomingTaken);
+            Assert.True(incomingTaken);
+        }
+        finally
+        {
+            fence.Exit(incomingTaken);
+        }
+        Assert.Equal(initial, fence.Capture());
+        Assert.True(fence.TryEnter(initial, out bool stillOk));
+        fence.Exit(stillOk);
+
+        // Reset incoming increments epoch and blocks TryEnter until Resume.
+        bool resetTaken = false;
+        try
+        {
+            fence.EnterIncoming(true, out resetTaken);
+            Assert.True(resetTaken);
+        }
+        finally
+        {
+            fence.Exit(resetTaken);
+        }
+        long next = fence.Capture();
+        Assert.Equal(initial + 1, next);
+        Assert.False(fence.TryEnter(initial, out bool blockedOld));
+        Assert.False(blockedOld);
+        Assert.False(fence.TryEnter(next, out bool blockedPending));
+        Assert.False(blockedPending);
+
+        bool resetApplied = false;
+        Assert.True(fence.ApplyReset(next, () => resetApplied = true));
+        Assert.True(resetApplied);
+        fence.Resume(next);
+
+        Assert.True(fence.TryEnter(next, out bool resumed));
+        Assert.True(resumed);
+        fence.Exit(resumed);
+    }
+
 }
