@@ -47,7 +47,9 @@ namespace hds
         {
             public float minX, minZ, maxX, maxZ;
             public int[] xz;       // x0, z0, x1, z1, ... (v3 supports the large archive sectors)
-            public double[] edgeNx, edgeNz; // precomputed outward unit normals per edge (NaN for degenerate edges)
+            // Lazily computed outward unit normals interleaved as [nx0, nz0, nx1, nz1, ...] (NaN for degenerate edges).
+            // Kept lazy so NavMesh.Load(1) during RPC 05 spawn does not allocate ~600k arrays across unused polygons.
+            public double[] edgeNormals;
             public float a, b, c, d; // plane; flat floors have a = c = 0, b = -1, d = y
             public double area2;      // twice the signed area: the winding
 
@@ -169,31 +171,44 @@ namespace hds
                     p.area2 += (double)p.xz[v * 2] * p.xz[w * 2 + 1] - (double)p.xz[w * 2] * p.xz[v * 2 + 1];
                 }
 
-                double winding = p.area2 >= 0 ? 1.0 : -1.0;
-                p.edgeNx = new double[n];
-                p.edgeNz = new double[n];
-                for (int v = 0; v < n; v++)
-                {
-                    int w = (v + 1) % n;
-                    double ex = p.xz[w * 2] - p.xz[v * 2];
-                    double ez = p.xz[w * 2 + 1] - p.xz[v * 2 + 1];
-                    double len = Math.Sqrt(ex * ex + ez * ez);
-                    if (len < 1e-6)
-                    {
-                        p.edgeNx[v] = double.NaN;
-                        p.edgeNz[v] = double.NaN;
-                    }
-                    else
-                    {
-                        p.edgeNx[v] = winding * ez / len;
-                        p.edgeNz[v] = -winding * ex / len;
-                    }
-                }
-
                 list.Add(p);
             }
 
             return list;
+        }
+
+        private static double[] EnsureEdgeNormals(Polygon p)
+        {
+            double[] normals = System.Threading.Volatile.Read(ref p.edgeNormals);
+            if (normals != null)
+            {
+                return normals;
+            }
+
+            int[] xz = p.xz;
+            int n = xz.Length >> 1;
+            double winding = p.area2 >= 0 ? 1.0 : -1.0;
+            normals = new double[n * 2];
+            for (int v = 0; v < n; v++)
+            {
+                int w = (v + 1) % n;
+                double ex = xz[w * 2] - xz[v * 2];
+                double ez = xz[w * 2 + 1] - xz[v * 2 + 1];
+                double len = Math.Sqrt(ex * ex + ez * ez);
+                if (len < 1e-6)
+                {
+                    normals[v * 2] = double.NaN;
+                    normals[v * 2 + 1] = double.NaN;
+                }
+                else
+                {
+                    normals[v * 2] = winding * ez / len;
+                    normals[v * 2 + 1] = -winding * ex / len;
+                }
+            }
+
+            System.Threading.Volatile.Write(ref p.edgeNormals, normals);
+            return normals;
         }
 
         private static Dictionary<long, List<OutdoorPolyRef>> GetOutdoorGrid(Sector sector)
@@ -261,58 +276,64 @@ namespace hds
                 string path = Path.Combine(directory ?? DataLoader.DataPath("navmesh"), metrId + ".bin.gz");
                 if (File.Exists(path))
                 {
-                    MemoryStream raw = new MemoryStream();
-                    using (GZipStream gz = new GZipStream(File.OpenRead(path), CompressionMode.Decompress))
+                    using (FileStream fs = File.OpenRead(path))
                     {
-                        gz.CopyTo(raw);
-                    }
-
-                    raw.Position = 0;
-                    using (BinaryReader r = new BinaryReader(raw))
-                    {
-                        uint magic = r.ReadUInt32();
-                        ushort version = r.ReadUInt16();
-                        if (magic != 0x564e584d || version != 2 && version != 3)
+                        int initialCapacity = (int)Math.Min(Math.Max(fs.Length * 3, 4096), 32 * 1024 * 1024);
+                        using (MemoryStream raw = new MemoryStream(initialCapacity))
                         {
-                            throw new InvalidDataException("Not a supported nav mesh file: " + path);
-                        }
-
-                        r.ReadUInt16();
-                        district.prefabs = new List<Polygon>[r.ReadUInt32()];
-                        for (int i = 0; i < district.prefabs.Length; i++)
-                        {
-                            r.ReadUInt32(); // the prefab's resource id
-                            district.prefabs[i] = ReadPolygons(r, version == 3);
-                        }
-
-                        UInt32 count = r.ReadUInt32();
-                        for (UInt32 i = 0; i < count; i++)
-                        {
-                            UInt16 id = r.ReadUInt16();
-                            Sector s = new Sector { regions = new List<Polygon>[r.ReadUInt16()] };
-                            for (int g = 0; g < s.regions.Length; g++)
+                            using (GZipStream gz = new GZipStream(fs, CompressionMode.Decompress, leaveOpen: true))
                             {
-                                s.regions[g] = ReadPolygons(r, version == 3);
+                                gz.CopyTo(raw);
                             }
 
-                            s.placements = new Placement[r.ReadUInt16()];
-                            for (int k = 0; k < s.placements.Length; k++)
+                            raw.Position = 0;
+                            using (BinaryReader r = new BinaryReader(raw))
                             {
-                                Placement p = new Placement { prefab = r.ReadUInt16() };
-                                p.pivotX = r.ReadInt16() * 10;
-                                p.pivotY = r.ReadInt16() * 10;
-                                p.pivotZ = r.ReadInt16() * 10;
-                                p.minX = r.ReadInt16() * 10;
-                                p.minY = r.ReadInt16() * 10;
-                                p.minZ = r.ReadInt16() * 10;
-                                p.maxX = r.ReadInt16() * 10;
-                                p.maxY = r.ReadInt16() * 10;
-                                p.maxZ = r.ReadInt16() * 10;
-                                p.rotation = r.ReadByte();
-                                s.placements[k] = p;
-                            }
+                                uint magic = r.ReadUInt32();
+                                ushort version = r.ReadUInt16();
+                                if (magic != 0x564e584d || version != 2 && version != 3)
+                                {
+                                    throw new InvalidDataException("Not a supported nav mesh file: " + path);
+                                }
 
-                            district.sectors[id] = s;
+                                r.ReadUInt16();
+                                district.prefabs = new List<Polygon>[r.ReadUInt32()];
+                                for (int i = 0; i < district.prefabs.Length; i++)
+                                {
+                                    r.ReadUInt32(); // the prefab's resource id
+                                    district.prefabs[i] = ReadPolygons(r, version == 3);
+                                }
+
+                                UInt32 count = r.ReadUInt32();
+                                for (UInt32 i = 0; i < count; i++)
+                                {
+                                    UInt16 id = r.ReadUInt16();
+                                    Sector s = new Sector { regions = new List<Polygon>[r.ReadUInt16()] };
+                                    for (int g = 0; g < s.regions.Length; g++)
+                                    {
+                                        s.regions[g] = ReadPolygons(r, version == 3);
+                                    }
+
+                                    s.placements = new Placement[r.ReadUInt16()];
+                                    for (int k = 0; k < s.placements.Length; k++)
+                                    {
+                                        Placement p = new Placement { prefab = r.ReadUInt16() };
+                                        p.pivotX = r.ReadInt16() * 10;
+                                        p.pivotY = r.ReadInt16() * 10;
+                                        p.pivotZ = r.ReadInt16() * 10;
+                                        p.minX = r.ReadInt16() * 10;
+                                        p.minY = r.ReadInt16() * 10;
+                                        p.minZ = r.ReadInt16() * 10;
+                                        p.maxX = r.ReadInt16() * 10;
+                                        p.maxY = r.ReadInt16() * 10;
+                                        p.maxZ = r.ReadInt16() * 10;
+                                        p.rotation = r.ReadByte();
+                                        s.placements[k] = p;
+                                    }
+
+                                    district.sectors[id] = s;
+                                }
+                            }
                         }
                     }
                 }
@@ -545,19 +566,19 @@ namespace hds
             }
 
             int[] xz = p.xz;
-            double[] edgeNx = p.edgeNx;
-            double[] edgeNz = p.edgeNz;
+            double[] edgeNormals = EnsureEdgeNormals(p);
             int n = xz.Length >> 1;
             double worst = double.MinValue;
             for (int j = 0; j < n; j++)
             {
-                double nx = edgeNx[j];
+                int idx = j << 1;
+                double nx = edgeNormals[idx];
                 if (double.IsNaN(nx))
                 {
                     continue;
                 }
 
-                double dist = nx * (x - xz[j << 1]) + edgeNz[j] * (z - xz[(j << 1) + 1]);
+                double dist = nx * (x - xz[idx]) + edgeNormals[idx + 1] * (z - xz[idx + 1]);
                 if (dist > worst) worst = dist;
             }
 

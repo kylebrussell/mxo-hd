@@ -139,4 +139,67 @@ public class NavMeshTests
         NavLocation at = new NavLocation { sector = 0x193, region = 7, polygon = 0x0c };
         Assert.Equal(new byte[] { 0x93, 0x01, 0x07, 0x00, 0x0c, 0x00, 0xec }, at.RecordBytes(0xec));
     }
+
+    [Fact]
+    public void ColdLoadKeepsEdgeNormalsLazyAndThreadSafe()
+    {
+        Load();
+        Assert.True(NavMesh.Locate(1, 39913.7, 95.0, -21402.3, out NavLocation coldAt));
+        Assert.False(coldAt.indoors);
+        Assert.Equal(403, coldAt.sector);
+        Assert.Equal(5, coldAt.region);
+        Assert.Equal(3, coldAt.polygon);
+
+        // Cold NavMesh.Load(1) runs on RPC 05 under WorldClient.processLock. Edge normals must stay lazy
+        // across untouched polygons so loading District 1 does not stall past FirstWorldSetupRetryMs.
+        var flags = System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public;
+        var districtsField = typeof(NavMesh).GetField("districts", flags)!;
+        var districts = (System.Collections.IDictionary)districtsField.GetValue(null)!;
+        object district = districts[(ushort)1]!;
+        var sectorsField = district.GetType().GetField("sectors", flags)!;
+        var sectors = (System.Collections.IDictionary)sectorsField.GetValue(district)!;
+
+        int totalPolygons = 0;
+        int populatedNormals = 0;
+        System.Reflection.FieldInfo? regionsField = null;
+        System.Reflection.FieldInfo? normalsField = null;
+        foreach (System.Collections.DictionaryEntry entry in sectors)
+        {
+            object sector = entry.Value!;
+            regionsField ??= sector.GetType().GetField("regions", flags)!;
+            var regions = (System.Collections.IEnumerable)regionsField.GetValue(sector)!;
+            foreach (object region in regions)
+            {
+                foreach (object poly in (System.Collections.IEnumerable)region)
+                {
+                    totalPolygons++;
+                    normalsField ??= poly.GetType().GetField("edgeNormals", flags)!;
+                    if (normalsField.GetValue(poly) != null) populatedNormals++;
+                }
+            }
+        }
+
+        Assert.True(totalPolygons > 100_000, $"Expected >100k polygons in district 1, got {totalPolygons}");
+        Assert.True(populatedNormals >= 1 && populatedNormals < totalPolygons / 50,
+            $"Expected lazy edge normals (<2% populated), got {populatedNormals}/{totalPolygons}");
+
+        // Concurrent queries across outdoor and indoor polygons must safely publish lazy edge normals.
+        var samples = new (ushort District, double X, double Y, double Z, bool Indoors, int Sector, int Region, int Polygon)[]
+        {
+            (1, 39913.7, 95.0, -21402.3, false, 403, 5, 3),
+            (1, 64230.6, 85.0, -92447.3, false, 311, 1, 11),
+            (1, 16800.1, -705.0, 24741.0, false, 422, 45, 0),
+            (1, 18532.7, 1695.0, 3169.6, true, 915, 25, 54),
+            (1, 45140.2, 2095.0, 6288.6, true, 35, 78, 4),
+        };
+        Parallel.For(0, 200, i =>
+        {
+            var s = samples[i % samples.Length];
+            Assert.True(NavMesh.Locate(s.District, s.X, s.Y, s.Z, out NavLocation at));
+            Assert.Equal(s.Indoors, at.indoors);
+            Assert.Equal(s.Sector, at.sector);
+            Assert.Equal(s.Region, at.region);
+            Assert.Equal(s.Polygon, at.polygon);
+        });
+    }
 }
