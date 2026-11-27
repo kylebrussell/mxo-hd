@@ -14,7 +14,7 @@ namespace hds
     {
         private EndPoint Remote;
         private Socket socket;
-        private IWorldEncryption cypher;
+        private volatile IWorldEncryption cypher;
 
         private string key;
 
