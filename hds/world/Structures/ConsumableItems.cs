@@ -26,7 +26,8 @@ namespace hds
             AntiStun,
             /// <summary>Changes one owned avatar appearance component permanently.</summary>
             Appearance,
-            TimedBuff
+            TimedBuff,
+            HealOverTime
         }
 
         public struct Consumable
@@ -81,6 +82,11 @@ namespace hds
             { BlueMarbles.Item1, BlueMarbles.Consumable(BlueMarbles.Stage1) },
             { BlueMarbles.Item2, BlueMarbles.Consumable(BlueMarbles.Stage2) },
             { BlueMarbles.Item3, BlueMarbles.Consumable(BlueMarbles.Stage3) },
+            { 39757, HealInhalers.Consumable(716) },
+            { 39758, HealInhalers.Consumable(717) },
+            { 39759, HealInhalers.Consumable(718) },
+            { 39760, HealInhalers.Consumable(719) },
+            { 39761, HealInhalers.Consumable(720) },
         };
 
         public static bool TryGet(UInt32 goid, out Consumable consumable)
@@ -96,7 +102,8 @@ namespace hds
         {
             return consumable.Effect == Effect.Heal || consumable.Effect == Effect.Cure ||
                 consumable.Effect == Effect.ConditionSweep || consumable.Effect == Effect.MaxHealthBoost ||
-                consumable.Effect == Effect.Appearance || consumable.Effect == Effect.TimedBuff;
+                consumable.Effect == Effect.Appearance || consumable.Effect == Effect.TimedBuff ||
+                consumable.Effect == Effect.HealOverTime;
         }
 
         // A death/revival or leave/re-entry into the same district invalidates the original cast too.
@@ -110,6 +117,8 @@ namespace hds
             // These character level requirements are on the items, in addition to the granted ability's Awakened rank.
             if (goid == BlueMarbles.Item2) return 40;
             if (goid == BlueMarbles.Item3) return 50;
+            if (goid >= HealInhalers.FirstItem && goid <= HealInhalers.LastItem)
+                return HealInhalers.RequiredLevel(goid);
             if (goid >= TacticBoostItems.FirstItem && goid <= TacticBoostItems.LastItem)
                 return TacticBoostItems.RequiredLevel(goid);
             return goid >= 39407 && goid <= 39410 ? (int)(goid - 39406) * 10 : 0;

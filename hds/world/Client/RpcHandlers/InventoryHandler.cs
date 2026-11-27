@@ -168,8 +168,9 @@ namespace hds
                 bool appearance = consumable.Effect == ConsumableItems.Effect.Appearance;
                 bool blueMarble = BlueMarbles.Handles(abilityId);
                 bool requiresOutsideCombat = appearance || blueMarble;
-                bool timedBuff = consumable.Effect == ConsumableItems.Effect.TimedBuff;
-                if ((appearance || timedBuff) && (slot < 1 || slot > 96))
+                bool timedEffect = consumable.Effect == ConsumableItems.Effect.TimedBuff ||
+                    consumable.Effect == ConsumableItems.Effect.HealOverTime;
+                if ((appearance || timedEffect) && (slot < 1 || slot > 96))
                     return false;
                 if (Stealth.IsOn(client, Stealth.MasterShadowAbility) && AbilityCatalog.Find(abilityId)?.CastSeconds > 0)
                 {
@@ -274,9 +275,9 @@ namespace hds
                             CommitRsiPill(client, slot, goid);
                             return;
                         }
-                        if (timedBuff)
+                        if (timedEffect)
                         {
-                            if (!CommitTimedItemBuff(client, slot, goid, consumable) && consumable.Seconds > 0)
+                            if (!CommitTimedItemEffect(client, slot, goid, consumable) && consumable.Seconds > 0)
                                 ReleaseReservation();
                             return;
                         }
@@ -306,21 +307,24 @@ namespace hds
             }
         }
 
-        private static bool CommitTimedItemBuff(WorldClient client, ushort slot, uint goid, ConsumableItems.Consumable consumable)
+        private static bool CommitTimedItemEffect(WorldClient client, ushort slot, uint goid, ConsumableItems.Consumable consumable)
         {
             uint character = client.playerData.getCharID();
             int remaining;
             try { remaining = Store.dbManager.WorldDbHandler.ConsumeOwnedBagItem(character, slot, goid); }
             catch (System.Data.Common.DbException error)
             {
-                Output.WriteDebugLog($"[INVENTORY] Timed buff rolled back char={character} item={goid}: {error.Message}");
+                Output.WriteDebugLog($"[INVENTORY] Timed item rolled back char={character} item={goid}: {error.Message}");
                 ClientActionsHandler.Notice(client, "This item could not be used. Your item was kept.");
                 return false;
             }
             if (remaining < 0) return false;
             client.messageQueue.addRpcMessage(remaining == 0 ? ServerPackets.BuildInventoryItemDelete(slot)
                 : ItemStacks.BuildStackCount(slot, remaining));
-            AbilityBuffs.Apply(client, consumable.AbilityId, client);
+            if (consumable.Effect == ConsumableItems.Effect.HealOverTime)
+                AbilitySupport.Land(client, consumable.AbilityId, 2);
+            else
+                AbilityBuffs.Apply(client, consumable.AbilityId, client);
             if (consumable.Seconds > 0)
                 AbilityCooldowns.StartItem(client, (ushort)goid, consumable.Group, consumable.Seconds,
                     TimeUtils.GetSimTimeSeconds());
