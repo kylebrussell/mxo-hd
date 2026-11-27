@@ -420,6 +420,8 @@ try
                     result = await NativeQa.Modes.AwakenedDetectionDisguiseMode.PrepareWitnessesAsync(actor, helpers);
                 else if (fixtureMode is NativeQa.Modes.MarketplaceBreadthMode market && action == "marketplace")
                     result = await market.SendActionAsync(actor, q, helpers, database);
+                else if (fixtureMode is NativeQa.Modes.MailAtomicTransfersMode mail && action == "mail-verify")
+                    result = await mail.VerifyAsync(actor, q, database);
                 else if (fixtureMode is NativeQa.Modes.StarterCoderViralResistanceMode && action == "aura-resist")
                     await NativeQa.Modes.StarterPathogenistAuraResistanceMode.ApplyResistanceAsync(actor,
                         NativeQa.Modes.StarterCoderViralResistanceMode.Resistance);

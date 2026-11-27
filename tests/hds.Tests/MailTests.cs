@@ -106,8 +106,10 @@ public class MailTests
         Assert.Contains("<Item ClassData=\"7332\" InstanceData=\"" + unchecked((int)0xcc040000) + "\"/>", xml);
     }
 
-    private class FakeHost : IMailHost
+    private class FakeHost : IMailHost, IMailTransfer
     {
+        private readonly InMemoryMailStore store;
+        public FakeHost(InMemoryMailStore store) { this.store = store; }
         public readonly Dictionary<string, UInt32> Handles = new(StringComparer.OrdinalIgnoreCase) { ["Alice"] = 1, ["Bob"] = 2 };
         public readonly Dictionary<UInt32, List<byte[]>> Sent = new();
         public readonly Dictionary<UInt32, long> Info = new() { [1] = 1000, [2] = 0 };
@@ -117,19 +119,27 @@ public class MailTests
 
         public UInt32 CharIdByHandle(string handle) => Handles.TryGetValue(handle, out UInt32 id) ? id : 0;
         public string HandleOf(UInt32 charId) => Handles.First(h => h.Value == charId).Key;
-        public void Send(UInt32 charId, byte[] record)
+        public void Send(UInt32 charId, params byte[][] records)
         {
             if (!Online.Contains(charId)) return;
             if (!Sent.TryGetValue(charId, out var list)) Sent[charId] = list = new List<byte[]>();
-            list.Add(record);
+            list.AddRange(records);
         }
         public bool IsDead(UInt32 charId) => false;
-        public long InfoOf(UInt32 charId) => Info[charId];
-        public void AddInfo(UInt32 charId, long change) => Info[charId] += change;
-        public MailItem? ItemAt(UInt32 charId, int slot) => Bags.TryGetValue((charId, slot), out var item) ? item : null;
-        public void RemoveItem(UInt32 charId, int slot) => Bags.Remove((charId, slot));
-        public int FreeBagSlots(UInt32 charId) => Free;
-        public void GiveItem(UInt32 charId, MailItem item) => Bags[(charId, 50 + Bags.Count)] = item;
+        public void PublishCash(uint charId, uint cash) { }
+        public long ReadCash(uint charId) => Info.GetValueOrDefault(charId, -1);
+        public void SetCash(uint charId, uint cash) => Info[charId] = cash;
+        public List<(ushort Slot, MailItem Item)> ReadBag(uint charId) => Free == 0
+            ? Enumerable.Range(1, 96).Select(slot => ((ushort)slot, new MailItem())).ToList()
+            : Bags.Where(row => row.Key.Item1 == charId).Select(row => ((ushort)row.Key.Item2, row.Value)).ToList();
+        public void RemoveItem(uint charId, ushort slot) => Bags.Remove((charId, slot));
+        public void AddItem(uint charId, ushort slot, MailItem item) => Bags.Add((charId, slot), item);
+        public int InboxCount(uint charId) => store.Count(charId);
+        public void AddMessage(MailMessage message) => store.Add(message);
+        public MailMessage ReadMessage(uint charId, uint id) => store.Get(charId, id)!;
+        public void SetAttachments(MailMessage message) => store.SetAttachments(message);
+        public void Commit() { }
+        public void Dispose() { }
 
         public List<string> Records(UInt32 charId) => Sent.TryGetValue(charId, out var list) ? list.Select(H).ToList() : new List<string>();
         public void Clear() => Sent.Clear();
@@ -138,9 +148,9 @@ public class MailTests
     private static (MailService, InMemoryMailStore, FakeHost) NewService()
     {
         var store = new InMemoryMailStore();
-        var host = new FakeHost();
+        var host = new FakeHost(store);
         UInt32 now = 1000;
-        return (new MailService(store, host, () => "Test", () => now++), store, host);
+        return (new MailService(store, host, () => host, () => "Test", () => now++), store, host);
     }
 
     private static MailRequests.Send Send(string to, string subject, string body, string? oob = null)
@@ -184,6 +194,10 @@ public class MailTests
     public void UnknownRecipientFailsLikeRetail()
     {
         var (mail, store, host) = NewService();
+        Assert.True(MailRequests.TryParseChunkHeader(Rpc(RetailChunkHeader), out var header));
+        Assert.True(MailRequests.TryParseChunk(Rpc(RetailChunk), out byte[] chunk));
+        mail.OnChunkHeader(1, header);
+        mail.OnChunk(1, chunk);
         Assert.True(MailRequests.TryParseSend(Rpc(RetailSend), out var send));
         mail.OnSend(1, send);
 
@@ -265,12 +279,16 @@ public class MailTests
 
         host.Free = 0;
         mail.OnTake(2, new MailRequests.Take { Id = gift.Id, Items = { (attached.ClassData, attached.InstanceData) } });
-        Assert.Equal(H(MailPackets.BuildStatus(0xfd, MailPackets.PersonalInventoryFull)), host.Records(2).Last());
+        Assert.Equal(H(MailPackets.BuildStatus(0xfd, MailPackets.PersonalInventoryFull)), host.Records(2)[^2]);
+        Assert.StartsWith("2ec7", host.Records(2)[^1]);
 
         host.Free = 10;
+        MailMessage staleMetadata = store.Get(2, gift.Id)!;
         mail.OnTake(2, new MailRequests.Take { Id = gift.Id, Items = { (attached.ClassData, attached.InstanceData) } });
         Assert.Equal("81fd8400008e", host.Records(2).Last());
         Assert.Contains(host.Bags, b => b.Key.Item1 == 2 && b.Value.Goid == 7332 && b.Value.Count == 3);
+        staleMetadata.Folder = "Saved";
+        store.Update(staleMetadata);
         Assert.Empty(store.Get(2, gift.Id)!.Items);
     }
 

@@ -144,7 +144,7 @@ server policy. [Room packet details](#chat-rooms-in-detail)
 
 ## Email
 
-The phone's Email window, `/mail`, and mail the server sends (retail forwarded loot to it when the bag was full: "New items forwarded to email because your inventory is full."). Retail: `mxopackets1_crashover2k_afterwhoruneo_proxy_026`, packets 14653-14716 (list, read two, reply to System, close, list again).
+Open the stock inbox from Phone > Email. Retail also sent system mail for loot overflow. See `mxopackets1_crashover2k_afterwhoruneo_proxy_026`, packets 14653-14716 (list, read two, reply to System, close, list again).
 
 | Request | Name / purpose | Evidence | Server today | Impact |
 |---|---|---|---|---|
@@ -317,12 +317,51 @@ All layouts are client.dll's; the values are retail's. Strings are `<u16 length 
 ### What the server does (ours, not retail's)
 
 - Mail lives in table `mail` (made on first use; also in `SQL/reality_hd.sql`). Status 5 deletes the row.
-- A send is checked whole before anything moves. An unknown recipient fails it with DESTAVATARDOESNTEXIST and a "Message Undeliverable" mail from System, as retail did; its text is ours. A full inbox (300) fails it with INBOXLIMITEXCEEDED.
-- Attached items leave the sender's bag on sending and are listed in the message's ItemList. `81 fc` puts them into free bag slots; without room it answers `LTPS_SPPERSONALINVENTORYFULL` (`0x0c0002ca`) and keeps them.
-- Attached information leaves the sender and reaches the recipient when the mail is sent. The received message has no place for an amount, so retail must have done something like this; how it showed it is not known.
+- A send locks the participating character rows in ID order. One SQL transaction removes the selected bag entries, moves the attached Info between the wallets, and inserts the inbox mail. The server publishes notifications, bag changes and wallet changes after commit. An unknown recipient gets DESTAVATARDOESNTEXIST and a System "Message Undeliverable" mail. A full inbox (300) gets INBOXLIMITEXCEEDED.
+- `81 fc` locks the owned message and recipient bag. Removing attachments from the message and adding them to the bag commit together. Full bags get `LTPS_SPPERSONALINVENTORYFULL` (`0x0c0002ca`) and a chat explanation. The attachments remain in the message and can be claimed after making room. Read, folder and status changes write metadata only.
+- Attached Info reaches the recipient on send, including when offline. The received message carries the item descriptors. The recipient's wallet reflects the Info credit.
+- Database errors return the send or claim result with a chat explanation. The headless `email-atomic-transfers` scenario forces a failed mail insert and a failed second bag insert. It checks rollback, retry, full-bag refusal and a repeated claim.
 - Reading a new or seen message marks it read. The new-mail notice is `81 ed` with Notification 1 to an online recipient. Nothing is said at login about mail that arrived while offline (no evidence of what retail did).
 - No postage: the client has MailInfoCost and MailItemCost settings, whose values and use were not traced.
 - Not done: mail to several recipients with attachments (the client refuses it anyway), folders other than storing the name, and items forwarded to mail when the bag is full (`MailService.SystemMessage` and `Deliver` are there for it).
+
+### Native mail transaction check
+
+Run `mail-atomic-transfers` at Mara Central (17000,495,2300).
+
+1. On a fresh login, open Phone > Email and click **New** before any claim.
+   If New does not open Compose, select **Delivery Check** and try **Reply**.
+2. Right-click Code Bit 1 in slot 3 and choose **Email this item**. Send
+   **Gift** to QAFriend with a nonempty body and 200 Info. Expect 300 Info and
+   an empty slot 3. Submit
+   `{"actor":"QAFriend","action":"mail-verify"}`. The helper reads Gift,
+   confirms 250 Info, and claims one Code Bit.
+3. Take the pill from **Delivery Check** into slot 3. Then try the pill in
+   **Bag Check** with the bag full again. Check `81 fd ca 02 00 0c` and the
+   chat line. Dismiss the Mail popup with **OK** even if its body is empty.
+   Submit `{"actor":"QAFriend","action":"mail-verify","step":"full"}` to
+   verify the first pill arrived and the second remains in the message.
+
+**Stock Compose and the claim modal.** In client 7.6005 (`client.dll`
+SHA-256 `cb5ffcc6bb046fc01e9b10cd8e0c5aa86a82ce8a6a50549c0af6b5c55f79cf3a`),
+New (`620cc28d`) and Reply (`620cc298`) enter the local mail UI through
+`620c9920` and `620ca070`. Both reach `620c5ad0`, which creates view
+`0x5b`. Its constructor loads layout `0x020000f2` from the shipped resource
+map. Reply also requires a selected message and fills the recipient locally.
+Opening the view emits no RPC. The Compose route reads no server feature,
+inbox limit, or mail-cost setting. `81 e5` is sent when the player submits.
+
+On a claim result, `621f88e7` reads the `81 fd` status. Success displays a
+local Mail modal. The failure branch looks up the reason through `6224c0e0`
+and opens the Mail modal at `621f7460`. Claude verified that Phone > Email >
+New opens normally on a fresh login to master `75be38de`, before any claim.
+
+Master queues the bag adds and `81 fd 84 00 00 8e` together. In PR1230's
+first successful native claim the same records went in separate datagrams.
+The claim now queues the records before one flush. The full-bag reply
+`81 fd ca 02 00 0c` precedes the additional refusal chat. The retained retail
+mail session has no framed claim exchange, so it supplies no evidence for
+an unsolicited header or message refresh after `81 fd`.
 
 ### Dev helpers (`MXO_DEV_COMMANDS=1`)
 

@@ -19,7 +19,7 @@ namespace hds.databases
 
         MailMessage Get(UInt32 ownerCharId, UInt32 id);
 
-        /// <summary>Saves status, folder and attachments.</summary>
+        /// <summary>Saves status and folder. Attachment changes belong to the transfer transaction.</summary>
         void Update(MailMessage message);
 
         bool Delete(UInt32 ownerCharId, UInt32 id);
@@ -68,7 +68,8 @@ namespace hds.databases
                 int index = messages.FindIndex(m => m.Id == message.Id && m.OwnerCharId == message.OwnerCharId);
                 if (index >= 0)
                 {
-                    messages[index] = message.Copy();
+                    messages[index].Folder = message.Folder;
+                    messages[index].Status = message.Status;
                 }
             }
         }
@@ -88,13 +89,19 @@ namespace hds.databases
                 return messages.Count(m => m.OwnerCharId == ownerCharId);
             }
         }
+
+        internal void SetAttachments(MailMessage message)
+        {
+            lock (sync)
+                messages.Single(m => m.Id == message.Id && m.OwnerCharId == message.OwnerCharId).Items = message.Copy().Items;
+        }
     }
 
     /// <summary>
     /// Table <c>mail</c> (made on first use, and in SQL/reality_hd.sql): one row per message and owner. Attachments
     /// are kept as text, <c>goid:purity:count</c> separated by commas.
     /// </summary>
-    public class MySqlMailStore : IMailStore
+    public partial class MySqlMailStore : IMailStore
     {
         private static readonly object EnsureLock = new object();
         private static bool ensured;
@@ -199,7 +206,12 @@ namespace hds.databases
 
         public UInt32 Add(MailMessage message)
         {
-            using (var conn = Open())
+            using var conn = Open();
+            return Insert(conn, null, message);
+        }
+
+        private static uint Insert(MySqlConnection conn, MySqlTransaction transaction, MailMessage message)
+        {
             using (var cmd = Cmd(conn,
                        "INSERT INTO mail (ownerCharId, sender, folder, category, sentTime, status, subject, body, items) " +
                        "VALUES (@o, @s, @f, @c, @t, @st, @sub, @b, @i); SELECT LAST_INSERT_ID();",
@@ -207,6 +219,7 @@ namespace hds.databases
                        "@t", (long)message.SentTime, "@st", (long)message.Status, "@sub", message.Subject, "@b", message.Body,
                        "@i", FormatItems(message.Items)))
             {
+                cmd.Transaction = transaction;
                 message.Id = Convert.ToUInt32(cmd.ExecuteScalar());
                 return message.Id;
             }
@@ -243,8 +256,8 @@ namespace hds.databases
         {
             using (var conn = Open())
             {
-                Cmd(conn, "UPDATE mail SET status = @st, folder = @f, items = @i WHERE ownerCharId = @o AND id = @id",
-                    "@st", (long)message.Status, "@f", message.Folder, "@i", FormatItems(message.Items),
+                Cmd(conn, "UPDATE mail SET status = @st, folder = @f WHERE ownerCharId = @o AND id = @id",
+                    "@st", (long)message.Status, "@f", message.Folder,
                     "@o", (long)message.OwnerCharId, "@id", (long)message.Id).ExecuteNonQuery();
             }
         }

@@ -497,13 +497,13 @@ namespace hds
                 return false;
             }
             take.Id = BitConverter.ToUInt32(data, 0);
-            int at = Offset(data, 0x06) - 2;
-            if (at < 0 || at + 2 > data.Length)
-            {
-                return true;
-            }
+            int offset = Offset(data, 0x06);
+            if (offset == 0) return true; // The client may omit the list to request all attachments.
+            int at = offset - 2;
+            if (at < 6 || at + 2 > data.Length) return false;
             int count = data[at] | (data[at + 1] << 8);
-            for (int i = 0; i < count && at + 2 + i * 9 + 9 <= data.Length; i++)
+            if (count > (data.Length - at - 2) / 9) return false;
+            for (int i = 0; i < count; i++)
             {
                 int element = at + 2 + i * 9;
                 UInt32 classData = BitConverter.ToUInt32(data, element + 1);
@@ -526,6 +526,7 @@ namespace hds
         public class Outgoing
         {
             public UInt32 Info;
+            public bool Invalid;
             public List<string> Recipients = new List<string>();
             public List<(int Slot, bool FromPersonalInventory)> Items = new List<(int, bool)>();
         }
@@ -544,14 +545,18 @@ namespace hds
             }
             catch (XmlException)
             {
+                outgoing.Invalid = true;
                 return outgoing;
             }
             foreach (XmlElement info in document.GetElementsByTagName("Info").OfType<XmlElement>())
             {
-                if (UInt32.TryParse(FirstNumber(info), NumberStyles.Integer, CultureInfo.InvariantCulture, out UInt32 amount))
+                if (!UInt32.TryParse(FirstNumber(info), NumberStyles.Integer, CultureInfo.InvariantCulture, out UInt32 amount)
+                    || amount > UInt32.MaxValue - outgoing.Info)
                 {
-                    outgoing.Info += amount;
+                    outgoing.Invalid = true;
+                    return outgoing;
                 }
+                outgoing.Info += amount;
             }
             foreach (XmlElement recipient in document.GetElementsByTagName("Recipient").OfType<XmlElement>())
             {
@@ -568,6 +573,7 @@ namespace hds
                     bool personal = !string.Equals(item.GetAttribute("FromPI"), "False", StringComparison.OrdinalIgnoreCase);
                     outgoing.Items.Add((slot, personal));
                 }
+                else outgoing.Invalid = true;
             }
             return outgoing;
         }
