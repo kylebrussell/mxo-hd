@@ -12,6 +12,18 @@ namespace hds
     /// </summary>
     public static class Crafting
     {
+        public const uint DecompilerTool = 613;
+
+        public enum DecompileOutcome { SourceChanged, BagFull, Succeeded }
+
+        public sealed class DecompileResult
+        {
+            public DecompileOutcome Outcome;
+            public int Remaining;
+            public bool Learned;
+            public IReadOnlyList<(InventoryItem Item, bool Added)> Grants;
+        }
+
         public class Recipe
         {
             public UInt32 ResultGoid;

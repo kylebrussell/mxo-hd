@@ -103,7 +103,8 @@ namespace hds.databases.interfaces{
         void AddCodeStorage(UInt32 charId, CodeStorage.Entry entry);
         void SetCodeStorageCount(UInt32 charId, UInt16 slot, int count);
         HashSet<UInt32> GetLearnedRecipes(UInt32 charId);
-        int DecompileItem(UInt32 charId, UInt16 slot, UInt32 expectedGoid);
+        Crafting.DecompileResult DecompileItem(uint charId, ushort slot, byte toolSlot, uint expectedGoid,
+            bool knownByDefault, IReadOnlyList<uint> recovered);
         (float Factor, double At) GetDeathPenalty(UInt32 charId);
         void SaveDeathPenalty(UInt32 charId, float factor, double at);
         void RemoveCodeStorage(UInt32 charId, UInt16 slot);

@@ -57,6 +57,27 @@ namespace hds
             return effectiveSkill > 0 && 4 * effectiveSkill + roll > 4 * complexity + 50;
         }
 
+        public static IReadOnlyList<uint> RecoverFragments(Crafting.Recipe recipe, int skill, Func<int> roll)
+        {
+            var recovered = new List<uint>();
+            // Write Code can turn a single recipe's ingredients into several physical copies.
+            // Bound recovery per copy until we track that provenance across inventory transfers.
+            int limit = recipe.Ingredients.Length / Math.Max(1, Find(recipe.ResultGoid)?.DefaultCodeCharges ?? 1);
+            if (limit == 0) return recovered;
+            foreach (uint goid in recipe.Ingredients)
+            {
+                var fragment = Find(goid);
+                // Shipped DecompileFragmentRecoveryTest rolls against the fragment's own complexity.
+                if (fragment?.Complexity > 0 && (fragment.Category & 0x00ff00ff) == 0x00430046 && // F?C: code fragment
+                    CodeStorage.IsUploadable(goid) && Succeeds(skill, fragment.Complexity.Value, roll()))
+                {
+                    recovered.Add(goid);
+                    if (recovered.Count == limit) break;
+                }
+            }
+            return recovered;
+        }
+
         /// <summary>Preflight result capacity after ingredients have gone, including a stack that loses its last item.</summary>
         public static bool HasResultSpace(uint result, IList<Crafting.InventoryItem> inventory, IList<ushort> consumed)
         {

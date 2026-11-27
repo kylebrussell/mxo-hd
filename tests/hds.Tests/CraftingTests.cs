@@ -63,4 +63,20 @@ public class CraftingTests
         var slots = Crafting.MatchIngredients(recipe, new[] { Item(9, 7336), Item(98, 7336), Item(2, 7336), Item(4, 7336) });
         Assert.Equal(new ushort[] { 2, 4 }, slots!.ToArray());
     }
+
+    [Fact]
+    public void FragmentRecoveryRollsPerEligibleIngredientAgainstItsOwnComplexity()
+    {
+        var recipe = new Crafting.Recipe { Ingredients = new uint[] { 2435, 2435, 7336, 9139, 2451, 2144 } };
+        var rolls = new System.Collections.Generic.Queue<int>(new[] { 42, 43, 100, 51 });
+        Assert.Equal(new uint[] { 2435, 2451 }, CraftingRules.RecoverFragments(recipe, 3, rolls.Dequeue));
+        Assert.Empty(rolls);
+    }
+
+    [Fact]
+    public void FragmentRecoveryRespectsTheNumberOfCopiesFromAReusableCode()
+    {
+        Assert.Empty(CraftingRules.RecoverFragments(Crafting.Recipes[2399], 50, () => 100));
+        Assert.Equal(new uint[] { 2435, 2444 }, CraftingRules.RecoverFragments(Crafting.Recipes[700], 50, () => 100));
+    }
 }

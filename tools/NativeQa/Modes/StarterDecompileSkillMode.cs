@@ -64,7 +64,7 @@ public class StarterDecompileSkillMode : NativeQaMode
             ? "PR640 B: start the stock client with its disposable CSR cui.cfg held aside and leave every other UI setting as in A. This mode supplies no character UI seed. Open Inventory with I and try title-bar drag and hover before any shortcut assignment. Record whether the pill tooltip lights up and actual use sends 81 31."
             : "PR640 A: the standard seeded profile. Page 2 slot 1 is the ability control. The three item shortcuts are installed in slots 2–4.",
         $"CSR is at ({X},{Y},{Z}); no helpers. Start with no selection. [MODIFIER] char=110 source=276 stat=707 add value=+18 duration=0s.",
-        "Use the Item Decompiler from its inventory context menu, then select Health Pill in bag slot 5 (stack of two). Expect [DECOMPILE] char=110 item=2399 skill=18 complexity=1, requiredAbove=54, success=True; one pill is consumed, 81 30 returns that recipe, 81 2f succeeds. There is no [VITALS] or [PVP] change.",
+        "Use the Item Decompiler shortcut, then select Health Pill in bag slot 5 (stack of two). Expect [DECOMPILE] char=110 item=2399 skill=18 complexity=1, requiredAbove=54, success=True; one pill is consumed and 81 2f succeeds. The reusable pill code has a per-copy recovery limit of zero. There is no [VITALS] or [PVP] change.",
         "After the 10 s reuse, use the same tool on Max Health Boost Pill 3.0 in slot 6. Expect [DECOMPILE] item=39413 skill=18 complexity=33 requiredAbove=182 success=False. The pill stays in the bag and no recipe packet arrives. The seeded rank makes both results independent of the regular 0–100 roll.",
         "Enter ?qaunload 276. Check [MODIFIER] char=110 source=276 stat=707 remove value=+18 duration=0s and no decompile result on the remaining slot-5 pill. Enter ?qaload 276 and see its +18 add. After the reuse, use the inventory activation and slot-5 pill again. It succeeds at the same skill and uses the last pill.",
         "Use the inventory context menu's Activate Item action for Code Compiler (bag slot 1) and Code Analyser (bag slot 2). The client opens the selected window locally and sends the matching explicit activation. Close each window before opening the other. Check the 969/970 linked source on/off records and typing/standing posture. Info stays constant."
@@ -102,9 +102,9 @@ public class StarterDecompileSkillMode : NativeQaMode
         int first = actor.World.RpcSnapshot().Count;
         actor.SendRpc(UseSlot5);
         await PacketAsync(first, "81 2f 01 05 5f 09 00 00");
-        await PacketAsync(first, "81 30 5f 09 00 00 01");
         Check.Equal(1L, await CountAsync(HealthPill), "One pill remains");
-        Check.Equal(1L, await LearnedAsync(HealthPill), "The recipe was written");
+        Check.Equal(0L, await CountAsync(2435), "The pill's reusable code has a per-copy recovery limit of zero");
+        Check.Equal(0L, await LearnedAsync(HealthPill), "The default recipe does not need a learned row");
         await EvidenceRetestWire.TimerAsync(actor, first, Decompile, AbilityCooldowns.OwnTimer, 10, ended: true);
 
         int failed = actor.World.RpcSnapshot().Count;
@@ -132,7 +132,7 @@ public class StarterDecompileSkillMode : NativeQaMode
         actor.SendRpc(UseSlot5);
         await PacketAsync(again, "81 2f 01 05 5f 09 00 00");
         Check.Equal(0L, await CountAsync(HealthPill), "With the skill restored, the remaining pill is spent");
-        Check.Equal(1L, await LearnedAsync(HealthPill), "Repeating a known recipe is idempotent");
+        Check.Equal(0L, await LearnedAsync(HealthPill), "The known recipe remains a default");
 
         await CheckHotbarIdleAsync(CraftingSession.Ability, HotbarCompiler, "?compilesession", "Compile session inactive.");
         await CheckHotbarIdleAsync(CraftingSession.WriterAbility, HotbarWriter, "?writersession", "Writer session inactive.");
