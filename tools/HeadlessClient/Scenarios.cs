@@ -117,6 +117,7 @@ public static partial class Scenarios
         new Scenario("consumable-sweep-control", ConsumableSweepControlCancellation, FreeCastViralLandingEnvironment(StillNpcs)),
         new Scenario("consumable-sweep-items", ConsumableSweepItems, StillNpcs),
         new Scenario("restorative-pill-atomic", RestorativePillAtomic, StillNpcs),
+        new Scenario("health-boost-anti-stun-atomic", HealthBoostAntiStunAtomic, HealthCallbackNpcs),
         new Scenario("rsi-modification-pills", RsiModificationPills, StillNpcs),
         new Scenario("quicksilver-pill", QuicksilverPillUse, StillNpcs),
         new Scenario("tactic-boost-consumables", TacticBoostConsumables, StillNpcs),

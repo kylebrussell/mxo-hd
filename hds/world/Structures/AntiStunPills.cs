@@ -68,7 +68,13 @@ namespace hds
                         if (!Ready(client) || data.worldGeneration != world || data.lifeGeneration != life ||
                             data.castEndsAt != castEnd || Store.dbManager.WorldDbHandler.GetItemGOIDAtInventorySlot(slot) != goid)
                         { Output.WriteDebugLog("[ANTISTUN] Cast cancelled: item, life, world or cast changed"); return; }
-                        InventoryHandler.RemoveOne(client, slot);
+                        byte[] removal = InventoryHandler.CommitDose(client, slot, goid, out string refusal);
+                        if (removal == null)
+                        {
+                            InventoryHandler.ReportDoseRefusal(client, refusal);
+                            return;
+                        }
+                        client.messageQueue.addRpcMessage(removal);
                         AbilityCooldowns.Start(client, ability, TimeUtils.GetSimTimeSeconds());
                         Apply(TimedEffects.ForPlayer(client), TimeUtils.GetSimTimeSeconds());
                         client.FlushQueue();
