@@ -85,6 +85,42 @@ public class AbilityControlDurationTests
         Assert.Contains(root, TimedEffects.ForPlayer(victim).Effects.HealthChanged(1, true, new Random(1)));
     }
 
+    [Theory]
+    [InlineData(65, 0x411e6666u)]
+    [InlineData(69, 0x41223d71u)]
+    public void ArchivedZoneOfPowerlessnessDurationsRequireTheCasterSideBonusInTheCurrentModel(int bonus, uint durationBits)
+    {
+        var caster = Client();
+        var recipient = Client();
+        var subject = TimedEffects.ForPlayer(recipient);
+        Assert.True(TempMods.TryGet(399, out var effect));
+        Assert.Equal(6f, Assert.Single(effect.Mods).Seconds);
+
+        try
+        {
+            // These inputs discriminate the runtime paths. The capture does not supply either caster's total.
+            recipient.playerData.passives.Totals[1042] = bonus;
+            Assert.Equal(6f, Apply().Seconds);
+            TimedEffects.Clear(subject);
+
+            recipient.playerData.passives.Totals[1042] = 0;
+            caster.playerData.passives.Totals[1042] = bonus;
+            Assert.Equal(durationBits, BitConverter.ToUInt32(PlayerEffects.Record(Apply(), false), 18));
+            TimedEffects.Clear(subject);
+
+            recipient.playerData.passives.Totals[575] = 300;
+            Assert.Equal(AbilityControlDurations.Mitigate(BitConverter.UInt32BitsToSingle(durationBits), 50, 300),
+                Apply().Seconds, 4);
+        }
+        finally
+        {
+            TimedEffects.Clear(subject);
+        }
+
+        TimedEffects.Active Apply() => Assert.Single(TimedEffects.Apply(subject, effect, TimeUtils.GetSimTimeSeconds(), caster),
+            mod => mod.Parent == 399 && mod.Target == TempMods.PowerlessAbility);
+    }
+
     [Fact]
     public void Enrage588AppliesTheUnscaledWithdrawRestrictionUntilExpiry()
     {
