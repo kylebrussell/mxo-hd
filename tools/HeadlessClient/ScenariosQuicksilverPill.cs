@@ -28,7 +28,7 @@ public static partial class Scenarios
             $"CHECK (charId <> {actor.CharId} OR goid <> {item} OR count <> 1)");
         actor.SendRpc("80 c6 05 00");
         await actor.WaitForRpcAsync("80 ac fa 04");
-        await actor.WaitForTextAsync("Your pill was kept.");
+        await actor.WaitForTextAsync("Your item was kept.");
         Check.Equal(2L, await Count(actor), "A failed spend retains both pills");
         Check.Equal(0, actor.Received(ModPattern(ability, 115)).Count, "A failed spend adds no buff");
         Check.Equal(0, actor.Received("80 bd 01 03 b8").Count, "A failed spend starts no reuse");

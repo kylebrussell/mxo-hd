@@ -109,6 +109,10 @@ namespace hds
             // Stored Gaussian Blur numeric effect + ImpartBlurInit/Term's kBlur (client62521e2f).
             { 49, new Buff { Seconds = 600, Family = 1013, DissemblingType = 0x40, Modifiers = new[] { Stat(520, 25) } } },
             { QuicksilverPill.Ability, QuicksilverPill.Definition() },
+            { 548, TacticBoostItems.Definition(548) },
+            { 549, TacticBoostItems.Definition(549) },
+            { 550, TacticBoostItems.Definition(550) },
+            { 551, TacticBoostItems.Definition(551) },
         };
 
         /// <summary>Ability id to the buff it gives; records, values and times from the first retail use found.</summary>
@@ -669,7 +673,8 @@ namespace hds
                     ids[i] = NextRecordId(data);
                 }
                 active = new Active { AbilityId = abilityId, RecordIds = ids, Generation = ++data.buffGeneration, Started=TimeUtils.GetSimTimeSeconds(), Definition = buff };
-                if(buff.DrainAmount>0 && buff.DrainSeconds>0)active.Drain=drain;
+                if (buff.DrainAmount > 0 && buff.DrainSeconds > 0 || buff.PeriodicFx != 0 && buff.PeriodicFxSeconds > 0)
+                    active.Drain = drain;
                 data.activeBuffs[abilityId] = active;
             }
 

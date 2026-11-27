@@ -225,7 +225,7 @@ Open the stock inbox from Phone > Email. Retail also sent system mail for loot o
 | `5c` | Slot u16, PersonalInventoryItem: drop a luggable item into the world (a dragged bag item released over the world, 0x621e1d10). The client refuses anything else: "You can only drop luggable objects in the world." The other sender is never called | D | partial: shared light-luggable drop/pickup and persistence; heavy attachments absent (DATA-MINING.md) | low |
 | `60` | Compile stored code into an item (ObjectID, Slot u16, PersonalInventoryItem 0 = a code storage slot, InvSlotOfToolUsed, FromCrafting): the Compile window's button (`CfCo`, 0x620836b0) and the Loading Area storage window. The answer is `61 <ResultCode>` | D | partial: owned bits, fragments and supported ordinary item codes. Ability-code archive economy unresolved. | medium |
 | `66` | Slot u8, TargetID: a mission item dragged onto the NPC whose key it carries (0x621eb080). The client prints "You hand over the %s." itself | D | handled (new): the mission's Give goal, as the NPC menu's Give | medium |
-| `80 c6` | PillInvSlot: use a pill from the bag (callers in the inventory and hotbar menus) | D | partial: owned supported pill goes through existing effect/timer/removal path, including [RSI modification pills](#rsi-modification-pills) and the [Quicksilver Pill](#quicksilver-pill) | low |
+| `80 c6` | PillInvSlot: use a pill from the bag (callers in the inventory and hotbar menus) | D | partial: owned supported pill goes through existing effect/timer/removal path, including [RSI modification pills](#rsi-modification-pills) [Quicksilver Pill](#quicksilver-pill), and [Tactic Boosts](#tactic-boost-consumables) | low |
 | `81 0e` | Vendor buy (ItemTypeID, BuyBackLastItemSold) | D, C 40 | handled: ordinary purchase places the item and debits Info atomically; full bags are refused; Buy Back uses its separate last-sale receipt | high |
 | `81 11` | Vendor sell (Appraise, Slot) | D, C 5 | handled | high |
 | `81 10` | StringID, CloseUI, sent as `00 00 00 00 01`. Guess: closing the vendor window | C 9 | handled: CloseUI=1 invalidates active vendor session; listed-stock/session authority enforced | low |
@@ -805,6 +805,25 @@ with the other modifiers. The item occupies no upgrade buffer and costs no IS.
 Use `quicksilver-pill` at Mara Central (17000,495,2300). Activate the pill
 stack in bag 5. Verify the cast, one pill consumed, the five modifier records
 and armor. An attempt during the item timer should preserve the second pill.
+
+### Tactic Boost consumables
+
+The shipped item templates 8322–8325 grant abilities 548–551 and impose
+level gates of none, 15, 30 and 45. Both owned-item requests (`80 c6` and
+`80 b9`) spend one item after the one-second cast. They add +5, +10, +15
+or +20 to Combat Tactics (163) for 600 seconds. The existing combat contests
+consume that stat. The authored initial FX plays at completion and
+`TacticBoostFunc` plays its pulse every five seconds while active.
+
+The tiers share stacking type 30. The server interprets the authored
+priority order by replacing a weaker boost with a stronger one, refusing a
+weaker item without spending it, and refreshing the same tier on use. The
+shipped records specify no separate reuse timer.
+
+Run `tactic-boost-consumables` at Mara Central (17000,495,2300). Use bag 5
+then bag 6, retry bag 5 while tier 2 is active, and continue through bags 7
+and 8. Check each one-second cast, stack/deletion update and the stat 163
+add/removal pair in DebugLog.
 
 ## Prompts and FX tokens
 
