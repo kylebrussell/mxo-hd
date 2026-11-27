@@ -30,6 +30,9 @@ namespace hds
         public static UInt64 entityIdCounter = 1;
         public static ArrayList gameServerEntities = ArrayList.Synchronized(new ArrayList()); // should hold all GameObject Entities where a view can be created (static, dynamic etc.)
         private byte[] buffer;
+        // Single-receive-thread endpoint cache avoiding Remote.ToString() and lock(Clients) on steady-state UDP packets.
+        private readonly Dictionary<EndPoint, WorldClient> clientsByEndpoint = new Dictionary<EndPoint, WorldClient>();
+        private Dictionary<string, WorldClient> endpointCacheSource;
         
         public ObjectManager objMan { get; set; }
 
@@ -106,22 +109,35 @@ namespace hds
                 byte[] finalMessage = new byte[msgLen];
                 ArrayUtils.fastCopy(buffer, finalMessage, msgLen);
 
-                // TODO CLIENT CHECK AND HANDLING
-                string remoteKey = Remote.ToString();
-                lock (Clients)
+                // Fast path on the single receive thread: avoid Remote.ToString() allocation and lock(Clients)
+                // while the client is active and still belongs to the same Clients dictionary.
+                Dictionary<string, WorldClient> registry = Clients;
+                if (!ReferenceEquals(endpointCacheSource, registry))
                 {
-                    if (Clients.TryGetValue(remoteKey, out currentClient))
+                    clientsByEndpoint.Clear();
+                    endpointCacheSource = registry;
+                }
+
+                if (!clientsByEndpoint.TryGetValue(Remote, out currentClient) ||
+                    currentClient == null || !currentClient.Alive || currentClient.IngressSnapshot.Claimed)
+                {
+                    string remoteKey = Remote.ToString();
+                    lock (registry)
                     {
+                        if (!registry.TryGetValue(remoteKey, out currentClient))
+                        {
+                            objMan.PushClient(remoteKey); // Push first, then create it
+                            currentClient = new WorldClient(Remote, socket, remoteKey);
+                            gameServerEntities.Add(objMan.GetAssignedObject(remoteKey));
+                            currentClient.playerData.setEntityId(entityIdCounter++);
+
+                            registry.Add(remoteKey, currentClient);
+                        }
                     }
-                    else
+
+                    if (currentClient != null)
                     {
-
-                        objMan.PushClient(remoteKey); // Push first, then create it
-                        currentClient = new WorldClient(Remote, socket, remoteKey);
-                        gameServerEntities.Add(objMan.GetAssignedObject(remoteKey));
-                        currentClient.playerData.setEntityId(entityIdCounter++);
-
-                        Clients.Add(remoteKey, currentClient);
+                        clientsByEndpoint[Remote] = currentClient;
                     }
                 }
 

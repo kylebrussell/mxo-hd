@@ -169,6 +169,129 @@ public class VisibilityPassBenchmark
     }
 
     [Fact]
+    public void LockFreeFindViewForEntityAndPartitionedIndexesStayConsistent()
+    {
+        var vm = new ViewManager();
+        var playerView = vm.addView(100UL, 12);
+        playerView.viewCreated = true;
+        var boothView = vm.addView(200UL, HardlineBooths.PhoneBoothType);
+        boothView.viewCreated = true;
+        var dmView = vm.addView(982000000042UL, 607);
+        dmView.viewCreated = true;
+
+        // First-match semantics for duplicate entity entries + lock-free FindViewForEntity parity.
+        var secondForEntity = new ClientView(599, 900, 200UL) { viewCreated = true };
+        vm.views.Add(secondForEntity);
+        Assert.Same(boothView, vm.FindViewForEntity(200UL));
+        Assert.Same(playerView, vm.FindViewForEntity(100UL));
+
+        // NonPlayerViews excludes GoID 12 and includes DataMining entity range.
+        var dmList = new List<ClientView>();
+        vm.CollectNonPlayerViewsInEntityRange(982000000000UL, 983000000000UL, dmList);
+        Assert.Single(dmList);
+        Assert.Same(dmView, dmList[0]);
+
+        // Removing the first view for entity 200 promotes the second view in lock-free lookup.
+        vm.removeViewByViewId(boothView.ViewID);
+        Assert.Same(secondForEntity, vm.FindViewForEntity(200UL));
+        vm.removeViewByViewId(secondForEntity.ViewID);
+        Assert.Null(vm.FindViewForEntity(200UL));
+
+        // Concurrent FindViewForEntity reads while views are added and removed must never throw.
+        using var stop = new CancellationTokenSource();
+        var reader = Task.Run(() =>
+        {
+            while (!stop.IsCancellationRequested)
+            {
+                _ = vm.FindViewForEntity(100UL);
+                _ = vm.FindViewForEntity(500UL);
+            }
+        });
+        for (int i = 0; i < 500; i++)
+        {
+            var added = vm.addView(500UL, 599);
+            added.viewCreated = true;
+            Assert.Same(added, vm.FindViewForEntity(500UL));
+            vm.removeViewByViewId(added.ViewID);
+        }
+        stop.Cancel();
+        reader.Wait();
+
+        vm.Clear();
+        Assert.Null(vm.FindViewForEntity(100UL));
+        vm.CollectNonPlayerViewsInEntityRange(982000000000UL, 983000000000UL, dmList);
+        Assert.Empty(dmList);
+    }
+
+    [Fact]
+    public void StampBasedReconcileMobViewsRetainsInRangeCorpseAndDeletesOutOfRangeOrOtherDistrict()
+    {
+        var viewer = Player(0);
+        viewer.viewMan.addView(700001UL, 12).viewCreated = true; // player view (ignored)
+
+        var corpseMob = new Mob(); corpseMob.setEntityId(800001UL); corpseMob.setDistrict(1); corpseMob.setGoId(new byte[] { 0x00, 0x57, 0x02, 0x00 });
+        var freshMob = new Mob(); freshMob.setEntityId(800002UL); freshMob.setDistrict(1); freshMob.setGoId(new byte[] { 0x00, 0x57, 0x02, 0x00 });
+        var farMob = new Mob(); farMob.setEntityId(800003UL); farMob.setDistrict(1); farMob.setGoId(new byte[] { 0x00, 0x57, 0x02, 0x00 });
+        var otherDistrictMob = new Mob(); otherDistrictMob.setEntityId(800004UL); otherDistrictMob.setDistrict(2); otherDistrictMob.setGoId(new byte[] { 0x00, 0x57, 0x02, 0x00 });
+
+        viewer.viewMan.addView(corpseMob.getEntityId(), 599).viewCreated = true;
+        viewer.viewMan.addView(farMob.getEntityId(), 599).viewCreated = true;
+        viewer.viewMan.addView(otherDistrictMob.getEntityId(), 599).viewCreated = true;
+
+        var mobsByEntity = new Dictionary<ulong, Mob>
+        {
+            [corpseMob.getEntityId()] = corpseMob,
+            [freshMob.getEntityId()] = freshMob,
+            [farMob.getEntityId()] = farMob,
+            [otherDistrictMob.getEntityId()] = otherDistrictMob,
+        };
+        // corpseMob is nearby but NOT introducible (already spawned corpse); freshMob is both nearby and introducible.
+        var nearby = new List<Mob> { corpseMob, freshMob };
+        var introducible = new List<Mob> { freshMob };
+        var toSpawn = new List<(Mob Mob, ClientView View)>();
+        var pets = new List<(Mob Mob, ClientView View)>();
+        var toDelete = new List<(ClientView View, Mob Mob)>();
+
+        viewer.viewMan.ReconcileMobViews(1, nearby, introducible, mobsByEntity, toSpawn, pets, toDelete);
+
+        Assert.Single(toSpawn);
+        Assert.Same(freshMob, toSpawn[0].Mob);
+        Assert.Empty(pets);
+        Assert.Equal(2, toDelete.Count);
+        Assert.Contains(toDelete, d => ReferenceEquals(d.Mob, farMob));
+        Assert.Contains(toDelete, d => ReferenceEquals(d.Mob, otherDistrictMob));
+        Assert.DoesNotContain(toDelete, d => ReferenceEquals(d.Mob, corpseMob));
+    }
+
+    [Fact]
+    public void SpatialGridIncrementalCellMoveAndClearPreserveNeighborQueries()
+    {
+        var grid = new SpatialGrid<string>(5000f);
+        long cellA = grid.GetCellKey(100f, 100f);
+        long cellB = grid.GetCellKey(25000f, 25000f);
+        grid.AddToCell(cellA, "m1");
+        grid.AddToCell(cellA, "m2");
+
+        var cells = new List<List<string>>();
+        grid.CollectNeighborCells(100f, 100f, 5000f, cells);
+        Assert.Equal(new[] { "m1", "m2" }, cells.SelectMany(c => c).OrderBy(x => x).ToArray());
+
+        // Move m1 from cellA to cellB incrementally.
+        Assert.True(grid.RemoveFromCell(cellA, "m1"));
+        grid.AddToCell(cellB, "m1");
+
+        grid.CollectNeighborCells(100f, 100f, 5000f, cells);
+        Assert.Equal(new[] { "m2" }, cells.SelectMany(c => c).ToArray());
+        grid.CollectNeighborCells(25000f, 25000f, 5000f, cells);
+        Assert.Equal(new[] { "m1" }, cells.SelectMany(c => c).ToArray());
+
+        // Clear empties all buckets and CollectNeighborCells skips empty lists.
+        grid.Clear();
+        grid.CollectNeighborCells(100f, 100f, 5000f, cells);
+        Assert.Empty(cells);
+    }
+
+    [Fact]
     public void DensePassTimings()
     {
         if (Environment.GetEnvironmentVariable("MXO_VISIBILITY_BENCH") != "1") return;

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Text;
 
@@ -15,6 +16,7 @@ namespace hds
         /// every pair of nearby players each pass, and a linear Find made that quadratic in the view count.</summary>
         public readonly ViewList views = new ViewList();
         UInt16 currentViewID = 3; // We start from 3 to increment
+        private long reconcileStamp;
 
 
         public ViewManager(){
@@ -42,10 +44,7 @@ namespace hds
 
         public ClientView FindViewForEntity(UInt64 entityId)
         {
-            lock (views)
-            {
-                return views.FirstForEntity(entityId);
-            }
+            return views.FirstForEntityLockFree(entityId);
         }
 
         public void removeViewByViewId(UInt16 viewId)
@@ -114,8 +113,8 @@ namespace hds
         /// <summary>
         /// Reconciles nearby player entities against this client's views under a single lock acquisition.
         /// Creates missing ClientView slots, appends uncreated nearby views to <paramref name="toSpawn"/>,
-        /// appends stale created player views not in <paramref name="nearbySet"/> to <paramref name="toDelete"/>,
-        /// and returns the current view-list version without allocating in the steady state.
+        /// appends stale created player views to <paramref name="toDelete"/>, and returns the current
+        /// view-list version without allocating in the steady state.
         /// </summary>
         internal long ReconcilePlayerViews(
             List<WorldClient> nearbyClients,
@@ -126,32 +125,61 @@ namespace hds
             List<(WorldClient Other, ClientView View)> toSpawn,
             List<ClientView> toDelete)
         {
+            return ReconcilePlayerViews(nearbyClients, nearbyEntities, nearbyGoids, playerGoId, toSpawn, toDelete);
+        }
+
+        internal long ReconcilePlayerViews(
+            List<WorldClient> nearbyClients,
+            List<ulong> nearbyEntities,
+            List<UInt16> nearbyGoids,
+            UInt16 playerGoId,
+            List<(WorldClient Other, ClientView View)> toSpawn,
+            List<ClientView> toDelete)
+        {
             toSpawn.Clear();
             toDelete.Clear();
             lock (views)
             {
+                long stamp = ++reconcileStamp;
                 int nearbyCount = nearbyClients.Count;
                 for (int i = 0; i < nearbyCount; i++)
                 {
                     ulong entityId = nearbyEntities[i];
-                    ClientView view = views.FirstForEntity(entityId);
+                    List<ClientView> entityViews = views.ViewsForEntity(entityId);
+                    ClientView view = entityViews != null && entityViews.Count > 0 ? entityViews[0] : null;
                     if (view == null || view.ViewID == 0)
                     {
                         view = addView(entityId, nearbyGoids[i]);
+                        view.ReconcileStamp = stamp;
                     }
+                    else
+                    {
+                        view.ReconcileStamp = stamp;
+                        if (entityViews.Count > 1)
+                        {
+                            for (int j = 1; j < entityViews.Count; j++)
+                            {
+                                entityViews[j].ReconcileStamp = stamp;
+                            }
+                        }
+                    }
+
                     if (!view.viewCreated)
                     {
                         toSpawn.Add((nearbyClients[i], view));
                     }
                 }
 
-                List<ClientView> backing = views.BackingList;
-                for (int i = 0; i < backing.Count; i++)
+                List<ClientView> playerViews = views.ViewsWithGoId(playerGoId);
+                if (playerViews != null)
                 {
-                    ClientView view = backing[i];
-                    if (view != null && view.viewCreated && view.GoID == playerGoId && !nearbySet.Contains(view.entityId))
+                    for (int i = 0; i < playerViews.Count; i++)
                     {
-                        toDelete.Add(view);
+                        ClientView view = playerViews[i];
+                        if (view != null && view.viewCreated && view.ReconcileStamp != stamp)
+                        {
+                            toDelete.Add(view);
+                        }
                     }
                 }
 
@@ -161,18 +189,19 @@ namespace hds
 
         /// <summary>
         /// Collects created views matching <paramref name="goId"/> whose entity is not in <paramref name="nearbySet"/>
-        /// under a single lock without copying the entire view list.
+        /// under a single lock without scanning unrelated views or copying the view list.
         /// </summary>
         internal void CollectStaleViewsByGoId(UInt32 goId, HashSet<ulong> nearbySet, List<ClientView> toDelete)
         {
             toDelete.Clear();
             lock (views)
             {
-                List<ClientView> backing = views.BackingList;
-                for (int i = 0; i < backing.Count; i++)
+                List<ClientView> matching = views.ViewsWithGoId(goId);
+                if (matching == null) return;
+                for (int i = 0; i < matching.Count; i++)
                 {
-                    ClientView view = backing[i];
-                    if (view != null && view.viewCreated && view.GoID == goId && !nearbySet.Contains(view.entityId))
+                    ClientView view = matching[i];
+                    if (view != null && view.viewCreated && !nearbySet.Contains(view.entityId))
                     {
                         toDelete.Add(view);
                     }
@@ -182,7 +211,7 @@ namespace hds
 
         /// <summary>
         /// Collects created mob views whose entity is in <paramref name="mobsByEntity"/> and either not in
-        /// <paramref name="nearbySet"/> or in another district, without copying the entire view list.
+        /// <paramref name="nearbySet"/> or in another district, scanning only non-player views.
         /// </summary>
         internal void CollectStaleMobViews(
             ushort districtId,
@@ -193,10 +222,10 @@ namespace hds
             toDelete.Clear();
             lock (views)
             {
-                List<ClientView> backing = views.BackingList;
-                for (int i = 0; i < backing.Count; i++)
+                List<ClientView> nonPlayers = views.NonPlayerViews;
+                for (int i = 0; i < nonPlayers.Count; i++)
                 {
-                    ClientView view = backing[i];
+                    ClientView view = nonPlayers[i];
                     if (view == null || !view.viewCreated) continue;
                     if (!mobsByEntity.TryGetValue(view.entityId, out Mob mob)) continue;
                     if (!nearbySet.Contains(view.entityId) || mob.getDistrict() != districtId)
@@ -210,7 +239,7 @@ namespace hds
         /// <summary>
         /// Reconciles nearby introducible mobs against this client's views under a single lock acquisition:
         /// creates missing ClientView slots, collects uncreated spawns and active pet refreshes, and collects
-        /// stale mob views without copying the view list.
+        /// stale mob views by scanning only non-player views.
         /// </summary>
         internal void ReconcileMobViews(
             ushort districtId,
@@ -245,10 +274,10 @@ namespace hds
                     }
                 }
 
-                List<ClientView> backing = views.BackingList;
-                for (int i = 0; i < backing.Count; i++)
+                List<ClientView> nonPlayers = views.NonPlayerViews;
+                for (int i = 0; i < nonPlayers.Count; i++)
                 {
-                    ClientView view = backing[i];
+                    ClientView view = nonPlayers[i];
                     if (view == null || !view.viewCreated) continue;
                     if (!mobsByEntity.TryGetValue(view.entityId, out Mob mob)) continue;
                     if (!nearbyMobEntities.Contains(view.entityId) || mob.getDistrict() != districtId)
@@ -260,8 +289,74 @@ namespace hds
         }
 
         /// <summary>
-        /// Collects visible ordinary mobs (and any currently selected mob) directly from the view list
-        /// without allocating a Snapshot() copy.
+        /// Stamp-based mob view reconciliation (zero HashSet): stamps all nearby mobs (including non-introducible
+        /// corpses so they stay alive in range), reconciles introducible mobs, and scans only non-player views.
+        /// </summary>
+        internal void ReconcileMobViews(
+            ushort districtId,
+            List<Mob> nearbyMobs,
+            List<Mob> introducibleMobs,
+            Dictionary<ulong, Mob> mobsByEntity,
+            List<(Mob Mob, ClientView View)> toSpawn,
+            List<(Mob Mob, ClientView View)> petsToRefresh,
+            List<(ClientView View, Mob Mob)> toDelete)
+        {
+            toSpawn.Clear();
+            petsToRefresh.Clear();
+            toDelete.Clear();
+            lock (views)
+            {
+                long stamp = ++reconcileStamp;
+                for (int i = 0; i < nearbyMobs.Count; i++)
+                {
+                    List<ClientView> entityViews = views.ViewsForEntity(nearbyMobs[i].getEntityId());
+                    if (entityViews != null)
+                    {
+                        for (int j = 0; j < entityViews.Count; j++)
+                        {
+                            entityViews[j].ReconcileStamp = stamp;
+                        }
+                    }
+                }
+
+                int count = introducibleMobs.Count;
+                for (int i = 0; i < count; i++)
+                {
+                    Mob mob = introducibleMobs[i];
+                    ulong entityId = mob.getEntityId();
+                    ClientView view = views.FirstForEntity(entityId);
+                    if (view == null || view.ViewID == 0)
+                    {
+                        view = addView(entityId, NumericalUtils.ByteArrayToUint16(mob.getGoId(), 1));
+                    }
+                    view.ReconcileStamp = stamp;
+                    if (!view.viewCreated)
+                    {
+                        toSpawn.Add((mob, view));
+                    }
+                    else if (!view.viewNeedsToBeDeleted && mob.pet != null)
+                    {
+                        petsToRefresh.Add((mob, view));
+                    }
+                }
+
+                List<ClientView> nonPlayers = views.NonPlayerViews;
+                for (int i = 0; i < nonPlayers.Count; i++)
+                {
+                    ClientView view = nonPlayers[i];
+                    if (view == null || !view.viewCreated) continue;
+                    if (!mobsByEntity.TryGetValue(view.entityId, out Mob mob)) continue;
+                    if (view.ReconcileStamp != stamp || mob.getDistrict() != districtId)
+                    {
+                        toDelete.Add((view, mob));
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Collects visible ordinary mobs (and any currently selected mob) directly from non-player views
+        /// without allocating a Snapshot() copy or probing player views against mobsByEntity.
         /// </summary>
         internal void CollectVisibleMobs(
             Dictionary<ulong, Mob> mobs,
@@ -274,10 +369,10 @@ namespace hds
         {
             lock (views)
             {
-                List<ClientView> backing = views.BackingList;
-                for (int i = 0; i < backing.Count; i++)
+                List<ClientView> nonPlayers = views.NonPlayerViews;
+                for (int i = 0; i < nonPlayers.Count; i++)
                 {
-                    ClientView view = backing[i];
+                    ClientView view = nonPlayers[i];
                     if (view == null || !view.viewCreated || view.viewNeedsToBeDeleted) continue;
                     if (!mobs.TryGetValue(view.entityId, out Mob mob)) continue;
                     if (!MobMotion.Ordinary(mob) || mob.getDistrict() != districtId) continue;
@@ -290,6 +385,27 @@ namespace hds
             }
         }
 
+        /// <summary>
+        /// Collects views whose entityId falls in [minEntityInclusive, maxEntityExclusive) by scanning only
+        /// non-player views under a single lock, avoiding Snapshot() copies in DataMining.Check.
+        /// </summary>
+        internal void CollectNonPlayerViewsInEntityRange(ulong minEntityInclusive, ulong maxEntityExclusive, List<ClientView> destination)
+        {
+            destination.Clear();
+            lock (views)
+            {
+                List<ClientView> nonPlayers = views.NonPlayerViews;
+                for (int i = 0; i < nonPlayers.Count; i++)
+                {
+                    ClientView view = nonPlayers[i];
+                    if (view != null && view.entityId >= minEntityInclusive && view.entityId < maxEntityExclusive)
+                    {
+                        destination.Add(view);
+                    }
+                }
+            }
+        }
+
     }
     /// <summary>
     /// The view list with entity and view-id indexes kept in step with every add and remove, so the first view
@@ -297,16 +413,30 @@ namespace hds
     /// </summary>
     public sealed class ViewList : System.Collections.ObjectModel.Collection<ClientView>
     {
+        internal const UInt32 PlayerGoId = 12;
         private readonly Dictionary<UInt64, List<ClientView>> byEntity = new Dictionary<UInt64, List<ClientView>>();
+        private readonly ConcurrentDictionary<UInt64, ClientView> firstByEntity = new ConcurrentDictionary<UInt64, ClientView>();
         private readonly Dictionary<UInt16, List<ClientView>> byViewId = new Dictionary<UInt16, List<ClientView>>();
+        private readonly Dictionary<UInt32, List<ClientView>> byGoId = new Dictionary<UInt32, List<ClientView>>();
+        private readonly List<ClientView> nonPlayerViews = new List<ClientView>();
 
         internal List<ClientView> BackingList => (List<ClientView>)Items;
+        internal List<ClientView> NonPlayerViews => nonPlayerViews;
 
         /// <summary>Bumped by every add, remove, replace and clear: the visibility pass skips a player whose views and surroundings are unchanged.</summary>
         public long Version { get; private set; }
 
         public ClientView FirstForEntity(UInt64 entityId) =>
             byEntity.TryGetValue(entityId, out var list) && list.Count > 0 ? list[0] : null;
+
+        internal ClientView FirstForEntityLockFree(UInt64 entityId) =>
+            firstByEntity.TryGetValue(entityId, out ClientView view) ? view : null;
+
+        internal List<ClientView> ViewsForEntity(UInt64 entityId) =>
+            byEntity.TryGetValue(entityId, out var list) ? list : null;
+
+        internal List<ClientView> ViewsWithGoId(UInt32 goId) =>
+            byGoId.TryGetValue(goId, out var list) ? list : null;
 
         public ClientView FirstWithViewId(UInt16 viewId) =>
             byViewId.TryGetValue(viewId, out var list) && list.Count > 0 ? list[0] : null;
@@ -318,8 +448,10 @@ namespace hds
             if (item == null) return;
             if (index == Count - 1)
             {
-                Append(byEntity, item.entityId, item);
+                AppendEntity(item.entityId, item);
                 Append(byViewId, item.ViewID, item);
+                Append(byGoId, item.GoID, item);
+                if (item.GoID != PlayerGoId) nonPlayerViews.Add(item);
             }
             else Rebuild();
         }
@@ -330,8 +462,10 @@ namespace hds
             base.RemoveItem(index);
             Version++;
             if (item == null) return;
-            Unindex(byEntity, item.entityId, item);
+            UnindexEntity(item.entityId, item);
             Unindex(byViewId, item.ViewID, item);
+            Unindex(byGoId, item.GoID, item);
+            if (item.GoID != PlayerGoId) nonPlayerViews.Remove(item);
         }
 
         protected override void SetItem(int index, ClientView item)
@@ -346,18 +480,62 @@ namespace hds
             base.ClearItems();
             Version++;
             byEntity.Clear();
+            firstByEntity.Clear();
             byViewId.Clear();
+            byGoId.Clear();
+            nonPlayerViews.Clear();
         }
 
         private void Rebuild()
         {
             byEntity.Clear();
             byViewId.Clear();
+            byGoId.Clear();
+            nonPlayerViews.Clear();
             foreach (ClientView view in this)
             {
                 if (view == null) continue;
                 Append(byEntity, view.entityId, view);
                 Append(byViewId, view.ViewID, view);
+                Append(byGoId, view.GoID, view);
+                if (view.GoID != PlayerGoId) nonPlayerViews.Add(view);
+            }
+
+            foreach (KeyValuePair<UInt64, List<ClientView>> kv in byEntity)
+            {
+                firstByEntity[kv.Key] = kv.Value[0];
+            }
+            foreach (UInt64 existing in firstByEntity.Keys)
+            {
+                if (!byEntity.ContainsKey(existing))
+                {
+                    firstByEntity.TryRemove(existing, out _);
+                }
+            }
+        }
+
+        private void AppendEntity(UInt64 entityId, ClientView item)
+        {
+            if (!byEntity.TryGetValue(entityId, out var list))
+            {
+                byEntity[entityId] = list = new List<ClientView>(1);
+                firstByEntity[entityId] = item;
+            }
+            list.Add(item);
+        }
+
+        private void UnindexEntity(UInt64 entityId, ClientView item)
+        {
+            if (!byEntity.TryGetValue(entityId, out var list)) return;
+            list.Remove(item);
+            if (list.Count == 0)
+            {
+                byEntity.Remove(entityId);
+                firstByEntity.TryRemove(entityId, out _);
+            }
+            else
+            {
+                firstByEntity[entityId] = list[0];
             }
         }
 

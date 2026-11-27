@@ -15,9 +15,16 @@ namespace hds
 
         public void Add(float x, float z, T item)
         {
-            int cellX = CellCoord(x);
-            int cellZ = CellCoord(z);
-            long key = MakeKey(cellX, cellZ);
+            AddToCell(MakeKey(CellCoord(x), CellCoord(z)), item);
+        }
+
+        public long GetCellKey(float x, float z)
+        {
+            return MakeKey(CellCoord(x), CellCoord(z));
+        }
+
+        public void AddToCell(long key, T item)
+        {
             if (!cells.TryGetValue(key, out List<T> list))
             {
                 list = new List<T>();
@@ -25,6 +32,36 @@ namespace hds
             }
 
             list.Add(item);
+        }
+
+        public bool RemoveFromCell(long key, T item)
+        {
+            if (!cells.TryGetValue(key, out List<T> list))
+            {
+                return false;
+            }
+
+            int idx = list.IndexOf(item);
+            if (idx < 0)
+            {
+                return false;
+            }
+
+            int last = list.Count - 1;
+            if (idx != last)
+            {
+                list[idx] = list[last];
+            }
+            list.RemoveAt(last);
+            return true;
+        }
+
+        public void Clear()
+        {
+            foreach (List<T> list in cells.Values)
+            {
+                list.Clear();
+            }
         }
 
         public void CollectNeighborCells(float x, float z, float radius, List<List<T>> destination)
@@ -40,7 +77,7 @@ namespace hds
                 for (int cz = minZ; cz <= maxZ; cz++)
                 {
                     long key = MakeKey(cx, cz);
-                    if (cells.TryGetValue(key, out List<T> list))
+                    if (cells.TryGetValue(key, out List<T> list) && list.Count > 0)
                     {
                         destination.Add(list);
                     }
@@ -60,7 +97,7 @@ namespace hds
                 for (int cz = minZ; cz <= maxZ; cz++)
                 {
                     long key = MakeKey(cx, cz);
-                    if (cells.TryGetValue(key, out List<T> list))
+                    if (cells.TryGetValue(key, out List<T> list) && list.Count > 0)
                     {
                         yield return list;
                     }
