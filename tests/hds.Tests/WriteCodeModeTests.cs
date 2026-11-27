@@ -60,7 +60,7 @@ public class WriteCodeModeTests
                 "ability-parity-starter-guardian-support" or "ability-parity-starter-hacker-defensive-passives" or
                 "ability-parity-patch-daemon2-lifecycle" or "ability-parity-emergency-repairs-two-cap" or
                 "ability-parity-gunslinger-scattershot-initiative" or "ability-parity-specialist-duelist-grants" or
-                "ability-parity-aikido-grandmaster-enrage" or "zen-master-capped-restore";
+                "ability-parity-aikido-grandmaster-enrage" or "zen-master-capped-restore" or "heal-inhalers";
             bool holdHealth = originalHold || groupedHold && plan.EnvironmentOverrides.GetValueOrDefault(holdHealthKey) == "1";
             Assert.Equal(holdHealth ? "1" : "", NativeQaFixturePlan.EnvironmentFor(mode)[holdHealthKey]);
             if (holdHealth) Assert.True(plan.DevCommands);

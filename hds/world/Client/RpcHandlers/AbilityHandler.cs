@@ -912,6 +912,8 @@ namespace hds
             { Deny(AbilityID, "Use an owned Inner Strength Booster.", AbilityRefusals.RequiredItemCategory); return; }
             if (BlueMarbles.Handles(AbilityID))
             { Deny(AbilityID, "Use an owned Blue Marble.", AbilityRefusals.RequiredItemCategory); return; }
+            if (HealInhalers.Handles(AbilityID))
+            { Deny(AbilityID, "Use an owned Heal Inhaler.", AbilityRefusals.RequiredItemCategory); return; }
 
             if (!ControlActions.CanUseAbilities(Store.currentClient))
             {

@@ -225,7 +225,7 @@ Open the stock inbox from Phone > Email. Retail also sent system mail for loot o
 | `5c` | Slot u16, PersonalInventoryItem: drop a luggable item into the world (a dragged bag item released over the world, 0x621e1d10). The client refuses anything else: "You can only drop luggable objects in the world." The other sender is never called | D | partial: shared light-luggable drop/pickup and persistence; heavy attachments absent (DATA-MINING.md) | low |
 | `60` | Compile stored code into an item (ObjectID, Slot u16, PersonalInventoryItem 0 = a code storage slot, InvSlotOfToolUsed, FromCrafting): the Compile window's button (`CfCo`, 0x620836b0) and the Loading Area storage window. The answer is `61 <ResultCode>` | D | partial: owned bits, fragments and supported ordinary item codes. Ability-code archive economy unresolved. | medium |
 | `66` | Slot u8, TargetID: a mission item dragged onto the NPC whose key it carries (0x621eb080). The client prints "You hand over the %s." itself | D | handled (new): the mission's Give goal, as the NPC menu's Give | medium |
-| `80 c6` | PillInvSlot: use a pill from the bag (callers in the inventory and hotbar menus) | D | partial: owned supported pill goes through existing effect/timer/removal path, including [RSI modification pills](#rsi-modification-pills) [Quicksilver Pill](#quicksilver-pill), [Tactic Boosts](#tactic-boost-consumables), the [IS Booster](#inner-strength-booster), and [Blue Marbles](#blue-marble-consumables) | low |
+| `80 c6` | PillInvSlot: use a pill from the bag (callers in the inventory and hotbar menus) | D | partial: owned supported pill goes through existing effect/timer/removal path, including [RSI modification pills](#rsi-modification-pills) [Quicksilver Pill](#quicksilver-pill), [Tactic Boosts](#tactic-boost-consumables), the [IS Booster](#inner-strength-booster), [Blue Marbles](#blue-marble-consumables), and [Health Inhalers](#health-inhalers) | low |
 | `81 0e` | Vendor buy (ItemTypeID, BuyBackLastItemSold) | D, C 40 | handled: ordinary purchase places the item and debits Info atomically; full bags are refused; Buy Back uses its separate last-sale receipt | high |
 | `81 11` | Vendor sell (Appraise, Slot) | D, C 5 | handled | high |
 | `81 10` | StringID, CloseUI, sent as `00 00 00 00 01`. Guess: closing the vendor window | C 9 | handled: CloseUI=1 invalidates active vendor session; listed-stock/session authority enforced | low |
@@ -861,6 +861,25 @@ Run `blue-marble-consumables` at Mara Central (17000,495,2300). Use bag 5,
 try bag 6 during reuse, and check that the Stage 1 records expire at six
 seconds. Use bag 6 after reuse, then bag 7 after its reuse. Expect the same
 five records with the stage-specific values and one spend per success.
+
+### Health Inhalers
+
+The five Health Inhalers (39757–39761) grant abilities 716–720. Their
+item level gates are none, 6, 12, 25 and 40. Using an owned inhaler casts
+for one second and spends one dose. Ten-second reuse is keyed to the used
+item and group 711, which it shares with ordinary Health Pills.
+
+Each tier applies a ten-second self HOT. The fixed values 15/30/45/60/90
+are callback inputs. The shipped callback rounds each 2.5-second pulse
+to +4/+8/+11/+15/+23 HP, capped at maximum health. The existing server
+scheduler runs three pulses before expiry. The linked modifier uses the
+existing Health (108) fallback for the inhalers' omitted target field.
+
+Run `heal-inhalers` at Mara Central (17000,495,2300). CSR starts at
+200/500 HP with natural regeneration held by the disposable fixture. Use
+bags 5–9 in order and wait for expiry between doses. Expected HP after
+each tier is 212/236/269/314/383. Try the ordinary Health Pill in bag 10
+during reuse to confirm it stays in the bag.
 
 ## Prompts and FX tokens
 
