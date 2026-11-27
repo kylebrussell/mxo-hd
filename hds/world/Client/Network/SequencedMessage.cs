@@ -17,6 +17,13 @@ namespace hds
         }
         internal ObjectMessageReceipt ObjectReceipt;
         internal SequencedMessage TimedViewWithRpc;
+        internal bool ReliableObject;
+        internal SequencedMessage ReliableObjectPrerequisite;
+        internal bool ReliableObjectAcked;
+        internal bool ReliableObjectGapObserved;
+        internal int? ObjectWorldGeneration;
+        internal long ObjectTransportEpoch;
+        private HashSet<UInt16> reliableObjectPackets;
         internal ushort MovementViewId;
         internal byte MovementFlags;
         internal byte MovementAction;
@@ -136,6 +143,18 @@ namespace hds
         /// <summary>An object message is sent at most this many times, then dropped.</summary>
         public const int MaxObjectSends = 10;
 
+        /// <summary>
+        /// Wait longer before the first retry of a spawn-critical reliable object message unless the client
+        /// explicitly reports a gap past it, avoiding duplicate ViewCreates on slow-but-lossless cold logins.
+        /// </summary>
+        public const long FirstReliableObjectRetryMs = 1000;
+
+        /// <summary>Steady resend cadence for spawn-critical reliable object messages (matches RPCs).</summary>
+        public const long ReliableObjectResendIntervalMs = RpcResendIntervalMs;
+
+        /// <summary>Spawn-critical reliable object messages match MaxRpcSends (30 s at 500 ms) so they survive cold-login loss bursts.</summary>
+        public const int MaxReliableObjectSends = MaxRpcSends;
+
         private long lastSentTick;
 
         /// <summary>
@@ -145,17 +164,72 @@ namespace hds
         /// </summary>
         public static bool ObjectResendEnabled = Environment.GetEnvironmentVariable("MXO_OBJECT_RESEND") == "1";
 
+        internal bool DiscardStaleReliableObject(int world, long transport) =>
+            ReliableObject && ObjectWorldGeneration.HasValue &&
+            (ObjectWorldGeneration.Value != world || ObjectTransportEpoch != transport);
+
+        internal void RecordReliableObjectPacket(UInt16 sequence)
+        {
+            if (!ReliableObject) return;
+            UInt16 seq = (UInt16)(sequence & 0xFFF);
+            if (reliableObjectPackets == null)
+            {
+                reliableObjectPackets = new HashSet<UInt16>();
+            }
+            lock (reliableObjectPackets)
+            {
+                reliableObjectPackets.Add(seq);
+            }
+        }
+
+        internal bool IsReliableObjectAckedBy(ICollection<UInt16> ackedSeqs)
+        {
+            if (!ReliableObject || reliableObjectPackets == null) return false;
+            lock (reliableObjectPackets)
+            {
+                foreach (UInt16 seq in reliableObjectPackets)
+                {
+                    if (ackedSeqs.Contains(seq))
+                    {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        internal void ClearReliableObjectPackets()
+        {
+            if (reliableObjectPackets == null) return;
+            lock (reliableObjectPackets)
+            {
+                reliableObjectPackets.Clear();
+            }
+        }
+
         /// <summary>
         /// Object messages stay queued until the client acks the packet that carried them
-        /// (DeletedAckedPackets). One is due when it hasn't been sent yet; with ObjectResendEnabled,
-        /// also when it was sent at least ObjectResendIntervalMs ago and is still unacked. The old
-        /// resend check compared a counter (0, 4000, 8000...) against Unix time and never passed.
+        /// (DeletedAckedPackets). One is due when it hasn't been sent yet; spawn-critical reliable
+        /// object messages resend until exact-ACKed (and after their prerequisite is ACKed); ordinary
+        /// object messages resend only when ObjectResendEnabled is set.
         /// </summary>
         public bool IsObjectSendDue(long nowTickMs)
         {
             if (!isSent)
             {
                 return true;
+            }
+
+            if (ReliableObject)
+            {
+                if (ReliableObjectAcked || sendCounter >= MaxReliableObjectSends)
+                {
+                    return false;
+                }
+                long interval = (sendCounter == 1 && !ReliableObjectGapObserved)
+                    ? FirstReliableObjectRetryMs
+                    : ReliableObjectResendIntervalMs;
+                return nowTickMs - lastSentTick >= interval;
             }
 
             if (!ObjectResendEnabled)

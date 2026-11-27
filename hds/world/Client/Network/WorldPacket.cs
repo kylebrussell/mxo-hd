@@ -299,6 +299,7 @@ namespace hds
                 {
                     message.increaseResendTime();
                     message.setNeededAck(this.neededAckSSeq);
+                    message.RecordReliableObjectPacket(this.neededAckSSeq);
                     content.append(message.content);
                 }
                 content.append(0x00);

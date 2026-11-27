@@ -38,6 +38,7 @@ public sealed class WorldSession : IDisposable
     private bool disposed;
     private bool disconnecting;
     private bool holdWorldSetupAcks;
+    private Func<ushort, WorldPayload, bool>? dropServerPacket;
 
     internal string DisconnectAfterRpc(byte[] request)
     {
@@ -189,6 +190,12 @@ public sealed class WorldSession : IDisposable
         }
     }
 
+    // Test-only: simulate UDP loss of matching server datagrams before updating ACK history or logs.
+    internal void SetServerDropFilter(Func<ushort, WorldPayload, bool>? filter)
+    {
+        lock (sendLock) dropServerPacket = filter;
+    }
+
     private byte AckBits(ushort ack)
     {
         byte bits = 0;
@@ -287,6 +294,12 @@ public sealed class WorldSession : IDisposable
         ushort serverSeq = (ushort)decrypted[2]!;
 
         WorldPayload payload = WireFormat.ParsePayload(plain);
+        Func<ushort, WorldPayload, bool>? dropFilter;
+        lock (sendLock) dropFilter = dropServerPacket;
+        if (dropFilter != null && dropFilter(serverSeq, payload))
+        {
+            return;
+        }
         // Retransmissions of the previous epoch's reset cannot contribute ACK history
         // after HandleReset has cleared the sequence window.
         if (payload.ResetRequested && resetAnswered) return;

@@ -17,6 +17,7 @@ namespace hds
         private readonly System.Collections.Generic.Dictionary<ushort, SequencedMessage> pendingMovementByView =
             new System.Collections.Generic.Dictionary<ushort, SequencedMessage>();
         internal int FirstUnsentObjectIndex;
+        internal int ReliableObjectCount;
         // Receipt and retry snapshots are published under the WorldClient transport fence.
         internal ClientDatagramReceipts ClientReceipts { get; } = new ClientDatagramReceipts();
         internal RpcResendBackoff ResendBackoff { get; } = new RpcResendBackoff();
@@ -210,6 +211,49 @@ namespace hds
             AddObject(messageBlock,isTimed,null);
         }
         internal void AddTrackedObject(byte[] messageBlock,ObjectMessageReceipt receipt)=>AddObject(messageBlock,false,receipt);
+        internal SequencedMessage AddReliableObject(byte[] messageBlock, int world, long transport,
+            SequencedMessage prerequisite = null, ObjectMessageReceipt receipt = null)
+        {
+            if (receipt != null) lock (receiptSync) { receipts.RemoveWhere(r => r.Finished); receipts.Add(receipt); }
+            SequencedMessage message = new SequencedMessage(messageBlock)
+            {
+                ObjectReceipt = receipt,
+                ReliableObject = true,
+                ReliableObjectPrerequisite = prerequisite,
+                ObjectWorldGeneration = world,
+                ObjectTransportEpoch = transport
+            };
+            lock (ObjectMessagesQueue.SyncRoot)
+            {
+                ObjectMessagesQueue.Add(message);
+                ReliableObjectCount++;
+            }
+            return message;
+        }
+        internal void PruneStaleReliableObjects(int world, long transport)
+        {
+            lock (ObjectMessagesQueue.SyncRoot)
+            {
+                if (ReliableObjectCount == 0) return;
+                int write = 0;
+                for (int i = 0; i < ObjectMessagesQueue.Count; i++)
+                {
+                    SequencedMessage message = (SequencedMessage)ObjectMessagesQueue[i];
+                    if (message.DiscardStaleReliableObject(world, transport))
+                    {
+                        ReliableObjectCount--;
+                        continue;
+                    }
+                    if (write != i) ObjectMessagesQueue[write] = message;
+                    write++;
+                }
+                if (write < ObjectMessagesQueue.Count)
+                {
+                    ObjectMessagesQueue.RemoveRange(write, ObjectMessagesQueue.Count - write);
+                    FirstUnsentObjectIndex = 0;
+                }
+            }
+        }
         private void AddObject(byte[] messageBlock,bool isTimed,ObjectMessageReceipt receipt)
         {
             if(MissionOutput.Stage(this,messageBlock,true,isTimed,receipt))return;
@@ -357,6 +401,7 @@ namespace hds
         {
             pendingMovementByView.Clear();
             FirstUnsentObjectIndex = 0;
+            ReliableObjectCount = 0;
         }
 
         public void addRawMessage(byte[] messageBlock)
