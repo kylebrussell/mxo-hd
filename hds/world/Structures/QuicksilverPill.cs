@@ -6,7 +6,6 @@ namespace hds
     {
         internal const uint Item = 47107;
         internal const ushort Ability = 1274;
-        internal const ushort MoveStat = 115;
         internal const ushort Armor = 0x100; // kArmor, PersonalFirewallInit/Term in the shipped callback
 
         internal static int RequiredLevel => (int)AbilityCatalog.Find(Ability).Number("CharStatsPrerequisite/ReqCharLevel");

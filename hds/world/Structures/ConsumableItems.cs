@@ -79,6 +79,7 @@ namespace hds
             { 8324, new Consumable(550, Effect.TimedBuff, 0, 0) },
             { 8325, new Consumable(551, Effect.TimedBuff, 0, 0) },
             { InnerStrengthBooster.Item, new Consumable(InnerStrengthBooster.Ability, Effect.TimedBuff, 0, 0) },
+            { SsrGum.Item, new Consumable(SsrGum.Ability, Effect.TimedBuff, 0, 0) },
             { BlueMarbles.Item1, BlueMarbles.Consumable(BlueMarbles.Stage1) },
             { BlueMarbles.Item2, BlueMarbles.Consumable(BlueMarbles.Stage2) },
             { BlueMarbles.Item3, BlueMarbles.Consumable(BlueMarbles.Stage3) },
