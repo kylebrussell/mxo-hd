@@ -37,7 +37,7 @@ public sealed class StarterCraftedPillRoundTripMode : NativeQaMode
         {
             "Level 18, CSR at (17000,495,6400) on outdoor NAV floor 400. Move the game window left until Inventory clears any desktop overlay. No helpers or targets. There are no Health Pills or Health Pill codes at entry. Enter ?qaunload 276 and confirm source 276 stat 707 +18 removal.",
             "Use Activate Item on bag slot 2 Code Analyser. Write Consumables > Consumable Pills > Health Pill 1.0, using the five ingredients in slots 4–8. Expect five material removals, a ten-charge code, a successful Writer result and 6 Info spent. Close Writer. Activate Code Compiler from bag slot 1 and compile that exact new code once. Expect a 3 s job, one charge used, 8 Info spent and one Health Pill in bag slot 4. Close Compiler.",
-            "With 276 still unloaded, try the Decompiler shortcut on page 2 slot 1 and the only Health Pill. It is refused and the pill stays. Enter ?qaload 276, expect +18 to stat 707, then repeat on that same pill. Expect stock 81 31, [DECOMPILE] item=2399 skill=18 complexity=1 success=True, one pill removed, one recipe packet and 10 s reuse. No maximum [VITALS] changes or [PVP] rounds."
+            "With 276 still unloaded, try the Decompiler shortcut on page 2 slot 1 and the only Health Pill. It is refused and the pill stays. Enter ?qaload 276, expect +18 to stat 707, then repeat on that same pill. Expect stock 81 31, [DECOMPILE] item=2399 skill=18 complexity=1 success=True, one pill removed and 10 s reuse. The reusable pill code has a per-copy recovery limit of zero. No maximum [VITALS] changes or [PVP] rounds."
         });
 
     public override async Task<byte[]> AfterStartAsync(NativeQaBootstrapContext context)
@@ -102,7 +102,8 @@ public sealed class StarterCraftedPillRoundTripMode : NativeQaMode
         int accepted = actor.World.RpcSnapshot().Count;
         actor.SendRpc(InventoryUse(resultSlot));
         await MatchAsync(accepted, $"81 2f 01 {resultSlot:x2} 5f 09 00 00");
-        await MatchAsync(accepted, "81 30 5f 09 00 00 01");
+        Check.Equal(0L, await db.LongAsync("SELECT COUNT(*) FROM inventory WHERE charId=110 AND goid IN (2435,2438,7458,2472,2454)"),
+            "A pill compiled from a reusable code does not refund recipe fragments");
         await EvidenceRetestWire.TimerAsync(actor, accepted, Decompile, AbilityCooldowns.OwnTimer, 10);
         Check.Equal(0L, await CountPillsAsync(), "Reloaded Decompile consumes the compiler's output");
         Check.Equal(charges - 1, await ChargesAsync(slot), "Decompile does not touch the item code");

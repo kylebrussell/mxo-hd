@@ -29,15 +29,16 @@ public sealed class StarterCoderInventoryLifecycleMode : NativeQaMode
                 + $"(110,{Pill},{PillSlot},1,0),(110,{Revolver},{RevolverSlot},1,0)",
             "CREATE TABLE IF NOT EXISTS char_recipes (charId INT UNSIGNED NOT NULL, goid BIGINT UNSIGNED NOT NULL, PRIMARY KEY(charId,goid))",
             $"DELETE FROM char_recipes WHERE charId=110 AND goid IN ({Pill},{Revolver})"
-        }, Array.Empty<string>(), DevCommands: true, hotbarAbilities: new[] { Decompile },
+        }, new[] { $"UPDATE char_abilities SET level=18 WHERE char_id=110 AND ability_id={AbilityMessages.AbilityGameObject(Decompile)}" },
+        DevCommands: true, hotbarAbilities: new[] { Decompile },
         environmentOverrides: new() { ["MXO_AGGRO"] = "0", ["MXO_MOB_WANDER"] = "0" },
         extraQaMetadata: new() { ["ScopedStockRows"] = "276,969,970", ["NativeCloseableRows"] = 0 },
         readyMessages: new[]
         {
             "Use Activate Item on the Code Analyser in bag slot 2. Verify Writer opens and the avatar begins typing. Close the window and verify the active record clears and the avatar stands.",
             "Repeat with the Code Compiler in bag slot 1. Opening and closing both tools should leave the bag and Info unchanged.",
-            "Right-click the Item Decompiler in bag slot 3 and choose Add Item to Hotbar. Use the new item shortcut, then click the Health Pill in bag slot 5. The action sends 81 31 with the tool slot, starts 10 s reuse, returns 81 30 and removes the input. The prepared page 2 ability shortcut is a control without a tool selection.",
-            "Try to decompile the revolver in bag slot 6 before reuse ends. It should remain in the bag. After the timer clears, decompile the revolver and verify that recipe is learned."
+            "Right-click the Item Decompiler in bag slot 3 and choose Add Item to Hotbar. Use the new item shortcut, then click the Health Pill in bag slot 5. Expect 81 31 with the tool slot, 10 s reuse and the pill consumed. The reusable pill code has a per-copy recovery limit of zero. The prepared page 2 ability shortcut is a control without a tool selection.",
+            "Try to decompile the revolver in bag slot 6 before reuse ends. It should remain in the bag. After the timer clears, decompile the revolver and verify that two fragments are recovered."
         });
 
     public override async Task<byte[]> AfterStartAsync(NativeQaBootstrapContext context)
@@ -63,14 +64,13 @@ public sealed class StarterCoderInventoryLifecycleMode : NativeQaMode
         int cursor = actor.World.RpcSnapshot().Count;
         actor.SendRpc(UseOnPill);
         await Observe(cursor, ReuseStart, "Decompile starts exactly one 10-second reuse");
-        await Observe(cursor, "81 30 5f 09 00 00 01", "The Health Pill recipe is returned");
         await Observe(cursor, "81 2f 01 05 5f 09 00 00", "The first item is decompiled");
-        Check.Equal(1L, await Learned(Pill), "The Health Pill recipe persists");
+        Check.Equal(0L, await Fragments(), "The reusable pill code has a per-copy recovery limit of zero");
 
         int repeated = actor.World.RpcSnapshot().Count;
         actor.SendRpc(UseOnRevolver);
         await Observe(repeated, "81 2f 00 06 bc 02 00 00", "An early repeat receives a result without spending the input");
-        Check.Equal(0L, await Learned(Revolver), "The early repeat did not learn the second recipe");
+        Check.Equal(0L, await Fragments(), "The early repeat grants nothing");
         Check.Equal(4L, await Items(), "The early repeat leaves the revolver in the bag");
         Check.Equal(1, actor.World.RpcSnapshot().Skip(cursor).Count(frame => BytePattern.Parse(ReuseStart).IsMatch(frame.Bytes)),
             "The early repeat does not restart the timer");
@@ -79,8 +79,8 @@ public sealed class StarterCoderInventoryLifecycleMode : NativeQaMode
         int finished = actor.World.RpcSnapshot().Count;
         actor.SendRpc(UseOnRevolver);
         await Observe(finished, "81 2f 01 06 bc 02 00 00", "The same request succeeds after reuse");
-        Check.Equal(1L, await Learned(Revolver), "The revolver recipe persists");
-        Check.Equal(3L, await Items(), "Only the three tools remain");
+        Check.Equal(2L, await Fragments(), "The known revolver grants two fragments");
+        Check.Equal(5L, await Items(), "Only the tools and two kinds of fragment remain");
         Check.Equal(startingInfo, await Info(), "Decompile leaves Info unchanged");
         Check.Equal(0, actor.World.Problems.Count, "Starter Coder replay framing");
         return Array.Empty<byte>();
@@ -109,6 +109,7 @@ public sealed class StarterCoderInventoryLifecycleMode : NativeQaMode
             StockAbilityProfile.ObserveAsync(actor, start, frame => BytePattern.Parse(hex).IsMatch(frame.Bytes), description);
         Task<long> Items() => db.LongAsync("SELECT COUNT(*) FROM inventory WHERE charId=110 AND slot BETWEEN 1 AND 96");
         Task<long> Info() => db.LongAsync("SELECT cash FROM characters WHERE charId=110");
-        Task<long> Learned(uint goid) => db.LongAsync($"SELECT COUNT(*) FROM char_recipes WHERE charId=110 AND goid={goid}");
+        Task<long> Fragments() => db.LongAsync("SELECT COALESCE(SUM(count),0) FROM inventory WHERE charId=110 " +
+            "AND goid IN (2435,2438,7458,2472,2454,2444,2449,2450)");
     }
 }

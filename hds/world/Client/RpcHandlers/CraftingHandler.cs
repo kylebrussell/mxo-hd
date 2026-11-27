@@ -12,7 +12,6 @@ namespace hds
     public class CraftingHandler
     {
         private const ushort DecompileItemsAbility = 276;
-        private const uint DecompilerTool = 613;
 
         /// <summary>Returns the message shown to the player.</summary>
         public string Compile(UInt32 resultGoid) => Compile(resultGoid, out _);
@@ -194,10 +193,10 @@ namespace hds
         private static bool Ready(WorldClient client) => !client.playerData.isDead && !client.playerData.duelDeath &&
             !CombatManager.GetHandler(client).isCombatRunning && ControlActions.CanUseAbilities(client);
 
-        private static bool Finish(WorldClient client, byte result, byte slot, uint item, string message)
+        private static bool Finish(WorldClient client, byte result, byte slot, uint item, string message, string chat = "SYSTEM")
         {
             client.messageQueue.addRpcMessage(CraftingRequests.BuildResult(result, slot, item));
-            new ServerPackets().sendSystemChatMessage(client, message, "SYSTEM");
+            new ServerPackets().sendSystemChatMessage(client, message, chat);
             client.FlushQueue();
             return true;
         }
@@ -224,11 +223,12 @@ namespace hds
                 var db = Store.dbManager.WorldDbHandler;
                 var inventory = db.GetInventoryItems(client.playerData.getCharID());
                 var source = inventory.FirstOrDefault(i => i.Slot == request.Slot);
-                if (request.ToolSlot < 1 || request.ToolSlot > 96 || !inventory.Any(i => i.Slot == request.ToolSlot && i.Goid == DecompilerTool))
+                if (request.ToolSlot < 1 || request.ToolSlot > 96 ||
+                    !inventory.Any(i => i.Slot == request.ToolSlot && i.Goid == Crafting.DecompilerTool))
                 { Finish(client, 0, request.Slot, source.Goid, "Decompile Items requires an Item Decompiler."); return; }
                 var item = CraftingRules.Find(source.Goid);
                 if (item == null || item.CantDecompile || item.Complexity.GetValueOrDefault() <= 0 || !item.Learnable ||
-                    !Crafting.Recipes.ContainsKey(source.Goid))
+                    !Crafting.Recipes.TryGetValue(source.Goid, out var recipe))
                 { Finish(client, 0, request.Slot, source.Goid, "This item cannot teach a recipe by decompiling."); return; }
                 double now = TimeUtils.GetSimTimeSeconds();
                 if (AbilityCooldowns.IsCasting(client.playerData, now) ||
@@ -243,23 +243,55 @@ namespace hds
                     $"complexity={complexity} roll={roll} total={4 * skill + roll} requiredAbove={4 * complexity + 50} success={success}");
                 if (!success)
                 { Finish(client, 0, request.Slot, source.Goid, "Failed to decompile the item."); return; }
-                int remaining;
-                try { remaining = db.DecompileItem(client.playerData.getCharID(), request.Slot, source.Goid); }
+                var recovered = CraftingRules.RecoverFragments(recipe, skill, Roll);
+                var publication = new AbilityAcquisition.Publication(client);
+                Crafting.DecompileResult result;
+                try
+                {
+                    result = db.DecompileItem(publication.Character, request.Slot, request.ToolSlot, source.Goid,
+                        KnownRecipes.Contains(source.Goid), recovered);
+                }
                 catch (System.Data.Common.DbException ex)
                 {
-                    Output.WriteDebugLog($"[DECOMPILE] Recipe transaction failed for char={client.playerData.getCharID()} item={source.Goid}: {ex}");
-                    Finish(client, 0, request.Slot, source.Goid, "The item could not be decompiled.");
+                    Output.WriteDebugLog($"[DECOMPILE] Transaction failed for char={client.playerData.getCharID()} item={source.Goid}: {ex}");
+                    Finish(client, 0, request.Slot, source.Goid, "The item could not be decompiled.", "BROADCAST");
                     return;
                 }
-                if (remaining < 0)
-                { Finish(client, 0, request.Slot, source.Goid, "The item moved before it could be decompiled."); return; }
-                if (remaining == 0) new ServerPackets().sendInventoryItemDelete(request.Slot, client);
-                else client.messageQueue.addRpcMessage(ItemStacks.BuildStackCount(request.Slot, remaining));
-                byte[] learned = new byte[11] { 0x81, 0x30, 0, 0, 0, 0, (byte)item.Complexity.Value, 0, 0, 0, 0 };
-                BitConverter.GetBytes(source.Goid).CopyTo(learned, 2);
-                BitConverter.GetBytes(item.Category).CopyTo(learned, 7);
-                client.messageQueue.addRpcMessage(learned);
-                Finish(client, 1, request.Slot, source.Goid, "Learned the recipe for " + item.Name + ".");
+                if (result.Outcome != Crafting.DecompileOutcome.Succeeded)
+                {
+                    string refusal = result.Outcome == Crafting.DecompileOutcome.BagFull
+                        ? "Your inventory is full. Make room for the recovered fragments."
+                        : "The item or decompiler moved before the decompile finished.";
+                    Finish(client, 0, request.Slot, source.Goid, refusal, "BROADCAST");
+                    return;
+                }
+                var packets = new List<byte[]>
+                {
+                    result.Remaining == 0 ? ServerPackets.BuildInventoryItemDelete(request.Slot)
+                        : ItemStacks.BuildStackCount(request.Slot, result.Remaining)
+                };
+                string message;
+                if (result.Learned)
+                {
+                    byte[] learned = new byte[11] { 0x81, 0x30, 0, 0, 0, 0, (byte)item.Complexity.Value, 0, 0, 0, 0 };
+                    BitConverter.GetBytes(source.Goid).CopyTo(learned, 2);
+                    BitConverter.GetBytes(item.Category).CopyTo(learned, 7);
+                    packets.Add(learned);
+                    message = "Learned the recipe for " + item.Name + ".";
+                }
+                else
+                {
+                    foreach (var (grant, added) in result.Grants)
+                        packets.Add(added
+                            ? ServerPackets.BuildInventoryItemAdd(grant.Slot, grant.Goid, ItemStacks.AmountByte(grant.Count), 0)
+                            : ItemStacks.BuildStackCount(grant.Slot, grant.Count));
+                    Output.WriteDebugLog($"[DECOMPILE] Recovered char={publication.Character} item={source.Goid} fragments={string.Join(",", recovered)}");
+                    message = recovered.Count == 0 ? "No fragments recovered from " + item.Name + "."
+                        : $"Recovered {recovered.Count} code fragments from {item.Name}.";
+                }
+                packets.Add(CraftingRequests.BuildResult(1, request.Slot, source.Goid));
+                packets.Add(ServerPackets.BuildSystemChatMessage(message, "BROADCAST"));
+                if (publication.Publish(client, packets.ToArray())) client.FlushQueue();
             }
         }
 

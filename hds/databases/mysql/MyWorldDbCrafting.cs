@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using MySqlConnector;
 
 namespace hds.databases
@@ -28,8 +29,9 @@ namespace hds.databases
             finally { CloseConnection(); }
         }
 
-        /// <summary>Consumes an owned source and persists its recipe together. Negative means the source changed.</summary>
-        public int DecompileItem(UInt32 charId, UInt16 slot, UInt32 expectedGoid)
+        /// <summary>Consumes an owned source and either learns its recipe or places recovered fragments in one transaction.</summary>
+        public Crafting.DecompileResult DecompileItem(uint charId, ushort slot, byte toolSlot, uint expectedGoid,
+            bool knownByDefault, IReadOnlyList<uint> recovered)
         {
             EnsureRecipes();
             using var connection = new MySqlConnection(connectionString);
@@ -39,27 +41,80 @@ namespace hds.databases
             using var command = connection.CreateCommand();
             command.Transaction = transaction;
             command.Parameters.AddWithValue("@char", charId);
-            command.Parameters.AddWithValue("@slot", slot);
             command.Parameters.AddWithValue("@goid", expectedGoid);
-            command.CommandText = "SELECT invId, goid, count FROM inventory WHERE charId=@char AND slot=@slot FOR UPDATE";
-            uint inventoryId;
-            int count;
+            command.CommandText = "SELECT invId, slot, goid, count, purity FROM inventory " +
+                "WHERE charId=@char AND slot BETWEEN 1 AND 96 ORDER BY slot FOR UPDATE";
+            var bag = new SortedDictionary<ushort, (uint Id, uint Goid, int Count, int Purity)>();
+            var refused = new Crafting.DecompileResult { Outcome = Crafting.DecompileOutcome.SourceChanged };
             using (var rows = command.ExecuteReader())
             {
-                if (!rows.Read() || rows.GetUInt32(1) != expectedGoid) return -1;
-                inventoryId = rows.GetUInt32(0);
-                count = ItemStacks.CountFromDb(rows.GetInt32(2));
-                if (rows.Read()) return -1;
+                while (rows.Read())
+                    if (!bag.TryAdd(rows.GetUInt16(1), (rows.GetUInt32(0), unchecked((uint)rows.GetInt64(2)),
+                        ItemStacks.CountFromDb(rows.GetInt32(3)), rows.GetInt32(4))))
+                        return refused;
             }
-            command.Parameters.AddWithValue("@id", inventoryId);
-            command.Parameters.AddWithValue("@count", count - 1);
-            command.CommandText = count == 1 ? "DELETE FROM inventory WHERE invId=@id" :
+            if (!bag.TryGetValue(slot, out var source) || source.Goid != expectedGoid ||
+                !bag.TryGetValue(toolSlot, out var tool) || tool.Goid != Crafting.DecompilerTool)
+                return refused;
+
+            command.CommandText = "SELECT goid FROM char_recipes WHERE charId=@char AND goid=@goid FOR UPDATE";
+            bool learned = !knownByDefault && command.ExecuteScalar() == null;
+            int remaining = source.Count - 1;
+            if (remaining == 0) bag.Remove(slot);
+            else bag[slot] = (source.Id, source.Goid, remaining, source.Purity);
+
+            var destinations = new SortedSet<ushort>();
+            if (!learned)
+            {
+                foreach (uint fragment in recovered)
+                {
+                    ushort destination = bag.FirstOrDefault(entry => entry.Value.Goid == fragment &&
+                        entry.Value.Purity == 0 && entry.Value.Count < ItemStacks.MaxStack).Key;
+                    if (destination == 0)
+                    {
+                        destination = Enumerable.Range(1, 96).Select(s => (ushort)s).FirstOrDefault(s => !bag.ContainsKey(s));
+                        if (destination == 0)
+                            return new Crafting.DecompileResult { Outcome = Crafting.DecompileOutcome.BagFull };
+                    }
+                    var existing = bag.GetValueOrDefault(destination);
+                    bag[destination] = (existing.Id, fragment, existing.Count + 1, 0);
+                    destinations.Add(destination);
+                }
+            }
+
+            var id = command.Parameters.AddWithValue("@id", source.Id);
+            var count = command.Parameters.AddWithValue("@count", remaining);
+            command.CommandText = remaining == 0 ? "DELETE FROM inventory WHERE invId=@id" :
                 "UPDATE inventory SET count=@count WHERE invId=@id";
-            if (command.ExecuteNonQuery() != 1) return -1;
-            command.CommandText = "INSERT INTO char_recipes (charId,goid) VALUES (@char,@goid) ON DUPLICATE KEY UPDATE goid=VALUES(goid)";
-            command.ExecuteNonQuery();
+            if (command.ExecuteNonQuery() != 1) return refused;
+            if (learned)
+            {
+                command.CommandText = "INSERT INTO char_recipes (charId,goid) VALUES (@char,@goid)";
+                if (command.ExecuteNonQuery() != 1) return refused;
+            }
+
+            var bagSlot = command.Parameters.AddWithValue("@slot", slot);
+            var fragmentGoid = command.Parameters.AddWithValue("@fragment", 0u);
+            var grants = new List<(Crafting.InventoryItem Item, bool Added)>();
+            foreach (ushort destination in destinations)
+            {
+                var grant = bag[destination];
+                bool added = grant.Id == 0;
+                id.Value = grant.Id;
+                count.Value = grant.Count;
+                bagSlot.Value = destination;
+                fragmentGoid.Value = grant.Goid;
+                command.CommandText = added
+                    ? "INSERT INTO inventory(charId,goid,slot,count,purity,created) VALUES(@char,@fragment,@slot,@count,0,NOW())"
+                    : "UPDATE inventory SET count=@count WHERE invId=@id";
+                if (command.ExecuteNonQuery() != 1) return refused;
+                grants.Add((new Crafting.InventoryItem(destination, grant.Goid, grant.Count), added));
+            }
             transaction.Commit();
-            return count - 1;
+            return new Crafting.DecompileResult
+            {
+                Outcome = Crafting.DecompileOutcome.Succeeded, Remaining = remaining, Learned = learned, Grants = grants
+            };
         }
     }
 }

@@ -138,5 +138,6 @@ Count bits hold count − 1, a reading the captures favour but don't prove. New 
 
 The compiler request/reply layouts, `.12` cost, skill contest and per-character recipe learning now have
 binary/script evidence and headless coverage. See [the native checklist and precise remaining limits](CLIENT-COMBAT-ACTIONS.md#native-checklist-and-current-status).
-The Code Writer/Analyzer UI path, fragment recovery, purity/stability, signal boosts, charges, XP and the other
-inventory-target abilities still need implementation or verification. Existing storage and stack behavior is unchanged by this work.
+[Fragment recovery](CLIENT-COMBAT-ACTIONS.md#decompile-fragment-recovery) uses the shipped contest and
+cookbook with a local yield limit for reusable codes. Purity/stability, signal boosts, XP and other
+inventory-target abilities still need implementation or verification.

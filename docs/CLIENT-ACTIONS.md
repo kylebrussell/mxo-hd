@@ -254,7 +254,7 @@ Open the stock inbox from Phone > Email. Retail also sent system mail for loot o
 | `81 9e` | `/pvp` | D | handled | medium |
 | `81 51` | Target | D, C 972 | handled | high |
 | `81 2e` | Compile code (SourceCode, CodeFragmentInfoArray, InvSlotForToolBeingUsed) | D | handled: validated compiler request and script contest; [limits](CLIENT-COMBAT-ACTIONS.md) | medium |
-| `81 31` | Inventory-target ability (AbilityID, SlotID, InvSlotOfToolUsed, IsRecipeKnown) | D | partial: Decompile276 consumes the owned item and persists recipe learning atomically. Fragment recovery and other inventory abilities remain open. | medium |
+| `81 31` | Inventory-target ability (AbilityID, SlotID, InvSlotOfToolUsed, IsRecipeKnown) | D | Decompile 276 atomically consumes the source and either learns its recipe or recovers its fragments. Other inventory-target abilities remain open. [Rules and limits](CLIENT-COMBAT-ACTIONS.md#decompile-fragment-recovery). | medium |
 | `81 aa` | UserData, Interrupted: an FX or cast ending (guess) | D | ignored | low |
 
 ## Help and petitions

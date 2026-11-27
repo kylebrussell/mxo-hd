@@ -11,7 +11,7 @@ This extends the audit in [CLIENT-ACTIONS.md](CLIENT-ACTIONS.md). The request la
 | `80 bb` | ability u16 | Removes the caller's removable beneficial parent buff and linked timed effects; emits native off records | UBF0 category and CanNOTRemoveBuff gate protect viruses, stuns, styles and Death Effect. |
 | `81 21` | bag slot u8 | Deposits the expected mission item into the currently open nearby Put container; replies `81 22` | Generic container storage is not implemented. Corpse loot is read-only. |
 | `81 2e` | SourceCode u32, array offset u16, tool slot u8, array count u16. Stock Writer rows are `(source flags u16, slot u16, goid u32)`. The legacy Compiler route uses `(amount u32, goid u32)`. | Verifies the opened tool and recipe. The Writer spends only the selected live slots and grants ordinary item code with the GOB charge count. | Direct archive placement is server policy. Purity, signal boosts and XP remain incomplete. [Writer evidence](WRITE-CODE.md#health-pill-10) |
-| `81 31` | ability u32, source bag slot u8, tool slot u8, recipe-known hint u8 | Decompile276 validates owned source, loaded ability, learnable recipe and contest; persists learning, removes source and sends `81 30`/`81 2f` | Fragment recovery, purity/stability contribution, other inventory-target abilities and exact tool semantics remain incomplete. Recipe-known hint is never trusted as authority. |
+| `81 31` | ability u32, source bag slot u8, tool slot u8, recipe-known hint u8 | Decompile 276 validates the source, tool and skill. A success consumes one source and either learns the recipe (`81 30`) or recovers its fragments (`5e` / `69 01`), then returns `81 2f`. | Purity/stability contribution, signal boosts and other inventory-target abilities remain incomplete. The server uses its own recipe list and learned rows. |
 
 `81 21` previously opened the marketplace. Marketplace open remains `81 29`. Put now opens an empty native container window; the drop request, rather than opening the window, consumes the mission item. Wrong item, replay, missing window, stale ownership and excessive distance are refused.
 
@@ -29,6 +29,35 @@ Binary evidence:
 The first `81 2e` producer (`6208be40..bf74`) reads ReqAbilityID at `62871018` and checks base37 (Write Code). It packs the selected result as `goid<<7`. The second (`6208c13d..c1e8`) copies the selected packed SourceCode. The server accepts the bare recipe form for the bounded Analyser recipes with the tool bound to the request's slot. The Compiler uses `60` for timed materialization of ordinary archive codes.
 
 `data/crafting_rules.json` exports 42,804 stored item rule rows. `research/crafting/extract_rules.py` reproduces this and `data/pvp_archives.json` directly from the client packmap. Missing GOB fields remain null. `char_recipes` persists learned recipes and the margin includes them on subsequent logins. The historical baseline recipe list is preserved.
+
+## Decompile fragment recovery
+
+The [retail beginner guide](https://mxon.de/mxoforums/mxo/posts/listdda1-2.html?start=15&topic_id=36300001584)
+distinguishes learning a new recipe from breaking down an item whose recipe is
+already known. The server uses the same default and learned recipe lists it
+sends at login. The client's final request byte is a UI hint.
+
+On a successful breakdown, each eligible cookbook fragment uses the shipped
+`DecompileFragmentRecoveryTest` threshold against its own complexity
+(`4 * skill + gaussian roll > 4 * complexity + 50`). The server currently
+uses the base equipped and loaded skill. The exact retail yield selection is
+unverified. The local rule takes at most one fragment per matching ingredient
+entry in cookbook order. For a reusable code, the per-copy limit is the number
+of ingredients divided by its shipped default charge count, rounded down. This
+prevents one batch of ingredients from returning more entries through its
+multiple copies. A Health Pill yields zero under that limit.
+
+Source consumption and all grants commit together. Recovery uses matching
+stacks first; when the final source is consumed, its slot is available. If the
+rolled fragments cannot all fit, the source stays and the client gets a
+full-bag explanation. A failed database write publishes neither removals nor
+grants. No additional Info is spent.
+
+Use `decompile-fragment-recovery` at Mara Central. Arm Decompile Items from
+page 2 and select the Shotgun in bag 5. Verify the recipe is learned. After
+the ten-second reuse, decompile its second copy in bag 6. Verify bag 6
+empties, the Class Routine stack in bag 7 grows from two to three, and three
+other fragments appear in bag slots 1, 2 and 4.
 
 ## Shared PvP interlock
 
