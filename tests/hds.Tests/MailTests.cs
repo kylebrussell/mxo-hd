@@ -279,13 +279,15 @@ public class MailTests
 
         host.Free = 0;
         mail.OnTake(2, new MailRequests.Take { Id = gift.Id, Items = { (attached.ClassData, attached.InstanceData) } });
-        Assert.Equal(H(MailPackets.BuildStatus(0xfd, MailPackets.PersonalInventoryFull)), host.Records(2)[^2]);
+        Assert.Equal(H(MailPackets.BuildStatus(0xfd, MailPackets.PersonalInventoryFull)), host.Records(2)[^3]);
+        Assert.Equal(H(MailPackets.BuildMessage(gift)), host.Records(2)[^2]);
         Assert.StartsWith("2ec7", host.Records(2)[^1]);
 
         host.Free = 10;
         MailMessage staleMetadata = store.Get(2, gift.Id)!;
         mail.OnTake(2, new MailRequests.Take { Id = gift.Id, Items = { (attached.ClassData, attached.InstanceData) } });
-        Assert.Equal("81fd8400008e", host.Records(2).Last());
+        Assert.Equal("81fd8400008e", host.Records(2)[^2]);
+        Assert.Equal(H(MailPackets.BuildMessage(store.Get(2, gift.Id)!)), host.Records(2)[^1]);
         Assert.Contains(host.Bags, b => b.Key.Item1 == 2 && b.Value.Goid == 7332 && b.Value.Count == 3);
         staleMetadata.Folder = "Saved";
         store.Update(staleMetadata);

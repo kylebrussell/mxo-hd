@@ -246,11 +246,12 @@ namespace hds
         public void OnTake(uint character, MailRequests.Take take)
         {
             var delivered = new List<(ushort Slot, MailItem Item)>();
+            MailMessage message = null;
             try
             {
                 using var transfer = beginTransfer();
                 if (transfer.ReadCash(character) < 0) throw new Refusal(MailPackets.MessageNotFound);
-                MailMessage message = transfer.ReadMessage(character, take.Id);
+                message = transfer.ReadMessage(character, take.Id);
                 if (message == null) throw new Refusal(MailPackets.MessageNotFound);
 
                 var left = new List<MailItem>(message.Items);
@@ -268,18 +269,21 @@ namespace hds
                 var occupied = transfer.ReadBag(character).Select(row => (int)row.Slot).ToHashSet();
                 List<ushort> free = TradeRules.FreeBagSlots(occupied);
                 if (free.Count < taking.Count) throw new Refusal(MailPackets.PersonalInventoryFull);
-                message.Items = left;
-                transfer.SetAttachments(message);
+                var updated = message.Copy();
+                updated.Items = left;
+                transfer.SetAttachments(updated);
                 for (int i = 0; i < taking.Count; i++)
                 {
                     transfer.AddItem(character, free[i], taking[i]);
                     delivered.Add((free[i], taking[i]));
                 }
                 transfer.Commit();
+                message = updated;
             }
             catch (Refusal error)
             {
                 host.Send(character, MailPackets.BuildStatus(0xfd, error.Status));
+                RefreshClaimedMessage(character, message);
                 if (error.Status == MailPackets.PersonalInventoryFull)
                     Notice(character, "Your inventory is full. The attachments are still in the message.");
                 return;
@@ -287,16 +291,26 @@ namespace hds
             catch (Exception error) when (error is DbException || error is InvalidOperationException || error is OverflowException)
             {
                 Output.WriteDebugLog($"[MAIL] Claim rolled back char={character} id={take.Id}: {error.Message}");
-                Notice(character, "Could not take the attachments. Open the message again and retry.");
                 host.Send(character, MailPackets.BuildStatus(0xfd, MailPackets.BadData));
+                RefreshClaimedMessage(character, message);
+                Notice(character, "Could not take the attachments. Try again.");
                 return;
             }
 
-            // Like master, queue bag adds followed by the claim result before a single flush.
+            // Keep the bag adds and claim result together before refreshing the inbox.
             host.Send(character, delivered.Select(row =>
                 ServerPackets.BuildInventoryItemAdd(row.Slot, row.Item.Goid, row.Item.InstanceData))
                 .Append(MailPackets.BuildStatus(0xfd, MailPackets.Success)).ToArray());
+            RefreshClaimedMessage(character, message);
             Output.WriteDebugLog($"[MAIL] Claimed char={character} id={take.Id} items={delivered.Count}");
+        }
+
+        private void RefreshClaimedMessage(uint character, MailMessage message)
+        {
+            // Take All disables the stock inbox. 81 fd reports the result, while 81 f3 redraws the
+            // attachment grid from the message's current ItemList and re-enables the controls.
+            if (message != null)
+                host.Send(character, MailPackets.BuildMessage(message));
         }
 
         /// <summary>Client 81 e5: send the mail and move any assets in one transaction.</summary>
