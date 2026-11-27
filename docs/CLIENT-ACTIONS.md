@@ -782,7 +782,10 @@ The `Regen` and `StatModifier` components supply these effects.
 | Patcher's Pill | 1263 | +30% | 300 s | `2a 00 00 04` |
 
 Both cast for 1.5 s, use the atomic owned-item spend, and have no stored
-reuse. Each raises natural health regeneration through stat 112. They can
+reuse. Inventory casts use the shipped numeric cast time wherever the
+catalog has one. This prevents the legacy CSV value 1,5 from becoming
+15 s on a first direct item request, including Smith's Rage Pill.
+Both items raise natural health regeneration through stat 112 and can
 overlap. `SmithVirusTerm` and the Patcher Fly Virus immunity callbacks refer
 to infection events the emulator does not run. This support covers the
 regeneration effects.
