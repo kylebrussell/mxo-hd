@@ -18,7 +18,7 @@ namespace hds
         {
             public ushort Goid;
             public int PickupUse, Level, Size;
-            public bool Singleton;
+            public bool Singleton, DropOnConstructChange;
             public double Reach = 100;
             public string HalfExtents;
             public uint[] Exclusive = Array.Empty<uint>();
@@ -62,6 +62,7 @@ namespace hds
                 string String(string key) => f.TryGetProperty(key, out var v) ? v.GetString() : null;
                 return new Definition { Goid = row.GetProperty("goid").GetUInt16(), PickupUse = row.GetProperty("pickup_use").GetInt32(),
                     Level = Number("CharStatsPrerequisite/ReqCharLevel"), Size = Number("Luggable/Size"),
+                    DropOnConstructChange = Number("Luggable/DropOnInterConstructTeleport") != 0,
                     Singleton = Number("InvItem/Singleton") != 0, HalfExtents = String("Model/HalfExtents") ?? String("Normal/HalfExtents"),
                     Reach = f.TryGetProperty("Usable/MaxDistance", out var reach) ? reach.GetDouble() : 100,
                     Exclusive = f.EnumerateObject().Where(p => p.Name.StartsWith("Usable/PickupExclusive", StringComparison.Ordinal)).Select(p => p.Value.GetUInt32()).ToArray() };
@@ -276,6 +277,57 @@ namespace hds
                 ground.Add(g); new ServerPackets().sendInventoryItemDelete(slot,c); Spawn(c,g); c.FlushQueue();
             }
         }
+        /// <summary>Release the flagged light luggables to the departure floor before crossing an Archive boundary.</summary>
+        internal static bool DropForArchiveTravel(WorldClient client)
+        {
+            uint character = client.playerData.getCharID();
+            lock (sync)
+            {
+                var items = Store.dbManager.WorldDbHandler.GetInventoryItems(character).Where(item =>
+                    item.Slot >= 1 && item.Slot <= 96 && item.Goid <= ushort.MaxValue &&
+                    IsLight((ushort)item.Goid) && Find((ushort)item.Goid).DropOnConstructChange).ToArray();
+                if (items.Length == 0) return true;
+
+                Position(client, out double x, out double y, out double z);
+                ushort district = (ushort)client.playerData.getDistrictId();
+                if (!NavMesh.Project(district, x, y, z, out NavPoint floor, 150) || Math.Abs(floor.y - y) > 150)
+                {
+                    Say(client, "Move to a clear floor before travelling with a luggable.");
+                    return false;
+                }
+
+                var drops = items.Select(item => (item.Slot, Ground: new Ground
+                {
+                    Goid = (ushort)item.Goid, District = district, X = floor.x, Y = floor.y, Z = floor.z
+                })).ToArray();
+                try
+                {
+                    Load();
+                    if (!WorldLuggablesDb.Drop(character, drops))
+                    {
+                        Say(client, "Your luggables could not be dropped. Archive travel was cancelled.");
+                        return false;
+                    }
+                }
+                catch (System.Data.Common.DbException ex)
+                {
+                    Output.WriteDebugLog($"[DATA-MINING] archive drop rollback char={character} type={ex.GetType().Name}");
+                    Say(client, "Your luggables could not be dropped. Archive travel was cancelled.");
+                    return false;
+                }
+
+                // Nearby players receive the normal ground-object view on the next visibility pass.
+                var packets = new ServerPackets();
+                foreach (var (slot, dropped) in drops)
+                {
+                    ground.Add(dropped);
+                    packets.sendInventoryItemDelete(slot, client);
+                    Output.WriteDebugLog($"[DATA-MINING] archive drop char={character} bagSlot={slot} goid={dropped.Goid} district={district} ground={dropped.Id}");
+                }
+                return true;
+            }
+        }
+
         /// <summary>Dev-only explicit fixture coordinates are ours, never presented as retail ambient placements.</summary>
         public static void Dev(WorldClient c, string[] args)
         {

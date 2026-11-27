@@ -304,6 +304,7 @@ public static partial class Scenarios
         new Scenario("compile-owned-equipment-code", CompileOwnedEquipmentCode, StillNpcs),
         new Scenario("medium02-partial-world", Medium02PartialWorld, StillNpcs),
         new Scenario("pvp-archive-transport", PvpArchiveTransport, StillNpcs),
+        new Scenario("archive-luggable-drop", ArchiveLuggableDrop, StillNpcs),
         new Scenario("archive01-partial-world", Archive01PartialWorld, StillNpcs),
         new Scenario("client-combat-actions", ClientCombatActions, StillNpcs),
         new Scenario("buff-dismiss-dev-disabled", BuffDismissDevDisabled,

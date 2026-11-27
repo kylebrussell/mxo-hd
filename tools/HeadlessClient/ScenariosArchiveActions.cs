@@ -60,15 +60,22 @@ public static partial class Scenarios
     private static async Task PvpArchiveTransport(ScenarioContext context)
     {
         var p=(await context.AddPlayersInWorldAsync(new CharacterSeed("ArchiveBook") {Level=25,Organization=1,
-            X=111600,Y=745,Z=-6130,Items=new[] {(3,38538u,1),(4,38537u,1)} }))[0];
+            X=111600,Y=745,Z=-6130,Items=new[] {(3,38538u,1),(4,38537u,1),(5,561u,1),(6,565u,1)} }))[0];
         await p.WaitUntilAsync(()=>p.ViewsOfGoid(38282).Count>0,"Zion archivist view",TimeSpan.FromSeconds(15));
         var rejected=(await context.AddPlayersInWorldAsync(new CharacterSeed("ArchiveUnderlevel") {Level=19,Organization=1,
-            X=111600,Y=745,Z=-6130,Items=new[] {(106,38538u,1)} }))[0];
+            X=111600,Y=745,Z=-6130,Items=new[] {(106,38538u,1),(5,561u,1)} }))[0];
         p.SendRpc("63 03 6a");
         await p.WaitForRpcAsync("65 03 00 6a 00");
-        await p.WaitForRpcAsync("81 07",TimeSpan.FromSeconds(185));
+        await p.WaitForRpcAsync("5f 05 00 01",TimeSpan.FromSeconds(185));
+        await p.WaitForRpcAsync("81 07");
         await rejected.WaitForTextAsync("requires level 20 through 30",TimeSpan.FromSeconds(5));
         Check.Equal(0,rejected.Received("81 07").Count,"Level gate prevents departure");
+        Check.Equal(1L,await context.Database.LongAsync($"SELECT COUNT(*) FROM inventory WHERE charId={rejected.CharId} AND slot=5 AND goid=561"),
+            "The refused traveller retains their luggable");
+        Check.Equal(1L,await context.Database.LongAsync("SELECT COUNT(*) FROM world_luggables WHERE district=1 AND goid=561"),
+            "The admitted traveller drops the flagged luggable in the city before entering");
+        Check.Equal(1L,await context.Database.LongAsync($"SELECT COUNT(*) FROM inventory WHERE charId={p.CharId} AND slot=6 AND goid=565"),
+            "The unflagged luggable travels to the Archive");
         p.SendRpc("81 08");
         await p.WaitForRpcAsync("81 08");
         var load=await p.WaitForRpcAsync("06");
