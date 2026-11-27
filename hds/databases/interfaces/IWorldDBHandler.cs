@@ -94,6 +94,8 @@ namespace hds.databases.interfaces{
         (uint Goid, ushort BagSlot, ushort DisplacedSlot, string Refusal) MoveWeapon(uint character, byte bagSlot, bool equip);
         (uint Goid, ushort WornSlot, ushort BagSlot, ushort DisplacedSlot, int[] Rsi, string Refusal) MoveClothing(
             uint character, byte source, byte destination, bool equip);
+        (uint Cash, (int Index, ushort Slot, int Count, bool Added)[] Items) ClaimCorpseLoot(
+            uint character, uint information, System.Collections.Generic.IReadOnlyList<uint> items);
         UInt16 GetFirstNewSlot();
         System.Collections.Generic.HashSet<int> GetCompletedMissions(UInt32 charId);
         void SaveMissionCompleted(UInt32 charId, int missionId);

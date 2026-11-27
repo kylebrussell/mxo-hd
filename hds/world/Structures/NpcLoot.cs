@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Data.Common;
 using hds.shared;
 
 namespace hds
@@ -13,6 +14,7 @@ namespace hds
     {
         public const UInt32 CodeBit1 = 7332; // Code Bit 1 .. Code Bit 8 are 7332 .. 7339
         public const UInt32 HealthPill1 = 2399;
+        internal const string AtomicFixture = "MXO_CORPSE_TAKE_ALL_QA";
 
         /// <summary>
         /// Retail never auto-pushed 81 19 on NPC death (82/82 retail 81 19 replies answered client 80 c7).
@@ -92,6 +94,13 @@ namespace hds
         private static NpcLootCache.Corpse DropCore(WorldClient client, Mob source, UInt32 info, UInt32 missionItem,
             IEnumerable<UInt32> items, bool deferPresentation)
         {
+            if (Environment.GetEnvironmentVariable(AtomicFixture) == "1" && client.playerData.getCharID() == 110 &&
+                source.getName() == "Loot Test Dummy" &&
+                (Store.config?.dbParams?.DatabaseName?.StartsWith("mxotest_", StringComparison.Ordinal) ?? false))
+            {
+                info = 25;
+                items = new[] { CodeBit1, HealthPill1 };
+            }
             lock (client.playerData.loot)
             {
                 NpcLootCache.Corpse corpse = client.playerData.loot.Add(source, info, missionItem, items);
@@ -207,36 +216,37 @@ namespace hds
                     return true;
                 }
 
-                if (corpse.Info > 0)
+                bool missionCorpse = client.playerData.missionProgress != null && client.playerData.missionMobs.Contains(corpse.Source);
+                if (!missionCorpse && corpse.MissionItem == 0)
                 {
-                    if(client.playerData.missionProgress!=null&&client.playerData.missionMobs.Contains(corpse.Source))
-                    {
-                        corpse.Info=0;
-                        MissionPersistence.Save(client); // pending cash transition and checkpoint commit together
-                    }
-                    else
-                    {
-                        UInt32 total = (UInt32)Math.Min(client.playerData.getInfo() + (long)corpse.Info, UInt32.MaxValue);
-                        Store.dbManager.WorldDbHandler.SaveInfo(client, total);
-                        client.playerData.setInfo(total);
-                        Output.WriteDebugLog("[LOOT] Player received " + corpse.Info + " info. Total: " + total);
-                        corpse.Info = 0;
-                    }
+                    if (ClaimOrdinary(client, corpse) && corpse.Items.Count == 0) emptied = corpse.Source;
                 }
-                packets.SendInfoCurrent(client, (UInt32)client.playerData.getInfo());
-                var claimed = GiveItems(client, corpse.Items);
-                if (corpse.MissionItem != 0)
+                else
                 {
-                    if (MissionRuntime.OnMissionItemLooted(client, corpse.MissionItem))
+                    if (corpse.Info > 0)
+                    {
+                        if (missionCorpse)
+                        {
+                            corpse.Info = 0;
+                            MissionPersistence.Save(client);
+                        }
+                        else
+                        {
+                            UInt32 total = (UInt32)Math.Min(client.playerData.getInfo() + (long)corpse.Info, UInt32.MaxValue);
+                            Store.dbManager.WorldDbHandler.SaveInfo(client, total);
+                            client.playerData.setInfo(total);
+                            corpse.Info = 0;
+                        }
+                    }
+                    packets.SendInfoCurrent(client, (UInt32)client.playerData.getInfo());
+                    var claimed = GiveItems(client, corpse.Items);
+                    if (corpse.MissionItem != 0 && MissionRuntime.OnMissionItemLooted(client, corpse.MissionItem))
                     {
                         claimed.Add((new byte[] { 0, 0, 0, 0x08 }, corpse.MissionItem));
                         corpse.MissionItem = 0;
                     }
-                }
-                packets.SendLootAccepted(client, claimed.ToArray());
-                if (corpse.Items.Count == 0 && corpse.MissionItem == 0)
-                {
-                    emptied = corpse.Source;
+                    packets.SendLootAccepted(client, claimed.ToArray());
+                    if (corpse.Items.Count == 0 && corpse.MissionItem == 0) emptied = corpse.Source;
                 }
             }
             // Tutorial callbacks can remove NPCs. Keep their lock outside the loot cache's lock.
@@ -244,6 +254,50 @@ namespace hds
             {
                 TutorialMission.Of(client)?.OnCorpseLooted(emptied);
             }
+            return true;
+        }
+
+        private static bool ClaimOrdinary(WorldClient client, NpcLootCache.Corpse corpse)
+        {
+            var publication = new AbilityAcquisition.Publication(client);
+            (uint Cash, (int Index, ushort Slot, int Count, bool Added)[] Items) result;
+            try
+            {
+                result = Store.dbManager.WorldDbHandler.ClaimCorpseLoot(publication.Character, corpse.Info, corpse.Items);
+            }
+            catch (DbException error)
+            {
+                Output.WriteDebugLog($"[LOOT] Take All rolled back char={publication.Character}: {error.Message}");
+                result = default;
+            }
+            if (result.Items == null)
+            {
+                var retry = BuildLootPresentation(corpse.Info, corpse.Items, new byte[corpse.Items.Count]);
+                if (publication.Publish(client, ServerPackets.BuildSystemChatMessage(
+                        "The loot could not be saved. The items and information were kept.", "BROADCAST"), retry[0], retry[1]))
+                    client.FlushQueue();
+                return false;
+            }
+
+            var replies = new List<byte[]> { ServerPackets.BuildInfoCurrent(result.Cash, ServerPackets.InfoReasonLoad) };
+            var claimed = new (byte[] Data, uint Item)[result.Items.Length];
+            for (int i = 0; i < result.Items.Length; i++)
+            {
+                var item = result.Items[i];
+                uint goid = corpse.Items[item.Index];
+                claimed[i] = (new byte[4], goid);
+                replies.Add(!item.Added ? ItemStacks.BuildStackCount(item.Slot, item.Count)
+                    : AbilityProgression.IsAbilityCode(goid) ? ServerPackets.BuildAbilityCodeAdd(item.Slot, goid)
+                    : ServerPackets.BuildInventoryItemAdd(item.Slot, goid, 0, (ushort)(RangedWeapons.IsGun(goid) ? 0x10 : 0)));
+            }
+            for (int i = result.Items.Length - 1; i >= 0; i--)
+                corpse.Items.RemoveAt(result.Items[i].Index);
+            if (corpse.Items.Count > 0)
+                replies.Add(ServerPackets.BuildSystemChatMessage("Your inventory is full. The remaining items were kept.", "BROADCAST"));
+            replies.Add(ServerPackets.BuildLootAccepted(claimed));
+            Output.WriteDebugLog($"[LOOT] Take All committed char={publication.Character} items={claimed.Length} info={corpse.Info}");
+            corpse.Info = 0;
+            if (publication.PublishPurchase(client, result.Cash, replies.ToArray())) client.FlushQueue();
             return true;
         }
 
