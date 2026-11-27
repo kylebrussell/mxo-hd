@@ -40,7 +40,7 @@ namespace hds
             lock(holder.Sync)holder.Position=new Observation {Owner=owner,Position=new NavPoint {x=x,y=y,z=z}};
         }
         // Explicit ordinary arrival producer; no global packet-shape detection or byte[] identity registry.
-        internal static void Arrival(WorldClient c,double x,double y,double z)
+        internal static void Arrival(WorldClient c,double x,double y,double z,SequencedMessage reliablePrerequisite=null)
         {
             var owner=new Owner(c);var receipt=new ObjectMessageReceipt();
             var value=new Observation {Owner=owner,Position=new NavPoint {x=(float)x,y=(float)y,z=(float)z},Receipt=receipt};
@@ -54,7 +54,11 @@ namespace hds
                 if(ReferenceEquals(old,holder.Arrival))old=null;
             }
             old?.Receipt?.Cancel();
-            c.messageQueue.AddTrackedObject(PacketsUtils.createTeleportPacket(c,(float)x,(float)y,(float)z),receipt);
+            byte[] teleport = PacketsUtils.createTeleportPacket(c,(float)x,(float)y,(float)z);
+            if(reliablePrerequisite!=null)
+                c.messageQueue.AddReliableObject(teleport,owner.World,owner.Epoch,reliablePrerequisite,receipt);
+            else
+                c.messageQueue.AddTrackedObject(teleport,receipt);
         }
         internal static bool Deferred(MissionObjectState state)=>state?.OpenFloor!=null&&
             state.OpenFloor.SourceGoid!=state.OpenFloor.ConcreteGoid&&MissionSites.Goid(state.spot)!=state.goid;

@@ -87,7 +87,9 @@ namespace hds
             byte[] rsiObject = new BootingHelperRsi().generateSelfSpawnPacket(Store.currentClient);
             //Store.world.sendViewPacketToAllPlayers(new BootingHelperRsi().generatePlayerSpawnPacket(Store.currentClient), Store.currentClient.playerData.getCharID(), NumericalUtils.ByteArrayToUint16(Store.currentClient.playerInstance.getGoid(), 1), Store.currentClient.playerData.getEntityId());
 
-            Store.currentClient.messageQueue.addObjectMessage(rsiObject, false);
+            int spawnWorld = Store.currentClient.playerData.worldGeneration;
+            long spawnEpoch = Store.currentClient.TransportFence.Capture();
+            SequencedMessage selfSpawn = Store.currentClient.messageQueue.AddReliableObject(rsiObject, spawnWorld, spawnEpoch);
             Store.currentClient.playerData.setOnWorld(true);
             MissionPersistence.WorldEntry(Store.currentClient);
             if (DeathPresentation.IsCorpse(Store.currentClient)) DeathPresentation.Corpse(Store.currentClient);
@@ -97,7 +99,8 @@ namespace hds
             if (Store.currentClient.playerData.pvpFlag)
             {
                 // Retail's PvP server sent the flag on the own view right after the spawn (some_pvp capture)
-                Store.currentClient.messageQueue.addObjectMessage(PvpFlag.BuildSelfFlags(PvpFlag.FlagsOf(Store.currentClient)), false);
+                Store.currentClient.messageQueue.AddReliableObject(
+                    PvpFlag.BuildSelfFlags(PvpFlag.FlagsOf(Store.currentClient)), spawnWorld, spawnEpoch, selfSpawn);
             }
 
             // Where the player stands on the client's nav mesh, as retail's record names it: without it the client has no
@@ -106,7 +109,7 @@ namespace hds
             NumericalUtils.LtVector3dToDoubles(Store.currentClient.playerInstance.Position.getValue(), ref sx, ref sy, ref sz);
             if (PacketsUtils.PlaceNear((UInt16)districtId, sx, sy, sz, out NavLocation place))
             {
-                MissionProxyIntroduction.Arrival(Store.currentClient,sx,sy,sz);
+                MissionProxyIntroduction.Arrival(Store.currentClient,sx,sy,sz,selfSpawn);
                 Output.WriteDebugLog("[SPAWN] On the nav mesh: sector " + place.sector + ", region " + place.region + ", polygon " + place.polygon);
             }
             if (districtId == (uint)MxOLocations.TUTORIAL)

@@ -201,8 +201,15 @@ namespace hds
                 {
                     SequencedMessage message = (SequencedMessage)q[i];
                     // Give up on object messages the client still hasn't acked after the last allowed send.
-                    if (message.sendCounter >= SequencedMessage.MaxObjectSends)
+                    int maxSends = message.ReliableObject ? SequencedMessage.MaxReliableObjectSends : SequencedMessage.MaxObjectSends;
+                    if (message.sendCounter >= maxSends)
                     {
+                        if (message.ReliableObject)
+                        {
+                            messageQueue.ReliableObjectCount--;
+                            Output.WriteDebugLog("[NET] Giving up on spawn object after " + message.sendCounter +
+                                                 " sends, char " + playerData.getCharID());
+                        }
                         messageQueue.OnObjectMessageSentLocked(message);
                         continue;
                     }
@@ -291,14 +298,18 @@ namespace hds
             if (messageQueue.RPCMessagesQueue.Count > 0 || messageQueue.ObjectMessagesQueue.Count > 0)
             {
                 // we currently dont know if we send something out so we need to proove that in a way
+                messageQueue.PruneStaleReliableObjects(playerData.worldGeneration, outgoingEpoch);
                 if (messageQueue.ObjectMessagesQueue.Count > 0)
                 {
                     long nowTick = Environment.TickCount64;
+                    int reliableResendCount = 0;
+                    int reliableOldestSend = 0;
                     lock (messageQueue.ObjectMessagesQueue.SyncRoot)
                     {
                         ArrayList q = messageQueue.ObjectMessagesQueue;
+                        bool canSkipSent = !SequencedMessage.ObjectResendEnabled && messageQueue.ReliableObjectCount == 0;
                         int start = 0;
-                        if (!SequencedMessage.ObjectResendEnabled &&
+                        if (canSkipSent &&
                             messageQueue.FirstUnsentObjectIndex > 0 &&
                             messageQueue.FirstUnsentObjectIndex <= q.Count &&
                             ((SequencedMessage)q[messageQueue.FirstUnsentObjectIndex - 1]).isSent)
@@ -306,12 +317,30 @@ namespace hds
                             start = messageQueue.FirstUnsentObjectIndex;
                         }
 
+                        HashSet<SequencedMessage> resentReliableObjects = null;
                         for (int i = start; i < q.Count; i++)
                         {
                             SequencedMessage messageObjects = (SequencedMessage)q[i];
-                            // New messages, plus unacked ones whose resend interval has passed.
-                            if (messageObjects.IsObjectSendDue(nowTick))
+                            // New messages, plus unacked ones whose resend interval has passed (and dependent
+                            // spawn-critical updates pulled behind a resent prerequisite in the same flush).
+                            bool due = messageObjects.IsObjectSendDue(nowTick);
+                            bool followPrerequisite = !due &&
+                                messageObjects.ReliableObject &&
+                                !messageObjects.ReliableObjectAcked &&
+                                messageObjects.ReliableObjectPrerequisite != null &&
+                                resentReliableObjects != null &&
+                                resentReliableObjects.Contains(messageObjects.ReliableObjectPrerequisite) &&
+                                messageObjects.sendCounter < SequencedMessage.MaxReliableObjectSends;
+                            if (due || followPrerequisite)
                             {
+                                if (messageObjects.ReliableObject && messageObjects.isSent)
+                                {
+                                    if (resentReliableObjects == null) resentReliableObjects = new HashSet<SequencedMessage>();
+                                    resentReliableObjects.Add(messageObjects);
+                                    reliableResendCount++;
+                                    int nextSend = messageObjects.sendCounter + 1;
+                                    if (nextSend > reliableOldestSend) reliableOldestSend = nextSend;
+                                }
                                 messageObjects.MarkObjectSent(nowTick);
                                 messageQueue.OnObjectMessageSentLocked(messageObjects);
                                 bool canAddThePak = packet.addObjectContent(messageObjects);
@@ -331,10 +360,18 @@ namespace hds
                             }
                         }
 
-                        if (!SequencedMessage.ObjectResendEnabled)
+                        if (canSkipSent)
                         {
                             messageQueue.FirstUnsentObjectIndex = q.Count;
                         }
+                    }
+
+                    if (reliableResendCount > 0)
+                    {
+                        Output.WriteDebugLog("[NET] Resending " + reliableResendCount + " spawn object(s) (send " +
+                                             reliableOldestSend + "), char " + playerData.getCharID() +
+                                             "; client acked sseq " + playerData.getACK() +
+                                             " bits " + playerData.getPss().ToString("x2"));
                     }
                 }
 
@@ -479,9 +516,10 @@ namespace hds
                     ushort receiptSequence = transitioning ? playerData.getCseq() : messageQueue.ClientReceipts.Latest;
                     byte[] encryptedData = cypher.encrypt(finalData, finalData.Length, receiptBits,
                         receiptSequence, playerData.getSseq());
-                    if (thePacket.RPCMessages.Count > 0 && DropTest.ShouldDrop(++rpcPacketsSent))
+                    if ((thePacket.RPCMessages.Count > 0 && DropTest.ShouldDrop(++rpcPacketsSent)) ||
+                        DropTest.ShouldDropSseq(playerData.getSseq()))
                     {
-                        Output.WriteDebugLog("[NET] Test: dropped RPC packet sseq " + playerData.getSseq());
+                        Output.WriteDebugLog("[NET] Test: dropped packet sseq " + playerData.getSseq());
                     }
                     else
                     {
@@ -537,6 +575,7 @@ namespace hds
         public void DeletedAckedPackets(UInt16 ackSeq)
         {
             messageQueue.ObserveObjectReceipts(ackSeq,playerData.getPss());
+            HashSet<UInt16> ackedSeqs = null;
             lock (messageQueue.ObjectMessagesQueue.SyncRoot)
             {
                 ArrayList q = messageQueue.ObjectMessagesQueue;
@@ -544,12 +583,38 @@ namespace hds
                 for (int i = 0; i < q.Count; i++)
                 {
                     SequencedMessage message = (SequencedMessage)q[i];
-                    // Only a message that has gone out can be acked. A queued-but-unsent message
-                    // still has neededAck 0, so without the sendCounter check any client ack that
-                    // arrived before the next flush deleted it unsent. That dropped the self-spawn
-                    // about half the time and left the client at "Negotiating with Servers...".
-                    if (message.IsAckedBy(ackSeq))
+                    if (message.ReliableObject)
                     {
+                        if (ackedSeqs == null) ackedSeqs = SequencedMessage.AckedSequences(ackSeq, playerData.getPss());
+                        bool prerequisiteAcked = message.ReliableObjectPrerequisite == null ||
+                                                 message.ReliableObjectPrerequisite.ReliableObjectAcked;
+                        bool sequenceAcked = message.IsReliableObjectAckedBy(ackedSeqs);
+                        if (prerequisiteAcked && sequenceAcked)
+                        {
+                            message.ReliableObjectAcked = true;
+                            messageQueue.ReliableObjectCount--;
+                            continue;
+                        }
+                        if (!prerequisiteAcked && sequenceAcked)
+                        {
+                            // This spawn-critical update arrived before its prerequisite (e.g. own-view nav position
+                            // arrived while self ViewCreate was lost and discarded by the client). Clear the premature
+                            // SSEQ record so it resends behind its prerequisite rather than retiring early.
+                            message.ClearReliableObjectPackets();
+                            message.ReliableObjectGapObserved = true;
+                        }
+                        else if (message.IsAckedBy(ackSeq))
+                        {
+                            // Client ACKed past this SSEQ without setting its PSS bit; trigger the faster retry cadence.
+                            message.ReliableObjectGapObserved = true;
+                        }
+                    }
+                    else if (message.IsAckedBy(ackSeq))
+                    {
+                        // Only a message that has gone out can be acked. A queued-but-unsent message
+                        // still has neededAck 0, so without the sendCounter check any client ack that
+                        // arrived before the next flush deleted it unsent. That dropped the self-spawn
+                        // about half the time and left the client at "Negotiating with Servers...".
                         continue;
                     }
                     if (write != i) q[write] = message;
@@ -567,7 +632,7 @@ namespace hds
                 ArrayList q = messageQueue.RPCMessagesQueue;
                 if (q.Count > 0)
                 {
-                    HashSet<UInt16> ackedSeqs = SequencedMessage.AckedSequences(ackSeq, playerData.getPss());
+                    if (ackedSeqs == null) ackedSeqs = SequencedMessage.AckedSequences(ackSeq, playerData.getPss());
                     int write = 0;
                     for (int i = 0; i < q.Count; i++)
                     {

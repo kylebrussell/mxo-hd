@@ -352,6 +352,7 @@ public static partial class Scenarios
         }),
         new Scenario("login", Login),
         new Scenario("startup-rpc-ack-grace", StartupRpcAckGrace, StillNpcs),
+        new Scenario("spawn-object-loss-recovery", SpawnObjectLossRecovery, StillNpcs),
         new Scenario("login-with-orphaned-crew-member", LoginWithOrphanedCrewMember),
         new Scenario("organization-reputation", OrganizationReputation),
         new Scenario("ordered-rpc-burst", OrderedRpcBurst, StillNpcs),
