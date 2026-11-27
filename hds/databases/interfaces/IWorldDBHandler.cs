@@ -54,6 +54,7 @@ namespace hds.databases.interfaces{
         void updateSourceHlForObjectTracking(UInt16 sourceDistrict, UInt16 sourceHl, UInt32 lastObjectId);
         void SetPlayerValues();
         void SetRsiValues();
+        (int[] Rsi, int Remaining) ConsumeRsiPill(uint charId, ushort slot, uint goid);
         void SetOnlineStatus(UInt32 charId, ushort isOnline);
         void ResetOnlineStatus();
         void SavePlayer(WorldClient client);

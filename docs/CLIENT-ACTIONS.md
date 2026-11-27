@@ -215,7 +215,7 @@ Open the stock inbox from Phone > Email. Retail also sent system mail for loot o
 | `5c` | Slot u16, PersonalInventoryItem: drop a luggable item into the world (a dragged bag item released over the world, 0x621e1d10). The client refuses anything else: "You can only drop luggable objects in the world." The other sender is never called | D | partial: shared light-luggable drop/pickup and persistence; heavy attachments absent (DATA-MINING.md) | low |
 | `60` | Compile stored code into an item (ObjectID, Slot u16, PersonalInventoryItem 0 = a code storage slot, InvSlotOfToolUsed, FromCrafting): the Compile window's button (`CfCo`, 0x620836b0) and the Loading Area storage window. The answer is `61 <ResultCode>` | D | partial: owned bits, fragments and supported ordinary item codes. Ability-code archive economy unresolved. | medium |
 | `66` | Slot u8, TargetID: a mission item dragged onto the NPC whose key it carries (0x621eb080). The client prints "You hand over the %s." itself | D | handled (new): the mission's Give goal, as the NPC menu's Give | medium |
-| `80 c6` | PillInvSlot: use a pill from the bag (callers in the inventory and hotbar menus) | D | partial: owned supported pill goes through existing effect/timer/removal path; other consumables remain unsupported | low |
+| `80 c6` | PillInvSlot: use a pill from the bag (callers in the inventory and hotbar menus) | D | partial: owned supported pill goes through existing effect/timer/removal path, including [RSI modification pills](#rsi-modification-pills) | low |
 | `81 0e` | Vendor buy (ItemTypeID, BuyBackLastItemSold) | D, C 40 | handled: ordinary purchase places the item and debits Info atomically; full bags are refused; Buy Back uses its separate last-sale receipt | high |
 | `81 11` | Vendor sell (Appraise, Slot) | D, C 5 | handled | high |
 | `81 10` | StringID, CloseUI, sent as `00 00 00 00 01`. Guess: closing the vendor window | C 9 | handled: CloseUI=1 invalidates active vendor session; listed-stock/session authority enforced | low |
@@ -756,6 +756,31 @@ If no Give goal wants the item from that NPC, the server says "They don't want t
 - Offline, the client spawns the object itself. Online, it waits for the server. Shared light-luggable pickup/drop and persistence now execute; see [DATA-MINING.md](DATA-MINING.md). Heavy carrying remains absent.
 
 **`5b <ItemHandle>`: picking up an item.** It is never sent. **`80 c6 <PillInvSlot u16>`** is sent only when the item check returns `0x95000014` (consumable grants an ability). Pills work through `80 b9`.
+
+### RSI modification pills
+
+[Retail Update 50](https://soeforums.mxoemu.info/mxo/search/search5d3c.html?enableHighlight=false&enableSummary=true&openModeration=0&start=80&topicId=0&userId=160)
+introduced permanent appearance changes via owned pills. The shipped items
+grant ability 1245. `research/abilities/extract_rsi_pills.py` exports their
+avatar restriction, `RSICall` and `NewRSIID` from the 7.6005 GOB. The shipped
+callback in `research/client-scripts/ability/general.py` applies one component
+and saves the RSI. Body, head, hair and facial-detail descriptors are resolved
+to the same ordinals the world view and returning Margin preview use. Palette,
+skin and tattoo values are direct. Three female body aliases (46736–46738)
+call the hair-color setter with out-of-range descriptors and are left
+unsupported. The 235 valid items include the separate female body templates.
+
+Both owned-item requests use the three-second, out-of-combat cast. Wrong
+avatar, moved item and interrupted casts preserve the pill. A single SQL
+transaction saves the appearance and spends one item, then the server updates
+the owner and nearby observers. No reuse timer is added. The effect is on
+using the pill. Drop tables and the stock localized ability message remain
+outside this implementation.
+
+Use `rsi-modification-pills` at Mara Central (17000,495,2300). Try the female
+hairstyle pill in bag 6, then activate the male hairstyle pill in bag 5.
+Expect a three-second cast, new hair with the same clothes, one item consumed
+and the change retained across relog.
 
 ## Prompts and FX tokens
 

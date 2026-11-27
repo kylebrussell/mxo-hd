@@ -741,27 +741,25 @@ namespace hds.databases{
 	        return data;
         }
 
-		public void SetRsiValues(){
-			OpenConnection();
-			int charID = (int) Store.currentClient.playerData.getCharID();
-			string sqlQuery="Select sex,body,hat,face,shirt,coat,pants,shoes,gloves,glasses,hair,facialdetail,shirtcolor,pantscolor,coatcolor,shoecolor,glassescolor,haircolor,skintone,tattoo,facialdetailcolor,leggins from rsivalues where charId='"+charID+"'";
-			queryExecuter= conn.CreateCommand();
-			queryExecuter.CommandText = sqlQuery;					
-			dr= queryExecuter.ExecuteReader();
-			int[] rsiValues  = new int[22];
-			
-			while(dr.Read()){
-				//we will read just one row
-				for(int i = 0;i<rsiValues.Length;i++){
-					int temp =(int) Convert.ToDecimal(dr.GetValue(i)); //int to int
-					rsiValues[i]=temp;
-				}
-			}
-
-			Store.currentClient.playerData.setRsiValues(rsiValues);
-			dr.Close();
-			CloseConnection();
-		}
+        public void SetRsiValues()
+        {
+            var data = Store.currentClient.playerData;
+            lock (data.rsiSync)
+            {
+                OpenConnection();
+                try
+                {
+                    using var command = conn.CreateCommand();
+                    command.CommandText = "SELECT " + RsiColumns + " FROM rsivalues WHERE charId=" + data.getCharID();
+                    using var row = command.ExecuteReader();
+                    int[] values = new int[22];
+                    if (row.Read())
+                        for (int i = 0; i < values.Length; i++) values[i] = row.GetInt16(i);
+                    data.setRsiValues(values);
+                }
+                finally { CloseConnection(); }
+            }
+        }
 
 		public void SetOnlineStatus(uint charId, ushort isOnline)
 		{
@@ -790,8 +788,6 @@ namespace hds.databases{
             UInt32 charID = NumericalUtils.ByteArrayToUint32(client.playerInstance.CharacterID.getValue(),1);
 			string handle = StringUtils.charBytesToString_NZ(client.playerInstance.CharacterName.getValue());
 			
-			int [] rsiValues = client.playerData.getRsiValues();
-			
 			double x=0;double y=0;double z=0;
 			byte[] Ltvector3d = client.playerInstance.Position.getValue();
 			NumericalUtils.LtVector3dToDoubles(Ltvector3d,ref x,ref y,ref z);
@@ -809,7 +805,11 @@ namespace hds.databases{
 				Output.writeToLogForConsole("[WORLD DB ACCESS ]" + positionQuery);
 			}
 
-			string rsiQuery = "update rsivalues set sex='" + rsiValues[0] + "',body='" + rsiValues[1] + "',hat='" +
+            // Serialize the legacy whole-RSI save with a pill's persistence and in-memory update.
+            lock (client.playerData.rsiSync)
+            {
+                int[] rsiValues = client.playerData.getRsiValues();
+                string rsiQuery = "update rsivalues set sex='" + rsiValues[0] + "',body='" + rsiValues[1] + "',hat='" +
 			                  rsiValues[2] + "',face='" + rsiValues[3] + "',shirt='" + rsiValues[4] + "',coat='" +
 			                  rsiValues[5] + "',pants='" + rsiValues[6] + "',shoes='" + rsiValues[7] +
 			                  "',gloves='" + rsiValues[8] + "',glasses='" + rsiValues[9] + "',hair='" +
@@ -819,10 +819,9 @@ namespace hds.databases{
 			                  "',haircolor='" + rsiValues[17] + "',skintone='" + rsiValues[18] + "',tattoo='" +
 			                  rsiValues[19] + "',facialdetailcolor='" + rsiValues[20] + "',leggins='" +
 			                  rsiValues[21] + "' where charId='" + charID + "';";
-            ExecuteNonResultQuery(rsiQuery);
-		
-            Output.writeToLogForConsole("[WORLD DB ACCESS ]" + rsiQuery);
-        
+                ExecuteNonResultQuery(rsiQuery);
+                Output.writeToLogForConsole("[WORLD DB ACCESS ]" + rsiQuery);
+            }
 			
 		}
 

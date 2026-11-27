@@ -92,6 +92,7 @@ namespace hds
         public UInt16 martialArt;
         // Archive publication shares the gate used by delayed casts and crafting sessions.
         public readonly object craftingSync = new object();
+        internal readonly object rsiSync = new object();
         public CraftingSession.State craftingSession;
         public float deathPenalty = 1;
         public double deathPenaltyAt, deathPenaltySentAt;

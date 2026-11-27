@@ -108,6 +108,7 @@ public static partial class Scenarios
         new Scenario("consumable-sweep-cast-cancellation", ConsumableSweepCastCancellation, StillNpcs),
         new Scenario("consumable-sweep-control", ConsumableSweepControlCancellation, FreeCastViralLandingEnvironment(StillNpcs)),
         new Scenario("consumable-sweep-items", ConsumableSweepItems, StillNpcs),
+        new Scenario("rsi-modification-pills", RsiModificationPills, StillNpcs),
         new Scenario("consumable-sweep-permissions", ConsumableSweepPermissions, StillNpcs),
         new Scenario("health-boost-pills", HealthBoostPillUse, HealthCallbackNpcs),
         new Scenario("prison-devices", PrisonDeviceUse, new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="1"}),

@@ -31,6 +31,38 @@ public class ConsumableItemTests
         Assert.Equal(8f, antibiotic.Seconds);
     }
 
+    [Fact]
+    public void StockRsiPillsResolveForTheMatchingAvatarOnly()
+    {
+        var parts = System.IO.File.ReadLines(DataLoader.DataPath("newrsiIDs.csv")).Skip(1).Select(line =>
+        {
+            string[] fields = line.Split(',');
+            return new NewRSIItem { type = fields[3], newRSIID = ushort.Parse(fields[1]),
+                internalId = ushort.Parse(fields[2]), gender = ushort.Parse(fields[4]) };
+        }).ToArray();
+
+        int supported = 0;
+        for (uint id = 46736; id <= 46973; id++)
+        {
+            if (!RsiPills.TryGet(id, out var pill)) continue;
+            supported++;
+            Assert.InRange(pill.Resolve(pill.Sex, parts), 0, 31);
+            Assert.Equal(-1, pill.Resolve(1 - pill.Sex, parts));
+            Assert.True(ConsumableItems.TryGet(id, out var consumable));
+            Assert.Equal(1245, consumable.AbilityId);
+            Assert.Equal(0f, consumable.Seconds);
+        }
+        Assert.Equal(235, supported);
+        Assert.False(ConsumableItems.TryGet(46736, out _)); // out-of-range hair-color callback
+        Assert.True(RsiPills.TryGet(46954, out var hair));
+        Assert.Equal(RsiPills.Part.Hair, hair.Field);
+        Assert.Equal(2, hair.Resolve(0, parts));             // descriptor 107, not ordinal 107
+        Assert.True(RsiPills.TryGet(46973, out var facial));
+        Assert.Equal(1, facial.Resolve(0, parts));          // descriptor 101 in the facial detail allocation
+        Assert.True(RsiPills.TryGet(46873, out var tattoo));
+        Assert.Equal(2, tattoo.Resolve(0, parts));
+    }
+
     [Theory]
     [InlineData(39406u, 0)]
     [InlineData(39407u, 10)]

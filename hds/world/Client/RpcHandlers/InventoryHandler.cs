@@ -159,6 +159,9 @@ namespace hds
                 UInt32 goid = Store.dbManager.WorldDbHandler.GetItemGOIDAtInventorySlot(slot);
                 if (!ConsumableItems.TryGet(goid, out ConsumableItems.Consumable consumable) || consumable.AbilityId != abilityId)
                     return false;
+                bool appearance = consumable.Effect == ConsumableItems.Effect.Appearance;
+                if (appearance && (slot < 1 || slot > 96))
+                    return false;
                 if (Stealth.IsOn(client, Stealth.MasterShadowAbility) && AbilityCatalog.Find(abilityId)?.CastSeconds > 0)
                 {
                     pak.sendSystemChatMessage(client, "You cannot use a timed item while Master Shadow is active.", "SYSTEM");
@@ -175,6 +178,22 @@ namespace hds
                 {
                     pak.sendSystemChatMessage(client, "Your character level is too low to use this item.", "MODAL");
                     return true;
+                }
+                if (appearance)
+                {
+                    RsiPills.TryGet(goid, out var pill);
+                    if (pill.Resolve(data.getRsiValues()[0], DataLoader.getInstance().newRSIItemsDb) < 0)
+                    {
+                        ClientActionsHandler.Notice(client, "This RSI pill is not compatible with your character.");
+                        return true;
+                    }
+                    if (!RsiPills.OutsideCombat(client))
+                    {
+                        client.messageQueue.addRpcMessage(AbilityRefusals.Encode(
+                            new AbilityRefusals.Record(abilityId, AbilityRefusals.MustBeOutsideCombat)));
+                        client.FlushQueue();
+                        return true;
+                    }
                 }
                 double now = TimeUtils.GetSimTimeSeconds();
                 bool busy = !ItemReady(client) || itemCasts.TryGetValue(client, out _) || AbilityCooldowns.IsCasting(data, now);
@@ -198,7 +217,7 @@ namespace hds
                 AbilityCooldowns.StartCast(data, now, castTime);
                 double castEnd = data.castEndsAt;
                 double reservedUntil = now + castTime + consumable.Seconds;
-                lock (data.cooldownEndsAt)
+                if (consumable.Seconds > 0) lock (data.cooldownEndsAt)
                 {
                     data.cooldownEndsAt[(UInt16)goid] = reservedUntil;
                     if (consumable.Group != 0) data.cooldownEndsAt[consumable.Group] = reservedUntil;
@@ -216,6 +235,7 @@ namespace hds
                         itemCasts.Remove(client);
                         if (client.playerData != data || !ItemReady(client) ||
                             !ConsumableItems.CastMatches(data, world, life, castEnd) ||
+                            (appearance && !RsiPills.OutsideCombat(client)) ||
                             Store.dbManager.WorldDbHandler.GetItemGOIDAtInventorySlot(slot) != goid)
                         {
                             lock (data.cooldownEndsAt)
@@ -226,6 +246,11 @@ namespace hds
                                     data.cooldownEndsAt.Remove(consumable.Group);
                             }
                             Output.WriteDebugLog("[INVENTORY] Item " + goid + " cast cancelled (slot, life, control, cast or world changed); not used");
+                            return;
+                        }
+                        if (appearance)
+                        {
+                            CommitRsiPill(client, slot, goid);
                             return;
                         }
                         AbilityCooldowns.StartItem(client, (UInt16)goid, consumable.Group, consumable.Seconds, TimeUtils.GetSimTimeSeconds());
@@ -241,6 +266,43 @@ namespace hds
                 });
                 return true;
             }
+        }
+
+        private static void CommitRsiPill(WorldClient client, ushort slot, uint goid)
+        {
+            var publication = new AbilityAcquisition.Publication(client);
+            var data = client.playerData;
+            int[] rsi;
+            int remaining;
+            try
+            {
+                lock (data.rsiSync)
+                {
+                    (rsi, remaining) = Store.dbManager.WorldDbHandler.ConsumeRsiPill(publication.Character, slot, goid);
+                    if (rsi != null) data.setRsiValues(rsi);
+                }
+            }
+            catch (System.Data.Common.DbException error)
+            {
+                Output.WriteDebugLog($"[RSI PILL] Rolled back char={publication.Character} item={goid}: {error.Message}");
+                publication.Notice(client, "The RSI change could not be saved. Your pill was kept.");
+                return;
+            }
+            if (rsi == null)
+            {
+                publication.Notice(client, "The RSI pill could not be used. Your pill was kept.");
+                return;
+            }
+
+            byte[] inventory = remaining == 0 ? ServerPackets.BuildInventoryItemDelete(slot)
+                : ItemStacks.BuildStackCount(slot, remaining);
+            if (!publication.Publish(client, inventory, ServerPackets.BuildSystemChatMessage("Your RSI has been updated.", "BROADCAST")))
+                return;
+            byte[] packed = PacketsUtils.getRSIBytes(rsi);
+            client.messageQueue.addObjectMessage(ServerPackets.BuildAppearanceUpdate(packed), false);
+            AnnounceAppearance(client, packed);
+            client.FlushQueue();
+            Output.WriteDebugLog($"[RSI PILL] Applied char={publication.Character} item={goid} slot={slot} remaining={remaining}");
         }
 
         private static void RefuseEquipment(byte[] request)
@@ -354,15 +416,14 @@ namespace hds
             Store.currentClient.playerData.setRsiValues(current);
             byte[] rsiData = PacketsUtils.getRSIBytes(current);
             pak.sendAppeareanceUpdate(Store.currentClient, rsiData);
-            AnnounceAppearance(rsiData);
+            AnnounceAppearance(Store.currentClient, rsiData);
         }
 
         /// <summary>Other players see a clothing change on their view of this player (RSIDescription).</summary>
-        private static void AnnounceAppearance(byte[] rsiData)
+        private static void AnnounceAppearance(WorldClient client, byte[] rsiData)
         {
             byte[] rsi = new byte[ServerPackets.RsiDescriptionSize];
             Array.Copy(rsiData, rsi, Math.Min(rsiData.Length, rsi.Length));
-            WorldClient client = Store.currentClient;
             client.playerInstance.RSIDescription.setValue(rsi);
             PlayerProgression.AnnounceToOthers(client, new List<Attribute> { client.playerInstance.RSIDescription });
         }
@@ -550,7 +611,7 @@ namespace hds
                 pak.sendInventoryItemMove(toRealSlotId, newSlotId, Store.currentClient);
             }
             pak.sendAppeareanceUpdate(Store.currentClient, rsiData);
-            AnnounceAppearance(rsiData);
+            AnnounceAppearance(Store.currentClient, rsiData);
             Store.dbManager.WorldDbHandler.UpdateInventorySlot(sourceSlot,toRealSlotId, Store.currentClient.playerData.getCharID());
             pak.sendInventoryItemMove(sourceSlot, toRealSlotId, Store.currentClient);
 

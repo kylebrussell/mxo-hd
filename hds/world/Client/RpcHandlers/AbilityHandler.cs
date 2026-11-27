@@ -902,6 +902,8 @@ namespace hds
             // Internal pill abilities require their owned bag item, even if an ability was loaded.
             if (HealthBoostPills.Handles(AbilityID))
             { HealthBoostPills.Deny(Store.currentClient, AbilityID); return; }
+            if (AbilityID == RsiPills.Ability)
+            { Deny(AbilityID, "Use an owned RSI modification pill.", AbilityRefusals.RequiredItemCategory); return; }
 
             if (!ControlActions.CanUseAbilities(Store.currentClient))
             {
