@@ -170,10 +170,19 @@ namespace hds
                 }
             });
         }
+        [ThreadStatic] private static HashSet<Mob> visibleScratch;
+        [ThreadStatic] private static HashSet<Mob> selectedScratch;
+
         internal static void Tick(List<WorldClient> clients,Dictionary<ulong,Mob> mobs,double now)
         {
-            var visible=new HashSet<Mob>();
-            var selected=new HashSet<Mob>();
+            HashSet<Mob> visible = visibleScratch;
+            if (visible == null) visibleScratch = visible = new HashSet<Mob>(64);
+            HashSet<Mob> selected = selectedScratch;
+            if (selected == null) selectedScratch = selected = new HashSet<Mob>(16);
+            visible.Clear();
+            selected.Clear();
+            try
+            {
             for(int ci=0;ci<clients.Count;ci++)
             {
                 var client=clients[ci];
@@ -300,6 +309,12 @@ namespace hds
                     mob.currentState=(int)Mob.statusList.WALKING;state.Walking=true;
                     mob.updateAnimation((byte)(state.Target!=null?Mob.Animations.RUN:Mob.Animations.WALK));
                 }
+            }
+            }
+            finally
+            {
+                visible.Clear();
+                selected.Clear();
             }
         }
     }

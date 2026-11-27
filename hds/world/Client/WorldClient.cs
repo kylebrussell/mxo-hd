@@ -954,6 +954,32 @@ namespace hds
         }
         internal int PendingPacketCount {get {lock(receivedPackets)return receivedPackets.Count;}}
 
+        /// <summary>
+        /// Releases pooled ingress buffers, pending object receipts/movements, and visibility caches once this
+        /// client has been removed from <see cref="WorldServer.Clients"/>.
+        /// </summary>
+        internal void CleanupOnDisconnect()
+        {
+            if (receivedPackets != null)
+            {
+                lock (receivedPackets)
+                {
+                    while (receivedPackets.Count > 0)
+                    {
+                        byte[] dropped = receivedPackets.Dequeue();
+                        int droppedLen = receivedPacketLengths != null && receivedPacketLengths.Count > 0
+                            ? receivedPacketLengths.Dequeue()
+                            : -1;
+                        if (droppedLen >= 0 && dropped != null) ArrayPool<byte>.Shared.Return(dropped);
+                    }
+                    receivedPacketLengths?.Clear();
+                }
+            }
+            messageQueue?.ForgetWorldObjects();
+            LastNearPlayers?.Clear();
+            LastNearPlayers = null;
+        }
+
         public void processPacket(byte[] packet)
         {
             // Preserve the direct entry's raw-arrival contract; queued work was stamped at ingress.

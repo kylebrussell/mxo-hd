@@ -7,36 +7,78 @@ namespace hds
 {
     public partial class WorldThreads
     {
+        private const uint SaveIntervalSeconds = 20;
+
         public void TimersThreadProcess()
         {
             Output.WriteLine("[WORLD SERVER]TimersThread started");
+            List<WorldClient> clients = new List<WorldClient>();
             while (true)
             {
                 // ToDo: This should update "timers" like Buffs, Skill Execution or something
                 Thread.Sleep(2000);
-                List<WorldClient> clients = SnapshotClientsForTimers();
-                CheckAndResendClients(clients);
-                SavePlayers(clients);
-            }
-        }
-        
-        private static List<WorldClient> SnapshotClientsForTimers()
-        {
-            lock (WorldServer.Clients)
-            {
-                return new List<WorldClient>(WorldServer.Clients.Values);
+                try
+                {
+                    SnapshotClientsForTimers(clients);
+                    CheckAndResendClients(clients);
+                    SavePlayers(clients);
+                }
+                catch (Exception ex)
+                {
+                    Output.WriteLine("[TIMERS] Timer pass failed: " + ex);
+                }
             }
         }
 
-        private static void CheckAndResendClients(List<WorldClient> clients)
+        private static void SnapshotClientsForTimers(List<WorldClient> destination)
         {
-            foreach (WorldClient client in clients)
+            destination.Clear();
+            lock (WorldServer.Clients)
             {
-                if (client != null)
+                if (destination.Capacity < WorldServer.Clients.Count)
                 {
-                    client.CheckAndResend();
+                    destination.Capacity = WorldServer.Clients.Count;
+                }
+                foreach (WorldClient client in WorldServer.Clients.Values)
+                {
+                    destination.Add(client);
                 }
             }
+        }
+
+        internal static void CheckAndResendClients(List<WorldClient> clients)
+        {
+            for (int i = 0; i < clients.Count; i++)
+            {
+                WorldClient client = clients[i];
+                if (client == null || client.IsBot)
+                {
+                    continue;
+                }
+
+                // Isolate per-client faults so one bad session never kills TimersThread for the server,
+                // and skip idle clients with nothing queued or unacked.
+                try
+                {
+                    if (client.HasPendingMessages())
+                    {
+                        client.CheckAndResend();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    uint charId = client.playerData != null ? client.playerData.getCharID() : 0;
+                    Output.WriteLine("[TIMERS] CheckAndResend failed for charId " + charId + ": " + ex.Message);
+                }
+            }
+        }
+
+        internal static uint ComputeInitialSaveTime(uint now, uint charId)
+        {
+            // Deterministically stagger initial autosave timestamps across [now - 19, now] so a
+            // simultaneous login wave spreads its 20 s MySQL writes evenly instead of bursting together.
+            uint offset = charId % SaveIntervalSeconds;
+            return now > offset ? now - offset : 1;
         }
 
         private static void SavePlayers(List<WorldClient> clients)
@@ -53,7 +95,8 @@ namespace hds
                 {
                     if (thisclient.playerData.lastSaveTime == 0)
                     {
-                        thisclient.playerData.lastSaveTime = TimeUtils.getUnixTimeUint32();
+                        thisclient.playerData.lastSaveTime = ComputeInitialSaveTime(
+                            TimeUtils.getUnixTimeUint32(), thisclient.playerData.getCharID());
                     }
 
                     CheckToSaveClientData(thisclient);
@@ -108,7 +151,7 @@ namespace hds
 
         private static void CheckToSaveClientData(WorldClient thisclient)
         {
-            if (thisclient != null && (TimeUtils.getUnixTimeUint32() - thisclient.playerData.lastSaveTime) > 20 && thisclient.playerData.getOnWorld())
+            if (thisclient != null && (TimeUtils.getUnixTimeUint32() - thisclient.playerData.lastSaveTime) > SaveIntervalSeconds && thisclient.playerData.getOnWorld())
             {
                 thisclient.playerData.lastSaveTime = TimeUtils.getUnixTimeUint32();
                 // Save Player
