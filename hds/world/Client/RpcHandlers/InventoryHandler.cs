@@ -164,12 +164,14 @@ namespace hds
                 ServerPackets pak = new ServerPackets();
                 UInt32 goid = Store.dbManager.WorldDbHandler.GetItemGOIDAtInventorySlot(slot);
                 if (!ConsumableItems.TryGet(goid, out ConsumableItems.Consumable consumable) ||
-                    consumable.AbilityId != abilityId && !OptimizerConsumables.MatchesItemAlias(goid, abilityId))
+                    consumable.AbilityId != abilityId && !OptimizerConsumables.MatchesItemAlias(goid, abilityId) &&
+                    !AndvaranautCoupler.MatchesItemAlias(goid, abilityId))
                     return false;
                 abilityId = consumable.AbilityId;
                 bool appearance = consumable.Effect == ConsumableItems.Effect.Appearance;
                 bool blueMarble = BlueMarbles.Handles(abilityId);
-                bool requiresOutsideCombat = appearance || blueMarble;
+                bool andvaranaut = abilityId == AndvaranautCoupler.Ability;
+                bool requiresOutsideCombat = appearance || blueMarble || andvaranaut;
                 bool timedEffect = consumable.Effect == ConsumableItems.Effect.TimedBuff ||
                     consumable.Effect == ConsumableItems.Effect.HealOverTime;
                 if ((appearance || timedEffect) && (slot < 1 || slot > 96))
@@ -207,12 +209,14 @@ namespace hds
                     client.FlushQueue();
                     return true;
                 }
-                int requiredRank = blueMarble ? BlueMarbles.RequiredAwakenedRank(abilityId) : 0;
+                int requiredRank = blueMarble ? BlueMarbles.RequiredAwakenedRank(abilityId)
+                    : andvaranaut ? AndvaranautCoupler.RequiredAwakenedRank : 0;
                 if (requiredRank > 0 && AbilityPassives.Level(client, AbilityProgression.AwakenedAbility) < requiredRank)
                 {
                     client.messageQueue.addRpcMessage(AbilityRefusals.Encode(
                         new AbilityRefusals.Record(abilityId, AbilityRefusals.NoClientMessage)));
-                    ClientActionsHandler.Notice(client, $"This Blue Marble requires Awakened rank {requiredRank}.");
+                    string itemName = blueMarble ? "This Blue Marble" : "The Andvaranaut Coupler";
+                    ClientActionsHandler.Notice(client, $"{itemName} requires Awakened rank {requiredRank}.");
                     client.FlushQueue();
                     return true;
                 }
@@ -336,6 +340,8 @@ namespace hds
                 ServerPackets.SendPlayerAbilityEffect(client, TacticBoostItems.ActivationFx);
             else if (BlueMarbles.Handles(consumable.AbilityId))
                 ServerPackets.SendPlayerAbilityEffect(client, BlueMarbles.ActivationFx(consumable.AbilityId));
+            else if (consumable.AbilityId == AndvaranautCoupler.Ability)
+                ServerPackets.SendPlayerAbilityEffect(client, AndvaranautCoupler.ActivationFx);
             else client.FlushQueue();
             return true;
         }

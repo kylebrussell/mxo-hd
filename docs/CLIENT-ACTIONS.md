@@ -225,7 +225,7 @@ Open the stock inbox from Phone > Email. Retail also sent system mail for loot o
 | `5c` | Slot u16, PersonalInventoryItem: drop a luggable item into the world (a dragged bag item released over the world, 0x621e1d10). The client refuses anything else: "You can only drop luggable objects in the world." The other sender is never called | D | partial: shared light-luggable drop/pickup and persistence; heavy attachments absent (DATA-MINING.md) | low |
 | `60` | Compile stored code into an item (ObjectID, Slot u16, PersonalInventoryItem 0 = a code storage slot, InvSlotOfToolUsed, FromCrafting): the Compile window's button (`CfCo`, 0x620836b0) and the Loading Area storage window. The answer is `61 <ResultCode>` | D | partial: owned bits, fragments and supported ordinary item codes. Ability-code archive economy unresolved. | medium |
 | `66` | Slot u8, TargetID: a mission item dragged onto the NPC whose key it carries (0x621eb080). The client prints "You hand over the %s." itself | D | handled (new): the mission's Give goal, as the NPC menu's Give | medium |
-| `80 c6` | PillInvSlot: use a pill from the bag (callers in the inventory and hotbar menus) | D | partial: owned supported pill goes through existing effect/timer/removal path, including [RSI modification pills](#rsi-modification-pills), [Quicksilver Pill](#quicksilver-pill), [Tactic Boosts](#tactic-boost-consumables), the [IS Booster](#inner-strength-booster), [Blue Marbles](#blue-marble-consumables), [Health Inhalers](#health-inhalers), [Optimizer and Overdrive items](#optimizer-and-overdrive-consumables), and [SSR Gum](#ssr-gum) | low |
+| `80 c6` | PillInvSlot: use a pill from the bag (callers in the inventory and hotbar menus) | D | partial: owned supported pill goes through existing effect/timer/removal path, including [RSI modification pills](#rsi-modification-pills), [Quicksilver Pill](#quicksilver-pill), [Tactic Boosts](#tactic-boost-consumables), the [IS Booster](#inner-strength-booster), [Blue Marbles](#blue-marble-consumables), [Health Inhalers](#health-inhalers), [Optimizer and Overdrive items](#optimizer-and-overdrive-consumables), [SSR Gum](#ssr-gum), and [Andvaranaut Coupler](#andvaranaut-coupler) | low |
 | `81 0e` | Vendor buy (ItemTypeID, BuyBackLastItemSold) | D, C 40 | handled: ordinary purchase places the item and debits Info atomically; full bags are refused; Buy Back uses its separate last-sale receipt | high |
 | `81 11` | Vendor sell (Appraise, Slot) | D, C 5 | handled | high |
 | `81 10` | StringID, CloseUI, sent as `00 00 00 00 01`. Guess: closing the vendor window | C 9 | handled: CloseUI=1 invalidates active vendor session; listed-stock/session authority enforced | low |
@@ -912,6 +912,23 @@ shipped GOB defines a one-second cast, no separate reuse, and twelve fixed
 Run and stacks with Quicksilver. `SSRGumFunc` in `tempmods.py` plays effect
 67108996 every four seconds. Headless checks the item spend, all twelve
 modifier adds and expirations, and the pulse and movement updates on both views.
+
+### Andvaranaut Coupler
+
+Item 47927 grants player template 1379. Its internal AbilityID names 1377,
+the NPC template. Owned item-bearing requests can use either ID. Both
+use the player template for effect and reuse. The item requires Awakened
+rank 1, applies instantly at rest and starts 120 seconds of item reuse.
+
+All eight modifiers last 60 seconds. They use the shipped character-level
+value function, adding 1 after truncating the binary32 coefficient times
+level. The four damage stats use 0.24 and the four resistances use 0.58.
+At level 50 the values are +12 and +29. The template supplies activation FX
+67109047 and `AndvarFunc` in `tempmods.py` plays FX 67109045 every 10 seconds.
+
+Run `andvaranaut-coupler` at Mara Central (17000,495,2300). Use bag 5 once.
+Expect one dose left, instant activation and eight matching removals
+at expiry. A second attempt within 120 seconds keeps the remaining dose.
 
 ## Prompts and FX tokens
 

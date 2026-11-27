@@ -918,6 +918,8 @@ namespace hds
             { Deny(AbilityID, "Use an owned Heal Inhaler.", AbilityRefusals.RequiredItemCategory); return; }
             if (OptimizerConsumables.Handles(AbilityID))
             { Deny(AbilityID, "Use the corresponding owned consumable.", AbilityRefusals.RequiredItemCategory); return; }
+            if (AndvaranautCoupler.HandlesRequest(AbilityID))
+            { Deny(AbilityID, "Use an owned Andvaranaut Coupler.", AbilityRefusals.RequiredItemCategory); return; }
 
             if (!ControlActions.CanUseAbilities(Store.currentClient))
             {

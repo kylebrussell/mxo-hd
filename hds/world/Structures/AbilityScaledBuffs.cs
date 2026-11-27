@@ -58,6 +58,11 @@ namespace hds
         public static bool TryScriptedTimed(ushort id, int casterLevel, out AbilityBuffs.Buff buff)
         {
             buff = null;
+            if (id == AndvaranautCoupler.Ability)
+            {
+                buff = AndvaranautCoupler.Definition(casterLevel);
+                return true;
+            }
             if (id != 63 && id != 436 && id != 68 && id != 319 && id != 314) return false;
             var entry = AbilityCatalog.Find(id);
             var modifiers = entry.Modifiers.Where(m => m.Number("WhenEnabled",-1)==2).ToList();

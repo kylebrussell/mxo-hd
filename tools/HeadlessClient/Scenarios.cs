@@ -121,6 +121,7 @@ public static partial class Scenarios
         new Scenario("tactic-boost-consumables", TacticBoostConsumables, StillNpcs),
         new Scenario("inner-strength-booster", InnerStrengthBoosterUse, StillNpcs),
         new Scenario("ssr-gum", SsrGumUse, StillNpcs),
+        new Scenario("andvaranaut-coupler", AndvaranautCouplerUse, StillNpcs),
         new Scenario("modifier-datagram-cap", ModifierDatagramCap, StillNpcs),
         new Scenario("blue-marble-consumables", BlueMarbleConsumables, StillNpcs),
         new Scenario("optimizer-consumables", OptimizerConsumablesUse, StillNpcs),
