@@ -61,18 +61,33 @@ namespace hds
             packetWithCrc.AddByteArray(packet.ReturnFinalPacket());
             packetWithCrc.AddByteArray(paddingBytes);
 
+            // Stock client.dll's CThreadedUDPDriver::GetPacket (0x623C096F..0x623C098A) checks raw_packet[5] == 0
+            // without checking (raw_packet[0] & 1) == 0, calls HandleDriverPacket (which returns false for 0x01
+            // encrypted datagrams), and then unconditionally drops the packet. On an encrypted packet (0x01 +
+            // 16-byte IV + ciphertext), raw_packet[5] is IV[4]. Generate a fresh CSPRNG IV per outbound datagram
+            // with IV[4] != 0x00 so no outgoing packet is dropped and client IVs are never echoed back.
+            byte[] outboundIv = GenerateOutboundIv();
             byte[] encrypted = new byte[packetWithCrc.ReturnFinalPacket().Length];
             PacketContent encryptedPacket = new PacketContent();
             lock (cipherLock)
             {
-                // The IV sent has to be the one the data is encrypted with
-                tf.SetIV(IV);
+                tf.SetIV(outboundIv);
                 tf.Encrypt(packetWithCrc.ReturnFinalPacket(), encrypted);
-                encryptedPacket.AddByte(0x01);
-                encryptedPacket.AddByteArray(IV);
             }
+            encryptedPacket.AddByte(0x01);
+            encryptedPacket.AddByteArray(outboundIv);
             encryptedPacket.AddByteArray(encrypted);
             return encryptedPacket.ReturnFinalPacket();
+        }
+
+        private static byte[] GenerateOutboundIv()
+        {
+            byte[] iv = RandomNumberGenerator.GetBytes(16);
+            if (iv[4] == 0)
+            {
+                iv[4] = (byte)(1 + RandomNumberGenerator.GetInt32(255));
+            }
+            return iv;
         }
 
         public ArrayList decrypt(byte[] encryptedData, int length)
@@ -88,7 +103,6 @@ namespace hds
             byte[] decryptBuffer = readerEncrypted.ReadBytes(encryptedData.Length - 17);
             lock (cipherLock)
             {
-                IV = packetIv;
                 tf.SetIV(packetIv);
                 tf.Decrypt(decryptBuffer, decryptedPacket);
             }
