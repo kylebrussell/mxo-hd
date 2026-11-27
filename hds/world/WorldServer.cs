@@ -33,7 +33,29 @@ namespace hds
         private byte[] buffer;
         // Single-receive-thread endpoint cache avoiding Remote.ToString() and lock(Clients) on steady-state UDP packets.
         private readonly Dictionary<EndPoint, WorldClient> clientsByEndpoint = new Dictionary<EndPoint, WorldClient>();
+        private readonly List<EndPoint> staleEndpointScratch = new List<EndPoint>();
         private Dictionary<string, WorldClient> endpointCacheSource;
+        private const int EndpointCachePruneSlack = 64;
+
+        internal int EndpointCacheCount => clientsByEndpoint.Count;
+
+        internal void PruneStaleEndpointCache()
+        {
+            staleEndpointScratch.Clear();
+            foreach (KeyValuePair<EndPoint, WorldClient> kv in clientsByEndpoint)
+            {
+                WorldClient c = kv.Value;
+                if (c == null || !c.Alive || c.IngressSnapshot.Claimed)
+                {
+                    staleEndpointScratch.Add(kv.Key);
+                }
+            }
+            for (int i = 0; i < staleEndpointScratch.Count; i++)
+            {
+                clientsByEndpoint.Remove(staleEndpointScratch[i]);
+            }
+            staleEndpointScratch.Clear();
+        }
         
         public ObjectManager objMan { get; set; }
 
@@ -124,7 +146,12 @@ namespace hds
                 if (!clientsByEndpoint.TryGetValue(Remote, out currentClient) ||
                     currentClient == null || !currentClient.Alive || currentClient.IngressSnapshot.Claimed)
                 {
+                    if (currentClient != null)
+                    {
+                        clientsByEndpoint.Remove(Remote);
+                    }
                     string remoteKey = Remote.ToString();
+                    int activeCount;
                     lock (registry)
                     {
                         if (!registry.TryGetValue(remoteKey, out currentClient))
@@ -136,11 +163,16 @@ namespace hds
 
                             registry.Add(remoteKey, currentClient);
                         }
+                        activeCount = registry.Count;
                     }
 
                     if (currentClient != null)
                     {
                         clientsByEndpoint[Remote] = currentClient;
+                    }
+                    if (clientsByEndpoint.Count > activeCount + EndpointCachePruneSlack)
+                    {
+                        PruneStaleEndpointCache();
                     }
                 }
 

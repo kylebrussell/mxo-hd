@@ -15,21 +15,30 @@ namespace hds.resources.gameobjects
 		
 		public void PushClient(string key){
             // Create a new gameobject for the unique key
-            if (!_currentObjects.ContainsKey(key))
+            lock (_currentObjects)
             {
-                _currentObjects.Add(key, new PlayerCharacter());
+                if (!_currentObjects.ContainsKey(key))
+                {
+                    _currentObjects.Add(key, new PlayerCharacter());
+                }
             }
             
 		}
 		
 		public PlayerCharacter GetAssignedObject(string key){
 			// Return gameobject structure
-			return _currentObjects[key] as PlayerCharacter;
+			lock (_currentObjects)
+			{
+				return _currentObjects[key] as PlayerCharacter;
+			}
 		}
 		
 		public void PopClient(string key){
 			// Delete key for unused player
-			_currentObjects.Remove(key);
+			lock (_currentObjects)
+			{
+				_currentObjects.Remove(key);
+			}
 		}
 		
 		public DynamicArray GenerateCreationPacket(IGameObject go,UInt16 viewID, byte idCounter){

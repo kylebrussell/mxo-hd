@@ -293,6 +293,32 @@ Server-side `LoadTest --authenticated --clients 200 --move --world-mobs` (Releas
 
 Under 200 dense moving clients with the full world NPC catalog (~9.1–9.2 million object updates/60 s, 0 failures, 0 timeouts), `player-views` drops **1.8–2.1×** (P50 `4 -> 2 ms`, P95 `8–16 -> 4–8 ms`), `mob-views` drops **1.6–2.1×** (P50 `2 -> 1 ms`), `Visibility` mean drops to `5.09 / 7.80 ms` (`12.9 ms` max on quiet run 1, P50 `8 ms` on both), and `FlushProcessing` mean per client flush drops another **20%** (`0.141–0.165 -> 0.113–0.132 ms`).
 
+### Disconnect cleanup reliability, `TimersThread` hardening, and dirty-tracked mob snapshot (follow-up)
+
+Auditing long-running session reliability and the remaining visibility `snapshot` cost (`0.77–0.88 ms`, P95 `2 ms`) on `84f38a702` uncovered four disconnect bugs/leaks plus two timer/snapshot bottlenecks:
+
+1. **`CleanDeadPlayers` out-of-range view-ID desync & unremoved views (`ViewVisibleThread.cs`).** `CleanDeadPlayers` called `otherclient.viewMan.GetViewForEntityAndGo(deadEntityId, ...)` across every connected client, allocating a new `ClientView` (advancing `currentViewID` off-by-one) and sending a bogus delete packet to players who never saw the leaver, while never calling `removeViewByViewId` for viewers who did.
+2. **Disconnect memory/state leaks (`ViewVisibleThread.cs`, `ObjectManager.cs`, `WorldServer.cs`, `WorldClient.cs`).** Reaped clients were never removed from `ObjectManager._currentObjects` (which also lacked internal locking), `WorldServer.gameServerEntities`, or `WorldServer.clientsByEndpoint`, nor were queued pooled UDP ingress buffers/receipts drained on reap.
+3. **`TimersThread` fault isolation & save-storm bursts (`TimersThread.cs`).** `CheckAndResendClients` had no `try/catch` (any single client exception terminated `TimersThread` server-wide), woke idle clients with empty queues every 2 s, and initialized `lastSaveTime` simultaneously during login waves.
+4. **Full 7,000-mob re-hash every visibility pass (`Mob.cs`, `ViewVisibleThread.cs`, `MobMotion.cs`).** `MobVisibilityCache.UpdateFromWorld` recomputed `GetCellKey` (`Math.Floor` × 2) and dictionary lookups for all ~7,000 world mobs every 500 ms even when ~6,970 were untouched.
+
+Changes:
+
+- **Safe disconnect view cleanup & leak removal (`ViewVisibleThread.cs`, `ObjectManager.cs`, `WorldServer.cs`, `WorldClient.cs`).** `CleanDeadPlayers` now uses `FindViewForEntity` (deleting and removing only existing views + clearing pending movement), pops the client from locked `ObjectManager`, removes `playerInstance` from `gameServerEntities`, and calls `CleanupOnDisconnect()`; `WorldServer` evicts dead/claimed `clientsByEndpoint` entries and prunes stale entries when cache exceeds active clients + 64.
+- **Fault-isolated `TimersThread` & staggered autosaves (`TimersThread.cs`).** Added outer and per-client `try/catch`, reused client snapshot lists, skipped `CheckAndResend()` for bots and clients with `!HasPendingMessages()`, and deterministically staggered initial `lastSaveTime` across `[now - 19, now]` by `charId % 20`.
+- **Dirty-tracked `MobVisibilityCache` & reusable snapshots (`Mob.cs`, `ViewVisibleThread.cs`, `MobMotion.cs`).** Added per-mob `VisibilityVersion` and global `AnyVisibilityVersion` bumped on every position/district/spawn/death/scripted-corpse/respawn mutation so `UpdateFromWorld()` skips untouched mobs in O(1)/single-int compare; reused `ViewVisibleThread` client/subway snapshot lists and `MobMotion.Tick` `[ThreadStatic]` scratch sets.
+
+Server-side `LoadTest --authenticated --clients 200 --move --world-mobs` (Release build, 30 s warmup + 60 s measure, run serially on 2026-11-27):
+
+| Case | Status | Server CPU % | FlushProcessing mean / sum | Visibility mean / P50 / max ms | snapshot mean / P95 ms | Echo RTT mean / P95 / max ms |
+|---|---|---:|---|---|---|---|
+| move 200 + world NPCs, master `84f38a702` (run 1) | PASS | 61.6 | 0.145 ms / 25.2 s | 6.50 / 8 / 47.8 | 0.88 / 2 | 35.4 / 128 / 92.3 |
+| move 200 + world NPCs, master `84f38a702` (run 2) | PASS | 61.0 | 0.152 ms / 26.4 s | 5.96 / 8 / 15.1 | 0.77 / 2 | 34.3 / 128 / 79.3 |
+| move 200 + world NPCs, this change (run 1) | PASS | **60.8** | **0.116 ms / 22.8 s** | **4.73 / 8 / 11.4** | **0.55 / 1** | **34.7 / 64 / 81.2** |
+| move 200 + world NPCs, this change (run 2) | PASS | 70.8 | **0.135 ms / 23.3 s** | 6.78 / **8** / 61.1 | **0.71 / 1** | 35.5 / 128 / 85.7 |
+
+Under 200 dense moving clients with the full world NPC catalog (~9.2M object updates/60 s, 0 failures, 0 timeouts), `snapshot` P95 drops in half (`2 -> 1 ms`, mean down to `0.55 ms`), `FlushProcessing` drops **2.4–3.1 s** per 60 s window (`25.2–26.4 -> 22.8–23.3 s`, mean `0.145–0.152 -> 0.116–0.135 ms`), and quiet-host `Visibility` hits **`4.73 ms` mean / `11.4 ms` max** with Echo RTT P95 **`64 ms`**.
+
 ## Reproduce
 
 Build Release last, because the tool refuses to run when a newer Debug server DLL exists. Then run each case serially:

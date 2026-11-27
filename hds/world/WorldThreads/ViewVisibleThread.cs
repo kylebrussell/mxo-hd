@@ -26,26 +26,28 @@ namespace hds
 
         // Compact value-type record so CheckPlayerMobViews checks spawn/distance/introducibility from a
         // contiguous array without chasing scattered Gen2 Mob objects for out-of-range neighbors.
-        private struct MobEntry
+        internal struct MobEntry
         {
             public Mob Mob;
             public float X;
             public float Z;
             public ushort District;
             public long CellKey;
+            public int VisibilityVersion;
             public bool Spawned;
             public bool CanIntroduce;
         }
 
         // Single-threaded cache owned by ViewVisibleThread so the ~7,000 world mobs are not copied and
         // re-bucketed into fresh dictionaries/lists every 500 ms pass when only a handful wander.
-        private sealed class MobVisibilityCache
+        internal sealed class MobVisibilityCache
         {
             public readonly List<Mob> Mobs = new List<Mob>();
             public MobEntry[] Entries = Array.Empty<MobEntry>();
             public readonly Dictionary<ulong, Mob> ByEntity = new Dictionary<ulong, Mob>();
             public readonly Dictionary<ushort, SpatialGrid<Mob>> Grids = new Dictionary<ushort, SpatialGrid<Mob>>();
             public readonly Dictionary<ushort, SpatialGrid<int>> IndexGrids = new Dictionary<ushort, SpatialGrid<int>>();
+            private long lastGlobalVisibilityVersion = -1;
 
             public void UpdateFromWorld()
             {
@@ -86,13 +88,25 @@ namespace hds
                     return;
                 }
 
-                // Fast path: membership unchanged; refresh compact entries and only move mobs whose district/cell changed.
+                // O(1) fast path when membership is unchanged and no mob moved, died, respawned, or switched district.
+                long globalVer = Volatile.Read(ref Mob.AnyVisibilityVersion);
+                if (globalVer == lastGlobalVisibilityVersion)
+                {
+                    return;
+                }
+
+                // Partial dirty scan: skip the ~6,970 untouched mobs in a single integer compare and refresh only
+                // mobs whose VisibilityVersion changed since the last pass.
                 MobEntry[] entries = Entries;
-                for (int i = 0; i < Mobs.Count; i++)
+                int count = Mobs.Count;
+                for (int i = 0; i < count; i++)
                 {
                     Mob mob = Mobs[i];
                     if (mob == null) continue;
                     ref MobEntry e = ref entries[i];
+                    int mobVer = Volatile.Read(ref mob.VisibilityVersion);
+                    if (e.VisibilityVersion == mobVer) continue;
+
                     float x = (float)mob.getXPos();
                     float z = (float)mob.getZPos();
                     ushort district = mob.getDistrict();
@@ -100,6 +114,7 @@ namespace hds
                     e.Z = z;
                     e.Spawned = mob.getIsSpawned();
                     e.CanIntroduce = DeathPresentation.CanIntroduceNpc(mob);
+                    e.VisibilityVersion = mobVer;
                     SpatialGrid<Mob> grid = GetOrCreateGrid(district);
                     long cellKey = grid.GetCellKey(x, z);
                     if (e.District != district || e.CellKey != cellKey)
@@ -118,6 +133,7 @@ namespace hds
                         e.CellKey = cellKey;
                     }
                 }
+                lastGlobalVisibilityVersion = globalVer;
             }
 
             private SpatialGrid<Mob> GetOrCreateGrid(ushort district)
@@ -142,6 +158,7 @@ namespace hds
 
             private void Rebuild()
             {
+                long globalVer = Volatile.Read(ref Mob.AnyVisibilityVersion);
                 ByEntity.Clear();
                 foreach (SpatialGrid<Mob> g in Grids.Values) g.Clear();
                 foreach (SpatialGrid<int> g in IndexGrids.Values) g.Clear();
@@ -160,6 +177,7 @@ namespace hds
                         continue;
                     }
 
+                    int mobVer = Volatile.Read(ref mob.VisibilityVersion);
                     ByEntity[mob.getEntityId()] = mob;
                     float x = (float)mob.getXPos();
                     float z = (float)mob.getZPos();
@@ -175,10 +193,12 @@ namespace hds
                         Z = z,
                         District = district,
                         CellKey = cellKey,
+                        VisibilityVersion = mobVer,
                         Spawned = mob.getIsSpawned(),
                         CanIntroduce = DeathPresentation.CanIntroduceNpc(mob)
                     };
                 }
+                lastGlobalVisibilityVersion = globalVer;
             }
         }
 
@@ -186,6 +206,9 @@ namespace hds
         {
             Output.WriteLine("[WORLD SERVER]View Visible Thread started");
             MobVisibilityCache mobCache = new MobVisibilityCache();
+            List<WorldClient> clients = new List<WorldClient>();
+            List<WorldClient> postPassClients = new List<WorldClient>();
+            List<Subway> subways = new List<Subway>();
             List<WorldClient> deadClients = new List<WorldClient>();
             List<WorldClient> aliveClients = new List<WorldClient>();
             Dictionary<uint, SpatialGrid<WorldClient>> clientGrids = new Dictionary<uint, SpatialGrid<WorldClient>>();
@@ -197,9 +220,9 @@ namespace hds
               try
               {
                 long stage=scaleStart;
-                List<WorldClient> clients = SnapshotClients();
+                SnapshotClientsInto(clients);
                 mobCache.UpdateFromWorld();
-                List<Subway> subways = SnapshotSubways();
+                SnapshotSubwaysInto(subways);
 
                 deadClients.Clear();
                 for (int i = 0; i < clients.Count; i++)
@@ -262,7 +285,7 @@ namespace hds
               {
                 Output.WriteLine("[VIEWS] Visibility pass failed: " + ex);
               }
-                finally {if(scaleStart!=0)ScaleDiagnostics.VisibilityCompleted(scaleStart,SnapshotClients());}
+                finally {if(scaleStart!=0){SnapshotClientsInto(postPassClients);ScaleDiagnostics.VisibilityCompleted(scaleStart,postPassClients);}}
                 Thread.Sleep(500);
             }
         }
@@ -290,12 +313,27 @@ namespace hds
             }
         }
 
-        private static List<WorldClient> SnapshotClients()
+        private static void SnapshotClientsInto(List<WorldClient> destination)
         {
+            destination.Clear();
             lock (WorldServer.Clients)
             {
-                return new List<WorldClient>(WorldServer.Clients.Values);
+                if (destination.Capacity < WorldServer.Clients.Count)
+                {
+                    destination.Capacity = WorldServer.Clients.Count;
+                }
+                foreach (WorldClient client in WorldServer.Clients.Values)
+                {
+                    destination.Add(client);
+                }
             }
+        }
+
+        private static List<WorldClient> SnapshotClients()
+        {
+            List<WorldClient> copy = new List<WorldClient>();
+            SnapshotClientsInto(copy);
+            return copy;
         }
 
         private static List<Mob> SnapshotMobs()
@@ -314,21 +352,42 @@ namespace hds
             }
         }
 
-        private static List<Subway> SnapshotSubways()
+        private static void SnapshotSubwaysInto(List<Subway> destination)
         {
-            List<Subway> subways = new List<Subway>();
             lock (WorldServer.subways.SyncRoot)
             {
-                foreach (object subway in WorldServer.subways)
+                int worldCount = WorldServer.subways.Count;
+                if (worldCount == destination.Count)
                 {
-                    Subway castSubway = subway as Subway;
+                    bool same = true;
+                    for (int i = 0; i < worldCount; i++)
+                    {
+                        if (!ReferenceEquals(WorldServer.subways[i], destination[i]))
+                        {
+                            same = false;
+                            break;
+                        }
+                    }
+                    if (same) return;
+                }
+
+                destination.Clear();
+                if (destination.Capacity < worldCount) destination.Capacity = worldCount;
+                for (int i = 0; i < worldCount; i++)
+                {
+                    Subway castSubway = WorldServer.subways[i] as Subway;
                     if (castSubway != null)
                     {
-                        subways.Add(castSubway);
+                        destination.Add(castSubway);
                     }
                 }
             }
+        }
 
+        private static List<Subway> SnapshotSubways()
+        {
+            List<Subway> subways = new List<Subway>();
+            SnapshotSubwaysInto(subways);
             return subways;
         }
 
@@ -1395,18 +1454,26 @@ namespace hds
                 CombatManager.RemoveClient(deadClient);
                 MissionPersistence.Suspend(deadClient);
                 TutorialMission.Of(deadClient)?.Abandon();
+                ulong deadEntityId = deadClient.playerData.getEntityId();
                 foreach (WorldClient otherclient in allClients)
                 {
-                    if (otherclient == null || otherclient == deadClient)
+                    if (otherclient == null || ReferenceEquals(otherclient, deadClient) || otherclient.viewMan == null)
                     {
                         continue;
                     }
 
-                    ClientView view = otherclient.viewMan.GetViewForEntityAndGo(deadClient.playerData.getEntityId(),
-                        NumericalUtils.ByteArrayToUint16(deadClient.playerInstance.GetGoid(), 1));
+                    // Lookup only: GetViewForEntityAndGo used to allocate a new ClientView on every out-of-range
+                    // player on the server, desynchronizing their ViewID counter and sending a delete for a view
+                    // they never spawned, while never removing the dead view from viewers who did see them.
+                    ClientView view = otherclient.viewMan.FindViewForEntity(deadEntityId);
                     if (view != null)
                     {
-                        new ServerPackets().sendDeleteViewPacket(otherclient, view.ViewID);
+                        if (view.viewCreated)
+                        {
+                            new ServerPackets().sendDeleteViewPacket(otherclient, view.ViewID);
+                        }
+                        otherclient.viewMan.removeViewByViewId(view.ViewID);
+                        otherclient.messageQueue?.ClearPendingMovement(view.ViewID);
                     }
                 }
 
@@ -1425,7 +1492,19 @@ namespace hds
                 SocialHandler.PlayerLeftWorld(deadClient);
                 }
                 catch {deadClient.ReleaseFailedReap();throw;}
-                if(RemoveClaimedClient(endpoint,deadClient))Output.WriteLine("Removed inactive Client with Key " + endpoint);
+                if (RemoveClaimedClient(endpoint, deadClient))
+                {
+                    Output.WriteLine("Removed inactive Client with Key " + endpoint);
+                    Store.world?.objMan?.PopClient(endpoint);
+                    if (deadClient.playerInstance != null)
+                    {
+                        lock (WorldServer.gameServerEntities.SyncRoot)
+                        {
+                            WorldServer.gameServerEntities.Remove(deadClient.playerInstance);
+                        }
+                    }
+                    deadClient.CleanupOnDisconnect();
+                }
                 // Views are now deleted to other players
                 // ToDo: Cleanup Missions (kill all running missions the player have)
                 // ToDo: Cleanup Teams (if your mission team has more than one player, you need to announce an update for the mission team to your mates)

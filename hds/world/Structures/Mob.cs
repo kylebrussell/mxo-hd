@@ -30,9 +30,29 @@ namespace hds
         private uint weapon;
         private int state; // 0= nothing, 1=rotating (just an example - must check this near from the npc class)
         private bool is_dead;
-        public bool ScriptedCorpse; // Mission data dead=1: visible on first entry and late views.
+        private bool scriptedCorpse;
+        public bool ScriptedCorpse
+        {
+            get => scriptedCorpse;
+            set
+            {
+                if (scriptedCorpse != value)
+                {
+                    scriptedCorpse = value;
+                    MarkVisibilityChanged();
+                }
+            }
+        } // Mission data dead=1: visible on first entry and late views.
         private bool is_lootable;
         private bool is_spawned = true;
+        // Dirty-tracking counters so MobVisibilityCache skips unchanged mobs across the ~7,000-mob catalog.
+        internal static long AnyVisibilityVersion;
+        internal int VisibilityVersion;
+        private void MarkVisibilityChanged()
+        {
+            Interlocked.Increment(ref VisibilityVersion);
+            Interlocked.Increment(ref AnyVisibilityVersion);
+        }
         // Explicit server-owned NPC grants; never inferred from a name or accepted in an ability request.
         private readonly System.Collections.Generic.HashSet<ushort> abilityGrants = new System.Collections.Generic.HashSet<ushort>();
         public bool HasAbility(ushort ability) { lock (abilityGrants) return abilityGrants.Contains(ability); }
@@ -227,7 +247,11 @@ namespace hds
 
         public void setDistrict(ushort _district)
         {
-            district = _district;
+            if (district != _district)
+            {
+                district = _district;
+                MarkVisibilityChanged();
+            }
         }
 
         public void setDistrictName(string _districtName)
@@ -262,7 +286,11 @@ namespace hds
 
         public void setXPos(double xPosition)
         {
-            xPos = xPosition;
+            if (xPos != xPosition)
+            {
+                xPos = xPosition;
+                MarkVisibilityChanged();
+            }
         }
 
         public void setYPos(double yPosition)
@@ -272,7 +300,11 @@ namespace hds
 
         public void setZPos(double zPosition)
         {
-            zPos = zPosition;
+            if (zPos != zPosition)
+            {
+                zPos = zPosition;
+                MarkVisibilityChanged();
+            }
         }
 
         public void setName(string mobName)
@@ -296,7 +328,11 @@ namespace hds
             {
                 DeathGeneration++;
             }
-            is_dead = dead;
+            if (is_dead != dead)
+            {
+                is_dead = dead;
+                MarkVisibilityChanged();
+            }
         }
 
         private readonly object deathLock = new object();
@@ -355,6 +391,7 @@ namespace hds
                 }
                 is_dead = true;
                 DeathGeneration++;
+                MarkVisibilityChanged();
                 return true;
             }
         }
@@ -366,7 +403,11 @@ namespace hds
 
         public void setIsSpawned(bool spawned)
         {
-            is_spawned = spawned;
+            if (is_spawned != spawned)
+            {
+                is_spawned = spawned;
+                MarkVisibilityChanged();
+            }
         }
 
         /// <summary>Back to life at the spawn point with full health, for a respawn after death.</summary>
@@ -391,6 +432,7 @@ namespace hds
                     CapturedEvasion.Reset();
                 }
             }
+            MarkVisibilityChanged();
         }
 
         public ulong getEntityId()
