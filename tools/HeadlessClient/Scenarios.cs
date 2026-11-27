@@ -301,6 +301,7 @@ public static partial class Scenarios
         new Scenario("death-reconstruct-and-tutorial-selection", DeathReconstructAndTutorialSelection, StillNpcs),
         new Scenario("tutorial-richland-handoff", TutorialRichlandHandoff, StillNpcs),
         new Scenario("loading-area-ordinary-archive-compile", LoadingAreaOrdinaryArchiveCompile, StillNpcs),
+        new Scenario("compile-owned-equipment-code", CompileOwnedEquipmentCode, StillNpcs),
         new Scenario("medium02-partial-world", Medium02PartialWorld, StillNpcs),
         new Scenario("pvp-archive-transport", PvpArchiveTransport, StillNpcs),
         new Scenario("archive01-partial-world", Archive01PartialWorld, StillNpcs),

@@ -32,7 +32,28 @@ The shipped `crafting_server.py:CompileTest` debits Info before evaluating the c
 
 ## Remaining economy boundary
 
-The tooltip's primary item-code/equipment materialization is **still incomplete**. The existing `60` executor only materializes owned stored bits/fragments under its documented local deterministic policy; ability-code copying, equipment codes, full archive success/charge/purity rules and XP are not reconstructed. The existing `81 2e` implementation assembles known recipes with its script-backed contest and cost. This change fixes activation and session authority for those bounded executors, not the unresolved economy. Ability969 remains partial in the generated audit. Write Code970 is a separate change.
+The `60` executor materializes owned ordinary item and equipment codes as
+well as the documented subset of bits and fragments. The existing `81 2e`
+executor assembles known recipes with its script-backed contest and cost.
+Ability-code copying, full archive purity rules, and compile XP remain open.
+Ability 969 remains partial in the generated audit.
+
+## Owned equipment codes
+
+The Compiler and Loading Area accept owned ordinary codes with a valid
+explicit charge count when the named item is a craftable recipe result with
+a known price and complexity. The stored `DefaultCodeCharges` field applies
+to new codes created by the Writer. Existing codes keep their own charge
+count and encoding. The exact owned slot is checked again within the atomic
+item, charge and Info transaction.
+
+In `compile-owned-equipment-code`, Redpill Special (2565) has complexity 1,
+VendorPrice 10 and no authored default charge count. The disposable fixture
+holds two direct charges in archive slot 400 and an owned Compiler in bag 1.
+Compile once in world with skill 50 for a three-second guaranteed contest.
+Compile the remaining code from the Loading Area Code Archive. Each success
+adds one separate revolver and debits 1 Info. The code goes from two charges
+to one, then disappears.
 
 ## Reproducible verification and native handoff
 
