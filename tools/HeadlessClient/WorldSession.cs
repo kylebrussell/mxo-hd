@@ -291,21 +291,41 @@ public sealed class WorldSession : IDisposable
                 viewLog.Add(payload.ViewSection);
                 creations.AddRange(parsedCreations);
             }
-            // A list can repeat RPCs we already have: the server sends unacked ones again with their own counters.
-            // Those are skipped, as the client does; a counter past the next one is a gap.
-            foreach (RpcRecord rpc in payload.Rpcs)
+            // Match stock client.dll CLTMessageBargeGuar::RCCInfoGuar::HandleInput (0x623C73B0..0x623C7798):
+            // each 0x04 block is checked by its starting counter only; if blockStart < expected (mod 65536), the
+            // stock client skips the entire block and drops any unreceived tail RPCs (permanent stream deadlock).
+            int rpcOffset = 0;
+            foreach ((ushort blockStart, int blockCount) in payload.RpcLists)
             {
-                ushort number = (ushort)(rpc.ListCounter + rpc.Index);
-                if (expectedServerRpc.HasValue && ((number - expectedServerRpc.Value) & 0xffff) >= 0x8000)
+                if (expectedServerRpc.HasValue)
                 {
-                    continue; // already had it
+                    int startDiff = (blockStart - expectedServerRpc.Value) & 0xffff;
+                    if (startDiff >= 0x8000)
+                    {
+                        ushort blockEnd = (ushort)(blockStart + blockCount);
+                        int tailDiff = (blockEnd - expectedServerRpc.Value) & 0xffff;
+                        if (tailDiff > 0 && tailDiff < 0x8000)
+                        {
+                            problems.Add(
+                                $"Overlapping RPC block {blockStart}..{(ushort)(blockEnd - 1)} starts before expected " +
+                                $"{expectedServerRpc.Value}; stock client.dll CLTMessageBargeGuar skips the whole block " +
+                                $"and drops {expectedServerRpc.Value}..{(ushort)(blockEnd - 1)}");
+                        }
+                        rpcOffset += blockCount;
+                        continue;
+                    }
+                    if (blockStart != expectedServerRpc.Value)
+                    {
+                        problems.Add($"Server RPC counter jumped: expected {expectedServerRpc.Value}, got {blockStart}");
+                    }
                 }
-                if (expectedServerRpc.HasValue && number != expectedServerRpc.Value)
+                for (int i = 0; i < blockCount; i++)
                 {
-                    problems.Add($"Server RPC counter jumped: expected {expectedServerRpc.Value}, got {number}");
+                    RpcRecord rpc = payload.Rpcs[rpcOffset + i];
+                    rpcLog.Add(rpc with { DatagramSequence = serverSeq, DatagramSimTime = payload.SimTime, DatagramViewSection = payload.ViewSection });
                 }
-                expectedServerRpc = (ushort)(number + 1);
-                rpcLog.Add(rpc with { DatagramSequence = serverSeq, DatagramSimTime = payload.SimTime, DatagramViewSection = payload.ViewSection });
+                rpcOffset += blockCount;
+                expectedServerRpc = (ushort)(blockStart + blockCount);
             }
         }
 

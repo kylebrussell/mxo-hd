@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -54,6 +54,38 @@ namespace hds
 
             this.RPCMessages.Add(rpcMessage);
             bufferSize = (UInt16)Math.Min(UInt16.MaxValue, bufferSize + rpcMessage.content.Length + 2);
+            return true;
+        }
+
+        /// <summary>
+        /// Adds an already-numbered protocol-0x04 RPC block atomically so resends never split an immutable block across
+        /// datagrams (stock client.dll CLTMessageBargeGuar drops overlapping/repacked blocks whose start &lt; expected).
+        /// </summary>
+        internal bool addRPCBlock(IList<SequencedMessage> block)
+        {
+            if (block == null || block.Count == 0) return true;
+            int totalBytes = IsEmpty ? 0 : 3;
+            bool hasTimedView = false;
+            for (int i = 0; i < block.Count; i++)
+            {
+                totalBytes += block[i].content.Length + 2;
+                if (block[i].TimedViewWithRpc != null) hasTimedView = true;
+            }
+            if (!IsEmpty && (hasTimedView || RPCMessages.Count + block.Count > 255 || checkIfBufferIsFull(totalBytes)))
+            {
+                return false;
+            }
+            for (int i = 0; i < block.Count; i++)
+            {
+                SequencedMessage message = block[i];
+                if (message.TimedViewWithRpc is { } view)
+                {
+                    addObjectContent(view);
+                    timed = true;
+                }
+                this.RPCMessages.Add(message);
+            }
+            bufferSize = (UInt16)Math.Min(UInt16.MaxValue, bufferSize + totalBytes);
             return true;
         }
 
@@ -155,13 +187,18 @@ namespace hds
             // Here goes code from RPCPacket (As it should be generated on the fly)
             if (RPCMessages.Count > 0)
             {
-                // New RPCs take the next counters; one resent keeps its own (Reality's MsgBlock sequenceId)
+                // New RPCs take the next counters and share one immutable block start per packet; resent RPCs keep
+                // their original counter and block start (stock client.dll CLTMessageBargeGuar skips any overlapping
+                // block whose start < m_nextExpectedSeq, so resends must never merge into a wider block).
                 UInt16 counter = playerData.getRPCCounter();
+                int freshBlockStart = -1;
                 foreach (SequencedMessage message in RPCMessages)
                 {
                     if (message.rpcNumber < 0)
                     {
+                        if (freshBlockStart < 0) freshBlockStart = counter;
                         message.rpcNumber = counter++;
+                        message.rpcBlockStart = freshBlockStart;
                         Output.WriteBonusDebugLog(playerData.getCharID(), message.content);
                     }
                 }
@@ -190,14 +227,26 @@ namespace hds
             
         }
 
-        /// <summary>RPCs in counter order, split where the counters stop following on.</summary>
+        /// <summary>
+        /// RPCs in counter order (handling 16-bit wrap), split where counters stop following on or where two RPCs
+        /// originated in different immutable protocol-0x04 blocks.
+        /// </summary>
         public static List<List<SequencedMessage>> RpcBlocks(IEnumerable<SequencedMessage> messages)
         {
+            List<SequencedMessage> list = messages.ToList();
+            bool wraps = list.Any(m => m.rpcNumber >= 0xC000) && list.Any(m => m.rpcNumber >= 0 && m.rpcNumber < 0x4000);
+            IEnumerable<SequencedMessage> ordered = wraps
+                ? list.OrderBy(m => (m.rpcNumber + 0x8000) & 0xFFFF)
+                : list.OrderBy(m => m.rpcNumber);
+
             List<List<SequencedMessage>> blocks = new List<List<SequencedMessage>>();
-            foreach (SequencedMessage message in messages.OrderBy(m => m.rpcNumber))
+            foreach (SequencedMessage message in ordered)
             {
                 List<SequencedMessage> last = blocks.Count > 0 ? blocks[blocks.Count - 1] : null;
-                if (last != null && (UInt16)(last[last.Count - 1].rpcNumber + 1) == (UInt16)message.rpcNumber && last.Count < 255)
+                bool sameOriginalBlock = last != null &&
+                    ((last[last.Count - 1].rpcBlockStart < 0 && message.rpcBlockStart < 0) ||
+                     last[last.Count - 1].rpcBlockStart == message.rpcBlockStart);
+                if (sameOriginalBlock && (UInt16)(last[last.Count - 1].rpcNumber + 1) == (UInt16)message.rpcNumber && last.Count < 255)
                 {
                     last.Add(message);
                 }

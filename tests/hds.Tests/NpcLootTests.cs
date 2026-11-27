@@ -251,6 +251,15 @@ public class NpcLootTests
             Assert.True(NpcLoot.TryPresentAutoOpen(client, corpse, client.TransportFence.Capture(),
                 client.playerData.worldGeneration, client.playerData.combatGeneration));
             Assert.True(DrainDatagrams(receiver) >= 1, "Deferred auto-open emitted its own datagram");
+
+            // 5) Cash-only (info > 0, 0 items) builds exact retail 18-byte 81 19 layout and defers/presents cleanly.
+            byte[] cashOnly = NpcLoot.BuildLootWindow(210, Array.Empty<uint>(), Array.Empty<byte>());
+            Assert.Equal("8119000000001000d2000000000000000000", Hex(cashOnly));
+            var cashCorpse = NpcLoot.DropAndRegister(client, mob, 210, 0, Array.Empty<uint>(), deferPresentation: true);
+            Assert.NotNull(cashCorpse);
+            Assert.True(NpcLoot.TryPresentAutoOpen(client, cashCorpse, client.TransportFence.Capture(),
+                client.playerData.worldGeneration, client.playerData.combatGeneration));
+            Assert.True(DrainDatagrams(receiver) >= 1, "Cash-only deferred auto-open emitted its own datagram");
         }
         finally
         {

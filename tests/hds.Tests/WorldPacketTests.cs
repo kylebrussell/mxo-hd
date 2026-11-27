@@ -113,4 +113,55 @@ public class WorldPacketTests
         Assert.Equal(new[] { 61, 62 }, blocks[0].Select(m => m.rpcNumber));
         Assert.Equal(new[] { 70, 71, 72 }, blocks[1].Select(m => m.rpcNumber));
     }
+
+    [Fact]
+    public void RpcBlocksSplitsDifferentOriginalBlocksEvenWhenCountersAreContiguous()
+    {
+        SequencedMessage Numbered(int n, int blockStart)
+        {
+            SequencedMessage m = Message(2);
+            m.rpcNumber = n;
+            m.rpcBlockStart = blockStart;
+            return m;
+        }
+
+        List<List<SequencedMessage>> blocks = WorldPacket.RpcBlocks(new[]
+        {
+            Numbered(0x73, 0x73),
+            Numbered(0x74, 0x74),
+            Numbered(0x75, 0x74),
+            Numbered(0x76, 0x76),
+            Numbered(0x77, 0x76),
+        });
+
+        Assert.Equal(3, blocks.Count);
+        Assert.Equal(new[] { 0x73 }, blocks[0].Select(m => m.rpcNumber));
+        Assert.Equal(new[] { 0x74, 0x75 }, blocks[1].Select(m => m.rpcNumber));
+        Assert.Equal(new[] { 0x76, 0x77 }, blocks[2].Select(m => m.rpcNumber));
+    }
+
+    [Fact]
+    public void RpcBlocksOrdersAcrossSixteenBitWrap()
+    {
+        SequencedMessage Numbered(int n, int blockStart)
+        {
+            SequencedMessage m = Message(2);
+            m.rpcNumber = n;
+            m.rpcBlockStart = blockStart;
+            return m;
+        }
+
+        List<List<SequencedMessage>> blocks = WorldPacket.RpcBlocks(new[]
+        {
+            Numbered(0, 65535),
+            Numbered(65535, 65535),
+            Numbered(1, 1),
+            Numbered(65534, 65534),
+        });
+
+        Assert.Equal(3, blocks.Count);
+        Assert.Equal(new[] { 65534 }, blocks[0].Select(m => m.rpcNumber));
+        Assert.Equal(new[] { 65535, 0 }, blocks[1].Select(m => m.rpcNumber));
+        Assert.Equal(new[] { 1 }, blocks[2].Select(m => m.rpcNumber));
+    }
 }

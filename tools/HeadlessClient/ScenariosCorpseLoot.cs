@@ -25,10 +25,17 @@ public static partial class Scenarios
 
     private static async Task CorpseWindowFourKills(ScenarioContext context)
     {
-        var p = (await context.AddPlayersInWorldAsync(new CharacterSeed("CorpseFour")
-        {
-            Level = 50, X = 19403, Y = -705, Z = 60401, Health = 5000, MaxHealth = 5000
-        }))[0];
+        var players = await context.AddPlayersInWorldAsync(
+            new CharacterSeed("CorpseFour")
+            {
+                Level = 50, X = 19403, Y = -705, Z = 60401, Health = 5000, MaxHealth = 5000
+            },
+            new CharacterSeed("CorpseWitness")
+            {
+                Level = 50, X = 19403, Y = -705, Z = 40000, Health = 5000, MaxHealth = 5000
+            });
+        var p = players[0];
+        var witness = players[1];
         ViewCreation[] targets = Array.Empty<ViewCreation>();
         await p.WaitUntilAsync(() =>
         {
@@ -80,11 +87,25 @@ public static partial class Scenarios
             ushort combatView = await WaitForCombatView(p, previousCombatView);
             previousCombatView = combatView;
             var combatEnd = await p.WaitForRpcAsync($"46 {MissionNpcId(target)} 00", TimeSpan.FromSeconds(30));
+            int creationCursor = p.World.CreationSnapshot().Count;
+            if (i == 2)
+            {
+                // Force a live 0x03 view-creation packet into the 0.25 s window between CombatEnd and 81 1a / 81 19.
+                witness.SendChat(FormattableString.Invariant(
+                    $"?tp {BitConverter.ToDouble(pos, 0)} {BitConverter.ToDouble(pos, 8)} {BitConverter.ToDouble(pos, 16) - 150} 0 0 0"));
+            }
             await p.WaitForViewUpdateAsync(1, $"01 01 00 {Le(combatView)}", TimeSpan.FromSeconds(10));
             var lootWindow = await p.WaitForRpcAsync("81 19", TimeSpan.FromSeconds(10));
             var killRpcs = p.World.RpcSnapshot().Skip(rpcCursor).ToArray();
             var lootClose = killRpcs.LastOrDefault(r => r.Bytes.Length == 2 && r.Bytes[0] == 0x81 && r.Bytes[1] == 0x1a);
             Check.That(lootClose != null, $"Kill #{i + 1}: 81 1a precedes 81 19");
+            Check.That(lootWindow.DatagramViewSection == null && lootClose!.DatagramViewSection == null,
+                $"Kill #{i + 1}: 81 1a / 81 19 went out in an RPC-only datagram isolated from 0x03 view bursts");
+            if (i == 2)
+            {
+                await p.WaitUntilAsync(() => p.World.CreationSnapshot().Skip(creationCursor).Any(v => v.Name == "CorpseWitness"),
+                    "Kill #3: concurrent view creation delivered cleanly alongside deferred loot open", TimeSpan.FromSeconds(5));
+            }
             Check.That(combatEnd.DatagramViewSection == null || BytePattern.IndexOf(combatEnd.DatagramViewSection, deathSignature, 0) < 0,
                 $"Kill #{i + 1}: SendNpcDies went out before SendCombatEnd (not coalesced with 46 00)");
             Check.That(combatEnd.DatagramSequence.HasValue && lootWindow.DatagramSequence.HasValue && lootClose!.DatagramSequence.HasValue,
@@ -95,6 +116,7 @@ public static partial class Scenarios
             int closeDelta = (lootClose!.DatagramSequence!.Value - combatEnd.DatagramSequence!.Value) & 0x0FFF;
             Check.That(closeDelta > 0 && closeDelta < 2048,
                 $"Kill #{i + 1}: 81 1a arrived in a later datagram than 46 00 (end={combatEnd.DatagramSequence}, close={lootClose.DatagramSequence})");
+            Check.Equal(0, p.World.Problems.Count, $"Kill #{i + 1}: zero protocol/bargeguar problems");
 
             foreach (var rpc in killRpcs) ui.Receive(rpc.Bytes);
             Check.That(ui.Visible, $"Kill #{i + 1}: Corpse window is visible after combat teardown");
