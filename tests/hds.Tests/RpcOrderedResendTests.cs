@@ -76,6 +76,13 @@ public class RpcOrderedResendTests
             for (int i = 0; i < count; i++) Client.messageQueue.addRpcMessage((byte[])body.Clone());
         }
 
+        public void QueueModifiers(int count, bool off)
+        {
+            for (ushort i = 0; i < count; i++)
+                Client.messageQueue.addRpcMessage(AbilityBuffs.BuildModifier(AbilityBuffs.KindStat,
+                    (ushort)(AbilityBuffs.FirstRecordId + i), 1325, 115, 5, off, 60));
+        }
+
         public SequencedMessage[] Pending() =>
             Client.messageQueue.RPCMessagesQueue.Cast<SequencedMessage>().ToArray();
 
@@ -397,6 +404,48 @@ public class RpcOrderedResendTests
         ReceiveStockBargeGuar(lootOpen.Blocks);
         Assert.Equal((ushort)9, expected);
         Assert.Equal(Enumerable.Range(0, 9).Select(i => (ushort)i).ToArray(), delivered.ToArray());
+    }
+
+    [Fact]
+    public void FreshAddsAndRemovalsShareOneDatagramBudget()
+    {
+        using var rig = new Rig();
+        rig.QueueModifiers(6, off: true);
+        rig.Queue(1); // An ordinary RPC does not count as a modifier or reset the budget.
+        rig.QueueModifiers(6, off: false);
+
+        var packets = rig.FlushWithBlocks();
+        Assert.Equal(2, packets.Count);
+        Assert.Equal(new[] { ((ushort)0, 7) }, packets[0].Blocks);
+        Assert.Equal(new[] { ((ushort)7, 6) }, packets[1].Blocks);
+        rig.Ack(packets[1].Sseq, bits: 1);
+        Assert.Empty(rig.Pending());
+    }
+
+    [Fact]
+    public void ResendsKeepModifierBatchesWithinBudgetWithoutSplittingOldBlocks()
+    {
+        using var rig = new Rig();
+        rig.QueueModifiers(4, off: false);
+        Assert.Equal(new[] { ((ushort)0, 4) }, rig.FlushWithBlocks().Single().Blocks);
+        rig.QueueModifiers(4, off: true);
+        Assert.Equal(new[] { ((ushort)4, 4) }, rig.FlushWithBlocks().Single().Blocks);
+
+        rig.Age(SequencedMessage.RpcResendIntervalMs + 50, Range(0, 8));
+        rig.QueueModifiers(2, off: false);
+        var resend = rig.FlushWithBlocks();
+        Assert.Equal(2, resend.Count);
+        Assert.Equal(new[] { ((ushort)0, 4) }, resend[0].Blocks);
+        Assert.Equal(new[] { ((ushort)4, 4), ((ushort)8, 2) }, resend[1].Blocks);
+        rig.Ack(resend[0].Sseq);
+
+        rig.Age(SequencedMessage.RpcResendIntervalMs + 50, Range(4, 6));
+        var missing = rig.FlushWithBlocks().Single();
+        Assert.Equal(resend[1].Blocks, missing.Blocks);
+        rig.Ack(missing.Sseq);
+        Assert.Empty(rig.Pending());
+        rig.Queue(1);
+        Assert.Equal(new[] { 10 }, rig.Flush().Single().Counters);
     }
 
     [Fact]

@@ -702,7 +702,8 @@ namespace hds
                 EvasionShield.Applied(client,active.Generation);
             }
             if (!buff.EvadeShield || EvasionShield.HasState(client))
-                QueueModifierRecords(client, active, buff, off: false);
+                foreach (byte[] record in BuildRecords(abilityId, buff, active.RecordIds, false))
+                    client.messageQueue.addRpcMessage(record);
             RefreshVitals(client);
             float movementScale = buff.MovementScale > 0 ? WithTimedMovementDebuffs(client, MovementScaleFor(client, buff)) : 0f;
             if (abilityId == HyperSprint)
@@ -969,22 +970,10 @@ namespace hds
 
         private static void QueueRemovalRecords(WorldClient client, Active active, Buff buff)
         {
-            QueueModifierRecords(client, active, buff, off: true);
+            foreach (byte[] record in BuildRecords(active.AbilityId, buff, active.RecordIds, true))
+                client.messageQueue.addRpcMessage(record);
             if (buff.Exclusive)
                 client.messageQueue.addRpcMessage(BuildExclusive(active.AbilityId, false));
-        }
-
-        private static void QueueModifierRecords(WorldClient client, Active active, Buff buff, bool off)
-        {
-            var records = BuildRecords(active.AbilityId, buff, active.RecordIds, off);
-            if (active.AbilityId == SsrGum.Ability)
-            {
-                SsrGum.QueueRecords(client, records);
-                return;
-            }
-
-            foreach (byte[] record in records)
-                client.messageQueue.addRpcMessage(record);
         }
 
         /// <summary>
