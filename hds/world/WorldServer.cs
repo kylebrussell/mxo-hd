@@ -483,17 +483,20 @@ namespace hds
             }
         }
 
-        public void SendViewUpdateToClientsWhoHasMobSpawned(PacketContent packet, Mob mob, byte[] followingUpdate = null, bool forceFlush = false)
+        public void SendViewUpdateToClientsWhoHasMobSpawned(PacketContent packet, Mob mob, byte[] followingUpdate = null, bool forceFlush = false, bool deferFlush = false)
         {
+            byte[] updateData = packet.ReturnFinalPacket();
+            ulong mobEntityId = mob.getEntityId();
+            ushort mobDistrict = mob.getDistrict();
             foreach (WorldClient client in ClientSnapshot())
             {
+                if (client == null || client.IsBot) continue;
                 // Look up only: GetViewForEntityAndGo would hand every client without the NPC a view id it never
                 // spawns, and the client's view ids would then run one behind the server's.
-                ClientView mobView = client.viewMan.FindViewForEntity(mob.getEntityId());
-                if (mobView != null && mobView.viewCreated && mob.getDistrict() == client.playerData.getDistrictId() && client.playerData.getOnWorld())
+                ClientView mobView = client.viewMan.FindViewForEntity(mobEntityId);
+                if (mobView != null && mobView.viewCreated && mobDistrict == client.playerData.getDistrictId() && client.playerData.getOnWorld())
                 {
-                    ServerPackets pak = new ServerPackets();
-                    pak.SendNpcUpdateData(mobView.ViewID, client, packet.ReturnFinalPacket(), followingUpdate, forceFlush);
+                    ServerPackets.SendNpcUpdateDataFast(mobView.ViewID, client, updateData, followingUpdate, forceFlush, deferFlush);
                 }
             }
         }

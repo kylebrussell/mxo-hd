@@ -40,19 +40,37 @@ namespace hds
 
         public void SendNpcUpdateData(UInt16 viewId, WorldClient client, byte[] updateData, byte[] followingUpdate = null, bool forceFlush = false)
         {
-            PacketContent pak = new PacketContent();
-            
-            pak.AddUint16(viewId, 1);
-            pak.AddByteArray(updateData);
-            if (followingUpdate != null)
+            SendNpcUpdateDataFast(viewId, client, updateData, followingUpdate, forceFlush, deferFlush: false);
+        }
+
+        internal static void SendNpcUpdateDataFast(UInt16 viewId, WorldClient client, byte[] updateData, byte[] followingUpdate = null, bool forceFlush = false, bool deferFlush = false)
+        {
+            byte[] payload;
+            if (followingUpdate == null)
             {
-                pak.AddUint16(viewId, 1);
-                pak.AddByteArray(followingUpdate);
+                payload = MessageQueue.BuildViewUpdateFast(viewId, updateData);
             }
-            
-            client.messageQueue.addObjectMessage(pak.ReturnFinalPacket(), false);
-            client.FlushQueue(false, forceFlush);
-            
+            else
+            {
+                payload = new byte[4 + updateData.Length + followingUpdate.Length];
+                payload[0] = (byte)(viewId & 0xFF);
+                payload[1] = (byte)((viewId >> 8) & 0xFF);
+                Buffer.BlockCopy(updateData, 0, payload, 2, updateData.Length);
+                int secondOffset = 2 + updateData.Length;
+                payload[secondOffset] = (byte)(viewId & 0xFF);
+                payload[secondOffset + 1] = (byte)((viewId >> 8) & 0xFF);
+                Buffer.BlockCopy(followingUpdate, 0, payload, secondOffset + 2, followingUpdate.Length);
+            }
+
+            client.messageQueue.addObjectMessage(payload, false);
+            if (deferFlush && !forceFlush)
+            {
+                client.MarkFlushPending();
+            }
+            else
+            {
+                client.FlushQueue(false, forceFlush);
+            }
         }
 
         public void SendNpcUpdateAnimation(UInt16 viewId, WorldClient client, Mob theMob, byte animation )

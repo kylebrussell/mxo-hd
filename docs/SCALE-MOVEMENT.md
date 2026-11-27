@@ -151,6 +151,31 @@ Server-side `LoadTest --authenticated` (Release build, 200 dense clients, 30 s w
 
 Under 200 dense moving clients (~9.0–9.2 million object updates delivered per 60 s window, 0 failures, 0 ping timeouts), server CPU drops by **4.7×** (from `342.3%` down to `71.7% / 73.8%`, less than one logical core), `FlushProcessing` drops **15–20×** (`4.63 ms` -> `0.23 / 0.32 ms`), `ObjectFirstSend` drops **3×** (`103.8 ms` -> `36.3 / 32.1 ms`), Echo RTT drops to `39.8 / 34.3 ms`, and `player-views` drops **4.7×** (`21.67 ms` -> `4.71 / 4.55 ms`).
 
+## World-NPC motion, NavMesh projection, and 12-bit SSEQ wraparound (follow-up)
+
+Profiling `move 200 --world-mobs` on master `098f15526` showed `mob-motion` dominating the visibility pass (`15.62 ms` mean, `64 ms` P95, `158.1 ms` max — over half of the `31.0 ms` mean / `179.2 ms` max pass):
+
+1. **O(S²) NavMesh projection and unindexed `Locate` scans (`NavMesh`, `NavMeshProjection`).** Every wander-goal attempt in `MobMotion.Tick` (up to 12 per mob) called `NavMesh.Project`, which ran an O(S²) all-pairs BFS calling `Connects()`/`Clip()` across every surface in the sector (including thousands of indoor building-prefab floors even though outdoor wandering rejects `indoors`), then ran `Closest()` + LINQ `Concat`/`Enumerable.Range` across every polygon regardless of `maxDistance`. `NavMesh.Locate` also took `loadLock` on every call and linearly scanned every outdoor polygon in the sector with per-edge `Math.Sqrt`.
+2. **Mob visibility and wander broadcast churn (`MobMotion`, `Mob`, `WorldServer`, `MobPackets`, `ViewManager`, `ViewVisibleThread`).** `MobMotion.Tick` copied every client's full view list (`Snapshot()`) every pass; `Mob.updateAnimation` called `packet.ReturnFinalPacket()` and synchronously called `FlushQueue()` for all 200 viewers on `ViewVisibleThread` per wandering mob; `CheckPlayerMobViews` locked `viewMan.views` once per nearby mob instead of batching per player; and `WorldPacket.content` grew a 0-capacity `MemoryStream` on every outbound packet.
+3. **12-bit SSEQ wraparound and pre-SSEQ retirement race (`SequencedMessage.IsAckedBy`).** `IsAckedBy` used non-wrapping `neededAck <= ackSeq`, stranding pre-wrap object messages (`neededAck` near `4095`) across the 12-bit wrap (`4095 -> 0`) and prematurely retiring post-wrap messages on stale `4095` ACKs; it also matched `neededAck == 0` if an ACK arrived between `MarkObjectSent` and `WorldPacket.getFinalData` assigning `neededAck`.
+
+Changes:
+
+- **Indexed `NavMesh.Locate` and cached `NavMesh.Project` (`NavMesh.cs`, `NavMeshProjection.cs`).** Switched `districts` to lock-free reads (`ConcurrentDictionary`), precomputed polygon outward unit edge normals on load, added a lazy per-sector 500-unit outdoor polygon spatial grid preserving exact `(region, polygon)` tie-breaking order, cached `Surface` windings and 3D `(x, y, z)`-bucketed same-sector adjacency graphs, added AABB pre-filtering and zero-LINQ candidate evaluation in `ProjectSurfaces`/`Covered`, and separated `OutdoorSurfaces` (`outdoorsOnly: true`) so outdoor mob wandering never builds or scans indoor skyscraper prefabs.
+- **Zero-copy mob motion, batched mob views, and deferred wander flushes (`MobMotion`, `Mob`, `WorldServer`, `MobPackets`, `ViewManager`, `ViewVisibleThread`, `WorldPacket`, `DynamicArray`).** Added `ViewManager.CollectVisibleMobs` and single-lock `ViewManager.ReconcileMobViews`, serialized mob updates once per broadcast via `SendNpcUpdateDataFast` with `deferFlush: true` (`MarkFlushPending`) for `Mob.updateAnimation`, pre-sized `SnapshotMobs`/`BuildMobByEntity`, and pre-sized `WorldPacket`'s `DynamicArray` to `bufferSize + 32`.
+- **12-bit modular SSEQ ACK check (`SequencedMessage.cs`).** Tracked `hasNeededAck` on `setNeededAck` (masked to 12 bits) and compared with `((ackSeq - neededAck) & 0xFFF) < 0x800`.
+
+Server-side `LoadTest --authenticated --clients 200` (Release build, 30 s warmup + 60 s measure, run serially on 2026-11-26):
+
+| Case | Status | Ramp s | Server CPU % | Echo RTT mean / max ms | Flush mean / max ms | Visibility mean / P95 / max ms | mob-motion mean / P95 / max ms | mob-views mean / max ms |
+|---|---|---:|---:|---|---:|---|---|---|
+| move 200 + world NPCs, master `098f15526` | PASS | 18.3 | 84.9 | 43.9 / 203.7 | 0.31 / 48.2 | 31.0 / 128 / 179.2 | 15.62 / 64 / 158.1 | 4.14 / 29.8 |
+| move 200 + world NPCs, this change (run 1) | PASS | 16.9 | 82.0 | **40.2 / 157.0** | **0.29 / 45.6** | **21.3 / 64 / 97.6** | **3.14 / 8 / 35.4** | 4.44 / 30.3 |
+| move 200 + world NPCs, this change (run 2) | PASS | 17.2 | 95.2 | **43.1 / 155.2** | **0.28 / 40.9** | **23.9 / 64 / 71.0** | **3.20 / 8 / 19.4** | 4.97 / 24.7 |
+| move 200 (test catalog), this change | PASS | 21.4 | 91.5 | 43.7 / 141.4 | **0.23 / 22.9** | **14.9 / 32 / 37.6** | **1.41 / 4 / 2.8** | **1.80 / 11.0** |
+
+Under 200 dense moving clients with the full world NPC catalog (~9.1–9.2 million object updates per 60 s window, 0 failures, 0 ping timeouts), `mob-motion` drops **5.0×** in mean (`15.62 ms` -> `3.14 / 3.20 ms`), **8×** in P95 (`64 ms` -> `8 ms`), and **4.5–8.1×** in max (`158.1 ms` -> `35.4 / 19.4 ms`), bringing overall visibility max from `179.2 ms` down to `97.6 / 71.0 ms` and Echo RTT max from `203.7 ms` down to `157.0 / 155.2 ms`.
+
 ## Reproduce
 
 Build Release last, because the tool refuses to run when a newer Debug server DLL exists. Then run each case serially:

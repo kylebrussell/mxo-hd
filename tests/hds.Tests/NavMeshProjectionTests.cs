@@ -188,6 +188,19 @@ public class NavMeshProjectionTests
         Assert.InRange(placed.z, site.minZ - 400, site.maxZ + 400);
     }
 
+    [Fact]
+    public void OutdoorsOnlyProjectionMatchesFullProjectionOnOutdoorStreet()
+    {
+        Load();
+        double[] from = { 17020, 495, 2693 };
+        Assert.True(NavMesh.Project(1, 17120, 495, 2793, out NavPoint full, maxDistance: 25, reachableFrom: from, requireDirect: true, outdoorsOnly: false));
+        Assert.True(NavMesh.Project(1, 17120, 495, 2793, out NavPoint outdoor, maxDistance: 25, reachableFrom: from, requireDirect: true, outdoorsOnly: true));
+        Assert.False(outdoor.location.indoors);
+        Assert.InRange(Math.Abs(full.x - outdoor.x), 0, 0.01);
+        Assert.InRange(Math.Abs(full.y - outdoor.y), 0, 0.01);
+        Assert.InRange(Math.Abs(full.z - outdoor.z), 0, 0.01);
+    }
+
     private static void Load()
     {
         string dir = AppContext.BaseDirectory;

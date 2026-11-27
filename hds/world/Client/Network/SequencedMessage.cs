@@ -26,6 +26,7 @@ namespace hds
         public UInt16 sendCounter;
         private int resendTime;
         private UInt16 neededAck;
+        private bool hasNeededAck;
         public bool isTimed;
         public bool isSent = false;
 
@@ -115,7 +116,8 @@ namespace hds
 
         public void setNeededAck(UInt16 ackSSeq)
         {
-            neededAck = ackSSeq;
+            neededAck = (UInt16)(ackSSeq & 0xFFF);
+            hasNeededAck = true;
         }
 
         public UInt16 getNeededAck()
@@ -165,12 +167,13 @@ namespace hds
         }
 
         /// <summary>
-        /// True when a client ack up to ackSeq covers this message. A message that has never been
-        /// sent can't be acked: its neededAck is still 0, which every ack would otherwise match.
+        /// True when a client ack up to ackSeq covers this message across the 12-bit SSEQ wrap (0..4095).
+        /// A message that has never been sent or has not yet been assigned its outbound SSEQ can't be acked:
+        /// its neededAck is still 0, which would otherwise match any ack before getFinalData assigns its SSEQ.
         /// </summary>
         public bool IsAckedBy(UInt16 ackSeq)
         {
-            return sendCounter > 0 && neededAck <= ackSeq;
+            return sendCounter > 0 && hasNeededAck && (((ackSeq - neededAck) & 0xFFF) < 0x800);
         }
 
         public void MarkObjectSent(long nowTickMs)

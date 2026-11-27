@@ -23,6 +23,8 @@ namespace hds
             public readonly double[] vertices, inset;
             public readonly NavLocation location;
             public readonly double minX, minZ, maxX, maxZ, centreX, centreZ, minY, maxY;
+            public readonly double winding, insetWinding;
+            internal Surface[] sameSectorNeighbors;
             private readonly double floorX, floorZ, floorC;
 
             internal Surface(double[] vertices, double floorX, double floorZ, double floorC, NavLocation location)
@@ -44,18 +46,27 @@ namespace hds
                 }
                 centreX /= vertices.Length / 2;
                 centreZ /= vertices.Length / 2;
+                winding = Area(vertices) >= 0 ? 1 : -1;
                 inset = Clip(vertices, vertices, SpawnInset);
                 if (inset.Length < 6) inset = Clip(vertices, vertices, 1);
                 if (inset.Length < 6) inset = vertices;
+                insetWinding = ReferenceEquals(inset, vertices) ? winding : (Area(inset) >= 0 ? 1 : -1);
             }
 
             public double Floor(double x, double z) => floorX * x + floorZ * z + floorC;
 
-            public bool Contains(double x, double z) => Interval(vertices, x, z, x, z, out _, out _);
+            public bool Contains(double x, double z) =>
+                x >= minX - 1e-7 && x <= maxX + 1e-7 && z >= minZ - 1e-7 && z <= maxZ + 1e-7 &&
+                Interval(vertices, winding, x, z, x, z, out _, out _);
 
-            public double[] Closest(double x, double z)
+            public void Closest(double x, double z, out double cx, out double cz)
             {
-                if (Interval(inset, x, z, x, z, out _, out _)) return new[] { x, z };
+                if (x >= minX - 1e-7 && x <= maxX + 1e-7 && z >= minZ - 1e-7 && z <= maxZ + 1e-7 &&
+                    Interval(inset, insetWinding, x, z, x, z, out _, out _))
+                {
+                    cx = x; cz = z;
+                    return;
+                }
                 double best = double.MaxValue, bx = centreX, bz = centreZ;
                 for (int i = 0; i < inset.Length; i += 2)
                 {
@@ -67,7 +78,13 @@ namespace hds
                     double distance = Square(px - x) + Square(pz - z);
                     if (distance < best) { best = distance; bx = px; bz = pz; }
                 }
-                return new[] { bx, bz };
+                cx = bx; cz = bz;
+            }
+
+            public double[] Closest(double x, double z)
+            {
+                Closest(x, z, out double cx, out double cz);
+                return new[] { cx, cz };
             }
 
             public bool Connects(Surface other) => TryPortal(other, out _, out _);
@@ -76,7 +93,8 @@ namespace hds
             {
                 portalX = portalZ = 0;
                 if (maxX + ConnectionSlack < other.minX || other.maxX + ConnectionSlack < minX ||
-                    maxZ + ConnectionSlack < other.minZ || other.maxZ + ConnectionSlack < minZ) return false;
+                    maxZ + ConnectionSlack < other.minZ || other.maxZ + ConnectionSlack < minZ ||
+                    maxY + StepHeight < other.minY || other.maxY + StepHeight < minY) return false;
                 double x = (Math.Max(minX, other.minX) + Math.Min(maxX, other.maxX)) / 2;
                 double z = (Math.Max(minZ, other.minZ) + Math.Min(maxZ, other.maxZ)) / 2;
                 if (Math.Abs(Floor(x, z) - other.Floor(x, z)) > StepHeight) return false;
@@ -125,7 +143,7 @@ namespace hds
         /// walkable route, preventing a three-metre offset from putting them in the next room through a wall.
         /// </summary>
         public static bool Project(ushort district, double x, double y, double z, out NavPoint point,
-            double maxDistance = 800, double[] reachableFrom = null, bool requireDirect = false)
+            double maxDistance = 800, double[] reachableFrom = null, bool requireDirect = false, bool outdoorsOnly = false)
         {
             point = default;
             if (!double.IsFinite(x) || !double.IsFinite(y) || !double.IsFinite(z) ||
@@ -148,13 +166,35 @@ namespace hds
                     Square(reachableFrom[0] - x) + Square(reachableFrom[2] - z) <= Square(maxDistance * 2))) sectors.Add(from.sector);
                 else reachableFrom = null;
             }
-            List<Surface> surfaces = new List<Surface>();
-            foreach (ushort id in sectors)
+            IReadOnlyList<Surface> surfaces;
+            bool singleSectorCached = false;
+            if (sectors.Count == 1)
             {
-                SectorInfo info = SectorProperties.Get(district, id);
-                if (info != null && data.sectors.TryGetValue(id, out Sector sector)) surfaces.AddRange(Surfaces(info, sector, data));
+                ushort onlyId = 0;
+                foreach (ushort id in sectors) { onlyId = id; break; }
+                SectorInfo info = SectorProperties.Get(district, onlyId);
+                if (info != null && data.sectors.TryGetValue(onlyId, out Sector sector))
+                {
+                    surfaces = outdoorsOnly ? OutdoorSurfaces(info, sector) : Surfaces(info, sector, data);
+                    singleSectorCached = true;
+                }
+                else
+                {
+                    return false;
+                }
             }
-            if (!ProjectSurfaces(surfaces, x, y, z, maxDistance, reachableFrom, requireDirect, out point)) return false;
+            else
+            {
+                List<Surface> combined = new List<Surface>();
+                foreach (ushort id in sectors)
+                {
+                    SectorInfo info = SectorProperties.Get(district, id);
+                    if (info != null && data.sectors.TryGetValue(id, out Sector sector))
+                        combined.AddRange(outdoorsOnly ? OutdoorSurfaces(info, sector) : Surfaces(info, sector, data));
+                }
+                surfaces = combined;
+            }
+            if (!ProjectSurfacesCore(surfaces, x, y, z, maxDistance, reachableFrom, requireDirect, singleSectorCached, out point)) return false;
             // Use the same final polygon choice as ordinary player positioning, including shared-edge tie breaking.
             if (!Locate(district, point.x, point.y, point.z, out NavLocation located)) return false;
             point.location = located;
@@ -189,8 +229,134 @@ namespace hds
             return found;
         }
 
+        private const double SurfaceGridCellSize = 500.0;
+        private const double SurfaceGridYCellSize = 200.0;
+
+        private static Dictionary<(int cx, int cy, int cz), List<Surface>> BuildSurfaceGrid(IReadOnlyList<Surface> surfaces)
+        {
+            var grid = new Dictionary<(int cx, int cy, int cz), List<Surface>>();
+            for (int i = 0; i < surfaces.Count; i++)
+            {
+                Surface s = surfaces[i];
+                int minCx = (int)Math.Floor((s.minX - ConnectionSlack) / SurfaceGridCellSize);
+                int maxCx = (int)Math.Floor((s.maxX + ConnectionSlack) / SurfaceGridCellSize);
+                int minCy = (int)Math.Floor((s.minY - StepHeight) / SurfaceGridYCellSize);
+                int maxCy = (int)Math.Floor((s.maxY + StepHeight) / SurfaceGridYCellSize);
+                int minCz = (int)Math.Floor((s.minZ - ConnectionSlack) / SurfaceGridCellSize);
+                int maxCz = (int)Math.Floor((s.maxZ + ConnectionSlack) / SurfaceGridCellSize);
+                for (int cx = minCx; cx <= maxCx; cx++)
+                {
+                    for (int cy = minCy; cy <= maxCy; cy++)
+                    {
+                        for (int cz = minCz; cz <= maxCz; cz++)
+                        {
+                            var key = (cx, cy, cz);
+                            if (!grid.TryGetValue(key, out List<Surface> bucket))
+                            {
+                                bucket = new List<Surface>(4);
+                                grid[key] = bucket;
+                            }
+                            bucket.Add(s);
+                        }
+                    }
+                }
+            }
+            return grid;
+        }
+
+        private static void BuildSameSectorAdjacency(List<Surface> surfaces)
+        {
+            if (surfaces.Count == 0) return;
+            var grid = BuildSurfaceGrid(surfaces);
+            var neighborLists = new List<Surface>[surfaces.Count];
+            var indexBySurface = new Dictionary<Surface, int>(surfaces.Count, ReferenceEqualityComparer.Instance);
+            for (int i = 0; i < surfaces.Count; i++)
+            {
+                neighborLists[i] = new List<Surface>(4);
+                indexBySurface[surfaces[i]] = i;
+            }
+
+            var seen = new HashSet<int>();
+            for (int i = 0; i < surfaces.Count; i++)
+            {
+                Surface s = surfaces[i];
+                seen.Clear();
+                int minCx = (int)Math.Floor((s.minX - ConnectionSlack) / SurfaceGridCellSize);
+                int maxCx = (int)Math.Floor((s.maxX + ConnectionSlack) / SurfaceGridCellSize);
+                int minCy = (int)Math.Floor((s.minY - StepHeight) / SurfaceGridYCellSize);
+                int maxCy = (int)Math.Floor((s.maxY + StepHeight) / SurfaceGridYCellSize);
+                int minCz = (int)Math.Floor((s.minZ - ConnectionSlack) / SurfaceGridCellSize);
+                int maxCz = (int)Math.Floor((s.maxZ + ConnectionSlack) / SurfaceGridCellSize);
+                for (int cx = minCx; cx <= maxCx; cx++)
+                {
+                    for (int cy = minCy; cy <= maxCy; cy++)
+                    {
+                        for (int cz = minCz; cz <= maxCz; cz++)
+                        {
+                            if (!grid.TryGetValue((cx, cy, cz), out List<Surface> bucket)) continue;
+                            for (int b = 0; b < bucket.Count; b++)
+                            {
+                                Surface other = bucket[b];
+                                int j = indexBySurface[other];
+                                if (j <= i || !seen.Add(j)) continue;
+                                if (s.Connects(other))
+                                {
+                                    neighborLists[i].Add(other);
+                                    neighborLists[j].Add(s);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            for (int i = 0; i < surfaces.Count; i++)
+            {
+                surfaces[i].sameSectorNeighbors = neighborLists[i].Count == 0
+                    ? Array.Empty<Surface>()
+                    : neighborLists[i].ToArray();
+            }
+        }
+
+        private static List<Surface> OutdoorSurfaces(SectorInfo info, Sector sector)
+        {
+            List<Surface> fast = System.Threading.Volatile.Read(ref sector.outdoorProjectionSurfaces);
+            if (fast != null) return fast;
+
+            lock (loadLock)
+            {
+                if (sector.outdoorProjectionSurfaces != null) return sector.outdoorProjectionSurfaces;
+                var result = new List<Surface>();
+                for (int g = 0; g < sector.regions.Length; g++)
+                {
+                    List<Polygon> polys = sector.regions[g];
+                    for (int p = 0; p < polys.Count; p++)
+                    {
+                        Polygon poly = polys[p];
+                        if (poly.xz.Length < 6 || Math.Abs(poly.b) < 1e-10 || Math.Abs(poly.area2) < 0.001) continue;
+                        double[] vertices = new double[poly.xz.Length];
+                        for (int i = 0; i < vertices.Length; i += 2)
+                        {
+                            vertices[i] = info.minX + poly.xz[i];
+                            vertices[i + 1] = info.minZ + poly.xz[i + 1];
+                        }
+                        double fx = -poly.a / poly.b;
+                        double fz = -poly.c / poly.b;
+                        result.Add(new Surface(vertices, fx, fz, -poly.d / poly.b - fx * info.minX - fz * info.minZ,
+                            new NavLocation { sector = info.sector, region = (ushort)g, polygon = (ushort)p }));
+                    }
+                }
+                BuildSameSectorAdjacency(result);
+                System.Threading.Volatile.Write(ref sector.outdoorProjectionSurfaces, result);
+                return result;
+            }
+        }
+
         private static List<Surface> Surfaces(SectorInfo info, Sector sector, District district)
         {
+            List<Surface> fast = System.Threading.Volatile.Read(ref sector.projectionSurfaces);
+            if (fast != null) return fast;
+
             lock (loadLock)
             {
                 if (sector.projectionSurfaces != null) return sector.projectionSurfaces;
@@ -220,88 +386,220 @@ namespace hds
                         Add(district.prefabs[pl.prefab][p], info.minX + pl.pivotX, pl.pivotY, info.minZ + pl.pivotZ, pl.rotation,
                             new NavLocation { sector = info.sector, region = (ushort)(sector.regions.Length + k), polygon = (ushort)p, indoors = true });
                 }
-                return sector.projectionSurfaces = result;
+                BuildSameSectorAdjacency(result);
+                System.Threading.Volatile.Write(ref sector.projectionSurfaces, result);
+                return result;
             }
         }
 
         internal static bool ProjectSurfaces(IReadOnlyList<Surface> all, double x, double y, double z, double maxDistance,
-            double[] from, bool requireDirect, out NavPoint point)
+            double[] from, bool requireDirect, out NavPoint point) =>
+            ProjectSurfacesCore(all, x, y, z, maxDistance, from, requireDirect, singleSectorCached: false, out point);
+
+        private static bool ProjectSurfacesCore(IReadOnlyList<Surface> all, double x, double y, double z, double maxDistance,
+            double[] from, bool requireDirect, bool singleSectorCached, out NavPoint point)
         {
             point = default;
             double feet = y - 95;
-            List<Surface> surfaces = all.Where(s => s.maxY >= feet - MaxFloorDistance && s.minY <= feet + MaxFloorDistance).ToList();
+            double minFloor = feet - MaxFloorDistance;
+            double maxFloor = feet + MaxFloorDistance;
+            double maxDistanceSq = maxDistance * maxDistance;
+
+            var surfaces = new List<Surface>(Math.Min(all.Count, 256));
+            for (int i = 0; i < all.Count; i++)
+            {
+                Surface s = all[i];
+                if (s.maxY >= minFloor && s.minY <= maxFloor) surfaces.Add(s);
+            }
+
             Surface reference = null;
             double height = MaxFloorDistance;
-            if (from != null && from.Length >= 3 && from.All(double.IsFinite))
-                foreach (Surface s in surfaces)
-                    if (s.Contains(from[0], from[2]) && Math.Abs(s.Floor(from[0], from[2]) - (from[1] - 95)) <= height)
+            bool hasFrom = from != null && from.Length >= 3 &&
+                double.IsFinite(from[0]) && double.IsFinite(from[1]) && double.IsFinite(from[2]);
+            if (hasFrom)
+            {
+                double fx = from[0], fy = from[1] - 95, fz = from[2];
+                for (int i = 0; i < surfaces.Count; i++)
+                {
+                    Surface s = surfaces[i];
+                    if (s.Contains(fx, fz))
                     {
-                        height = Math.Abs(s.Floor(from[0], from[2]) - (from[1] - 95));
-                        reference = s;
+                        double err = Math.Abs(s.Floor(fx, fz) - fy);
+                        if (err <= height)
+                        {
+                            height = err;
+                            reference = s;
+                        }
                     }
+                }
+            }
+
             Surface root = reference;
             if (root == null)
             {
                 // With no player polygon on this floor, choose the nearest height first. A closer horizontal polygon
                 // belonging to a mezzanine must not pull an arrival off the requested floor.
                 double floorError = double.MaxValue, nearest = double.MaxValue;
-                foreach (Surface s in surfaces)
+                for (int i = 0; i < surfaces.Count; i++)
                 {
-                    double[] p = s.Closest(x, z);
-                    double distance = Square(p[0] - x) + Square(p[1] - z), error = Math.Abs(s.Floor(p[0], p[1]) - feet);
-                    if (distance <= Square(maxDistance) && (error < floorError - 0.01 ||
+                    Surface s = surfaces[i];
+                    if (x < s.minX - maxDistance || x > s.maxX + maxDistance ||
+                        z < s.minZ - maxDistance || z > s.maxZ + maxDistance) continue;
+                    s.Closest(x, z, out double px, out double pz);
+                    double distance = Square(px - x) + Square(pz - z), error = Math.Abs(s.Floor(px, pz) - feet);
+                    if (distance <= maxDistanceSq && (error < floorError - 0.01 ||
                         (error <= floorError + 0.01 && distance < nearest)))
                     { root = s; floorError = error; nearest = distance; }
                 }
             }
+
             if (root != null)
             {
-                HashSet<Surface> reached = new HashSet<Surface> { root };
-                Queue<Surface> queue = new Queue<Surface>();
+                var reached = new HashSet<Surface>(ReferenceEqualityComparer.Instance) { root };
+                var queue = new Queue<Surface>();
                 queue.Enqueue(root);
-                while (queue.Count > 0)
+
+                if (singleSectorCached && root.sameSectorNeighbors != null)
                 {
-                    Surface current = queue.Dequeue();
-                    foreach (Surface other in surfaces)
-                        if (!reached.Contains(other) && current.Connects(other)) { reached.Add(other); queue.Enqueue(other); }
+                    while (queue.Count > 0)
+                    {
+                        Surface current = queue.Dequeue();
+                        Surface[] neighbors = current.sameSectorNeighbors;
+                        for (int i = 0; i < neighbors.Length; i++)
+                        {
+                            Surface other = neighbors[i];
+                            if (other.maxY >= minFloor && other.minY <= maxFloor && reached.Add(other))
+                            {
+                                queue.Enqueue(other);
+                            }
+                        }
+                    }
                 }
-                surfaces = surfaces.Where(reached.Contains).ToList();
+                else
+                {
+                    var grid = BuildSurfaceGrid(surfaces);
+                    while (queue.Count > 0)
+                    {
+                        Surface current = queue.Dequeue();
+                        if (current.sameSectorNeighbors != null)
+                        {
+                            Surface[] same = current.sameSectorNeighbors;
+                            for (int i = 0; i < same.Length; i++)
+                            {
+                                Surface other = same[i];
+                                if (other.maxY >= minFloor && other.minY <= maxFloor && reached.Add(other))
+                                {
+                                    queue.Enqueue(other);
+                                }
+                            }
+                        }
+
+                        int minCx = (int)Math.Floor((current.minX - ConnectionSlack) / SurfaceGridCellSize);
+                        int maxCx = (int)Math.Floor((current.maxX + ConnectionSlack) / SurfaceGridCellSize);
+                        int minCy = (int)Math.Floor((current.minY - StepHeight) / SurfaceGridYCellSize);
+                        int maxCy = (int)Math.Floor((current.maxY + StepHeight) / SurfaceGridYCellSize);
+                        int minCz = (int)Math.Floor((current.minZ - ConnectionSlack) / SurfaceGridCellSize);
+                        int maxCz = (int)Math.Floor((current.maxZ + ConnectionSlack) / SurfaceGridCellSize);
+                        for (int cx = minCx; cx <= maxCx; cx++)
+                        {
+                            for (int cy = minCy; cy <= maxCy; cy++)
+                            {
+                                for (int cz = minCz; cz <= maxCz; cz++)
+                                {
+                                    if (!grid.TryGetValue((cx, cy, cz), out List<Surface> bucket)) continue;
+                                    for (int b = 0; b < bucket.Count; b++)
+                                    {
+                                        Surface other = bucket[b];
+                                        if (reached.Contains(other)) continue;
+                                        if (current.sameSectorNeighbors != null && other.sameSectorNeighbors != null &&
+                                            current.location.sector == other.location.sector) continue;
+                                        if (current.Connects(other))
+                                        {
+                                            reached.Add(other);
+                                            queue.Enqueue(other);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                var filtered = new List<Surface>(reached.Count);
+                for (int i = 0; i < surfaces.Count; i++)
+                {
+                    if (reached.Contains(surfaces[i])) filtered.Add(surfaces[i]);
+                }
+                surfaces = filtered;
             }
-            double best = maxDistance * maxDistance;
+
+            double best = maxDistanceSq;
             double bestHeight = double.MaxValue;
             bool found = false;
-            foreach (Surface s in surfaces)
+            NavPoint bestPoint = default;
+
+            void Consider(Surface s, double px, double pz)
             {
-                IEnumerable<double[]> candidates = new[] { s.Closest(x, z) };
-                if (reference != null && requireDirect)
-                    candidates = candidates.Concat(new[] { new[] { s.centreX, s.centreZ }, s.Closest(from[0], from[2]) })
-                        .Concat(Enumerable.Range(0, s.inset.Length / 2).Select(i => new[] { s.inset[i * 2], s.inset[i * 2 + 1] }));
-                foreach (double[] candidate in candidates)
+                double distance = Square(px - x) + Square(pz - z);
+                if (distance > best) return;
+                double floor = s.Floor(px, pz);
+                double floorErr = Math.Abs(floor - feet);
+                if (floorErr > MaxFloorDistance) return;
+                if (found && Math.Abs(distance - best) < 1e-7 && floorErr > bestHeight) return;
+                if (reference != null && requireDirect && !Covered(surfaces, from[0], from[2], px, pz)) return;
+                NavLocation at = s.location;
+                at.floorY = floor;
+                bestPoint = new NavPoint { x = px, y = floor + 95, z = pz, location = at };
+                found = true;
+                best = distance;
+                bestHeight = floorErr;
+            }
+
+            bool checkExtra = reference != null && requireDirect;
+            for (int i = 0; i < surfaces.Count; i++)
+            {
+                Surface s = surfaces[i];
+                if (x < s.minX - maxDistance || x > s.maxX + maxDistance ||
+                    z < s.minZ - maxDistance || z > s.maxZ + maxDistance) continue;
+
+                s.Closest(x, z, out double cx, out double cz);
+                Consider(s, cx, cz);
+                if (checkExtra)
                 {
-                    double px = candidate[0], pz = candidate[1], floor = s.Floor(px, pz);
-                    double distance = Square(px - x) + Square(pz - z);
-                    if (distance > best || Math.Abs(floor - feet) > MaxFloorDistance) continue;
-                    if (found && Math.Abs(distance - best) < 1e-7 && Math.Abs(floor - feet) > bestHeight) continue;
-                    if (reference != null && requireDirect && !Covered(surfaces, from[0], from[2], px, pz)) continue;
-                    NavLocation at = s.location;
-                    at.floorY = floor;
-                    point = new NavPoint { x = px, y = floor + 95, z = pz, location = at };
-                    found = true;
-                    best = distance;
-                    bestHeight = Math.Abs(floor - feet);
+                    Consider(s, s.centreX, s.centreZ);
+                    s.Closest(from[0], from[2], out double fx, out double fz);
+                    Consider(s, fx, fz);
+                    double[] inset = s.inset;
+                    for (int k = 0; k < inset.Length; k += 2)
+                    {
+                        Consider(s, inset[k], inset[k + 1]);
+                    }
                 }
             }
+
+            point = bestPoint;
             return found;
         }
 
         private static bool Covered(List<Surface> surfaces, double x, double z, double tx, double tz)
         {
-            List<(double start, double end)> intervals = new List<(double, double)>();
-            foreach (Surface s in surfaces)
-                if (Interval(s.vertices, x, z, tx, tz, out double start, out double end)) intervals.Add((start, end));
-            double covered = 0, slack = ConnectionSlack / Math.Max(1, Math.Sqrt(Square(tx - x) + Square(tz - z)));
-            foreach (var interval in intervals.OrderBy(i => i.start))
+            double segMinX = Math.Min(x, tx) - 1e-7, segMaxX = Math.Max(x, tx) + 1e-7;
+            double segMinZ = Math.Min(z, tz) - 1e-7, segMaxZ = Math.Max(z, tz) + 1e-7;
+            List<(double start, double end)> intervals = new List<(double, double)>(8);
+            for (int i = 0; i < surfaces.Count; i++)
             {
+                Surface s = surfaces[i];
+                if (s.maxX < segMinX || s.minX > segMaxX || s.maxZ < segMinZ || s.minZ > segMaxZ) continue;
+                if (Interval(s.vertices, s.winding, x, z, tx, tz, out double start, out double end))
+                {
+                    intervals.Add((start, end));
+                }
+            }
+            double covered = 0, slack = ConnectionSlack / Math.Max(1, Math.Sqrt(Square(tx - x) + Square(tz - z)));
+            intervals.Sort((a, b) => a.start.CompareTo(b.start));
+            for (int i = 0; i < intervals.Count; i++)
+            {
+                var interval = intervals[i];
                 if (interval.start > covered + slack) return false;
                 covered = Math.Max(covered, interval.end);
                 if (covered >= 1 - 1e-8) return true;
@@ -310,10 +608,9 @@ namespace hds
         }
 
         // Clip a segment to a convex polygon, retaining its parameter interval.
-        private static bool Interval(double[] polygon, double x, double z, double tx, double tz, out double start, out double end)
+        private static bool Interval(double[] polygon, double winding, double x, double z, double tx, double tz, out double start, out double end)
         {
             start = 0; end = 1;
-            double winding = Area(polygon) >= 0 ? 1 : -1;
             for (int i = 0; i < polygon.Length; i += 2)
             {
                 int j = (i + 2) % polygon.Length;

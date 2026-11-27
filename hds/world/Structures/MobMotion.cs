@@ -174,24 +174,32 @@ namespace hds
         {
             var visible=new HashSet<Mob>();
             var selected=new HashSet<Mob>();
-            foreach(var client in clients)
+            for(int ci=0;ci<clients.Count;ci++)
+            {
+                var client=clients[ci];
                 if(client?.playerData!=null&&client.Alive&&client.playerData.getOnWorld()&&!client.playerData.waitForRPCShutDown)
                 {
                     var data=client.playerData;
-                    ushort targetView=data.currentSelectedTargetViewId;
-                    ushort targetSpawn=data.currentSelectedTargetSpawnId;
-                    foreach(var view in client.viewMan.Snapshot())
-                    {
-                        if(!view.viewCreated||view.viewNeedsToBeDeleted||!mobs.TryGetValue(view.entityId,out var mob)||
-                            !Ordinary(mob)||mob.getDistrict()!=data.getDistrictId())continue;
-                        visible.Add(mob);
-                        // The native client selects the NPC when opening its radial.
-                        if(!data.isDead&&view.ViewID==targetView&&view.spawnId==targetSpawn)selected.Add(mob);
-                    }
+                    // The native client selects the NPC when opening its radial.
+                    client.viewMan.CollectVisibleMobs(mobs,data.getDistrictId(),data.isDead,
+                        data.currentSelectedTargetViewId,data.currentSelectedTargetSpawnId,visible,selected);
                 }
+            }
             lock(sync)
             {
-                foreach(var old in moving.Keys.Where(m=>!visible.Contains(m)).ToArray())moving.Remove(old);
+                List<Mob> stale=null;
+                foreach(var mob in moving.Keys)
+                {
+                    if(!visible.Contains(mob))
+                    {
+                        if(stale==null)stale=new List<Mob>();
+                        stale.Add(mob);
+                    }
+                }
+                if(stale!=null)
+                {
+                    for(int i=0;i<stale.Count;i++)moving.Remove(stale[i]);
+                }
                 foreach(var mob in visible)
                 {
                     if(!moving.TryGetValue(mob,out var state)||state.Life!=mob.DeathGeneration)moving[mob]=state=New(mob,now);
@@ -224,7 +232,8 @@ namespace hds
                             enrage!=null&&!TimedEffects.ForMob(mob).Effects.IsCurrent(enrage,now))
                         {Stop(mob,state,now);continue;}
                         var to=Position(target);
-                        if(Math.Abs(from[1]-to[1])>150||Math.Pow(to[0]-mob.xBase,2)+Math.Pow(to[2]-mob.zBase,2)>25000000)
+                        double leashDx=to[0]-mob.xBase,leashDz=to[2]-mob.zBase;
+                        if(Math.Abs(from[1]-to[1])>150||leashDx*leashDx+leashDz*leashDz>25000000)
                         {Stop(mob,state,now);continue;}
                         bool straight=NavMesh.HasSightPath(mob.getDistrict(),from[0],from[1],from[2],to[0],to[1],to[2]);
                         double distanceSquared=DistanceSquared(to,from);
@@ -272,7 +281,7 @@ namespace hds
                         {
                             double angle=state.Random.NextDouble()*Math.PI*2,radius=WanderRadius*Math.Sqrt(state.Random.NextDouble());
                             if(NavMesh.Project(mob.getDistrict(),mob.xBase+Math.Cos(angle)*radius,mob.yBase,mob.zBase+Math.Sin(angle)*radius,
-                                out var goal,maxDistance:25,reachableFrom:from,requireDirect:true)&&!goal.location.indoors&&Math.Abs(goal.y-from[1])<=150)
+                                out var goal,maxDistance:25,reachableFrom:from,requireDirect:true,outdoorsOnly:true)&&!goal.location.indoors&&Math.Abs(goal.y-from[1])<=150)
                             {state.Goal=new[]{goal.x,goal.y,goal.z};break;}
                         }
                         if(state.Goal==null)state.WaitUntil=now+MinimumIdleSeconds;
@@ -282,7 +291,8 @@ namespace hds
                     double[] goalAt=state.Goal;
                     mob.setXPos(next.x);mob.setYPos(next.y);mob.setZPos(next.z);
                     mob.setRotation(MobAggro.YawTowards(from[0],from[2],goalAt[0],goalAt[2]));
-                    if(state.Target==null&&Math.Pow(next.x-goalAt[0],2)+Math.Pow(next.z-goalAt[2],2)<1)
+                    double goalDx=next.x-goalAt[0],goalDz=next.z-goalAt[2];
+                    if(state.Target==null&&goalDx*goalDx+goalDz*goalDz<1)
                     {
                         Stop(mob,state,now,publishArrival:true);
                         continue;
