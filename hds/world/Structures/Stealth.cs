@@ -50,6 +50,8 @@ namespace hds
         /// <summary>MasterShadowActive: 180 s, ISDrainWithAbilityDeactivation every 5 s taking its value 25.</summary>
         public const double ShadowSeconds = 180.0, ShadowDrainSeconds = 5.0;
         public const int ShadowDrain = 25;
+        // DatamineTap1..4 have DeactivateShadowIfInInv with a four-second update interval.
+        private const double DatamineTapCheckSeconds = 4.0;
         /// <summary>NPCDetection_DistanceFactor and NPCDetection_NoiseFactor console variables, both 1.0 by default (0x628190b0).</summary>
         public const float DistanceFactor = 1.0f, NoiseFactor = 1.0f;
 
@@ -523,7 +525,11 @@ namespace hds
             if (state.Seconds > 0)
                 DelayedActions.AfterFor(client, state.Seconds, () => End(client, "expired", true, generation));
             if (def.Periodic) Schedule(client, generation, UpdateSeconds, Update);
-            if (def.Kind == Kind.Shadow) Schedule(client, generation, ShadowDrainSeconds, Drain);
+            if (def.Kind == Kind.Shadow)
+            {
+                Schedule(client, generation, DatamineTapCheckSeconds, CheckDatamineTap);
+                Schedule(client, generation, ShadowDrainSeconds, Drain);
+            }
             return state;
         }
 
@@ -574,6 +580,24 @@ namespace hds
                 }
             }
             if (DetectedByPlayer(client, state)) End(client, "revealed", true, state.Generation);
+        }
+
+        private static void CheckDatamineTap(WorldClient client, State state)
+        {
+            var data = client.playerData;
+            if (!data.getOnWorld() || data.worldChangePending || data.isDead || data.duelDeath) return;
+
+            bool hasTap;
+            try
+            {
+                hasTap = databases.WorldLuggablesDb.HasDatamineTap(data.getCharID());
+            }
+            catch (System.Data.Common.DbException ex)
+            {
+                Output.WriteDebugLog($"[STEALTH] Datamine tap check failed for char={data.getCharID()}: {ex.Message}");
+                return;
+            }
+            if (hasTap) End(client, "carrying a Datamine tap", true, state.Generation);
         }
 
         /// <summary>ISDrainWithAbilityDeactivation: take the value; when there isn't enough Inner Strength the ability ends.</summary>

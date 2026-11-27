@@ -20,6 +20,15 @@ namespace hds.databases
             for (int i = 0; i < values.Length; i += 2) q.Parameters.AddWithValue((string)values[i], values[i + 1]);
             return q;
         }
+        internal static bool HasDatamineTap(uint character)
+        {
+            using var connection = Open();
+            using var command = Cmd(connection, null,
+                "SELECT 1 FROM inventory WHERE charId=@c AND slot BETWEEN 1 AND 96 AND goid BETWEEN 47276 AND 47279 LIMIT 1",
+                "@c", character);
+            return command.ExecuteScalar() != null;
+        }
+
         public static List<DataMining.Ground> Load()
         {
             using var c = Open();
