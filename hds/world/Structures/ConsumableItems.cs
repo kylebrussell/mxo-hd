@@ -87,6 +87,9 @@ namespace hds
             { 39759, HealInhalers.Consumable(718) },
             { 39760, HealInhalers.Consumable(719) },
             { 39761, HealInhalers.Consumable(720) },
+            { OptimizerConsumables.InhalerItem, OptimizerConsumables.Consumable(OptimizerConsumables.Inhaler) },
+            { OptimizerConsumables.HypoItem, OptimizerConsumables.Consumable(OptimizerConsumables.Hypo) },
+            { OptimizerConsumables.OverdriveItem, OptimizerConsumables.Consumable(OptimizerConsumables.Overdrive) },
         };
 
         public static bool TryGet(UInt32 goid, out Consumable consumable)
@@ -119,6 +122,8 @@ namespace hds
             if (goid == BlueMarbles.Item3) return 50;
             if (goid >= HealInhalers.FirstItem && goid <= HealInhalers.LastItem)
                 return HealInhalers.RequiredLevel(goid);
+            if (goid >= OptimizerConsumables.InhalerItem && goid <= OptimizerConsumables.OverdriveItem)
+                return OptimizerConsumables.RequiredLevel(goid);
             if (goid >= TacticBoostItems.FirstItem && goid <= TacticBoostItems.LastItem)
                 return TacticBoostItems.RequiredLevel(goid);
             return goid >= 39407 && goid <= 39410 ? (int)(goid - 39406) * 10 : 0;

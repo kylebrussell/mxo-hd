@@ -113,6 +113,7 @@ public static partial class Scenarios
         new Scenario("tactic-boost-consumables", TacticBoostConsumables, StillNpcs),
         new Scenario("inner-strength-booster", InnerStrengthBoosterUse, StillNpcs),
         new Scenario("blue-marble-consumables", BlueMarbleConsumables, StillNpcs),
+        new Scenario("optimizer-consumables", OptimizerConsumablesUse, StillNpcs),
         new Scenario("heal-inhalers", HealInhalersUse, new Dictionary<string, string>(StillNpcs)
         {
             ["MXO_DESPERATION_QA_HOLD_HEALTH"] = "1"

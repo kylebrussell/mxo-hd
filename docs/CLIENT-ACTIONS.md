@@ -225,7 +225,7 @@ Open the stock inbox from Phone > Email. Retail also sent system mail for loot o
 | `5c` | Slot u16, PersonalInventoryItem: drop a luggable item into the world (a dragged bag item released over the world, 0x621e1d10). The client refuses anything else: "You can only drop luggable objects in the world." The other sender is never called | D | partial: shared light-luggable drop/pickup and persistence; heavy attachments absent (DATA-MINING.md) | low |
 | `60` | Compile stored code into an item (ObjectID, Slot u16, PersonalInventoryItem 0 = a code storage slot, InvSlotOfToolUsed, FromCrafting): the Compile window's button (`CfCo`, 0x620836b0) and the Loading Area storage window. The answer is `61 <ResultCode>` | D | partial: owned bits, fragments and supported ordinary item codes. Ability-code archive economy unresolved. | medium |
 | `66` | Slot u8, TargetID: a mission item dragged onto the NPC whose key it carries (0x621eb080). The client prints "You hand over the %s." itself | D | handled (new): the mission's Give goal, as the NPC menu's Give | medium |
-| `80 c6` | PillInvSlot: use a pill from the bag (callers in the inventory and hotbar menus) | D | partial: owned supported pill goes through existing effect/timer/removal path, including [RSI modification pills](#rsi-modification-pills) [Quicksilver Pill](#quicksilver-pill), [Tactic Boosts](#tactic-boost-consumables), the [IS Booster](#inner-strength-booster), [Blue Marbles](#blue-marble-consumables), and [Health Inhalers](#health-inhalers) | low |
+| `80 c6` | PillInvSlot: use a pill from the bag (callers in the inventory and hotbar menus) | D | partial: owned supported pill goes through existing effect/timer/removal path, including [RSI modification pills](#rsi-modification-pills) [Quicksilver Pill](#quicksilver-pill), [Tactic Boosts](#tactic-boost-consumables), the [IS Booster](#inner-strength-booster), [Blue Marbles](#blue-marble-consumables), [Health Inhalers](#health-inhalers), and [Optimizer and Overdrive items](#optimizer-and-overdrive-consumables) | low |
 | `81 0e` | Vendor buy (ItemTypeID, BuyBackLastItemSold) | D, C 40 | handled: ordinary purchase places the item and debits Info atomically; full bags are refused; Buy Back uses its separate last-sale receipt | high |
 | `81 11` | Vendor sell (Appraise, Slot) | D, C 5 | handled | high |
 | `81 10` | StringID, CloseUI, sent as `00 00 00 00 01`. Guess: closing the vendor window | C 9 | handled: CloseUI=1 invalidates active vendor session; listed-stock/session authority enforced | low |
@@ -880,6 +880,29 @@ Run `heal-inhalers` at Mara Central (17000,495,2300). CSR starts at
 bags 5–9 in order and wait for expiry between doses. Expected HP after
 each tier is 212/236/269/314/383. Try the ordinary Health Pill in bag 10
 during reuse to confirm it stays in the bag.
+
+### Optimizer and Overdrive consumables
+
+Items 47111–47113 grant templates 1275–1277. All require character level
+45, cast for one second, and have an individual 30-second timer. Both
+owned-item request forms spend one item after the cast.
+
+- Code Optimizer Inhaler reduces Inner Strength cost by 10% (117), so
+  Hyper-Dodge costs 18 instead of 20 while active.
+- Code Optimizer Hypo adds 30 to maximum Inner Strength (109).
+- Overdrive Hypo adds +8 to the four damage stats (159, 171, 172, 1034)
+  and applies Enrage (93). Overdrive cannot be dismissed. The shipped
+  update effect plays on activation in interlock, then every four seconds
+  in interlock.
+
+The modifiers last 300 seconds. The server accepts the duplicated internal
+ID 1276 from an item-bearing use of bag item 47113, using its triggered
+template 1277 for the effect. The normal Hypo keeps source 1276.
+
+Run `optimizer-consumables` at Mara Central (17000,495,2300). Use bags 5,
+6 and 7. Compare Hyper-Dodge's IS debit and check the +30 maximum and
+Overdrive records. Open close combat with the Melee Dummy two metres east
+at (17200,495,2300). Check the periodic FX and the Enrage withdrawal gate.
 
 ## Prompts and FX tokens
 
