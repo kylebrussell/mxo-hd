@@ -250,6 +250,13 @@ public sealed class WorldSession : IDisposable
             }
             return;
         }
+        // Stock client.dll's CThreadedUDPDriver::GetPacket (0x623C096F..0x623C098A) drops any datagram whose
+        // raw byte 5 (IV[4] on an encrypted 0x01 packet) is 0x00 without checking (raw[0] & 1).
+        if (packet.Length > 5 && packet[5] == 0x00)
+        {
+            AddProblem("Encrypted server packet has wire[5] (IV[4]) == 0x00; stock client CThreadedUDPDriver::GetPacket drops it");
+            return;
+        }
 
         ArrayList? decrypted = receiveCypher.decrypt(packet, packet.Length);
         if (decrypted == null)

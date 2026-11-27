@@ -76,4 +76,96 @@ public class WorldEncryptionTests
         stop.Cancel();
         await decrypting;
     }
+
+    [Fact]
+    public void EncryptGeneratesFreshIvAndNeverEmitsZeroWireByteFive()
+    {
+        WorldEncryption sender = new WorldEncryption();
+        WorldEncryption reader = new WorldEncryption();
+        byte[] plain = { 0x02 };
+        byte[]? previousIv = null;
+
+        for (int i = 0; i < 2000; i++)
+        {
+            byte[] wire = sender.encrypt(plain, plain.Length, 0x7f, 1, (ushort)((i + 1) & 0xfff));
+            Assert.Equal(0x01, wire[0]);
+            Assert.NotEqual(0x00, wire[5]); // IV[4]: stock client CThreadedUDPDriver::GetPacket drops wire[5] == 0
+
+            byte[] iv = wire[1..17];
+            if (previousIv != null)
+            {
+                Assert.NotEqual(previousIv, iv);
+            }
+            previousIv = iv;
+
+            ArrayList decrypted = reader.decrypt(wire, wire.Length);
+            Assert.NotNull(decrypted);
+            Assert.Equal(plain, (byte[])decrypted[0]);
+        }
+    }
+
+    [Fact]
+    public void DecryptingClientPacketWithZeroIvByteFourDoesNotPoisonSubsequentEncrypts()
+    {
+        byte[] sessionKey = new byte[16];
+        for (int i = 0; i < sessionKey.Length; i++) sessionKey[i] = (byte)(0x21 + i);
+
+        // Build a valid encrypted client->server datagram whose IV[4] == 0x00 (wire[5] == 0x00),
+        // matching the 1-in-256 packets stock client.dll sends that used to poison WorldEncryption.IV
+        // and cause a 12-second server->client blackout.
+        byte[] badClientIv = { 0x11, 0x22, 0x33, 0x44, 0x00, 0x55, 0x66, 0x77, 0x88, 0x99, 0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff };
+        byte[] clientPlain = { 0x02 };
+        byte[] clientWire = EncryptWithExplicitIv(sessionKey, badClientIv, clientPlain, 0x7f, 136, 256);
+        Assert.Equal(0x00, clientWire[5]);
+
+        WorldEncryption server = new WorldEncryption(sessionKey);
+        ArrayList inbound = server.decrypt(clientWire, clientWire.Length);
+        Assert.NotNull(inbound);
+        Assert.Equal(clientPlain, (byte[])inbound[0]);
+
+        WorldEncryption clientPeer = new WorldEncryption(sessionKey);
+        for (int i = 0; i < 500; i++)
+        {
+            byte[] reply = server.encrypt(clientPlain, clientPlain.Length, 0x7f, 136, (ushort)(257 + i));
+            Assert.NotEqual(0x00, reply[5]);
+            Assert.NotEqual(badClientIv, reply[1..17]);
+
+            ArrayList decrypted = clientPeer.decrypt(reply, reply.Length);
+            Assert.NotNull(decrypted);
+            Assert.Equal(clientPlain, (byte[])decrypted[0]);
+        }
+    }
+
+    private static byte[] EncryptWithExplicitIv(byte[] key, byte[] iv, byte[] plainData, ushort pss, ushort cseq, ushort sseq)
+    {
+        uint seqValue = ((uint)pss << 24) | ((uint)cseq << 12) | sseq;
+        PacketContent body = new PacketContent();
+        body.AddUint16((ushort)(plainData.Length + 4), 1);
+        body.AddByteArray(TimeUtils.getCurrentTime());
+        body.AddUint32(seqValue, 0);
+        body.AddByteArray(plainData);
+
+        byte[] bodyBytes = body.ReturnFinalPacket();
+        int padding = 16 - ((bodyBytes.Length + 4) % 16);
+        byte[] padBytes = new byte[padding];
+        Array.Fill(padBytes, (byte)padding);
+
+        PacketContent withCrc = new PacketContent();
+        withCrc.AddByteArray(new Crc32().checksumB(bodyBytes, 1));
+        withCrc.AddByteArray(bodyBytes);
+        withCrc.AddByteArray(padBytes);
+
+        byte[] plaintext = withCrc.ReturnFinalPacket();
+        byte[] ciphertext = new byte[plaintext.Length];
+        MxoTwofish tf = new MxoTwofish();
+        tf.SetKey(key);
+        tf.SetIV(iv);
+        tf.Encrypt(plaintext, ciphertext);
+
+        PacketContent wire = new PacketContent();
+        wire.AddByte(0x01);
+        wire.AddByteArray(iv);
+        wire.AddByteArray(ciphertext);
+        return wire.ReturnFinalPacket();
+    }
 }
