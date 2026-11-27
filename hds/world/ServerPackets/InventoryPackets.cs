@@ -15,17 +15,20 @@ namespace hds
         internal static byte[] BuildEquipmentRefusal(byte[] request)
         {
             byte slot = request != null && request.Length > 0 && request[0] < 0x6b ? request[0] : (byte)0;
-            return new byte[] { 0x65, slot, 0, slot, 0, 0 };
+            return BuildInventoryItemMove(slot, slot);
         }
 
-        public void sendInventoryItemMove(UInt16 sourceSlot, UInt16 destSlot, WorldClient client)
+        public void sendInventoryItemMove(UInt16 sourceSlot, UInt16 destSlot, WorldClient client) =>
+            client.messageQueue.addRpcMessage(BuildInventoryItemMove(sourceSlot, destSlot));
+
+        internal static byte[] BuildInventoryItemMove(ushort sourceSlot, ushort destSlot)
         {
             PacketContent pak = new PacketContent();
             pak.AddByte(0x65);
             pak.AddUint16(sourceSlot,1);
             pak.AddUint16(destSlot,1);
             pak.AddByte(0x00);
-            client.messageQueue.addRpcMessage(pak.ReturnFinalPacket());
+            return pak.ReturnFinalPacket();
         }
 
         public void sendInventoryItemAdd(UInt16 freeSlot, UInt32 itemId, ushort amount, UInt16 type, WorldClient client)

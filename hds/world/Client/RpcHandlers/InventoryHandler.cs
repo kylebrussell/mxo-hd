@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.Common;
 using System.Collections;
 using System.Text;
 
@@ -24,23 +25,71 @@ namespace hds
 
         public void processItemMove(ref byte[] packet)
         {
-            byte[] sourceSlot = {packet[0], packet[1]};
-            byte[] destSlot   = {packet[2], packet[3]};
-
-            UInt16 fromSlot =  NumericalUtils.ByteArrayToUint16(sourceSlot,1);
-            UInt16 toSlot   = NumericalUtils.ByteArrayToUint16(destSlot,1);
-            if(PrisonDevices.Equipment(Store.currentClient,fromSlot,toSlot)) return;
-            if(!MissionPersistence.MoveItem(Store.currentClient,fromSlot,toSlot))
+            WorldClient client = Store.currentClient;
+            var publication = new AbilityAcquisition.Publication(client);
+            ushort source = packet?.Length >= 2 ? BitConverter.ToUInt16(packet, 0) : (ushort)0;
+            if (packet == null || (packet.Length != 4 && packet.Length != 5) ||
+                (packet.Length == 5 && packet[4] != 0))
             {
-                Store.dbManager.WorldDbHandler.UpdateInventorySlot(fromSlot, toSlot, Store.currentClient.playerData.getCharID());
-                MissionRuntime.OnInventoryItemMoved(Store.currentClient, fromSlot, toSlot);
+                RefuseSlotMove(client, publication, source, "That inventory move is unavailable.");
+                return;
             }
-            TutorialMission.Of(Store.currentClient)?.OnInventoryItemMoved(fromSlot, toSlot);
 
-            ServerPackets pak = new ServerPackets();
-            pak.sendInventoryItemMove(fromSlot, toSlot, Store.currentClient);
+            ushort dest = BitConverter.ToUInt16(packet, 2);
+            if (PrisonDevices.Equipment(client, source, dest)) return;
+            if (source > PvpArchives.BookSlot || dest > PvpArchives.BookSlot)
+            {
+                RefuseSlotMove(client, publication, source, "That inventory slot is unavailable.");
+                return;
+            }
+
+            if (source != dest)
+            {
+                string refusal = CommitSlotMove(client, publication.Character, source, dest);
+                if (refusal != null)
+                {
+                    RefuseSlotMove(client, publication, source, refusal);
+                    return;
+                }
+            }
+
+            if (publication.Publish(client, ServerPackets.BuildInventoryItemMove(source, dest))) client.FlushQueue();
+            Output.WriteDebugLog($"[INVENTORY] Slot move committed char={publication.Character} source={source} dest={dest}");
         }
 
+        private static string CommitSlotMove(WorldClient client, uint character, ushort source, ushort dest)
+        {
+            try
+            {
+                lock (client.playerData.missionSync)
+                {
+                    // These destination slots require a mission checkpoint change; regular swaps
+                    // must never displace their rows. The dedicated source move expects an empty slot.
+                    if (client.playerData.missionProgress?.itemSlots.ContainsValue(dest) == true)
+                        return "That slot holds a mission item. Your items were kept.";
+
+                    if (!MissionPersistence.MoveItem(client, source, dest) &&
+                        !Store.dbManager.WorldDbHandler.MoveInventorySlots(character, source, dest))
+                        return "Those slots cannot be moved. Your items were kept.";
+
+                    TutorialMission.Of(client)?.OnInventoryItemMoved(source, dest);
+                    return null;
+                }
+            }
+            catch (Exception error) when (error is DbException || error is MissionCheckpointException)
+            {
+                Output.WriteDebugLog($"[INVENTORY] Slot move rolled back char={character} source={source} dest={dest}: {error.Message}");
+                return "The inventory move could not be saved. Your items were kept.";
+            }
+        }
+
+        private static void RefuseSlotMove(WorldClient client, AbilityAcquisition.Publication publication,
+            ushort source, string reason)
+        {
+            if (source > PvpArchives.BookSlot) source = 0;
+            if (publication.Publish(client, ServerPackets.BuildInventoryItemMove(source, source),
+                ServerPackets.BuildSystemChatMessage(reason, "BROADCAST"))) client.FlushQueue();
+        }
 
         public void processItemAdd(UInt32 itemID, UInt16 type)
         {

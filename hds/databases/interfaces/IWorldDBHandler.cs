@@ -90,6 +90,7 @@ namespace hds.databases.interfaces{
         AttributeAllocation.Result AllocateAttributes(UInt32 character, System.Collections.Generic.IReadOnlyList<CharacterAttributes.Raise> raises);
         //NEW
         void UpdateInventorySlot(UInt16 sourceSlot, UInt16 destSlot, UInt32 charId);
+        bool MoveInventorySlots(uint character, ushort source, ushort destination);
         UInt16 GetFirstNewSlot();
         System.Collections.Generic.HashSet<int> GetCompletedMissions(UInt32 charId);
         void SaveMissionCompleted(UInt32 charId, int missionId);

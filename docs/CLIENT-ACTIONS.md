@@ -433,6 +433,24 @@ four Code Bits after the source change. A split of three succeeds, followed
 by a plain drag from bag 4 onto bag 3 to merge. The headless test also
 forces the second write of a merge to fail and then verifies a clean retry.
 
+### Atomic bag-slot swaps
+
+A plain drag onto another item sends the inventory move opcode 65.
+The stock reply exchanges both slots, so the server locks and moves the
+two owned rows in one transaction. It replies after commit. A drag to an
+empty slot moves only the source. Both paths keep the item row, quantity
+and descriptor intact.
+
+A failed write keeps both slots and returns the existing same-slot
+response, which clears the stock drag cursor, plus a visible reason.
+Tracked mission items still move to an empty slot with their checkpoint.
+A plain swap cannot displace a tracked mission item or cross worn slots.
+
+In NativeQa mode **bag-slot-swap-atomic**, drag the Lock Pick onto the
+Antibiotics first. A constraint in the disposable fixture rejects the
+second write. Check the two unchanged slots and cleared cursor, then
+drag the Lock Pick onto the Code Analyser for a successful swap.
+
 ## Loot acknowledgements and closure
 
 Server `81 20` lists **claimed item identities to remove**, not the remaining items. Client `621e2bb0` passes each pair to `621cd6d0`, which removes the matching container row; an empty array removes none. Server `81 1a` closes the container window through `621ca200`. Mission Search now acknowledges exact original window pairs and closes only after all contents transfer. Full bags retain the icon and selection. NPC replies likewise acknowledge only transferred drops. See [evidence and checklist](MISSION-LOOT-CLAIM-CLOSE.md).

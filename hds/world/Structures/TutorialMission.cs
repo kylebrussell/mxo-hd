@@ -631,9 +631,9 @@ namespace hds
             foreach (var item in itemSlots.ToList())
             {
                 if (item.Value == fromSlot)
-                {
                     itemSlots[item.Key] = toSlot;
-                }
+                else if (item.Value == toSlot)
+                    itemSlots[item.Key] = fromSlot;
             }
         }
 
