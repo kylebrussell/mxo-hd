@@ -157,6 +157,8 @@ namespace hds
         /// </summary>
         public bool UseItem(UInt16 slot, UInt16 abilityId)
         {
+            if (slot < 1 || slot > 96) return false;
+
             WorldClient client = Store.currentClient;
             ClientData data = client.playerData;
             lock (data.craftingSync)
@@ -174,8 +176,6 @@ namespace hds
                 bool requiresOutsideCombat = appearance || blueMarble || andvaranaut;
                 bool timedEffect = consumable.Effect == ConsumableItems.Effect.TimedBuff ||
                     consumable.Effect == ConsumableItems.Effect.HealOverTime;
-                if ((appearance || timedEffect) && (slot < 1 || slot > 96))
-                    return false;
                 if (Stealth.IsOn(client, Stealth.MasterShadowAbility) && AbilityCatalog.Find(abilityId)?.CastSeconds > 0)
                 {
                     pak.sendSystemChatMessage(client, "You cannot use a timed item while Master Shadow is active.", "SYSTEM");
@@ -281,14 +281,20 @@ namespace hds
                             CommitRsiPill(client, slot, goid);
                             return;
                         }
+                        byte[] removal = CommitDose(client, slot, goid);
+                        if (removal == null)
+                        {
+                            if (consumable.Seconds > 0) ReleaseReservation();
+                            return;
+                        }
                         if (timedEffect)
                         {
-                            if (!CommitTimedItemEffect(client, slot, goid, consumable) && consumable.Seconds > 0)
-                                ReleaseReservation();
+                            client.messageQueue.addRpcMessage(removal);
+                            ApplyTimedItemEffect(client, goid, consumable);
                             return;
                         }
                         AbilityCooldowns.StartItem(client, (UInt16)goid, consumable.Group, consumable.Seconds, TimeUtils.GetSimTimeSeconds());
-                        RemoveOne(client, slot);
+                        client.messageQueue.addRpcMessage(removal);
                         client.FlushQueue();
                         if (consumable.Effect == ConsumableItems.Effect.Heal)
                             AbilityHandler.HealSelf(client, amount);
@@ -313,20 +319,27 @@ namespace hds
             }
         }
 
-        private static bool CommitTimedItemEffect(WorldClient client, ushort slot, uint goid, ConsumableItems.Consumable consumable)
+        private static byte[] CommitDose(WorldClient client, ushort slot, uint goid)
         {
             uint character = client.playerData.getCharID();
             int remaining;
             try { remaining = Store.dbManager.WorldDbHandler.ConsumeOwnedBagItem(character, slot, goid); }
             catch (System.Data.Common.DbException error)
             {
-                Output.WriteDebugLog($"[INVENTORY] Timed item rolled back char={character} item={goid}: {error.Message}");
-                ClientActionsHandler.Notice(client, "This item could not be used. Your item was kept.");
-                return false;
+                Output.WriteDebugLog($"[INVENTORY] Item use rolled back char={character} item={goid} slot={slot}: {error.Message}");
+                new ServerPackets().sendSystemChatMessage(client, "This item could not be used. Your item was kept.", "BROADCAST");
+                return null;
             }
-            if (remaining < 0) return false;
-            client.messageQueue.addRpcMessage(remaining == 0 ? ServerPackets.BuildInventoryItemDelete(slot)
-                : ItemStacks.BuildStackCount(slot, remaining));
+            if (remaining < 0)
+            {
+                new ServerPackets().sendSystemChatMessage(client, "The item in that bag slot changed. Try again.", "BROADCAST");
+                return null;
+            }
+            return remaining == 0 ? ServerPackets.BuildInventoryItemDelete(slot) : ItemStacks.BuildStackCount(slot, remaining);
+        }
+
+        private static void ApplyTimedItemEffect(WorldClient client, uint goid, ConsumableItems.Consumable consumable)
+        {
             if (consumable.Effect == ConsumableItems.Effect.HealOverTime)
                 AbilitySupport.Land(client, consumable.AbilityId, 2);
             else if (OptimizerConsumables.Handles(consumable.AbilityId))
@@ -345,7 +358,6 @@ namespace hds
             else if (consumable.AbilityId == AndvaranautCoupler.Ability)
                 ServerPackets.SendPlayerAbilityEffect(client, AndvaranautCoupler.ActivationFx);
             else client.FlushQueue();
-            return true;
         }
 
         private static void CommitRsiPill(WorldClient client, ushort slot, uint goid)
