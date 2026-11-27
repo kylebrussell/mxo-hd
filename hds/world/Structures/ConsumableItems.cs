@@ -23,7 +23,9 @@ namespace hds
             MaxHealthBoost,
             /// <summary>Periodic chance to remove negative conditions.</summary>
             ConditionSweep,
-            AntiStun
+            AntiStun,
+            /// <summary>Changes one owned avatar appearance component permanently.</summary>
+            Appearance
         }
 
         public struct Consumable
@@ -73,14 +75,18 @@ namespace hds
 
         public static bool TryGet(UInt32 goid, out Consumable consumable)
         {
-            return Items.TryGetValue(goid, out consumable);
+            if (Items.TryGetValue(goid, out consumable)) return true;
+            if (!RsiPills.TryGet(goid, out _)) return false;
+            consumable = new Consumable(RsiPills.Ability, Effect.Appearance, 0, 0);
+            return true;
         }
 
-        /// <summary>Heal, antibiotic, condition sweep and owned health boost paths are executable.</summary>
+        /// <summary>Effects implemented by the common timed inventory executor.</summary>
         public static bool IsUsable(Consumable consumable)
         {
             return consumable.Effect == Effect.Heal || consumable.Effect == Effect.Cure ||
-                consumable.Effect == Effect.ConditionSweep || consumable.Effect == Effect.MaxHealthBoost;
+                consumable.Effect == Effect.ConditionSweep || consumable.Effect == Effect.MaxHealthBoost ||
+                consumable.Effect == Effect.Appearance;
         }
 
         // A death/revival or leave/re-entry into the same district invalidates the original cast too.

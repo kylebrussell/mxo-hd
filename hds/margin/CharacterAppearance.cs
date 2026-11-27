@@ -10,6 +10,9 @@ namespace hds
         private static readonly ushort[] MaleFacialDetails = { 102, 101, 100, 103, 104, 105, 106, 118, 119, 120, 124, 125, 123 };
         private static readonly ushort[] FemaleFacialDetails = { 108, 107, 109, 110, 111, 112, 113, 114, 115, 116, 117, 122 };
 
+        internal static int FacialDetailOrdinal(ushort descriptor, bool female) =>
+            System.Array.IndexOf(female ? FemaleFacialDetails : MaleFacialDetails, descriptor);
+
         internal static byte[] Build(Rsivalue rsi, IEnumerable<NewRSIItem> parts)
         {
             // Characters with a missing legacy RSI row can still log in with the previous preview.
