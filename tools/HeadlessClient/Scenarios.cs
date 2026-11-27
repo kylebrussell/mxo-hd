@@ -379,6 +379,7 @@ public static partial class Scenarios
         new Scenario("split-and-merge-stacks", SplitAndMergeStacks),
         new Scenario("bag-stacks-atomic", AtomicBagStacks, StillNpcs),
         new Scenario("central-storage-store-relog-retrieve", CentralStorageStoreRelogRetrieve),
+        new Scenario("central-storage-atomic", AtomicCentralStorage, StillNpcs),
         new Scenario("subway-platform-logins-keep-car-views", SubwayPlatformLoginsKeepCarViews),
         new Scenario("large02-partial-world", Large02PartialWorld, StillNpcs),
         new Scenario("large02-prefab-door", Large02PrefabDoorDiagnostic, new Dictionary<string,string>{["MXO_DEV_COMMANDS"]="0",["MXO_MOBS"]=""}),

@@ -61,6 +61,8 @@ namespace hds.databases.interfaces{
         void SavePlayer(WorldClient client);
         void SaveExperience(WorldClient client, long exp);
         void SaveInfo(WorldClient client, long exp);
+        CentralStorage.Receipt MoveCentralStorage(uint character, CentralStorage.Move move);
+        CentralStorage.Receipt MoveCentralStorageStack(uint character, ushort source, ushort dest, uint? splitAmount);
         StackMoves.Receipt SplitBagStack(uint character, StackMoves.Split split);
         StackMoves.Receipt MergeBagStack(uint character, StackMoves.Merge merge);
         TradeItem GetTradeItem(uint character, byte slot);

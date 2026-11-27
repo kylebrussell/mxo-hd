@@ -26,27 +26,8 @@ namespace hds.databases
                 connection.Open();
                 EnsureTransactionalInventory(connection);
                 using var tx = connection.BeginTransaction();
-                var bag = new Dictionary<int, (uint Id, StackMoves.Stack Item)>();
-                using (var read = new MySqlCommand(
-                    "SELECT invId,slot,goid,count,purity FROM inventory WHERE charId=@character AND slot BETWEEN 0 AND 96 " +
-                    "ORDER BY slot,invId FOR UPDATE", connection, tx))
-                {
-                    read.Parameters.AddWithValue("@character", character);
-                    using var rows = read.ExecuteReader();
-                    while (rows.Read())
-                    {
-                        int slot = rows.GetByte(1);
-                        long goid = rows.GetInt64(2);
-                        var item = new StackMoves.Stack
-                        {
-                            Goid = goid > 0 && goid <= uint.MaxValue ? (uint)goid : 0,
-                            Count = ItemStacks.CountFromDb(rows.GetInt32(3)),
-                            Purity = unchecked((uint)rows.GetInt32(4))
-                        };
-                        if (!bag.TryAdd(slot, (rows.GetUInt32(0), item)))
-                            return Denied("a backpack slot is ambiguous");
-                    }
-                }
+                var bag = ReadLockedBagStacks(tx, character);
+                if (bag == null) return Denied("a backpack slot is ambiguous");
 
                 StackMoves.Stack At(int slot) => bag.TryGetValue(slot, out var row) ? row.Item : default;
                 int? FirstFree() => TradeRules.FreeBagSlots(bag.Keys).Select(slot => (int?)slot).FirstOrDefault();
@@ -63,14 +44,8 @@ namespace hds.databases
                 using var credit = new MySqlCommand(null, connection, tx);
                 if (plan.DestIsNew)
                 {
-                    credit.CommandText = "INSERT INTO inventory(charId,goid,slot,count,purity) " +
-                        "VALUES(@character,@goid,@slot,@count,@purity)";
-                    credit.Parameters.AddWithValue("@character", character);
-                    credit.Parameters.AddWithValue("@goid", source.Goid);
-                    credit.Parameters.AddWithValue("@slot", plan.DestSlot);
-                    credit.Parameters.AddWithValue("@count", plan.DestCount == 1 ? 0 : plan.DestCount);
-                    credit.Parameters.AddWithValue("@purity", unchecked((int)source.Purity));
-                    if (credit.ExecuteNonQuery() != 1) return Denied("the destination stack changed");
+                    if (!InsertBagStack(credit, character, plan.DestSlot, source.Goid, plan.DestCount, source.Purity))
+                        return Denied("the destination stack changed");
                 }
                 else if (!WriteBagCount(credit, bag[plan.DestSlot].Id, plan.DestCount))
                 {
@@ -85,6 +60,41 @@ namespace hds.databases
                 Output.WriteDebugLog($"[INVENTORY] Stack move rolled back char={character} source={sourceSlot}: {error.Message}");
                 return Denied("the stack move could not be saved. Your items were kept");
             }
+        }
+
+        private static Dictionary<int, (uint Id, StackMoves.Stack Item)> ReadLockedBagStacks(MySqlTransaction tx, uint character)
+        {
+            var bag = new Dictionary<int, (uint Id, StackMoves.Stack Item)>();
+            using var read = new MySqlCommand(
+                "SELECT invId,slot,goid,count,purity FROM inventory WHERE charId=@character AND slot BETWEEN 0 AND 96 " +
+                "ORDER BY slot,invId FOR UPDATE", tx.Connection, tx);
+            read.Parameters.AddWithValue("@character", character);
+            using var rows = read.ExecuteReader();
+            while (rows.Read())
+            {
+                int slot = rows.GetByte(1);
+                AbilityAcquisition.TryDescriptor(rows.GetInt64(2), out uint goid);
+                var item = new StackMoves.Stack
+                {
+                    Goid = goid,
+                    Count = ItemStacks.CountFromDb(rows.GetInt32(3)),
+                    Purity = unchecked((uint)rows.GetInt32(4))
+                };
+                if (!bag.TryAdd(slot, (rows.GetUInt32(0), item))) return null;
+            }
+            return bag;
+        }
+
+        private static bool InsertBagStack(MySqlCommand command, uint character, ushort slot, uint goid, int count, uint purity)
+        {
+            command.CommandText = "INSERT INTO inventory(charId,goid,slot,count,purity) " +
+                "VALUES(@character,@goid,@slot,@count,@purity)";
+            command.Parameters.AddWithValue("@character", character);
+            command.Parameters.AddWithValue("@goid", goid);
+            command.Parameters.AddWithValue("@slot", slot);
+            command.Parameters.AddWithValue("@count", count == 1 ? 0 : count);
+            command.Parameters.AddWithValue("@purity", unchecked((int)purity));
+            return command.ExecuteNonQuery() == 1;
         }
     }
 }

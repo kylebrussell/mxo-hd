@@ -82,6 +82,24 @@ Each request is answered in the order shown:
 - `6b` always means "any slot", although storage slot 0x6b exists. The client's own paths use it that way.
 - A split takes the client's byte slots as they come. Storage slots above 0xff can't be split, and a new character's code sits far below that.
 
+## Atomic moves
+
+The server locks a character's storage rows and the bag when a move
+crosses the boundary. It plans from the locked contents, commits both
+slot changes, and then publishes the normal inventory updates. A failed
+write leaves both containers intact. An upload failure sends the normal
+Upload Status and a notice. Download, split, and merge failures send a
+visible reason. Ability-code learning uses its existing acquisition
+transaction.
+
+The **central-storage-atomic** fixture starts at the Mara Central booth
+with two Code Bit stacks. Upload and retrieve Code Bit 2 through
+**Central Storage > Equipment**. Attempt to upload Code Bit 1 last.
+A constraint in the disposable archive refuses that second write, so the
+bag keeps all ten and the archive stays empty of Code Bit 1. Headless
+coverage also forces late failures on download and the archive's own split
+and merge, then checks each successful retry.
+
 ## Tests
 
 - `tests/hds.Tests/CentralStorageTests.cs`: parsing, records, and every rule and refusal above.
