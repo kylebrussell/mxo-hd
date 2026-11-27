@@ -159,6 +159,10 @@ public static partial class Scenarios
         RpcRecord claimed = await bob.WaitForRpcAsync($"81 fd {MailSuccess}");
         RpcRecord added = bob.Received("5e").Single();
         CheckClaimBatch(claimed, added);
+        string[] refreshed = await WaitForMailBody(bob, id);
+        Check.Equal("Gift", refreshed[0], "The refresh is for the selected message");
+        Check.Equal("A Code Bit and some info.", refreshed[1], "The refresh keeps the message body");
+        Check.That(!refreshed[2].Contains("<Item "), "The refresh clears the claimed attachment");
         Check.Equal(NpcLoot.CodeBit1, BitConverter.ToUInt32(added.Bytes, 3), "The item Bob took");
         Check.Equal(1L, await context.Database.LongAsync($"SELECT COUNT(*) FROM inventory WHERE charId={bob.CharId} AND goid={NpcLoot.CodeBit1}"), "Bob's Code Bit in the database");
         Check.Equal("", await context.Database.ScalarAsync($"SELECT items FROM mail WHERE id={id}"), "The message has no attachments left");
@@ -167,6 +171,16 @@ public static partial class Scenarios
         // Taking again: nothing there
         bob.SendRpc($"81 fc {Le(id)} 08 00 01 00 00 {Le(NpcLoot.CodeBit1)} {Le(instance)}");
         await bob.WaitForRpcAsync("81 fd 77 00 00 0e");
+        Check.That(!(await WaitForMailBody(bob, id))[2].Contains("<Item "), "The stale claim also refreshes the empty attachment grid");
+
+        alice.SendRpc(MailSend("Bob", "Read Check", "Another row is readable.", false));
+        var otherSent = await alice.WaitForRpcAsync($"81 e6 ?? ?? ?? ?? {MailSuccess}");
+        uint otherId = BitConverter.ToUInt32(otherSent.Bytes, 2);
+        await bob.WaitForRpcAsync($"81 ed 19 00 ?? ?? ?? ?? {Le(otherId)}");
+        bob.SendRpc($"81 f0 {Le(otherId)}");
+        Check.Equal("Another row is readable.", (await WaitForMailBody(bob, otherId))[1], "Open another message after a claim");
+        bob.SendRpc($"81 f6 {Le(1u)} {Le(2u)}");
+        await bob.WaitForRpcAsync($"81 f7 {MailSuccess}");
 
         // Dev helpers: ?mailbot, and a mail to MailBot comes back
         bob.SendChat("?mailbot Testing");
@@ -228,6 +242,9 @@ public static partial class Scenarios
         string take = $"81 fc {Le(id)} 08 00 02 00 00 {Le(7332u)} {Le(bitDescriptor)} 00 {Le(2399u)} {Le(pillDescriptor)}";
         receiver.SendRpc(take);
         await receiver.WaitForRpcAsync("81 fd ca 02 00 0c");
+        string[] refused = await WaitForMailBody(receiver, id);
+        Check.That(refused[2].Contains("<Item ClassData=\"7332\"") && refused[2].Contains("<Item ClassData=\"2399\""),
+            "Full-bag refresh keeps both attachments in the inbox");
         await receiver.WaitForTextAsync("Your inventory is full. The attachments are still in the message.");
         Check.Equal(stored, await db.ScalarAsync($"SELECT items FROM mail WHERE id={id}"), "Full-bag refusal retains the attachments");
         Check.Equal(0L, await ReceiverItems(), "Full-bag refusal grants no items");
@@ -239,8 +256,9 @@ public static partial class Scenarios
             $"ALTER TABLE inventory ADD CONSTRAINT reject_second_attachment CHECK (charId<>{receiver.CharId} OR goid<>2399)");
         receiverCursor = receiver.World.RpcSnapshot().Count;
         receiver.SendRpc(take);
-        await receiver.WaitForTextAsync("Could not take the attachments");
         await receiver.WaitForRpcAsync("81 fd 68 00 00 0e");
+        Check.Equal(refused[2], (await WaitForMailBody(receiver, id))[2], "Rollback refresh preserves the original attachment list");
+        await receiver.WaitForTextAsync("Could not take the attachments");
         Check.Equal(stored, await db.ScalarAsync($"SELECT items FROM mail WHERE id={id}"), "Failed claim restored both attachments");
         Check.Equal(0L, await ReceiverItems(), "Failed second insertion rolled back the first");
         Check.That(!receiver.World.RpcSnapshot().Skip(receiverCursor).Any(r => r.Bytes[0] == 0x5e), "Failed claim published no bag adds");
@@ -251,13 +269,21 @@ public static partial class Scenarios
         var pill = await receiver.WaitForRpcAsync("5e 0c 00 5f 09 00 00 00 00 00 0c 01");
         var claimed = await receiver.WaitForRpcAsync($"81 fd {MailSuccess}");
         CheckClaimBatch(claimed, bit, pill);
+        Check.That(!(await WaitForMailBody(receiver, id))[2].Contains("<Item "), "Successful retry refresh clears both attachments");
         Check.Equal(2L, await ReceiverItems(), "Claim retry grants both attachments exactly once");
         Check.Equal("", await db.ScalarAsync($"SELECT items FROM mail WHERE id={id}"), "Claim emptied the message");
         Check.Equal(3L, await db.LongAsync($"SELECT count FROM inventory WHERE charId={receiver.CharId} AND goid=7332"), "Claim preserves stack size");
         receiver.SendRpc(take);
         await receiver.WaitForRpcAsync("81 fd 77 00 00 0e");
+        Check.That(!(await WaitForMailBody(receiver, id))[2].Contains("<Item "), "Repeated claim refresh stays empty");
         Check.Equal(2L, await ReceiverItems(), "Repeated claim cannot grant either attachment again");
         Check.Equal(250L, await Cash(receiver), "Claim and replay do not repeat the Info credit");
+    }
+
+    private static async Task<string[]> WaitForMailBody(HeadlessPlayer player, uint id)
+    {
+        var reply = await player.WaitForRpcAsync($"81 f3 19 00 ?? ?? ?? ?? {Le(id)}");
+        return MessageChunks(reply.Bytes).ToArray();
     }
 
     private static void CheckClaimBatch(RpcRecord claimed, params RpcRecord[] items)
