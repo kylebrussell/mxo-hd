@@ -160,8 +160,8 @@ namespace hds
                 if (!ConsumableItems.TryGet(goid, out ConsumableItems.Consumable consumable) || consumable.AbilityId != abilityId)
                     return false;
                 bool appearance = consumable.Effect == ConsumableItems.Effect.Appearance;
-                bool quicksilver = consumable.Effect == ConsumableItems.Effect.Quicksilver;
-                if ((appearance || quicksilver) && (slot < 1 || slot > 96))
+                bool timedBuff = consumable.Effect == ConsumableItems.Effect.TimedBuff;
+                if ((appearance || timedBuff) && (slot < 1 || slot > 96))
                     return false;
                 if (Stealth.IsOn(client, Stealth.MasterShadowAbility) && AbilityCatalog.Find(abilityId)?.CastSeconds > 0)
                 {
@@ -207,6 +207,15 @@ namespace hds
                     return true;
                 }
 
+                if (TacticBoostItems.Handles(abilityId) && TacticBoostItems.Outranked(client, abilityId))
+                {
+                    client.messageQueue.addRpcMessage(AbilityRefusals.Encode(
+                        new AbilityRefusals.Record(abilityId, AbilityRefusals.NoClientMessage)));
+                    ClientActionsHandler.Notice(client, "A stronger Tactic Boost is already active.");
+                    client.FlushQueue();
+                    return true;
+                }
+
                 // Both inventory paths interrupt compiling only after the pill passes its eligibility checks.
                 CraftingSession.End(client);
                 AbilityItem ability = DataLoader.getInstance().getAbilityByID(abilityId);
@@ -248,9 +257,10 @@ namespace hds
                             CommitRsiPill(client, slot, goid);
                             return;
                         }
-                        if (quicksilver)
+                        if (timedBuff)
                         {
-                            if (!CommitQuicksilver(client, slot, consumable)) ReleaseReservation();
+                            if (!CommitTimedItemBuff(client, slot, goid, consumable) && consumable.Seconds > 0)
+                                ReleaseReservation();
                             return;
                         }
                         AbilityCooldowns.StartItem(client, (UInt16)goid, consumable.Group, consumable.Seconds, TimeUtils.GetSimTimeSeconds());
@@ -279,24 +289,27 @@ namespace hds
             }
         }
 
-        private static bool CommitQuicksilver(WorldClient client, ushort slot, ConsumableItems.Consumable consumable)
+        private static bool CommitTimedItemBuff(WorldClient client, ushort slot, uint goid, ConsumableItems.Consumable consumable)
         {
             uint character = client.playerData.getCharID();
             int remaining;
-            try { remaining = Store.dbManager.WorldDbHandler.ConsumeOwnedBagItem(character, slot, QuicksilverPill.Item); }
+            try { remaining = Store.dbManager.WorldDbHandler.ConsumeOwnedBagItem(character, slot, goid); }
             catch (System.Data.Common.DbException error)
             {
-                Output.WriteDebugLog($"[QUICKSILVER] Rolled back char={character}: {error.Message}");
-                ClientActionsHandler.Notice(client, "The Quicksilver Pill could not be used. Your pill was kept.");
+                Output.WriteDebugLog($"[INVENTORY] Timed buff rolled back char={character} item={goid}: {error.Message}");
+                ClientActionsHandler.Notice(client, "This item could not be used. Your item was kept.");
                 return false;
             }
             if (remaining < 0) return false;
             client.messageQueue.addRpcMessage(remaining == 0 ? ServerPackets.BuildInventoryItemDelete(slot)
                 : ItemStacks.BuildStackCount(slot, remaining));
-            AbilityBuffs.Apply(client, QuicksilverPill.Ability, client);
-            AbilityCooldowns.StartItem(client, (ushort)QuicksilverPill.Item, consumable.Group, consumable.Seconds,
-                TimeUtils.GetSimTimeSeconds());
-            client.FlushQueue();
+            AbilityBuffs.Apply(client, consumable.AbilityId, client);
+            if (consumable.Seconds > 0)
+                AbilityCooldowns.StartItem(client, (ushort)goid, consumable.Group, consumable.Seconds,
+                    TimeUtils.GetSimTimeSeconds());
+            if (TacticBoostItems.Handles(consumable.AbilityId))
+                ServerPackets.SendPlayerAbilityEffect(client, TacticBoostItems.ActivationFx);
+            else client.FlushQueue();
             return true;
         }
 
