@@ -767,6 +767,24 @@ If no Give goal wants the item from that NPC, the server says "They don't want t
 
 **`5b <ItemHandle>`: picking up an item.** It is never sent. **`80 c6 <PillInvSlot u16>`** is sent only when the item check returns `0x95000014` (consumable grants an ability). Pills work through `80 b9`.
 
+### Restorative pill consumption
+
+Health Pills, Antibiotics and Condition Sweep use the same owned bag-dose
+transaction as timed consumables. At cast completion the exact bag slot and
+item are checked under a row lock. The stack decrement or final bag removal
+must commit before the server starts item or family reuse and applies healing
+or the sweep. Successful use preserves the existing cast and reuse records.
+A rejected write keeps the dose, clears the provisional timer reservation and
+sends a visible refusal.
+
+The `restorative-pill-atomic` fixture deliberately rejects the stack decrement
+in bags 5 and 7 for CSR in the disposable database. Activate those stacks first.
+They should retain both doses after a 1 s cast and refusal, with no effect or
+reuse. Activate the single doses in bags 6 and 8 to verify retry. The Health
+Pill heals 30 and starts 10 s reuse. Antibiotic 5.0 starts sweep 678 and 8 s
+reuse. The headless check uses both native item senders and verifies both
+item and family timers.
+
 ### RSI modification pills
 
 [Retail Update 50](https://soeforums.mxoemu.info/mxo/search/search5d3c.html?enableHighlight=false&enableSummary=true&openModeration=0&start=80&topicId=0&userId=160)
