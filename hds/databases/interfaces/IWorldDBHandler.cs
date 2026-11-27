@@ -91,6 +91,7 @@ namespace hds.databases.interfaces{
         //NEW
         void UpdateInventorySlot(UInt16 sourceSlot, UInt16 destSlot, UInt32 charId);
         bool MoveInventorySlots(uint character, ushort source, ushort destination);
+        (uint Goid, ushort BagSlot, ushort DisplacedSlot, string Refusal) MoveWeapon(uint character, byte bagSlot, bool equip);
         UInt16 GetFirstNewSlot();
         System.Collections.Generic.HashSet<int> GetCompletedMissions(UInt32 charId);
         void SaveMissionCompleted(UInt32 charId, int missionId);

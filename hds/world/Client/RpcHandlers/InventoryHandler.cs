@@ -584,55 +584,63 @@ namespace hds
         /// <summary>The weapon slot on the paper doll; clothing uses 0x61 (hat) to 0x68 (shoes).</summary>
         public const byte WeaponSlot = 0x69;
 
-        /// <summary>
-        /// Equip a weapon (RPC 0x63 with destination 0x69), as retail did: move any weapon already held
-        /// to a free bag slot, move this one into the weapon slot (65 src 00 69 00) and set the player's
-        /// EquippedItemID.
-        /// </summary>
-        internal static void EquipWeapon(byte sourceSlot)
-        {
-            UInt32 charId = Store.currentClient.playerData.getCharID();
-            UInt32 weaponGoid = Store.dbManager.WorldDbHandler.GetItemGOIDAtInventorySlot(sourceSlot);
-            ServerPackets pak = new ServerPackets();
+        /// <summary>Equip follows the stock displaced-weapon move, then the bag-to-hand move.</summary>
+        internal static bool EquipWeapon(byte sourceSlot) => ChangeWeapon(sourceSlot, equip: true);
 
+        /// <summary>Send the held weapon to the selected bag slot, or the first free one for zero.</summary>
+        internal static bool UnequipWeapon(byte destSlot) => ChangeWeapon(destSlot, equip: false);
+
+        private static bool ChangeWeapon(byte bagSlot, bool equip)
+        {
             WorldClient client = Store.currentClient;
-            bool refresh = FreeAttackBootstrap.PrepareEquip(client, sourceSlot, weaponGoid);
-            UInt16? displacedSlot = null;
-            if (Store.dbManager.WorldDbHandler.IsSlotinUseByItem(WeaponSlot))
+            lock (client.playerData.craftingSync)
             {
-                displacedSlot = Store.dbManager.WorldDbHandler.GetFirstNewSlot();
-                Store.dbManager.WorldDbHandler.UpdateInventorySlot(WeaponSlot, displacedSlot.Value, charId);
-            }
+                var publication = new AbilityAcquisition.Publication(client);
+                (uint Goid, ushort BagSlot, ushort DisplacedSlot, string Refusal) move;
+                try
+                {
+                    move = Store.dbManager.WorldDbHandler.MoveWeapon(publication.Character, bagSlot, equip);
+                }
+                catch (DbException error)
+                {
+                    Output.WriteDebugLog($"[INVENTORY] Weapon move rolled back char={publication.Character} " +
+                        $"slot={bagSlot} equip={equip}: {error.Message}");
+                    move = (0, 0, 0, "The weapon move could not be saved. Your items were kept.");
+                }
+                if (move.Refusal != null)
+                {
+                    RefuseSlotMove(client, publication, equip ? bagSlot : WeaponSlot, move.Refusal);
+                    return false;
+                }
 
-            Store.dbManager.WorldDbHandler.UpdateInventorySlot(sourceSlot, WeaponSlot, charId);
-            lock (client.messageQueue.RPCMessagesQueue.SyncRoot)
-            {
-                if (refresh) FreeAttackBootstrap.RefreshEquip(client, sourceSlot, weaponGoid);
-                if (displacedSlot.HasValue)
-                    pak.sendInventoryItemMove(WeaponSlot, displacedSlot.Value, client);
-                pak.sendInventoryItemMove(sourceSlot, WeaponSlot, client);
+                var packets = new ServerPackets();
+                if (equip)
+                {
+                    bool refresh = FreeAttackBootstrap.PrepareEquip(client, move.Goid);
+                    lock (client.messageQueue.RPCMessagesQueue.SyncRoot)
+                    {
+                        if (refresh) FreeAttackBootstrap.RefreshEquip(client, bagSlot, move.Goid);
+                        if (move.DisplacedSlot != 0) packets.sendInventoryItemMove(WeaponSlot, move.DisplacedSlot, client);
+                        packets.sendInventoryItemMove(bagSlot, WeaponSlot, client);
+                    }
+                    Output.WriteDebugLog($"[INVENTORY] Equipped weapon {move.Goid} from slot {bagSlot}");
+                }
+                else
+                {
+                    packets.sendInventoryItemMove(WeaponSlot, move.BagSlot, client);
+                    Output.WriteDebugLog($"[INVENTORY] Unequipped weapon to slot {move.BagSlot}");
+                }
+                SetEquippedItem(client, move.Goid);
+                return true;
             }
-            SetEquippedItem(weaponGoid);
-            Output.WriteDebugLog("[INVENTORY] Equipped weapon " + weaponGoid + " from slot " + sourceSlot);
         }
 
-        /// <summary>Unequip the weapon to the slot the client chose (65 69 00 dst 00), or a free one.</summary>
-        internal static void UnequipWeapon(byte destSlot)
+        private static void SetEquippedItem(WorldClient client, uint goid)
         {
-            UInt32 charId = Store.currentClient.playerData.getCharID();
-            UInt16 toSlot = destSlot != 0 ? destSlot : Store.dbManager.WorldDbHandler.GetFirstNewSlot();
-            Store.dbManager.WorldDbHandler.UpdateInventorySlot(WeaponSlot, toSlot, charId);
-            new ServerPackets().sendInventoryItemMove(WeaponSlot, toSlot, Store.currentClient);
-            SetEquippedItem(0);
-            Output.WriteDebugLog("[INVENTORY] Unequipped weapon to slot " + toSlot);
-        }
-
-        private static void SetEquippedItem(UInt32 goid)
-        {
-            Store.currentClient.playerInstance.EquippedItemID.setValue(goid);
-            Store.currentClient.messageQueue.addObjectMessage(ServerPackets.BuildEquippedItemUpdate(goid), false);
-            Store.currentClient.FlushQueue();
-            PlayerProgression.AnnounceToOthers(Store.currentClient, new List<Attribute> { Store.currentClient.playerInstance.EquippedItemID });
+            client.playerInstance.EquippedItemID.setValue(goid);
+            client.messageQueue.addObjectMessage(ServerPackets.BuildEquippedItemUpdate(goid), false);
+            client.FlushQueue();
+            PlayerProgression.AnnounceToOthers(client, new List<Attribute> { client.playerInstance.EquippedItemID });
         }
 
         public void processMountItem(ref byte[] rpcData)
