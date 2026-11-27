@@ -14,6 +14,13 @@ namespace hds
         public const UInt32 CodeBit1 = 7332; // Code Bit 1 .. Code Bit 8 are 7332 .. 7339
         public const UInt32 HealthPill1 = 2399;
 
+        /// <summary>
+        /// Retail never auto-pushed 81 19 on NPC death (82/82 retail 81 19 replies answered client 80 c7).
+        /// For our automatic post-kill corpse popup, wait briefly after SendNpcDies + SendCombatEnd so the
+        /// 7.6005 client exits the interlock UI before receiving 81 1a + 81 19.
+        /// </summary>
+        public const double AutoOpenAfterCombatEndSeconds = 0.25;
+
         /// <summary>Code Bit tier for an NPC level: 1 up to level 9, then one tier per ten levels, at most 8.</summary>
         public static UInt32 CodeBitFor(ushort level)
         {
@@ -63,18 +70,75 @@ namespace hds
 
         public static void Drop(WorldClient client, Mob source, UInt32 info, UInt32 missionItem, IEnumerable<UInt32> items)
         {
-            if(client.playerData.missionProgress!=null&&client.playerData.missionMobs.Contains(source))
-            {
-                MissionPersistence.Mutate(client,()=>DropCore(client,source,info,missionItem,items));return;
-            }
-            DropCore(client,source,info,missionItem,items);
+            DropAndRegister(client, source, info, missionItem, items, deferPresentation: false);
         }
-        private static void DropCore(WorldClient client,Mob source,UInt32 info,UInt32 missionItem,IEnumerable<UInt32> items)
+
+        /// <summary>
+        /// Records a freshly killed NPC's corpse loot in the recipient's cache (and mission checkpoint when applicable).
+        /// When <paramref name="deferPresentation"/> is true, the corpse is immediately lootable via manual double-click
+        /// (<c>80 c7 ... 05 00</c>), while the automatic <c>81 1a</c> + <c>81 19</c> popup is left for
+        /// <see cref="ScheduleAutoOpen"/> after combat teardown and SQL commit.
+        /// </summary>
+        internal static NpcLootCache.Corpse DropAndRegister(WorldClient client, Mob source, UInt32 info, UInt32 missionItem,
+            IEnumerable<UInt32> items, bool deferPresentation)
+        {
+            if (client.playerData.missionProgress != null && client.playerData.missionMobs.Contains(source))
+            {
+                return MissionPersistence.Mutate(client, () => DropCore(client, source, info, missionItem, items, deferPresentation));
+            }
+            return DropCore(client, source, info, missionItem, items, deferPresentation);
+        }
+
+        private static NpcLootCache.Corpse DropCore(WorldClient client, Mob source, UInt32 info, UInt32 missionItem,
+            IEnumerable<UInt32> items, bool deferPresentation)
         {
             lock (client.playerData.loot)
             {
-                SendWindow(client, client.playerData.loot.Add(source, info, missionItem, items));
+                NpcLootCache.Corpse corpse = client.playerData.loot.Add(source, info, missionItem, items);
+                if (!deferPresentation)
+                {
+                    SendWindow(client, corpse);
+                }
+                return corpse;
             }
+        }
+
+        /// <summary>
+        /// Schedules the automatic post-kill <c>81 1a</c> + <c>81 19</c> corpse window after combat teardown.
+        /// Call only after any mission SQL mutation has committed.
+        /// </summary>
+        internal static void ScheduleAutoOpen(WorldClient client, NpcLootCache.Corpse corpse,
+            double delaySeconds = AutoOpenAfterCombatEndSeconds)
+        {
+            if (client == null || corpse == null) return;
+            long epoch = client.TransportFence.Capture();
+            int worldGen = client.playerData.worldGeneration;
+            int combatGen = client.playerData.combatGeneration;
+            DelayedActions.AfterFor(client, delaySeconds, () => TryPresentAutoOpen(client, corpse, epoch, worldGen, combatGen));
+        }
+
+        internal static bool TryPresentAutoOpen(WorldClient client, NpcLootCache.Corpse corpse,
+            long epoch, int worldGen, int combatGen)
+        {
+            if (client == null || corpse == null || !client.Alive || !client.playerData.getOnWorld() ||
+                client.playerData.worldGeneration != worldGen || client.playerData.combatGeneration != combatGen ||
+                !client.TransportFence.IsCurrent(epoch))
+            {
+                return false;
+            }
+
+            lock (client.playerData.loot)
+            {
+                if (!client.playerData.loot.WindowOpen || !ReferenceEquals(client.playerData.loot.Current, corpse) ||
+                    !corpse.Available || corpse.Presented)
+                {
+                    return false;
+                }
+                SendWindow(client, corpse);
+                Output.WriteDebugLog($"[COMBAT] Loot window sent with {corpse.Info} info and {corpse.Items.Count + (corpse.MissionItem == 0 ? 0 : 1)} items");
+            }
+            client.FlushQueue(false, true);
+            return true;
         }
 
         /// <summary>Reopens the killer's saved contents for this corpse, including a partially looted full bag.</summary>
@@ -84,7 +148,7 @@ namespace hds
             {
                 SendWindow(client, client.playerData.loot.Select(entity));
             }
-            client.FlushQueue();
+            client.FlushQueue(false, true);
         }
 
         private static void SendWindow(WorldClient client, NpcLootCache.Corpse corpse)
@@ -93,6 +157,7 @@ namespace hds
             List<byte> flags = new List<byte>();
             if (corpse != null)
             {
+                corpse.Presented = true;
                 if (corpse.MissionItem != 0)
                 {
                     items.Add(corpse.MissionItem);

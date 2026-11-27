@@ -145,6 +145,11 @@ namespace hds
             {
                 if (nowTickMs - sent[i].lastRpcSendTick >= interval) { due = i; break; }
             }
+            if (due >= 0 && sent[due].rpcBlockStart >= 0)
+            {
+                int blockStart = sent[due].rpcBlockStart;
+                while (due + 1 < sent.Count && sent[due + 1].rpcBlockStart == blockStart) due++;
+            }
             if (due >= 0 && lastIngressTickMs.HasValue) ResendBackoff.RecordRetry();
 
             var result = new System.Collections.Generic.List<SequencedMessage>(due + 1 + fresh.Count);

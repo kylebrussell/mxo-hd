@@ -13,10 +13,19 @@ public sealed class LevelFourBreadthMode : NativeQaMode
         new[] { "UPDATE char_abilities SET level=1 WHERE char_id=110" },
         new[] { $"UPDATE characters SET level=3,exp={InitialXp},cash=1000,y=-705,rotation=0,"
             + "healthC=250,healthM=250,innerStrC=106,innerStrM=106,pvpflag=0 WHERE charId=110" },
-        environmentOverrides: new() { ["MXO_MOBS"] = "world", ["MXO_AGGRO"] = "0", ["MXO_MOB_WANDER"] = "0" },
-        readyMessages: new[] { $"CSR starts at level 3 and {InitialXp} XP. Kill one Chopper Runner normally. "
+        environmentOverrides: new() { ["MXO_MOBS"] = "world", ["MXO_AGGRO"] = "0", ["MXO_MOB_WANDER"] = "0", ["MXO_DEV_COMMANDS"] = "1" },
+        readyMessages: new[]
+        {
+            $"CSR starts at level 3 and {InitialXp} XP. Kill one Chopper Runner normally. "
             + $"Expect +{KillXp} XP, level 4 at {InitialXp + KillXp} XP, max HP 300 and max IS 109. "
-            + "Quit and relog in the same fixture to check persistence." });
+            + "Quit and relog in the same fixture to check persistence.",
+            "Corpse-window 4-kill step: kill all four printed nearby Chopper Runners in a row in normal close combat, "
+            + "closing each Corpse window with Take All or X before the next fight. Disclosed QA movement aid: "
+            + "MXO_DEV_COMMANDS=1 is enabled solely so you can type the printed ?tp command for targets #2-#4 to land "
+            + "within melee reach facing each Runner (no combat, loot, XP, or difficulty overrides). Expect 4/4 "
+            + "automatic Corpse windows ~0.25 s after combat teardown (SendNpcDies, SendCombatEnd, and 81 1a + 81 19 "
+            + "in separate ordered packets)."
+        });
 
     public override async Task<byte[]> AfterStartAsync(NativeQaBootstrapContext context)
     {
@@ -32,20 +41,61 @@ public sealed class LevelFourBreadthMode : NativeQaMode
         using var probe = await HeadlessPlayer.LoginAsync(context.Address, "QAFriend", "QAFriend");
         await probe.EnterWorldAsync();
         var source = OpenWorldFirstLevelFixture.Spawns[0];
-        OpenWorldCurrentNpc.Current? target = null;
+        OpenWorldCurrentNpc.Current? first = null;
+        ViewCreation[] runners = Array.Empty<ViewCreation>();
         await probe.WaitUntilAsync(() =>
         {
-            try { target = OpenWorldCurrentNpc.Require(probe.World.CurrentOwnViewLife(), source[0], source[1], source[2]); }
+            try { first = OpenWorldCurrentNpc.Require(probe.World.CurrentOwnViewLife(), source[0], source[1], source[2]); }
             catch (InvalidDataException) { return false; }
-            return true;
-        }, "the level-one Chopper Runner in the current world", TimeSpan.FromSeconds(20));
-        Check.That(target!.View.Attributes.TryGetValue("Health", out var health) && health.Length == 2 && BitConverter.ToUInt16(health) > 0,
-            "The selected Runner is alive");
-        var point = OpenWorldFirstLevelFixture.Approach(target.Position);
+            runners = probe.ViewsOfGoid(599)
+                .Where(v => v.Name == "Chopper Runner"
+                    && v.Attributes.TryGetValue("Level", out var lvl) && lvl.Length == 1 && lvl[0] == 1
+                    && v.Attributes.TryGetValue("Health", out var hp) && hp.Length == 2 && BitConverter.ToUInt16(hp) > 0
+                    && v.Attributes.TryGetValue("Position", out var pos) && pos.Length == 24)
+                .OrderBy(v =>
+                {
+                    byte[] p = v.Attributes["Position"];
+                    double dx = BitConverter.ToDouble(p, 0) - 19403d;
+                    double dz = BitConverter.ToDouble(p, 16) - 60401d;
+                    return dx * dx + dz * dz;
+                })
+                .Take(4)
+                .ToArray();
+            return runners.Length == 4;
+        }, "four live level-one Chopper Runners in the current world", TimeSpan.FromSeconds(20));
+
+        Check.That(first!.View.Attributes.TryGetValue("Health", out var health) && health.Length == 2 && BitConverter.ToUInt16(health) > 0,
+            "The primary Runner is alive");
+        var primaryPoint = OpenWorldFirstLevelFixture.Approach(first.Position);
+        Console.WriteLine($"Chopper Runner at {first.Position[0]:0.###},{first.Position[1]:0.###},{first.Position[2]:0.###}. "
+            + $"Approach stand {primaryPoint.x:0.###},{primaryPoint.y:0.###},{primaryPoint.z:0.###}.");
+        var stands = new List<(double[] Pos, NavPoint Stand, string Command, string Confirmation, double DistanceMetres)>(4);
+        for (int i = 0; i < runners.Length; i++)
+        {
+            byte[] p = runners[i].Attributes["Position"];
+            double[] pos = { BitConverter.ToDouble(p, 0), BitConverter.ToDouble(p, 8), BitConverter.ToDouble(p, 16) };
+            NavPoint stand = OpenWorldFirstLevelFixture.Approach(pos);
+            byte yaw = MobAggro.YawTowards(stand.x, stand.z, pos[0], pos[2]);
+            var nav = stand.location;
+            string command = FormattableString.Invariant(
+                $"?tp {stand.x:0.###} {stand.y:0.###} {stand.z:0.###} {nav.sector:X} {nav.region:X} {nav.polygon:X} - {yaw:X2}");
+            string confirmation = $"Teleported to {nav.sector:X}/{nav.region:X}";
+            double distM = Math.Sqrt(Math.Pow(stand.x - pos[0], 2) + Math.Pow(stand.y - pos[1], 2) + Math.Pow(stand.z - pos[2], 2)) / 100.0;
+            Check.That(CombatHandler.InMeleeReach((float)distM), $"Target #{i + 1} approach stand is within melee reach");
+            stands.Add((pos, stand, command, confirmation, distM));
+        }
+        for (int i = 0; i < stands.Count; i++)
+        {
+            var s = stands[i];
+            probe.SkipReceived();
+            probe.SendChat(s.Command);
+            await probe.WaitForTextAsync(s.Confirmation, TimeSpan.FromSeconds(10));
+            Console.WriteLine($"Corpse-window target #{i + 1}: Chopper Runner at {s.Pos[0]:0.###},{s.Pos[1]:0.###},{s.Pos[2]:0.###}. "
+                + $"Approach stand {s.Stand.x:0.###},{s.Stand.y:0.###},{s.Stand.z:0.###} ({s.DistanceMetres:0.00} m). "
+                + $"Disclosed QA warp: {s.Command}");
+        }
         NativeQaReadiness.RequireNoAmbientAggro(server, probe);
-        Check.Equal(0, probe.World.Problems.Count, "The Chopper's view decodes cleanly");
-        Console.WriteLine($"Chopper Runner at {target.Position[0]:0.###},{target.Position[1]:0.###},{target.Position[2]:0.###}. "
-            + $"Approach stand {point.x:0.###},{point.y:0.###},{point.z:0.###}.");
+        Check.Equal(0, probe.World.Problems.Count, "The Chopper views decode cleanly");
         return Array.Empty<byte>();
     }
 }

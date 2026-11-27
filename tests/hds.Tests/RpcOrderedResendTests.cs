@@ -50,14 +50,30 @@ public class RpcOrderedResendTests
         }
 
         /// <summary>Flushes and returns the packets that carried RPCs: their sequence and RPC counters as sent.</summary>
-        public List<(ushort Sseq, int[] Counters)> Flush()
+        public List<(ushort Sseq, int[] Counters)> Flush() =>
+            FlushWithBlocks().Select(p => (p.Sseq, p.Counters)).ToList();
+
+        /// <summary>Flushes and returns the packets that carried RPCs along with their protocol-0x04 block headers.</summary>
+        public List<(ushort Sseq, int[] Counters, (ushort Counter, int Count)[] Blocks)> FlushWithBlocks()
         {
             Client.FlushQueue(force: true);
             List<(byte[] Plain, ushort Sseq, ushort Pss)> fresh;
             lock (Cipher.Sent) { fresh = Cipher.Sent.Skip(seen).ToList(); seen = Cipher.Sent.Count; }
-            return fresh.Select(p => (p.Sseq, HeadlessClient.WireFormat.ParsePayload(p.Plain).Rpcs
-                    .Select(r => (int)(ushort)(r.ListCounter + r.Index)).ToArray()))
+            return fresh.Select(p =>
+                {
+                    var payload = HeadlessClient.WireFormat.ParsePayload(p.Plain);
+                    return (p.Sseq,
+                        payload.Rpcs.Select(r => (int)(ushort)(r.ListCounter + r.Index)).ToArray(),
+                        payload.RpcLists.ToArray());
+                })
                 .Where(p => p.Item2.Length > 0).ToList();
+        }
+
+        public void QueuePayload(int count, int payloadBytes)
+        {
+            byte[] body = new byte[payloadBytes];
+            body[0] = 0x81; body[1] = 0x4d;
+            for (int i = 0; i < count; i++) Client.messageQueue.addRpcMessage((byte[])body.Clone());
         }
 
         public SequencedMessage[] Pending() =>
@@ -279,5 +295,85 @@ public class RpcOrderedResendTests
         rig.Queue(4); rig.Flush();
         Assert.Empty(rig.Flush());
         Assert.All(rig.Pending(), m => Assert.Equal(1, m.sendCounter));
+    }
+
+    [Fact]
+    public void ResendsPreserveImmutableRpcBlockBoundariesForStockClient()
+    {
+        // Reproduces pr1227b-native SSEQ 287 (0x73..0x77) + SSEQ 291 (0x73..0x79):
+        // stock client.dll CLTMessageBargeGuar::RCCInfoGuar::HandleInput (0x623C73B0..0x623C7798) checks only
+        // blockStart < m_nextExpectedSeq and skips the entire block. If a resend merged previously-sent blocks
+        // (0,1)+(1,2)+(3,2)+(5,2) into (0,7) after the client received (0,5), the stock client skipped (0,7)
+        // completely and permanently deadlocked at expected=5 (blocking all subsequent RPCs including 81 1a/81 19).
+        using var rig = new Rig();
+        rig.Queue(1); Assert.Equal(new[] { ((ushort)0, 1) }, rig.FlushWithBlocks().Single().Blocks);
+        rig.Queue(2); Assert.Equal(new[] { ((ushort)1, 2) }, rig.FlushWithBlocks().Single().Blocks);
+        rig.Queue(2); Assert.Equal(new[] { ((ushort)3, 2) }, rig.FlushWithBlocks().Single().Blocks);
+        rig.Queue(2); Assert.Equal(new[] { ((ushort)5, 2) }, rig.FlushWithBlocks().Single().Blocks);
+
+        // First resend covers 0..4; second resend 100 ms later covers 0..6 (before ACK for first resend arrives).
+        rig.Age(SequencedMessage.RpcResendIntervalMs + 50, 0, 1, 2, 3, 4);
+        var firstResend = rig.FlushWithBlocks().Single();
+        Assert.Equal(new[] { ((ushort)0, 1), ((ushort)1, 2), ((ushort)3, 2) }, firstResend.Blocks);
+
+        rig.Age(SequencedMessage.RpcResendIntervalMs + 50, 0, 1, 2, 3, 4, 5, 6);
+        var secondResend = rig.FlushWithBlocks().Single();
+        Assert.Equal(new[] { ((ushort)0, 1), ((ushort)1, 2), ((ushort)3, 2), ((ushort)5, 2) }, secondResend.Blocks);
+
+        // Feed both resend packets through stock CLTMessageBargeGuar's exact block-start sequence rule.
+        ushort expected = 0;
+        var delivered = new List<ushort>();
+        void ReceiveStockBargeGuar((ushort Counter, int Count)[] blocks)
+        {
+            foreach (var (start, count) in blocks)
+            {
+                if (((start - expected) & 0xFFFF) >= 0x8000) continue; // stock client skips whole block
+                Assert.Equal(expected, start);
+                for (int i = 0; i < count; i++) delivered.Add((ushort)(start + i));
+                expected = (ushort)(expected + count);
+            }
+        }
+
+        ReceiveStockBargeGuar(firstResend.Blocks);
+        Assert.Equal((ushort)5, expected);
+
+        ReceiveStockBargeGuar(secondResend.Blocks);
+        Assert.Equal((ushort)7, expected);
+
+        // Server receives ACK for secondResend, then sends 81 1a + 81 19 (counters 7..8): delivers cleanly.
+        rig.Ack(secondResend.Sseq);
+        Assert.Empty(rig.Pending());
+        rig.Queue(2);
+        var lootOpen = rig.FlushWithBlocks().Single();
+        Assert.Equal(new[] { ((ushort)7, 2) }, lootOpen.Blocks);
+        ReceiveStockBargeGuar(lootOpen.Blocks);
+        Assert.Equal((ushort)9, expected);
+        Assert.Equal(Enumerable.Range(0, 9).Select(i => (ushort)i).ToArray(), delivered.ToArray());
+    }
+
+    [Fact]
+    public void ResendsNeverMergeWithFreshRpcsAndNeverSplitExistingBlocksAcrossMtu()
+    {
+        using var rig = new Rig();
+        rig.QueuePayload(2, 400); // block (0, 2) = ~804 bytes
+        var first = rig.FlushWithBlocks().Single();
+        Assert.Equal(new[] { ((ushort)0, 2) }, first.Blocks);
+
+        // Resend block (0, 2) together with a fresh RPC (2, 1): must stay two distinct blocks, not (0, 3).
+        rig.Age(SequencedMessage.RpcResendIntervalMs + 50, 0, 1);
+        rig.QueuePayload(1, 200);
+        var combined = rig.FlushWithBlocks().Single();
+        Assert.Equal(new[] { ((ushort)0, 2), ((ushort)2, 1) }, combined.Blocks);
+
+        // Queue another ~804-byte block (3, 2) and resend all three blocks: MTU split must happen BETWEEN blocks,
+        // never slicing block (3, 2) across two datagrams.
+        rig.QueuePayload(2, 400);
+        Assert.Equal(new[] { ((ushort)3, 2) }, rig.FlushWithBlocks().Single().Blocks);
+
+        rig.Age(SequencedMessage.RpcResendIntervalMs + 50, 0, 1, 2, 3, 4);
+        var packets = rig.FlushWithBlocks();
+        Assert.Equal(2, packets.Count);
+        Assert.Equal(new[] { ((ushort)0, 2), ((ushort)2, 1) }, packets[0].Blocks);
+        Assert.Equal(new[] { ((ushort)3, 2) }, packets[1].Blocks);
     }
 }

@@ -13,6 +13,7 @@ namespace hds
             public UInt32 Info;
             public UInt32 MissionItem;
             public readonly List<UInt32> Items;
+            internal bool Presented;
 
             public Corpse(Mob source, UInt32 info, UInt32 missionItem, IEnumerable<UInt32> items)
             {

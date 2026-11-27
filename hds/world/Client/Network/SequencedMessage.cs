@@ -33,6 +33,11 @@ namespace hds
         // first sent with, remembers the packets that carried it, and goes out again until the client acks one of them.
         // The client acks a packet's sequence and, in its ack bits, the 8 before it, so a lost one shows up as a gap.
         public int rpcNumber = -1;
+        // Immutable starting counter of the protocol-0x04 block this RPC was first numbered into. Stock client.dll
+        // CLTMessageBargeGuar::RCCInfoGuar::HandleInput (0x623C73B0..0x623C7798) checks only the block start sequence
+        // against m_nextExpectedSeq and skips an entire block when blockStart < expected, so resends must never merge
+        // previously-sent blocks or fresh RPCs into a wider overlapping block.
+        public int rpcBlockStart = -1;
         // Only explicitly world-bound producer records use this lifetime; ordinary reliable RPCs are unchanged.
         internal int? RpcWorldGeneration;
         internal long RpcTransportEpoch;

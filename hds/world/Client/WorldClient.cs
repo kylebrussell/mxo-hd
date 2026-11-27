@@ -375,20 +375,57 @@ namespace hds
                                                  ", char " + playerData.getCharID() + "; client acked sseq " + playerData.getACK() +
                                                  " bits " + playerData.getPss().ToString("x2"));
                         }
-                        foreach (SequencedMessage messageRPC in rpcsToSend)
+                        int rpcIndex = 0;
+                        while (rpcIndex < rpcsToSend.Count)
                         {
-                            messageRPC.lastRpcSendTick = rpcNow;
-                            messageRPC.IncreaseSentCounter();
-                            if (packet.addRPCContent(messageRPC) == false)
+                            SequencedMessage first = rpcsToSend[rpcIndex];
+                            if (first.rpcNumber >= 0 && first.rpcBlockStart >= 0)
+                            {
+                                List<SequencedMessage> existingBlock = new List<SequencedMessage> { first };
+                                int blockStart = first.rpcBlockStart;
+                                rpcIndex++;
+                                while (rpcIndex < rpcsToSend.Count &&
+                                       rpcsToSend[rpcIndex].rpcNumber >= 0 &&
+                                       rpcsToSend[rpcIndex].rpcBlockStart == blockStart)
+                                {
+                                    existingBlock.Add(rpcsToSend[rpcIndex]);
+                                    rpcIndex++;
+                                }
+
+                                foreach (SequencedMessage m in existingBlock)
+                                {
+                                    m.lastRpcSendTick = rpcNow;
+                                    m.IncreaseSentCounter();
+                                }
+
+                                if (packet.addRPCBlock(existingBlock) == false)
+                                {
+                                    packet.isFinal = true;
+                                    worldPackets.Add(packet);
+                                    packet = new WorldPacket(playerData);
+                                    packet.addRPCBlock(existingBlock);
+                                }
+
+                                if (existingBlock.Any(m => m.isTimed))
+                                {
+                                    packet.timed = true;
+                                }
+                                continue;
+                            }
+
+                            rpcIndex++;
+                            first.lastRpcSendTick = rpcNow;
+                            first.IncreaseSentCounter();
+                            if (packet.addRPCContent(first) == false)
                             {
                                 packet.isFinal = true;
                                 worldPackets.Add(packet);
                                 // Start new packet and add it to the queue 
                                 packet = new WorldPacket(playerData);
-                                packet.addRPCContent(messageRPC);
+                                packet.addRPCContent(first);
                             }
 
-                            if (messageRPC.isTimed == true)
+                            if (first.isTimed == true)
                             {
                                 packet.timed = true;
                             }
