@@ -9,6 +9,7 @@ namespace hds
         public sealed class Entry { public ushort Slot; public uint Base; public int Charges; public uint Goid => (Base >> 7) & 0x7ffff; }
         public static bool Valid(uint value, int charges) => (value & 0x8000007f) == 0 && charges >= 1 && charges <= 127;
         public static uint Packed(uint value, int charges) => (value & ~127u) | (uint)charges;
+        /// <summary>Whether the Writer can create a new code with the shipped default charge count.</summary>
         public static bool Supported(uint goid)
         {
             var item = CraftingRules.Find(goid);

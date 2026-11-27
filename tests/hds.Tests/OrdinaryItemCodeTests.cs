@@ -80,7 +80,14 @@ public class OrdinaryItemCodeTests
         Assert.Equal(price, item.Price);
         Assert.Equal(specialization, CraftingHandler.Specialization(item.Category));
         Assert.False(OrdinaryItemCode.IsConsumable(item.Category));
-        Assert.False(OrdinaryItemCode.Supported(2565)); // Another shipped revolver, outside this reviewed batch.
+    }
+    [Fact]
+    public void OwnedCodeNeedsItsStoredChargesWithoutRequiringAWriterDefault()
+    {
+        var item = CraftingRules.Find(2565);
+        Assert.Null(item.DefaultCodeCharges);
+        Assert.True(OrdinaryItemCode.CanMaterialize(item));
+        Assert.False(OrdinaryItemCode.Supported(item.Goid));
     }
     [Fact]
     public void DelayedExceptionsReachRefusalHandlerOnceAndPreserveException()

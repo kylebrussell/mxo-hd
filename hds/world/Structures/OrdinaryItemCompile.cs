@@ -35,11 +35,12 @@ namespace hds
             var db = Store.dbManager.WorldDbHandler;
             uint character = client.playerData.getCharID();
             var archived = db.GetOrdinaryItemCode(character, request.Slot);
-            if (archived == null || (request.Item != 0 && request.Item != archived.Goid) ||
-                !OrdinaryItemCode.Supported(archived.Goid))
+            if (archived == null || (request.Item != 0 && request.Item != archived.Goid))
                 return false;
+            var item = CraftingRules.Find(archived.Goid);
+            if (!OrdinaryItemCode.CanMaterialize(item)) return false;
 
-            long price = OrdinaryItemCode.Cost(CraftingRules.Find(archived.Goid), 0);
+            long price = OrdinaryItemCode.Cost(item, 0);
             ClientActionRequests.Materialized materialized;
             try { materialized = db.MaterializeOrdinaryItemCode(character, archived, null, price); }
             catch (System.Data.Common.DbException ex)
@@ -57,7 +58,9 @@ namespace hds
         /// <summary>Starts the in-world Compiler contest for ordinary item codes.</summary>
         public static bool TryStart(WorldClient client, ClientActionRequests.StoredCompile request)
         {
-            if (request == null || !OrdinaryItemCode.Supported(request.Item)) return false;
+            if (request == null) return false;
+            var item = CraftingRules.Find(request.Item);
+            if (!OrdinaryItemCode.CanMaterialize(item)) return false;
             var data = client.playerData;
             lock (data.craftingSync)
             {
@@ -67,7 +70,6 @@ namespace hds
                 if (!Ready(client, request.Tool) ||
                     pending.TryGetValue(client, out _) || AbilityCooldowns.IsCasting(data, now)) { Finish(client, 1); return true; }
                 var source = db.GetOrdinaryItemCode(data.getCharID(), request.Slot);
-                var item = CraftingRules.Find(request.Item);
                 if (source == null || source.Goid != request.Item) { Finish(client, 1); return true; }
                 int skill = CraftingHandler.Skill(client, 706);
                 int specialization = CraftingHandler.Skill(client, CraftingHandler.Specialization(item.Category));

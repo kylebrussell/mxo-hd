@@ -135,7 +135,8 @@ namespace hds.databases
         public ClientActionRequests.Materialized MaterializeOrdinaryItemCode(uint character, OrdinaryItemCode.Entry source, byte? tool, long cost, bool contestWon = true)
         {
             var result = new ClientActionRequests.Materialized();
-            if (source == null || !OrdinaryItemCode.Valid(source.Base, source.Charges) || !OrdinaryItemCode.Supported(source.Goid) || cost < 0) return result;
+            if (source == null || !OrdinaryItemCode.Valid(source.Base, source.Charges) ||
+                !OrdinaryItemCode.CanMaterialize(CraftingRules.Find(source.Goid)) || cost < 0) return result;
             using var connection = new MySqlConnection(connectionString); connection.Open();
             EnsureTransactionalInventory(connection);
             using var tx = connection.BeginTransaction(); using var c = connection.CreateCommand(); c.Transaction = tx;
