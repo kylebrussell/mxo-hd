@@ -136,6 +136,100 @@ public class WorldEncryptionTests
         }
     }
 
+    [Theory]
+    [InlineData(128, "9F589F5CF6122C32B6BFEC2F2AE8C35A")]
+    [InlineData(192, "EFA71F788965BD4453F860178FC19101")]
+    [InlineData(256, "57FF739D4DC92C1BD7FC01700CC8216F")]
+    public void TwofishSboxTablesMatchOfficialSchneierEcbKnownAnswerVectors(int keyBits, string expectedHex)
+    {
+        byte[] key = new byte[keyBits / 8];
+        byte[] plain = new byte[16];
+        byte[] cipher = new byte[16];
+        byte[] decrypted = new byte[16];
+
+        using var tf = new ManyMonkeys.Cryptography.Twofish
+        {
+            Mode = System.Security.Cryptography.CipherMode.ECB,
+            KeySize = keyBits,
+            BlockSize = 128
+        };
+
+        using var enc = tf.CreateEncryptor(key, new byte[16]);
+        enc.TransformBlock(plain, 0, 16, cipher, 0);
+        Assert.Equal(expectedHex, Convert.ToHexString(cipher));
+
+        using var dec = tf.CreateDecryptor(key, new byte[16]);
+        dec.TransformBlock(cipher, 0, 16, decrypted, 0);
+        Assert.Equal(plain, decrypted);
+    }
+
+    [Fact]
+    public void MxoTwofishReusesKeyAcrossMultipleIvsAndInvalidatesOnSetKey()
+    {
+        byte[] key1 = Enumerable.Range(0, 16).Select(i => (byte)(0x10 + i)).ToArray();
+        byte[] key2 = Enumerable.Range(0, 16).Select(i => (byte)(0x80 + i)).ToArray();
+        byte[] plain = Enumerable.Range(0, 1280).Select(i => (byte)(i * 31 + 7)).ToArray();
+        byte[] cipher1 = new byte[plain.Length];
+        byte[] cipher2 = new byte[plain.Length];
+        byte[] roundTrip = new byte[plain.Length];
+
+        var tf = new MxoTwofish();
+        tf.SetKey(key1);
+
+        for (int i = 0; i < 16; i++)
+        {
+            byte[] iv = Enumerable.Range(0, 16).Select(b => (byte)(i * 17 + b + 1)).ToArray();
+            tf.SetIV(iv);
+            tf.Encrypt(plain, cipher1);
+
+            // Fresh instance must match byte-for-byte with reused key schedule
+            var reference = new MxoTwofish();
+            reference.SetKey(key1);
+            reference.SetIV(iv);
+            reference.Encrypt(plain, cipher2);
+            Assert.Equal(cipher2, cipher1);
+
+            tf.SetIV(iv);
+            tf.Decrypt(cipher1, roundTrip);
+            Assert.Equal(plain, roundTrip);
+        }
+
+        byte[] sharedIv = Enumerable.Repeat((byte)0x5A, 16).ToArray();
+        tf.SetIV(sharedIv);
+        tf.Encrypt(plain, cipher1);
+
+        tf.SetKey(key2);
+        tf.SetIV(sharedIv);
+        tf.Encrypt(plain, cipher2);
+        Assert.NotEqual(cipher1, cipher2);
+
+        tf.SetIV(sharedIv);
+        tf.Decrypt(cipher2, roundTrip);
+        Assert.Equal(plain, roundTrip);
+    }
+
+    [Fact]
+    public void DecryptDropsShortOrUnalignedBuffersAndCrcSliceMatchesFullBuffer()
+    {
+        var crypto = new WorldEncryption();
+        Assert.Null(crypto.decrypt(null!, 0));
+        Assert.Null(crypto.decrypt(Array.Empty<byte>(), 0));
+        Assert.Null(crypto.decrypt(new byte[17], 17));
+        Assert.Null(crypto.decrypt(new byte[32], 32));
+        Assert.Null(crypto.decrypt(new byte[34], 34));
+
+        byte[] data = Enumerable.Range(0, 128).Select(i => (byte)(i * 13 + 3)).ToArray();
+        byte[] slice = data[17..91];
+        var crc = new Crc32();
+        Assert.Equal(crc.checksum(slice), crc.checksum(data, 17, 74));
+
+        var dyn = new DynamicArray();
+        dyn.append((byte)0x01);
+        dyn.append(new byte[] { 0x02, 0x03 });
+        dyn.append((byte)0x04);
+        Assert.Equal(new byte[] { 0x01, 0x02, 0x03, 0x04 }, dyn.getBytes());
+    }
+
     private static byte[] EncryptWithExplicitIv(byte[] key, byte[] iv, byte[] plainData, ushort pss, ushort cseq, ushort sseq)
     {
         uint seqValue = ((uint)pss << 24) | ((uint)cseq << 12) | sseq;

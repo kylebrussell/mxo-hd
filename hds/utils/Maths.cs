@@ -46,7 +46,9 @@ namespace hds
 
         public bool IsInCircle(float src_x, float src_z, float otherpoint_x , float otherpoint_z, float radius)
         {
-            return (Math.Pow((src_x - otherpoint_x), 2) + Math.Pow(src_z - otherpoint_z, 2)) <= radius * radius;
+            double dx = (double)src_x - otherpoint_x;
+            double dz = (double)src_z - otherpoint_z;
+            return (dx * dx + dz * dz) <= (double)radius * radius;
         }
 
         public int diceRollOperant()

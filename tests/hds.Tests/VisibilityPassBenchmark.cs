@@ -118,6 +118,57 @@ public class VisibilityPassBenchmark
     }
 
     [Fact]
+    public void IsInCircleAndGridCollectAndBatchReconcileMatchExpectedSemantics()
+    {
+        var maths = new Maths();
+        Assert.True(maths.IsInCircle(17000f, 2500f, 17000f, 7500f, 5000f));
+        Assert.False(maths.IsInCircle(17000f, 2500f, 17000f, 7501f, 5000f));
+        Assert.True(maths.IsInCircle(-60000f, 60000f, -57000f, 64000f, 5000f));
+        Assert.False(maths.IsInCircle(-60000f, 60000f, -56999f, 64000f, 5000f));
+
+        var grid = new SpatialGrid<int>(5000f);
+        grid.Add(0f, 0f, 1);
+        grid.Add(4900f, 4900f, 2);
+        grid.Add(5100f, 5100f, 3);
+        grid.Add(25000f, 25000f, 4);
+        var collected = new List<List<int>>();
+        grid.CollectNeighborCells(2500f, 2500f, 5000f, collected);
+        var viaYield = grid.GetNeighborCells(2500f, 2500f, 5000f).SelectMany(c => c).OrderBy(x => x).ToList();
+        var viaCollect = collected.SelectMany(c => c).OrderBy(x => x).ToList();
+        Assert.Equal(viaYield, viaCollect);
+        Assert.Equal(new[] { 1, 2, 3 }, viaCollect);
+
+        var viewer = Player(0);
+        var nearbyA = Player(1);
+        var nearbyB = Player(2);
+        var stalePlayer = Player(3);
+        viewer.viewMan.addView(nearbyA.playerData.getEntityId(), 12).viewCreated = true;
+        viewer.viewMan.addView(stalePlayer.playerData.getEntityId(), 12).viewCreated = true;
+        viewer.viewMan.addView(999999UL, HardlineBooths.PhoneBoothType).viewCreated = true;
+
+        var nearbyClients = new List<WorldClient> { nearbyA, nearbyB };
+        var nearbyEntities = new List<ulong> { nearbyA.playerData.getEntityId(), nearbyB.playerData.getEntityId() };
+        var nearbyGoids = new List<ushort> { 12, 12 };
+        var nearbySet = new HashSet<ulong>(nearbyEntities);
+        var toSpawn = new List<(WorldClient Other, ClientView View)>();
+        var toDelete = new List<ClientView>();
+
+        long ver = viewer.viewMan.ReconcilePlayerViews(
+            nearbyClients, nearbyEntities, nearbyGoids, nearbySet, 12, toSpawn, toDelete);
+        Assert.Equal(viewer.viewMan.Version, ver);
+        Assert.Single(toSpawn);
+        Assert.Same(nearbyB, toSpawn[0].Other);
+        Assert.Single(toDelete);
+        Assert.Equal(stalePlayer.playerData.getEntityId(), toDelete[0].entityId);
+
+        // Non-player booth view stays intact in ReconcilePlayerViews and is caught by CollectStaleViewsByGoId.
+        var staleBooths = new List<ClientView>();
+        viewer.viewMan.CollectStaleViewsByGoId(HardlineBooths.PhoneBoothType, new HashSet<ulong>(), staleBooths);
+        Assert.Single(staleBooths);
+        Assert.Equal(999999UL, staleBooths[0].entityId);
+    }
+
+    [Fact]
     public void DensePassTimings()
     {
         if (Environment.GetEnvironmentVariable("MXO_VISIBILITY_BENCH") != "1") return;

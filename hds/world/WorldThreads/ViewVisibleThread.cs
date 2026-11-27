@@ -347,6 +347,9 @@ namespace hds
             }
 
             Maths mathUtils = new Maths();
+            var nearbySubwayEntities = new HashSet<ulong>();
+            var neighborCells = new List<List<Subway>>(9);
+            var viewsToDelete = new List<ClientView>();
             foreach (WorldClient thisclient in clients)
             {
                 if (thisclient == null || thisclient.Alive == false)
@@ -372,11 +375,14 @@ namespace hds
                 NumericalUtils.LtVector3dToDoubles(thisclient.playerInstance.Position.getValue(),
                     ref playerX, ref playerY, ref playerZ);
 
-                HashSet<ulong> nearbySubwayEntities = new HashSet<ulong>();
-                foreach (List<Subway> cell in grid.GetNeighborCells((float)playerX, (float)playerZ, ViewRange))
+                nearbySubwayEntities.Clear();
+                grid.CollectNeighborCells((float)playerX, (float)playerZ, ViewRange, neighborCells);
+                for (int c = 0; c < neighborCells.Count; c++)
                 {
-                    foreach (Subway thisSubway in cell)
+                    List<Subway> cell = neighborCells[c];
+                    for (int s = 0; s < cell.Count; s++)
                     {
+                        Subway thisSubway = cell[s];
                         if (thisSubway == null)
                         {
                             continue;
@@ -405,31 +411,13 @@ namespace hds
                     }
                 }
 
-                if (thisclient.viewMan.Count == 0)
+                thisclient.viewMan.CollectStaleViewsByGoId(SubwayTypeId, nearbySubwayEntities, viewsToDelete);
+                for (int i = 0; i < viewsToDelete.Count; i++)
                 {
-                    continue;
-                }
-
-                List<UInt16> viewsToRemove = new List<UInt16>();
-                List<ClientView> viewSnapshot = thisclient.viewMan.Snapshot();
-                foreach (ClientView view in viewSnapshot)
-                {
-                    if (!view.viewCreated || view.GoID != SubwayTypeId)
-                    {
-                        continue;
-                    }
-
-                    if (!nearbySubwayEntities.Contains(view.entityId))
-                    {
-                        ServerPackets packets = new ServerPackets();
-                        packets.sendDeleteViewPacket(thisclient, view.ViewID);
-                        viewsToRemove.Add(view.ViewID);
-                    }
-                }
-
-                foreach (UInt16 viewId in viewsToRemove)
-                {
-                    thisclient.viewMan.removeViewByViewId(viewId);
+                    ClientView view = viewsToDelete[i];
+                    ServerPackets packets = new ServerPackets();
+                    packets.sendDeleteViewPacket(thisclient, view.ViewID);
+                    thisclient.viewMan.removeViewByViewId(view.ViewID);
                 }
             }
         }
@@ -443,6 +431,9 @@ namespace hds
             }
 
             Maths mathUtils = new Maths();
+            var nearbyBooths = new HashSet<ulong>();
+            var neighborCells = new List<List<StaticWorldObject>>(9);
+            var viewsToDelete = new List<ClientView>();
             foreach (WorldClient thisclient in clients)
             {
                 if (thisclient == null || thisclient.Alive == false)
@@ -465,11 +456,14 @@ namespace hds
                         continue;
                     }
 
-                    HashSet<ulong> nearbyBooths = new HashSet<ulong>();
-                    foreach (List<StaticWorldObject> cell in grid.GetNeighborCells((float)playerX, (float)playerZ, ViewRange))
+                    nearbyBooths.Clear();
+                    grid.CollectNeighborCells((float)playerX, (float)playerZ, ViewRange, neighborCells);
+                    for (int c = 0; c < neighborCells.Count; c++)
                     {
-                        foreach (StaticWorldObject staticWorldObject in cell)
+                        List<StaticWorldObject> cell = neighborCells[c];
+                        for (int s = 0; s < cell.Count; s++)
                         {
+                            StaticWorldObject staticWorldObject = cell[s];
                             if (!mathUtils.IsInCircle((float)playerX, (float)playerZ,
                                     (float)staticWorldObject.pos_x, (float)staticWorldObject.pos_z, ViewRange))
                             {
@@ -525,13 +519,12 @@ namespace hds
                     }
 
                     // Booths that are out of range (or in another district) leave the client's view
-                    foreach (ClientView view in thisclient.viewMan.Snapshot())
+                    thisclient.viewMan.CollectStaleViewsByGoId(HardlineBooths.PhoneBoothType, nearbyBooths, viewsToDelete);
+                    for (int i = 0; i < viewsToDelete.Count; i++)
                     {
-                        if (view.viewCreated && HardlineBooths.IsBooth(view.GoID) && !nearbyBooths.Contains(view.entityId))
-                        {
-                            new ServerPackets().sendDeleteViewPacket(thisclient, view.ViewID);
-                            thisclient.viewMan.removeViewByViewId(view.ViewID);
-                        }
+                        ClientView view = viewsToDelete[i];
+                        new ServerPackets().sendDeleteViewPacket(thisclient, view.ViewID);
+                        thisclient.viewMan.removeViewByViewId(view.ViewID);
                     }
                 }
             }
@@ -541,6 +534,9 @@ namespace hds
             Dictionary<ulong, Mob> mobsByEntity)
         {
             Maths mathUtils = new Maths();
+            var nearbyMobEntities = new HashSet<ulong>();
+            var neighborCells = new List<List<Mob>>(9);
+            var viewsToDelete = new List<(ClientView View, Mob Mob)>();
             foreach (WorldClient thisclient in clients)
             {
                 if (thisclient == null || thisclient.Alive == false)
@@ -565,11 +561,14 @@ namespace hds
                 NumericalUtils.LtVector3dToDoubles(thisclient.playerInstance.Position.getValue(),
                     ref playerX, ref playerY, ref playerZ);
 
-                HashSet<ulong> nearbyMobEntities = new HashSet<ulong>();
-                foreach (List<Mob> cell in grid.GetNeighborCells((float)playerX, (float)playerZ, ViewRange))
+                nearbyMobEntities.Clear();
+                grid.CollectNeighborCells((float)playerX, (float)playerZ, ViewRange, neighborCells);
+                for (int c = 0; c < neighborCells.Count; c++)
                 {
-                    foreach (Mob thismob in cell)
+                    List<Mob> cell = neighborCells[c];
+                    for (int m = 0; m < cell.Count; m++)
                     {
+                        Mob thismob = cell[m];
                         // Unspawned NPCs (corpse gone, waiting to respawn) aren't nearby, so their views get deleted below
                         if (thismob == null || !thismob.getIsSpawned())
                         {
@@ -623,45 +622,23 @@ namespace hds
                     }
                 }
 
-                if (thisclient.viewMan.Count == 0)
+                thisclient.viewMan.CollectStaleMobViews(districtId, nearbyMobEntities, mobsByEntity, viewsToDelete);
+                for (int i = 0; i < viewsToDelete.Count; i++)
                 {
-                    continue;
-                }
-
-                List<UInt16> viewsToRemove = new List<UInt16>();
-                List<ClientView> viewSnapshot = thisclient.viewMan.Snapshot();
-                foreach (ClientView view in viewSnapshot)
-                {
-                    if (!view.viewCreated)
-                    {
-                        continue;
-                    }
-
-                    if (!mobsByEntity.TryGetValue(view.entityId, out Mob mob))
-                    {
-                        continue;
-                    }
-
-                    if (!nearbyMobEntities.Contains(view.entityId) || mob.getDistrict() != districtId)
-                    {
-                        // Delete Mob's View from Client if we are outside
-                        ServerPackets packets = new ServerPackets();
-                        packets.sendDeleteViewPacket(thisclient, view.ViewID);
+                    ClientView view = viewsToDelete[i].View;
+                    Mob mob = viewsToDelete[i].Mob;
+                    // Delete Mob's View from Client if we are outside
+                    ServerPackets packets = new ServerPackets();
+                    packets.sendDeleteViewPacket(thisclient, view.ViewID);
 #if DEBUG
-                        if (DebugChat.Enabled)
-                        packets.sendSystemChatMessage(thisclient,
-                            "MobView (" + mob.getName() + " LVL: " + mob.getLevel() +
-                            " ) with View ID " + view.ViewID + " is out of range and is deleted!",
-                            "MODAL");
+                    if (DebugChat.Enabled)
+                    packets.sendSystemChatMessage(thisclient,
+                        "MobView (" + mob.getName() + " LVL: " + mob.getLevel() +
+                        " ) with View ID " + view.ViewID + " is out of range and is deleted!",
+                        "MODAL");
 #endif
-                        viewsToRemove.Add(view.ViewID);
-                        mob.isUpdateable = false;
-                    }
-                }
-
-                foreach (UInt16 viewId in viewsToRemove)
-                {
-                    thisclient.viewMan.removeViewByViewId(viewId);
+                    mob.isUpdateable = false;
+                    thisclient.viewMan.removeViewByViewId(view.ViewID);
                 }
             }
         }
@@ -672,6 +649,7 @@ namespace hds
         /// </summary>
         private sealed class PlayerSample
         {
+            public WorldClient Client;
             public bool Eligible, Hidden;
             public uint District;
             public double X, Z;
@@ -690,51 +668,100 @@ namespace hds
             new Dictionary<WorldClient, (long Views, List<WorldClient> Near)>(ReferenceEqualityComparer.Instance);
         internal static int SkippedPlayerEvaluations;
 
-        private static Dictionary<WorldClient, PlayerSample> SamplePlayers(List<WorldClient> clients)
+        private static PlayerSample SampleSingle(WorldClient client)
+        {
+            double x = 0, y = 0, z = 0;
+            NumericalUtils.LtVector3dToDoubles(client.playerInstance.Position.getValue(), ref x, ref y, ref z);
+            return new PlayerSample
+            {
+                Client = client,
+                Eligible = client.Alive && client.playerData.getOnWorld() && !client.playerData.waitForRPCShutDown,
+                Hidden = Stealth.IsHidden(client),
+                District = client.playerData.getDistrictId(),
+                X = x, Z = z,
+                Entity = client.playerData.getEntityId(),
+                Goid = NumericalUtils.ByteArrayToUint16(client.playerInstance.GetGoid(), 1)
+            };
+        }
+
+        private static Dictionary<WorldClient, PlayerSample> SamplePlayers(List<WorldClient> clients, List<PlayerSample> sampleList)
         {
             var samples = new Dictionary<WorldClient, PlayerSample>(clients.Count, ReferenceEqualityComparer.Instance);
-            foreach (WorldClient client in clients)
+            for (int i = 0; i < clients.Count; i++)
             {
+                WorldClient client = clients[i];
                 if (client == null || samples.ContainsKey(client)) continue;
-                double x = 0, y = 0, z = 0;
-                NumericalUtils.LtVector3dToDoubles(client.playerInstance.Position.getValue(), ref x, ref y, ref z);
-                samples[client] = new PlayerSample
-                {
-                    Eligible = client.Alive && client.playerData.getOnWorld() && !client.playerData.waitForRPCShutDown,
-                    Hidden = Stealth.IsHidden(client),
-                    District = client.playerData.getDistrictId(),
-                    X = x, Z = z,
-                    Entity = client.playerData.getEntityId(),
-                    Goid = NumericalUtils.ByteArrayToUint16(client.playerInstance.GetGoid(), 1)
-                };
+                PlayerSample sample = SampleSingle(client);
+                client.VisibilitySampleIndex = sampleList.Count;
+                sampleList.Add(sample);
+                samples[client] = sample;
             }
             return samples;
+        }
+
+        private static PlayerSample LookupSample(WorldClient client, List<PlayerSample> sampleList, Dictionary<WorldClient, PlayerSample> samples)
+        {
+            int idx = client.VisibilitySampleIndex;
+            if ((uint)idx < (uint)sampleList.Count && ReferenceEquals(sampleList[idx].Client, client))
+            {
+                return sampleList[idx];
+            }
+            return samples.TryGetValue(client, out PlayerSample s) ? s : null;
         }
 
         internal static void CheckPlayerViews(List<WorldClient> clients,
             Dictionary<uint, SpatialGrid<WorldClient>> clientGrids,
             Dictionary<ulong, WorldClient> clientsByEntity)
         {
-            Maths mathUtils = new Maths();
-            Dictionary<WorldClient, PlayerSample> samples = SamplePlayers(clients);
+            var sampleList = new List<PlayerSample>(clients.Count);
+            Dictionary<WorldClient, PlayerSample> samples = SamplePlayers(clients, sampleList);
             Dictionary<WorldClient, PlayerSample> previous = previousSamples;
             // A player's outcome depends only on its own sample, its views and the samples near it, so when none of
             // those changed it is skipped. Any join, leave or hidden player (stealth visibility also depends on PvP
             // state, which a sample doesn't carry) makes this a full pass.
-            bool canSkip = previous != null && previous.Count == samples.Count && !samples.Values.Any(s => s.Hidden);
-            foreach (var pair in samples)
+            bool canSkip = previous != null && previous.Count == samples.Count;
+            for (int i = 0; i < sampleList.Count; i++)
             {
-                if (previous == null || !previous.TryGetValue(pair.Key, out PlayerSample before)) { canSkip = false; continue; }
-                pair.Value.Changed = !pair.Value.SameAs(before);
+                PlayerSample sample = sampleList[i];
+                if (sample.Hidden) canSkip = false;
+                if (previous == null || !previous.TryGetValue(sample.Client, out PlayerSample before)) { canSkip = false; continue; }
+                sample.Changed = !sample.SameAs(before);
                 // Leaving the world or the district takes a player out of the grid, where neighbours wouldn't see it.
-                if (before.Eligible != pair.Value.Eligible || before.District != pair.Value.District) canSkip = false;
+                if (before.Eligible != sample.Eligible || before.District != sample.District) canSkip = false;
             }
             previousSamples = samples;
-            foreach (WorldClient gone in evaluatedViews.Keys.Where(c => !samples.ContainsKey(c)).ToList()) evaluatedViews.Remove(gone);
-
-            foreach (WorldClient currentClient in clients)
+            if (evaluatedViews.Count > 0)
             {
-                if (currentClient == null || !samples.TryGetValue(currentClient, out PlayerSample current) || !current.Eligible)
+                List<WorldClient> goneClients = null;
+                foreach (WorldClient c in evaluatedViews.Keys)
+                {
+                    if (!samples.ContainsKey(c))
+                    {
+                        if (goneClients == null) goneClients = new List<WorldClient>();
+                        goneClients.Add(c);
+                    }
+                }
+                if (goneClients != null)
+                {
+                    for (int i = 0; i < goneClients.Count; i++) evaluatedViews.Remove(goneClients[i]);
+                }
+            }
+
+            const double viewRangeSq = (double)ViewRange * ViewRange;
+            var neighborCells = new List<List<WorldClient>>(9);
+            var nearbyClients = new List<WorldClient>(clients.Count);
+            var nearbyEntities = new List<ulong>(clients.Count);
+            var nearbyGoids = new List<UInt16>(clients.Count);
+            var nearbyPlayerEntities = new HashSet<ulong>(clients.Count);
+            var toSpawn = new List<(WorldClient Other, ClientView View)>();
+            var toDelete = new List<ClientView>();
+
+            for (int ci = 0; ci < clients.Count; ci++)
+            {
+                WorldClient currentClient = clients[ci];
+                if (currentClient == null) continue;
+                PlayerSample current = LookupSample(currentClient, sampleList, samples);
+                if (current == null || !current.Eligible)
                 {
                     continue;
                 }
@@ -745,30 +772,47 @@ namespace hds
                     continue;
                 }
 
-                if (canSkip && !current.Changed && evaluatedViews.TryGetValue(currentClient, out var seen) &&
-                    seen.Views == currentClient.viewMan.Version && !NeighbourChanged(grid, current, seen.Near, samples))
+                bool hasEvaluated = evaluatedViews.TryGetValue(currentClient, out var seen);
+                if (canSkip && !current.Changed && hasEvaluated &&
+                    seen.Views == currentClient.viewMan.Version &&
+                    !NeighbourChanged(grid, current, seen.Near, sampleList, samples, neighborCells))
                 {
                     SkippedPlayerEvaluations++;
                     continue;
                 }
 
-                double currentPlayerX = current.X;
-                double currentPlayerZ = current.Z;
+                float currentPlayerX = (float)current.X;
+                float currentPlayerZ = (float)current.Z;
 
-                HashSet<ulong> nearbyPlayerEntities = new HashSet<ulong>();
-                foreach (List<WorldClient> cell in grid.GetNeighborCells((float)currentPlayerX, (float)currentPlayerZ, ViewRange))
+                nearbyClients.Clear();
+                nearbyEntities.Clear();
+                nearbyGoids.Clear();
+                nearbyPlayerEntities.Clear();
+                List<WorldClient> nearList = hasEvaluated ? seen.Near : new List<WorldClient>();
+                nearList.Clear();
+
+                grid.CollectNeighborCells(currentPlayerX, currentPlayerZ, ViewRange, neighborCells);
+                for (int cellIdx = 0; cellIdx < neighborCells.Count; cellIdx++)
                 {
-                    foreach (WorldClient otherClient in cell)
+                    List<WorldClient> cell = neighborCells[cellIdx];
+                    for (int oi = 0; oi < cell.Count; oi++)
                     {
-                        if (otherClient == null || otherClient == currentClient)
+                        WorldClient otherClient = cell[oi];
+                        if (otherClient == null || ReferenceEquals(otherClient, currentClient))
                         {
                             continue;
                         }
 
+                        nearList.Add(otherClient);
+
                         // A client the grid holds but this pass didn't sample (added since the snapshot) is read live.
-                        if (!samples.TryGetValue(otherClient, out PlayerSample other))
+                        PlayerSample other = LookupSample(otherClient, sampleList, samples);
+                        if (other == null)
                         {
-                            samples[otherClient] = other = SamplePlayers(new List<WorldClient> { otherClient })[otherClient];
+                            other = SampleSingle(otherClient);
+                            otherClient.VisibilitySampleIndex = sampleList.Count;
+                            sampleList.Add(other);
+                            samples[otherClient] = other;
                         }
 
                         if (!other.Eligible || other.District != districtId)
@@ -776,10 +820,9 @@ namespace hds
                             continue;
                         }
 
-                        bool playerIsInCircle = mathUtils.IsInCircle((float)currentPlayerX, (float)currentPlayerZ,
-                            (float)other.X, (float)other.Z, ViewRange);
-
-                        if (!playerIsInCircle)
+                        double dx = currentPlayerX - (float)other.X;
+                        double dz = currentPlayerZ - (float)other.Z;
+                        if (dx * dx + dz * dz > viewRangeSq)
                         {
                             continue;
                         }
@@ -791,13 +834,25 @@ namespace hds
                         }
 
                         nearbyPlayerEntities.Add(other.Entity);
+                        nearbyClients.Add(otherClient);
+                        nearbyEntities.Add(other.Entity);
+                        nearbyGoids.Add(other.Goid);
+                    }
+                }
 
-                        ClientView clientView = currentClient.viewMan.GetViewForEntityAndGo(other.Entity, other.Goid);
+                long version = currentClient.viewMan.ReconcilePlayerViews(
+                    nearbyClients, nearbyEntities, nearbyGoids, nearbyPlayerEntities,
+                    current.Goid, toSpawn, toDelete);
 
+                if (toSpawn.Count > 0)
+                {
+                    for (int s = 0; s < toSpawn.Count; s++)
+                    {
+                        WorldClient otherClient = toSpawn[s].Other;
+                        ClientView clientView = toSpawn[s].View;
                         if (clientView.viewCreated == false &&
                             currentClient.playerData.getDistrictId() == otherClient.playerData.getDistrictId() &&
-                            otherClient.playerData.getOnWorld() && currentClient.playerData.getOnWorld() &&
-                            playerIsInCircle)
+                            otherClient.playerData.getOnWorld() && currentClient.playerData.getOnWorld())
                         {
                             // Spawn player
                             ServerPackets pak = new ServerPackets();
@@ -810,29 +865,17 @@ namespace hds
                             clientView.spawnId = pak.SendPlayerSpawn(currentClient, otherClient, clientView.ViewID);
                             clientView.viewCreated = true;
                             Stealth.AfterSpawn(currentClient, otherClient, clientView.ViewID);
-                            EvasionShield.AfterSpawn(currentClient,otherClient,clientView.ViewID);
-                            StealthShieldAbilities.AfterSpawn(currentClient,otherClient,clientView.ViewID);
+                            EvasionShield.AfterSpawn(currentClient, otherClient, clientView.ViewID);
+                            StealthShieldAbilities.AfterSpawn(currentClient, otherClient, clientView.ViewID);
                         }
                     }
                 }
 
-                if (currentClient.viewMan.Count == 0)
+                if (toDelete.Count > 0)
                 {
-                    continue;
-                }
-
-                UInt16 playerGoId = current.Goid;
-                List<UInt16> viewsToRemove = new List<UInt16>();
-                List<ClientView> viewSnapshot = currentClient.viewMan.Snapshot();
-                foreach (ClientView view in viewSnapshot)
-                {
-                    if (!view.viewCreated || view.GoID != playerGoId)
+                    for (int d = 0; d < toDelete.Count; d++)
                     {
-                        continue;
-                    }
-
-                    if (!nearbyPlayerEntities.Contains(view.entityId))
-                    {
+                        ClientView view = toDelete[d];
                         ServerPackets packets = new ServerPackets();
                         if (clientsByEntity.TryGetValue(view.entityId, out WorldClient otherClient))
                         {
@@ -848,37 +891,39 @@ namespace hds
                         }
 
                         packets.sendDeleteViewPacket(currentClient, view.ViewID);
-                        viewsToRemove.Add(view.ViewID);
+                        currentClient.viewMan.removeViewByViewId(view.ViewID);
                     }
+                    version = currentClient.viewMan.Version;
                 }
 
-                foreach (UInt16 viewId in viewsToRemove)
-                {
-                    currentClient.viewMan.removeViewByViewId(viewId);
-                }
-                evaluatedViews[currentClient] = (currentClient.viewMan.Version, Near(grid, current, currentClient));
+                evaluatedViews[currentClient] = (version, nearList);
             }
         }
 
         /// <summary>Whether anyone in the player's neighbour cells now, or in them at its last evaluation, changed.</summary>
         private static bool NeighbourChanged(SpatialGrid<WorldClient> grid, PlayerSample current, List<WorldClient> near,
-            Dictionary<WorldClient, PlayerSample> samples)
+            List<PlayerSample> sampleList, Dictionary<WorldClient, PlayerSample> samples, List<List<WorldClient>> neighborCells)
         {
-            foreach (WorldClient other in near)
-                if (!samples.TryGetValue(other, out PlayerSample s) || s.Changed) return true;
-            foreach (List<WorldClient> cell in grid.GetNeighborCells((float)current.X, (float)current.Z, ViewRange))
-                foreach (WorldClient other in cell)
-                    if (other != null && (!samples.TryGetValue(other, out PlayerSample s) || s.Changed)) return true;
+            for (int i = 0; i < near.Count; i++)
+            {
+                PlayerSample s = LookupSample(near[i], sampleList, samples);
+                if (s == null || s.Changed) return true;
+            }
+            grid.CollectNeighborCells((float)current.X, (float)current.Z, ViewRange, neighborCells);
+            for (int c = 0; c < neighborCells.Count; c++)
+            {
+                List<WorldClient> cell = neighborCells[c];
+                for (int i = 0; i < cell.Count; i++)
+                {
+                    WorldClient other = cell[i];
+                    if (other != null)
+                    {
+                        PlayerSample s = LookupSample(other, sampleList, samples);
+                        if (s == null || s.Changed) return true;
+                    }
+                }
+            }
             return false;
-        }
-
-        private static List<WorldClient> Near(SpatialGrid<WorldClient> grid, PlayerSample current, WorldClient self)
-        {
-            var near = new List<WorldClient>();
-            foreach (List<WorldClient> cell in grid.GetNeighborCells((float)current.X, (float)current.Z, ViewRange))
-                foreach (WorldClient other in cell)
-                    if (other != null && !ReferenceEquals(other, self)) near.Add(other);
-            return near;
         }
 
         internal static bool TryClaimInactiveClient(WorldClient client,out string key)

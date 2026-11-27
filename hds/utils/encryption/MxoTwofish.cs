@@ -6,9 +6,11 @@ namespace hds
 {
     public class MxoTwofish
     {
-        Twofish tf;
-        ICryptoTransform tfEncryptor;
-        ICryptoTransform tfDecryptor;
+        private readonly Twofish tf;
+        private TwofishEncryption cachedCipher;
+        private byte[] currentKey;
+        private byte[] currentIv;
+        private bool keyDirty = true;
 
         public MxoTwofish()
         {
@@ -21,26 +23,55 @@ namespace hds
 
         public void SetIV(byte[] iv)
         {
-            tf.IV = iv;
+            currentIv = iv;
         }
 
         public void SetKey(byte[] key)
         {
-            tf.Key = key;
+            currentKey = key;
+            keyDirty = true;
+        }
+
+        private TwofishEncryption EnsureCipher()
+        {
+            if (keyDirty || cachedCipher == null)
+            {
+                byte[] key = currentKey ?? tf.Key;
+                byte[] iv = currentIv ?? tf.IV;
+                int keyBits = key.Length * 8;
+                cachedCipher = new TwofishEncryption(keyBits, ref key, ref iv, CipherMode.CBC,
+                    TwofishBase.EncryptionDirection.Encrypting);
+                keyDirty = false;
+            }
+            return cachedCipher;
         }
 
         public void Encrypt(byte[] plainData, byte[] destination)
         {
-            tfEncryptor = tf.CreateEncryptor(tf.Key, tf.IV);
-            for (int i = 0; i < plainData.Length / 16; i++)
-                tfEncryptor.TransformBlock(plainData, i * 16, 16, destination, i * 16);
+            TwofishEncryption cipher = EnsureCipher();
+            cipher.SetIV(currentIv ?? tf.IV, 0);
+            cipher.EncryptBlocks(plainData, 0, destination, 0, plainData.Length);
+        }
+
+        internal void Encrypt(byte[] iv, int ivOffset, byte[] plainData, int srcOffset, byte[] destination, int dstOffset, int length)
+        {
+            TwofishEncryption cipher = EnsureCipher();
+            cipher.SetIV(iv, ivOffset);
+            cipher.EncryptBlocks(plainData, srcOffset, destination, dstOffset, length);
         }
 
         public void Decrypt(byte[] criptedData, byte[] destination)
         {
-            tfDecryptor = tf.CreateDecryptor(tf.Key, tf.IV);
-            for (int i = 0; i < criptedData.Length / 16; i++)
-                tfDecryptor.TransformBlock(criptedData, i * 16, 16, destination, i * 16);
+            TwofishEncryption cipher = EnsureCipher();
+            cipher.SetIV(currentIv ?? tf.IV, 0);
+            cipher.DecryptBlocks(criptedData, 0, destination, 0, criptedData.Length);
+        }
+
+        internal void Decrypt(byte[] iv, int ivOffset, byte[] criptedData, int srcOffset, byte[] destination, int dstOffset, int length)
+        {
+            TwofishEncryption cipher = EnsureCipher();
+            cipher.SetIV(iv, ivOffset);
+            cipher.DecryptBlocks(criptedData, srcOffset, destination, dstOffset, length);
         }
     }
 }
