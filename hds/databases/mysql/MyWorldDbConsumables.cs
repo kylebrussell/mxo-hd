@@ -4,7 +4,7 @@ namespace hds.databases
 {
     public partial class MyWorldDbAccess
     {
-        // Must run in the same transaction as WriteBagConsumption.
+        // Must run in the same transaction as WriteBagCount.
         private static int LockOwnedBagItem(MySqlCommand command, uint charId, ushort slot, uint goid, out uint id)
         {
             id = 0;
@@ -18,12 +18,12 @@ namespace hds.databases
             return row.Read() ? -1 : remaining;
         }
 
-        private static bool WriteBagConsumption(MySqlCommand command, uint id, int remaining)
+        private static bool WriteBagCount(MySqlCommand command, uint id, int count)
         {
             command.Parameters.AddWithValue("@id", id);
-            command.Parameters.AddWithValue("@remaining", remaining);
-            command.CommandText = remaining == 0 ? "DELETE FROM inventory WHERE invId=@id" :
-                "UPDATE inventory SET count=@remaining WHERE invId=@id";
+            command.Parameters.AddWithValue("@count", count);
+            command.CommandText = count == 0 ? "DELETE FROM inventory WHERE invId=@id" :
+                "UPDATE inventory SET count=@count WHERE invId=@id";
             return command.ExecuteNonQuery() == 1;
         }
 
@@ -36,7 +36,7 @@ namespace hds.databases
             using var command = connection.CreateCommand();
             command.Transaction = tx;
             int remaining = LockOwnedBagItem(command, charId, slot, goid, out uint id);
-            if (remaining < 0 || !WriteBagConsumption(command, id, remaining)) return -1;
+            if (remaining < 0 || !WriteBagCount(command, id, remaining)) return -1;
             tx.Commit();
             return remaining;
         }

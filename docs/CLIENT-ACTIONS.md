@@ -418,6 +418,21 @@ No retail capture has a split or a merge; the layouts are client.dll's and the r
 
 **The server:** a split into an empty slot (or the first free one for `6b`) makes a new stack there (`5e` with the amount, the source's new count in `69`); onto the same item it adds if the stack stays within ItemStacks.MaxStack (64); splitting the whole stack moves it. A merge moves as much as fits (`69` for both, `5f` for an emptied source). Anything else (another item, a full stack, more than the stack holds) is refused with "You can't do that: ..." and the source's count sent again. These answers are the records the server already used for stacks (`69 01 <slot u32> <(count - 1) * 4 u32>`, which retail sent for a used cookie).
 
+### Atomic personal bag moves
+
+Personal bag split and merge plan both slots from locked inventory rows.
+The removal or decrement and the destination insert or increment commit
+together. The two normal client updates are published in their established
+order after commit. A write failure leaves the original stack counts in the
+bag and sends a source count refresh and visible refusal. A merge requires
+matching item properties as well as a matching item type.
+
+Use the NativeQa mode **bag-stacks-atomic** to test **Split Quantity...**
+from bag 3 into bag 4. Its disposable SQL constraint rejects a split of
+four Code Bits after the source change. A split of three succeeds, followed
+by a plain drag from bag 4 onto bag 3 to merge. The headless test also
+forces the second write of a merge to fail and then verifies a clean retry.
+
 ## Loot acknowledgements and closure
 
 Server `81 20` lists **claimed item identities to remove**, not the remaining items. Client `621e2bb0` passes each pair to `621cd6d0`, which removes the matching container row; an empty array removes none. Server `81 1a` closes the container window through `621ca200`. Mission Search now acknowledges exact original window pairs and closes only after all contents transfer. Full bags retain the icon and selection. NPC replies likewise acknowledge only transferred drops. See [evidence and checklist](MISSION-LOOT-CLAIM-CLOSE.md).

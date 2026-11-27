@@ -66,4 +66,19 @@ public class StackMovesTests
         Assert.NotNull(StackMoves.PlanMerge(new StackMoves.Merge { Source = 3, Dest = 11 }, bag, 64).Refusal);
         Assert.NotNull(StackMoves.PlanMerge(new StackMoves.Merge { Source = 3, Dest = 8, CentralStorage = true }, bag, 64).Refusal);
     }
+
+    [Fact]
+    public void CompareItemPropertiesWithoutStackQuantity()
+    {
+        var merge = new StackMoves.Merge { Source = 3, Dest = 8 };
+        StackMoves.Stack At(int slot, uint descriptor) => new StackMoves.Stack
+        {
+            Goid = 7332, Count = 2, Purity = slot == 3 ? 0 : descriptor
+        };
+
+        var same = StackMoves.PlanMerge(merge, slot => At(slot, 0x0c040000), 64);
+        Assert.Equal(4, same.DestCount);
+        var different = StackMoves.PlanMerge(merge, slot => At(slot, 0x0c040001), 64);
+        Assert.Equal("the items have different properties", different.Refusal);
+    }
 }

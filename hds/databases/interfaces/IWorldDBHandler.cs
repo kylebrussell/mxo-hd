@@ -61,6 +61,8 @@ namespace hds.databases.interfaces{
         void SavePlayer(WorldClient client);
         void SaveExperience(WorldClient client, long exp);
         void SaveInfo(WorldClient client, long exp);
+        StackMoves.Receipt SplitBagStack(uint character, StackMoves.Split split);
+        StackMoves.Receipt MergeBagStack(uint character, StackMoves.Merge merge);
         TradeItem GetTradeItem(uint character, byte slot);
         TradeSettlement SettleTrade(uint requester, TradeOffer requesterOffer, uint target, TradeOffer targetOffer);
         void EnsureVendorBuyback();

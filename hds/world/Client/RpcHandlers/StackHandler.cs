@@ -1,6 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using hds.shared;
 
 namespace hds
@@ -44,6 +42,7 @@ namespace hds
         {
             public UInt32 Goid;
             public int Count;
+            public uint Purity;
         }
 
         /// <summary>What a request does: counts after it (a 0 empties the slot), and the slot a new stack goes to.</summary>
@@ -53,6 +52,19 @@ namespace hds
             public int SourceCount, DestCount;
             public UInt16 DestSlot;
             public bool DestIsNew;
+        }
+
+        /// <summary>The locked source and the outcome of attempting to persist both slot changes.</summary>
+        public sealed class Receipt
+        {
+            public Plan Plan { get; }
+            public Stack Source { get; }
+
+            internal Receipt(Plan plan, Stack source)
+            {
+                Plan = plan;
+                Source = source;
+            }
         }
 
         public static bool TryParseSplit(byte[] rpcData, out Split split)
@@ -97,6 +109,7 @@ namespace hds
             if (split.Amount < 1 || split.Amount > source.Count) return new Plan { Refusal = "the stack doesn't hold that many" };
 
             int amount = (int)split.Amount;
+            if (amount > maxStack) return new Plan { Refusal = "the destination stack is full" };
             if (split.Dest == NoSlot || split.Dest == split.Source)
             {
                 int? free = firstFreeSlot();
@@ -110,7 +123,8 @@ namespace hds
                 return new Plan { SourceCount = source.Count - amount, DestCount = amount, DestSlot = split.Dest, DestIsNew = true };
             }
             if (dest.Goid != source.Goid) return new Plan { Refusal = "the destination holds another item" };
-            if (dest.Count + amount > maxStack) return new Plan { Refusal = "the destination stack is full" };
+            if (TradePackets.Descriptor(source.Purity, 1) != TradePackets.Descriptor(dest.Purity, 1)) return new Plan { Refusal = "the items have different properties" };
+            if (amount > maxStack - dest.Count) return new Plan { Refusal = "the destination stack is full" };
             return new Plan { SourceCount = source.Count - amount, DestCount = dest.Count + amount, DestSlot = split.Dest };
         }
 
@@ -122,6 +136,7 @@ namespace hds
             Stack source = at(merge.Source), dest = at(merge.Dest);
             if (source.Goid == 0 || dest.Goid == 0) return new Plan { Refusal = "an empty slot" };
             if (source.Goid != dest.Goid) return new Plan { Refusal = "different items" };
+            if (TradePackets.Descriptor(source.Purity, 1) != TradePackets.Descriptor(dest.Purity, 1)) return new Plan { Refusal = "the items have different properties" };
             int moving = Math.Min(source.Count, maxStack - dest.Count);
             if (moving <= 0) return new Plan { Refusal = "the destination stack is full" };
             return new Plan { SourceCount = source.Count - moving, DestCount = dest.Count + moving, DestSlot = merge.Dest };
@@ -130,46 +145,31 @@ namespace hds
 
     public static class StackHandler
     {
-        private static StackMoves.Stack At(UInt32 charId, int slot)
+        private static void Publish(WorldClient client, ushort sourceSlot, StackMoves.Receipt result, bool split)
         {
-            MarketPlaceHandler.Db.GetInventoryItem(charId, (UInt16)slot, out UInt32 goid, out UInt32 ignored);
-            return new StackMoves.Stack
+            var plan = result.Plan;
+            var source = result.Source;
+            string movement = split ? "Split" : "Merge";
+            if (plan.Refusal != null)
             {
-                Goid = goid, Count = goid == 0 ? 0 : ItemStacks.CountFromDb(MarketPlaceHandler.Db.GetInventoryCount(charId, (UInt16)slot))
-            };
-        }
-
-        private static int? FirstFree(UInt32 charId)
-        {
-            HashSet<int> used = new HashSet<int>(Store.dbManager.WorldDbHandler.GetInventoryItems(charId).Select(i => (int)i.Slot));
-            List<UInt16> free = TradeRules.FreeBagSlots(used);
-            return free.Count > 0 ? free[0] : (int?)null;
-        }
-
-        private static void Refuse(WorldClient client, string what, StackMoves.Plan plan, UInt16 source)
-        {
-            Output.WriteDebugLog("[INVENTORY] " + what + " refused: " + plan.Refusal);
-            // Put the client's view of the source back, in case it moved anything itself
-            StackMoves.Stack stack = At(client.playerData.getCharID(), source);
-            if (stack.Goid != 0 && ItemStacks.IsStackable(stack.Goid))
-            {
-                client.messageQueue.addRpcMessage(ItemStacks.BuildStackCount(source, stack.Count));
-            }
-            new ServerPackets().sendSystemChatMessage(client, "You can't do that: " + plan.Refusal + ".", "SYSTEM");
-            client.FlushQueue();
-        }
-
-        private static void SetCount(WorldClient client, UInt16 slot, int count)
-        {
-            UInt32 charId = client.playerData.getCharID();
-            if (count <= 0)
-            {
-                MarketPlaceHandler.Db.RemoveInventoryItem(charId, slot);
-                client.messageQueue.addRpcMessage(ServerPackets.BuildInventoryItemDelete(slot));
+                Output.WriteDebugLog($"[INVENTORY] {movement} of slot {sourceSlot} refused: {plan.Refusal}");
+                if (source.Goid != 0 && ItemStacks.IsStackable(source.Goid))
+                    client.messageQueue.addRpcMessage(ItemStacks.BuildStackCount(sourceSlot, source.Count));
+                new ServerPackets().sendSystemChatMessage(client, "You can't do that: " + plan.Refusal + ".", "BROADCAST");
+                client.FlushQueue();
                 return;
             }
-            Store.dbManager.WorldDbHandler.SetInventoryCount(slot, charId, count);
-            client.messageQueue.addRpcMessage(ItemStacks.BuildStackCount(slot, count));
+
+            byte[] sourceUpdate = plan.SourceCount == 0 ? ServerPackets.BuildInventoryItemDelete(sourceSlot) :
+                ItemStacks.BuildStackCount(sourceSlot, plan.SourceCount);
+            byte[] destinationUpdate = plan.DestIsNew ? ServerPackets.BuildInventoryItemAdd(plan.DestSlot,
+                source.Goid, TradePackets.Descriptor(source.Purity, plan.DestCount)) :
+                ItemStacks.BuildStackCount(plan.DestSlot, plan.DestCount);
+            client.messageQueue.addRpcMessage(split ? sourceUpdate : destinationUpdate);
+            client.messageQueue.addRpcMessage(split ? destinationUpdate : sourceUpdate);
+            client.FlushQueue();
+            Output.WriteDebugLog($"[INVENTORY] {movement} committed char={client.playerData.getCharID()} " +
+                $"source={sourceSlot} count={plan.SourceCount} destination={plan.DestSlot} count={plan.DestCount}");
         }
 
         /// <summary>Client 68: split a stack.</summary>
@@ -184,32 +184,8 @@ namespace hds
                 CentralStorageHandler.ProcessSplit(client, split.Source, split.Dest, split.Amount);
                 return;
             }
-            UInt32 charId = client.playerData.getCharID();
-            StackMoves.Plan plan = StackMoves.PlanSplit(split, slot => At(charId, slot), () => FirstFree(charId), ItemStacks.MaxStack);
-            if (plan.Refusal != null)
-            {
-                Refuse(client, "Split of slot " + split.Source, plan, split.Source);
-                return;
-            }
-            MarketPlaceHandler.Db.GetInventoryItem(charId, split.Source, out UInt32 goid, out UInt32 purity);
-            SetCount(client, split.Source, plan.SourceCount);
-            if (plan.DestIsNew)
-            {
-                MarketPlaceHandler.Db.AddInventoryItem(charId, plan.DestSlot, goid, purity);
-                if (plan.DestCount > 1)
-                {
-                    Store.dbManager.WorldDbHandler.SetInventoryCount(plan.DestSlot, charId, plan.DestCount);
-                }
-                UInt32 descriptor = TradePackets.Descriptor(purity, plan.DestCount);
-                client.messageQueue.addRpcMessage(ServerPackets.BuildInventoryItemAdd(plan.DestSlot, goid,
-                    (byte)((descriptor >> 16) & 0xff), (byte)(descriptor >> 24)));
-            }
-            else
-            {
-                SetCount(client, plan.DestSlot, plan.DestCount);
-            }
-            client.FlushQueue();
-            Output.WriteDebugLog("[INVENTORY] Split " + split.Amount + " of slot " + split.Source + " to slot " + plan.DestSlot);
+            var result = Store.dbManager.WorldDbHandler.SplitBagStack(client.playerData.getCharID(), split);
+            Publish(client, split.Source, result, split: true);
         }
 
         /// <summary>Client 67: merge two stacks of the same item.</summary>
@@ -224,17 +200,8 @@ namespace hds
                 CentralStorageHandler.ProcessMerge(client, merge.Source, merge.Dest);
                 return;
             }
-            UInt32 charId = client.playerData.getCharID();
-            StackMoves.Plan plan = StackMoves.PlanMerge(merge, slot => At(charId, slot), ItemStacks.MaxStack);
-            if (plan.Refusal != null)
-            {
-                Refuse(client, "Merge of slot " + merge.Source + " into " + merge.Dest, plan, merge.Source);
-                return;
-            }
-            SetCount(client, merge.Dest, plan.DestCount);
-            SetCount(client, merge.Source, plan.SourceCount);
-            client.FlushQueue();
-            Output.WriteDebugLog("[INVENTORY] Merged slot " + merge.Source + " into " + merge.Dest + " (" + plan.DestCount + ")");
+            var result = Store.dbManager.WorldDbHandler.MergeBagStack(client.playerData.getCharID(), merge);
+            Publish(client, merge.Source, result, split: false);
         }
     }
 }
