@@ -366,6 +366,7 @@ public static partial class Scenarios
         new Scenario("vendor-buyback", VendorBuybackAuthority, new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="1"}),
         new Scenario("vendor-purchase-full-bag", VendorPurchaseFullBag, new Dictionary<string,string>(StillNpcs){["MXO_DEV_COMMANDS"]="1"}),
         new Scenario("secure-trade", SecureTrade),
+        new Scenario("secure-trade-atomic", SecureTradeAtomic, StillNpcs),
         new Scenario("trade-cancel-and-refusals", TradeCancelAndRefusals),
         new Scenario("email-send-read-delete", EmailSendReadDelete),
         new Scenario("email-attachments-and-mailbot", EmailAttachmentsAndMailBot),

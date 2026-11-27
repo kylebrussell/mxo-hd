@@ -61,6 +61,8 @@ namespace hds.databases.interfaces{
         void SavePlayer(WorldClient client);
         void SaveExperience(WorldClient client, long exp);
         void SaveInfo(WorldClient client, long exp);
+        TradeItem GetTradeItem(uint character, byte slot);
+        TradeSettlement SettleTrade(uint requester, TradeOffer requesterOffer, uint target, TradeOffer targetOffer);
         void EnsureVendorBuyback();
         (ushort Slot, int Count, uint Cash, uint Price) PurchaseVendorItem(uint character, uint goid);
         VendorBuyback.Result SellVendorItem(uint character, ushort slot, string session, uint vendor);
