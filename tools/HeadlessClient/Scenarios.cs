@@ -280,6 +280,7 @@ public static partial class Scenarios
             }),
         new Scenario("mission-container-deposit", MissionContainerDeposit, StillNpcs, "container-put.xml"),
         new Scenario("data-mining-luggable-persistence", DataMiningLuggables, StillNpcs),
+        new Scenario("datamine-tap-shadow", DatamineTapShadow, StillNpcs),
         new Scenario("sati-partial-world", SatiPartialWorld, StillNpcs),
         new Scenario("sati-door-diagnostic", SatiDoorDiagnostic, StillNpcs),
         new Scenario("sati-prefab-door", SatiPrefabDoorDiagnostic, new Dictionary<string,string>{["MXO_DEV_COMMANDS"]="0",["MXO_MOBS"]=""}),

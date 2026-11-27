@@ -58,6 +58,22 @@ PR334 observed the green/cyan goggles aura and pickup cleanup. During PR448's st
 
 Still absent: heavy-luggable attachments/Hyper-Strength carrying, faction/crew binding and ownership, Unbind/UniqueID, luggable stat buffs/forced PvP, automatic drop on death, timed recovery/respawn and quest-specific luggable mechanics. Heavy carrying is explicitly refused. No full retail parity is claimed for these items.
 
+### Datamine taps and Master Shadow
+
+All four shipped Datamine taps (47276 through 47279) call
+`DeactivateShadowIfInInv` on a four-second update interval. The script
+checks for the item in inventory, then deactivates `MasterShadowActiveAbility`
+when present. An active Master Shadow now checks the personal bag every
+four seconds. The first check starts after activation. A carried tap ends the
+normal Shadow state with its existing 30-second termination reuse. Dropping
+it leaves the next cast running. Other light luggables have no such effect.
+
+The `datamine-tap-shadow` mode seeds tap 1 in bag 5 and another light
+luggable in bag 6. Cast Master Shadow from page 2, then drop only the tap.
+After reuse, repeat the cast and wait for the first ordinary IS drain.
+The ground tap and the unrelated carried item are controls. The separate
+Datamine tap activation FX callback remains outside this package.
+
 ### Archive travel
 
 The GOB field `Luggable/DropOnInterConstructTeleport` opts individual light
