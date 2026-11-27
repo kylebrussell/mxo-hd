@@ -38,6 +38,7 @@ namespace hds
         // against m_nextExpectedSeq and skips an entire block when blockStart < expected, so resends must never merge
         // previously-sent blocks or fresh RPCs into a wider overlapping block.
         public int rpcBlockStart = -1;
+        internal bool WorldSetupRpc;
         // Only explicitly world-bound producer records use this lifetime; ordinary reliable RPCs are unchanged.
         internal int? RpcWorldGeneration;
         internal long RpcTransportEpoch;

@@ -105,6 +105,54 @@ public class RpcOrderedResendTests
 
     private static int[] Range(int from, int count) => Enumerable.Range(from, count).ToArray();
 
+    [Theory]
+    [InlineData(12)]
+    [InlineData(13)]
+    public void StockStartupAckRetiresTheOriginalSetupBatchBeforeItsFirstRetry(int firstSetup)
+    {
+        using var rig = new Rig();
+        rig.Client.messageQueue.QueueWorldSetup(() => rig.Queue(firstSetup));
+        var command = rig.Flush().Single();
+        rig.Client.messageQueue.QueueWorldSetup(() => rig.Queue(22 - firstSetup));
+        var setup = rig.Flush().Single();
+        int[] counters = Range(firstSetup, 22 - firstSetup);
+        Assert.Equal(counters, setup.Counters);
+        Assert.Equal((ushort)1, command.Sseq);
+        Assert.Equal((ushort)2, setup.Sseq);
+
+        // Both trace arms sent spawn while their newest ACK was still 1, with history bit 0 set.
+        rig.ReceiveAck(1, 1, 0x01);
+        rig.ReceiveAck(2, 1, 0x01);
+        rig.Age(650, counters);
+        rig.Queue(1);
+        var fresh = rig.Flush().Single();
+        Assert.Equal(new[] { 22 }, fresh.Counters);
+        rig.Age(650, 22);
+        Assert.Empty(rig.Flush()); // a due live record cannot pull an older setup block forward
+
+        rig.ReceiveAck(3, fresh.Sseq, 0x03); // covers SSEQ 2 even without a resend packet
+        Assert.Empty(rig.Pending());
+        rig.Queue(1);
+        Assert.Equal(new[] { 23 }, rig.Flush().Single().Counters);
+        rig.Age(650, 23);
+        Assert.Equal(new[] { 23 }, rig.Flush().Single().Counters);
+    }
+
+    [Fact]
+    public void LostSetupBlockRetriesAfterOneSecondThenUsesTheOrdinaryInterval()
+    {
+        using var rig = new Rig();
+        rig.Queue(1);
+        rig.Client.messageQueue.QueueWorldSetup(() => rig.Queue(2));
+        Assert.Equal(new[] { ((ushort)0, 3) }, rig.FlushWithBlocks().Single().Blocks);
+        rig.Age(650, 0, 1, 2);
+        Assert.Empty(rig.Flush()); // immutable mixed block waits together
+        rig.Age(1050, 0, 1, 2);
+        Assert.Equal(new[] { ((ushort)0, 3) }, rig.FlushWithBlocks().Single().Blocks);
+        rig.Age(650, 0, 1, 2);
+        Assert.Equal(new[] { ((ushort)0, 3) }, rig.FlushWithBlocks().Single().Blocks);
+    }
+
     [Fact]
     public void AResendIsOneAscendingRunFromTheOldestUnackedRpc()
     {

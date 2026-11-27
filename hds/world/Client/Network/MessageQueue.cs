@@ -20,6 +20,9 @@ namespace hds
         // Receipt and retry snapshots are published under the WorldClient transport fence.
         internal ClientDatagramReceipts ClientReceipts { get; } = new ClientDatagramReceipts();
         internal RpcResendBackoff ResendBackoff { get; } = new RpcResendBackoff();
+        [ThreadStatic] private static MessageQueue worldSetupQueue;
+        // The stock client can send spawn with its ACK still on the world command while it processes the setup burst.
+        internal const long FirstWorldSetupRetryMs = 1000;
         private readonly object receiptSync=new object();
         private readonly System.Collections.Generic.HashSet<ObjectMessageReceipt> receipts=new System.Collections.Generic.HashSet<ObjectMessageReceipt>();
         private bool receiptSequenceKnown;
@@ -70,6 +73,14 @@ namespace hds
             QueueRpc(messageBlock,null,0);
         }
 
+        internal void QueueWorldSetup(Action enqueue)
+        {
+            MessageQueue previous = worldSetupQueue;
+            worldSetupQueue = this;
+            try { enqueue(); }
+            finally { worldSetupQueue = previous; }
+        }
+
         // Explicit world-lifetime producers. No validity callbacks or owner locks in the queue.
         internal void AddWorldBoundRpc(byte[] messageBlock,int world,long transport) => QueueRpc(messageBlock,world,transport);
         // The view and its clock sample are one reliable response, including on retransmission.
@@ -91,7 +102,11 @@ namespace hds
             content.append(rpcSizeByte);
             content.append(messageBlock);
 
-            SequencedMessage message = new SequencedMessage(content.getBytes()) { RpcWorldGeneration=world, RpcTransportEpoch=transport, TimedViewWithRpc=timedView };
+            SequencedMessage message = new SequencedMessage(content.getBytes())
+            {
+                RpcWorldGeneration = world, RpcTransportEpoch = transport, TimedViewWithRpc = timedView,
+                WorldSetupRpc = worldSetupQueue == this
+            };
             // Same lock as the flush and ack code: the flush thread enumerates this list while packet
             // handlers add to it, and an unlocked Add crashed the server ("Collection was modified").
             lock (RPCMessagesQueue.SyncRoot)
@@ -127,11 +142,19 @@ namespace hds
         {
             var sent = new System.Collections.Generic.List<SequencedMessage>();
             var fresh = new System.Collections.Generic.List<SequencedMessage>();
+            SequencedMessage protectedRpc = null;
             lock (RPCMessagesQueue.SyncRoot)
             {
                 foreach (SequencedMessage message in RPCMessagesQueue)
                 {
-                    if (message.rpcNumber >= 0) sent.Add(message);
+                    if (message.rpcNumber >= 0)
+                    {
+                        sent.Add(message);
+                        if (message.WorldSetupRpc && message.sendCounter == 1 &&
+                            nowTickMs - message.lastRpcSendTick < FirstWorldSetupRetryMs &&
+                            (protectedRpc == null || Behind(message, nextCounter) > Behind(protectedRpc, nextCounter)))
+                            protectedRpc = message;
+                    }
                     else fresh.Add(message);
                 }
             }
@@ -140,8 +163,17 @@ namespace hds
             sent.Sort((a, b) => Behind(b, nextCounter).CompareTo(Behind(a, nextCounter)));
             long interval = lastIngressTickMs.HasValue
                 ? ResendBackoff.Interval(nowTickMs, lastIngressTickMs.Value) : SequencedMessage.RpcResendIntervalMs;
+            int eligible = sent.Count;
+            if (protectedRpc != null && interval < FirstWorldSetupRetryMs)
+            {
+                // A later live RPC becoming due must not pull an earlier setup RPC into its first retry.
+                // If the original block mixed setup and other records, wait for the whole block.
+                eligible = sent.IndexOf(protectedRpc);
+                int block = protectedRpc.rpcBlockStart;
+                while (eligible > 0 && block >= 0 && sent[eligible - 1].rpcBlockStart == block) eligible--;
+            }
             int due = -1;
-            for (int i = sent.Count - 1; i >= 0; i--)
+            for (int i = eligible - 1; i >= 0; i--)
             {
                 if (nowTickMs - sent[i].lastRpcSendTick >= interval) { due = i; break; }
             }

@@ -37,6 +37,7 @@ public sealed class WorldSession : IDisposable
     private bool resetAnswered;
     private bool disposed;
     private bool disconnecting;
+    private bool holdWorldSetupAcks;
 
     internal string DisconnectAfterRpc(byte[] request)
     {
@@ -173,6 +174,21 @@ public sealed class WorldSession : IDisposable
         }
     }
 
+    // World-load replay only. Keep the ACK at the world command while receiving newer server packets.
+    internal void HoldWorldSetupAcks()
+    {
+        lock (sendLock) holdWorldSetupAcks = true;
+    }
+
+    internal void ReleaseWorldSetupAcks()
+    {
+        lock (sendLock)
+        {
+            holdWorldSetupAcks = false;
+            SendEncrypted(new byte[] { 0x02 });
+        }
+    }
+
     private byte AckBits(ushort ack)
     {
         byte bits = 0;
@@ -192,7 +208,9 @@ public sealed class WorldSession : IDisposable
         // Sequence word: own sequence in the low 12 bits, the last server sequence seen in the next 12. The server's
         // encrypt() parameter names are from its side: there, cseq is the peer's number and sseq its own.
         ownSeq = (ushort)((ownSeq + 1) & 0xfff);
-        byte[] packet = sendCypher.encrypt(plain, plain.Length, pss, lastServerSeq, ownSeq);
+        bool holding = holdWorldSetupAcks && lastServerSeq > 1;
+        byte[] packet = sendCypher.encrypt(plain, plain.Length, holding ? (byte)1 : pss,
+            holding ? (ushort)1 : lastServerSeq, ownSeq);
         udp.Send(packet, packet.Length, server);
     }
 

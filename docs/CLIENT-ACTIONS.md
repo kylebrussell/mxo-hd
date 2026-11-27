@@ -47,6 +47,16 @@ Remaining ignored requests now depend on unrecovered protocol purpose or backend
 | `81 56` | No fields; 13 send sites in `viewmgr.cpp` | D, C 1 | ignored | low (purpose unknown) |
 | `81 4d` | ElapsedTime u32; retail echoed `81 4d` | C 1 | handled: exact bounded elapsed-time echo; [P7 evidence](IGNORED-CLIENT-ACTIONS.md) | low |
 
+The two [PR1234 stock-client runs](https://github.com/kylebrussell/mxo-hd/pull/1234)
+sent spawn with ACK `1/01` while the original setup RPC block at SSEQ 2
+was still outstanding. The server retried the block before processing the
+client's later ACK that covered SSEQ 2. The first retry of a world-setup
+RPC now waits one second from its first send. An ordered retry also waits
+when it would otherwise include that protected block. New sends remain
+eligible throughout. Later retries use the normal interval and backoff.
+The headless `startup-rpc-ack-grace` check holds the ACK at `1/01` for
+650 ms and then releases it.
+
 ## Movement, travel and the world
 
 | Request | Name / purpose | Evidence | Server today | Impact |
