@@ -108,6 +108,7 @@ namespace hds
             } } },
             // Stored Gaussian Blur numeric effect + ImpartBlurInit/Term's kBlur (client62521e2f).
             { 49, new Buff { Seconds = 600, Family = 1013, DissemblingType = 0x40, Modifiers = new[] { Stat(520, 25) } } },
+            { QuicksilverPill.Ability, QuicksilverPill.Definition() },
         };
 
         /// <summary>Ability id to the buff it gives; records, values and times from the first retail use found.</summary>
@@ -361,7 +362,14 @@ namespace hds
             ushort stat = MovementStatFor(stealth);
             // GOB 115 links the ordinary Run channel to the owner percentage 998.
             if (stat == RunMovementStat)
+            {
                 stanceScale += AbilityStats.Player(client, RunOwnerMovementBonusStat) / 100f;
+                // Quicksilver adds directly to Run without replacing the active movement buff.
+                lock (client.playerData.activeBuffs)
+                    if (client.playerData.activeBuffs.TryGetValue(QuicksilverPill.Ability, out var quicksilver) &&
+                        ActiveDefinition(quicksilver, out Buff pill))
+                        stanceScale += pill.Modifiers.Single(mod => mod.Stat == QuicksilverPill.MoveStat).Value / 100f;
+            }
             // GOB 878 links to the owner percentage 1051. A stock Belt uses this channel.
             if (stealth?.Def.Ability == Stealth.InvisibilityGrantAbility)
                 stanceScale += AbilityStats.Player(client, InvisibilityMovementBonusStat) / 100f;
@@ -410,7 +418,8 @@ namespace hds
         internal const ushort RunOwnerMovementBonusStat = 998;
         internal const ushort SneakOwnerMovementBonusStat = 1050;
         private const ushort InfiltratorUpgrade = 1115;
-        private static bool UsesStanceMovement(ushort id) => id == InfiltratorUpgrade || id == AbilityShadowPresentation.Child;
+        private static bool UsesStanceMovement(ushort id) =>
+            id == InfiltratorUpgrade || id == AbilityShadowPresentation.Child || id == QuicksilverPill.Ability;
 
         internal const ushort InvisibilityMovementBonusStat = 1051;
         private const ushort RunMovementStat = 115, SneakMovementStat = 877, InvisibleMovementStat = 878;

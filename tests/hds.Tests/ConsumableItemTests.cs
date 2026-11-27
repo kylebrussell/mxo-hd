@@ -32,6 +32,22 @@ public class ConsumableItemTests
     }
 
     [Fact]
+    public void QuicksilverItemUsesItsShippedTimersAndFixedBuff()
+    {
+        Assert.True(ConsumableItems.TryGet(47107, out var pill));
+        Assert.Equal(1274, pill.AbilityId);
+        Assert.Equal(45, ConsumableItems.RequiredLevel(47107));
+        Assert.Equal(1f, AbilityCatalog.Find(pill.AbilityId).CastSeconds);
+        Assert.Equal(30f, pill.Seconds);
+        Assert.Equal(0, pill.Group);
+        Assert.True(AbilityBuffs.TryGet(pill.AbilityId, out var buff));
+        Assert.Equal(300f, buff.Seconds);
+        Assert.Equal(0x0100, buff.DissemblingType);
+        Assert.Equal(new[] { (115, 10), (183, 12), (1009, 12), (1010, 12), (1011, 12) },
+            buff.Modifiers.OrderBy(mod => mod.Stat).Select(mod => ((int)mod.Stat, mod.Value)));
+    }
+
+    [Fact]
     public void StockRsiPillsResolveForTheMatchingAvatarOnly()
     {
         var parts = System.IO.File.ReadLines(DataLoader.DataPath("newrsiIDs.csv")).Skip(1).Select(line =>

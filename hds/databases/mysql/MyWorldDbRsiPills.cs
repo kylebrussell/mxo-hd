@@ -18,18 +18,8 @@ namespace hds.databases
             using var tx = connection.BeginTransaction();
             using var command = connection.CreateCommand();
             command.Transaction = tx;
-            command.Parameters.AddWithValue("@char", charId);
-            command.Parameters.AddWithValue("@slot", slot);
-            command.CommandText = "SELECT invId, goid, count FROM inventory WHERE charId=@char AND slot=@slot FOR UPDATE";
-            uint id;
-            int remaining;
-            using (var row = command.ExecuteReader())
-            {
-                if (!row.Read() || row.GetInt64(1) != goid) return default;
-                id = row.GetUInt32(0);
-                remaining = ItemStacks.CountFromDb(row.GetInt32(2)) - 1;
-                if (row.Read()) return default;
-            }
+            int remaining = LockOwnedBagItem(command, charId, slot, goid, out uint id);
+            if (remaining < 0) return default;
 
             command.CommandText = "SELECT " + RsiColumns + " FROM rsivalues WHERE charid=@char FOR UPDATE";
             var rsi = new int[22];
@@ -41,11 +31,7 @@ namespace hds.databases
             int value = pill.Resolve(rsi[0], DataLoader.getInstance().newRSIItemsDb);
             if (value < 0) return default;
 
-            command.Parameters.AddWithValue("@id", id);
-            command.Parameters.AddWithValue("@remaining", remaining);
-            command.CommandText = remaining == 0 ? "DELETE FROM inventory WHERE invId=@id" :
-                "UPDATE inventory SET count=@remaining WHERE invId=@id";
-            if (command.ExecuteNonQuery() != 1) return default;
+            if (!WriteBagConsumption(command, id, remaining)) return default;
 
             int index = (int)pill.Field;
             if (rsi[index] != value)
