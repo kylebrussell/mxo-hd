@@ -114,16 +114,26 @@ public static partial class Scenarios
 
     private static async Task HealthDeflectLineup(ScenarioContext context)
     {
-        var p=await context.AddPlayerAsync(LineUpActor("DeflectOwner") with {Organization=1,InnerStrength=2000,MaxInnerStrength=2000});
+        const ushort level = 22; // Both Deflect parents are legal at this level.
+        var seed = LineUpActor("DeflectOwner");
+        var p=await context.AddPlayerAsync(seed with
+        {
+            Level=level, Experience=(int)PlayerProgression.ExperienceForLevel(level), Organization=1,
+            InnerStrength=2000, MaxInnerStrength=2000,
+            OwnedLoadedAbilities=FriendlyAuraProfile(level, seed.OwnedLoadedAbilities!.Select(row => row.Ability)
+                .Concat(new ushort[] { 378, 380 }).ToArray())
+        });
         var friend=await context.AddPlayerAsync(new CharacterSeed("DeflectFriend") {X=17120,Level=50,Organization=1});
         var enemy=await context.AddPlayerAsync(new CharacterSeed("DeflectEnemy") {X=17220,Level=50,Organization=2,InnerStrength=1000,MaxInnerStrength=1000});
         await context.Database.ExecuteAsync($"DELETE FROM char_abilities WHERE char_id IN ({friend.CharId},{enemy.CharId})");
-        await LoadAbilitiesAsync(context,enemy,2,17,477,478,480,481,483);
+        await LoadAbilitiesAsync(context,enemy,2,17,CombatStyles.HackerStyle,477,478,480,481,483);
         foreach(var actor in new[]{p,friend,enemy}) await actor.EnterWorldAsync();
+        SelectStyle(enemy, CombatStyles.HackerStyle);
+        await enemy.WaitForViewUpdateAsync(2, "02 80 80 80 80 80 10 ee 03 00 00");
         p.SendRpc(GroupInvite(Team,friend.Handle,""));await friend.WaitForRpcAsync("80 8f 0c 00");
         friend.SendRpc(InviteAnswer(Team,0,p.Handle));await friend.WaitForRpcAsync("80 8e");await p.WaitForRpcAsync($"70 03 {Le(friend.CharId)} 09 00");
         Cast(p,380);await p.WaitForRpcAsync("80 bd 05 7c 01 00 00 00 00 00 01",TimeSpan.FromSeconds(8));
-        var ballistic=await friend.WaitForRpcAsync(ModPattern(692,1010));Check.Equal(19,BitConverter.ToInt32(ballistic.Bytes,13),"Deflect uses caster20");
+        var ballistic=await friend.WaitForRpcAsync(ModPattern(692,1010));Check.Equal(21,BitConverter.ToInt32(ballistic.Bytes,13),"Deflect uses caster22");
         await friend.WaitForRpcAsync(ModPattern(692,1011));
         var bulletFx = await friend.WaitForRpcAsync(ModPattern(380,380));
         Check.Equal(0x28000824, BitConverter.ToInt32(bulletFx.Bytes,13), "Deflect Bullets delayed FX");

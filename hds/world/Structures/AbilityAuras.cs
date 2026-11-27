@@ -89,11 +89,6 @@ namespace hds
         // Beneficial parents retain the existing off-time cooldown policy; default native timing remains unverified.
         public static bool Friendly(ushort id) => id == 42 || id == CombatAuraTwo || id == 378 || id == 380;
 
-        internal static void LoadoutChanged(WorldClient client)
-        {
-            if (!AbilityPassives.IsLoaded(client, CombatAuraTwo)) Stop(client, CombatAuraTwo);
-        }
-
         public static ushort EffectOf(ushort id) => (ushort)(Callback(id, "ApplyAuraEffect")?.Number("MinValue") ?? 0);
 
         public static int DrainOf(ushort id) => (int)(Callback(id, "ISDrainWithAbilityDeactivation")?.Number("MinValue") ?? 0);
@@ -181,9 +176,19 @@ namespace hds
             }
             if (id == ProxyTechnician.Ability && !ProxyTechnician.Matches(client,generation)) { Stop(client,id,generation); return; }
             if (DaemonBoost.Handles(id) && !DaemonBoost.Loaded(client, id)) { Stop(client,id,generation); return; }
-            if (!PayDrain(client, id, generation)) return;
-            Pulse(client, id, generation);
-            if (Current(client, id, generation)) Schedule(client, id, generation);
+            if (Friendly(id))
+            {
+                // Archive unloads and friendly upkeep share the owner lock.
+                lock (client.playerData.craftingSync) ApplyTick();
+            }
+            else ApplyTick();
+
+            void ApplyTick()
+            {
+                if (!PayDrain(client, id, generation)) return;
+                Pulse(client, id, generation);
+                if (Current(client, id, generation)) Schedule(client, id, generation);
+            }
         }
 
         internal static bool PayDrain(WorldClient client, ushort id, int? generation = null)
@@ -349,6 +354,16 @@ namespace hds
             }
             foreach (var entry in pending) Stop(client, entry.Key, entry.Value.Generation, announce);
             if (clearChild) client.FlushQueue();
+        }
+
+        internal static void LoadoutChanged(WorldClient client)
+        {
+            if (!states.TryGetValue(client, out var state)) return;
+            KeyValuePair<ushort, Activation>[] activations;
+            lock (state) activations = state.On.ToArray();
+            foreach (var (id, activation) in activations)
+                if (Friendly(id) && !AbilityPassives.IsLoaded(client, id))
+                    Stop(client, id, activation.Generation);
         }
     }
 }
