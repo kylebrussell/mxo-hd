@@ -31,7 +31,7 @@ namespace hds.databases
             int value = pill.Resolve(rsi[0], DataLoader.getInstance().newRSIItemsDb);
             if (value < 0) return default;
 
-            if (!WriteBagConsumption(command, id, remaining)) return default;
+            if (!WriteBagCount(command, id, remaining)) return default;
 
             int index = (int)pill.Field;
             if (rsi[index] != value)
