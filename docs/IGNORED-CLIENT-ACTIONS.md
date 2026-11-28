@@ -75,7 +75,7 @@ some requests incorrectly.
 | Rank | Player impact | Stock action | Evidence and disposition |
 |---|---|---|---|
 | 1 | High | Vendor Buy `81 0e` | The ordinary purchase used to debit Info even when inventory placement failed. The vendor charge and item update now commit together. Full bags get the existing vendor refusal response. |
-| 2 | High | Marketplace List `81 2b` | The stock Lock Pick code trace uses container 0, slot 396. A bag lookup ignores that source. The captured `5f 8c 01 00` and `81 2c` now follow an atomic archive removal and posting. |
+| 2 | High | Marketplace List `81 2b` | The stock Lock Pick code trace uses container 0, slot 396. The captured `5f 8c 01 00` and `81 2c` follow an atomic archive removal and posting. A [refused listing](#marketplace-listing-refusal) returns `81 2c` with the original source and UI data. |
 | 3 | High | Marketplace Buy or De-list `81 26` | Checkout used to write the listing, bag, and wallets separately and could only deliver to the bag. Now it commits delivery, sale state and payment together. An ordinary item code returns through a known-abilities `5e` record. |
 | 3a | High | Secure Trade Accept `81 85` | Both accepted offers now [settle inventory and Info in one transaction](SECURE-TRADE.md#atomic-settlement). A failed final write closes the trade and keeps both participants' assets. |
 | 3b | High | Bag Merge and Split `67`/`68` | [Personal bag moves](CLIENT-ACTIONS.md#atomic-personal-bag-moves) now commit both slots together and send a visible refusal on rollback. |
@@ -108,6 +108,28 @@ some requests incorrectly.
 | 6a | Medium | Manual luggable Drop `5c` and Take | [Manual transfer failures](DATA-MINING.md#manual-transfer-refusal) keep both the item and its original location. Drop also clears the pending inventory cursor. |
 | 7 | Low | FX completion `81 aa`, world-entry `80 be`, range `81 46` | Senders are known. No reply or authoritative state transition is established. `81 47` and `81 4a` still lack a reachable sender. |
 | 8 | Low | Local support `81 b*`, GM inspection `81 57/59/5b` | Local support and private GM text reports work. External ticket service and structured GM viewers remain open. |
+
+### Marketplace listing refusal
+
+The `81 2b` request's last four bytes are `ClientUIData` (client.dll
+`0x621fbdc0`, printer `0x621fd6b0`). The stock sender at `0x621fbef0`
+leaves these bytes zero. The 33-byte `81 2c` response has
+`ClientUIData` at offset `0x19` and `Status` at `0x1d` (constructor
+`0x6214209d`, printer `0x62155130`). Both success and refusal echo the
+request's source container, slot and UI data. A refused listing returns
+`LTPS_SPINVALIDINVENTORYTRANSACTION` (`0x0c00029c`) with the existing
+explanation and leaves the source and wallet intact.
+
+Use `marketplace-listing-refusal` from the Mara Central booth
+(17000,495,2300). Go to the Loading Area and drag the one-charge Lock
+Pick code from Possessions into Selling. List for 1,100 Info. The
+disposable database CHECK refuses this price. Verify the `81 2c`
+refusal, the retained code and the unchanged balance of 2,000. Dismiss
+any popup and list the same code for 1,200 in the same session. Expect
+`5f 8c 01 00` then `81 2c` with status zero. Reopen Marketplace and
+verify one listing at 1,200.
+
+### Marketplace archive codes
 
 The marketplace uses the low seven bits of the captured class-46 descriptor
 for the charge count (1–127). Listing accepts both flagged storage rows and
