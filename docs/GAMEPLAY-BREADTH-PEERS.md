@@ -60,8 +60,8 @@ crew when the server locks the persisted rows. Each refusal sends
 `7b <name offset u16> <status u32> <sized name>` and a chat explanation.
 The stock dispatcher at `621790b1` calls `621ba2e0`. The name getter at
 `62127650` reads the offset at +1. A positive Status at +3 reaches
-`621ba373`, which clears the pending creation state. Status 1 uses the
-client's generic “Faction could not be created” dialog. Native runs showed
+`621ba373`, which clears the pending creation state. Status 1 prints
+“Faction could not be created.” in stock chat. Native runs showed
 that both `6f` and an empty final `7c` left the pending state active.
 Crew state and the invitation are published after commit.
 
@@ -72,15 +72,32 @@ Faction**, then use **Modify** to enter `QARetryFaction`.
 
 1. Choose **Recruit**. The disposable fixture rejects the character
    affiliation write with CSR at 1,000 Info. Expect “Your crew was kept,”
-   `7b`, an unaffiliated crew and no invitation for QAOther. Dismiss the
-   dialog, verify Modify and Recruit are available, then continue in the
-   same session.
+   `7b`, an unaffiliated crew and no invitation for QAOther. Verify Modify
+   and Recruit are available, then continue in the same session.
 2. Open **Crew**, deposit 1 Info, and verify Crew 1 and personal Info 999.
    This releases the fixture's SQL check. Select QAOther again if needed.
 3. Return to **Faction**, use the same name and choose **Recruit**. Expect
    the new faction status and one invitation to QAOther. Accept with
    `{"actor":"QAOther","action":"social","step":"faction-answer","accept":true}`.
    Use **More** to verify ranks 1 and 5, then check them again after relog.
+
+### Atomic faction admission
+
+Accepting a faction invitation with `6f 01` joins the invited crew at rank
+5 and updates all its members' affiliations in one transaction. The
+server checks that the accepting player still captains the invited crew
+and the sender still leads the inviting faction. A failed write keeps
+the crew unaffiliated and gives both captains a chat explanation. The
+sender can offer a fresh invitation in the same session.
+
+Use `faction-admission-atomic` and have QAOther send
+`{"actor":"QAOther","action":"faction-admission"}` after CSR enters
+Mara. Accept the stock prompt. The fixture refuses the affiliation write
+while CSR has 1,000 Info. Expect the crew to stay unaffiliated and a
+visible request for a new invitation. Open **Crew** from the people icon
+and deposit 1 Info to release the fixture check. Have QAOther send the
+same control again, accept, and open **Faction > More**. QAPeerCrew stays
+at rank 1 and QACrew joins at rank 5. Check the same roster after relog.
 
 ## Marketplace
 

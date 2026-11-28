@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Data.Common;
 using System.Linq;
 using hds.shared;
 using hds.world.Structures;
@@ -318,6 +319,8 @@ namespace hds
                     }
 
                     pending.GroupName = faction.name;
+                    pending.InvitingFactionId = factionId;
+                    pending.InvitedCrewId = inviteeCrew;
                     invitePacket = SocialPackets.FactionInvite(inviterHandle, faction.name);
                     break;
                 }
@@ -392,7 +395,7 @@ namespace hds
                     JoinCrew(invitee, inviter, invite);
                     break;
                 case SocialPackets.GroupFaction:
-                    JoinFaction(invitee, invite);
+                    JoinFaction(invitee, inviter, invite);
                     break;
             }
         }
@@ -484,42 +487,44 @@ namespace hds
             SendToAll(OnlineWhere(c => CrewIdOf(c) == crewId && c != invitee), joined);
         }
 
-        private static void JoinFaction(WorldClient captain, PendingInvite invite)
+        private static void JoinFaction(WorldClient captain, WorldClient inviter, PendingInvite invite)
         {
-            var db = Store.dbManager.WorldDbHandler;
-            Faction faction = db.FetchFaction(FactionIdOfHandle(invite));
-            UInt32 crewId = CrewIdOf(captain);
-            if (faction == null || faction.factionId == 0 || crewId == 0)
+            uint factionId = invite.InvitingFactionId;
+            uint crewId = invite.InvitedCrewId;
+            try
             {
-                Notice(captain, "That faction no longer exists.");
+                if (!Store.dbManager.WorldDbHandler.AdmitCrewToFaction(
+                    captain.playerData.getCharID(), crewId, invite.InviterCharId, factionId))
+                {
+                    RefuseFactionAdmission(captain, inviter, "That faction invitation is no longer valid. Ask for a new invitation.");
+                    return;
+                }
+            }
+            catch (DbException error)
+            {
+                Output.WriteDebugLog($"[SOCIAL] Faction admission rolled back crew={crewId} faction={factionId}: {error.Message}");
+                RefuseFactionAdmission(captain, inviter, "The faction join could not be saved. Your crew was kept. Ask for a new invitation.");
                 return;
             }
 
-            db.AddCrewToFaction(faction.factionId, crewId);
-            db.SetFactionOfCrewMembers(crewId, faction.factionId);
-            db.SetCrewFactionRank(crewId, SocialPackets.BottomFactionRank); // a newcomer starts at the bottom (ours)
+            Output.WriteDebugLog($"[SOCIAL] Crew {crewId} joined faction {factionId} at rank {SocialPackets.BottomFactionRank}");
             // ProxyM2_m2_packets 18:55:42: after "6f 01 ... 00 00 00 00" the invitee got 7c mode 1 and mode 2.
             foreach (WorldClient member in OnlineWhere(c => CrewIdOf(c) == crewId))
             {
-                SetOwnGroupIds(member, faction.factionId, null, null);
+                SetOwnGroupIds(member, factionId, null, null);
             }
 
-            foreach (WorldClient member in OnlineWhere(c => FactionIdOf(c) == faction.factionId))
+            foreach (WorldClient member in OnlineWhere(c => FactionIdOf(c) == factionId))
             {
-                SendFactionInfo(member, faction.factionId);
+                SendFactionInfo(member, factionId);
             }
         }
 
-        private static UInt32 FactionIdOfHandle(PendingInvite invite)
+        private static void RefuseFactionAdmission(WorldClient captain, WorldClient inviter, string text)
         {
-            WorldClient inviter = FindOnlineByCharId(invite.InviterCharId);
-            if (inviter != null)
-            {
-                return FactionIdOf(inviter);
-            }
-
-            Crew crew = Store.dbManager.WorldDbHandler.GetCrewData(Store.dbManager.WorldDbHandler.GetCrewIdByInviterHandle(invite.InviterHandle));
-            return crew.factionId;
+            byte[] notice = ServerPackets.BuildSystemChatMessage(text, "BROADCAST");
+            Send(captain, notice);
+            Send(inviter, notice);
         }
 
         internal static void SendCrewInfo(WorldClient client, UInt32 crewId)

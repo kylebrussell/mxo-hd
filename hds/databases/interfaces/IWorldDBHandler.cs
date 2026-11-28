@@ -38,7 +38,7 @@ namespace hds.databases.interfaces{
         List<CrewMember> GetCrewMembersForCrewId(UInt32 crewId);
         void AddMemberToCrew(UInt32 charId, UInt32 crewId, UInt32 factionId, ushort isCaptain, ushort isFirstMate);
         void RemoveMemberFromCrew(UInt32 charId, UInt32 crewId);
-        void AddCrewToFaction(UInt32 factionId, UInt32 crewId);
+        bool AdmitCrewToFaction(uint captain, uint crew, uint inviter, uint faction);
         void RemoveCrewFromFaction(UInt32 factionId, UInt32 crewId);
         void DeleteCrew(UInt32 crewId);
 

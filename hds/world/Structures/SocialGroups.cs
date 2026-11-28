@@ -26,6 +26,8 @@ namespace hds.world.Structures
         public string InviteeHandle;
         /// <summary>Crew or faction name the inviter typed; for a crew that does not exist yet it names the new crew.</summary>
         public string GroupName;
+        internal uint InvitedCrewId;
+        internal uint InvitingFactionId;
         public DateTime CreatedUtc;
 
         /// <summary>Sent from the crew creation window (80 84): the inviter hears the outcome as 80 85, not 6f.</summary>

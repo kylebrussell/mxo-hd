@@ -337,6 +337,8 @@ try
                     await NativeQa.Modes.SecureTradeMode.SendPartnerActionAsync(actor, q);
                 else if (fixtureMode is NativeQa.Modes.SocialBreadthMode && action == "social")
                     result = await NativeQa.Modes.SocialBreadthMode.SendActionAsync(actor, q);
+                else if (fixtureMode is NativeQa.Modes.AtomicFactionAdmissionMode && action == "faction-admission")
+                    result = NativeQa.Modes.AtomicFactionAdmissionMode.OfferInvitation(actor);
                 else if (fixtureMode is NativeQa.Modes.TeamBreadthMode && action == "team-breadth")
                     result = await NativeQa.Modes.TeamBreadthMode.SendActionAsync(actor, q);
                 else if ((fixtureMode is NativeQa.Modes.HackerParitySweepMode or NativeQa.Modes.HackerSecondPassMode) && action == "hacker-group-arrive")
