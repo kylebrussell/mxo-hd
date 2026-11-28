@@ -786,12 +786,15 @@ namespace hds
 
         // ---- removing members and handing over (72, 75, 80 87) ----------------------------------------------------
 
-        private static void RefuseCrewRemoval(WorldClient client,
-            string message = "Only the crew captain can remove a current crew member.")
+        private static void RefuseCrewRosterAction(WorldClient client, string message)
         {
-            Send(client, SocialPackets.CrewRemoveRefused());
+            Send(client, SocialPackets.ReleaseCrewRosterInput());
             Send(client, ServerPackets.BuildSystemChatMessage(message, "BROADCAST"));
         }
+
+        private static void RefuseCrewRemoval(WorldClient client,
+            string message = "Only the crew captain can remove a current crew member.") =>
+            RefuseCrewRosterAction(client, message);
 
         /// <summary>
         /// Client 72 &lt;type&gt; &lt;charId&gt;: the team leader boots a member (team window Boot, 0x621c0c40), or the crew
@@ -912,8 +915,11 @@ namespace hds
         /// </summary>
         public static void ProcessMakeLeader(WorldClient client, byte[] rpcData)
         {
+            const string crewRefusal = "Only the crew captain can transfer leadership to another current crew member.";
             if (rpcData.Length < 5)
             {
+                if (rpcData.Length > 0 && rpcData[0] == SocialPackets.GroupCrew)
+                    RefuseCrewRosterAction(client, crewRefusal);
                 return;
             }
 
@@ -950,24 +956,36 @@ namespace hds
                 {
                     var db = Store.dbManager.WorldDbHandler;
                     UInt32 crewId = CrewIdOf(client);
-                    if (target == me || !IsCaptain(client, crewId))
+                    if (crewId == 0 || target == me)
                     {
+                        RefuseCrewRosterAction(client, crewRefusal);
                         return;
                     }
 
-                    List<CrewMember> members = CrewMembersOf(crewId);
-                    CrewMember next = members.FirstOrDefault(m => m.charId == target);
-                    if (next == null)
+                    List<CrewMember> members;
+                    CrewMember next;
+                    uint factionId;
+                    try
                     {
-                        return;
-                    }
+                        members = CrewMembersOf(crewId);
+                        next = members.FirstOrDefault(m => m.charId == target);
+                        var transfer = next == null ? null : db.TransferCrewCaptain(crewId, me, target,
+                            SocialBot.IsBot(client), SocialBot.IsBot(FindOnlineByCharId(target)) ? next : null);
+                        if (!transfer.HasValue)
+                        {
+                            RefuseCrewRosterAction(client, crewRefusal);
+                            return;
+                        }
 
-                    Crew crew = db.GetCrewData(crewId);
-                    db.SetCrewCaptain(crewId, target, next.handle);
-                    if (next.isFirstMate)
+                        factionId = transfer.Value.FactionId;
+                        if (transfer.Value.ClearedFirstMate)
+                            SocialBot.SetFirstMate(crewId, 0);
+                    }
+                    catch (DbException error)
                     {
-                        db.SetCrewFirstMate(crewId, 0);
-                        SocialBot.SetFirstMate(crewId, 0);
+                        Output.WriteDebugLog($"[SOCIAL] Crew captain transfer rolled back crew={crewId} member={target}: {error.Message}");
+                        RefuseCrewRosterAction(client, "The captain could not be changed. Crew and faction leadership were kept.");
+                        return;
                     }
 
                     byte[] captain = SocialPackets.NewLeader(type, target);
@@ -976,16 +994,10 @@ namespace hds
                         Send(FindOnlineByCharId(member.charId), captain);
                     }
 
-                    if (crew.factionId != 0)
+                    if (factionId != 0)
                     {
-                        Faction faction = db.FetchFaction(crew.factionId);
-                        if (faction != null && string.Equals(faction.masterPlayerHandle, HandleOf(client), StringComparison.OrdinalIgnoreCase))
-                        {
-                            db.SetFactionMaster(crew.factionId, next.handle);
-                        }
-
                         byte[] inFaction = SocialPackets.FactionCrewCaptain(crewId, target, next.handle, FindOnlineByCharId(target) != null);
-                        SendToAll(OnlineWhere(c => FactionIdOf(c) == crew.factionId && CrewIdOf(c) != crewId), inFaction);
+                        SendToAll(OnlineWhere(c => FactionIdOf(c) == factionId && CrewIdOf(c) != crewId), inFaction);
                     }
 
                     Output.WriteDebugLog("[SOCIAL] Crew " + crewId + " is now led by " + next.handle);

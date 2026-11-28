@@ -1217,12 +1217,6 @@ namespace hds.databases{
 	        NonQuery("UPDATE crews SET faction_rank = @rank WHERE id = @crew", P("@rank", (int) rank), P("@crew", crewId));
         }
 
-        public void SetFactionMaster(UInt32 factionId, string handle)
-        {
-	        NonQuery("UPDATE factions SET master_player_handle = @handle WHERE id = @faction",
-		        P("@handle", handle), P("@faction", factionId));
-        }
-
         public bool IsOnFriendList(UInt32 charId, UInt32 friendId)
         {
 	        object found = ScalarQuery("SELECT id FROM buddylist WHERE charId = @char AND friendId = @friend LIMIT 1",

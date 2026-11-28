@@ -156,6 +156,25 @@ deposit confirmation. Remove QAFriend again in the same session. Expect
 `72 02`, QAFriend gone, and CSR still captain in QAFaction. Relog and
 verify the member is still absent and the crew bank is 201.
 
+### Atomic crew captain transfer
+
+The roster's **Make Captain** action sends `75 02 <character id u32>`.
+The server checks the current captain and replacement against the crew
+and commits captain flags, the first-mate clearing where needed, and the
+faction master transfer in one transaction. Successful commits send
+`75 02` to the crew and `7e` to the other crews in the faction.
+On refusal the requester receives chat and `72 02 00 00 00 00`.
+The Make Captain sender at `621c0700` sets the same stock input lock
+as Remove, and the zero-ID reply releases it.
+
+Use `crew-captain-transfer-atomic`. Open **Crew**, right-click first
+mate QAFriend, then choose **Make Captain**. The disposable SQL check
+blocks the faction master write. Verify CSR stays captain, QAFriend
+stays first mate and the roster menu reopens. Deposit 1 through the
+**Faction** bank controls and retry in Crew. QAFriend becomes captain
+and the first-mate slot clears. Verify the crew roster and faction
+bank of 501 after relog.
+
 ## Marketplace
 
 Use the `marketplace-breadth` mode. QAFriend lists a Code Bit 1 for 300
