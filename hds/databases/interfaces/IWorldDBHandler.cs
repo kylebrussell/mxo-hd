@@ -138,7 +138,7 @@ namespace hds.databases.interfaces{
         void SetCrewCaptain(UInt32 crewId, UInt32 charId, string handle);
         void DisbandCrew(UInt32 crewId);
         void SetFactionOfCrewMembers(UInt32 crewId, UInt32 factionId);
-        void DisbandFaction(UInt32 factionId);
+        bool DisbandFaction(uint leader, uint faction);
         (uint FactionId, uint Refusal) FoundFaction(uint founder, uint crew, string name);
         void SetCrewFirstMate(UInt32 crewId, UInt32 charId);
         void SetCrewFactionRank(UInt32 crewId, ushort rank);

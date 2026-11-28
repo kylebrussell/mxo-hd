@@ -2,9 +2,11 @@ namespace HeadlessClient;
 
 public static partial class Scenarios
 {
-    public static string FactionEjectionFaultSql(uint crew) => $"""
+    public const string FactionDepartureFault = "qa_faction_departure_update";
+
+    public static string FactionDepartureFaultSql(uint crew) => $"""
         SET SESSION sql_mode='';
-        ALTER TABLE characters ADD CONSTRAINT qa_faction_ejection_update
+        ALTER TABLE characters ADD CONSTRAINT {FactionDepartureFault}
             CHECK (crewId<>{crew} OR cash<>1000 OR factionId<>0);
         """;
 
@@ -41,7 +43,7 @@ public static partial class Scenarios
             VALUES ({leaderCrew},{leader.CharId},1,0,NOW()),({targetCrew},{captain.CharId},1,0,NOW()),
                 ({targetCrew},{member.CharId},0,0,NOW());
             """);
-        await db.ExecuteAsync(FactionEjectionFaultSql(targetCrew));
+        await db.ExecuteAsync(FactionDepartureFaultSql(targetCrew));
         await captain.EnterWorldAsync();
         await member.EnterWorldAsync();
 
@@ -53,7 +55,7 @@ public static partial class Scenarios
         await ProveAtomicFactionEjectionAsync(leader, captain, db, targetCrew, faction, member);
     }
 
-    public static async Task ReleaseFactionEjectionFaultAsync(HeadlessPlayer captain)
+    public static async Task DepositOneCrewInfoAsync(HeadlessPlayer captain)
     {
         captain.SkipReceived();
         captain.SendRpc("78 02 01 00 00 00 01");
@@ -78,7 +80,7 @@ public static partial class Scenarios
             "A member write failure restores the target crew's faction and rank");
         Check.Equal((long)removedMembers, await MemberCount(faction), "Every target member still belongs to the faction");
 
-        await ReleaseFactionEjectionFaultAsync(captain);
+        await DepositOneCrewInfoAsync(captain);
         leader.SendRpc(eject);
         await leader.WaitForRpcAsync(eject);
         await captain.WaitForRpcAsync(eject);

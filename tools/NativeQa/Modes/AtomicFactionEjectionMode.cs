@@ -18,7 +18,7 @@ public sealed class AtomicFactionEjectionMode : SocialBreadthMode
             social.AfterHelpers.Concat(new[] { $"""
                 UPDATE characters SET z={Z},cash=1000 WHERE handle='{Target}';
                 UPDATE characters SET z={Z} WHERE handle='QAFriend';
-                """, Scenarios.FactionEjectionFaultSql(PeerCrew) }).ToArray(),
+                """, Scenarios.FactionDepartureFaultSql(PeerCrew) }).ToArray(),
             environmentOverrides: new() { ["MXO_AGGRO"] = "0", ["MXO_MOB_WANDER"] = "0" },
             readyMessages: new[] {
                 "CSR leads QACrew at rank 1. QAOther captains QAPeerCrew at rank 5 in QAFaction. The open NAV stands are CSR (17000,495,6400), QAOther (17220,495,6400), and QAFriend (17120,495,6400). No teleport, selection or dev command.",
@@ -40,7 +40,7 @@ public sealed class AtomicFactionEjectionMode : SocialBreadthMode
         Check.Equal(1000L, await db.LongAsync($"SELECT cash FROM characters WHERE charId={captain.CharId}"),
             "The target captain's wallet matches the fault predicate");
         Check.Equal(1L, await db.LongAsync("SELECT COUNT(*) FROM information_schema.TABLE_CONSTRAINTS " +
-            "WHERE CONSTRAINT_SCHEMA=DATABASE() AND TABLE_NAME='characters' AND CONSTRAINT_NAME='qa_faction_ejection_update'"),
+            $"WHERE CONSTRAINT_SCHEMA=DATABASE() AND TABLE_NAME='characters' AND CONSTRAINT_NAME='{Scenarios.FactionDepartureFault}'"),
             "The disclosed affiliation fault is installed");
         if (context.StockProbe is not { } leader) return Array.Empty<byte>();
         await leader.EnterWorldAsync();
@@ -52,7 +52,7 @@ public sealed class AtomicFactionEjectionMode : SocialBreadthMode
     internal static async Task<string> ReleaseFaultAsync(HeadlessPlayer actor)
     {
         if (actor.Handle != Target) throw new ArgumentException("Use QAOther for the faction ejection retry.");
-        await Scenarios.ReleaseFactionEjectionFaultAsync(actor);
+        await Scenarios.DepositOneCrewInfoAsync(actor);
         return "QAOther deposited 1 Info (999 remains)";
     }
 }
