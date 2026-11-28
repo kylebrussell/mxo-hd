@@ -5,11 +5,17 @@ public static partial class Scenarios
     public const int QaCrewBankId = 9031;
     public const int QaFactionBankId = 9032;
 
-    public static string GroupBankSeedSql(uint owner, uint member = 0) => $"""
+    public static string GroupBankSeedSql(uint owner) =>
+        GroupBankLedgersSql($"(SELECT handle FROM characters WHERE charId={owner})") + "\n" + GroupBankMembersSql(owner);
+
+    private static string GroupBankLedgersSql(string ownerHandleSql) => $"""
         INSERT INTO factions(id,name,master_player_handle,money)
-            SELECT {QaFactionBankId},'QA Bank Faction',handle,500 FROM characters WHERE charId={owner};
+            VALUES ({QaFactionBankId},'QA Bank Faction',{ownerHandleSql},500);
         INSERT INTO crews(id,crew_name,master_player_handle,money,org,faction_id,faction_rank)
-            SELECT {QaCrewBankId},'QA Bank Crew',handle,200,1,{QaFactionBankId},1 FROM characters WHERE charId={owner};
+            VALUES ({QaCrewBankId},'QA Bank Crew',{ownerHandleSql},200,1,{QaFactionBankId},1);
+        """;
+
+    private static string GroupBankMembersSql(uint owner, uint member = 0) => $"""
         DELETE FROM crew_members WHERE char_id IN ({owner},{member});
         INSERT INTO crew_members(crew_id,char_id,is_captain,is_first_mate,created_at)
             SELECT {QaCrewBankId},charId,charId={owner},0,NOW() FROM characters WHERE charId IN ({owner},{member});
@@ -24,6 +30,8 @@ public static partial class Scenarios
 
     private static async Task AtomicGroupBank(ScenarioContext context)
     {
+        var db = context.Database;
+        await db.ExecuteAsync(GroupBankLedgersSql("'BankOwner'"));
         var owner = await context.AddPlayerAsync(new CharacterSeed("BankOwner")
         {
             X = 17000, Y = 495, Z = 6400, CrewId = QaCrewBankId, FactionId = QaFactionBankId
@@ -33,8 +41,7 @@ public static partial class Scenarios
             X = 17060, Y = 495, Z = 6400, CrewId = QaCrewBankId, FactionId = QaFactionBankId, Info = 500
         });
         var outsider = await context.AddPlayerAsync(new CharacterSeed("BankOutsider") { X = 17120, Y = 495, Z = 6400 });
-        var db = context.Database;
-        await db.ExecuteAsync(GroupBankSeedSql(owner.CharId, member.CharId));
+        await db.ExecuteAsync(GroupBankMembersSql(owner.CharId, member.CharId));
         await db.ExecuteAsync(GroupBankFaultSql);
         await owner.EnterWorldAsync();
         await member.EnterWorldAsync();

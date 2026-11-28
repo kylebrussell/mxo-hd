@@ -39,6 +39,9 @@ public sealed class AtomicGroupBankMode : NativeQaMode
         if (context.StockProbe is not { } actor) return Array.Empty<byte>();
         await actor.EnterWorldAsync();
         NativeQaReadiness.RequireNoAmbientAggro(context.ActualServer!, actor);
+        await actor.WaitUntilAsync(() => actor.Received("80 86 6e 00 00 00 47 23 00 00").Count > 0 &&
+            actor.Received("7c 6e 00 00 00 48 23 00 00 01").Count > 0,
+            "The stock bootstrap receives the seeded Crew and Faction status records", HeadlessPlayer.DefaultTimeout);
         await Scenarios.ProveAtomicGroupBankAsync(actor, db);
         return Array.Empty<byte>();
     }
