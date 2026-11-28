@@ -132,6 +132,25 @@ namespace hds
 
         private static readonly Dictionary<UInt32, Pet> pets = new Dictionary<UInt32, Pet>();
         private static readonly Dictionary<UInt32, byte> simulacraCounters = new Dictionary<UInt32, byte>();
+
+        internal static int SimulacraCounterCount
+        {
+            get
+            {
+                lock (simulacraCounters) return simulacraCounters.Count;
+            }
+        }
+
+        internal static void SetSimulacraCounterForTesting(UInt32 charId, byte counter)
+        {
+            lock (simulacraCounters) simulacraCounters[charId] = counter;
+        }
+
+        internal static void ClearSimulacraCounter(UInt32 charId)
+        {
+            if (charId == 0) return;
+            lock (simulacraCounters) simulacraCounters.Remove(charId);
+        }
         private static readonly Random random = new Random();
         private static Timer timer;
 

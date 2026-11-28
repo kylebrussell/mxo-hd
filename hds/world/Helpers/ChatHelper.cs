@@ -31,9 +31,24 @@ namespace hds
                     WorldClient caller = Store.currentClient, target = caller;
                     if (commands.Length == 2)
                     {
-                        lock (WorldServer.Clients)
-                            target = WorldServer.Clients.Values.FirstOrDefault(c =>
-                                string.Equals(TimedEffects.PlayerName(c), commands[1], StringComparison.OrdinalIgnoreCase));
+                        target = null;
+                        List<WorldClient> snapshot = WorldServer.RentClientSnapshot();
+                        try
+                        {
+                            for (int i = 0; i < snapshot.Count; i++)
+                            {
+                                WorldClient c = snapshot[i];
+                                if (c != null && string.Equals(TimedEffects.PlayerName(c), commands[1], StringComparison.OrdinalIgnoreCase))
+                                {
+                                    target = c;
+                                    break;
+                                }
+                            }
+                        }
+                        finally
+                        {
+                            WorldServer.ReturnClientSnapshot(snapshot);
+                        }
                     }
                     bool restored = commands.Length <= 2 && AbilityResurrection.QaRevive(caller, target);
                     new ServerPackets().sendSystemChatMessage(caller, restored ? "QA revive completed in place." :

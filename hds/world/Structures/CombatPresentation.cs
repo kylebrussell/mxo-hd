@@ -105,25 +105,32 @@ namespace hds
 
         private void RefreshObservers()
         {
-            WorldClient[] clients;
-            lock (WorldServer.Clients) clients = WorldServer.Clients.Values.ToArray();
-            lock (sync)
+            List<WorldClient> clients = WorldServer.RentClientSnapshot();
+            try
             {
-                if (ended) return;
-                foreach (var old in observers.ToArray())
-                    if (!CanSee(old.Key) || old.Key.viewMan.getViewById(old.Value)?.entityId != entity)
-                    { DeleteObserver(old.Key, old.Value); observers.Remove(old.Key); }
-                foreach (WorldClient client in clients)
+                lock (sync)
                 {
-                    if (fighters.ContainsValue(client) || observers.ContainsKey(client) || !CanSee(client)) continue;
-                    // A departed fighter may still be waiting for the death teardown. Do not recreate its live view.
-                    if (client.viewMan.FindViewForEntity(entity)?.viewCreated == true) continue;
-                    new ServerPackets().SendSpawnGameObject(client, handler, entity);
-                    ushort view = client.viewMan.FindViewForEntity(entity).ViewID;
-                    client.messageQueue.addObjectMessage(ServerPackets.BuildCombatInitialize(view, centre, Handles(client), sequence + 1), false);
-                    observers.Add(client, view);
-                    client.FlushQueue();
+                    if (ended) return;
+                    foreach (var old in observers.ToArray())
+                        if (!CanSee(old.Key) || old.Key.viewMan.getViewById(old.Value)?.entityId != entity)
+                        { DeleteObserver(old.Key, old.Value); observers.Remove(old.Key); }
+                    for (int i = 0; i < clients.Count; i++)
+                    {
+                        WorldClient client = clients[i];
+                        if (client == null || fighters.ContainsValue(client) || observers.ContainsKey(client) || !CanSee(client)) continue;
+                        // A departed fighter may still be waiting for the death teardown. Do not recreate its live view.
+                        if (client.viewMan.FindViewForEntity(entity)?.viewCreated == true) continue;
+                        new ServerPackets().SendSpawnGameObject(client, handler, entity);
+                        ushort view = client.viewMan.FindViewForEntity(entity).ViewID;
+                        client.messageQueue.addObjectMessage(ServerPackets.BuildCombatInitialize(view, centre, Handles(client), sequence + 1), false);
+                        observers.Add(client, view);
+                        client.FlushQueue();
+                    }
                 }
+            }
+            finally
+            {
+                WorldServer.ReturnClientSnapshot(clients);
             }
         }
         public void Round(bool attackerWins, uint flags, CombatTactic attackerTactic, CombatTactic defenderTactic,
