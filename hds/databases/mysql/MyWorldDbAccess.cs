@@ -468,12 +468,6 @@ namespace hds.databases{
 	        return crewMembers;
         }
 
-        public void RemoveMemberFromCrew(uint charId, uint crewId)
-        {
-	        ExecuteNonResultQuery("DELETE FROM crew_members WHERE crew_id = '" + crewId + "' AND char_id ='" +charId+ "' LIMIT 1");
-	        ExecuteNonResultQuery("UPDATE characters SET crewId = 0, factionId = 0 WHERE charId='" + charId + "' ");
-        }
-
         public void RemoveCrewFromFaction(uint factionId, uint crewId)
         {
 	        ExecuteNonResultQuery("UPDATE crews SET faction_id = '0' WHERE id='" + crewId + "' AND faction_id = '" + factionId + "' ");

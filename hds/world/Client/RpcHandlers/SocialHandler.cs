@@ -634,7 +634,6 @@ namespace hds
             }
 
             WorldClient client = Store.currentClient;
-            UInt32 charId = client.playerData.getCharID();
             var db = Store.dbManager.WorldDbHandler;
             switch (rpcData[0])
             {
@@ -643,32 +642,8 @@ namespace hds
                     break;
 
                 case SocialPackets.GroupCrew:
-                {
-                    UInt32 crewId = CrewIdOf(client);
-                    if (crewId == 0)
-                    {
-                        return;
-                    }
-
-                    db.RemoveMemberFromCrew(charId, crewId);
-                    List<CrewMember> remaining = db.GetCrewMembersForCrewId(crewId);
-                    if (remaining.Count == 0)
-                    {
-                        db.DisbandCrew(crewId, null);
-                    }
-                    else if (!remaining.Any(m => m.isCaptain))
-                    {
-                        CrewMember next = remaining.FirstOrDefault(m => m.isFirstMate) ?? remaining[0];
-                        db.SetCrewCaptain(crewId, next.charId, next.handle);
-                    }
-
-                    // Two-person capture 09:43:53-54: the leaver's own view got FactionID 0 and CrewID 0, the
-                    // remaining members 72 02 <leaver>.
-                    SetOwnGroupIds(client, 0, 0, null);
-                    SendToAll(OnlineWhere(c => CrewIdOf(c) == crewId && c != client),
-                        SocialPackets.LeftGroup(SocialPackets.GroupCrew, charId));
+                    LeaveCrew(client);
                     break;
-                }
 
                 case SocialPackets.GroupFaction:
                 {
@@ -698,6 +673,69 @@ namespace hds
 
                     break;
                 }
+            }
+        }
+
+        private static void LeaveCrew(WorldClient client)
+        {
+            uint crewId = CrewIdOf(client);
+            if (crewId == 0) return;
+
+            uint charId = client.playerData.getCharID();
+            (uint FactionId, CrewMember Successor, bool FactionLeaderChanged, bool Archived, string Refusal) result;
+            try
+            {
+                result = Store.dbManager.WorldDbHandler.LeaveCrew(crewId, charId);
+            }
+            catch (DbException error)
+            {
+                Output.WriteDebugLog($"[SOCIAL] Crew leave rolled back crew={crewId} member={charId}: {error.Message}");
+                RefuseCrewLeave(client, crewId, "The crew could not be left. Membership and leadership were kept.");
+                return;
+            }
+            if (result.Refusal != null)
+            {
+                RefuseCrewLeave(client, crewId, result.Refusal);
+                return;
+            }
+
+            // Two-person capture 09:43:53-54: the leaver gets zero IDs and the remaining crew gets 72 02.
+            SetOwnGroupIds(client, 0, 0, null);
+            List<WorldClient> remaining = OnlineWhere(c => CrewIdOf(c) == crewId);
+            SendToAll(remaining, SocialPackets.LeftGroup(SocialPackets.GroupCrew, charId));
+            if (result.Successor is CrewMember next)
+            {
+                if (next.isFirstMate) SocialBot.SetFirstMate(crewId, 0);
+                SendToAll(remaining, SocialPackets.NewLeader(SocialPackets.GroupCrew, next.charId));
+            }
+
+            if (result.FactionId != 0)
+            {
+                List<WorldClient> faction = OnlineWhere(c => FactionIdOf(c) == result.FactionId);
+                if (result.Archived)
+                    SendToAll(faction, SocialPackets.FactionCrewRemoved(crewId));
+                else if (result.FactionLeaderChanged)
+                    foreach (WorldClient member in faction) SendFactionInfo(member, result.FactionId);
+                else if (result.Successor is CrewMember successor)
+                    SendToAll(faction.Where(c => CrewIdOf(c) != crewId),
+                        SocialPackets.FactionCrewCaptain(crewId, successor.charId, successor.handle, FindOnlineByCharId(successor.charId) != null));
+            }
+            Output.WriteDebugLog($"[SOCIAL] {HandleOf(client)} left crew {crewId}");
+        }
+
+        private static void RefuseCrewLeave(WorldClient client, uint crewId, string message)
+        {
+            Send(client, ServerPackets.BuildSystemChatMessage(message, "BROADCAST"));
+            try
+            {
+                // The stock 71 sender clears its crew manager locally. Rebuild it with the committed roster.
+                SendCrewInfo(client, crewId);
+                uint faction = FactionIdOf(client);
+                if (faction != 0) SendFactionInfo(client, faction);
+            }
+            catch (DbException error)
+            {
+                Output.WriteDebugLog($"[SOCIAL] Crew roster restore deferred crew={crewId}: {error.Message}");
             }
         }
 
