@@ -126,7 +126,7 @@ namespace hds
 
         // The stock 72 handler at 621c2500 clears the input lock before looking up charId.
         // Zero is neither the recipient nor a roster entry, so the acknowledgement changes no membership.
-        internal static byte[] CrewRemoveRefused() => LeftGroup(GroupCrew, 0);
+        internal static byte[] ReleaseCrewRosterInput() => LeftGroup(GroupCrew, 0);
 
         /// <summary>77 &lt;type&gt;: the group was disbanded (retail sent 77 03 to the leader and the member).</summary>
         public static byte[] GroupDisbanded(byte groupType)
