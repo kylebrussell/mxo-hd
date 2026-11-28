@@ -20,6 +20,7 @@ namespace hds
 
         private static readonly List<Pending> pending = new List<Pending>();
         private static Timer timer;
+        private static int timerRunning;
 
         private static double Now()
         {
@@ -39,8 +40,24 @@ namespace hds
                 pending.Add(new Pending { DueAt = Now() + seconds, Action = action });
                 if (timer == null)
                 {
-                    timer = new Timer(_ => RunDue(Now()), null, 100, 100);
+                    timer = new Timer(_ => RunDueFromTimer(), null, 100, 100);
                 }
+            }
+        }
+
+        private static void RunDueFromTimer()
+        {
+            if (Interlocked.CompareExchange(ref timerRunning, 1, 0) != 0)
+            {
+                return;
+            }
+            try
+            {
+                RunDue(Now());
+            }
+            finally
+            {
+                Volatile.Write(ref timerRunning, 0);
             }
         }
 
@@ -67,18 +84,46 @@ namespace hds
 
         public static void RunDue(double now)
         {
-            List<Pending> due;
+            List<Pending> due = null;
             lock (pending)
             {
-                due = pending.FindAll(p => p.DueAt <= now);
-                pending.RemoveAll(p => p.DueAt <= now);
+                int count = pending.Count;
+                if (count == 0)
+                {
+                    return;
+                }
+
+                int write = 0;
+                for (int i = 0; i < count; i++)
+                {
+                    Pending item = pending[i];
+                    if (item.DueAt <= now)
+                    {
+                        if (due == null) due = new List<Pending>(4);
+                        due.Add(item);
+                    }
+                    else
+                    {
+                        if (write != i) pending[write] = item;
+                        write++;
+                    }
+                }
+                if (write < count)
+                {
+                    pending.RemoveRange(write, count - write);
+                }
             }
 
-            foreach (Pending p in due)
+            if (due == null)
+            {
+                return;
+            }
+
+            for (int i = 0; i < due.Count; i++)
             {
                 try
                 {
-                    p.Action();
+                    due[i].Action();
                 }
                 catch (Exception ex)
                 {

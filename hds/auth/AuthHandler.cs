@@ -9,14 +9,15 @@ namespace hds.auth
 {
     public class AuthHandler
     {
-        private MxoRSA rsa;
+        private static readonly MxoRSA SharedRsa = new MxoRSA();
+        private static readonly byte[] BlankIv = new byte[16];
+
         private MxoTwofish tf;
         private Md5 md5;
 
         int status;
 
         byte[] challenge;
-        byte[] blankIV;
         byte[] md5edChallenge;
         
         WorldList wl;
@@ -32,14 +33,6 @@ namespace hds.auth
         {
             this.authClientSession = authClientSession;
             status = 0;
-            rsa = new MxoRSA();
-            tf = new MxoTwofish();
-            md5 = new Md5();
-
-            wl = new WorldList();
-
-            blankIV = new byte[]
-                {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
         }
 
         public int getStatus()
@@ -194,7 +187,7 @@ namespace hds.auth
             Output.OptWriteLine("-> Encrypted blob received.");
 
             // Get RSA decrypted blob
-            byte[] decryptedBlob = rsa.decryptWithPrivkey(blob);
+            byte[] decryptedBlob = SharedRsa.decryptWithPrivkey(blob);
             if (decryptedBlob == null || decryptedBlob.Length < 30)
                 throw new AuthException("Decrypted auth blob too short");
             Output.OptWriteLine("-> Blob decoded.");
@@ -204,7 +197,11 @@ namespace hds.auth
             byte[] tfKey = new byte[16];
             ArrayUtils.copy(decryptedBlob, 7, tfKey, 0, 16);
 
-            tf.SetIV(blankIV);
+            tf ??= new MxoTwofish();
+            md5 ??= new Md5();
+            wl ??= new WorldList();
+
+            tf.SetIV(BlankIv);
             tf.SetKey(tfKey);
 
             // Create the challenge: random, so a recorded login can't be replayed (it used to be all zeros). The client
@@ -250,53 +247,65 @@ namespace hds.auth
         {
             if (receivedBytes < 6)
                 throw new AuthException("Auth challenge response too short");
-            if (md5edChallenge == null || challenge == null)
+            byte[] activeChallenge = challenge;
+            byte[] activeMd5Challenge = md5edChallenge;
+            if (activeMd5Challenge == null || activeChallenge == null || tf == null || wl == null)
                 throw new AuthException("Challenge response received before auth request");
+
+            // Challenges are single-use: clear before verifying so a second response cannot replay the same challenge.
+            challenge = null;
+            md5edChallenge = null;
 
             reader.SetOffsetOverrideValue(4);
             int blobSize = (int) reader.ReadUint8();
             if (blobSize < 32 || (blobSize % 16) != 0 || 6 + blobSize > receivedBytes)
                 throw new AuthException("Bad challenge blob size");
 
-            byte[] encryptedBlob = new byte[blobSize];
             byte[] decryptedBlob = new byte[blobSize];
-
-            reader.SetOffsetOverrideValue(6);
-            encryptedBlob = reader.ReadBytes(blobSize);
-            // ArrayUtils.copy(data, 6, encryptedBlob, 0, blobSize);
-
-            // Reset IV to 0
-            tf.SetIV(blankIV);
-            tf.Decrypt(encryptedBlob, decryptedBlob);
-
-            byte[] receivedMD5 = new byte[16];
-            ArrayUtils.copy(decryptedBlob, 1, receivedMD5, 0, 16);
-            
-            // Security says that must be the same. Only log the MD5 part: the rest of the blob
-            // carries the plaintext password.
-            Output.WriteLine("Received MD5(challenge):" + StringUtils.bytesToString(receivedMD5));
-            if (!ArrayUtils.equal(receivedMD5, md5edChallenge))
-            {
-                Output.WriteLine("The Md5 from client and Our Md5 are not same, aborting");
-                Output.WriteLine("Stored MD5ed Challenge:" + StringUtils.bytesToString(md5edChallenge));
-                throw new AuthException("Md5 challenge differs");
-            }
-
-            // We take the pass from the decrypted Blob and subtract 1 byte, the ending "0"
-            int passSize = ((int) decryptedBlob[23]) - 1;
-            if (passSize < 1 || 25 + passSize > decryptedBlob.Length)
-                throw new AuthException("Bad password length");
-
-            byte[] passwordB = new byte[passSize];
-            ArrayUtils.copy(decryptedBlob, 25, passwordB, 0, passSize);
-
-            Output.OptWriteLine("-> Password decrypted, size:" + passSize);
-
-            // The password is only ever held here, as the launcher's bytes, for the one verification call.
+            byte[] passwordB = null;
+            LoginResult login;
             string username = wl.getUsername();
-            LoginResult login = Login.Authenticate(username, passwordB, RemoteAddress(), DevAcceptAnyPassword);
-            Array.Clear(passwordB, 0, passwordB.Length);
-            Array.Clear(decryptedBlob, 0, decryptedBlob.Length);
+
+            try
+            {
+                reader.SetOffsetOverrideValue(6);
+                byte[] encryptedBlob = reader.ReadBytes(blobSize);
+
+                // Reset IV to 0
+                tf.SetIV(BlankIv);
+                tf.Decrypt(encryptedBlob, decryptedBlob);
+
+                byte[] receivedMD5 = new byte[16];
+                ArrayUtils.copy(decryptedBlob, 1, receivedMD5, 0, 16);
+
+                // Security says that must be the same. Only log the MD5 part: the rest of the blob
+                // carries the plaintext password.
+                Output.WriteLine("Received MD5(challenge):" + StringUtils.bytesToString(receivedMD5));
+                if (!ArrayUtils.equal(receivedMD5, activeMd5Challenge))
+                {
+                    Output.WriteLine("The Md5 from client and Our Md5 are not same, aborting");
+                    Output.WriteLine("Stored MD5ed Challenge:" + StringUtils.bytesToString(activeMd5Challenge));
+                    throw new AuthException("Md5 challenge differs");
+                }
+
+                // We take the pass from the decrypted Blob and subtract 1 byte, the ending "0"
+                int passSize = ((int) decryptedBlob[23]) - 1;
+                if (passSize < 1 || 25 + passSize > decryptedBlob.Length)
+                    throw new AuthException("Bad password length");
+
+                passwordB = new byte[passSize];
+                ArrayUtils.copy(decryptedBlob, 25, passwordB, 0, passSize);
+
+                Output.OptWriteLine("-> Password decrypted, size:" + passSize);
+
+                // The password is only ever held here, as the launcher's bytes, for the one verification call.
+                login = Login.Authenticate(username, passwordB, RemoteAddress(), DevAcceptAnyPassword);
+            }
+            finally
+            {
+                if (passwordB != null) Array.Clear(passwordB, 0, passwordB.Length);
+                Array.Clear(decryptedBlob, 0, decryptedBlob.Length);
+            }
             switch (login.Outcome)
             {
                 case LoginOutcome.Ok:
@@ -350,7 +359,7 @@ namespace hds.auth
 
                 // We keep the Key from before this part
                 // Set the challenge we saved before as IV
-                tf.SetIV(challenge);
+                tf.SetIV(activeChallenge);
                 tf.Encrypt(privExp, buffer);
 
                 privExp = buffer;
