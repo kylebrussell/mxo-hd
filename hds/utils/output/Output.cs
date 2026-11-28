@@ -41,6 +41,7 @@ namespace hds
 		private static readonly bool EnablePacketLogs = GetEnvFlag("MXO_PACKET_LOG", false);
 		public static bool PacketLogsEnabled => EnablePacketLogs;
 		private static readonly bool EnableDebugLogs = GetEnvFlag("MXO_DEBUG_LOG", false);
+		public static bool DebugLogsEnabled => EnableDebugLogs;
 		private static readonly bool EnableRpcLogs = GetEnvFlag("MXO_RPC_LOG", false);
 		private static readonly bool EnableClientViewRequestLog = GetEnvFlag("MXO_CLIENT_VIEW_LOG", false);
 		private static readonly bool EnableServerLog = GetEnvFlag("MXO_SERVER_LOG", true);

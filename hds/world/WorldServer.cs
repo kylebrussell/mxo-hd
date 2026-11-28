@@ -834,7 +834,10 @@ namespace hds
                     if (target != null && target.playerData.getEntityId() == theView.entityId)
                     {
                         byte[] payload = pak.ReturnFinalPacket();
-                        Output.WriteDebugLog("Update SelfViewState from Ability FX on OtherState Views from " + StringUtils.charBytesToString(currentClient.playerInstance.CharacterName.getValue()) + " to  " + StringUtils.charBytesToString(target.playerInstance.CharacterName.getValue()) + " HEX: " + StringUtils.bytesToString_NS(payload));
+                        if (Output.DebugLogsEnabled)
+                        {
+                            Output.WriteDebugLog("Update SelfViewState from Ability FX on OtherState Views from " + StringUtils.charBytesToString(currentClient.playerInstance.CharacterName.getValue()) + " to  " + StringUtils.charBytesToString(target.playerInstance.CharacterName.getValue()) + " HEX: " + StringUtils.bytesToString_NS(payload));
+                        }
                         target.messageQueue.addObjectMessage(payload, false);
                         target.FlushQueue();
                         return;
@@ -858,10 +861,10 @@ namespace hds
                 for (int i = 0; i < count; i++)
                 {
                     WorldClient client = recipients[i];
-                    if (client == null) continue;
+                    if (client == null || client.IsBot || !client.playerData.getOnWorld() || worldObject.metrId != client.playerData.getDistrictId()) continue;
                     // Find, not GetViewForEntityAndGo: that would add an empty view to every player for every car
                     ClientView objectView = client.viewMan.FindViewForEntity(entityStaticId);
-                    if (objectView != null && objectView.viewCreated && worldObject.metrId == client.playerData.getDistrictId() && client.playerData.getOnWorld())
+                    if (objectView != null && objectView.viewCreated)
                     {
                         pak ??= new ServerPackets();
                         pak.SendUpdateViewStatePacket(client, objectView.ViewID, updateData);
@@ -921,11 +924,11 @@ namespace hds
                 for (int i = 0; i < count; i++)
                 {
                     WorldClient client = recipients[i];
-                    if (client == null || client.IsBot) continue;
+                    if (client == null || client.IsBot || !client.playerData.getOnWorld() || mobDistrict != client.playerData.getDistrictId()) continue;
                     // Look up only: GetViewForEntityAndGo would hand every client without the NPC a view id it never
                     // spawns, and the client's view ids would then run one behind the server's.
                     ClientView mobView = client.viewMan.FindViewForEntity(mobEntityId);
-                    if (mobView != null && mobView.viewCreated && mobDistrict == client.playerData.getDistrictId() && client.playerData.getOnWorld())
+                    if (mobView != null && mobView.viewCreated)
                     {
                         ServerPackets.SendNpcUpdateDataFast(mobView.ViewID, client, updateData, followingUpdate, forceFlush, deferFlush);
                     }

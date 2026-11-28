@@ -37,10 +37,22 @@ namespace hds
 
         internal static WorldClient FindOnline(Func<WorldClient, bool> match)
         {
-            lock (WorldServer.Clients)
+            List<WorldClient> snapshot = WorldServer.RentClientSnapshot();
+            try
             {
-                return WorldServer.Clients.Values.FirstOrDefault(c =>
-                    c != null && c.playerData != null && c.playerData.getOnWorld() && match(c));
+                for (int i = 0; i < snapshot.Count; i++)
+                {
+                    WorldClient c = snapshot[i];
+                    if (c != null && c.playerData != null && c.playerData.getOnWorld() && match(c))
+                    {
+                        return c;
+                    }
+                }
+                return null;
+            }
+            finally
+            {
+                WorldServer.ReturnClientSnapshot(snapshot);
             }
         }
 
@@ -52,10 +64,23 @@ namespace hds
 
         internal static List<WorldClient> OnlineWhere(Func<WorldClient, bool> match)
         {
-            lock (WorldServer.Clients)
+            List<WorldClient> matches = new List<WorldClient>();
+            List<WorldClient> snapshot = WorldServer.RentClientSnapshot();
+            try
             {
-                return WorldServer.Clients.Values.Where(c =>
-                    c != null && c.playerData != null && c.playerData.getOnWorld() && match(c)).ToList();
+                for (int i = 0; i < snapshot.Count; i++)
+                {
+                    WorldClient c = snapshot[i];
+                    if (c != null && c.playerData != null && c.playerData.getOnWorld() && match(c))
+                    {
+                        matches.Add(c);
+                    }
+                }
+                return matches;
+            }
+            finally
+            {
+                WorldServer.ReturnClientSnapshot(snapshot);
             }
         }
 
@@ -898,6 +923,7 @@ namespace hds
             UInt32 leftCharId = client.playerData.getCharID();
             Groups.RemoveSeeker(leftCharId);
             IgnoreFilter.RemovePlayer(leftCharId);
+            CoderPets.ClearSimulacraCounter(leftCharId);
             EmoteHandler.PlayerLeftWorld(client);
             try
             {
