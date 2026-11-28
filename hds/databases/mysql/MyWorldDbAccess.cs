@@ -16,13 +16,41 @@ namespace hds.databases{
 		// player and timer thread: under load a query failed with "Connection must be Open" (and the player stuck at
 		// login, found by tools/HeadlessClient), or a reader could be replaced mid-read by another player's query.
 		[ThreadStatic] private static IDbConnection threadConnection;
+		[ThreadStatic] private static string threadConnectionString;
+		[ThreadStatic] private static bool threadConnectionOwned;
 		[ThreadStatic] private static IDbCommand threadCommand;
 		[ThreadStatic] private static IDataReader threadReader;
+		[ThreadStatic] private static bool threadReaderOwned;
 		private readonly string connectionString;
+		private readonly Func<string, IDbConnection> connectionFactory;
 
-		private IDbConnection conn => threadConnection ??= new MySqlConnection(connectionString);
+		private IDbConnection conn
+		{
+			get
+			{
+				if (threadConnection == null ||
+					(connectionString != null && threadConnectionOwned &&
+					 !string.Equals(threadConnectionString, connectionString, StringComparison.Ordinal)))
+				{
+					ResetThreadConnection();
+					Func<string, IDbConnection> factory = connectionFactory ?? (cs => new MySqlConnection(cs));
+					threadConnection = factory(connectionString);
+					threadConnectionString = connectionString;
+					threadConnectionOwned = true;
+				}
+				return threadConnection;
+			}
+		}
 		private IDbCommand queryExecuter { get => threadCommand; set => threadCommand = value; }
-		private IDataReader dr { get => threadReader; set => threadReader = value; }
+		private IDataReader dr
+		{
+			get => threadReader;
+			set
+			{
+				threadReader = value;
+				threadReaderOwned = value != null;
+			}
+		}
 
 		public MyWorldDbAccess(){
             var config = Store.config;
@@ -33,54 +61,162 @@ namespace hds.databases{
                 "User ID=" + config.dbParams.Username + ";" +
                 "Password=" + config.dbParams.Password + ";" +
                 "Pooling=true;");
+            connectionFactory = cs => new MySqlConnection(cs);
+		}
+
+		internal MyWorldDbAccess(string connectionString, Func<string, IDbConnection> connectionFactory)
+		{
+			this.connectionString = connectionString ?? throw new ArgumentNullException(nameof(connectionString));
+			this.connectionFactory = connectionFactory ?? (cs => new MySqlConnection(cs));
+		}
+
+		internal static IDbConnection CurrentThreadConnectionForTesting => threadConnection;
+
+		internal static void ClearThreadStateForTesting()
+		{
+			ResetThreadConnection();
+		}
+
+		internal static void SetAbandonedReaderForTesting(IDataReader reader, IDbCommand command = null)
+		{
+			threadReader = reader;
+			threadReaderOwned = reader != null;
+			threadCommand = command;
+		}
+
+		private static void DisposeActiveReaderAndCommand()
+		{
+			if (threadReaderOwned)
+			{
+				IDataReader activeReader = threadReader;
+				threadReader = null;
+				threadReaderOwned = false;
+				if (activeReader != null)
+				{
+					try { activeReader.Close(); } catch { }
+					try { activeReader.Dispose(); } catch { }
+				}
+			}
+
+			IDbCommand activeCommand = threadCommand;
+			threadCommand = null;
+			if (activeCommand != null)
+			{
+				try { activeCommand.Dispose(); } catch { }
+			}
+		}
+
+		private static void ResetThreadConnection()
+		{
+			DisposeActiveReaderAndCommand();
+			IDbConnection existing = threadConnection;
+			threadConnection = null;
+			threadConnectionString = null;
+			threadConnectionOwned = false;
+			if (existing != null)
+			{
+				try { existing.Close(); } catch { }
+				try { existing.Dispose(); } catch { }
+			}
 		}
 
 		public void OpenConnection()
 		{
-			if (conn.State == ConnectionState.Closed)
+			// Recover from any prior unhandled exception on this thread that left an owned reader/command open
+			// or left our pooled connection in an Open/Broken state, and handle DB swaps cleanly.
+			bool hadAbandonedOwnedReader = threadReaderOwned && threadReader != null;
+			DisposeActiveReaderAndCommand();
+
+			if (connectionString != null && threadConnection != null &&
+				(threadConnection.State == ConnectionState.Broken ||
+				 (threadConnectionOwned &&
+				  (hadAbandonedOwnedReader ||
+				   !string.Equals(threadConnectionString, connectionString, StringComparison.Ordinal) ||
+				   threadConnection.State != ConnectionState.Closed))))
 			{
-				conn.Open();
+				ResetThreadConnection();
+			}
+
+			IDbConnection connection = conn;
+			if (connection.State == ConnectionState.Closed)
+			{
+				connection.Open();
 			}
 		}
 
 		public void CloseConnection()
 		{
-			if (conn.State != ConnectionState.Closed)
+			DisposeActiveReaderAndCommand();
+			IDbConnection existing = threadConnection;
+			if (existing == null)
 			{
-				conn.Close();
-			}   
+				return;
+			}
+
+			if (existing.State == ConnectionState.Broken)
+			{
+				ResetThreadConnection();
+				return;
+			}
+
+			if (existing.State != ConnectionState.Closed)
+			{
+				try
+				{
+					existing.Close();
+				}
+				catch
+				{
+					ResetThreadConnection();
+				}
+			}
 		}
 		
 		public void ExecuteNonResultQuery(string query)
 		{
 			OpenConnection();
-			string updateQuery = query;
-			queryExecuter = conn.CreateCommand();
-			queryExecuter.CommandText = updateQuery;
-			queryExecuter.ExecuteNonQuery();
-			CloseConnection();
+			try
+			{
+				using (IDbCommand cmd = conn.CreateCommand())
+				{
+					queryExecuter = cmd;
+					cmd.CommandText = query;
+					cmd.ExecuteNonQuery();
+				}
+			}
+			finally
+			{
+				CloseConnection();
+			}
 		}
 		
 		
 		public UInt32 GetUserIdForCharId(byte[] charIdHex){
-			OpenConnection();	 
-			UInt32 charId = NumericalUtils.ByteArrayToUint32(charIdHex,1);
-			Output.OptWriteLine("[WORLD] Checking from DB:"+charId);
-			string sqlQuery="Select userid from characters where charid ='"+charId+"'";
-			queryExecuter= conn.CreateCommand();
-			queryExecuter.CommandText = sqlQuery;					
-			dr= queryExecuter.ExecuteReader();
-			
-			UInt32 userId = new UInt32();
-			
-			while(dr.Read()){
-				userId = (UInt32)Convert.ToDecimal(dr.GetValue(0));	
+			OpenConnection();
+			try
+			{
+				UInt32 charId = NumericalUtils.ByteArrayToUint32(charIdHex,1);
+				Output.OptWriteLine("[WORLD] Checking from DB:"+charId);
+				string sqlQuery="Select userid from characters where charid ='"+charId+"'";
+				using (IDbCommand cmd = conn.CreateCommand())
+				{
+					queryExecuter = cmd;
+					cmd.CommandText = sqlQuery;
+					using (IDataReader reader = cmd.ExecuteReader())
+					{
+						dr = reader;
+						UInt32 userId = new UInt32();
+						while(reader.Read()){
+							userId = (UInt32)Convert.ToDecimal(reader.GetValue(0));
+						}
+						return userId;
+					}
+				}
 			}
-			
-			dr.Close();
-			CloseConnection();
-			return userId;
-			
+			finally
+			{
+				CloseConnection();
+			}
 		}
 
 		public void AddHandleToFriendList(string handleToAdd, UInt32 charId)
@@ -542,11 +678,18 @@ namespace hds.databases{
 
         public void setBackground(string backgroundText)
         {
-	        UInt32 charID = Store.currentClient.playerData.getCharID();
-
-            ExecuteNonResultQuery("UPDATE characters SET background = '" + backgroundText + "' WHERE charId = '" +
-                                  charID + "' LIMIT 1");
-            
+            UInt32 charID = Store.currentClient.playerData.getCharID();
+            using (var connection = new MySqlConnection(connectionString))
+            {
+                connection.Open();
+                using (var cmd = connection.CreateCommand())
+                {
+                    cmd.CommandText = "UPDATE characters SET background = @background WHERE charId = @charId LIMIT 1";
+                    cmd.Parameters.AddWithValue("@background", backgroundText ?? "");
+                    cmd.Parameters.AddWithValue("@charId", charID);
+                    cmd.ExecuteNonQuery();
+                }
+            }
         }
 		
 		public void SetPlayerValues()
@@ -776,15 +919,24 @@ namespace hds.databases{
 
 		public void UpdateRsiPartValue(string part, uint value, UInt32 charId)
         {
-	        ExecuteNonResultQuery("UPDATE rsivalues SET " + part + "=" + value + " WHERE charid= '" + charId + "' LIMIT 1");
-            
+            if (!MyMarginDBAccess.IsAllowedRsiColumn(part))
+            {
+                throw new ArgumentException("Unknown RSI column: " + part, nameof(part));
+            }
+            using (var connection = new MySqlConnection(connectionString))
+            {
+                connection.Open();
+                using (var cmd = connection.CreateCommand())
+                {
+                    cmd.CommandText = "UPDATE rsivalues SET `" + part + "` = @value WHERE charid = @charId LIMIT 1";
+                    cmd.Parameters.AddWithValue("@value", value);
+                    cmd.Parameters.AddWithValue("@charId", charId);
+                    cmd.ExecuteNonQuery();
+                }
+            }
         }
 		
 		public void SavePlayer(WorldClient client){
-			System.Globalization.CultureInfo customCulture = (System.Globalization.CultureInfo)System.Threading.Thread.CurrentThread.CurrentCulture.Clone();
-            customCulture.NumberFormat.NumberDecimalSeparator = ".";
-            System.Threading.Thread.CurrentThread.CurrentCulture = customCulture;
-
             UInt32 charID = NumericalUtils.ByteArrayToUint32(client.playerInstance.CharacterID.getValue(),1);
 			string handle = StringUtils.charBytesToString_NZ(client.playerInstance.CharacterName.getValue());
 			
@@ -794,35 +946,46 @@ namespace hds.databases{
 			
 			int rotation =client.playerInstance.YawInterval.getValue()[0];
 
-			// The Loading Area (location 0x385) is a waiting room between death and a hardline: it doesn't fit the
-			// tinyint districtId column and isn't a place to log back in to, so keep the last real location.
-			if (!client.playerData.DistrictIsLA())
+			using (var connection = new MySqlConnection(connectionString))
 			{
-				string positionQuery = "update characters set x =" + x + " ,y=" + y + " ,z=" + z + " , rotation=" +
-				                       rotation + ", districtId=" + client.playerData.getDistrictId() + " where handle='" +
-				                       handle + "' ";
-				ExecuteNonResultQuery(positionQuery);
-				Output.writeToLogForConsole("[WORLD DB ACCESS ]" + positionQuery);
-			}
+				connection.Open();
 
-            // Serialize the legacy whole-RSI save with a pill's persistence and in-memory update.
-            lock (client.playerData.rsiSync)
-            {
-                int[] rsiValues = client.playerData.getRsiValues();
-                string rsiQuery = "update rsivalues set sex='" + rsiValues[0] + "',body='" + rsiValues[1] + "',hat='" +
-			                  rsiValues[2] + "',face='" + rsiValues[3] + "',shirt='" + rsiValues[4] + "',coat='" +
-			                  rsiValues[5] + "',pants='" + rsiValues[6] + "',shoes='" + rsiValues[7] +
-			                  "',gloves='" + rsiValues[8] + "',glasses='" + rsiValues[9] + "',hair='" +
-			                  rsiValues[10] + "',facialdetail='" + rsiValues[11] + "',shirtcolor='" +
-			                  rsiValues[12] + "',pantscolor='" + rsiValues[13] + "',coatcolor='" + rsiValues[14] +
-			                  "',shoecolor='" + rsiValues[15] + "',glassescolor='" + rsiValues[16] +
-			                  "',haircolor='" + rsiValues[17] + "',skintone='" + rsiValues[18] + "',tattoo='" +
-			                  rsiValues[19] + "',facialdetailcolor='" + rsiValues[20] + "',leggins='" +
-			                  rsiValues[21] + "' where charId='" + charID + "';";
-                ExecuteNonResultQuery(rsiQuery);
-                Output.writeToLogForConsole("[WORLD DB ACCESS ]" + rsiQuery);
-            }
-			
+				// The Loading Area (location 0x385) is a waiting room between death and a hardline: it doesn't fit the
+				// tinyint districtId column and isn't a place to log back in to, so keep the last real location.
+				if (!client.playerData.DistrictIsLA())
+				{
+					using (var posCmd = connection.CreateCommand())
+					{
+						posCmd.CommandText = "UPDATE characters SET x = @x, y = @y, z = @z, rotation = @rotation, districtId = @districtId WHERE handle = @handle";
+						posCmd.Parameters.AddWithValue("@x", x);
+						posCmd.Parameters.AddWithValue("@y", y);
+						posCmd.Parameters.AddWithValue("@z", z);
+						posCmd.Parameters.AddWithValue("@rotation", rotation);
+						posCmd.Parameters.AddWithValue("@districtId", client.playerData.getDistrictId());
+						posCmd.Parameters.AddWithValue("@handle", handle);
+						posCmd.ExecuteNonQuery();
+					}
+				}
+
+				// Serialize the legacy whole-RSI save with a pill's persistence and in-memory update.
+				lock (client.playerData.rsiSync)
+				{
+					int[] rsiValues = client.playerData.getRsiValues();
+					using (var rsiCmd = connection.CreateCommand())
+					{
+						rsiCmd.CommandText = "UPDATE rsivalues SET sex=@p0,body=@p1,hat=@p2,face=@p3,shirt=@p4,coat=@p5,pants=@p6,shoes=@p7," +
+						                     "gloves=@p8,glasses=@p9,hair=@p10,facialdetail=@p11,shirtcolor=@p12,pantscolor=@p13,coatcolor=@p14," +
+						                     "shoecolor=@p15,glassescolor=@p16,haircolor=@p17,skintone=@p18,tattoo=@p19,facialdetailcolor=@p20,leggins=@p21 " +
+						                     "WHERE charId=@charId";
+						for (int i = 0; i < 22; i++)
+						{
+							rsiCmd.Parameters.AddWithValue("@p" + i, rsiValues[i]);
+						}
+						rsiCmd.Parameters.AddWithValue("@charId", charID);
+						rsiCmd.ExecuteNonQuery();
+					}
+				}
+			}
 		}
 
 

@@ -3,7 +3,9 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Text;
 using hds.databases.Entities;
+using Microsoft.EntityFrameworkCore;
 using MySqlConnector;
 
 using hds.databases.interfaces;
@@ -12,17 +14,21 @@ using hds.shared;
 namespace hds.databases{
 
     public partial class MyMarginDBAccess : IMarginDBHandler{
-		
-		// One per thread: each margin client has a thread, and they used to share one connection, command and reader
-		// (see MyWorldDbAccess).
-		[ThreadStatic] private static IDbConnection threadConnection;
-		[ThreadStatic] private static IDbCommand threadCommand;
-		[ThreadStatic] private static IDataReader threadReader;
-		private readonly string connectionString;
 
-		private IDbConnection conn => threadConnection ??= new MySqlConnection(connectionString);
-		private IDbCommand queryExecuter { get => threadCommand; set => threadCommand = value; }
-		private IDataReader dr { get => threadReader; set => threadReader = value; }
+        private static readonly HashSet<string> AllowedRsiColumns = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            "sex", "body", "hat", "face", "shirt", "coat", "pants", "shoes",
+            "gloves", "glasses", "hair", "facialdetail", "shirtcolor", "pantscolor",
+            "coatcolor", "shoecolor", "glassescolor", "haircolor", "skintone",
+            "tattoo", "facialdetailcolor", "leggins"
+        };
+
+        internal static bool IsAllowedRsiColumn(string field)
+        {
+            return !string.IsNullOrEmpty(field) && AllowedRsiColumns.Contains(field);
+        }
+
+		private readonly string connectionString;
 		private DbParams dbParams;
 		
 		public MyMarginDBAccess(){
@@ -41,28 +47,28 @@ namespace hds.databases{
 
 		private MatrixDbContext CreateDbContext()
 		{
-			return new MatrixDbContext(dbParams);
+			return MatrixDbContext.Create(dbParams);
 		}
 
         public Character GetCharInfo(int charId)
         {
 	        using (MatrixDbContext dbContext = CreateDbContext())
 	        {
-		        return dbContext.Characters.SingleOrDefault(c => c.CharId == (ulong) charId);
+		        return dbContext.Characters.AsNoTracking().SingleOrDefault(c => c.CharId == (ulong) charId);
 	        }
         }
 
         public Rsivalue LoadAppearance(int charId)
         {
             using var dbContext = CreateDbContext();
-            return dbContext.Rsivalues.SingleOrDefault(rsi => rsi.Charid == charId);
+            return dbContext.Rsivalues.AsNoTracking().SingleOrDefault(rsi => rsi.Charid == charId);
         }
 
         public List<MarginInventoryItem> LoadInventory(int charId)
         {
 	        using (MatrixDbContext dbContext = CreateDbContext())
 	        {
-		        var items = dbContext.Inventories.Where(i => i.CharId == (ulong) charId);
+		        var items = dbContext.Inventories.AsNoTracking().Where(i => i.CharId == (ulong) charId);
 		        List<MarginInventoryItem> Inventory = new List<MarginInventoryItem>();
 		        foreach (var inventoryItem in items)
 		        {
@@ -82,17 +88,17 @@ namespace hds.databases{
         {
 	        using (MatrixDbContext dbContext = CreateDbContext())
 	        {
-		        var hardLines = dbContext.DataHardlines.ToList();
+		        var hardLines = dbContext.DataHardlines.AsNoTracking().ToList();
 
-		        string hexpacket = "";
+		        StringBuilder hexpacket = new StringBuilder(hardLines.Count * 12);
 		        foreach (var hardline in hardLines)
 		        {
 			        string districtHex =  StringUtils.bytesToString_NS(NumericalUtils.uint16ToByteArrayShort((UInt16)hardline.DistrictId));
 			        string hardlineHex = StringUtils.bytesToString_NS(NumericalUtils.uint16ToByteArray((UInt16)hardline.HardLineId,1));
-			        hexpacket = hexpacket + districtHex + hardlineHex + "0000";
+			        hexpacket.Append(districtHex).Append(hardlineHex).Append("0000");
 		        }
 
-		        return hexpacket;
+		        return hexpacket.ToString();
 	        }
         }
 
@@ -101,7 +107,8 @@ namespace hds.databases{
 	        using (MatrixDbContext dbContext = CreateDbContext())
 	        {
 		        List<CharAbility> charAbilities =
-			        dbContext.CharAbilities.Where(ca => ca.CharId == charId && ca.Slot < CharacterAttributes.FirstSlot)
+			        dbContext.CharAbilities.AsNoTracking()
+				        .Where(ca => ca.CharId == charId && ca.Slot < CharacterAttributes.FirstSlot)
 				        .OrderBy(ca => ca.Slot).ToList();
 
 		        List<MarginAbilityItem> abilities = new List<MarginAbilityItem>();
@@ -124,7 +131,7 @@ namespace hds.databases{
         {
 	        using (MatrixDbContext dbContext = CreateDbContext())
 	        {
-		        var character =  dbContext.Characters.FirstOrDefault(c => c.Handle == handle && c.IsDeleted == 0);
+		        var character =  dbContext.Characters.AsNoTracking().FirstOrDefault(c => c.Handle == handle && c.IsDeleted == 0);
 
 				int number=0;
 				if (character != null)
@@ -147,23 +154,39 @@ namespace hds.databases{
 
         public void updateCharacter(string firstName, string lastName, string background, UInt32 charID)
         {
-            string theQuery = "UPDATE characters SET firstName = '" + firstName + "', lastName='" + lastName + "', background='" + background + "' WHERE charid='" + charID.ToString() + "' ";
-            conn.Open();
-            queryExecuter = conn.CreateCommand();
-            queryExecuter.CommandText = theQuery;
-            queryExecuter.ExecuteNonQuery();
-            conn.Close();
+            using (var connection = new MySqlConnection(connectionString))
+            {
+                connection.Open();
+                using (var cmd = connection.CreateCommand())
+                {
+                    cmd.CommandText = "UPDATE characters SET firstName = @firstName, lastName = @lastName, background = @background WHERE charid = @charId";
+                    cmd.Parameters.AddWithValue("@firstName", firstName ?? "");
+                    cmd.Parameters.AddWithValue("@lastName", lastName ?? "");
+                    cmd.Parameters.AddWithValue("@background", background ?? "");
+                    cmd.Parameters.AddWithValue("@charId", charID);
+                    cmd.ExecuteNonQuery();
+                }
+            }
         }
 
 
         public void updateRSIValue(string field, string value, UInt32 charID)
         {
-            string theQuery = "UPDATE rsivalues SET " + field + "='" + value + "' WHERE charid='" + charID.ToString() + "' ";
-            conn.Open();
-            queryExecuter = conn.CreateCommand();
-            queryExecuter.CommandText = theQuery;
-            queryExecuter.ExecuteNonQuery();
-            conn.Close();
+            if (!IsAllowedRsiColumn(field))
+            {
+                throw new ArgumentException("Unknown RSI column: " + field, nameof(field));
+            }
+            using (var connection = new MySqlConnection(connectionString))
+            {
+                connection.Open();
+                using (var cmd = connection.CreateCommand())
+                {
+                    cmd.CommandText = "UPDATE rsivalues SET `" + field + "` = @value WHERE charid = @charId";
+                    cmd.Parameters.AddWithValue("@value", value);
+                    cmd.Parameters.AddWithValue("@charId", charID);
+                    cmd.ExecuteNonQuery();
+                }
+            }
         }
 
         /// <summary>A new character's starting health, inner strength and attributes (retail level 1 values).</summary>
@@ -171,13 +194,18 @@ namespace hds.databases{
         {
             UInt16 health = PlayerProgression.MaxHealthAtLevel(1);
             UInt16 innerStrength = PlayerProgression.MaxInnerStrengthAtLevel(1);
-            string theQuery = "UPDATE characters SET healthC = '" + health + "', healthM = '" + health + "', innerStrC = '" + innerStrength +
-                              "', innerStrM = '" + innerStrength + "' WHERE charId = '" + charID + "'";
-            conn.Open();
-            queryExecuter = conn.CreateCommand();
-            queryExecuter.CommandText = theQuery;
-            queryExecuter.ExecuteNonQuery();
-            conn.Close();
+            using (var connection = new MySqlConnection(connectionString))
+            {
+                connection.Open();
+                using (var cmd = connection.CreateCommand())
+                {
+                    cmd.CommandText = "UPDATE characters SET healthC = @health, healthM = @health, innerStrC = @innerStrength, innerStrM = @innerStrength WHERE charId = @charId";
+                    cmd.Parameters.AddWithValue("@health", health);
+                    cmd.Parameters.AddWithValue("@innerStrength", innerStrength);
+                    cmd.Parameters.AddWithValue("@charId", charID);
+                    cmd.ExecuteNonQuery();
+                }
+            }
 
             SetStartingAttributes(charID);
         }
@@ -196,21 +224,28 @@ namespace hds.databases{
         {
             using (MatrixDbContext dbContext = CreateDbContext())
             {
-                Dictionary<byte, UInt16> attributes = new Dictionary<byte, UInt16>();
                 var slots=CharacterAttributes.All.Select(a=>(int)CharacterAttributes.SlotOf(a)).ToArray();
-                var rows=dbContext.CharAbilities.Where(ca=>ca.CharId==charId && slots.Contains(ca.Slot)).OrderBy(ca=>ca.Id).ToArray();
+                var rows=dbContext.CharAbilities.AsNoTracking().Where(ca=>ca.CharId==charId && slots.Contains(ca.Slot)).OrderBy(ca=>ca.Id).ToArray();
                 return AttributeAllocation.ReadValues(rows.Select(row=>new AttributeAllocation.Row(row.Id,row.Slot,row.AbilityId,row.Level)));
             }
         }
 
         public void addAbility(Int32 abilityID, UInt16 slotID, UInt32 charID, UInt16 level, UInt16 is_loaded)
         {
-            string theQuery = "INSERT INTO char_abilities SET char_id='" + charID.ToString()  + "', slot='" + slotID.ToString() + "', ability_id='" + abilityID.ToString() + "', level='" + level.ToString() + "', is_loaded='" + is_loaded.ToString() + "', added=NOW() ";
-            conn.Open();
-            queryExecuter = conn.CreateCommand();
-            queryExecuter.CommandText = theQuery;
-            queryExecuter.ExecuteNonQuery();
-            conn.Close();
+            using (var connection = new MySqlConnection(connectionString))
+            {
+                connection.Open();
+                using (var cmd = connection.CreateCommand())
+                {
+                    cmd.CommandText = "INSERT INTO char_abilities SET char_id = @charId, slot = @slotId, ability_id = @abilityId, level = @level, is_loaded = @isLoaded, added = NOW()";
+                    cmd.Parameters.AddWithValue("@charId", charID);
+                    cmd.Parameters.AddWithValue("@slotId", slotID);
+                    cmd.Parameters.AddWithValue("@abilityId", abilityID);
+                    cmd.Parameters.AddWithValue("@level", level);
+                    cmd.Parameters.AddWithValue("@isLoaded", is_loaded);
+                    cmd.ExecuteNonQuery();
+                }
+            }
         }
 
 
@@ -220,24 +255,34 @@ namespace hds.databases{
 		    // Faster way instead of checking on every item type 
 		    if (itemGoId != 0 && slotId != 0 && charId != 0)
 		    {
-			    conn.Open();
-			    string sqlQuery = "INSERT INTO inventory SET charId = '" + charId.ToString() + "' , goid = '" + itemGoId.ToString() + "', slot = '" + slotId.ToString() + "', created = NOW() ";
-			    queryExecuter = conn.CreateCommand();
-			    queryExecuter.CommandText = sqlQuery;
-			    queryExecuter.ExecuteNonQuery();   
-			    conn.Close();
+			    using (var connection = new MySqlConnection(connectionString))
+			    {
+				    connection.Open();
+				    using (var cmd = connection.CreateCommand())
+				    {
+					    cmd.CommandText = "INSERT INTO inventory SET charId = @charId, goid = @goid, slot = @slot, created = NOW()";
+					    cmd.Parameters.AddWithValue("@charId", charId);
+					    cmd.Parameters.AddWithValue("@goid", itemGoId);
+					    cmd.Parameters.AddWithValue("@slot", slotId);
+					    cmd.ExecuteNonQuery();
+				    }
+			    }
 		    }
 	    }
 
 	    public void deleteCharacter(UInt64 charId)
         {
             // This is a "soft-delete" Method. The Data wouldnt be deleted but will be invisible to the users.
-            conn.Open();
-            string sqlSoftDeleteChar = "UPDATE characters SET is_deleted='1' WHERE charId = '" + charId.ToString() + "' ";
-            queryExecuter = conn.CreateCommand();
-            queryExecuter.CommandText = sqlSoftDeleteChar;
-            queryExecuter.ExecuteNonQuery();
-            conn.Close();
+            using (var connection = new MySqlConnection(connectionString))
+            {
+                connection.Open();
+                using (var cmd = connection.CreateCommand())
+                {
+                    cmd.CommandText = "UPDATE characters SET is_deleted = 1 WHERE charId = @charId";
+                    cmd.Parameters.AddWithValue("@charId", charId);
+                    cmd.ExecuteNonQuery();
+                }
+            }
         }
 	}
 }

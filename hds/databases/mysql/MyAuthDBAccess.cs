@@ -11,7 +11,7 @@ namespace hds.databases
     {
         private MatrixDbContext CreateDbContext()
         {
-            return new MatrixDbContext(Store.config.dbParams);
+            return MatrixDbContext.Create(Store.config.dbParams);
         }
 
         public bool FetchWorldList(ref WorldList wl)
