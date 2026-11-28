@@ -17,7 +17,7 @@ public sealed class MailAtomicStatusMode : NativeQaMode
         environmentOverrides: new() { ["MXO_AGGRO"] = "0", ["MXO_MOB_WANDER"] = "0" },
         readyMessages: new[] {
             "Mara Central NAV CSR (17000,495,2300) and QAFriend (17120,495,2300). No teleport, world target or dev command. Phone > Email > Delete Check. Verify its body and one Health Pill attachment.",
-            "Click Delete. The disclosed disposable CHECK refuses status 4 only for Delete Check. Expect 81 f5 68 00 00 0e, followed by 81 f3 with the saved status 3 and its attachment. Chat says 'The message was kept.' Dismiss any Mail popup and reselect Delete Check if the button still shows Undelete. The row and pill should remain available.",
+            "Click Delete. The disclosed disposable CHECK refuses status 4 for Delete Check. Expect chat 'The message was kept.' and one 81 ed for Delete Check with saved status 3, More=0, Notification=0. Verify no Mail modal and 2/300 with 2 shown. Select Inbox Control and then Delete Check to verify both rows, Read, Delete and the attached pill. The button label may refresh on reselection.",
             """Send {"actor":"QAFriend","action":"mail-status-retry"} and wait for "Mail status fixture CHECK removed". This removes only the named CHECK from the owned disposable mail table. In the same inbox click Delete again. Expect 81 f5 84 00 00 8e. Click Undelete and verify the same success and pill still attached.""",
             "Delete Check is disposable. Click Delete again and Close. Expect 81 f6 4->5 acknowledged by 81 f7 84 00 00 8e. Reopen Email. Delete Check is gone and Inbox Control still opens with body 'Keep this message.' Close normally."
         });

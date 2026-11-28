@@ -74,6 +74,12 @@ namespace hds
                                            config.dbParams.Username + ";Password=" + config.dbParams.Password +
                                            ";Pooling=true;");
             conn.Open();
+            EnsureTable(conn);
+            return conn;
+        }
+
+        internal static void EnsureTable(MySqlConnection conn)
+        {
             lock (EnsureLock)
             {
                 if (!ensured)
@@ -86,7 +92,6 @@ namespace hds
                     ensured = true;
                 }
             }
-            return conn;
         }
 
         private static MySqlCommand Cmd(MySqlConnection conn, string sql, UInt32 charId, string handle = null)

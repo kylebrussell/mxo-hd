@@ -12,6 +12,7 @@ namespace hds.databases
         void RemoveItem(uint character, ushort slot);
         void AddItem(uint character, ushort slot, MailItem item);
         int InboxCount(uint character);
+        bool RecipientIgnores(uint recipient, string senderHandle);
         void AddMessage(MailMessage message);
         MailMessage ReadMessage(uint character, uint id);
         void SetAttachments(MailMessage message);
@@ -29,6 +30,7 @@ namespace hds.databases
                     "WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME IN ('characters','inventory','mail') AND ENGINE='InnoDB'");
                 if (Convert.ToInt32(command.ExecuteScalar()) != 3)
                     throw new InvalidOperationException("Mail transfers require transactional character, inventory and mail tables.");
+                IgnoreListDb.EnsureTable(connection);
                 return new Transfer(connection, connection.BeginTransaction());
             }
             catch
@@ -105,6 +107,13 @@ namespace hds.databases
             {
                 using var command = Prepare("SELECT COUNT(*) FROM mail WHERE ownerCharId=@c", "@c", character);
                 return Convert.ToInt32(command.ExecuteScalar());
+            }
+
+            public bool RecipientIgnores(uint recipient, string senderHandle)
+            {
+                using var command = Prepare("SELECT 1 FROM ignorelist WHERE charId=@recipient AND handle=@sender FOR UPDATE",
+                    "@recipient", recipient, "@sender", senderHandle);
+                return command.ExecuteScalar() != null;
             }
 
             public void AddMessage(MailMessage message) => Insert(connection, transaction, message);
