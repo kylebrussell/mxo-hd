@@ -27,12 +27,21 @@ public static partial class Scenarios
         await player.WaitForRpcAsync("80 97 05 00");
         player.SendRpc("80 98 06 00 00 00 01 02 00");
         await player.WaitForRpcAsync("80 99");
+        int beforeAccept = player.World.CreationSnapshot().Count;
         player.SendRpc("80 9b 07 00 01");
         await player.WaitForRpcAsync("80 9c");
 
-        ViewCreation courier = await player.WaitForViewNamedAsync("Courier");
-        ViewCreation receiver = await player.WaitForViewNamedAsync("Receiver");
-        player.SendRpc($"80 c7 {MissionNpcId(courier)} 0d 00");
+        ViewCreation? courier = null, receiver = null;
+        await player.WaitUntilAsync(() =>
+        {
+            var newViews = player.World.CreationSnapshot().Skip(beforeAccept).ToArray();
+            courier = newViews.LastOrDefault(view => view.Name == "Courier");
+            receiver = newViews.LastOrDefault(view => view.Name == "Receiver");
+            return courier != null && receiver != null;
+        }, "the newly accepted mission's Courier and Receiver", TimeSpan.FromSeconds(15));
+        var courierId = MissionNpcId(courier!);
+        var receiverId = MissionNpcId(receiver!);
+        player.SendRpc($"80 c7 {courierId} 0d 00");
         await player.WaitForRpcAsync("80 a0 01 06 00 01");
         Check.Equal(1L, await DiskCount(), "Get grants exactly one tracked disk");
         ushort source = checked((ushort)await DiskSlot());
@@ -46,18 +55,18 @@ public static partial class Scenarios
         }
 
         if (menu)
-            player.SendRpc($"80 c7 {MissionNpcId(receiver)} 0e 00");
+            player.SendRpc($"80 c7 {receiverId} 0e 00");
         else
         {
             Check.That(source != MovedDiskSlot, "The disk arrives before the reserved empty destination");
-            await Refused(source, MissionNpcId(courier), source);
-            await Refused(MovedDiskSlot, MissionNpcId(receiver), source);
-            string staleReceiver = $"{Le(receiver.ViewId)} {Le((ushort)(receiver.SpawnId ^ 1))}";
+            await Refused(source, courierId, source);
+            await Refused(MovedDiskSlot, receiverId, source);
+            string staleReceiver = $"{Le(receiver!.ViewId)} {Le((ushort)(receiver.SpawnId ^ 1))}";
             await Refused(source, staleReceiver, source);
             player.SendRpc($"65 {Le(source)} {Le(MovedDiskSlot)} 00");
             await player.WaitForRpcAsync($"65 {Le(source)} {Le(MovedDiskSlot)} 00");
-            await Refused(source, MissionNpcId(receiver), MovedDiskSlot);
-            player.SendRpc($"66 {MovedDiskSlot:x2} {MissionNpcId(receiver)}");
+            await Refused(source, receiverId, MovedDiskSlot);
+            player.SendRpc($"66 {MovedDiskSlot:x2} {receiverId}");
             source = MovedDiskSlot;
         }
         await player.WaitForRpcAsync($"5f {Le(source)} 01");
