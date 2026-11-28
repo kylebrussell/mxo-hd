@@ -710,19 +710,29 @@ namespace hds
                 case SocialPackets.GroupFaction:
                 {
                     UInt32 factionId = FactionIdOf(client);
-                    Faction faction = factionId != 0 ? db.FetchFaction(factionId) : null;
-                    if (faction == null || !string.Equals(faction.masterPlayerHandle, handle, StringComparison.OrdinalIgnoreCase))
+                    try
                     {
+                        if (!db.DisbandFaction(client.playerData.getCharID(), factionId))
+                        {
+                            Send(client, ServerPackets.BuildSystemChatMessage("Only the leader of an active faction can disband it.", "BROADCAST"));
+                            return;
+                        }
+                    }
+                    catch (DbException error)
+                    {
+                        Output.WriteDebugLog($"[SOCIAL] Faction disband rolled back faction={factionId}: {error.Message}");
+                        Send(client, ServerPackets.BuildSystemChatMessage(
+                            "The faction could not be disbanded. The roster and bank were kept.", "BROADCAST"));
                         return;
                     }
 
                     List<WorldClient> members = OnlineWhere(c => FactionIdOf(c) == factionId);
-                    db.DisbandFaction(factionId);
                     foreach (WorldClient member in members)
                     {
                         Send(member, SocialPackets.GroupDisbanded(type));
                         SetOwnGroupIds(member, 0, null, null);
                     }
+                    Output.WriteDebugLog($"[SOCIAL] {handle} disbanded faction {factionId}");
 
                     break;
                 }

@@ -1204,14 +1204,6 @@ namespace hds.databases{
 		        P("@faction", factionId), P("@crew", crewId));
         }
 
-        /// <summary>Marks the faction deleted and takes every crew and character out of it.</summary>
-        public void DisbandFaction(UInt32 factionId)
-        {
-	        NonQuery("UPDATE factions SET deleted_at = NOW() WHERE id = @faction", P("@faction", factionId));
-	        NonQuery("UPDATE crews SET faction_id = 0 WHERE faction_id = @faction", P("@faction", factionId));
-	        NonQuery("UPDATE characters SET factionId = 0 WHERE factionId = @faction", P("@faction", factionId));
-        }
-
         /// <summary>Makes the member the crew's first mate (0: nobody).</summary>
         public void SetCrewFirstMate(UInt32 crewId, UInt32 charId)
         {

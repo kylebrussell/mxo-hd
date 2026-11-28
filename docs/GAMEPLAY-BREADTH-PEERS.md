@@ -116,6 +116,23 @@ deposits 1 Info into its crew bank, releasing the disposable fault.
 Remove QAPeerCrew again in the same session. The roster should retain
 QACrew at rank 1 and lose QAPeerCrew. Check the roster after relog.
 
+### Atomic faction disband
+
+Disbanding with `77 01` archives the faction and clears its crew ranks
+and member affiliations in one transaction. The database verifies the
+current faction leader before any write. The existing archived balance
+is retained. On a rollback, the active roster and bank remain available
+and the requester gets a visible explanation.
+
+In `faction-disband-atomic`, open the people icon above chat and choose
+**Faction > Disband**. The stock sender at `620b2acf` uses `77 01` and
+prints “Disbanding Faction.” Confirm the request. The disposable check
+blocks the last affiliation write. Expect “The roster and bank were
+kept.”, both crews and 500 Info still in the Faction bank. Send
+`{"actor":"QAOther","action":"faction-disband-retry"}` to deposit 1 into
+QAPeerCrew's bank and release the fixture fault. Repeat Disband, then
+relog. The faction is gone and QACrew is still present.
+
 ## Marketplace
 
 Use the `marketplace-breadth` mode. QAFriend lists a Code Bit 1 for 300

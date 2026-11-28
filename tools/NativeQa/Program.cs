@@ -341,6 +341,8 @@ try
                     result = NativeQa.Modes.AtomicFactionAdmissionMode.OfferInvitation(actor);
                 else if (fixtureMode is NativeQa.Modes.AtomicFactionEjectionMode && action == "faction-ejection-retry")
                     result = await NativeQa.Modes.AtomicFactionEjectionMode.ReleaseFaultAsync(actor);
+                else if (fixtureMode is NativeQa.Modes.AtomicFactionDisbandMode && action == "faction-disband-retry")
+                    result = await NativeQa.Modes.AtomicFactionDisbandMode.ReleaseFaultAsync(actor);
                 else if (fixtureMode is NativeQa.Modes.TeamBreadthMode && action == "team-breadth")
                     result = await NativeQa.Modes.TeamBreadthMode.SendActionAsync(actor, q);
                 else if ((fixtureMode is NativeQa.Modes.HackerParitySweepMode or NativeQa.Modes.HackerSecondPassMode) && action == "hacker-group-arrive")
