@@ -219,25 +219,15 @@ namespace hds
             return pak.ReturnFinalPacket();
         }
 
-        public void SendMoneyUpdateFactionCrew(WorldClient client, ushort type, UInt32 moneyAmount, ushort IsMoneyGiving)
+        internal static byte[] BuildGroupBankUpdate(uint character, byte type, uint amount, bool deposit)
         {
-            // We found only ONE Example of this reponse in the 020_mxoemu_2_persons_actions_with_afterwhoruneo
-            PacketContent pak = new PacketContent();
-            pak.AddUShort((ushort) RPCResponseHeaders.SERVER_FACTION_UPDATE_MONEY);
-            pak.AddUShort(type);
-            pak.AddUint32(moneyAmount,1);
-            pak.AddUint32(Store.currentClient.playerData.getCharID(),1);
-            pak.AddUShort(IsMoneyGiving);
-
-            switch (type)
-            {
-                case 1:
-                    Store.world.SendRPCToFactionMembers(NumericalUtils.ByteArrayToUint32(client.playerInstance.FactionID.getValue(),1), client, pak.ReturnFinalPacket(), true);
-                    break;
-                case 2:
-                    Store.world.SendRPCToCrewMembers(NumericalUtils.ByteArrayToUint32(client.playerInstance.CrewID.getValue(),1), client, pak.ReturnFinalPacket(), true);
-                    break;
-            }
+            PacketContent packet = new PacketContent();
+            packet.AddUShort((ushort)RPCResponseHeaders.SERVER_FACTION_UPDATE_MONEY);
+            packet.AddByte(type);
+            packet.AddUint32(amount, 1);
+            packet.AddUint32(character, 1);
+            packet.AddByte(deposit ? (byte)1 : (byte)0);
+            return packet.ReturnFinalPacket();
         }
 
     }

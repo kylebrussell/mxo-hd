@@ -673,6 +673,12 @@ Arrays are `<u16 count>` followed by the elements, at the offset given.
 - `80 91` puts the player on the list or takes them off. Leaving the world takes them off too.
 - `80 92` answers with the other seekers in the level range, in the player's faction if asked, with a wanted discipline and an organisation from the lists if given, sorted by level.
 - A range of 0..0 means any level, and the two ends are swapped if given the wrong way round. Retail's own search sent 64..50.
+
+### Atomic crew and faction bank transfers
+
+`78 <type:u8> <amount:u32> <deposit:u8>` moves Info between the player and the bank of their current faction (type 1) or crew (type 2). The server locks the player's persisted wallet and membership, then the group's bank balance. Both writes commit in the same transaction. If either write fails, both balances are kept and the requester gets a visible refusal.
+
+After commit, the stock `79` ledger delta goes to online members of that group. The requester also receives the new absolute wallet balance. The `group-bank-atomic` fixture rejects a single wallet value in its disposable database to exercise the late failure, then checks crew deposit and withdrawal and a faction deposit.
 - Best discipline is the player's TitleAbility. The flag byte is 0.
 
 ### Dev helper

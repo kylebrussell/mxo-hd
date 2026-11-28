@@ -381,31 +381,6 @@ namespace hds.databases{
 	        return factionId;
         }
 
-        public void IncreaseCrewMoney(UInt32 crewId, UInt32 amount)
-        {
-	        ExecuteNonResultQuery("UPDATE crews SET money = money + '" + amount + "' WHERE id = '" + crewId.ToString() + "' LIMIT 1");
-	       
-        }
-        
-        public void DecreaseCrewMoney(UInt32 crewId, UInt32 amount)
-        {
-	        ExecuteNonResultQuery("UPDATE crews SET money = money - '" + amount + "' WHERE id = '" + crewId.ToString() +
-	                              "' LIMIT 1");
-	        
-        }
-        
-        public void IncreaseFactionMoney(UInt32 crewId, UInt32 amount)
-        {
-	        ExecuteNonResultQuery("UPDATE factions SET money = money + '" + amount + "' WHERE id = '" +
-	                              crewId.ToString() + "' LIMIT 1");
-        }
-        
-        public void DecreaseFactionMoney(UInt32 crewId, UInt32 amount)
-        {
-	        ExecuteNonResultQuery("UPDATE factions SET money = money - '" + amount + "' WHERE id = '" +
-	                              crewId.ToString() + "' LIMIT 1");
-        }
-
         public Crew GetCrewData(UInt32 crewId)
         {
 	        Crew theCrew = new Crew();
@@ -421,7 +396,7 @@ namespace hds.databases{
 		        theCrew.crewId = (UInt32) dr.GetInt32(0);
 		        theCrew.crewName = dr.GetString(1);
 		        theCrew.characterMasterName = dr.GetString(2);
-		        theCrew.money = (UInt32) dr.GetInt32(3);
+		        theCrew.money = Convert.ToUInt32(dr.GetValue(3));
 		        theCrew.org = (ushort) dr.GetInt16(4);
 		        theCrew.factionId = (UInt32) dr.GetInt32(5);
 		        theCrew.factionRank = (ushort) dr.GetInt32(6);
