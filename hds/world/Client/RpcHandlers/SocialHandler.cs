@@ -268,6 +268,7 @@ namespace hds
                     }
 
                     UInt32 crewId = CrewIdOf(inviter);
+                    pending.InvitingCrewId = crewId;
                     byte org;
                     if (crewId != 0)
                     {
@@ -434,16 +435,19 @@ namespace hds
         private static void JoinCrew(WorldClient invitee, WorldClient inviter, PendingInvite invite)
         {
             var db = Store.dbManager.WorldDbHandler;
-            UInt32 crewId = inviter != null ? CrewIdOf(inviter) : db.GetCrewIdByInviterHandle(invite.InviterHandle);
+            UInt32 crewId = invite.InvitingCrewId;
+            if (crewId == 0 && !invite.FromCrewCreation)
+                crewId = inviter != null ? CrewIdOf(inviter) : db.GetCrewIdByInviterHandle(invite.InviterHandle);
             bool founded = invite.FromCrewCreation || crewId == 0;
             bool inviteeIsBot = SocialBot.IsBot(invitee);
             UInt32 charId = invitee.playerData.getCharID();
+            UInt32 factionId = 0;
             if (founded)
             {
                 const string refused = "The crew could not be created. Both memberships were kept.";
-                if (inviter == null || crewId != 0 || CrewIdOf(invitee) != 0)
+                if (inviter == null || CrewIdOf(inviter) != 0 || CrewIdOf(invitee) != 0)
                 {
-                    RefuseCrewFounding(invitee, inviter, invite, SocialPackets.CrewCreateAlreadyMember, refused);
+                    RefuseCrewInvitation(invitee, inviter, invite, SocialPackets.CrewCreateAlreadyMember, refused);
                     return;
                 }
 
@@ -453,7 +457,7 @@ namespace hds
                     var result = db.FoundCrew(invite.InviterCharId, charId, inviteeIsBot, invite.GroupName, org);
                     if (result.CrewId == 0)
                     {
-                        RefuseCrewFounding(invitee, inviter, invite, result.Refusal, refused);
+                        RefuseCrewInvitation(invitee, inviter, invite, result.Refusal, refused);
                         return;
                     }
                     crewId = result.CrewId;
@@ -461,39 +465,37 @@ namespace hds
                 catch (DbException error)
                 {
                     Output.WriteDebugLog($"[SOCIAL] Crew founding rolled back founder={invite.InviterCharId} invitee={charId}: {error.Message}");
-                    RefuseCrewFounding(invitee, inviter, invite, SocialPackets.CrewCreateServerError, refused);
+                    RefuseCrewInvitation(invitee, inviter, invite, SocialPackets.CrewRequestError, refused);
                     return;
                 }
                 Output.WriteDebugLog("[SOCIAL] " + invite.InviterHandle + " founded crew '" + invite.GroupName + "' (" + crewId + ")");
             }
 
-            Crew crew = db.GetCrewData(crewId);
-            if (inviteeIsBot)
+            else
             {
-                SocialBot.SetCrew(invitee, crewId); // a bot has no character row: its membership lives in memory
-            }
-            else if (!founded)
-            {
-                db.AddMemberToCrew(charId, crewId, crew.factionId, 0, 0);
+                var admittedFaction = AdmitInvitedCrewMember(invitee, inviter, invite, crewId, inviteeIsBot);
+                if (!admittedFaction.HasValue) return;
+                factionId = admittedFaction.Value;
             }
 
+            if (inviteeIsBot) SocialBot.SetCrew(invitee, crewId);
             // Two-person capture 09:41:13: the newcomer gets FactionID + CrewID on its own view, the member list
             // (80 86) and, when the crew is in a faction, the faction (7c mode 1 and 2); the others get 70 02.
-            SetOwnGroupIds(invitee, crew.factionId, crewId, null);
+            SetOwnGroupIds(invitee, factionId, crewId, null);
             SendCrewInfo(invitee, crewId);
-            if (crew.factionId != 0)
+            if (factionId != 0)
             {
-                SendFactionInfo(invitee, crew.factionId);
+                SendFactionInfo(invitee, factionId);
             }
 
             if (founded)
             {
                 if (invite.FromCrewCreation)
                 {
-                    Send(inviter, SocialPackets.CrewCreated(crewId, crew.crewName, (byte) crew.org, SocialPackets.ResultOk));
+                    Send(inviter, SocialPackets.CrewCreated(crewId, invite.GroupName, invite.Org, SocialPackets.ResultOk));
                 }
 
-                SetOwnGroupIds(inviter, crew.factionId, crewId, null);
+                SetOwnGroupIds(inviter, factionId, crewId, null);
                 SendCrewInfo(inviter, crewId);
                 return;
             }
@@ -502,7 +504,36 @@ namespace hds
             SendToAll(OnlineWhere(c => CrewIdOf(c) == crewId && c != invitee), joined);
         }
 
-        private static void RefuseCrewFounding(WorldClient invitee, WorldClient inviter, PendingInvite invite, uint status, string message)
+        private static uint? AdmitInvitedCrewMember(WorldClient invitee, WorldClient inviter, PendingInvite invite,
+            uint crew, bool inviteeIsBot)
+        {
+            const string refused = "The crew invitation could not be accepted. Your affiliations were kept.";
+            uint charId = invitee.playerData.getCharID();
+            bool inviterIsBot = SocialBot.IsBot(inviter);
+            if (CrewIdOf(invitee) != 0 || (inviterIsBot && CrewIdOf(inviter) != crew))
+            {
+                RefuseCrewInvitation(invitee, inviter, invite, SocialPackets.CrewRequestError, refused);
+                return null;
+            }
+
+            try
+            {
+                // An implicit founding invite can still join the offered crew after another invite founded it.
+                string foundingName = invite.InvitingCrewId == 0 ? invite.GroupName : null;
+                var result = Store.dbManager.WorldDbHandler.AdmitCrewMember(crew, invite.InviterCharId, charId,
+                    inviterIsBot, inviteeIsBot, foundingName);
+                if (result.Refusal == SocialPackets.ResultOk) return result.FactionId;
+                RefuseCrewInvitation(invitee, inviter, invite, result.Refusal, refused);
+            }
+            catch (DbException error)
+            {
+                Output.WriteDebugLog($"[SOCIAL] Crew admission rolled back crew={crew} invitee={charId}: {error.Message}");
+                RefuseCrewInvitation(invitee, inviter, invite, SocialPackets.CrewRequestError, refused);
+            }
+            return null;
+        }
+
+        private static void RefuseCrewInvitation(WorldClient invitee, WorldClient inviter, PendingInvite invite, uint status, string message)
         {
             if (invite.FromCrewCreation)
                 Send(inviter, SocialPackets.CrewCreated(0, invite.GroupName, invite.Org, status));

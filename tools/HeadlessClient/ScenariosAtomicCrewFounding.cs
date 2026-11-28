@@ -43,7 +43,7 @@ public static partial class Scenarios
         long originalRosterRows = await db.LongAsync(originalRosters);
         founder.SendRpc(CrewCreate(CrewFoundingName, refused.Handle, 1));
         await AcceptCrewFoundingAsync(refused, founder.Handle);
-        var failure = await founder.WaitForRpcAsync("80 85 00 00 00 00 0d 00 01 b4 00 00 02");
+        var failure = await founder.WaitForRpcAsync("80 85 00 00 00 00 0d 00 01 01 00 00 00");
         Check.That(failure.Bytes.Skip(13).SequenceEqual(Sized(CrewFoundingName)), "The stock result includes the original crew name");
         await founder.WaitForTextAsync(CrewFoundingRefusal);
         await refused.WaitForTextAsync(CrewFoundingRefusal);

@@ -50,7 +50,7 @@ namespace hds.databases
                 "VALUES(@crew,@founder,1,0,NOW())" + (inviteeIsBot ? "" : ",(@crew,@invitee,0,0,NOW())");
             command.ExecuteNonQuery();
             command.CommandText = "UPDATE characters SET crewId=@crew WHERE charId IN (@founder,@invitee)";
-            if (command.ExecuteNonQuery() != (inviteeIsBot ? 1 : 2)) return (0, SocialPackets.CrewCreateServerError);
+            if (command.ExecuteNonQuery() != (inviteeIsBot ? 1 : 2)) return (0, SocialPackets.CrewRequestError);
 
             transaction.Commit();
             return (crew, SocialPackets.ResultOk);

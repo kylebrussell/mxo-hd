@@ -293,6 +293,7 @@ public static partial class Scenarios
         new Scenario("crew-member-removal-atomic", AtomicCrewEjection, StillNpcs),
         new Scenario("crew-captain-transfer-atomic", AtomicCrewCaptainTransfer, StillNpcs),
         new Scenario("crew-founding-atomic", AtomicCrewFounding, StillNpcs),
+        new Scenario("crew-admission-atomic", AtomicCrewAdmission, StillNpcs),
         new Scenario("datamine-tap-transfer-rules", DatamineTapTransferRules, StillNpcs),
         new Scenario("sati-partial-world", SatiPartialWorld, StillNpcs),
         new Scenario("sati-door-diagnostic", SatiDoorDiagnostic, StillNpcs),
