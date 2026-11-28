@@ -1,10 +1,12 @@
 using System;
+using System.Buffers.Binary;
 using System.Collections;
 
 namespace hds.resources.gameobjects
 {
 	public class ObjectManager
 	{
+		private static readonly byte[] CreationSeparator = { 0xcd, 0xab };
 		private readonly Hashtable _currentObjects;
 		
 		public ObjectManager (){
@@ -43,25 +45,27 @@ namespace hds.resources.gameobjects
 		
 		public DynamicArray GenerateCreationPacket(IGameObject go,UInt16 viewID, byte idCounter){
             
-			DynamicArray din = new DynamicArray();
             byte fullyDynamicFlag=0x08;
 			byte[] goid = go.GetGoid();
-            bool fullyDynamic = (go.GetRelatedStaticObjId()==0xFFFFFFFF);
+            UInt32 relatedStaticObjId = go.GetRelatedStaticObjId();
+            bool fullyDynamic = (relatedStaticObjId==0xFFFFFFFF);
 			if (fullyDynamic){
 				fullyDynamicFlag=(byte)0x0c;
 			}
 
+			byte[] creationAttributes = go.GetCreationAttributes();
+			DynamicArray din = new DynamicArray(creationAttributes.Length + (fullyDynamic ? 6 : 10));
+
 			din.append(fullyDynamicFlag);
 			din.append(goid);
 			if (!fullyDynamic){
-				din.append(NumericalUtils.uint32ToByteArray(go.GetRelatedStaticObjId(),1));
+				BinaryPrimitives.WriteUInt32LittleEndian(din.GetAppendSpan(4), relatedStaticObjId);
 			}
 						
 			din.append(idCounter);
-			byte[] separator = {0xcd,0xab};
-			din.append(separator);
+			din.append(CreationSeparator);
 			
-			din.append(go.GetCreationAttributes());
+			din.append(creationAttributes);
 			
 			if(goid[0] == 0x0c && goid[1] == 0x00){
 				viewID = 0x0002;

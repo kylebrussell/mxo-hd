@@ -1,6 +1,8 @@
 using System;
+using System.Threading;
 using System.Timers;
 using hds.shared;
+using Timer = System.Timers.Timer;
 
 
 namespace hds.world.Structures
@@ -9,6 +11,9 @@ namespace hds.world.Structures
     {
         public StaticWorldObject worldObject;
         public Object6568 gameObjectData;
+        private readonly object countdownLock = new object();
+        private Timer countdownTimer;
+        private int tickInFlight;
         
         public static int secondsClosingDoors = 3;
         public static int secondsDriveOut = 5;
@@ -50,16 +55,58 @@ namespace hds.world.Structures
 
         public void StartCountdown()
         {
-            Timer myTimer = new Timer(1000);
-            myTimer.AutoReset = true; // the key is here so it repeats
-            myTimer.Elapsed += DecreaseSeconds;
-            myTimer.Interval = 1000; // 1000 ms is one second
-            myTimer.Start();
+            lock (countdownLock)
+            {
+                StopCountdownLocked();
+                Timer myTimer = new Timer(1000);
+                myTimer.AutoReset = true; // the key is here so it repeats
+                myTimer.Elapsed += DecreaseSeconds;
+                myTimer.Interval = 1000; // 1000 ms is one second
+                countdownTimer = myTimer;
+                myTimer.Start();
+            }
             UpdateSubwayState();
         }
 
+        public void StopCountdown()
+        {
+            lock (countdownLock)
+            {
+                StopCountdownLocked();
+            }
+        }
+
+        private void StopCountdownLocked()
+        {
+            if (countdownTimer != null)
+            {
+                countdownTimer.Elapsed -= DecreaseSeconds;
+                countdownTimer.Stop();
+                countdownTimer.Dispose();
+                countdownTimer = null;
+            }
+        }
+
         public void DecreaseSeconds(Object source, ElapsedEventArgs e)
-            => AdvanceCountdown(UpdateSubwayState);
+        {
+            if (Interlocked.Exchange(ref tickInFlight, 1) != 0)
+            {
+                return;
+            }
+
+            try
+            {
+                AdvanceCountdown(UpdateSubwayState);
+            }
+            catch (Exception ex)
+            {
+                Output.WriteDebugLog("[SUBWAY] Countdown tick error: " + ex.Message);
+            }
+            finally
+            {
+                Volatile.Write(ref tickInFlight, 0);
+            }
+        }
 
         internal void AdvanceCountdown(Action publish)
         {
@@ -138,6 +185,16 @@ namespace hds.world.Structures
 
         public void UpdateSubwayState()
         {
+            UpdateSubwayState(Store.world);
+        }
+
+        internal void UpdateSubwayState(WorldServer world)
+        {
+            if (world == null)
+            {
+                return;
+            }
+
             var pak = new PacketContent();
             // CurrentState is update attribute 1, a four-byte state. The enclosing
             // WorldPacket owns the sole view-list terminator; padding here ended
@@ -145,7 +202,7 @@ namespace hds.world.Structures
             pak.AddByteArray(BuildStateUpdate(stateByte));
             // The state is for the debug log only: it used to go to every player in range as system chat
             Output.WriteDebugLog("[SUBWAY] Car " + worldObject.mxoStaticId + " in district " + worldObject.metrId + " now " + currentState);
-            Store.world.SendViewUpdateToClientWhoHasStaticObjectSpawned(pak, worldObject, EntityId(worldObject));
+            world.SendViewUpdateToClientWhoHasStaticObjectSpawned(pak, worldObject, EntityId(worldObject));
         }
 
         internal static byte[] BuildStateUpdate(byte state) => ObjectStates.BuildStateUpdate(6568, 0x0b00u | state);

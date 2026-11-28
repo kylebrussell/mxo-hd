@@ -27,58 +27,47 @@ namespace hds
 		
 		// Compares two arrays of same length
 		public static bool equal(byte[] arrayA,byte[] arrayB){
-			if(arrayA.Length!=arrayB.Length)
-				return false;
-			for(int i = 0;i<arrayA.Length;i++){
-				if(arrayA[i]!=arrayB[i])
-					return false;
-			}
-			return true;
+			return arrayA.AsSpan().SequenceEqual(arrayB);
 		}
 		
 		// Copies N bytes from source offset to destination array offset
 		static public void copy(byte[] sourceArray, int offsetB,byte[] destinationArray,int offsetA, int nBytes){
-			for (int i = 0;i<nBytes;i++){
-				if(offsetA+i < destinationArray.Length && offsetB+i < sourceArray.Length)
-					destinationArray[offsetA+i] = sourceArray[offsetB+i];
-				else
-					break; // We keep limits safe if > length
-			}	
+			if (nBytes <= 0 || offsetB >= sourceArray.Length || offsetA >= destinationArray.Length)
+			{
+				return;
+			}
+
+			int count = Math.Min(nBytes, Math.Min(sourceArray.Length - offsetB, destinationArray.Length - offsetA));
+			if (count > 0)
+			{
+				Buffer.BlockCopy(sourceArray, offsetB, destinationArray, offsetA, count);
+			}
 		}
 
         // Copies N bytes from source offset to destination array offset
         public static void copyTo(byte[] sourceArray, int offsetB, byte[] destinationArray, int offsetA, int nBytes)
         {
-            for (int i = 0; i < nBytes; i++)
+            if (nBytes <= 0 || offsetA >= destinationArray.Length)
             {
-                if (offsetA + i < destinationArray.Length)
-                    destinationArray[offsetA + i] = sourceArray[offsetB + i];
-                else
-                    break; // We keep limits safe if > length
+                return;
+            }
+
+            int count = Math.Min(nBytes, destinationArray.Length - offsetA);
+            if (count > 0)
+            {
+                Buffer.BlockCopy(sourceArray, offsetB, destinationArray, offsetA, count);
             }
         }
 		
 		
 		/* Does a fast copy of array contents */
 		public static void fastCopy(byte[] source, byte[]destination, int length){
-			int pointer = 0;
-			
-			// Copy 4 bytes to 4 bytes
-			for (int i = 0;(i+4)<length;i+=4){
-				destination[i] = source[i];
-				destination[i+1] = source[i+1];
-				destination[i+2] = source[i+2];
-				destination[i+3] = source[i+3];
-				pointer+=4;
+			if (length <= 0)
+			{
+				return;
 			}
-			
-			// Copy the rest, if any
-			if (pointer!=length){
-				for (int i = pointer;i<length;i++){
-					destination[i] = source[i];
-				}
-			}
-			
+
+			Buffer.BlockCopy(source, 0, destination, 0, length);
 		}
 	
 		
