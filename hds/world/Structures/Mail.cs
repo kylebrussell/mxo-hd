@@ -89,6 +89,26 @@ namespace hds
             return plus >= 0 ? trimmed.Substring(plus + 1) : trimmed;
         }
 
+        internal static bool TryLocalRecipient(string address, string world, out string handle)
+        {
+            handle = "";
+            string[] parts = address.Trim().Split('+');
+            if (parts.Length == 1 && !parts[0].Contains('.'))
+            {
+                handle = parts[0];
+                return handle.Length > 0;
+            }
+            if (parts.Length != 4 || string.IsNullOrWhiteSpace(world) ||
+                !parts[0].Equals("SOE", StringComparison.OrdinalIgnoreCase) ||
+                !parts[1].Equals("MXO", StringComparison.OrdinalIgnoreCase) ||
+                !parts[2].Equals(world, StringComparison.OrdinalIgnoreCase) ||
+                string.IsNullOrWhiteSpace(parts[3]))
+                return false;
+
+            handle = parts[3];
+            return true;
+        }
+
         /// <summary><c>81 eb &lt;InboxLimit u32&gt;</c>: first answer to a header request.</summary>
         public static byte[] BuildInboxLimit(UInt32 limit = InboxLimit)
         {

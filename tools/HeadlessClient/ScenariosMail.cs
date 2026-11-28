@@ -120,7 +120,7 @@ public static partial class Scenarios
         Check.Equal(0L, await context.Database.LongAsync($"SELECT COUNT(*) FROM mail WHERE ownerCharId={bob.CharId}"), "Bob's mail after emptying");
 
         // A recipient that doesn't exist: retail's DESTAVATARDOESNTEXIST, then a system mail
-        alice.SendRpc(MailSend("soe+mxo+nowhere+Nobody", "Lost", "Nobody reads this.", false));
+        alice.SendRpc(MailSend("Nobody", "Lost", "Nobody reads this.", false));
         await alice.WaitForRpcAsync("81 e6 00 00 00 00 41 00 00 0e");
         RpcRecord undeliverable = await alice.WaitForRpcAsync("81 ed 19 00");
         Check.Equal("SYSTEM", StringAtOffset(undeliverable.Bytes, 6), "Undeliverable notice category");

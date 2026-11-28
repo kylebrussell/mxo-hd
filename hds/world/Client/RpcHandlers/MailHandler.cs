@@ -392,20 +392,26 @@ namespace hds
                 host.Send(character, MailPackets.BuildSendResult(0, MailPackets.BadData));
                 return;
             }
-            var handles = (oob.Recipients.Count > 0 ? oob.Recipients
-                : to.Split(new[] { ',', ';', ' ' }, StringSplitOptions.RemoveEmptyEntries).ToList())
-                .Select(MailPackets.HandleOf).Where(h => h.Length > 0).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+            var addresses = oob.Recipients.Count > 0 ? oob.Recipients.AsEnumerable()
+                : to.Split(new[] { ',', ';', ' ' }, StringSplitOptions.RemoveEmptyEntries);
 
             var recipients = new List<uint>();
             bool toBot = false;
-            string missing = null;
+            string undeliverable = "The message had no recipient.";
+            string world = serverName();
             var messages = new List<MailMessage>();
             var changedCash = new Dictionary<uint, uint>();
             var slots = new List<ushort>();
             try
             {
-                foreach (string handle in handles)
+                foreach (string address in addresses.Distinct(StringComparer.OrdinalIgnoreCase))
                 {
+                    if (!MailPackets.TryLocalRecipient(address, world, out string handle))
+                    {
+                        undeliverable = "Use a valid recipient address on " + world + ".";
+                        throw new Refusal(MailPackets.RecipientUnknown,
+                            "That address is invalid or on another world. Your items and information were kept.");
+                    }
                     if (BotEnabled && string.Equals(handle, BotHandle, StringComparison.OrdinalIgnoreCase))
                     {
                         toBot = true;
@@ -414,7 +420,7 @@ namespace hds
                     uint recipient = host.CharIdByHandle(handle);
                     if (recipient == 0)
                     {
-                        missing = handle;
+                        undeliverable = "There is no one called " + handle + ".";
                         throw new Refusal(MailPackets.RecipientUnknown);
                     }
                     if (!recipients.Contains(recipient)) recipients.Add(recipient);
@@ -423,8 +429,8 @@ namespace hds
 
                 uint now = clock();
                 string senderHandle = host.HandleOf(character);
-                string sender = MailPackets.Address(serverName(), senderHandle);
-                string bot = toBot ? MailPackets.Address(serverName(), BotHandle) : null;
+                string sender = MailPackets.Address(world, senderHandle);
+                string bot = toBot ? MailPackets.Address(world, BotHandle) : null;
                 bool attachments = oob.Info > 0 || oob.Items.Count > 0;
                 if (attachments && (recipients.Count + (toBot ? 1 : 0) != 1 || host.IsDead(character) ||
                     oob.Items.Count > MaxAttachments || oob.Items.Any(item => !item.FromPersonalInventory || item.Slot < 0 ||
@@ -493,9 +499,8 @@ namespace hds
                 host.Send(character, MailPackets.BuildSendResult(0, error.Status));
                 if (error.Status == MailPackets.RecipientUnknown)
                 {
-                    string reason = missing == null ? "The message had no recipient." : "There is no one called " + missing + ".";
                     Deliver(SystemMessage(character, "Message Undeliverable",
-                        "Your message \"" + subject + "\" to " + to + " could not be delivered. " + reason));
+                        "Your message \"" + subject + "\" to " + to + " could not be delivered. " + undeliverable));
                 }
                 return;
             }
