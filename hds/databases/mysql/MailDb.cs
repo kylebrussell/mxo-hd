@@ -22,6 +22,7 @@ namespace hds.databases
         /// <summary>Saves status and folder. Attachment changes belong to the transfer transaction.</summary>
         void Update(MailMessage message);
 
+        bool TryMarkRead(uint ownerCharId, uint id);
         bool SetStatus(uint ownerCharId, uint id, uint status);
         void ChangeAllStatus(uint ownerCharId, uint oldStatus, uint newStatus);
         bool Delete(UInt32 ownerCharId, UInt32 id);
@@ -73,6 +74,18 @@ namespace hds.databases
                     messages[index].Folder = message.Folder;
                     messages[index].Status = message.Status;
                 }
+            }
+        }
+
+        public bool TryMarkRead(uint ownerCharId, uint id)
+        {
+            lock (sync)
+            {
+                var message = messages.FirstOrDefault(m => m.OwnerCharId == ownerCharId && m.Id == id);
+                if (message == null || (message.Status != MailPackets.StatusNew && message.Status != MailPackets.StatusUnread))
+                    return false;
+                message.Status = MailPackets.StatusRead;
+                return true;
             }
         }
 
@@ -288,6 +301,15 @@ namespace hds.databases
                     "@st", (long)message.Status, "@f", message.Folder,
                     "@o", (long)message.OwnerCharId, "@id", (long)message.Id).ExecuteNonQuery();
             }
+        }
+
+        public bool TryMarkRead(uint ownerCharId, uint id)
+        {
+            using var conn = Open();
+            using var cmd = Cmd(conn, "UPDATE mail SET status=@read WHERE ownerCharId=@owner AND id=@id AND status IN (@new,@unread)",
+                "@read", MailPackets.StatusRead, "@owner", ownerCharId, "@id", id,
+                "@new", MailPackets.StatusNew, "@unread", MailPackets.StatusUnread);
+            return cmd.ExecuteNonQuery() == 1;
         }
 
         public bool SetStatus(uint ownerCharId, uint id, uint status)

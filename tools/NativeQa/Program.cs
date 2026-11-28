@@ -445,6 +445,8 @@ try
                     result = await mail.VerifyAsync(actor, q, database);
                 else if (fixtureMode is NativeQa.Modes.MailIgnoreSenderMode && action == "mail-ignore")
                     result = await NativeQa.Modes.MailIgnoreSenderMode.SendActionAsync(actor, q, database);
+                else if (fixtureMode is NativeQa.Modes.MailReadRecoveryMode && action is "mail-read-retry" or "mail-read-verify")
+                    result = await NativeQa.Modes.MailReadRecoveryMode.CheckReadAsync(actor, database, action == "mail-read-retry");
                 else if (fixtureMode is NativeQa.Modes.MailAtomicStatusMode && action == "mail-status-retry" && actor.Handle == "QAFriend")
                 {
                     await Scenarios.ReleaseMailStatusFaultAsync(database);
