@@ -67,9 +67,13 @@ public static partial class Scenarios
     {
         string prefix = await BuddyAddressPrefixAsync(db);
         string friend = prefix + BuddySaveAdd, other = prefix + BuddySaveRemove;
+        var onlinePattern = BytePattern.Parse("80 de 05 00 00");
+        bool IsOnline(RpcRecord rpc, string address) =>
+            onlinePattern.IsMatch(rpc.Bytes) && StringAtOffset(rpc.Bytes, 2) == address;
+
         var loaded = await owner.WaitForRpcAsync("80 d7 08 00 3b 00 00 8e");
         Check.Equal(other, StringAtOffset(loaded.Bytes, 2), "QAOther is the active buddy at login");
-        await owner.WaitForRpcAsync("80 de");
+        await owner.WaitForRpcAsync(rpc => IsOnline(rpc, other), "QAOther online");
         byte[] Edit(byte op, string address) => new byte[] { 0x80, op, 4, 0 }.Concat(Sized(address)).ToArray();
 
         owner.SendRpc(Edit(0xd6, friend));
@@ -78,15 +82,15 @@ public static partial class Scenarios
         owner.SendRpc(Edit(0xda, other));
         var removeRefused = await owner.WaitForRpcAsync("80 db 08 00 68 00 00 0e");
         Check.Equal(other, StringAtOffset(removeRefused.Bytes, 2), "Remove refusal names the retained buddy");
-        Check.Equal(1, owner.Received("80 de").Count, "No online notification for the refused add");
+        Check.That(!owner.Received("80 de").Any(rpc => IsOnline(rpc, friend)),
+            "No online notification for the refused add, independent of QAOther's world-entry presence");
         await CheckBuddySaveRowsAsync(db, owner.CharId, committed: false);
 
         await ReleaseBuddySaveFaultsAsync(db);
         owner.SendRpc(Edit(0xd6, friend));
         var added = await owner.WaitForRpcAsync("80 d7 08 00 84 00 00 8e");
         Check.Equal(friend, StringAtOffset(added.Bytes, 2), "Retry adds QAFriend");
-        var online = await owner.WaitForRpcAsync("80 de");
-        Check.Equal(friend, StringAtOffset(online.Bytes, 2), "The successful add publishes online presence");
+        await owner.WaitForRpcAsync(rpc => IsOnline(rpc, friend), "QAFriend online after successful add");
         owner.SendRpc(Edit(0xd6, friend));
         await owner.WaitForRpcAsync("80 d7 08 00 84 00 00 8e");
         owner.SendRpc(Edit(0xda, other));
