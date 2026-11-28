@@ -17,8 +17,10 @@ namespace hds.databases{
 		// login, found by tools/HeadlessClient), or a reader could be replaced mid-read by another player's query.
 		[ThreadStatic] private static IDbConnection threadConnection;
 		[ThreadStatic] private static string threadConnectionString;
+		[ThreadStatic] private static bool threadConnectionOwned;
 		[ThreadStatic] private static IDbCommand threadCommand;
 		[ThreadStatic] private static IDataReader threadReader;
+		[ThreadStatic] private static bool threadReaderOwned;
 		private readonly string connectionString;
 		private readonly Func<string, IDbConnection> connectionFactory;
 
@@ -26,17 +28,29 @@ namespace hds.databases{
 		{
 			get
 			{
-				if (threadConnection == null || !string.Equals(threadConnectionString, connectionString, StringComparison.Ordinal))
+				if (threadConnection == null ||
+					(connectionString != null && threadConnectionOwned &&
+					 !string.Equals(threadConnectionString, connectionString, StringComparison.Ordinal)))
 				{
 					ResetThreadConnection();
-					threadConnection = connectionFactory(connectionString);
+					Func<string, IDbConnection> factory = connectionFactory ?? (cs => new MySqlConnection(cs));
+					threadConnection = factory(connectionString);
 					threadConnectionString = connectionString;
+					threadConnectionOwned = true;
 				}
 				return threadConnection;
 			}
 		}
 		private IDbCommand queryExecuter { get => threadCommand; set => threadCommand = value; }
-		private IDataReader dr { get => threadReader; set => threadReader = value; }
+		private IDataReader dr
+		{
+			get => threadReader;
+			set
+			{
+				threadReader = value;
+				threadReaderOwned = value != null;
+			}
+		}
 
 		public MyWorldDbAccess(){
             var config = Store.config;
@@ -66,17 +80,22 @@ namespace hds.databases{
 		internal static void SetAbandonedReaderForTesting(IDataReader reader, IDbCommand command = null)
 		{
 			threadReader = reader;
+			threadReaderOwned = reader != null;
 			threadCommand = command;
 		}
 
 		private static void DisposeActiveReaderAndCommand()
 		{
-			IDataReader activeReader = threadReader;
-			threadReader = null;
-			if (activeReader != null)
+			if (threadReaderOwned)
 			{
-				try { activeReader.Close(); } catch { }
-				try { activeReader.Dispose(); } catch { }
+				IDataReader activeReader = threadReader;
+				threadReader = null;
+				threadReaderOwned = false;
+				if (activeReader != null)
+				{
+					try { activeReader.Close(); } catch { }
+					try { activeReader.Dispose(); } catch { }
+				}
 			}
 
 			IDbCommand activeCommand = threadCommand;
@@ -93,6 +112,7 @@ namespace hds.databases{
 			IDbConnection existing = threadConnection;
 			threadConnection = null;
 			threadConnectionString = null;
+			threadConnectionOwned = false;
 			if (existing != null)
 			{
 				try { existing.Close(); } catch { }
@@ -102,15 +122,17 @@ namespace hds.databases{
 
 		public void OpenConnection()
 		{
-			// Recover from any prior unhandled exception on this thread that left a reader/command open
-			// or left the pooled connection in an Open/Broken state, and handle DB swaps cleanly.
-			bool hadAbandonedReader = threadReader != null;
+			// Recover from any prior unhandled exception on this thread that left an owned reader/command open
+			// or left our pooled connection in an Open/Broken state, and handle DB swaps cleanly.
+			bool hadAbandonedOwnedReader = threadReaderOwned && threadReader != null;
 			DisposeActiveReaderAndCommand();
 
-			if (threadConnection != null &&
-				(hadAbandonedReader ||
-				 !string.Equals(threadConnectionString, connectionString, StringComparison.Ordinal) ||
-				 threadConnection.State != ConnectionState.Closed))
+			if (connectionString != null && threadConnection != null &&
+				(threadConnection.State == ConnectionState.Broken ||
+				 (threadConnectionOwned &&
+				  (hadAbandonedOwnedReader ||
+				   !string.Equals(threadConnectionString, connectionString, StringComparison.Ordinal) ||
+				   threadConnection.State != ConnectionState.Closed))))
 			{
 				ResetThreadConnection();
 			}
