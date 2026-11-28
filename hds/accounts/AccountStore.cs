@@ -54,7 +54,37 @@ namespace hds.accounts
 
         private static readonly object SchemaGate = new object();
         private static readonly object CreateGate = new object();
+        private static volatile CachedConfigConnection cachedConfig;
         private readonly string connectionString;
+
+        private sealed class CachedConfigConnection
+        {
+            public readonly string Host;
+            public readonly int Port;
+            public readonly string DatabaseName;
+            public readonly string Username;
+            public readonly string Password;
+            public readonly string ConnectionString;
+
+            public CachedConfigConnection(DbParams db, string connectionString)
+            {
+                Host = db.Host;
+                Port = db.Port;
+                DatabaseName = db.DatabaseName;
+                Username = db.Username;
+                Password = db.Password;
+                ConnectionString = connectionString;
+            }
+
+            public bool Matches(DbParams db)
+            {
+                return Port == db.Port &&
+                       string.Equals(Host, db.Host, StringComparison.Ordinal) &&
+                       string.Equals(DatabaseName, db.DatabaseName, StringComparison.Ordinal) &&
+                       string.Equals(Username, db.Username, StringComparison.Ordinal) &&
+                       string.Equals(Password, db.Password, StringComparison.Ordinal);
+            }
+        }
 
         public AccountStore(string connectionString)
         {
@@ -64,6 +94,12 @@ namespace hds.accounts
         public static AccountStore FromConfig()
         {
             DbParams db = Store.config.dbParams;
+            CachedConfigConnection cached = cachedConfig;
+            if (cached != null && cached.Matches(db))
+            {
+                return new AccountStore(cached.ConnectionString);
+            }
+
             var builder = new MySqlConnectionStringBuilder
             {
                 Server = db.Host,
@@ -74,7 +110,9 @@ namespace hds.accounts
                 Pooling = true,
                 ConvertZeroDateTime = true,
             };
-            return new AccountStore(builder.ConnectionString);
+            string built = builder.ConnectionString;
+            cachedConfig = new CachedConfigConnection(db, built);
+            return new AccountStore(built);
         }
 
         private MySqlConnection Open()

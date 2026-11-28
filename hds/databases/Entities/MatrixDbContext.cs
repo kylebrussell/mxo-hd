@@ -1,4 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System;
+using System.Collections.Concurrent;
+using Microsoft.EntityFrameworkCore;
 
 #nullable disable
 
@@ -6,6 +8,10 @@ namespace hds.databases.Entities
 {
     public partial class MatrixDbContext : DbContext
     {
+        private static readonly MySqlServerVersion CachedServerVersion = new MySqlServerVersion(new Version(8, 0, 0));
+        private static readonly ConcurrentDictionary<string, DbContextOptions<MatrixDbContext>> OptionsCache =
+            new ConcurrentDictionary<string, DbContextOptions<MatrixDbContext>>(StringComparer.Ordinal);
+
         private DbParams dbParams;
 
         public MatrixDbContext(DbParams dbParams)
@@ -16,6 +22,28 @@ namespace hds.databases.Entities
         public MatrixDbContext(DbContextOptions<MatrixDbContext> options)
             : base(options)
         {
+        }
+
+        internal static string BuildConnectionString(DbParams dbParams)
+        {
+            return "server=" + dbParams.Host + ";port=" + dbParams.Port + ";user=" + dbParams.Username + ";password=" +
+                   dbParams.Password + ";database=" + dbParams.DatabaseName + ";ConvertZeroDateTime=True";
+        }
+
+        internal static DbContextOptions<MatrixDbContext> GetOrCreateOptions(DbParams dbParams)
+        {
+            string connectionString = BuildConnectionString(dbParams);
+            return OptionsCache.GetOrAdd(connectionString, cs =>
+            {
+                var builder = new DbContextOptionsBuilder<MatrixDbContext>();
+                builder.UseMySql(cs, CachedServerVersion);
+                return builder.Options;
+            });
+        }
+
+        public static MatrixDbContext Create(DbParams dbParams)
+        {
+            return new MatrixDbContext(GetOrCreateOptions(dbParams));
         }
 
         public virtual DbSet<Buddylist> Buddylists { get; set; }
@@ -38,10 +66,7 @@ namespace hds.databases.Entities
         {
             if (!optionsBuilder.IsConfigured)
             {
-                optionsBuilder.UseMySql(
-                    "server=" + dbParams.Host + ";port=" + dbParams.Port + ";user=" + dbParams.Username + ";password=" +
-                    dbParams.Password + ";database=" + dbParams.DatabaseName + ";ConvertZeroDateTime=True",
-                    ServerVersion.Parse("8.0.0-mysql"));
+                optionsBuilder.UseMySql(BuildConnectionString(dbParams), CachedServerVersion);
             }
         }
 
