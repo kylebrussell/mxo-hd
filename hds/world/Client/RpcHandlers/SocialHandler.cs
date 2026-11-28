@@ -634,7 +634,6 @@ namespace hds
             }
 
             WorldClient client = Store.currentClient;
-            var db = Store.dbManager.WorldDbHandler;
             switch (rpcData[0])
             {
                 case SocialPackets.GroupTeam:
@@ -646,34 +645,46 @@ namespace hds
                     break;
 
                 case SocialPackets.GroupFaction:
-                {
-                    // A crew leaves its faction; only its captain can do that. (No retail capture of this.)
-                    UInt32 factionId = FactionIdOf(client);
-                    UInt32 crewId = CrewIdOf(client);
-                    Crew crew = crewId != 0 ? db.GetCrewData(crewId) : null;
-                    if (factionId == 0 || crew == null ||
-                        !string.Equals(crew.characterMasterName, HandleOf(client), StringComparison.OrdinalIgnoreCase))
-                    {
-                        Send(client, SocialPackets.InviteAnswer(SocialPackets.GroupFaction, SocialPackets.FactionNotAuthorized, HandleOf(client)));
-                        return;
-                    }
-
-                    db.RemoveCrewFromFaction(factionId, crewId);
-                    db.SetFactionOfCrewMembers(crewId, 0);
-                    foreach (WorldClient member in OnlineWhere(c => CrewIdOf(c) == crewId))
-                    {
-                        SetOwnGroupIds(member, 0, null, null);
-                        Send(member, SocialPackets.GroupDisbanded(SocialPackets.GroupFaction));
-                    }
-
-                    foreach (WorldClient member in OnlineWhere(c => FactionIdOf(c) == factionId))
-                    {
-                        SendFactionInfo(member, factionId);
-                    }
-
+                    LeaveFaction(client);
                     break;
-                }
             }
+        }
+
+        private static void LeaveFaction(WorldClient client)
+        {
+            uint factionId = FactionIdOf(client), crewId = CrewIdOf(client);
+            string refusal;
+            try
+            {
+                refusal = Store.dbManager.WorldDbHandler.LeaveFaction(client.playerData.getCharID(), crewId, factionId);
+            }
+            catch (DbException error)
+            {
+                Output.WriteDebugLog($"[SOCIAL] Faction leave rolled back crew={crewId} faction={factionId}: {error.Message}");
+                refusal = "The faction could not be left. Your crew and faction were kept.";
+            }
+            if (refusal != null)
+            {
+                Send(client, ServerPackets.BuildSystemChatMessage(refusal, "BROADCAST"));
+                try
+                {
+                    // The stock Leave sender clears the faction view locally before the server can answer.
+                    if (factionId != 0) SendFactionInfo(client, factionId);
+                }
+                catch (DbException error)
+                {
+                    Output.WriteDebugLog($"[SOCIAL] Faction roster restore failed faction={factionId}: {error.Message}");
+                }
+                return;
+            }
+
+            foreach (WorldClient member in OnlineWhere(c => CrewIdOf(c) == crewId))
+            {
+                SetOwnGroupIds(member, 0, null, null);
+                Send(member, SocialPackets.GroupDisbanded(SocialPackets.GroupFaction));
+            }
+            SendToAll(OnlineWhere(c => FactionIdOf(c) == factionId), SocialPackets.FactionCrewRemoved(crewId));
+            Output.WriteDebugLog($"[SOCIAL] {HandleOf(client)} withdrew crew {crewId} from faction {factionId}");
         }
 
         private static void LeaveCrew(WorldClient client)

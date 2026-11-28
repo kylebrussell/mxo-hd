@@ -468,11 +468,6 @@ namespace hds.databases{
 	        return crewMembers;
         }
 
-        public void RemoveCrewFromFaction(uint factionId, uint crewId)
-        {
-	        ExecuteNonResultQuery("UPDATE crews SET faction_id = '0' WHERE id='" + crewId + "' AND faction_id = '" + factionId + "' ");
-        }
-
 
         public string GetPathForDistrictKey(string key){
 	        OpenConnection();
@@ -1166,12 +1161,6 @@ namespace hds.databases{
 		        P("@char", charId), P("@crew", crewId));
 	        NonQuery("UPDATE crews SET master_player_handle = @handle WHERE id = @crew",
 		        P("@handle", handle), P("@crew", crewId));
-        }
-
-        public void SetFactionOfCrewMembers(UInt32 crewId, UInt32 factionId)
-        {
-	        NonQuery("UPDATE characters SET factionId = @faction WHERE crewId = @crew",
-		        P("@faction", factionId), P("@crew", crewId));
         }
 
         /// <summary>Makes the member the crew's first mate (0: nobody).</summary>

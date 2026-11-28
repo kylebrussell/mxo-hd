@@ -17,7 +17,6 @@ namespace hds.databases
             command.Parameters.AddWithValue("@captain", captain);
             command.Parameters.AddWithValue("@captainCrew", captainCrew);
             command.Parameters.AddWithValue("@faction", faction);
-            command.Parameters.AddWithValue("@targetCrew", targetCrew);
             command.CommandText = "SELECT p.handle,c.master_player_handle,c.faction_rank,f.master_player_handle " +
                 "FROM characters p JOIN crews c ON c.id=p.crewId AND c.faction_id=p.factionId " +
                 "JOIN factions f ON f.id=c.faction_id " +
@@ -33,12 +32,19 @@ namespace hds.databases
                     return false;
             }
 
+            if (!DetachCrewFromFaction(command, targetCrew)) return false;
+            transaction.Commit();
+            return true;
+        }
+
+        private static bool DetachCrewFromFaction(MySqlCommand command, uint targetCrew)
+        {
+            command.Parameters.AddWithValue("@targetCrew", targetCrew);
             command.CommandText = "UPDATE crews SET faction_id=0,faction_rank=0 WHERE id=@targetCrew AND faction_id=@faction " +
                 "AND (deleted_at IS NULL OR deleted_at < '1971-01-01')";
             if (command.ExecuteNonQuery() != 1) return false;
             command.CommandText = "UPDATE characters SET factionId=0 WHERE crewId=@targetCrew";
             command.ExecuteNonQuery();
-            transaction.Commit();
             return true;
         }
     }

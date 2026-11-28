@@ -68,7 +68,7 @@ public sealed class AtomicCrewDisbandMode : NativeQaMode
 
     internal static async Task<string> ReleaseFaultAsync(HeadlessPlayer actor)
     {
-        if (actor.Handle != "QAFriend") throw new ArgumentException("Use QAFriend for the crew disband retry.");
+        if (actor.Handle != "QAFriend") throw new ArgumentException("Use QAFriend for the retry deposit.");
         await Scenarios.DepositOneCrewInfoAsync(actor);
         return "QAFriend deposited 1 Info (999 remains)";
     }
