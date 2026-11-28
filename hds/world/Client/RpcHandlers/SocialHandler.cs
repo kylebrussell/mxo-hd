@@ -786,6 +786,13 @@ namespace hds
 
         // ---- removing members and handing over (72, 75, 80 87) ----------------------------------------------------
 
+        private static void RefuseCrewRemoval(WorldClient client,
+            string message = "Only the crew captain can remove a current crew member.")
+        {
+            Send(client, SocialPackets.CrewRemoveRefused());
+            Send(client, ServerPackets.BuildSystemChatMessage(message, "BROADCAST"));
+        }
+
         /// <summary>
         /// Client 72 &lt;type&gt; &lt;charId&gt;: the team leader boots a member (team window Boot, 0x621c0c40), or the crew
         /// captain removes one (crew window "Remove"). Everyone, the removed player included, gets 72 with that id; the
@@ -795,6 +802,8 @@ namespace hds
         {
             if (rpcData.Length < 5)
             {
+                if (rpcData.Length > 0 && rpcData[0] == SocialPackets.GroupCrew)
+                    RefuseCrewRemoval(client);
                 return;
             }
 
@@ -803,6 +812,8 @@ namespace hds
             UInt32 me = client.playerData.getCharID();
             if (target == me)
             {
+                if (type == SocialPackets.GroupCrew)
+                    RefuseCrewRemoval(client, "Use Leave Crew to remove yourself.");
                 return; // the client sends 71 to leave
             }
 
@@ -844,26 +855,45 @@ namespace hds
                 {
                     var db = Store.dbManager.WorldDbHandler;
                     UInt32 crewId = CrewIdOf(client);
-                    if (!IsCaptain(client, crewId))
+                    if (crewId == 0)
                     {
+                        RefuseCrewRemoval(client);
                         return;
                     }
 
-                    List<CrewMember> members = CrewMembersOf(crewId);
-                    if (!members.Any(m => m.charId == target))
+                    List<CrewMember> members;
+                    WorldClient gone = FindOnlineByCharId(target);
+                    try
                     {
+                        members = CrewMembersOf(crewId);
+                        if (SocialBot.IsBot(gone))
+                        {
+                            if (!IsCaptain(client, crewId) || !members.Any(m => m.charId == target))
+                            {
+                                RefuseCrewRemoval(client);
+                                return;
+                            }
+                            SocialBot.SetCrew(gone, 0);
+                        }
+                        else if (!db.EjectCrewMember(me, crewId, target))
+                        {
+                            RefuseCrewRemoval(client);
+                            return;
+                        }
+                    }
+                    catch (DbException error)
+                    {
+                        Output.WriteDebugLog($"[SOCIAL] Crew member removal rolled back crew={crewId} member={target}: {error.Message}");
+                        RefuseCrewRemoval(client, "The crew member could not be removed. The roster was kept.");
                         return;
                     }
 
-                    db.RemoveMemberFromCrew(target, crewId);
-                    SocialBot.SetCrew(FindOnlineByCharId(target), 0);
                     byte[] removed = SocialPackets.LeftGroup(type, target);
                     foreach (CrewMember member in members)
                     {
                         Send(FindOnlineByCharId(member.charId), removed);
                     }
 
-                    WorldClient gone = FindOnlineByCharId(target);
                     if (gone != null)
                     {
                         SetOwnGroupIds(gone, 0, 0, null);

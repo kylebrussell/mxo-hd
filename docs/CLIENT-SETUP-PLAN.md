@@ -247,7 +247,7 @@ The client reports its own movement in protocol 03, view 2: `02 03 02 00 <sub-vi
   - The update forwarded to other players included everything to the end of the client's packet, RPCs included. It now forwards just the update.
   - `?gotopos` didn't update the stored position, so the next save and relog put the player back where they had been.
 - **Check:** walk, turn and strafe, relog. The saved x/z/rotation match the client's last report (for example rotation 239 = last yaw `ef`), and the character comes back in the same spot facing the same way.
-- The client answers the self-spawn with RPC `80 be` (logged as header 190). It doesn't always include the names sub-view, so `-WaitWorld` waits for either.
+- `-WaitWorld` takes its baseline before login. It looks for new world-entry replies (`80 be`, `3e`, `0c` or the names sub-view) in the server log and the adjacent `DebugLog.txt`, including when the reply arrives before the wait starts.
 
 ## Platform options on Apple Silicon
 
