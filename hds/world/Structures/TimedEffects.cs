@@ -363,6 +363,10 @@ namespace hds
             {
                 RunDue(TimeUtils.GetSimTimeSeconds());
             }
+            catch (Exception ex)
+            {
+                Output.WriteDebugLog("[EFFECTS] TimerTick failed: " + ex.Message);
+            }
             finally
             {
                 Interlocked.Exchange(ref ticking, 0);
@@ -380,6 +384,10 @@ namespace hds
             List<Subject> subjects;
             lock (live)
             {
+                if (live.Count == 0)
+                {
+                    return;
+                }
                 subjects = new List<Subject>(live);
             }
 

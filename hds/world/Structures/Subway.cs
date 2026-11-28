@@ -1,18 +1,22 @@
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Timers;
 using hds.shared;
-using Timer = System.Timers.Timer;
 
 
 namespace hds.world.Structures
 {
     public class Subway
     {
+        private static readonly object SchedulerLock = new object();
+        private static readonly HashSet<Subway> ActiveSubways = new HashSet<Subway>();
+        private static readonly List<Subway> TickScratch = new List<Subway>(256);
+        private static System.Threading.Timer SharedCountdownTimer;
+        private static int sharedTickInFlight;
+
         public StaticWorldObject worldObject;
         public Object6568 gameObjectData;
-        private readonly object countdownLock = new object();
-        private Timer countdownTimer;
         private int tickInFlight;
         
         public static int secondsClosingDoors = 3;
@@ -53,37 +57,79 @@ namespace hds.world.Structures
             worldObject.pos_y = worldObject.pos_x + 71.45;
         }
 
+        internal static int ActiveCountdownCount
+        {
+            get
+            {
+                lock (SchedulerLock)
+                {
+                    return ActiveSubways.Count;
+                }
+            }
+        }
+
         public void StartCountdown()
         {
-            lock (countdownLock)
+            lock (SchedulerLock)
             {
-                StopCountdownLocked();
-                Timer myTimer = new Timer(1000);
-                myTimer.AutoReset = true; // the key is here so it repeats
-                myTimer.Elapsed += DecreaseSeconds;
-                myTimer.Interval = 1000; // 1000 ms is one second
-                countdownTimer = myTimer;
-                myTimer.Start();
+                ActiveSubways.Add(this);
+                if (SharedCountdownTimer == null)
+                {
+                    // One shared 1 s clock drives all ~188 subway cars sequentially instead of
+                    // spawning 188 concurrent System.Timers.Timer callbacks on the ThreadPool.
+                    SharedCountdownTimer = new System.Threading.Timer(_ => TickActiveSubways(), null, 1000, 1000);
+                }
             }
             UpdateSubwayState();
         }
 
         public void StopCountdown()
         {
-            lock (countdownLock)
+            lock (SchedulerLock)
             {
-                StopCountdownLocked();
+                ActiveSubways.Remove(this);
             }
         }
 
-        private void StopCountdownLocked()
+        internal static void TickActiveSubways()
         {
-            if (countdownTimer != null)
+            if (Interlocked.Exchange(ref sharedTickInFlight, 1) != 0)
             {
-                countdownTimer.Elapsed -= DecreaseSeconds;
-                countdownTimer.Stop();
-                countdownTimer.Dispose();
-                countdownTimer = null;
+                return;
+            }
+
+            try
+            {
+                TickScratch.Clear();
+                lock (SchedulerLock)
+                {
+                    if (ActiveSubways.Count == 0)
+                    {
+                        return;
+                    }
+                    if (TickScratch.Capacity < ActiveSubways.Count)
+                    {
+                        TickScratch.Capacity = ActiveSubways.Count;
+                    }
+                    foreach (Subway car in ActiveSubways)
+                    {
+                        TickScratch.Add(car);
+                    }
+                }
+
+                for (int i = 0; i < TickScratch.Count; i++)
+                {
+                    TickScratch[i].DecreaseSeconds(TickScratch[i], null);
+                }
+                TickScratch.Clear();
+            }
+            catch (Exception ex)
+            {
+                Output.WriteDebugLog("[SUBWAY] Shared scheduler tick error: " + ex.Message);
+            }
+            finally
+            {
+                Volatile.Write(ref sharedTickInFlight, 0);
             }
         }
 

@@ -1249,18 +1249,46 @@ namespace hds
             }
         }
 
+        private static int tickInFlight;
+
         private static void TickAll()
         {
+            if (Interlocked.Exchange(ref tickInFlight, 1) != 0)
+            {
+                return;
+            }
+
             try
             {
                 double now = TimeUtils.GetSimTimeSeconds();
                 List<Pet> all;
-                lock (pets) all = pets.Values.ToList();
-                foreach (Pet pet in all) Tick(pet, now);
+                lock (pets)
+                {
+                    if (pets.Count == 0)
+                    {
+                        return;
+                    }
+                    all = new List<Pet>(pets.Values);
+                }
+                for (int i = 0; i < all.Count; i++)
+                {
+                    try
+                    {
+                        Tick(all[i], now);
+                    }
+                    catch (Exception e)
+                    {
+                        Output.WriteDebugLog("[PET] Tick failed: " + e);
+                    }
+                }
             }
             catch (Exception e)
             {
-                Output.WriteDebugLog("[PET] Tick failed: " + e);
+                Output.WriteDebugLog("[PET] TickAll failed: " + e);
+            }
+            finally
+            {
+                Volatile.Write(ref tickInFlight, 0);
             }
         }
 

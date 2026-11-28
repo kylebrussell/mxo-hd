@@ -26,6 +26,7 @@ namespace hds
 
         private static readonly List<DeadMob> dead = new List<DeadMob>();
         private static Timer timer;
+        private static int tickInFlight;
 
         private static double ReadSeconds(string name, double fallback)
         {
@@ -77,11 +78,18 @@ namespace hds
         /// <summary>Unspawns corpses whose time is up and brings back NPCs whose respawn time has come.</summary>
         public static void Tick(double now)
         {
-            List<Mob> respawned = new List<Mob>();
+            List<Mob> respawned = null;
+            double respawnAfter = Math.Max(RespawnSeconds, CorpseSeconds);
             lock (dead)
             {
-                foreach (DeadMob entry in dead)
+                if (dead.Count == 0)
                 {
+                    return;
+                }
+
+                for (int i = dead.Count - 1; i >= 0; i--)
+                {
+                    DeadMob entry = dead[i];
                     double since = now - entry.DiedAt;
                     if (!entry.Unspawned && since >= CorpseSeconds)
                     {
@@ -90,17 +98,23 @@ namespace hds
                         entry.Unspawned = true;
                     }
 
-                    if (entry.Unspawned && since >= Math.Max(RespawnSeconds, CorpseSeconds))
+                    if (entry.Unspawned && since >= respawnAfter)
                     {
+                        if (respawned == null) respawned = new List<Mob>(4);
                         respawned.Add(entry.Mob);
+                        dead.RemoveAt(i);
                     }
                 }
-
-                dead.RemoveAll(d => respawned.Contains(d.Mob));
             }
 
-            foreach (Mob mob in respawned)
+            if (respawned == null)
             {
+                return;
+            }
+
+            for (int i = 0; i < respawned.Count; i++)
+            {
+                Mob mob = respawned[i];
                 mob.ResetForRespawn();
                 mob.setIsSpawned(true);
                 Output.WriteDebugLog("[MOB] " + mob.getName() + " respawned at its spawn point");
@@ -115,6 +129,10 @@ namespace hds
                 {
                     timer = new Timer(_ =>
                     {
+                        if (Interlocked.Exchange(ref tickInFlight, 1) != 0)
+                        {
+                            return;
+                        }
                         try
                         {
                             Tick(Now());
@@ -122,6 +140,10 @@ namespace hds
                         catch (Exception ex)
                         {
                             Output.WriteDebugLog("[MOB] Respawn tick failed: " + ex.Message);
+                        }
+                        finally
+                        {
+                            Volatile.Write(ref tickInFlight, 0);
                         }
                     }, null, 1000, 1000);
                 }
