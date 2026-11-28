@@ -3,13 +3,14 @@ namespace HeadlessClient;
 public static partial class Scenarios
 {
     public const uint GiveItemFixtureMission = 399903, GiveItemFixtureDisk = 6831;
+    public const int GiveStandX = 17000, GiveStandY = 495, GiveStandZ = 6400;
     private const ushort MovedDiskSlot = 6;
 
     private static async Task GiveMissionItemByDragging(ScenarioContext context)
     {
         var players = await context.AddPlayersInWorldAsync(
-            new CharacterSeed("Giver") { Level = 50, Organization = 3, X = TeamMissionFixture.HolderX, Y = TeamMissionFixture.Y, Z = TeamMissionFixture.Z },
-            new CharacterSeed("MenuGiver") { Level = 50, Organization = 3, X = TeamMissionFixture.HolderX, Y = TeamMissionFixture.Y, Z = TeamMissionFixture.Z });
+            new CharacterSeed("Giver") { Level = 50, Organization = 3, X = GiveStandX, Y = GiveStandY, Z = GiveStandZ },
+            new CharacterSeed("MenuGiver") { Level = 50, Organization = 3, X = GiveStandX, Y = GiveStandY, Z = GiveStandZ });
         await ProveGiveItemAsync(players[0], context.Database);
         await ProveGiveItemAsync(players[1], context.Database, menu: true);
     }
