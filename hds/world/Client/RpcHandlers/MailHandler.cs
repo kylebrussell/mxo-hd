@@ -177,9 +177,21 @@ namespace hds
             catch (DbException error)
             {
                 Output.WriteDebugLog($"[MAIL] Status change rolled back char={charId} id={id} status={status}: {error.Message}");
-                // Failed 81 f5 makes the stock client clear its cached headers and send 81 ea.
-                // An extra 81 f3 during that rebuild can seed a row ahead of the fresh list.
-                host.Send(charId, MailPackets.BuildStatus(0xf5, MailPackets.BadData));
+                MailMessage saved = null;
+                try
+                {
+                    saved = store.Get(charId, id);
+                }
+                catch (DbException refreshError)
+                {
+                    Output.WriteDebugLog($"[MAIL] Status refresh failed char={charId} id={id}: {refreshError.Message}");
+                }
+
+                // With the existing id cached, 81 ed redraws one row in place. A failure
+                // 81 f5 would clear the cache and request a full list, which inflates the count.
+                host.Send(charId, saved != null
+                    ? MailPackets.BuildHeader(saved, false, false)
+                    : MailPackets.BuildStatus(0xf5, MailPackets.BadData));
                 Notice(charId, "The mail status could not be changed. The message was kept.");
                 return;
             }

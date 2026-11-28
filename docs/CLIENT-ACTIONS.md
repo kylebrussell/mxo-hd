@@ -339,19 +339,23 @@ All layouts are client.dll's; the values are retail's. Strings are `<u16 length 
 ### Atomic mail status changes
 
 The stock Delete and Undelete sender at `621f91e0` updates the cached
-status before sending `81 f4`. A refused write returns failed `81 f5`.
-Its stock handler at `621f8300` clears the header cache and sends `81 ea`.
-The normal header response restores the saved status and inbox count.
-The message body and attachments are available on reselection. Closing
-the inbox sends `81 f6` for deleted-to-purged
+status before sending `81 f4`. A refused write returns the saved
+`81 ed` header for that message and explains the refusal in chat.
+For an existing cached ID, `621f9380` calls the in-place row redraw
+at `620cb7b0` through `620cb840`. The header keeps Notification clear
+and does not change the body or attachments. A failed `81 f5` would
+instead open a modal, clear the header cache and re-list the inbox.
+That path is reserved for failures without a saved row to restore.
+Closing the inbox sends `81 f6` for deleted-to-purged
 and new-to-seen. Each request uses one owner-and-status-scoped SQL
 statement. If one row fails, the batch stays unchanged and `81 f7`
 reports the failure.
 
 Use `mail-status-atomic` at Mara Central (17000,495,2300). Open
 **Phone > Email > Delete Check** and verify its Health Pill attachment.
-Choose **Delete** and check the refusal, saved row and pill. If the control
-still shows Undelete, reselect the row. Send
+Choose **Delete** and check the refusal and two-message count. Select
+**Inbox Control**, then **Delete Check** again to verify Read and the pill.
+Send
 `{"actor":"QAFriend","action":"mail-status-retry"}` to remove the disclosed
 CHECK from the disposable database. Retry Delete in the same inbox, then
 Undelete and verify the pill remains. Delete the disposable message again

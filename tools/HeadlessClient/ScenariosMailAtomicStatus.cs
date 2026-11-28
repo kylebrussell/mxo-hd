@@ -62,16 +62,24 @@ public static partial class Scenarios
         string undelete = $"81 f4 {Le(id)} {Le(3u)}";
         string purge = $"81 f6 {Le(4u)} {Le(5u)}";
         string owned = $"ownerCharId={reader.CharId} AND id={id}";
-        reader.SendRpc(delete);
-        await reader.WaitForRpcAsync($"81 f5 {MailBadData}");
-        await reader.WaitForTextAsync("The mail status could not be changed. The message was kept.");
-        Check.Equal(0, reader.Received("81 f3").Count, "The failure sends no full message ahead of the stock inbox rebuild");
-
-        // The stock 81 f5 failure consumer clears its cached headers and requests the list again.
+        string selectedHeader = $"81 ed 19 00 ?? ?? ?? ?? {Le(id)}";
+        uint control = checked((uint)await db.LongAsync($"SELECT id FROM mail WHERE ownerCharId={reader.CharId} AND subject='{MailControlSubject}'"));
         reader.SendRpc($"81 ea 0d 00 {Le(50u)} {Le(0x7ffffffeu)} 01 01 00 00");
         await reader.WaitForRpcAsync($"81 ef 0c 00 {Le(2u)} {MailSuccess}");
-        var header = await reader.WaitForRpcAsync($"81 ed 19 00 ?? ?? ?? ?? {Le(id)}");
-        Check.Equal(3u, BitConverter.ToUInt32(header.Bytes, 16), "The fresh inbox restores the saved status");
+        await reader.WaitForRpcAsync(selectedHeader);
+        await reader.WaitForRpcAsync($"81 ed 19 00 ?? ?? ?? ?? {Le(control)}");
+
+        reader.SendRpc(delete);
+        var header = await reader.WaitForRpcAsync(selectedHeader);
+        await reader.WaitForTextAsync("The mail status could not be changed. The message was kept.");
+        Check.Equal(3u, BitConverter.ToUInt32(header.Bytes, 16), "The single row restores the saved status");
+        Check.Equal((byte)0, header.Bytes[0x14], "The correction has no additional headers");
+        Check.Equal((byte)0, header.Bytes[0x15], "The correction is not a new-mail notification");
+        Check.Equal(3, reader.Received("81 ed").Count, "Only the affected row follows the initial two inbox headers");
+        Check.Equal(1, reader.Received("81 ef").Count, "There is no second list response");
+        Check.Equal(0, reader.Received("81 f5").Count, "The correction does not trigger a fresh list request");
+        Check.Equal(0, reader.Received("81 f3").Count, "The correction does not send an unsolicited full message");
+
         reader.SendRpc($"81 f0 {Le(id)}");
         var restored = await reader.WaitForRpcAsync($"81 f3 19 00 ?? ?? ?? ?? {Le(id)}");
         var chunks = MessageChunks(restored.Bytes);
