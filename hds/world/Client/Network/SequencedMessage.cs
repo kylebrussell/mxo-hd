@@ -3,6 +3,7 @@ using System.Buffers.Binary;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 
 namespace hds
 {
@@ -24,6 +25,7 @@ namespace hds
         internal bool ReliableObjectGapObserved;
         internal int? ObjectWorldGeneration;
         internal long ObjectTransportEpoch;
+        private int firstReliableObjectPacket = -1;
         private HashSet<UInt16> reliableObjectPackets;
         internal ushort MovementViewId;
         internal byte MovementFlags;
@@ -103,6 +105,8 @@ namespace hds
             ReliableObjectGapObserved = false;
             ObjectWorldGeneration = null;
             ObjectTransportEpoch = 0;
+            firstReliableObjectPacket = -1;
+            firstRpcPacket = -1;
             MovementViewId = viewId;
             MovementFlags = flags;
             MovementAction = action;
@@ -141,9 +145,11 @@ namespace hds
         internal long RpcTransportEpoch;
         internal bool DiscardUnassignedWorldRpc(int world,long transport) => rpcNumber < 0 &&
             RpcWorldGeneration.HasValue && (RpcWorldGeneration.Value != world || RpcTransportEpoch != transport);
-        // Lazy-allocated so millions of object/movement updates per minute do not allocate an unused HashSet<ushort>.
+        // Inline single-send SSEQ avoids allocating a HashSet<ushort> for the 99.9% of RPCs
+        // acknowledged on their first transmission; _rpcPackets is allocated only on retries or direct access.
+        private int firstRpcPacket = -1;
         private HashSet<UInt16> _rpcPackets;
-        public HashSet<UInt16> rpcPackets => _rpcPackets ?? (_rpcPackets = new HashSet<UInt16>());
+        public HashSet<UInt16> rpcPackets => EnsureRpcPackets(Volatile.Read(ref firstRpcPacket));
         public long lastRpcSendTick;
 
         /// <summary>How long an unacked RPC waits before it is sent again (Reality: the ping, 30 ms to 1 s).</summary>
@@ -158,10 +164,54 @@ namespace hds
         public const byte ForceAckBit = 0x80;
         internal const byte AckHistoryMask = (1 << AckHistoryBits) - 1;
 
+        /// <summary>
+        /// Zero-allocation value representation of the 12-bit ACK sequence and 7-bit history window
+        /// equivalent to <see cref="AckedSequences"/>.
+        /// </summary>
+        internal readonly struct AckWindow
+        {
+            private readonly UInt16 latest;
+            private readonly byte bits;
+
+            public AckWindow(UInt16 ackSeq, UInt16 ackBits)
+            {
+                latest = (UInt16)(ackSeq & 0xFFF);
+                bits = (byte)(ackBits & AckHistoryMask);
+            }
+
+            public bool Contains(UInt16 sequence)
+            {
+                int diff = (latest - (sequence & 0xFFF)) & 0xFFF;
+                if (diff == 0) return true;
+                return diff <= AckHistoryBits && (bits & (1 << (diff - 1))) != 0;
+            }
+        }
+
+        private HashSet<UInt16> EnsureRpcPackets(int seed)
+        {
+            HashSet<UInt16> packets = Volatile.Read(ref _rpcPackets);
+            if (packets == null)
+            {
+                var created = new HashSet<UInt16>();
+                if (seed >= 0) created.Add((UInt16)seed);
+                packets = Interlocked.CompareExchange(ref _rpcPackets, created, null) ?? created;
+            }
+            if (seed >= 0)
+            {
+                lock (packets) packets.Add((UInt16)seed);
+            }
+            return packets;
+        }
+
         /// <summary>Whether any packet this RPC went out in is among those the client acked.</summary>
         public bool IsRpcAckedBy(ICollection<UInt16> ackedSeqs)
         {
-            HashSet<UInt16> packets = _rpcPackets;
+            int first = Volatile.Read(ref firstRpcPacket);
+            if (first >= 0 && ackedSeqs.Contains((UInt16)first))
+            {
+                return true;
+            }
+            HashSet<UInt16> packets = Volatile.Read(ref _rpcPackets);
             if (packets == null) return false;
             lock (packets)
             {
@@ -177,12 +227,47 @@ namespace hds
             return false;
         }
 
-        public void RecordRpcPacket(UInt16 sequence)
+        internal bool IsRpcAckedBy(in AckWindow acked)
         {
-            HashSet<UInt16> packets = rpcPackets;
+            int first = Volatile.Read(ref firstRpcPacket);
+            if (first >= 0 && acked.Contains((UInt16)first))
+            {
+                return true;
+            }
+            HashSet<UInt16> packets = Volatile.Read(ref _rpcPackets);
+            if (packets == null) return false;
             lock (packets)
             {
-                packets.Add(sequence);
+                foreach (UInt16 seq in packets)
+                {
+                    if (acked.Contains(seq))
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        public void RecordRpcPacket(UInt16 sequence)
+        {
+            int seq = sequence & 0xFFF;
+            int existing = Interlocked.CompareExchange(ref firstRpcPacket, seq, -1);
+            if (existing == -1 || existing == seq)
+            {
+                HashSet<UInt16> existingSet = Volatile.Read(ref _rpcPackets);
+                if (existingSet != null)
+                {
+                    lock (existingSet) existingSet.Add((UInt16)seq);
+                }
+                return;
+            }
+
+            HashSet<UInt16> packets = EnsureRpcPackets(existing);
+            lock (packets)
+            {
+                packets.Add((UInt16)seq);
             }
         }
 
@@ -262,26 +347,54 @@ namespace hds
             ReliableObject && ObjectWorldGeneration.HasValue &&
             (ObjectWorldGeneration.Value != world || ObjectTransportEpoch != transport);
 
+        private HashSet<UInt16> EnsureReliableObjectPackets(int seed)
+        {
+            HashSet<UInt16> packets = Volatile.Read(ref reliableObjectPackets);
+            if (packets == null)
+            {
+                var created = new HashSet<UInt16>();
+                if (seed >= 0) created.Add((UInt16)seed);
+                packets = Interlocked.CompareExchange(ref reliableObjectPackets, created, null) ?? created;
+            }
+            if (seed >= 0)
+            {
+                lock (packets) packets.Add((UInt16)seed);
+            }
+            return packets;
+        }
+
         internal void RecordReliableObjectPacket(UInt16 sequence)
         {
             if (!ReliableObject) return;
-            UInt16 seq = (UInt16)(sequence & 0xFFF);
-            if (reliableObjectPackets == null)
+            int seq = sequence & 0xFFF;
+            int existing = Interlocked.CompareExchange(ref firstReliableObjectPacket, seq, -1);
+            if (existing == -1 || existing == seq)
             {
-                reliableObjectPackets = new HashSet<UInt16>();
+                HashSet<UInt16> existingSet = Volatile.Read(ref reliableObjectPackets);
+                if (existingSet != null)
+                {
+                    lock (existingSet) existingSet.Add((UInt16)seq);
+                }
+                return;
             }
-            lock (reliableObjectPackets)
+
+            HashSet<UInt16> packets = EnsureReliableObjectPackets(existing);
+            lock (packets)
             {
-                reliableObjectPackets.Add(seq);
+                packets.Add((UInt16)seq);
             }
         }
 
         internal bool IsReliableObjectAckedBy(ICollection<UInt16> ackedSeqs)
         {
-            if (!ReliableObject || reliableObjectPackets == null) return false;
-            lock (reliableObjectPackets)
+            if (!ReliableObject) return false;
+            int first = Volatile.Read(ref firstReliableObjectPacket);
+            if (first >= 0 && ackedSeqs.Contains((UInt16)first)) return true;
+            HashSet<UInt16> packets = Volatile.Read(ref reliableObjectPackets);
+            if (packets == null) return false;
+            lock (packets)
             {
-                foreach (UInt16 seq in reliableObjectPackets)
+                foreach (UInt16 seq in packets)
                 {
                     if (ackedSeqs.Contains(seq))
                     {
@@ -292,12 +405,34 @@ namespace hds
             return false;
         }
 
+        internal bool IsReliableObjectAckedBy(in AckWindow acked)
+        {
+            if (!ReliableObject) return false;
+            int first = Volatile.Read(ref firstReliableObjectPacket);
+            if (first >= 0 && acked.Contains((UInt16)first)) return true;
+            HashSet<UInt16> packets = Volatile.Read(ref reliableObjectPackets);
+            if (packets == null) return false;
+            lock (packets)
+            {
+                foreach (UInt16 seq in packets)
+                {
+                    if (acked.Contains(seq))
+                    {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
         internal void ClearReliableObjectPackets()
         {
-            if (reliableObjectPackets == null) return;
-            lock (reliableObjectPackets)
+            Volatile.Write(ref firstReliableObjectPacket, -1);
+            HashSet<UInt16> packets = Volatile.Read(ref reliableObjectPackets);
+            if (packets == null) return;
+            lock (packets)
             {
-                reliableObjectPackets.Clear();
+                packets.Clear();
             }
         }
 

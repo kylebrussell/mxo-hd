@@ -57,6 +57,8 @@ namespace hds
         private bool flushingQueueInProgress = false;
         // Reusable per-client flush scratch (accessed strictly while flushingQueueInProgress is true).
         private List<WorldPacket> flushPackets;
+        private List<SequencedMessage> flushRpcsToSend;
+        private List<SequencedMessage> flushExistingRpcBlock;
         private Stack<WorldPacket> flushPacketPool;
         private const int MaxPooledFlushPackets = 8;
         private readonly MultiProtocolManager protocolManager;
@@ -439,9 +441,15 @@ namespace hds
                     lock (messageQueue.RPCMessagesQueue.SyncRoot)
                     {
                         long rpcNow = Environment.TickCount64;
+                        List<SequencedMessage> rpcsToSend = flushRpcsToSend;
+                        if (rpcsToSend == null)
+                        {
+                            rpcsToSend = new List<SequencedMessage>(8);
+                            flushRpcsToSend = rpcsToSend;
+                        }
                         // Unacked RPCs that are due go out again as one run from the oldest unacked counter, then new
-                        // ones, all in counter order and within MessageQueue.MaxRpcsInFlight (TakeRpcsToSend).
-                        List<SequencedMessage> rpcsToSend = messageQueue.TakeRpcsToSend(rpcNow, playerData.getRPCCounter(),
+                        // ones, all in counter order and within MessageQueue.MaxRpcsInFlight (TakeRpcsToSendInto).
+                        messageQueue.TakeRpcsToSendInto(rpcNow, playerData.getRPCCounter(), rpcsToSend,
                             out MessageQueue.RpcResend resend, Interlocked.Read(ref lastIngressTick));
                         if (resend.Count > 0)
                         {
@@ -458,7 +466,14 @@ namespace hds
                             SequencedMessage first = rpcsToSend[rpcIndex];
                             if (first.rpcNumber >= 0 && first.rpcBlockStart >= 0)
                             {
-                                List<SequencedMessage> existingBlock = new List<SequencedMessage> { first };
+                                List<SequencedMessage> existingBlock = flushExistingRpcBlock;
+                                if (existingBlock == null)
+                                {
+                                    existingBlock = new List<SequencedMessage>(8);
+                                    flushExistingRpcBlock = existingBlock;
+                                }
+                                existingBlock.Clear();
+                                existingBlock.Add(first);
                                 int blockStart = first.rpcBlockStart;
                                 rpcIndex++;
                                 while (rpcIndex < rpcsToSend.Count &&
@@ -469,10 +484,13 @@ namespace hds
                                     rpcIndex++;
                                 }
 
-                                foreach (SequencedMessage m in existingBlock)
+                                bool anyTimed = false;
+                                for (int bi = 0; bi < existingBlock.Count; bi++)
                                 {
+                                    SequencedMessage m = existingBlock[bi];
                                     m.lastRpcSendTick = rpcNow;
                                     m.IncreaseSentCounter();
+                                    if (m.isTimed) anyTimed = true;
                                 }
 
                                 if (packet.addRPCBlock(existingBlock) == false)
@@ -483,10 +501,11 @@ namespace hds
                                     packet.addRPCBlock(existingBlock);
                                 }
 
-                                if (existingBlock.Any(m => m.isTimed))
+                                if (anyTimed)
                                 {
                                     packet.timed = true;
                                 }
+                                existingBlock.Clear();
                                 continue;
                             }
 
@@ -507,6 +526,7 @@ namespace hds
                                 packet.timed = true;
                             }
                         }
+                        rpcsToSend.Clear();
                     }
                 }
 
@@ -696,8 +716,9 @@ namespace hds
 
         public void DeletedAckedPackets(UInt16 ackSeq)
         {
-            messageQueue.ObserveObjectReceipts(ackSeq,playerData.getPss());
-            HashSet<UInt16> ackedSeqs = null;
+            ushort pss = playerData.getPss();
+            messageQueue.ObserveObjectReceipts(ackSeq, pss);
+            var ackWindow = new SequencedMessage.AckWindow(ackSeq, pss);
             lock (messageQueue.ObjectMessagesQueue.SyncRoot)
             {
                 ArrayList q = messageQueue.ObjectMessagesQueue;
@@ -707,10 +728,9 @@ namespace hds
                     SequencedMessage message = (SequencedMessage)q[i];
                     if (message.ReliableObject)
                     {
-                        if (ackedSeqs == null) ackedSeqs = SequencedMessage.AckedSequences(ackSeq, playerData.getPss());
                         bool prerequisiteAcked = message.ReliableObjectPrerequisite == null ||
                                                  message.ReliableObjectPrerequisite.ReliableObjectAcked;
-                        bool sequenceAcked = message.IsReliableObjectAckedBy(ackedSeqs);
+                        bool sequenceAcked = message.IsReliableObjectAckedBy(in ackWindow);
                         if (prerequisiteAcked && sequenceAcked)
                         {
                             message.ReliableObjectAcked = true;
@@ -755,13 +775,12 @@ namespace hds
                 ArrayList q = messageQueue.RPCMessagesQueue;
                 if (q.Count > 0)
                 {
-                    if (ackedSeqs == null) ackedSeqs = SequencedMessage.AckedSequences(ackSeq, playerData.getPss());
                     int write = 0;
                     for (int i = 0; i < q.Count; i++)
                     {
                         SequencedMessage message = (SequencedMessage)q[i];
                         // Gone once the client acks a packet it was in; until then FlushQueue sends it again
-                        if (message.rpcNumber >= 0 && message.IsRpcAckedBy(ackedSeqs))
+                        if (message.rpcNumber >= 0 && message.IsRpcAckedBy(in ackWindow))
                         {
                             continue;
                         }

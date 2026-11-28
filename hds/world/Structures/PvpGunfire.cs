@@ -1,6 +1,8 @@
 using System;
+using System.Threading;
 using System.Timers;
 using hds.shared;
+using Timer = System.Timers.Timer;
 
 namespace hds
 {
@@ -27,6 +29,8 @@ namespace hds
         private readonly object sync = new object();
         private readonly Random rng = new Random();
         private Timer timer;
+        private ElapsedEventHandler timerHandler;
+        private int tickInFlight;
         private byte noiseLevel;
         private int outOfRangeTicks;
         private UInt16 combatEffectRecordId;
@@ -77,7 +81,8 @@ namespace hds
                 fire.SendCombatEffect(false);
                 Output.WriteDebugLog("[PVP] " + PvpFlag.Name(shooter) + " opens fire on " + PvpFlag.Name(target));
                 fire.timer = new Timer(RangedWeapons.FireIntervalMs(gun)) { AutoReset = true };
-                fire.timer.Elapsed += (s, e) => fire.OnTimer();
+                fire.timerHandler = (s, e) => fire.OnTimer();
+                fire.timer.Elapsed += fire.timerHandler;
                 fire.timer.Start();
             }
             fire.Fire(true);
@@ -110,6 +115,10 @@ namespace hds
 
         private void OnTimer()
         {
+            if (Interlocked.Exchange(ref tickInFlight, 1) != 0)
+            {
+                return;
+            }
             try
             {
                 if (!IsActive)
@@ -139,6 +148,10 @@ namespace hds
             catch (Exception ex)
             {
                 Output.WriteLine("[PVP] Shot failed: " + ex);
+            }
+            finally
+            {
+                Volatile.Write(ref tickInFlight, 0);
             }
         }
 
@@ -237,9 +250,17 @@ namespace hds
                     return;
                 }
                 IsActive = false;
-                timer?.Stop();
-                timer?.Dispose();
-                timer = null;
+                if (timer != null)
+                {
+                    if (timerHandler != null)
+                    {
+                        timer.Elapsed -= timerHandler;
+                        timerHandler = null;
+                    }
+                    timer.Stop();
+                    timer.Dispose();
+                    timer = null;
+                }
                 CombatHandler handler = CombatManager.GetHandler(Shooter);
                 if (handler.pvpGunfire == this)
                 {

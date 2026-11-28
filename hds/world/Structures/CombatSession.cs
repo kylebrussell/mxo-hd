@@ -1,5 +1,7 @@
 using System;
+using System.Threading;
 using System.Timers;
+using Timer = System.Timers.Timer;
 
 namespace hds
 {
@@ -169,28 +171,34 @@ namespace hds
             IsActive = false;
         }
 
+        private readonly object timerLock = new object();
+        private int tickInFlight;
+
         /// <summary>
         /// Starts the combat session and begins the update timer.
         /// </summary>
         /// <param name="tickIntervalMs">Milliseconds between combat ticks</param>
         public void Start(int tickIntervalMs = CombatInterlock.RoundMs)
         {
-            if (IsActive) return;
-
-            IsActive = true;
-            StartTime = DateTime.Now;
-            RoundNumber = 0;
-
-            // Set the mob into combat state if applicable
-            if (DefenderMob != null)
+            lock (timerLock)
             {
-                DefenderMob.currentState = (int)Mob.statusList.COMBAT;
-            }
+                if (IsActive) return;
 
-            combatTimer = new Timer(tickIntervalMs);
-            combatTimer.Elapsed += OnTimerTick;
-            combatTimer.AutoReset = true;
-            combatTimer.Enabled = true;
+                IsActive = true;
+                StartTime = DateTime.Now;
+                RoundNumber = 0;
+
+                // Set the mob into combat state if applicable
+                if (DefenderMob != null)
+                {
+                    DefenderMob.currentState = (int)Mob.statusList.COMBAT;
+                }
+
+                combatTimer = new Timer(tickIntervalMs);
+                combatTimer.Elapsed += OnTimerTick;
+                combatTimer.AutoReset = true;
+                combatTimer.Enabled = true;
+            }
         }
 
         /// <summary>
@@ -198,17 +206,24 @@ namespace hds
         /// </summary>
         public void Stop(CombatEndReason reason)
         {
-            if (!IsActive) return;
-
-            IsActive = false;
-            combatTimer?.Stop();
-            combatTimer?.Dispose();
-            combatTimer = null;
-
-            // Reset mob state if applicable
-            if (DefenderMob != null && !DefenderMob.getIsDead() && DefenderMob.CombatantCount <= 1)
+            lock (timerLock)
             {
-                DefenderMob.currentState = (int)Mob.statusList.STANDING;
+                if (!IsActive) return;
+
+                IsActive = false;
+                if (combatTimer != null)
+                {
+                    combatTimer.Elapsed -= OnTimerTick;
+                    combatTimer.Stop();
+                    combatTimer.Dispose();
+                    combatTimer = null;
+                }
+
+                // Reset mob state if applicable
+                if (DefenderMob != null && !DefenderMob.getIsDead() && DefenderMob.CombatantCount <= 1)
+                {
+                    DefenderMob.currentState = (int)Mob.statusList.STANDING;
+                }
             }
 
             OnCombatEnd?.Invoke(this, reason);
@@ -219,10 +234,29 @@ namespace hds
         /// </summary>
         private void OnTimerTick(object sender, ElapsedEventArgs e)
         {
-            if (!IsActive) return;
+            if (Interlocked.Exchange(ref tickInFlight, 1) != 0)
+            {
+                return;
+            }
 
-            RoundNumber++;
-            OnCombatTick?.Invoke(this);
+            try
+            {
+                lock (timerLock)
+                {
+                    if (!IsActive) return;
+                    RoundNumber++;
+                }
+
+                OnCombatTick?.Invoke(this);
+            }
+            catch (Exception ex)
+            {
+                Output.WriteDebugLog("[COMBAT] Session tick failed: " + ex.Message);
+            }
+            finally
+            {
+                Volatile.Write(ref tickInFlight, 0);
+            }
         }
 
         /// <summary>

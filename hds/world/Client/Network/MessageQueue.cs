@@ -192,12 +192,21 @@ namespace hds
         internal System.Collections.Generic.List<SequencedMessage> TakeRpcsToSend(long nowTickMs, UInt16 nextCounter, out RpcResend resend,
             long? lastIngressTickMs = null)
         {
+            var result = new List<SequencedMessage>();
+            TakeRpcsToSendInto(nowTickMs, nextCounter, result, out resend, lastIngressTickMs);
+            return result.Count == 0 ? EmptyRpcList : result;
+        }
+
+        internal void TakeRpcsToSendInto(long nowTickMs, UInt16 nextCounter, List<SequencedMessage> destination, out RpcResend resend,
+            long? lastIngressTickMs = null)
+        {
+            destination.Clear();
             lock (RPCMessagesQueue.SyncRoot)
             {
                 if (RPCMessagesQueue.Count == 0)
                 {
                     resend = default;
-                    return EmptyRpcList;
+                    return;
                 }
 
                 List<SequencedMessage> sent = rpcSentScratch;
@@ -272,13 +281,12 @@ namespace hds
                     resend = due < 0 ? default : new RpcResend(sent[0].rpcNumber, sent[due].rpcNumber, due + 1, sent[0].sendCounter);
                     if (total == 0)
                     {
-                        return EmptyRpcList;
+                        return;
                     }
 
-                    var result = new System.Collections.Generic.List<SequencedMessage>(total);
-                    for (int i = 0; i <= due; i++) result.Add(sent[i]);
-                    for (int i = 0; i < freshToTake; i++) result.Add(fresh[i]);
-                    return result;
+                    if (destination.Capacity < total) destination.Capacity = total;
+                    for (int i = 0; i <= due; i++) destination.Add(sent[i]);
+                    for (int i = 0; i < freshToTake; i++) destination.Add(fresh[i]);
                 }
                 finally
                 {
