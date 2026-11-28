@@ -12,7 +12,54 @@ namespace hds
 
         /// <summary>Seconds between accepted /stuck requests for one character (local policy).</summary>
         public const int StuckCooldownSeconds = 300;
+        private const int StuckPruneThreshold = 64;
         private static readonly Dictionary<uint, double> lastStuck = new Dictionary<uint, double>();
+
+        internal static int StuckCooldownCount
+        {
+            get { lock (lastStuck) return lastStuck.Count; }
+        }
+
+        internal static void ClearStuckCooldownsForTesting()
+        {
+            lock (lastStuck) lastStuck.Clear();
+        }
+
+        internal static void RecordStuckCooldownForTesting(uint character, double at)
+        {
+            lock (lastStuck)
+            {
+                lastStuck[character] = at;
+            }
+        }
+
+        internal static void PruneExpiredStuckCooldowns(double now)
+        {
+            lock (lastStuck)
+            {
+                PruneExpiredStuckCooldownsLocked(now);
+            }
+        }
+
+        private static void PruneExpiredStuckCooldownsLocked(double now)
+        {
+            List<uint> expired = null;
+            foreach (KeyValuePair<uint, double> kv in lastStuck)
+            {
+                if (now - kv.Value >= StuckCooldownSeconds)
+                {
+                    expired ??= new List<uint>();
+                    expired.Add(kv.Key);
+                }
+            }
+            if (expired != null)
+            {
+                for (int i = 0; i < expired.Count; i++)
+                {
+                    lastStuck.Remove(expired[i]);
+                }
+            }
+        }
 
         /// <summary>
         /// 81 55 (no fields) is /stuck: the stock client sends it only after its own local stuck test passes
@@ -33,6 +80,10 @@ namespace hds
             if (refusal == null)
                 lock (lastStuck)
                 {
+                    if (lastStuck.Count >= StuckPruneThreshold)
+                    {
+                        PruneExpiredStuckCooldownsLocked(now);
+                    }
                     if (lastStuck.TryGetValue(character, out double last) && now - last < StuckCooldownSeconds)
                         refusal = "You can use /stuck again in " + (int)Math.Ceiling(StuckCooldownSeconds - (now - last)) + " seconds.";
                     else lastStuck[character] = now;

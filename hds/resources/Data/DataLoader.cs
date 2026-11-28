@@ -67,7 +67,7 @@ namespace hds
         public List<GameObjectItem> GODB = new List<GameObjectItem>(); // Holds the GameObjects
         public List<ClothingItem> ClothingRSIDB = new List<ClothingItem>();
         public List<StaticWorldObject> WorldObjectsDB = new List<StaticWorldObject>();
-        public StaticObjectIndex WorldObjectsById = new StaticObjectIndex();
+        public StaticObjectIndex WorldObjectsById;
         public List<EmoteItem> Emotes = new List<EmoteItem>();
         public List<NewRSIItem> newRSIItemsDb = new List<NewRSIItem>();
         public List<Vendor> Vendors = new List<Vendor>();
@@ -85,6 +85,7 @@ namespace hds
 
         private DataLoader(bool loadFiles)
         {
+            WorldObjectsById = new StaticObjectIndex(WorldObjectsDB);
             if (!loadFiles)
             {
                 return;
@@ -94,6 +95,7 @@ namespace hds
 
         private DataLoader()
         {
+            WorldObjectsById = new StaticObjectIndex(WorldObjectsDB);
             loadEmotes();
             LoadMissions();
             loadNewRSIIDs(DataPath("newrsiIDs.csv"));
@@ -819,8 +821,9 @@ namespace hds
                     StaticWorldObject worldObject = ParseStaticWorldObjectLine(
                         line.AsSpan(), staticObjectTypeCache, quatInterner, out UInt16 typeId);
 
+                    int rowIndex = WorldObjectsDB.Count;
                     WorldObjectsDB.Add(worldObject);
-                    WorldObjectsById.Add(worldObject);
+                    WorldObjectsById.AddAt(worldObject, rowIndex);
                     if (typeId == 6568)
                     {
                         AddWorldObjectToWorldServer(worldObject);
