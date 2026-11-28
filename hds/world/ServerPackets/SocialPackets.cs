@@ -69,6 +69,9 @@ namespace hds
         public const byte FriendListed = 0x3c;
         public const byte FriendAdded = 0x84;
         public const byte FriendNotFound = 0x41;
+        internal const uint FriendSuccess = 0x8e000084;
+        internal const uint FriendMissing = 0x0e000041;
+        internal const uint FriendSaveFailed = 0x0e000068;
 
         public static uint InviteDeclinedCode(byte groupType)
         {
@@ -262,13 +265,18 @@ namespace hds
         /// (both in 80 d7 friend answers and in 2c tell acknowledgements).</summary>
         private static byte ResultFlag(byte status) => status == FriendNotFound ? (byte) 0x0e : (byte) 0x8e;
 
-        /// <summary>80 d7 08 00 &lt;status&gt; 00 00 &lt;8e|0e&gt; &lt;sized handle&gt;: one friend list entry / add result.</summary>
-        public static byte[] FriendListStatus(byte status, string handleWithPrefix)
+        /// <summary>80 d7 08 00 &lt;status u32&gt; &lt;sized handle&gt;: one entry in the friend list at login.</summary>
+        public static byte[] FriendListStatus(byte status, string handleWithPrefix) =>
+            FriendListResult(false, handleWithPrefix, ((uint)ResultFlag(status) << 24) | status);
+
+        /// <summary>80 d7 / 80 db 08 00 &lt;status u32&gt; &lt;sized handle&gt;: add or remove result.</summary>
+        internal static byte[] FriendListResult(bool remove, string handleWithPrefix, uint status)
         {
             PacketContent pak = new PacketContent();
-            pak.AddUint16((UInt16) RPCResponseHeaders.SERVER_FRIENDLIST_STATUS_ADD, 0);
+            pak.AddUint16((UInt16)(remove ? RPCResponseHeaders.SERVER_FRIENDLIST_STATUS_DELETE :
+                RPCResponseHeaders.SERVER_FRIENDLIST_STATUS_ADD), 0);
             pak.AddUint16(8, 1);
-            pak.AddByteArray(new byte[] {status, 0x00, 0x00, ResultFlag(status)});
+            pak.AddUint32(status, 1);
             pak.AddSizedTerminatedString(handleWithPrefix);
             return pak.ReturnFinalPacket();
         }

@@ -237,16 +237,15 @@ namespace hds.databases{
 			return userId;
 		}
 
-		public void AddHandleToFriendList(string handleToAdd, UInt32 charId)
+		public void AddFriend(UInt32 charId, UInt32 friendId)
 		{
-			UInt32 friendId = GetCharIdByHandle(handleToAdd);
-			NonQuery("INSERT INTO buddylist SET charId = @charId, friendId = @friendId, is_ignored = 0",
+			NonQuery("INSERT INTO buddylist (charId, friendId, is_ignored) SELECT @charId, @friendId, 0 " +
+				"WHERE NOT EXISTS (SELECT 1 FROM buddylist WHERE charId = @charId AND friendId = @friendId)",
 				P("@charId", charId), P("@friendId", friendId));
 		}
 
-		public void RemoveHandleFromFriendList(string handleToRemove, UInt32 charId)
+		public void RemoveFriend(UInt32 charId, UInt32 friendId)
 		{
-			UInt32 friendId = GetCharIdByHandle(handleToRemove);
 			NonQuery("DELETE FROM buddylist WHERE charId = @charId AND friendId = @friendId",
 				P("@charId", charId), P("@friendId", friendId));
 		}
@@ -967,14 +966,6 @@ namespace hds.databases{
 	        NonQuery("UPDATE crews SET master_player_handle = @handle WHERE id = @crew",
 		        P("@handle", handle), P("@crew", crewId));
         }
-
-        public bool IsOnFriendList(UInt32 charId, UInt32 friendId)
-        {
-	        object found = ScalarQuery("SELECT id FROM buddylist WHERE charId = @char AND friendId = @friend LIMIT 1",
-		        P("@char", charId), P("@friend", friendId));
-	        return found != null && found != DBNull.Value;
-        }
-
 
 		public void AddCrew(string crewName, string masterHandle)
 		{

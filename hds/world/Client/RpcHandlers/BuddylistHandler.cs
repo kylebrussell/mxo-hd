@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Data.Common;
 using hds.shared;
 
 namespace hds
@@ -11,48 +12,45 @@ namespace hds
         /// <summary>Client 80 d6 04 00 &lt;sized "SOE+MXO+&lt;server&gt;+handle"&gt;.</summary>
         public void ProcessAddFriend(ref byte[] packet)
         {
-            string playerHandleWithPrefix;
-            if (!ReadHandle(packet, out playerHandleWithPrefix))
-            {
-                return;
-            }
-
-            string playerHandleClean = playerHandleWithPrefix.Replace(Prefix, "");
-            UInt32 myCharId = Store.currentClient.playerData.getCharID();
-            UInt32 friendId = Store.dbManager.WorldDbHandler.GetCharIdByHandle(playerHandleClean);
-            if (friendId == 0)
-            {
-                // mxopackets1_crashover2k_009_session_complete: 41 answered two of 29 adds (handles we take to be gone).
-                SocialHandler.Send(Store.currentClient, SocialPackets.FriendListStatus(SocialPackets.FriendNotFound, playerHandleWithPrefix));
-                return;
-            }
-
-            if (!Store.dbManager.WorldDbHandler.IsOnFriendList(myCharId, friendId))
-            {
-                Store.dbManager.WorldDbHandler.AddHandleToFriendList(playerHandleClean, myCharId);
-            }
-
-            // Same capture: 84 answered the other adds.
-            SocialHandler.Send(Store.currentClient, SocialPackets.FriendListStatus(SocialPackets.FriendAdded, playerHandleWithPrefix));
-            if (SocialHandler.FindOnlineByCharId(friendId) != null)
-            {
-                SocialHandler.Send(Store.currentClient, SocialPackets.FriendOnline(playerHandleWithPrefix));
-            }
+            EditFriend(Store.currentClient, packet, remove: false);
         }
 
         public void ProcessRemoveFriend(ref byte[] packet)
         {
-            string playerHandleWithPrefix;
-            if (!ReadHandle(packet, out playerHandleWithPrefix))
+            EditFriend(Store.currentClient, packet, remove: true);
+        }
+
+        private static void EditFriend(WorldClient client, byte[] packet, bool remove)
+        {
+            if (!ReadHandle(packet, out string address)) return;
+
+            var db = Store.dbManager.WorldDbHandler;
+            uint owner = client.playerData.getCharID();
+            uint friendId;
+            try
             {
+                string handle = address.Replace(Prefix, "");
+                friendId = db.GetCharIdByHandle(handle);
+                if (friendId != 0)
+                {
+                    if (remove) db.RemoveFriend(owner, friendId);
+                    else db.AddFriend(owner, friendId);
+                }
+            }
+            catch (DbException error)
+            {
+                Output.WriteDebugLog($"[BUDDY] Friend list edit could not be saved char={owner} remove={remove}: {error.Message}");
+                SocialHandler.Send(client, SocialPackets.FriendListResult(remove, address, SocialPackets.FriendSaveFailed));
                 return;
             }
 
-            string playerHandleClean = playerHandleWithPrefix.Replace(Prefix, "");
-            Store.dbManager.WorldDbHandler.RemoveHandleFromFriendList(playerHandleClean,
-                Store.currentClient.playerData.getCharID());
-            ServerPackets packets = new ServerPackets();
-            packets.SendRemoveFriend(Store.currentClient, playerHandleWithPrefix);
+            // An already absent entry can be removed again to clear a stale client row.
+            uint status = friendId != 0 || remove
+                ? SocialPackets.FriendSuccess
+                : SocialPackets.FriendMissing;
+            SocialHandler.Send(client, SocialPackets.FriendListResult(remove, address, status));
+            if (!remove && friendId != 0 && SocialHandler.FindOnlineByCharId(friendId) != null)
+                SocialHandler.Send(client, SocialPackets.FriendOnline(address));
         }
 
         public void ProcessAnnounceFriendsOffline(UInt32 charId, string handle)

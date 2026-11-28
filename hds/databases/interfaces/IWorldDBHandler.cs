@@ -26,8 +26,8 @@ namespace hds.databases.interfaces{
         Hashtable GetCharInfoByHandle(string handle);
         UInt32 GetUserIdForCharId(byte[] charIdHex);
         string GetPathForDistrictKey(string key);
-        void AddHandleToFriendList(string handleToAdd, UInt32 charId);
-        void RemoveHandleFromFriendList(string handleToRemove, UInt32 charId);
+        void AddFriend(UInt32 charId, UInt32 friendId);
+        void RemoveFriend(UInt32 charId, UInt32 friendId);
         ArrayList FetchPlayersWhoAddedMeToBuddylist(UInt32 charId);
         ArrayList FetchFriendList(UInt32 charId);
         Faction FetchFaction(UInt32 factionId);
@@ -145,6 +145,5 @@ namespace hds.databases.interfaces{
         (uint FactionId, uint Refusal) FoundFaction(uint founder, uint crew, string name);
         bool ChangeCrewFirstMate(uint crew, uint captain, uint target, bool captainIsBot, bool targetIsBot);
         (uint Status, ushort Rank) ChangeFactionRank(uint captain, uint crew, uint faction, uint targetCrew, bool promote);
-        bool IsOnFriendList(UInt32 charId, UInt32 friendId);
     }
 }

@@ -461,6 +461,26 @@ an unsolicited header or message refresh after `81 fd`.
 - `?mailbot [subject]`: a mail from MailBot with a Code Bit 1 attached arrives at once.
 - Mail sent to `MailBot` is answered with "RE: <subject>", the text quoted, and the attachments (and information) given back.
 
+## Buddy List write refusal
+
+The stock **/friend** and **Buddy List > Remove** requests are `80 d6` and
+`80 da`. Their results `80 d7` and `80 db` carry the requested name and
+a 32-bit status. The client checks the success bit before changing the
+row (client.dll `0x622558a5` and `0x62251c5f`). Its failure text comes from
+strings `0xaa00002c` and `0xaa00003a`.
+
+A rejected write returns `0x0e000068` and keeps the saved list. The server
+sends online presence for a new buddy after a successful add. Repeating
+an add keeps one saved row.
+
+Use `buddy-list-write-refusal` at the outdoor Mara stand (17000,495,6400).
+Type `/friend QAFriend`, then remove **QAOther** from Buddy List. The
+disposable CHECK and foreign key refuse the edits. QAOther should remain
+the only buddy. Send `{"actor":"QAFriend","action":"buddy-save","step":"retry"}`
+to verify the saved list and release both faults. Repeat the same edits
+in the same session and verify only QAFriend remains. Relog to check
+persistence.
+
 ## Ignore list in detail
 
 `80 e0` / `80 e2`: `<name offset u16>` and the name, like the friend list's `80 d6`. The answers `80 e1` / `80 e3` are `08 00 <Status u32> <name>`. client.dll (0x62255bb0) adds the name and prints "Ignoring %s." for a success code and "Failed to ignore %s." otherwise. The server answers SUCCESS (`0x8e000084`), DESTAVATARDOESNTEXIST for a handle nobody has, IGNORENOTFOUND (`0x0e000058`) for removing someone not on the list. At world entry it sends each stored name with `LTOBJSRV_CONTACT_LIST_SETUP_PLAYER_IGNORED` (`0x8e00003d`); that this is what retail sent at login is a guess (the handler compares against that code, and the friend list uses its neighbours 3b/3c the same way). The client also filters chat and mail to and from ignored players itself. The server keeps each online player's list in memory, loaded at world entry and updated by `80 e0`/`80 e2`. It does not deliver area, crew, faction, team or room lines from an ignored handle to that listener. A tell to a player who ignores the sender is not delivered; the sender gets `2c <counter>` with LTOBJSRV_SOECHAT_IGNORING (`0x0e000054`). That status is the 23rd name in client.dll's `0x3d + n` chat result table, which is evidence that the original chat service refused such tells. Ignoring is one-way. [Mail checks saved recipient ignores](#mail-and-ignores), including while the recipient is offline.
