@@ -29,7 +29,7 @@ namespace hds
             var upload = new BackgroundChunkUpload(worldGeneration);
             uint length = BinaryPrimitives.ReadUInt32LittleEndian(body);
             uint width = BinaryPrimitives.ReadUInt32LittleEndian(body[4..]);
-            if (body.Length == 11 && width == ChunkSize && length is >= ChunkSize and <= MaxLength)
+            if (body.Length == 11 && width == ChunkSize && length >= ChunkSize && length <= MaxLength)
                 upload.bytes = new byte[length];
             return upload;
         }

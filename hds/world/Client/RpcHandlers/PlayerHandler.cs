@@ -318,7 +318,8 @@ namespace hds
             uint charId = client.playerData.getCharID();
             var upload = client.playerData.PendingBackground;
             client.playerData.PendingBackground = null;
-            string background = packetData is [0, 0, 1]
+            bool chunked = packetData.Length == 3 && packetData[0] == 0 && packetData[1] == 0 && packetData[2] == 1;
+            string background = chunked
                 ? upload?.ReadIfComplete(client.playerData.worldGeneration)
                 : ReadInlineBackground(packetData);
             bool saved = false;
