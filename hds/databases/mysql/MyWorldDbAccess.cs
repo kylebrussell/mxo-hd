@@ -1172,16 +1172,6 @@ namespace hds.databases{
 	        return found != null && found != DBNull.Value;
         }
 
-        /// <summary>Creates a crew with the captain as its first member and returns its id.</summary>
-        public UInt32 CreateCrew(string crewName, string captainHandle, ushort org)
-        {
-	        object id = ScalarQuery(
-		        "INSERT INTO crews (crew_name, master_player_handle, money, org, faction_id, faction_rank, created_at, deleted_at) " +
-		        "VALUES (@name, @captain, 0, @org, 0, 0, NOW(), NULL); SELECT LAST_INSERT_ID();",
-		        P("@name", crewName.Trim()), P("@captain", captainHandle), P("@org", (int) org));
-	        return Convert.ToUInt32(id);
-        }
-
         public void SetCrewCaptain(UInt32 crewId, UInt32 charId, string handle)
         {
 	        NonQuery("UPDATE crew_members SET is_captain = (char_id = @char) WHERE crew_id = @crew",

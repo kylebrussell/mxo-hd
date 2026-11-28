@@ -345,6 +345,8 @@ try
                     result = await NativeQa.Modes.AtomicFactionDisbandMode.ReleaseFaultAsync(actor);
                 else if (fixtureMode is NativeQa.Modes.AtomicCrewEjectionMode && action == "crew-removal-retry")
                     result = await NativeQa.Modes.AtomicCrewEjectionMode.ReleaseFaultAsync(actor);
+                else if (fixtureMode is NativeQa.Modes.AtomicCrewFoundingMode && action == "crew-founding-accept")
+                    result = await NativeQa.Modes.AtomicCrewFoundingMode.AcceptAsync(actor);
                 else if (fixtureMode is NativeQa.Modes.TeamBreadthMode && action == "team-breadth")
                     result = await NativeQa.Modes.TeamBreadthMode.SendActionAsync(actor, q);
                 else if ((fixtureMode is NativeQa.Modes.HackerParitySweepMode or NativeQa.Modes.HackerSecondPassMode) && action == "hacker-group-arrive")

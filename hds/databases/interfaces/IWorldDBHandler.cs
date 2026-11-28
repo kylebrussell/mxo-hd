@@ -137,7 +137,7 @@ namespace hds.databases.interfaces{
 
         // Social groups (parameterized; names may contain quotes)
         bool CrewNameExists(string crewName);
-        UInt32 CreateCrew(string crewName, string captainHandle, ushort org);
+        (uint CrewId, uint Refusal) FoundCrew(uint founder, uint invitee, bool inviteeIsBot, string name, byte org);
         void SetCrewCaptain(UInt32 crewId, UInt32 charId, string handle);
         void DisbandCrew(UInt32 crewId);
         void SetFactionOfCrewMembers(UInt32 crewId, UInt32 factionId);

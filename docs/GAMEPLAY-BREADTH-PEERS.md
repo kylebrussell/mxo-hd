@@ -175,6 +175,27 @@ stays first mate and the roster menu reopens. Deposit 1 through the
 and the first-mate slot clears. Verify the crew roster and faction
 bank of 501 after relog.
 
+### Atomic crew founding
+
+On acceptance of a founding invitation (`6f 02`), the server rechecks
+both characters and the crew name under transaction locks. The new
+crew, captain and member roster rows, and character affiliations commit
+together. The crew creation window receives `80 85` with status
+`0x020000b4` on a write failure. The stock handler at `621a9520` clears
+the pending state and uses its generic failure text with the shipped
+“Unknown Error” resource. The server also gives both players a specific
+chat refusal. Success sends `80 85` and the committed roster.
+
+Use `crew-founding-atomic`. From **Crew > Create Crew**, enter
+**QARetryCrew**, choose Zion and invite QAFriend. Send
+`{"actor":"QAFriend","action":"crew-founding-accept"}`.
+The disclosed disposable check blocks QAFriend's affiliation write.
+Verify the failure result and that CSR remains unaffiliated. Reopen
+creation right away and use the same name and organization with QAOther.
+Send `{"actor":"QAOther","action":"crew-founding-accept"}`.
+Expect success and a two-member roster with CSR as captain. Verify
+the name and roster after relog.
+
 ## Marketplace
 
 Use the `marketplace-breadth` mode. QAFriend lists a Code Bit 1 for 300
