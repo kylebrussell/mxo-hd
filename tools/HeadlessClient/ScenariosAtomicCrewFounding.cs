@@ -39,6 +39,8 @@ public static partial class Scenarios
         founder.SkipReceived();
         refused.SkipReceived();
         accepted.SkipReceived();
+        string originalRosters = $"SELECT COUNT(*) FROM crew_members WHERE char_id IN ({founder.CharId},{refused.CharId})";
+        long originalRosterRows = await db.LongAsync(originalRosters);
         founder.SendRpc(CrewCreate(CrewFoundingName, refused.Handle, 1));
         await AcceptCrewFoundingAsync(refused, founder.Handle);
         var failure = await founder.WaitForRpcAsync("80 85 00 00 00 00 0d 00 01 b4 00 00 02");
@@ -47,8 +49,7 @@ public static partial class Scenarios
         await refused.WaitForTextAsync(CrewFoundingRefusal);
         Check.Equal(0L, await db.LongAsync($"SELECT COUNT(*) FROM crews WHERE crew_name='{CrewFoundingName}'"),
             "A failed affiliation write rolls back the inserted crew and releases its name");
-        Check.Equal(0L, await db.LongAsync($"SELECT COUNT(*) FROM crew_members WHERE char_id IN ({founder.CharId},{refused.CharId})"),
-            "Neither rolled-back roster row remains");
+        Check.Equal(originalRosterRows, await db.LongAsync(originalRosters), "Rollback adds no roster rows");
         Check.Equal(2L, await db.LongAsync($"SELECT COUNT(*) FROM characters WHERE charId IN ({founder.CharId},{refused.CharId}) AND crewId=0 AND factionId=0"),
             "Both players stay unaffiliated");
         Check.Equal(0, founder.Received("80 85 ?? ?? ?? ?? 0d 00 01 00 00 00 00").Count,
