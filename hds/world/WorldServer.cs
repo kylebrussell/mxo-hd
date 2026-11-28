@@ -1,5 +1,6 @@
 using System;
 using System.Buffers;
+using System.Buffers.Binary;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel.Design;
@@ -39,7 +40,36 @@ namespace hds
         private readonly Dictionary<EndPoint, WorldClient> clientsByEndpoint = new Dictionary<EndPoint, WorldClient>();
         private readonly List<EndPoint> staleEndpointScratch = new List<EndPoint>();
         private Dictionary<string, WorldClient> endpointCacheSource;
+        private readonly Dictionary<ulong, WorldClient> clientsByIpv4Endpoint = new Dictionary<ulong, WorldClient>();
+        private readonly List<ulong> staleIpv4EndpointScratch = new List<ulong>();
+        private long transientReceiveErrors;
         private const int EndpointCachePruneSlack = 64;
+
+        internal static bool TryReadIpv4EndpointKey(SocketAddress address, out ulong key, out uint ipv4Raw, out ushort port)
+        {
+            if (address == null || address.Family != AddressFamily.InterNetwork || address.Size < 8)
+            {
+                key = 0;
+                ipv4Raw = 0;
+                port = 0;
+                return false;
+            }
+            ReadOnlySpan<byte> raw = address.Buffer.Span;
+            port = (ushort)((raw[2] << 8) | raw[3]);
+            ipv4Raw = BinaryPrimitives.ReadUInt32LittleEndian(raw.Slice(4, 4));
+            key = ((ulong)ipv4Raw << 16) | port;
+            return true;
+        }
+
+        internal static bool IsTransientReceiveError(SocketError error)
+        {
+            return error == SocketError.ConnectionReset ||
+                   error == SocketError.MessageSize ||
+                   error == SocketError.Interrupted ||
+                   error == SocketError.WouldBlock ||
+                   error == SocketError.TryAgain ||
+                   error == SocketError.NoBufferSpaceAvailable;
+        }
 
         /// <summary>Thread-safe entity ID allocator shared across UDP ingress, combat, missions, pets, and loaders.</summary>
         public static UInt64 NextEntityId()
@@ -71,7 +101,7 @@ namespace hds
             return true;
         }
 
-        internal int EndpointCacheCount => clientsByEndpoint.Count;
+        internal int EndpointCacheCount => (clientsByEndpoint?.Count ?? 0) + (clientsByIpv4Endpoint?.Count ?? 0);
 
         internal static bool HasActiveCharacter(UInt32 charId)
         {
@@ -93,6 +123,8 @@ namespace hds
 
         internal void PruneStaleEndpointCache()
         {
+            if (clientsByEndpoint != null && staleEndpointScratch != null)
+            {
             staleEndpointScratch.Clear();
             foreach (KeyValuePair<EndPoint, WorldClient> kv in clientsByEndpoint)
             {
@@ -107,6 +139,25 @@ namespace hds
                 clientsByEndpoint.Remove(staleEndpointScratch[i]);
             }
             staleEndpointScratch.Clear();
+            }
+
+            if (clientsByIpv4Endpoint != null && staleIpv4EndpointScratch != null)
+            {
+            staleIpv4EndpointScratch.Clear();
+            foreach (KeyValuePair<ulong, WorldClient> kv in clientsByIpv4Endpoint)
+            {
+                WorldClient c = kv.Value;
+                if (c == null || !c.Alive || c.IngressSnapshot.Claimed)
+                {
+                    staleIpv4EndpointScratch.Add(kv.Key);
+                }
+            }
+            for (int i = 0; i < staleIpv4EndpointScratch.Count; i++)
+            {
+                clientsByIpv4Endpoint.Remove(staleIpv4EndpointScratch[i]);
+            }
+            staleIpv4EndpointScratch.Clear();
+            }
         }
         
         public ObjectManager objMan { get; set; }
@@ -141,118 +192,151 @@ namespace hds
         
         
         /// <summary>
-        /// Receives datagrams one at a time, in arrival order. A receive that completes synchronously is handled in this
-        /// loop rather than from its callback: under load (200 moving clients) every receive completed synchronously and
-        /// the callback-to-BeginReceiveFrom recursion overflowed the stack, ending the server process.
+        /// Receives datagrams synchronously on the dedicated World listener thread in arrival order using
+        /// a reusable SocketAddress and value-type IPv4 endpoint cache (zero per-datagram IPEndPoint,
+        /// SocketAsyncResult, or Remote.ToString() allocations on steady-state traffic).
         /// </summary>
-        private void ReceiveNext()
+        private void ReceiveLoop()
         {
+            SocketAddress receivedAddress = new SocketAddress(socket.AddressFamily);
             while (!stopping)
             {
-                // Queue each datagram before receiving another. Concurrent callbacks racing for processLock can reorder RPCs.
-                EndPoint nextClient = new IPEndPoint(IPAddress.Any, 0);
-                IAsyncResult iar;
+                int msgLen;
                 try
                 {
-                    iar = socket.BeginReceiveFrom(buffer, 0, buffer.Length, SocketFlags.None, ref nextClient,
-                        finalReceiveFrom, socket);
+                    msgLen = socket.ReceiveFrom(buffer.AsSpan(), SocketFlags.None, receivedAddress);
                 }
                 catch (SocketException ex)
                 {
-                    if (!stopping)
+                    if (stopping)
                     {
-                        Output.WriteLine("[WORLD] Receive failed: " + ex.SocketErrorCode + " " + ex.Message);
+                        return;
                     }
+                    if (IsTransientReceiveError(ex.SocketErrorCode))
+                    {
+                        long count = Interlocked.Increment(ref transientReceiveErrors);
+                        if (count == 1 || (count & (count - 1)) == 0)
+                        {
+                            Output.WriteLine("[WORLD] Transient UDP receive error: " + ex.SocketErrorCode +
+                                             " (count=" + count + "): " + ex.Message);
+                        }
+                        continue;
+                    }
+                    Output.WriteLine("[WORLD] Receive failed: " + ex.SocketErrorCode + " " + ex.Message);
                     return;
                 }
                 catch (ObjectDisposedException)
                 {
-                    return; // The socket closed while a receive was finishing.
+                    return; // The socket closed while a receive was waiting.
                 }
-                if (!iar.CompletedSynchronously) return;
-                ProcessDatagram(iar);
+
+                if (msgLen <= 0)
+                {
+                    continue;
+                }
+
+                DispatchDatagram(receivedAddress, msgLen);
             }
         }
 
-        private void finalReceiveFrom(IAsyncResult iar)
+        private WorldClient ResolveOrAdmitClient(Dictionary<string, WorldClient> registry, EndPoint remote, out int activeCount)
         {
-            if (iar.CompletedSynchronously) return; // ReceiveNext handles it without growing the stack
-            ProcessDatagram(iar);
-            ReceiveNext();
+            WorldClient currentClient = null;
+            string remoteKey = remote.ToString();
+            lock (registry)
+            {
+                if (!registry.TryGetValue(remoteKey, out currentClient))
+                {
+                    if (!CanAdmitNewEndpointLocked(registry))
+                    {
+                        long dropped = Interlocked.Increment(ref rejectedEndpoints);
+                        if (dropped == 1 || (dropped & (dropped - 1)) == 0)
+                        {
+                            Output.WriteLine("[WORLD] Dropped unknown UDP endpoint " + remoteKey +
+                                             " (client/unauth cap reached, total rejected=" + dropped + ")");
+                        }
+                        activeCount = registry.Count;
+                    }
+                    else
+                    {
+                        objMan.PushClient(remoteKey); // Push first, then create it
+                        currentClient = new WorldClient(remote, socket, remoteKey);
+                        gameServerEntities.Add(objMan.GetAssignedObject(remoteKey));
+                        currentClient.playerData.setEntityId(NextEntityId());
+
+                        registry.Add(remoteKey, currentClient);
+                        activeCount = registry.Count;
+                    }
+                }
+                else
+                {
+                    activeCount = registry.Count;
+                }
+            }
+            return currentClient;
         }
 
-        private void ProcessDatagram(IAsyncResult iar)
+        private void DispatchDatagram(SocketAddress receivedAddress, int msgLen)
         {
-            Socket recvSocket = (Socket)iar.AsyncState;
-            EndPoint Remote = new IPEndPoint(IPAddress.Any, 0);
-            
-            int msgLen = 0;
             WorldClient currentClient = null;
             byte[] pooledMessage = null;
             bool handedOff = false;
 
             try
             {
-                msgLen = recvSocket.EndReceiveFrom(iar, ref Remote);
                 pooledMessage = ArrayPool<byte>.Shared.Rent(msgLen);
                 Buffer.BlockCopy(buffer, 0, pooledMessage, 0, msgLen);
 
-                // Fast path on the single receive thread: avoid Remote.ToString() allocation and lock(Clients)
+                // Fast path on the single receive thread: avoid IPEndPoint/string allocation and lock(Clients)
                 // while the client is active and still belongs to the same Clients dictionary.
                 Dictionary<string, WorldClient> registry = Clients;
                 if (!ReferenceEquals(endpointCacheSource, registry))
                 {
                     clientsByEndpoint.Clear();
+                    clientsByIpv4Endpoint.Clear();
                     endpointCacheSource = registry;
                 }
 
-                if (!clientsByEndpoint.TryGetValue(Remote, out currentClient) ||
-                    currentClient == null || !currentClient.Alive || currentClient.IngressSnapshot.Claimed)
+                if (TryReadIpv4EndpointKey(receivedAddress, out ulong ipv4Key, out uint ipv4Raw, out ushort port))
                 {
-                    if (currentClient != null)
+                    if (!clientsByIpv4Endpoint.TryGetValue(ipv4Key, out currentClient) ||
+                        currentClient == null || !currentClient.Alive || currentClient.IngressSnapshot.Claimed)
                     {
-                        clientsByEndpoint.Remove(Remote);
-                    }
-                    string remoteKey = Remote.ToString();
-                    int activeCount;
-                    lock (registry)
-                    {
-                        if (!registry.TryGetValue(remoteKey, out currentClient))
+                        if (currentClient != null)
                         {
-                            if (!CanAdmitNewEndpointLocked(registry))
-                            {
-                                long dropped = Interlocked.Increment(ref rejectedEndpoints);
-                                if (dropped == 1 || (dropped & (dropped - 1)) == 0)
-                                {
-                                    Output.WriteLine("[WORLD] Dropped unknown UDP endpoint " + remoteKey +
-                                                     " (client/unauth cap reached, total rejected=" + dropped + ")");
-                                }
-                                activeCount = registry.Count;
-                            }
-                            else
-                            {
-                                objMan.PushClient(remoteKey); // Push first, then create it
-                                currentClient = new WorldClient(Remote, socket, remoteKey);
-                                gameServerEntities.Add(objMan.GetAssignedObject(remoteKey));
-                                currentClient.playerData.setEntityId(NextEntityId());
-
-                                registry.Add(remoteKey, currentClient);
-                                activeCount = registry.Count;
-                            }
+                            clientsByIpv4Endpoint.Remove(ipv4Key);
                         }
-                        else
+                        EndPoint remote = new IPEndPoint(new IPAddress((long)ipv4Raw), port);
+                        currentClient = ResolveOrAdmitClient(registry, remote, out int activeCount);
+                        if (currentClient != null)
                         {
-                            activeCount = registry.Count;
+                            clientsByIpv4Endpoint[ipv4Key] = currentClient;
+                        }
+                        if (EndpointCacheCount > activeCount + EndpointCachePruneSlack)
+                        {
+                            PruneStaleEndpointCache();
                         }
                     }
-
-                    if (currentClient != null)
+                }
+                else
+                {
+                    EndPoint remote = udplistener.Create(receivedAddress);
+                    if (!clientsByEndpoint.TryGetValue(remote, out currentClient) ||
+                        currentClient == null || !currentClient.Alive || currentClient.IngressSnapshot.Claimed)
                     {
-                        clientsByEndpoint[Remote] = currentClient;
-                    }
-                    if (clientsByEndpoint.Count > activeCount + EndpointCachePruneSlack)
-                    {
-                        PruneStaleEndpointCache();
+                        if (currentClient != null)
+                        {
+                            clientsByEndpoint.Remove(remote);
+                        }
+                        currentClient = ResolveOrAdmitClient(registry, remote, out int activeCount);
+                        if (currentClient != null)
+                        {
+                            clientsByEndpoint[remote] = currentClient;
+                        }
+                        if (EndpointCacheCount > activeCount + EndpointCachePruneSlack)
+                        {
+                            PruneStaleEndpointCache();
+                        }
                     }
                 }
 
@@ -260,19 +344,6 @@ namespace hds
                 {
                     currentClient.QueuePooledPacket(pooledMessage, msgLen);
                     handedOff = true;
-                }
-
-            }
-            catch (SocketException ex)
-            {
-                Output.WriteLine("Exception thrown by socket " + ex.SocketErrorCode + " " + ex.Message);
-                if (ex.ErrorCode == 10054)
-                {
-                    // Client got removed by timeout
-                    if (currentClient != null)
-                    {
-                        currentClient.Alive = false;
-                    }
                 }
             }
             catch (Exception ex)
@@ -289,17 +360,13 @@ namespace hds
             }
         }
 
-        
         private void ListenForAllClients()
         {
-            // SIO_UDP_CONNRESET stops Windows from surfacing ICMP "port unreachable" as receive
-            // errors. It is a Windows-only ioctl: on macOS/Linux it throws and the unhandled
-            // exception kills the whole server process (auth included), so only apply it there.
+            // SIO_UDP_CONNRESET with FALSE (0) stops Windows from surfacing ICMP "port unreachable"
+            // as WSAECONNRESET (10054) receive errors. Windows-only ioctl.
             if (OperatingSystem.IsWindows())
             {
-                byte[] byteTrue = new byte[4];
-                byteTrue[byteTrue.Length - 1] = 1;
-                socket.IOControl(SIO_UDP_CONNRESET, byteTrue, null);
+                socket.IOControl(SIO_UDP_CONNRESET, new byte[4], null);
             }
 
             serverport = NetworkBind.WorldPort;
@@ -316,18 +383,16 @@ namespace hds
                 // Fall back to OS defaults if container/host caps socket buffer sizes.
             }
             socket.Bind(udplistener);
-    
-            IPEndPoint sender = new IPEndPoint(IPAddress.Any, 0);
-            EndPoint Remote = sender;
+
             try
             {
-                ReceiveNext();
-            }catch(Exception ex)
+                ReceiveLoop();
+            }
+            catch (Exception ex)
             {
                 Output.WriteDebugLog("Exception Thrown ListenForAllClients " + ex.Message);
             }
         }
-        
 
         internal static WorldClient FindClientByCharId(UInt32 charId) => FindClientByCharId(Clients, charId);
 

@@ -12,7 +12,7 @@ namespace hds
         public PacketReader(byte[] packetData)
         {
             this.packetData = packetData;
-            if (packetData.Length > 0)
+            if (packetData != null && packetData.Length > 0)
             {
                 lenght = packetData.Length;
             }
@@ -83,8 +83,12 @@ namespace hds
         public string ReadSizedString()
         {
             UInt16 sizeOfString = ReadUInt16(1);
-            string value = ReadRawChars(sizeOfString);
-            offset += sizeOfString;
+            int remaining = packetData != null && offset >= 0 && offset <= packetData.Length
+                ? packetData.Length - offset
+                : 0;
+            int advance = sizeOfString < remaining ? sizeOfString : remaining;
+            string value = ReadRawChars(advance);
+            offset += advance;
             return value;
         }
 
@@ -96,33 +100,57 @@ namespace hds
                 return string.Empty;
             }
 
-            string value = ReadRawChars(sizeOfString - 1); // -1 strips the zero byte
-            offset += sizeOfString; // just one for the zero termination
+            int remaining = packetData != null && offset >= 0 && offset <= packetData.Length
+                ? packetData.Length - offset
+                : 0;
+            int advance = sizeOfString < remaining ? sizeOfString : remaining;
+            int charCount = sizeOfString - 1;
+            if (charCount > advance)
+            {
+                charCount = advance;
+            }
+            string value = ReadRawChars(charCount); // -1 strips the zero byte when present
+            offset += advance;
             return value;
         }
 
         private string ReadRawChars(int length)
         {
-            if (length <= 0)
+            if (length <= 0 || packetData == null || offset < 0 || offset >= packetData.Length)
             {
                 return string.Empty;
             }
 
-            char[] chars = new char[length];
             int available = packetData.Length - offset;
-            int copyCount = available < length ? (available > 0 ? available : 0) : length;
-            for (int i = 0; i < copyCount; i++)
+            int copyCount = available < length ? available : length;
+            if (copyCount <= 0)
             {
-                chars[i] = (char)packetData[offset + i];
+                return string.Empty;
             }
-            return new string(chars);
+
+            return string.Create(copyCount, (packetData, offset), (span, state) =>
+            {
+                byte[] data = state.packetData;
+                int start = state.offset;
+                for (int i = 0; i < span.Length; i++)
+                {
+                    span[i] = (char)data[start + i];
+                }
+            });
         }
 
         public byte[] ReadBytes(int size)
         {
-            // Just read amount of bytes
+            if (size < 0 || packetData == null || offset < 0 || size > packetData.Length - offset)
+            {
+                throw new ArgumentOutOfRangeException(nameof(size), "Requested byte count exceeds remaining packet data.");
+            }
+            if (size == 0)
+            {
+                return Array.Empty<byte>();
+            }
             byte[] newByteArray = new byte[size];
-            ArrayUtils.copy(packetData, offset, newByteArray, 0, size);
+            Buffer.BlockCopy(packetData, offset, newByteArray, 0, size);
             offset += size;
             return newByteArray;
         }

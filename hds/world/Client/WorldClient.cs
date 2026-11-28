@@ -14,6 +14,8 @@ namespace hds
     public class WorldClient
     {
         private EndPoint Remote;
+        private EndPoint cachedRemoteEndPoint;
+        private SocketAddress remoteSocketAddress;
         private Socket socket;
         private volatile IWorldEncryption cypher;
 
@@ -89,6 +91,7 @@ namespace hds
         public WorldClient(EndPoint _Remote, Socket _socket, string _key)
         {
             Remote = _Remote;
+            if (_Remote != null) { cachedRemoteEndPoint = _Remote; remoteSocketAddress = _Remote.Serialize(); }
             socket = _socket;
             key = _key;
             // A key nobody has until the UDP init names a verified character and UseSessionKey installs that login's
@@ -176,6 +179,7 @@ namespace hds
         }
 
         // This method sends one packet at a time to the game client 
+        internal bool SendPacketSliceForTesting(byte[] data, int length) => sendPacketSlice(data, length);
         private bool sendPacket(byte[] data) => sendPacketSlice(data, data.Length);
 
         private bool sendPacketSlice(byte[] data, int length)
@@ -187,7 +191,25 @@ namespace hds
                 {
                     // Synchronous UDP SendTo hands the datagram straight to the kernel send buffer in order,
                     // avoiding per-packet AsyncCallback/IAsyncResult/IOCP completions and async reordering.
-                    socket.SendTo(data, 0, length, SocketFlags.None, Remote);
+                    SocketAddress sa = remoteSocketAddress;
+                    if (sa == null || !ReferenceEquals(cachedRemoteEndPoint, Remote))
+                    {
+                        EndPoint ep = Remote;
+                        if (ep != null)
+                        {
+                            sa = ep.Serialize();
+                            cachedRemoteEndPoint = ep;
+                            remoteSocketAddress = sa;
+                        }
+                    }
+                    if (sa != null)
+                    {
+                        socket.SendTo(data.AsSpan(0, length), SocketFlags.None, sa);
+                    }
+                    else
+                    {
+                        socket.SendTo(data, 0, length, SocketFlags.None, Remote);
+                    }
                     return true;
                 }
                 catch (Exception ex)

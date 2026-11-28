@@ -72,6 +72,8 @@ namespace hds.world.Structures
         /// <summary>Longest room name or topic we take (ours; the client sets no limit).</summary>
         public const int MaxNameLength = 64;
         public const int MaxTopicLength = 255;
+        public const int MaxRooms = 512;
+        public const int MaxRoomListEntries = 512;
 
         private readonly object sync = new object();
         private readonly Dictionary<string, ChatRoom> rooms = new Dictionary<string, ChatRoom>(StringComparer.OrdinalIgnoreCase);
@@ -118,6 +120,10 @@ namespace hds.world.Structures
                 {
                     return Status.AlreadyExists;
                 }
+                if (rooms.Count >= MaxRooms)
+                {
+                    return Status.RoomFull;
+                }
 
                 topic = topic ?? "";
                 rooms[name] = new ChatRoom
@@ -155,6 +161,10 @@ namespace hds.world.Structures
                                 string.Equals(room.Password, password ?? "", StringComparison.Ordinal);
                 if (!admitted)
                 {
+                    if (!room.WaitingForEntry.Contains(handle) && room.WaitingForEntry.Count >= MaxRoomListEntries)
+                    {
+                        return Status.RoomFull;
+                    }
                     room.WaitingForEntry.Add(handle);
                     return Status.WaitingForEntry;
                 }
@@ -271,6 +281,7 @@ namespace hds.world.Structures
                 switch (change)
                 {
                     case Change.Invite:
+                        if (!room.Invited.Contains(target) && room.Invited.Count >= MaxRoomListEntries) return Status.RoomFull;
                         return room.Invited.Add(target) ? Status.Success : Status.DuplicateInvite;
                     case Change.Uninvite:
                         return room.Invited.Remove(target) ? Status.Success : Status.NotInvited;
@@ -283,6 +294,7 @@ namespace hds.world.Structures
                         room.Occupants.RemoveAll(o => ChatRoom.Same(o, target));
                         return Status.Success;
                     case Change.Ban:
+                        if (!room.Banned.Contains(target) && room.Banned.Count >= MaxRoomListEntries) return Status.RoomFull;
                         if (!room.Banned.Add(target))
                         {
                             return Status.DuplicateBan;
