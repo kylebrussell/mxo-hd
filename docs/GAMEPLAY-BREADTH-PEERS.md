@@ -234,8 +234,9 @@ unaffiliated.
 
 ### Atomic crew leave
 
-The stock **Leave** button sends `71 02` and immediately clears the
-local crew panel. The handler at `621a6fb0` rebuilds the crew from
+The stock **Leave** button sends `71 02`, prints its local departure
+messages and clears the crew panel before the server replies. The
+handler at `621a6fb0` rebuilds the crew from
 `80 86`. On refusal the server resends the saved roster and current
 faction status so the player can reopen Crew and retry.
 
@@ -251,6 +252,25 @@ QAFriend as faction leader. Verify CSR remains captain, QAFriend
 remains first mate and both panels reopen. Deposit 1 in the faction
 bank and retry in the same session. CSR leaves and QAFriend becomes
 crew captain and faction leader. Relog and verify CSR stays unaffiliated.
+
+### Atomic faction leave
+
+The stock Faction **Leave** action at `620b0520` sends `71 01` and clears
+its local faction view. The server checks the current captain and
+commits the crew's faction and rank resets with all member affiliations.
+A crew that contains the active faction leader must disband its faction
+before leaving. A refusal sends the saved faction status and roster to
+the requester. The rest of the faction receives a crew removal only
+after commit.
+
+Use `faction-leave-atomic`. CSR captains rank-5 QACrew. Open
+**Faction > Leave**. The disposable affiliation check blocks the
+departure until QAFriend deposits 1 Info via
+`{"actor":"QAFriend","action":"faction-leave-retry"}`.
+Reopen Faction after the refusal and verify both crews and bank 500.
+After the deposit, repeat Leave in the same session. Verify QACrew and
+its bank of 201 still appear in Crew, and Faction stays unaffiliated
+after relog.
 
 ## Marketplace
 

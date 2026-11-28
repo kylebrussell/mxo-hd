@@ -349,7 +349,8 @@ try
                     result = await NativeQa.Modes.AtomicCrewFoundingMode.AcceptAsync(actor);
                 else if (fixtureMode is NativeQa.Modes.AtomicCrewAdmissionMode && action == "crew-admission-invite")
                     result = NativeQa.Modes.AtomicCrewAdmissionMode.OfferInvitation(actor);
-                else if (fixtureMode is NativeQa.Modes.AtomicCrewDisbandMode && action == "crew-disband-retry")
+                else if ((fixtureMode is NativeQa.Modes.AtomicCrewDisbandMode && action == "crew-disband-retry") ||
+                         (fixtureMode is NativeQa.Modes.AtomicFactionLeaveMode && action == "faction-leave-retry"))
                     result = await NativeQa.Modes.AtomicCrewDisbandMode.ReleaseFaultAsync(actor);
                 else if (fixtureMode is NativeQa.Modes.TeamBreadthMode && action == "team-breadth")
                     result = await NativeQa.Modes.TeamBreadthMode.SendActionAsync(actor, q);
