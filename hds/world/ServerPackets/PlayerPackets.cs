@@ -483,10 +483,27 @@ namespace hds
 
             // Get Data from DB and save
             Hashtable characterData = Store.dbManager.WorldDbHandler.GetCharInfo(client.playerData.getCharID());
-            String backgroundTextt = characterData["background"].ToString();
-            pak.AddSizedTerminatedString(backgroundTextt);
+            AddBackgroundText(pak, (string)characterData["background"] ?? "");
             client.messageQueue.addRpcMessage(pak.ReturnFinalPacket());
 
+        }
+
+        public void SendBackgroundSaveResult(WorldClient client, bool saved)
+        {
+            PacketContent pak = new PacketContent();
+            pak.AddUint16((UInt16)RPCResponseHeaders.SERVER_PLAYER_SET_BACKGROUND_RESULT, 0);
+            // Stock 81 97 treats a signed Status below 1 as success.
+            pak.AddUint32(saved ? 0u : 1u, 1);
+            client.messageQueue.addRpcMessage(pak.ReturnFinalPacket());
+            client.FlushQueue();
+        }
+
+        private static void AddBackgroundText(PacketContent packet, string text)
+        {
+            byte[] bytes = Encoding.Latin1.GetBytes(text);
+            packet.AddUint16((ushort)(bytes.Length + 1), 1);
+            packet.AddByteArray(bytes);
+            packet.AddByte(0);
         }
 
         public void SendPlayerGetDetails(WorldClient client, Hashtable charData)
@@ -549,15 +566,7 @@ namespace hds
             pak.AddUint16((UInt16) RPCResponseHeaders.SERVER_PLAYER_HANDLE_BACKGROUND,0 );
             pak.AddUint16(5,1);
             pak.AddUShort(1);
-            if (charData["background"].ToString().Length > 0)
-            {
-                pak.AddSizedTerminatedString(charData["background"].ToString());
-            }
-            else
-            {
-                pak.AddUint16(1,0);
-                pak.AddUShort(0);
-            }
+            AddBackgroundText(pak, (string)charData["background"] ?? "");
             
             client.messageQueue.addRpcMessage(pak.ReturnFinalPacket());
         }

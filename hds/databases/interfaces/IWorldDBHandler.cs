@@ -106,7 +106,7 @@ namespace hds.databases.interfaces{
         MissionAccountUpdate CommitActiveMission(UInt32 charId, string expected, string next, UInt16 fromSlot = 0, UInt16 toSlot = 0);
         void AddItemToInventory(UInt16 slotId, UInt32 itemGoID);
         void RemoveItemAtInventorySlot(UInt16 slotId, UInt32 charId);
-        void setBackground(string backgroundText);
+        bool TrySetBackground(uint charId, string background);
         UInt32 GetItemGOIDAtInventorySlot(UInt16 slotId);
         List<Crafting.InventoryItem> GetInventoryItems(UInt32 charId);
         void SetInventoryCount(UInt16 slotId, UInt32 charId, int count);

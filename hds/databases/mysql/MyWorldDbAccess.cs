@@ -499,20 +499,15 @@ namespace hds.databases{
 			SavePlayer(Store.currentClient);
 		}
 
-        public void setBackground(string backgroundText)
+        public bool TrySetBackground(uint charId, string background)
         {
-            UInt32 charID = Store.currentClient.playerData.getCharID();
-            using (var connection = new MySqlConnection(connectionString))
-            {
-                connection.Open();
-                using (var cmd = connection.CreateCommand())
-                {
-                    cmd.CommandText = "UPDATE characters SET background = @background WHERE charId = @charId LIMIT 1";
-                    cmd.Parameters.AddWithValue("@background", backgroundText ?? "");
-                    cmd.Parameters.AddWithValue("@charId", charID);
-                    cmd.ExecuteNonQuery();
-                }
-            }
+            using var connection = new MySqlConnection(connectionString);
+            connection.Open();
+            using var command = connection.CreateCommand();
+            command.CommandText = "UPDATE characters SET background = @background WHERE charId = @charId LIMIT 1";
+            command.Parameters.AddWithValue("@background", background);
+            command.Parameters.AddWithValue("@charId", charId);
+            return command.ExecuteNonQuery() == 1;
         }
 		
 		public void SetPlayerValues()
@@ -627,7 +622,7 @@ namespace hds.databases{
 				{
 					data.Add("firstname", reader.GetString(0));
 					data.Add("lastname", reader.GetString(1));
-					data.Add("background", reader.GetString(2));
+					data.Add("background", reader.IsDBNull(2) ? "" : reader.GetString(2));
 					data.Add("district", reader.GetString(3));
 					data.Add("repMero", reader.GetInt16(4));
 					data.Add("repMachine", reader.GetInt16(5));
@@ -681,7 +676,7 @@ namespace hds.databases{
 					data.Add("charId", (UInt32)reader.GetInt32(0));
 					data.Add("firstname", reader.GetString(1));
 					data.Add("lastname", reader.GetString(2));
-					data.Add("background", reader.GetString(3));
+					data.Add("background", reader.IsDBNull(3) ? "" : reader.GetString(3));
 					data.Add("alignment", (ushort)reader.GetInt16(4));
 					data.Add("conquest_points", (UInt32)reader.GetInt32(5));
 					if (!reader.IsDBNull(6))
