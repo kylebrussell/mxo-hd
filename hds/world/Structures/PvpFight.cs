@@ -256,7 +256,7 @@ namespace hds
             centre = attacker.playerInstance.Position.getValue();
             handler.Position.setValue(centre);
             handlerObject = handler;
-            lock (WorldServer.gameServerEntities)
+            lock (WorldServer.gameServerEntities.SyncRoot)
             {
                 handlerEntity = WorldServer.entityIdCounter++;
                 WorldServer.gameServerEntities.Add(handler);
@@ -1081,7 +1081,7 @@ namespace hds
                 side.TeardownPending = false;
                 if (!IsActive && members.All(s => !s.TeardownPending))
                 {
-                    lock (WorldServer.gameServerEntities)
+                    lock (WorldServer.gameServerEntities.SyncRoot)
                     {
                         WorldServer.gameServerEntities.Remove(handlerObject);
                     }
@@ -1167,7 +1167,7 @@ namespace hds
                 lock (f.sync) complete = !f.IsActive && f.members.All(s => !s.TeardownPending);
                 if (complete)
                 {
-                    lock (WorldServer.gameServerEntities)
+                    lock (WorldServer.gameServerEntities.SyncRoot)
                     {
                         WorldServer.gameServerEntities.Remove(f.handlerObject);
                     }

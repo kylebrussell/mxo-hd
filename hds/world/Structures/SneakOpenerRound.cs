@@ -78,7 +78,7 @@ namespace hds
             handler.StartTime.setValue(CombatHandler.CombatStartTime());
             handler.Position.setValue(caster.playerInstance.Position.getValue());
             ulong entity;
-            lock (WorldServer.gameServerEntities)
+            lock (WorldServer.gameServerEntities.SyncRoot)
             {
                 entity = WorldServer.entityIdCounter++;
                 WorldServer.gameServerEntities.Add(handler);
@@ -93,7 +93,7 @@ namespace hds
             DelayedActions.After(presentSeconds, () =>
             {
                 presentation.HideFighters();
-                lock (WorldServer.gameServerEntities) WorldServer.gameServerEntities.Remove(handler);
+                lock (WorldServer.gameServerEntities.SyncRoot) WorldServer.gameServerEntities.Remove(handler);
                 // The exchange turned the fighters toward each other on every screen. Re-send each one's real pose: the
                 // stock client otherwise keeps the target facing the caster, and a later rear opener is refused locally.
                 RestorePose(caster);
