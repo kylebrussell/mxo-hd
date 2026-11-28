@@ -443,6 +443,11 @@ try
                     result = await market.SendActionAsync(actor, q, helpers, database);
                 else if (fixtureMode is NativeQa.Modes.MailAtomicTransfersMode mail && action == "mail-verify")
                     result = await mail.VerifyAsync(actor, q, database);
+                else if (fixtureMode is NativeQa.Modes.MailAtomicStatusMode && action == "mail-status-retry" && actor.Handle == "QAFriend")
+                {
+                    await Scenarios.ReleaseMailStatusFaultAsync(database);
+                    result = "Mail status fixture CHECK removed";
+                }
                 else if (fixtureMode is NativeQa.Modes.StarterCoderViralResistanceMode && action == "aura-resist")
                     await NativeQa.Modes.StarterPathogenistAuraResistanceMode.ApplyResistanceAsync(actor,
                         NativeQa.Modes.StarterCoderViralResistanceMode.Resistance);

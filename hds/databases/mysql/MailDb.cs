@@ -22,6 +22,8 @@ namespace hds.databases
         /// <summary>Saves status and folder. Attachment changes belong to the transfer transaction.</summary>
         void Update(MailMessage message);
 
+        bool SetStatus(uint ownerCharId, uint id, uint status);
+        void ChangeAllStatus(uint ownerCharId, uint oldStatus, uint newStatus);
         bool Delete(UInt32 ownerCharId, UInt32 id);
 
         int Count(UInt32 ownerCharId);
@@ -71,6 +73,32 @@ namespace hds.databases
                     messages[index].Folder = message.Folder;
                     messages[index].Status = message.Status;
                 }
+            }
+        }
+
+        public bool SetStatus(uint ownerCharId, uint id, uint status)
+        {
+            lock (sync)
+            {
+                var message = messages.FirstOrDefault(m => m.OwnerCharId == ownerCharId && m.Id == id);
+                if (message == null) return false;
+                if (status == MailPackets.StatusPurged) messages.Remove(message);
+                else message.Status = status;
+                return true;
+            }
+        }
+
+        public void ChangeAllStatus(uint ownerCharId, uint oldStatus, uint newStatus)
+        {
+            lock (sync)
+            {
+                if (newStatus == MailPackets.StatusPurged)
+                {
+                    messages.RemoveAll(m => m.OwnerCharId == ownerCharId && m.Status == oldStatus);
+                    return;
+                }
+                foreach (var message in messages.Where(m => m.OwnerCharId == ownerCharId && m.Status == oldStatus))
+                    message.Status = newStatus;
             }
         }
 
@@ -260,6 +288,27 @@ namespace hds.databases
                     "@st", (long)message.Status, "@f", message.Folder,
                     "@o", (long)message.OwnerCharId, "@id", (long)message.Id).ExecuteNonQuery();
             }
+        }
+
+        public bool SetStatus(uint ownerCharId, uint id, uint status)
+        {
+            if (status == MailPackets.StatusPurged) return Delete(ownerCharId, id);
+
+            using var conn = Open();
+            using var cmd = Cmd(conn, "UPDATE mail SET status=@status WHERE ownerCharId=@owner AND id=@id",
+                "@status", status, "@owner", ownerCharId, "@id", id);
+            return cmd.ExecuteNonQuery() == 1;
+        }
+
+        public void ChangeAllStatus(uint ownerCharId, uint oldStatus, uint newStatus)
+        {
+            using var conn = Open();
+            string sql = newStatus == MailPackets.StatusPurged
+                ? "DELETE FROM mail WHERE ownerCharId=@owner AND status=@old"
+                : "UPDATE mail SET status=@new WHERE ownerCharId=@owner AND status=@old";
+            using var cmd = Cmd(conn, sql, "@owner", ownerCharId, "@old", oldStatus);
+            if (newStatus != MailPackets.StatusPurged) cmd.Parameters.AddWithValue("@new", newStatus);
+            cmd.ExecuteNonQuery();
         }
 
         public bool Delete(UInt32 ownerCharId, UInt32 id)

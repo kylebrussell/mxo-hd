@@ -161,41 +161,69 @@ namespace hds
         }
 
         /// <summary>Client 81 f4: Delete (4) / Undelete (3) one message; 5 removes it.</summary>
-        public void OnSetStatus(UInt32 charId, UInt32 id, UInt32 status)
+        public void OnSetStatus(uint charId, uint id, uint status)
         {
-            MailMessage message = store.Get(charId, id);
-            if (message == null || status < MailPackets.StatusNew || status > MailPackets.StatusPurged)
+            if (!ValidStatus(status))
             {
-                host.Send(charId, MailPackets.BuildStatus(0xf5, message == null ? MailPackets.MessageNotFound : MailPackets.BadData));
+                host.Send(charId, MailPackets.BuildStatus(0xf5, MailPackets.BadData));
                 return;
             }
-            SetStatus(message, status);
-            host.Send(charId, MailPackets.BuildStatus(0xf5, MailPackets.Success));
+
+            bool changed;
+            try
+            {
+                changed = store.SetStatus(charId, id, status);
+            }
+            catch (DbException error)
+            {
+                Output.WriteDebugLog($"[MAIL] Status change rolled back char={charId} id={id} status={status}: {error.Message}");
+                byte[] failure = MailPackets.BuildStatus(0xf5, MailPackets.BadData);
+                MailMessage saved = null;
+                try
+                {
+                    saved = store.Get(charId, id);
+                }
+                catch (DbException refreshError)
+                {
+                    Output.WriteDebugLog($"[MAIL] Status refresh failed char={charId} id={id}: {refreshError.Message}");
+                }
+
+                // The stock UI sets the new status in its cache before sending 81 f4.
+                // The full message replaces that optimistic state and redraws the row.
+                if (saved != null) host.Send(charId, failure, MailPackets.BuildMessage(saved));
+                else host.Send(charId, failure);
+                Notice(charId, "The mail status could not be changed. The message was kept.");
+                return;
+            }
+
+            host.Send(charId, MailPackets.BuildStatus(0xf5, changed ? MailPackets.Success : MailPackets.MessageNotFound));
         }
 
         /// <summary>Client 81 f6, sent as the inbox closes: 1 -> 2 (seen) and 4 -> 5 (empty the deleted ones).</summary>
-        public void OnChangeAll(UInt32 charId, UInt32 oldStatus, UInt32 newStatus)
+        public void OnChangeAll(uint charId, uint oldStatus, uint newStatus)
         {
-            if (newStatus >= MailPackets.StatusNew && newStatus <= MailPackets.StatusPurged)
+            if (!ValidStatus(oldStatus) || !ValidStatus(newStatus))
             {
-                foreach (MailMessage message in store.List(charId).Where(m => m.Status == oldStatus))
-                {
-                    SetStatus(message, newStatus);
-                }
+                host.Send(charId, MailPackets.BuildStatus(0xf7, MailPackets.BadData));
+                return;
             }
+
+            try
+            {
+                store.ChangeAllStatus(charId, oldStatus, newStatus);
+            }
+            catch (DbException error)
+            {
+                Output.WriteDebugLog($"[MAIL] Inbox status change rolled back char={charId} {oldStatus}->{newStatus}: {error.Message}");
+                host.Send(charId, MailPackets.BuildStatus(0xf7, MailPackets.BadData));
+                Notice(charId, "The inbox status could not be changed. Your messages were kept.");
+                return;
+            }
+
             host.Send(charId, MailPackets.BuildStatus(0xf7, MailPackets.Success));
         }
 
-        private void SetStatus(MailMessage message, UInt32 status)
-        {
-            if (status == MailPackets.StatusPurged)
-            {
-                store.Delete(message.OwnerCharId, message.Id);
-                return;
-            }
-            message.Status = status;
-            store.Update(message);
-        }
+        private static bool ValidStatus(uint status) => status >= MailPackets.StatusNew && status <= MailPackets.StatusPurged;
 
         /// <summary>Client 81 f8: move messages to a folder.</summary>
         public void OnClassify(UInt32 charId, MailRequests.Classify classify)
