@@ -397,6 +397,7 @@ public static partial class Scenarios
         new Scenario("ignore-list-write-refusal", IgnoreListWriteRefusal, StillNpcs),
         new Scenario("buddy-list-write-refusal", BuddyListWriteRefusal, StillNpcs),
         new Scenario("background-save-result", BackgroundSaveResult, StillNpcs),
+        new Scenario("background-chunked-save", BackgroundChunkedSave, StillNpcs),
         new Scenario("chat-rooms-create-talk-moderate-and-find", ChatRoomsCreateTalkModerateAndFind),
         new Scenario("socialbot-in-a-chat-room", SocialBotInAChatRoom),
         new Scenario("subway-ride-by-car", SubwayRideByCar),

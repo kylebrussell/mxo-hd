@@ -316,8 +316,14 @@ namespace hds
         {
             var client = Store.currentClient;
             uint charId = client.playerData.getCharID();
+            var upload = client.playerData.PendingBackground;
+            client.playerData.PendingBackground = null;
+            bool chunked = packetData.Length == 3 && packetData[0] == 0 && packetData[1] == 0 && packetData[2] == 1;
+            string background = chunked
+                ? upload?.ReadIfComplete(client.playerData.worldGeneration)
+                : ReadInlineBackground(packetData);
             bool saved = false;
-            if (TryReadBackground(packetData, out string background))
+            if (background != null)
             {
                 try
                 {
@@ -331,21 +337,16 @@ namespace hds
             new ServerPackets().SendBackgroundSaveResult(client, saved);
         }
 
-        private static bool TryReadBackground(byte[] body, out string background)
+        private static string ReadInlineBackground(byte[] body)
         {
-            background = null;
             // 81 96: offset 5 (relative to the opcode), IsChunked=0, then the sized narrow string.
             if (body.Length < 6 || body[0] != 5 || body[1] != 0 || body[2] != 0)
-                return false;
-            const int MaxBackgroundLength = 1024; // characters.background
+                return null;
             int length = (body[3] | (body[4] << 8)) - 1;
-            if (length < 0 || length > MaxBackgroundLength || body.Length != length + 6 || body[^1] != 0)
-                return false;
+            if (length < 0 || length > BackgroundChunkUpload.MaxLength || body.Length != length + 6 || body[^1] != 0)
+                return null;
             ReadOnlySpan<byte> text = body.AsSpan(5, length);
-            if (text.Contains((byte)0)) return false;
-
-            background = Encoding.Latin1.GetString(text);
-            return true;
+            return text.Contains((byte)0) ? null : Encoding.Latin1.GetString(text);
         }
 
         public void ProcessLootAccepted()
