@@ -717,8 +717,8 @@ namespace hds
         public void DeletedAckedPackets(UInt16 ackSeq)
         {
             ushort pss = playerData.getPss();
-            messageQueue.ObserveObjectReceipts(ackSeq, pss);
             var ackWindow = new SequencedMessage.AckWindow(ackSeq, pss);
+            messageQueue.ObserveObjectReceipts(in ackWindow);
             lock (messageQueue.ObjectMessagesQueue.SyncRoot)
             {
                 ArrayList q = messageQueue.ObjectMessagesQueue;

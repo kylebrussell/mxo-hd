@@ -527,9 +527,9 @@ namespace hds
                         continue;
                     }
 
-                    byte[] update = BuildViewUpdate(view.ViewID, data);
-                    if (followingUpdate != null)
-                        update = update.Concat(BuildViewUpdate(view.ViewID, followingUpdate)).ToArray();
+                    byte[] update = followingUpdate != null
+                        ? BuildCombinedViewUpdate(view.ViewID, data, followingUpdate)
+                        : BuildViewUpdate(view.ViewID, data);
                     client.messageQueue.addObjectMessage(update, false);
                     client.FlushQueue();
                 }
@@ -584,6 +584,28 @@ namespace hds
         public static byte[] BuildViewUpdate(UInt16 viewId, byte[] data)
         {
             return MessageQueue.BuildViewUpdateFast(viewId, data);
+        }
+
+        /// <summary>Two back-to-back view-list entries for the same view in a single allocation.</summary>
+        internal static byte[] BuildCombinedViewUpdate(UInt16 viewId, byte[] first, byte[] second)
+        {
+            int firstLen = first != null ? first.Length : 0;
+            int secondLen = second != null ? second.Length : 0;
+            byte[] result = new byte[4 + firstLen + secondLen];
+            result[0] = (byte)(viewId & 0xFF);
+            result[1] = (byte)(viewId >> 8);
+            if (firstLen > 0)
+            {
+                Buffer.BlockCopy(first, 0, result, 2, firstLen);
+            }
+            int secondOffset = 2 + firstLen;
+            result[secondOffset] = (byte)(viewId & 0xFF);
+            result[secondOffset + 1] = (byte)(viewId >> 8);
+            if (secondLen > 0)
+            {
+                Buffer.BlockCopy(second, 0, result, secondOffset + 2, secondLen);
+            }
+            return result;
         }
 
         public void SendSelfViewUpdate(PacketContent pak, UInt16 viewId, WorldClient client, bool isTimed)

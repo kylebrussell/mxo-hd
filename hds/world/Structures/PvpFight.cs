@@ -92,6 +92,7 @@ namespace hds
         private readonly object sync = new object();
         private readonly Random rng = new Random();
         private Timer timer;
+        private System.Timers.ElapsedEventHandler roundTimerHandler;
         private GameObject handlerObject;
         private UInt64 handlerEntity;
         private byte[] centre;
@@ -310,7 +311,8 @@ namespace hds
             IsActive = true;
             presentation = new CombatPresentation(attacker, defender, null, handler, handlerEntity);
             timer = new Timer(CombatInterlock.RoundMs) { AutoReset = true };
-            timer.Elapsed += (s, e) => OnRoundTimer();
+            roundTimerHandler = (s, e) => OnRoundTimer();
+            timer.Elapsed += roundTimerHandler;
             timer.Start();
         }
 
@@ -980,9 +982,17 @@ namespace hds
                 }
                 IsActive = false;membershipVersion++;
                 presentation?.End(delay);
-                timer?.Stop();
-                timer?.Dispose();
-                timer = null;
+                if (timer != null)
+                {
+                    if (roundTimerHandler != null)
+                    {
+                        timer.Elapsed -= roundTimerHandler;
+                        roundTimerHandler = null;
+                    }
+                    timer.Stop();
+                    timer.Dispose();
+                    timer = null;
+                }
                 Output.WriteDebugLog("[PVP] Close combat between " + PvpFlag.Name(Attacker.Client) + " and " + PvpFlag.Name(Defender.Client) +
                                      " ends: " + reason + " (" + (who != null ? PvpFlag.Name(who) : "-") + ")" +
                                      (delay > 0 ? ", interlock down in " + delay + " s" : ""));

@@ -732,11 +732,13 @@ namespace hds
                 {
                     // Sends a packet from a file
                     string filename = "packet.txt";
-                    TextReader tr = new StreamReader(filename);
-                    string hexContent = tr.ReadToEnd();
+                    string hexContent;
+                    using (TextReader tr = new StreamReader(filename))
+                    {
+                        hexContent = tr.ReadToEnd();
+                    }
                     hexContent = hexContent.Replace(" ", string.Empty);
                     hexContent = hexContent.Replace(" ", Environment.NewLine);
-                    tr.Close();
 
                     if (hexContent.Length > 0)
                     {
@@ -814,11 +816,13 @@ namespace hds
                 {
                     // sends a RPC Packet from a File
                     string filename = "rpcpacket.txt";
-                    TextReader tr = new StreamReader(filename);
-                    string hexContent = tr.ReadToEnd();
+                    string hexContent;
+                    using (TextReader tr = new StreamReader(filename))
+                    {
+                        hexContent = tr.ReadToEnd();
+                    }
                     hexContent = hexContent.Replace(" ", string.Empty);
                     hexContent = hexContent.Replace(" ", Environment.NewLine);
-                    tr.Close();
 
                     if (hexContent.Length > 0)
                     {

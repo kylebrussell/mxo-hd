@@ -15,13 +15,52 @@ namespace hds
             lock(sync)
             {
                 if(cancelled||received||dispatched.Count==0)return;
-                var expired=new List<ushort>();
-                foreach(var item in dispatched)if(logical-item.Value>=0x800)expired.Add(item.Key);
-                foreach(var key in expired)dispatched.Remove(key);
-                if(dispatched.Count==0)cancelled=true;
+                List<ushort> expired=null;
+                foreach(var item in dispatched)
+                {
+                    if(logical-item.Value>=0x800)
+                    {
+                        expired ??= new List<ushort>();
+                        expired.Add(item.Key);
+                    }
+                }
+                if(expired!=null)
+                {
+                    for(int i=0;i<expired.Count;i++)dispatched.Remove(expired[i]);
+                    if(dispatched.Count==0)cancelled=true;
+                }
             }
         }
-        internal void Observe(ISet<ushort> acknowledged){lock(sync)if(!cancelled&&!received&&System.Linq.Enumerable.Any(dispatched.Keys,acknowledged.Contains))received=true;}
+        internal void Observe(in SequencedMessage.AckWindow acknowledged)
+        {
+            lock(sync)
+            {
+                if(cancelled||received)return;
+                foreach(ushort seq in dispatched.Keys)
+                {
+                    if(acknowledged.Contains(seq))
+                    {
+                        received=true;
+                        return;
+                    }
+                }
+            }
+        }
+        internal void Observe(ISet<ushort> acknowledged)
+        {
+            lock(sync)
+            {
+                if(cancelled||received)return;
+                foreach(ushort seq in dispatched.Keys)
+                {
+                    if(acknowledged.Contains(seq))
+                    {
+                        received=true;
+                        return;
+                    }
+                }
+            }
+        }
         internal void Cancel(){lock(sync){cancelled=true;dispatched.Clear();}}
     }
 }

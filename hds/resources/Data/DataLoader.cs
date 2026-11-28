@@ -5,6 +5,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Xml;
 using hds.world.Structures;
 
@@ -12,7 +13,7 @@ namespace hds
 {
     class DataLoader
     {
-        private static DataLoader Instance;
+        private static volatile DataLoader Instance;
         private static readonly string[] StaticObjectCsvFiles =
         {
             "staticObjects_slums_1.csv",
@@ -40,6 +41,27 @@ namespace hds
         private readonly Dictionary<UInt16, byte[]> staticObjectTypeCache = new Dictionary<UInt16, byte[]>(1024);
         private StringSpanInterner activeQuatInterner;
 
+        // Lock-free published O(1) lookup tables preserving exact first-match List<T>.Find semantics.
+        // Rebuilt automatically if tests mutate the underlying public lists after load.
+        private readonly object catalogIndexLock = new object();
+        private volatile Dictionary<UInt16, AbilityItem> abilityById;
+        private int abilityIndexCount = -1;
+        private volatile Dictionary<int, GameObjectItem> gameObjectById;
+        private int gameObjectIndexCount = -1;
+        private volatile Dictionary<UInt32, ClothingItem> clothingByGoid;
+        private int clothingIndexCount = -1;
+        private volatile Dictionary<UInt32, byte> emoteByLongId;
+        private int emoteIndexCount = -1;
+
+        private static readonly CultureInfo BuffTimeCulture = CreateBuffTimeCulture();
+
+        private static CultureInfo CreateBuffTimeCulture()
+        {
+            CultureInfo ci = (CultureInfo)CultureInfo.CurrentCulture.Clone();
+            ci.NumberFormat.CurrencyDecimalSeparator = ".";
+            return ci;
+        }
+
         // Data Storage - maybe we need to change this to something better (like a AbilityQuery Object)
         public List<AbilityItem> AbilityDB = new List<AbilityItem>(); // holds our Ability DB
         public List<GameObjectItem> GODB = new List<GameObjectItem>(); // Holds the GameObjects
@@ -55,6 +77,19 @@ namespace hds
 
 
         public bool useSQLiteDatabase = false;
+
+        internal static DataLoader CreateEmptyForTesting()
+        {
+            return new DataLoader(loadFiles: false);
+        }
+
+        private DataLoader(bool loadFiles)
+        {
+            if (!loadFiles)
+            {
+                return;
+            }
+        }
 
 
         private DataLoader()
@@ -172,9 +207,8 @@ namespace hds
                 return;
             }
 
-            ArrayList csvData = loadCSV(path, ';');
             int linecount = 1;
-            foreach (string[] data in csvData)
+            foreach (string[] data in StreamCsvRows(path, ';'))
             {
                 if (linecount > 0)
                 {
@@ -229,9 +263,8 @@ namespace hds
         public void loadNewRSIIDs(string path)
         {
             Output.Write("Loading RSI IDs for Character Creation ..");
-            ArrayList newRSIDB = loadCSV(path, ',');
             int linecount = 1;
-            foreach (string[] data in newRSIDB)
+            foreach (string[] data in StreamCsvRows(path, ','))
             {
                 if (linecount > 1)
                 {
@@ -268,10 +301,9 @@ namespace hds
             // This is just an example of loading CSV    
             //return dataTable;
             Output.Write("Loading Hostile Mobs ..");
-            ArrayList goDB = loadCSV(path, ';');
             int linecount = 1;
             int repeats = 0;
-            foreach (string[] data in goDB)
+            foreach (string[] data in StreamCsvRows(path, ';'))
             {
                 if (skipRepeats && linecount > 1 &&
                     mobsSeen.IsRepeat(Convert.ToUInt16(data[0]), data[2], double.Parse(data[7]), double.Parse(data[9]), double.Parse(data[8])))
@@ -363,6 +395,23 @@ namespace hds
             return value % 2 == 0;
         }
 
+        private static IEnumerable<string[]> StreamCsvRows(string path, char separator)
+        {
+            string resolved = ResolveDataPath(path);
+            int i = 0;
+            using (StreamReader sr = new StreamReader(resolved, Encoding.UTF8, true, 65536))
+            {
+                string line;
+                while ((line = sr.ReadLine()) != null)
+                {
+                    if (line.Length == 0) continue;
+                    i++;
+                    yield return line.Split(separator);
+                }
+            }
+            Output.Write(i + " Entrys added !\n");
+        }
+
         public ArrayList loadCSV(string path, char seperator)
         {
             path = ResolveDataPath(path);
@@ -426,9 +475,8 @@ namespace hds
             // This is just an example of loading CSV    
             //return dataTable;
             Output.Write("Loading GameObjects ..");
-            ArrayList goDB = loadCSV(path, ',');
             int linecount = 0;
-            foreach (string[] data in goDB)
+            foreach (string[] data in StreamCsvRows(path, ','))
             {
                 //Output.WriteLine("Show Colums for Line : " + linecount.ToString() + " GOID:  " + data[1].ToString() + " Name " + data[0].ToString());
 
@@ -438,21 +486,15 @@ namespace hds
                 GODB.Add(goItem);
                 linecount++;
             }
+            RebuildGameObjectIndex();
         }
 
         public void loadAbilityDB(string path)
         {
             Output.Write("Loading Abilities..");
 
-            // load the CSV into an ArrayList collection
-            ArrayList abilityDB = loadCSV(path, ';');
-
             int linecount = 1;
-
-            // Create a new List 
-
-
-            foreach (string[] data in abilityDB)
+            foreach (string[] data in StreamCsvRows(path, ';'))
             {
                 AbilityItem ability = new AbilityItem();
                 // we want to skip the first line as it should have the Names
@@ -534,9 +576,7 @@ namespace hds
                     {
                         if (data[12].Length > 0)
                         {
-                            CultureInfo ci = (CultureInfo) CultureInfo.CurrentCulture.Clone();
-                            ci.NumberFormat.CurrencyDecimalSeparator = ".";
-                            ability.setBuffTime(float.Parse(data[12], NumberStyles.Any, ci));
+                            ability.setBuffTime(float.Parse(data[12], NumberStyles.Any, BuffTimeCulture));
                         }
                     }
 
@@ -550,20 +590,17 @@ namespace hds
 
                     AbilityDB.Add(ability);
                 }
-
-
                 linecount++;
             }
+            RebuildAbilityIndex();
         }
 
         public void loadClothingDB(string path)
         {
             Output.Write("Loading Clothing..");
 
-            ArrayList itemRSIMap = loadCSV(path, ';');
-
             int linecount = 1;
-            foreach (string[] data in itemRSIMap)
+            foreach (string[] data in StreamCsvRows(path, ';'))
             {
                 if (linecount > 1)
                 {
@@ -579,9 +616,9 @@ namespace hds
                     clothItem.setColorId(Convert.ToUInt16(data[5]));
                     ClothingRSIDB.Add(clothItem);
                 }
-
                 linecount++;
             }
+            RebuildClothingIndex();
         }
 
         public void loadWorldObjectsDb(string path)
@@ -812,12 +849,8 @@ namespace hds
         public void loadVendorItems(string dataVendorItemsCsv)
         {
             // metr_id;vendor_static_id;items
-            ArrayList vendorItems = loadCSV(dataVendorItemsCsv, ';');
-
             int linecount = 1;
-
-            // Create a new List
-            foreach (string[] data in vendorItems)
+            foreach (string[] data in StreamCsvRows(dataVendorItemsCsv, ';'))
             {
                 if (linecount > 1)
                 {
@@ -1037,18 +1070,132 @@ namespace hds
             Emotes.Add(new EmoteItem(0x05160058, 0xe8)); // /weddingcake
             Emotes.Add(new EmoteItem(0x59160058, 0xee)); // /bangbang
             Emotes.Add(new EmoteItem(0x050000e0, 0xa8)); // /leanwallloop
+            RebuildEmoteIndex();
+        }
+
+        private Dictionary<UInt32, byte> EnsureEmoteIndex()
+        {
+            Dictionary<UInt32, byte> index = emoteByLongId;
+            if (index != null && Volatile.Read(ref emoteIndexCount) == Emotes.Count)
+            {
+                return index;
+            }
+            return RebuildEmoteIndex();
+        }
+
+        private Dictionary<UInt32, byte> RebuildEmoteIndex()
+        {
+            lock (catalogIndexLock)
+            {
+                int count = Emotes.Count;
+                var next = new Dictionary<UInt32, byte>(count);
+                for (int i = 0; i < count; i++)
+                {
+                    EmoteItem item = Emotes[i];
+                    if (item != null)
+                    {
+                        next.TryAdd(item.emoteIDLong, item.emoteShortID);
+                    }
+                }
+                emoteByLongId = next;
+                Volatile.Write(ref emoteIndexCount, count);
+                return next;
+            }
+        }
+
+        private Dictionary<UInt16, AbilityItem> EnsureAbilityIndex()
+        {
+            Dictionary<UInt16, AbilityItem> index = abilityById;
+            if (index != null && Volatile.Read(ref abilityIndexCount) == AbilityDB.Count)
+            {
+                return index;
+            }
+            return RebuildAbilityIndex();
+        }
+
+        private Dictionary<UInt16, AbilityItem> RebuildAbilityIndex()
+        {
+            lock (catalogIndexLock)
+            {
+                int count = AbilityDB.Count;
+                var next = new Dictionary<UInt16, AbilityItem>(count);
+                for (int i = 0; i < count; i++)
+                {
+                    AbilityItem item = AbilityDB[i];
+                    if (item != null)
+                    {
+                        next.TryAdd(item.getAbilityID(), item);
+                    }
+                }
+                abilityById = next;
+                Volatile.Write(ref abilityIndexCount, count);
+                return next;
+            }
+        }
+
+        private Dictionary<int, GameObjectItem> EnsureGameObjectIndex()
+        {
+            Dictionary<int, GameObjectItem> index = gameObjectById;
+            if (index != null && Volatile.Read(ref gameObjectIndexCount) == GODB.Count)
+            {
+                return index;
+            }
+            return RebuildGameObjectIndex();
+        }
+
+        private Dictionary<int, GameObjectItem> RebuildGameObjectIndex()
+        {
+            lock (catalogIndexLock)
+            {
+                int count = GODB.Count;
+                var next = new Dictionary<int, GameObjectItem>(count);
+                for (int i = 0; i < count; i++)
+                {
+                    GameObjectItem item = GODB[i];
+                    if (item != null)
+                    {
+                        next.TryAdd(item.getGOID(), item);
+                    }
+                }
+                gameObjectById = next;
+                Volatile.Write(ref gameObjectIndexCount, count);
+                return next;
+            }
+        }
+
+        private Dictionary<UInt32, ClothingItem> EnsureClothingIndex()
+        {
+            Dictionary<UInt32, ClothingItem> index = clothingByGoid;
+            if (index != null && Volatile.Read(ref clothingIndexCount) == ClothingRSIDB.Count)
+            {
+                return index;
+            }
+            return RebuildClothingIndex();
+        }
+
+        private Dictionary<UInt32, ClothingItem> RebuildClothingIndex()
+        {
+            lock (catalogIndexLock)
+            {
+                int count = ClothingRSIDB.Count;
+                var next = new Dictionary<UInt32, ClothingItem>(count);
+                for (int i = 0; i < count; i++)
+                {
+                    ClothingItem item = ClothingRSIDB[i];
+                    if (item != null)
+                    {
+                        next.TryAdd(item.getGoidDecimal(), item);
+                    }
+                }
+                clothingByGoid = next;
+                Volatile.Write(ref clothingIndexCount, count);
+                return next;
+            }
         }
 
         public byte findEmoteByLongId(UInt32 _emoteLongId)
         {
-            byte emoteIdShort = 0x00;
-            EmoteItem emoteItem = Emotes.Find(delegate(EmoteItem temp) { return temp.emoteIDLong == _emoteLongId; });
-            if (emoteItem != null)
-            {
-                emoteIdShort = emoteItem.emoteShortID;
-            }
-
-            return emoteIdShort;
+            return EnsureEmoteIndex().TryGetValue(_emoteLongId, out byte emoteIdShort) ? emoteIdShort : (byte)0x00;
         }
 
         public List<StaticWorldObject> findObjectsBySectorWorldRangeAndType(float x, float z, uint metrId,
@@ -1080,14 +1227,12 @@ namespace hds
 
         public AbilityItem getAbilityByID(UInt16 id)
         {
-            AbilityItem abTemp = AbilityDB.Find(delegate(AbilityItem a) { return a.getAbilityID() == id; });
-            return abTemp;
+            return EnsureAbilityIndex().TryGetValue(id, out AbilityItem abTemp) ? abTemp : null;
         }
 
         public GameObjectItem getGameObjectItemById(UInt16 id)
         {
-            GameObjectItem goItem = GODB.Find(delegate(GameObjectItem a) { return a.getGOID() == id; });
-            return goItem;
+            return EnsureGameObjectIndex().TryGetValue(id, out GameObjectItem goItem) ? goItem : null;
         }
 
         /// <summary>A row keyed by this static id wins; otherwise the merchant static resolved for a row
@@ -1105,17 +1250,11 @@ namespace hds
 
         public ClothingItem getItemValues(UInt32 itemID)
         {
-            ClothingItem clothingTemp = ClothingRSIDB.Find(delegate(ClothingItem temp)
+            if (EnsureClothingIndex().TryGetValue(itemID, out ClothingItem clothingTemp))
             {
-                return temp.getGoidDecimal() == itemID;
-            });
-            if (clothingTemp == null)
-            {
-                ClothingItem emptyItem = new ClothingItem();
-                return emptyItem;
+                return clothingTemp;
             }
-
-            return clothingTemp;
+            return new ClothingItem();
         }
 
         // SingleTon Pattern - as we only want to load the Data once at startup and manage 
@@ -1129,6 +1268,12 @@ namespace hds
         /// </summary>
         public static DataLoader getInstance()
         {
+            DataLoader existing = Instance;
+            if (existing != null)
+            {
+                return existing;
+            }
+
             lock (InstanceLock)
             {
                 if (Instance == null)
