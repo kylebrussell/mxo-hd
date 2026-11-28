@@ -141,14 +141,15 @@ namespace hds
         }
 
         // The client uses a zero faction ID to initialize its unaffiliated state and enable the Faction menu.
-        internal static byte[] BuildEmptyFactionInfoPacket(uint charId)
+        internal static byte[] BuildEmptyFactionInfoPacket(uint charId, bool final = false)
         {
             PacketContent packet = new PacketContent();
             packet.AddUShort((ushort)RPCResponseHeaders.SERVER_FACTION_PLAYER_INFO);
             packet.AddUint32(charId, 1);
             packet.AddUint32(0, 1); // No faction.
             packet.AddUint16(1, 1); // Message number.
-            packet.AddHexBytes("00000000"); // Final flag, data type, and absent data-array offset.
+            packet.AddByte(final ? (byte)1 : (byte)0);
+            packet.AddHexBytes("000000"); // No data type or data array.
             return packet.ReturnFinalPacket();
         }
 

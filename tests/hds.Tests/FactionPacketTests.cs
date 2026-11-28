@@ -30,6 +30,13 @@ public class FactionPacketTests
     }
 
     [Fact]
+    public void EmptyFactionInfoCanTerminateAFactionReply()
+    {
+        Assert.Equal("7C7856341200000000010001000000",
+            ToHex(ServerPackets.BuildEmptyFactionInfoPacket(0x12345678, final: true)));
+    }
+
+    [Fact]
     public void FactionInfoLayoutMatchesDecodedFieldOrder()
     {
         uint charId = 0x11223344;

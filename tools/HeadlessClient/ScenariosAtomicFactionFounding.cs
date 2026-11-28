@@ -43,16 +43,21 @@ public static partial class Scenarios
         await peer.EnterWorldAsync();
         await member.EnterWorldAsync();
 
+        member.SkipReceived();
         member.SendRpc(FactionFoundRequest(AtomicFactionName, peer.Handle));
-        await member.WaitForRpcAsync("6f 01 08 00 0f 00 00 0d");
+        await WaitForFoundingRefusal(member, "Only the captain of an unaffiliated crew can found a faction.");
         uint faction = await ProveAtomicFactionFoundingAsync(founder, peer, db, founderCrew, member);
 
         peer.SendRpc(FactionFoundRequest(AtomicFactionName, founder.Handle));
-        await peer.WaitForRpcAsync("6f 01 08 00 11 00 00 0d");
+        await WaitForFoundingRefusal(peer, "That faction name is invalid or already in use.");
         peer.SendRpc(InviteAnswer(1, 0, founder.Handle));
         await peer.WaitForRpcAsync($"7c {Le(peer.CharId)} {Le(faction)} 02");
         Check.Equal(5L, await db.LongAsync($"SELECT faction_rank FROM crews WHERE id={peerCrew} AND faction_id={faction}"),
             "The invite still brings in a second crew at rank 5");
+        founder.SkipReceived();
+        founder.SendRpc(FactionFoundRequest("AnotherFaction", peer.Handle));
+        await founder.WaitForRpcAsync($"7c {Le(founder.CharId)} {Le(faction)} 02 00 01 02");
+        await founder.WaitForTextAsync("Only the captain of an unaffiliated crew can found a faction.");
     }
 
     public static async Task<uint> ProveAtomicFactionFoundingAsync(HeadlessPlayer founder, HeadlessPlayer peer,
@@ -67,8 +72,7 @@ public static partial class Scenarios
 
         byte[] request = FactionFoundRequest(AtomicFactionName, peer.Handle);
         founder.SendRpc(request);
-        await founder.WaitForTextAsync("The faction could not be created. Your crew was kept.");
-        await founder.WaitForRpcAsync("6f 01 08 00 0f 00 00 0d");
+        await WaitForFoundingRefusal(founder, "The faction could not be created. Your crew was kept.");
         Check.Equal(0L, await db.LongAsync($"SELECT COUNT(*) FROM factions WHERE name='{AtomicFactionName}'"),
             "A failure updating character membership rolls back the inserted faction and the name can be reused");
         Check.Equal(1L, await db.LongAsync($"SELECT COUNT(*) FROM crews WHERE id={crew} AND faction_id=0 AND faction_rank=0"),
@@ -95,5 +99,13 @@ public static partial class Scenarios
         Check.Equal(member == null ? 1L : 2L, await db.LongAsync($"SELECT COUNT(*) FROM characters WHERE crewId={crew} AND factionId={faction}"),
             "The entire founding crew entered the faction");
         return faction;
+    }
+
+    private static async Task WaitForFoundingRefusal(HeadlessPlayer player, string notice)
+    {
+        var status = await player.WaitForRpcAsync($"7c {Le(player.CharId)} 00 00 00 00 01 00 01 00 00 00");
+        Check.Equal(15, status.Bytes.Length, "The final unaffiliated status carries no faction payload");
+        await player.WaitForTextAsync(notice);
+        Check.Equal(0, player.Received("6f 01").Count, "A founding refusal is not a declined invitation");
     }
 }
