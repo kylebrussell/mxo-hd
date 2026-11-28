@@ -23,6 +23,47 @@ public static partial class Scenarios
         p.SendRpc("81 1f");await p.WaitForRpcAsync("81 20");
     }
 
+    private static async Task CorpseLootReplacementClose(ScenarioContext context)
+    {
+        var p = (await context.AddPlayersInWorldAsync(
+            new CharacterSeed("CorpseReplacement") { Level = 50, X = 24499, Y = 495, Z = -1498, Health = 5000, MaxHealth = 5000 }))[0];
+        var first = await p.WaitForViewNamedAsync("WinterFrost");
+        var second = await p.WaitForViewNamedAsync("Trainman");
+        await DefeatMissionNpc(p, first);
+        uint firstInfo = BitConverter.ToUInt32(p.Received("81 19").Last().Bytes, 8);
+
+        int oldWindows = p.Received("81 19").Count;
+        int oldCloses = p.Received("81 1a").Count;
+        Task kill = DefeatMissionNpc(p, second);
+        await p.WaitUntilAsync(() => p.Received("81 1a").Count > oldCloses,
+            "the server asks the client to close the first corpse window", TimeSpan.FromSeconds(30));
+        Check.Equal(oldWindows, p.Received("81 19").Count, "The replacement has not arrived before the close echo");
+        p.SendRpc("81 1a"); // Recorded stock response to the server-driven close.
+        await kill;
+        uint secondInfo = BitConverter.ToUInt32(p.Received("81 19").Last().Bytes, 8);
+        p.SendRpc("81 1f");
+        await p.WaitForRpcAsync($"80 e4 {Le(1000u + secondInfo)}");
+        await p.WaitForRpcAsync("81 20");
+
+        int walletUpdates = p.Received("80 e4").Count;
+        p.SendRpc("81 1a"); // This time the operator closed the new window.
+        p.SendRpc("81 1f");
+        await p.WaitForRpcAsync("81 20 0c 00 00 00 00 00 00 00 00 00 00 00");
+        p.SendRpc("81 48");
+        await p.WaitForRpcAsync("81 49");
+        Check.Equal(walletUpdates, p.Received("80 e4").Count, "An explicit operator close invalidates the replacement selection");
+        int beforeReopen = p.Received("81 19").Count;
+        await MoveForMissionTest(p, BitConverter.ToDouble(first.Attributes["Position"], 0) + 100,
+            BitConverter.ToDouble(first.Attributes["Position"], 8), BitConverter.ToDouble(first.Attributes["Position"], 16));
+        p.SendRpc($"80 c7 {MissionNpcId(first)} 05 00");
+        var reopened = await p.WaitForRpcAsync("81 19");
+        Check.Equal(beforeReopen + 1, p.Received("81 19").Count, "Search opens the unclaimed first corpse");
+        Check.Equal(firstInfo, BitConverter.ToUInt32(reopened.Bytes, 8), "Replacing the window preserves the first corpse's unclaimed Info");
+        p.SendRpc("81 1f");
+        await p.WaitForRpcAsync($"80 e4 {Le(1000u + firstInfo + secondInfo)}");
+        await p.WaitForRpcAsync("81 20");
+    }
+
     private static async Task CorpseWindowFourKills(ScenarioContext context)
     {
         var players = await context.AddPlayersInWorldAsync(

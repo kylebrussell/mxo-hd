@@ -31,6 +31,22 @@ namespace hds
         private readonly Dictionary<UInt64, Corpse> corpses = new Dictionary<UInt64, Corpse>();
         private Corpse current;
         public bool WindowOpen { get; private set; }
+        internal bool HasPresentedWindow { get; set; }
+        internal PendingPresentation Replacement { get; set; }
+
+        internal sealed class PendingPresentation
+        {
+            internal Corpse Corpse;
+            internal readonly int World;
+            internal readonly long Transport;
+
+            internal PendingPresentation(WorldClient client, Corpse corpse)
+            {
+                Corpse = corpse;
+                World = client.playerData.worldGeneration;
+                Transport = client.TransportFence.Capture();
+            }
+        }
 
         // Callers hold this cache's lock while changing the selected corpse or granting its contents.
         public Corpse Current => current != null && current.Available ? current : null;
@@ -63,6 +79,8 @@ namespace hds
         {
             current = null;
             WindowOpen = false;
+            HasPresentedWindow = false;
+            Replacement = null;
         }
 
         public void Forget(Mob source)
