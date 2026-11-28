@@ -147,7 +147,7 @@ server policy. [Room packet details](#chat-rooms-in-detail)
 | `81 54` | `/whereami` | C 58 | handled | low |
 | `81 92` | Player details (CharacterID, CharacterName) | D, C 7 | handled | medium |
 | `81 94` | Get background (`vieweditbackground.cpp`) | D, C 1 | handled | low |
-| `81 96` | Set background (ChunkString, IsChunked) | D | handled | low |
+| `81 96` | Set background (ChunkString, IsChunked) | D | partial: inline saves return `81 97` | low |
 | `81 57` | Inspect a target (TargetHandle, GetAbilities, GetInventory, GetTempMods). Guess: the GM `/snooploadout` | D, S | partial: server-allowlisted GM current-view loadout text report; native chunk viewer unimplemented | low |
 | `81 59` | Snoop a crew (SnoopManager, CrewName): GM `/snoopcrew` | D, S | partial: server-allowlisted GM crew text report; native chunk viewer unimplemented | low |
 | `81 5b` | Snoop a faction: GM `/snoopfaction` | D, S | partial: server-allowlisted GM faction text report; native chunk viewer unimplemented | low |
@@ -460,6 +460,29 @@ an unsolicited header or message refresh after `81 fd`.
 
 - `?mailbot [subject]`: a mail from MailBot with a Code Bit 1 attached arrives at once.
 - Mail sent to `MailBot` is answered with "RE: <subject>", the text quoted, and the attachments (and information) given back.
+
+## Character background saves
+
+`/setbackground` opens the stock editor (client.dll `0x6225a02f`). It
+reads the saved text with `81 94` / `81 95`. An inline save sends
+`81 96 05 00 00 <length u16> <terminated text>`. The stock editor
+copies the low byte of each character at `0x62422004` and widens each
+byte on display. The editor and public profile use that same wire
+encoding when reading back the saved text.
+
+The server returns `81 97` with 32-bit status 0 after a saved update and
+1 for refused writes and invalid requests. The client branches on that
+status at `0x621782e5` to display the success or failure line. The stock
+editor uses chunks at 300 bytes (`0x620ac4c7`, `0x6258e0a0`). The
+server currently accepts inline saves and explicitly refuses chunked
+background updates, preserving the prior text.
+
+Use `background-save-result` at Mara (17000,495,6400). Open
+`/setbackground` and replace **Saved profile** with **Mara trial**.
+The disclosed disposable CHECK refuses the update. Reopen and confirm
+the old text. Send `{"actor":"QAFriend","action":"profile-save","step":"retry"}`
+to check the saved text and release the fault. Save **Mara trial** again
+in the same session, then relog and reopen to verify persistence.
 
 ## Buddy List write refusal
 

@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data.Common;
 using System.Linq;
 using System.Drawing.Printing;
 using System.Text;
@@ -313,14 +314,38 @@ namespace hds
 
         public void ProcessSetBackgroundRequest(ref byte[] packetData)
         {
-            UInt16 backgroundSize = NumericalUtils.ByteArrayToUint16(new byte[] {packetData[3], packetData[4]},1);
+            var client = Store.currentClient;
+            uint charId = client.playerData.getCharID();
+            bool saved = false;
+            if (TryReadBackground(packetData, out string background))
+            {
+                try
+                {
+                    saved = Store.dbManager.WorldDbHandler.TrySetBackground(charId, background);
+                }
+                catch (DbException error)
+                {
+                    Output.WriteDebugLog($"[BACKGROUND] Save refused char={charId}: {error.Message}");
+                }
+            }
+            new ServerPackets().SendBackgroundSaveResult(client, saved);
+        }
 
-            byte[] backgroundBytes = new byte[backgroundSize-1];
-            ArrayUtils.copy(packetData,5,backgroundBytes,0,backgroundSize-1);
+        private static bool TryReadBackground(byte[] body, out string background)
+        {
+            background = null;
+            // 81 96: offset 5 (relative to the opcode), IsChunked=0, then the sized narrow string.
+            if (body.Length < 6 || body[0] != 5 || body[1] != 0 || body[2] != 0)
+                return false;
+            const int MaxBackgroundLength = 1024; // characters.background
+            int length = (body[3] | (body[4] << 8)) - 1;
+            if (length < 0 || length > MaxBackgroundLength || body.Length != length + 6 || body[^1] != 0)
+                return false;
+            ReadOnlySpan<byte> text = body.AsSpan(5, length);
+            if (text.Contains((byte)0)) return false;
 
-            string backgroundText = StringUtils.charBytesToString(backgroundBytes);
-            Store.dbManager.WorldDbHandler.setBackground(backgroundText);
-
+            background = Encoding.Latin1.GetString(text);
+            return true;
         }
 
         public void ProcessLootAccepted()
