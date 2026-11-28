@@ -795,12 +795,12 @@ namespace hds
                     theMob.setRotation(rotation);
                     theMob.setIsDead(false);
                     theMob.setIsLootable(false);
-                    lock (WorldServer.mobs)
+                    lock (WorldServer.mobs.SyncRoot)
                     {
                         WorldServer.mobs.Add(theMob);
                     }
 
-                    lock (WorldServer.gameServerEntities)
+                    lock (WorldServer.gameServerEntities.SyncRoot)
                     {
                         WorldServer.gameServerEntities.Add(theMob);
                     }

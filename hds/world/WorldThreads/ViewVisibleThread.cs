@@ -293,7 +293,7 @@ namespace hds
         private static void CheckForServerEntites()
         {
             // This can later replace ALL Methods 
-            lock (WorldServer.gameServerEntities)
+            lock (WorldServer.gameServerEntities.SyncRoot)
             {
                 foreach (var serverEntity in WorldServer.gameServerEntities)
                 {

@@ -32,6 +32,11 @@ namespace hds{
 		
 		private void ParseContent(ref byte[] packetData){
 
+			if (packetData == null || packetData.Length == 0)
+			{
+				return;
+			}
+
 			buffer = null;
 			buffer = packetData;
 			offset = 0; //initialize to initial byte
@@ -58,6 +63,7 @@ namespace hds{
 
             if (hasSimTime)
             {
+                if (offset + 4 > packetData.Length) return;
                 float simTime = BinaryPrimitives.ReadSingleLittleEndian(packetData.AsSpan(offset, 4));
                 offset += 4;
                 Store.currentClient.playerData.setClientSimTime(simTime);
@@ -111,9 +117,9 @@ namespace hds{
 			{
 				//Not just ACK nor Resetting
 
-				if (packetData[offset] == 0x05)
+				if (offset < packetData.Length && packetData[offset] == 0x05)
 				{
-					offset = offset + 4;
+					offset = offset + 4 <= packetData.Length ? offset + 4 : packetData.Length;
 					Output.writeToLogForConsole("Its a 05 Packet");
 					Store.currentClient.messageQueue.ackOnlyCount = Store.currentClient.messageQueue.ackOnlyCount + 1;
 					Store.currentClient.FlushQueue();
@@ -121,7 +127,7 @@ namespace hds{
 
 				}
 
-				if (packetData[offset] == 0x03)
+				if (offset < packetData.Length && packetData[offset] == 0x03)
 				{
 					// Is a 03 packet
 					offset++;

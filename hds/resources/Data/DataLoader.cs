@@ -1,9 +1,10 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Xml;
 using hds.world.Structures;
 
@@ -12,7 +13,32 @@ namespace hds
     class DataLoader
     {
         private static DataLoader Instance;
+        private static readonly string[] StaticObjectCsvFiles =
+        {
+            "staticObjects_slums_1.csv",
+            "staticObjects_slums_2.csv",
+            "staticObjects_it.csv",
+            "staticObjects_dt_1.csv",
+            "staticObjects_dt_2.csv",
+            "staticObjects_small03.csv",
+            "staticObjects_large01.csv",
+            "staticObjects_large02.csv",
+            "staticObjects_widowsmoor.csv",
+            "staticObjects_medium01.csv",
+            "staticObjects_medium02.csv",
+            "staticObjects_medium03.csv",
+            "staticObjects_archive01.csv",
+            "staticObjects_yuki.csv",
+            "staticObjects_archive02.csv",
+            "staticObjects_archive_ashencourte.csv",
+            "staticObjects_datamine.csv",
+            "staticObjects_archive_sakura.csv",
+            "staticObjects_archive_sati.csv"
+        };
+
         private readonly Maths mathUtils = new Maths();
+        private readonly Dictionary<UInt16, byte[]> staticObjectTypeCache = new Dictionary<UInt16, byte[]>(1024);
+        private StringSpanInterner activeQuatInterner;
 
         // Data Storage - maybe we need to change this to something better (like a AbilityQuery Object)
         public List<AbilityItem> AbilityDB = new List<AbilityItem>(); // holds our Ability DB
@@ -55,26 +81,35 @@ namespace hds
 
             loadVendorItems(DataPath("vendor_items.csv"));
             loadNPCSignPosts(DataPath("npcsign_parsed.csv"));
-            // Disabled for Debugging
-            loadWorldObjectsDb(DataPath("staticObjects_slums_1.csv"));
-            loadWorldObjectsDb(DataPath("staticObjects_slums_2.csv"));
-            loadWorldObjectsDb(DataPath("staticObjects_it.csv"));
-            loadWorldObjectsDb(DataPath("staticObjects_dt_1.csv"));
-            loadWorldObjectsDb(DataPath("staticObjects_dt_2.csv"));
-            loadWorldObjectsDb(DataPath("staticObjects_small03.csv"));
-            loadWorldObjectsDb(DataPath("staticObjects_large01.csv"));
-            loadWorldObjectsDb(DataPath("staticObjects_large02.csv"));
-            loadWorldObjectsDb(DataPath("staticObjects_widowsmoor.csv"));
-            loadWorldObjectsDb(DataPath("staticObjects_medium01.csv"));
-            loadWorldObjectsDb(DataPath("staticObjects_medium02.csv"));
-            loadWorldObjectsDb(DataPath("staticObjects_medium03.csv"));
-            loadWorldObjectsDb(DataPath("staticObjects_archive01.csv"));
-            loadWorldObjectsDb(DataPath("staticObjects_yuki.csv"));
-            loadWorldObjectsDb(DataPath("staticObjects_archive02.csv"));
-            loadWorldObjectsDb(DataPath("staticObjects_archive_ashencourte.csv"));
-            loadWorldObjectsDb(DataPath("staticObjects_datamine.csv"));
-            loadWorldObjectsDb(DataPath("staticObjects_archive_sakura.csv"));
-            loadWorldObjectsDb(DataPath("staticObjects_archive_sati.csv"));
+
+            long estimatedStaticBytes = 0;
+            for (int i = 0; i < StaticObjectCsvFiles.Length; i++)
+            {
+                string fullPath = DataPath(StaticObjectCsvFiles[i]);
+                if (File.Exists(fullPath))
+                {
+                    estimatedStaticBytes += new FileInfo(fullPath).Length;
+                }
+            }
+            int estimatedRows = (int)Math.Min(int.MaxValue, estimatedStaticBytes / 100);
+            if (estimatedRows > 0)
+            {
+                WorldObjectsDB.EnsureCapacity(estimatedRows);
+                WorldObjectsById.EnsureCapacity(estimatedRows);
+            }
+
+            activeQuatInterner = new StringSpanInterner(4096);
+            try
+            {
+                for (int i = 0; i < StaticObjectCsvFiles.Length; i++)
+                {
+                    loadWorldObjectsDb(DataPath(StaticObjectCsvFiles[i]));
+                }
+            }
+            finally
+            {
+                activeQuatInterner = null;
+            }
         }
 
         public void LoadMissions()
@@ -562,44 +597,201 @@ namespace hds
             }
         }
 
+        internal sealed class StringSpanInterner
+        {
+            private string[] buckets;
+            private int count;
+
+            public StringSpanInterner(int initialCapacity = 1024)
+            {
+                int size = 16;
+                while (size < initialCapacity) size <<= 1;
+                buckets = new string[size];
+            }
+
+            public int Count => count;
+
+            public string Intern(ReadOnlySpan<char> span)
+            {
+                if (span.IsEmpty)
+                {
+                    return string.Empty;
+                }
+
+                int hash = string.GetHashCode(span);
+                int mask = buckets.Length - 1;
+                int slot = hash & mask;
+                while (true)
+                {
+                    string existing = buckets[slot];
+                    if (existing == null)
+                    {
+                        break;
+                    }
+                    if (existing.AsSpan().SequenceEqual(span))
+                    {
+                        return existing;
+                    }
+                    slot = (slot + 1) & mask;
+                }
+
+                if ((count + 1) * 10 >= buckets.Length * 7)
+                {
+                    Resize();
+                    mask = buckets.Length - 1;
+                    slot = hash & mask;
+                    while (buckets[slot] != null)
+                    {
+                        slot = (slot + 1) & mask;
+                    }
+                }
+
+                string created = span.ToString();
+                buckets[slot] = created;
+                count++;
+                return created;
+            }
+
+            private void Resize()
+            {
+                string[] oldBuckets = buckets;
+                string[] nextBuckets = new string[oldBuckets.Length << 1];
+                int mask = nextBuckets.Length - 1;
+                for (int i = 0; i < oldBuckets.Length; i++)
+                {
+                    string entry = oldBuckets[i];
+                    if (entry == null) continue;
+                    int slot = string.GetHashCode(entry.AsSpan()) & mask;
+                    while (nextBuckets[slot] != null)
+                    {
+                        slot = (slot + 1) & mask;
+                    }
+                    nextBuckets[slot] = entry;
+                }
+                buckets = nextBuckets;
+            }
+        }
+
+        private static int ParseHexNibble(char c)
+        {
+            if (c >= '0' && c <= '9') return c - '0';
+            if (c >= 'a' && c <= 'f') return c - 'a' + 10;
+            if (c >= 'A' && c <= 'F') return c - 'A' + 10;
+            throw new FormatException("Invalid hex digit: " + c);
+        }
+
+        internal static UInt32 ParseHexUInt32LittleEndian(ReadOnlySpan<char> hex)
+        {
+            if (hex.Length < 8)
+            {
+                throw new FormatException("Expected at least 8 hex digits for UInt32.");
+            }
+            uint b0 = (uint)((ParseHexNibble(hex[0]) << 4) | ParseHexNibble(hex[1]));
+            uint b1 = (uint)((ParseHexNibble(hex[2]) << 4) | ParseHexNibble(hex[3]));
+            uint b2 = (uint)((ParseHexNibble(hex[4]) << 4) | ParseHexNibble(hex[5]));
+            uint b3 = (uint)((ParseHexNibble(hex[6]) << 4) | ParseHexNibble(hex[7]));
+            return b0 | (b1 << 8) | (b2 << 16) | (b3 << 24);
+        }
+
+        internal static UInt16 ParseHexUInt16LittleEndian(ReadOnlySpan<char> hex)
+        {
+            if (hex.Length < 4)
+            {
+                throw new FormatException("Expected at least 4 hex digits for UInt16.");
+            }
+            uint b0 = (uint)((ParseHexNibble(hex[0]) << 4) | ParseHexNibble(hex[1]));
+            uint b1 = (uint)((ParseHexNibble(hex[2]) << 4) | ParseHexNibble(hex[3]));
+            return (UInt16)(b0 | (b1 << 8));
+        }
+
+        private static ReadOnlySpan<char> NextCsvField(ref ReadOnlySpan<char> remaining)
+        {
+            int comma = remaining.IndexOf(',');
+            if (comma < 0)
+            {
+                ReadOnlySpan<char> last = remaining;
+                remaining = ReadOnlySpan<char>.Empty;
+                return last;
+            }
+
+            ReadOnlySpan<char> field = remaining.Slice(0, comma);
+            remaining = remaining.Slice(comma + 1);
+            return field;
+        }
+
+        internal static StaticWorldObject ParseStaticWorldObjectLine(
+            ReadOnlySpan<char> line,
+            Dictionary<UInt16, byte[]> typeCache,
+            StringSpanInterner quatInterner,
+            out UInt16 typeId)
+        {
+            ReadOnlySpan<char> rem = line;
+            UInt16 metrId = UInt16.Parse(NextCsvField(ref rem), NumberStyles.Integer, CultureInfo.InvariantCulture);
+            UInt16 sectorId = UInt16.Parse(NextCsvField(ref rem), NumberStyles.Integer, CultureInfo.InvariantCulture);
+            UInt32 mxoStaticId = ParseHexUInt32LittleEndian(NextCsvField(ref rem));
+            UInt32 staticId = ParseHexUInt32LittleEndian(NextCsvField(ref rem));
+
+            ReadOnlySpan<char> typeSpan = NextCsvField(ref rem);
+            typeId = ParseHexUInt16LittleEndian(typeSpan);
+            if (!typeCache.TryGetValue(typeId, out byte[] typeBytes))
+            {
+                typeBytes = new byte[] { (byte)(typeId & 0xFF), (byte)(typeId >> 8) };
+                typeCache[typeId] = typeBytes;
+            }
+
+            bool exterior = bool.Parse(NextCsvField(ref rem));
+            double posX = double.Parse(NextCsvField(ref rem), NumberStyles.Float | NumberStyles.AllowThousands, CultureInfo.InvariantCulture);
+            double posY = double.Parse(NextCsvField(ref rem), NumberStyles.Float | NumberStyles.AllowThousands, CultureInfo.InvariantCulture);
+            double posZ = double.Parse(NextCsvField(ref rem), NumberStyles.Float | NumberStyles.AllowThousands, CultureInfo.InvariantCulture);
+            double rot = double.Parse(NextCsvField(ref rem), NumberStyles.Float | NumberStyles.AllowThousands, CultureInfo.InvariantCulture);
+            string quat = quatInterner.Intern(NextCsvField(ref rem));
+
+            return new StaticWorldObject
+            {
+                metrId = metrId,
+                sectorID = sectorId,
+                mxoStaticId = mxoStaticId,
+                staticId = staticId,
+                type = typeBytes,
+                exterior = exterior,
+                pos_x = posX,
+                pos_y = posY,
+                pos_z = posZ,
+                rot = rot,
+                quat = quat
+            };
+        }
+
         private void LoadWorldObjectsFile(string path)
         {
             Output.Write("Loading Static Objects from " + path + " - please wait...");
 
-            ArrayList staticWorldObjects = loadCSV(path, ',');
-            StaticWorldObject worldObject = null;
-            int linecount = 1;
-            foreach (string[] data in staticWorldObjects)
+            string resolvedPath = ResolveDataPath(path);
+            StringSpanInterner quatInterner = activeQuatInterner ?? new StringSpanInterner(1024);
+            int nonEmptyLines = 0;
+
+            using (var sr = new StreamReader(resolvedPath, Encoding.UTF8, true, 65536))
             {
-                if (linecount > 1)
+                string line;
+                while ((line = sr.ReadLine()) != null)
                 {
-                    //Output.WriteLine("Show Colums for Line : " + linecount.ToString() + " GOID:  " + data[1].ToString() + " Name " + data[0].ToString());
+                    if (line.Length == 0) continue;
+                    nonEmptyLines++;
+                    if (nonEmptyLines == 1) continue; // CSV header
 
-                    worldObject = new StaticWorldObject();
-
-                    worldObject.metrId = Convert.ToUInt16(data[0]);
-                    worldObject.sectorID = Convert.ToUInt16(data[1]);
-
-
-                    worldObject.mxoStaticId =
-                        NumericalUtils.ByteArrayToUint32(StringUtils.hexStringToBytes(data[2]), 1);
-                    worldObject.staticId = NumericalUtils.ByteArrayToUint32(StringUtils.hexStringToBytes(data[3]), 1);
-                    worldObject.type = StringUtils.hexStringToBytes(data[4].Substring(0, 4));
-                    worldObject.exterior = Convert.ToBoolean(data[5]);
-                    worldObject.pos_x = double.Parse(data[6], CultureInfo.InvariantCulture);
-                    worldObject.pos_y = double.Parse(data[7], CultureInfo.InvariantCulture);
-                    worldObject.pos_z = double.Parse(data[8], CultureInfo.InvariantCulture);
-                    worldObject.rot = double.Parse(data[9], CultureInfo.InvariantCulture);
-                    worldObject.quat = data[10];
+                    StaticWorldObject worldObject = ParseStaticWorldObjectLine(
+                        line.AsSpan(), staticObjectTypeCache, quatInterner, out UInt16 typeId);
 
                     WorldObjectsDB.Add(worldObject);
                     WorldObjectsById.Add(worldObject);
-                    AddWorldObjectToWorldServer(worldObject);
-                    worldObject = null;
+                    if (typeId == 6568)
+                    {
+                        AddWorldObjectToWorldServer(worldObject);
+                    }
                 }
-
-                linecount++;
             }
+
+            Output.Write(nonEmptyLines + " Entrys added !\n");
         }
 
         public void AddWorldObjectToWorldServer(StaticWorldObject worldObject)

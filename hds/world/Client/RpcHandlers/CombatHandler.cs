@@ -1598,7 +1598,7 @@ namespace hds
                 return;
             }
 
-            lock (WorldServer.gameServerEntities)
+            lock (WorldServer.gameServerEntities.SyncRoot)
             {
                 WorldServer.gameServerEntities.Remove(session.CombatHandlerObject);
             }
