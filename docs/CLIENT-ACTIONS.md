@@ -632,7 +632,7 @@ Retail traffic has only `72 03 <own id>` at login, `72 02` to the remaining memb
 | `72` (6) | +1 GroupType, +2 PlayerID u32 | Team window Boot (`MTBt`, confirm `MTBC`), or the mini team list (`MTBo`). Crew right-click "Remove" (`CrRm`), offered only to the captain |
 | `75` (6) | +1 GroupType, +2 PlayerID u32 | Team Promote (`MTPr`), or crew right-click "Make Captain" (`CNCp`) |
 | `80 87` (6) | +2 FirstMateID u32 | Crew right-click "Make First Mate" (`CrFM`), or "Demote" on the first mate (`CrDm`), which sends 0 |
-| `80 80` (7) | +2 MemberID u32 (a crew id), +6 bPromote | Faction members window "Promote" (`FMPr`) and "Demote" (`FMDe`). Offered only to a captain whose crew ranks higher than the target |
+| `80 80` (7) | +2 MemberID u32 (a crew id), +6 bPromote | Faction members window "Promote" (`FMPr`) and "Demote" (`FMDe`). Requires a captain whose crew outranks the target. Demote also requires a target at rank 2–4 and more than 2^(rank − 1) crews at that rank. |
 | `73` (5) | +1 CrewID u32 | Faction members window "Remove" (`FMRm`). Offered only to the captain of a rank-1 crew |
 | `80 84` | +2 InviteeName offset, +4 CrewName offset (7), +6 OrganizationID, then the crew name, then the invitee | The crew creation window (`viewcrewcreation.cpp`). It prints "Crew create invitation sent." |
 | `80 91` | +2 RemoveFromSeekerList, +3 ExtraDisciplines offset, +5 OrgsToWorkWith offset | Team window Seek (`MTSk`). The client prints "You flag yourself as looking for team." itself |

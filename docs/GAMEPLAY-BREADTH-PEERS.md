@@ -287,7 +287,31 @@ Dismiss the rank error if modal and verify that QAPeerCrew remains rank 5.
 Send `{"actor":"QAOther","action":"faction-rank-retry"}` and wait for the
 deposit to raise the peer crew bank to 1. Repeat Promote in the same
 session. QAPeerCrew should reach rank 4 and retain it after relog.
-Choose **Demote** on the same crew and check that it returns to rank 5.
+
+### Stock faction Demote menu
+
+The stock menu at `620b3620` calls the Demote predicate at `620b2160`.
+It requires the current captain to outrank the target crew and the
+target's rank to be below 5. The counter at `620b1ff0` walks the loaded
+faction roster and counts crews by rank. Demote is added only when the
+count for the target rank exceeds `1 << (rank - 1)`. The wire rank already
+comes from the `7c` roster and changes when the client consumes `7f`.
+
+Use `faction-demote-stock` at the verified Mara stand (17000,495,6400).
+In **Faction > More**, rank 4 starts with eight crews named QARank1
+through QARank8. Their captains are offline fixture characters.
+
+1. Right-click **QARank1**. Demote is absent at the eight-crew limit.
+2. Scroll to **QAPeerCrew** under rank 5 and choose **Promote > Yes**.
+   The client sends `80 80 8e 23 00 00 01` and the server sends
+   `7f 8e 23 00 00 04`. Rank 4 now has nine crews.
+3. Right-click **QAPeerCrew** under rank 4 and choose **Demote > Yes**.
+   The client sends `80 80 8e 23 00 00 00` and the server sends
+   `7f 8e 23 00 00 05`. After relog QAPeerCrew remains at rank 5,
+   and QARank1 no longer offers Demote.
+
+The headless bootstrap verifies the full stock-shaped roster and both
+rank deltas against the persisted population at rank 4.
 
 ## Marketplace
 
