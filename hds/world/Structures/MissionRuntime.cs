@@ -290,13 +290,13 @@ namespace hds
             return true;
         }
 
-        /// <summary>Right-click Give on an NPC (80 c7 ... 0e): the player hands over the objective's item.</summary>
-        public static bool OnGive(WorldClient client, Mob npc)
+        /// <summary>Give uses the tracked item. Drag-and-drop also specifies its current bag slot.</summary>
+        public static bool OnGive(WorldClient client, Mob npc, UInt16? sourceSlot = null)
         {
-            return MissionPersistence.Mutate(client,()=>OnGiveCore(client, npc));
+            return MissionPersistence.Mutate(client,()=>OnGiveCore(client, npc, sourceSlot));
         }
 
-        private static bool OnGiveCore(WorldClient client, Mob npc)
+        private static bool OnGiveCore(WorldClient client, Mob npc, UInt16? sourceSlot)
         {
             MissionProgress progress = client.playerData.missionProgress;
             MissionObjective objective = npc == null ? null : progress?.FindOpen(MissionGoalType.Give, npc.missionNpcId);
@@ -305,9 +305,15 @@ namespace hds
                 return false;
             }
 
+            if (sourceSlot.HasValue && (objective.item == 0 ||
+                !progress.itemSlots.TryGetValue(objective.item, out UInt16 slot) || sourceSlot.Value != slot))
+            {
+                return false;
+            }
+
             if (objective.item != 0 && !TakeItem(client, progress, objective.item))
             {
-                return true;
+                return !sourceSlot.HasValue;
             }
             Complete(client, progress, objective);
             client.FlushQueue();

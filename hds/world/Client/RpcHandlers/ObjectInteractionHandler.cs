@@ -64,19 +64,22 @@ namespace hds
         /// </summary>
         public static void ProcessGiveToNpc(WorldClient client, byte[] rpcData)
         {
-            if (rpcData.Length < 5)
+            if (rpcData.Length != 5)
             {
                 return;
             }
 
             byte slot = rpcData[0];
-            UInt16 viewId = (UInt16)(rpcData[1] | (rpcData[2] << 8));
+            uint target = BitConverter.ToUInt32(rpcData, 1);
+            UInt16 viewId = (UInt16)target;
             ClientView view = client.viewMan.getViewById(viewId);
+            if (view != null && view.spawnId != target >> 16)
+                view = null;
             Mob npc = InteractedMissionMob(view);
             Output.WriteDebugLog("[MISSION] Item in slot " + slot + " dragged onto view " + viewId + (npc != null ? " (" + npc.getName() + ")" : ""));
-            bool taken = MissionRuntime.OnGive(client, npc);
-            TutorialMission.Of(client)?.OnGive(InteractedTutorialMob(view));
-            if (!taken && TutorialMission.Of(client) == null)
+            bool taken = MissionRuntime.OnGive(client, npc, slot) ||
+                TutorialMission.Of(client)?.OnGive(InteractedTutorialMob(view), slot) == true;
+            if (!taken)
             {
                 // Ours: the client already said it handed the item over, and the item is still in the bag
                 new ServerPackets().sendSystemChatMessage(client, "They don't want that.", "SYSTEM");
