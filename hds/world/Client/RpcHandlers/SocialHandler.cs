@@ -1075,23 +1075,26 @@ namespace hds
             }
 
             UInt32 targetCrewId = BitConverter.ToUInt32(rpcData, 0);
-            var db = Store.dbManager.WorldDbHandler;
             UInt32 factionId = FactionIdOf(client);
             UInt32 myCrewId = CrewIdOf(client);
-            Faction faction = factionId != 0 ? db.FetchFaction(factionId) : null;
-            Crew mine = faction?.crews.FirstOrDefault(c => c.crewId == myCrewId);
-            Crew target = faction?.crews.FirstOrDefault(c => c.crewId == targetCrewId);
-            if (mine == null || target == null || targetCrewId == myCrewId || !IsCaptain(client, myCrewId) ||
-                RankOf(faction, mine) != SocialPackets.TopFactionRank)
+            try
             {
-                Send(client, SocialPackets.FactionRemoveFailed(targetCrewId, SocialPackets.FactionNotAuthorized));
+                if (!Store.dbManager.WorldDbHandler.EjectCrewFromFaction(client.playerData.getCharID(), myCrewId, factionId, targetCrewId))
+                {
+                    Send(client, SocialPackets.FactionRemoveFailed(targetCrewId, SocialPackets.FactionNotAuthorized));
+                    return;
+                }
+            }
+            catch (DbException error)
+            {
+                Output.WriteDebugLog($"[SOCIAL] Faction ejection rolled back crew={targetCrewId} faction={factionId}: {error.Message}");
+                // The stock 74 consumer displays its generic failure regardless of Status.
+                Send(client, SocialPackets.FactionRemoveFailed(targetCrewId, 0));
+                Send(client, ServerPackets.BuildSystemChatMessage("The faction removal could not be saved. The roster was kept.", "BROADCAST"));
                 return;
             }
 
             List<WorldClient> everyone = OnlineWhere(c => FactionIdOf(c) == factionId);
-            db.RemoveCrewFromFaction(factionId, targetCrewId);
-            db.SetFactionOfCrewMembers(targetCrewId, 0);
-            db.SetCrewFactionRank(targetCrewId, 0);
             SendToAll(everyone, SocialPackets.FactionCrewRemoved(targetCrewId));
             foreach (WorldClient member in everyone.Where(c => CrewIdOf(c) == targetCrewId))
             {

@@ -99,6 +99,23 @@ and deposit 1 Info to release the fixture check. Have QAOther send the
 same control again, accept, and open **Faction > More**. QAPeerCrew stays
 at rank 1 and QACrew joins at rank 5. Check the same roster after relog.
 
+### Atomic faction ejection
+
+Removing another crew with `73` clears that crew's faction, rank and
+member affiliations in one transaction. The server checks the issuing
+captain's current rank and sends the removal packet only after commit.
+If a write fails, it sends the ordinary `74` refusal and a chat
+explanation. The stock `74` handler at `621b9600` displays its generic
+failure without reading Status.
+
+Use `faction-ejection-atomic`. Open the people icon above chat and choose
+**Faction > More**. Right-click QAPeerCrew and choose **Remove**. Expect
+“The roster was kept.” in chat and both crews still in the list. Send
+`{"actor":"QAOther","action":"faction-ejection-retry"}`. The helper
+deposits 1 Info into its crew bank, releasing the disposable fault.
+Remove QAPeerCrew again in the same session. The roster should retain
+QACrew at rank 1 and lose QAPeerCrew. Check the roster after relog.
+
 ## Marketplace
 
 Use the `marketplace-breadth` mode. QAFriend lists a Code Bit 1 for 300

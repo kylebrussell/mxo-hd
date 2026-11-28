@@ -8,8 +8,8 @@ namespace NativeQa.Modes;
 public class SocialBreadthMode : NativeQaMode
 {
     protected const uint CaptainCrew = 9101;
-    private const uint PeerCrew = 9102;
-    private const uint FactionId = 9103;
+    protected const uint PeerCrew = 9102;
+    protected const uint FactionId = 9103;
     private const string Captain = "CSR_Tester";
     private const string Member = "QAFriend";
     private const string PeerCaptain = "QAOther";
