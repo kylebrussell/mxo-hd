@@ -77,7 +77,7 @@ namespace hds{
             var publication = new AbilityAcquisition.Publication(client);
             if (placement.Container == 0 && !client.playerData.DistrictIsLA())
             {
-                publication.Notice(client, "List archive codes from the Loading Area marketplace.");
+                RefusePlacement(client, publication, placement, "List archive codes from the Loading Area marketplace.");
                 return;
             }
             var listing = new MarketListing
@@ -97,7 +97,7 @@ namespace hds{
                 {
                     refusal = Db.Place(listing, placement);
                 }
-                catch (DbException ex)
+                catch (Exception ex) when (ex is DbException || ex is InvalidOperationException)
                 {
                     Output.WriteDebugLog("[MARKET] Listing transaction rolled back: " + ex.Message);
                     refusal = "The listing could not be posted. Your item was kept.";
@@ -105,7 +105,7 @@ namespace hds{
             }
             if (refusal != null)
             {
-                publication.Notice(client, refusal);
+                RefusePlacement(client, publication, placement, refusal);
                 return;
             }
 
@@ -113,7 +113,16 @@ namespace hds{
                 : ServerPackets.BuildInventoryItemDelete(placement.Slot);
             Output.WriteDebugLog($"[MARKET] {publication.Character} listed class={listing.GoId} descriptor={listing.Descriptor:x8} " +
                 $"container={placement.Container} slot={placement.Slot} price={listing.Price} id={listing.Id}");
-            if (publication.Publish(client, remove, MarketplacePackets.Listed(listing, placement.Container, placement.Slot)))
+            if (publication.Publish(client, remove,
+                MarketplacePackets.Listed(listing, placement.Container, placement.Slot, placement.ClientUiData)))
+                client.FlushQueue();
+        }
+
+        private static void RefusePlacement(WorldClient client, AbilityAcquisition.Publication publication,
+            MarketplaceRequests.Placement placement, string reason)
+        {
+            if (publication.Publish(client, MarketplacePackets.PlaceRefused(placement, CentralStorage.InvalidTransaction),
+                ServerPackets.BuildSystemChatMessage(reason, "SYSTEM")))
                 client.FlushQueue();
         }
 

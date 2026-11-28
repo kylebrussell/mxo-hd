@@ -423,6 +423,7 @@ public static partial class Scenarios
         new Scenario("prompt-and-fx-callbacks", PromptAndFxCallbacks),
         new Scenario("marketplace-purchase", MarketplacePurchase),
         new Scenario("marketplace-archive-code", MarketplaceArchiveCode, StillNpcs),
+        new Scenario("marketplace-listing-refusal", MarketplaceListingRefusal, StillNpcs),
         new Scenario("marketplace-seller-in-loading-area", MarketplaceSellerInLoadingArea),
         new Scenario("loading-area-to-a-hardline-data-hardlines-lacks", LoadingAreaToMissingHardline),
         new Scenario("la-hardline-registration", LaHardlineRegistration, new Dictionary<string,string>{["MXO_DEV_COMMANDS"]="0",["MXO_MOBS"]=""}),

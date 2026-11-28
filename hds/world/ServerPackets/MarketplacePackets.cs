@@ -90,20 +90,27 @@ namespace hds
             return Framed(0x812a, 0, rows.ReturnFinalPacket(), 24 * listings.Count);
         }
 
-        /// <summary>81 2c: the item is on the market. Listing id, goid, descriptor, price, days (30), then the
-        /// container byte and slot the client listed it from, then eight zero bytes.</summary>
-        public static byte[] Listed(MarketListing listing, byte container, UInt16 slot)
+        /// <summary>81 2c: listing result with the source container, slot, client UI data and status.</summary>
+        public static byte[] Listed(MarketListing listing, byte container, UInt16 slot, uint clientUiData = 0) =>
+            PlaceResult(listing.Id, listing.GoId, listing.Descriptor, listing.Price, ListingDays, container, slot, clientUiData, 0);
+
+        public static byte[] PlaceRefused(MarketplaceRequests.Placement request, uint status) =>
+            PlaceResult(0, 0, 0, 0, 0, request.Container, request.Slot, request.ClientUiData, status);
+
+        private static byte[] PlaceResult(uint listingId, uint goid, uint descriptor, uint price, uint days,
+            byte container, UInt16 slot, uint clientUiData, uint status)
         {
             PacketContent pak = new PacketContent();
             pak.AddUint16(0x812c, 0);
-            pak.AddUint32(listing.Id, 1);
-            pak.AddUint32(listing.GoId, 1);
-            pak.AddUint32(listing.Descriptor, 1);
-            pak.AddUint32(listing.Price, 1);
-            pak.AddUint32(ListingDays, 1);
+            pak.AddUint32(listingId, 1);
+            pak.AddUint32(goid, 1);
+            pak.AddUint32(descriptor, 1);
+            pak.AddUint32(price, 1);
+            pak.AddUint32(days, 1);
             pak.AddByte(container);
             pak.AddUint16(slot, 1);
-            pak.AddByteArray(new byte[8]);
+            pak.AddUint32(clientUiData, 1);
+            pak.AddUint32(status, 1);
             return pak.ReturnFinalPacket();
         }
 
@@ -158,6 +165,7 @@ namespace hds
             public UInt32 Price;
             public byte Container;
             public UInt16 Slot;
+            public UInt32 ClientUiData;
         }
 
         /// <summary>81 24 &lt;category&gt; &lt;u32 0&gt; &lt;u32 0&gt; &lt;u16 25&gt; &lt;u32 999999999&gt; &lt;u32 0&gt; 01 00 00 (every retail
@@ -184,7 +192,7 @@ namespace hds
             return true;
         }
 
-        /// <summary>81 2b &lt;category&gt; &lt;price u32&gt; &lt;container u8&gt; &lt;slot u16&gt; 00 00 00 00, e.g. the SWAT disguise
+        /// <summary>81 2b &lt;category&gt; &lt;price u32&gt; &lt;container u8&gt; &lt;slot u16&gt; &lt;ClientUIData u32&gt;, e.g. the SWAT disguise
         /// "49 54 4f 74 e8 03 00 00 01 1a 00 00 00 00 00" (inventory slot 26, answered with "5f 1a 00 01").</summary>
         public static bool TryParsePlacement(byte[] rpcData, out Placement placement)
         {
@@ -198,6 +206,8 @@ namespace hds
             placement.Price = BitConverter.ToUInt32(rpcData, 4);
             placement.Container = rpcData[8];
             placement.Slot = BitConverter.ToUInt16(rpcData, 9);
+            if (rpcData.Length >= 15)
+                placement.ClientUiData = BitConverter.ToUInt32(rpcData, 11);
             return true;
         }
 

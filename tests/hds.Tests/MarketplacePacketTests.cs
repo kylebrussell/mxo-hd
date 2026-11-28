@@ -61,6 +61,16 @@ public class MarketplacePacketTests
     }
 
     [Fact]
+    public void ListingRefusalEchoesSourceAndClientUiData()
+    {
+        Assert.True(MarketplaceRequests.TryParsePlacement(
+            Hex("49 54 4c f0 4c 04 00 00 00 8c 01 40 30 20 10"), out var request));
+        Assert.Equal(0x10203040u, request.ClientUiData);
+        Assert.Equal(H("81 2c 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 8c 01 40 30 20 10 9c 02 00 0c"),
+            H(MarketplacePackets.PlaceRefused(request, CentralStorage.InvalidTransaction)));
+    }
+
+    [Fact]
     public void BoughtMatchesRetailTShirt()
     {
         // buy_shielded_happy_grass_g-met_t-shirt_from_marketplace_for_6000_info.
