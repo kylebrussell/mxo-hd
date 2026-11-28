@@ -434,16 +434,25 @@ namespace hds
         /// <param name="playerHandle">Player Handle to send the Packet</param>
         public void SendRPCToOnePlayerByHandle(byte[] packet, string playerHandle)
         {
-            foreach (WorldClient client in ClientSnapshot())
+            List<WorldClient> recipients = RentClientSnapshot();
+            try
             {
-                if (client == null) continue;
-                string charname = StringUtils.charBytesToString_NZ(client.playerInstance.CharacterName.getValue());
-                Output.writeToLogForConsole("Charname |" + charname + "| PlayerHandle |" + playerHandle + "|");
-                if (charname == playerHandle)
+                for (int i = 0; i < recipients.Count; i++)
                 {
-                    client.messageQueue.addRpcMessage(packet);
-                    client.FlushQueue();
+                    WorldClient client = recipients[i];
+                    if (client == null) continue;
+                    string charname = StringUtils.charBytesToString_NZ(client.playerInstance.CharacterName.getValue());
+                    Output.writeToLogForConsole("Charname |" + charname + "| PlayerHandle |" + playerHandle + "|");
+                    if (charname == playerHandle)
+                    {
+                        client.messageQueue.addRpcMessage(packet);
+                        client.FlushQueue();
+                    }
                 }
+            }
+            finally
+            {
+                ReturnClientSnapshot(recipients);
             }
         }
 
@@ -456,91 +465,134 @@ namespace hds
         /// <param name="data"></param>
         public void SendRPCToAllOtherPlayers(ClientData myself, byte[] data)
         {
-            // Send a global message to all connected Players (like shut down Server announce or something)
-            foreach (WorldClient client in ClientSnapshot())
+            UInt32 myCharId = myself.getCharID();
+            List<WorldClient> recipients = RentClientSnapshot();
+            try
             {
-                if (client != null && client.playerData.getCharID() != myself.getCharID())
+                for (int i = 0; i < recipients.Count; i++)
                 {
-                    // create the RPC Message
-                    client.messageQueue.addRpcMessage(data);
-                    client.FlushQueue();
+                    WorldClient client = recipients[i];
+                    if (client != null && client.playerData.getCharID() != myCharId)
+                    {
+                        client.messageQueue.addRpcMessage(data);
+                        client.FlushQueue();
+                    }
                 }
+            }
+            finally
+            {
+                ReturnClientSnapshot(recipients);
             }
         }
 
         public void SendRPCToCrewMembers(UInt32 groupId, WorldClient myself, byte[] data, bool ShouldSendToMyself)
         {
-            // Send a global message to all connected Players (like shut down Server announce or something)
-            foreach (WorldClient client in ClientSnapshot())
+            UInt32 myCharId = myself.playerData.getCharID();
+            List<WorldClient> recipients = RentClientSnapshot();
+            try
             {
-                if (client == null) continue;
-                if (NumericalUtils.ByteArrayToUint32(client.playerInstance.CrewID.getValue(), 1) == groupId)
+                for (int i = 0; i < recipients.Count; i++)
                 {
-                    if (client.playerData.getCharID() != myself.playerData.getCharID() || ShouldSendToMyself)
+                    WorldClient client = recipients[i];
+                    if (client == null) continue;
+                    if (NumericalUtils.ByteArrayToUint32(client.playerInstance.CrewID.getValue(), 1) == groupId)
                     {
-                        // create the RPC Message
-                        client.messageQueue.addRpcMessage(data);
-                        client.FlushQueue();
+                        if (client.playerData.getCharID() != myCharId || ShouldSendToMyself)
+                        {
+                            client.messageQueue.addRpcMessage(data);
+                            client.FlushQueue();
+                        }
                     }
                 }
+            }
+            finally
+            {
+                ReturnClientSnapshot(recipients);
             }
         }
         
         public void SendRPCToFactionMembers(UInt32 groupId, WorldClient myself, byte[] data, bool ShouldSendToMyself)
         {
-            // Send a global message to all connected Players (like shut down Server announce or something)
-            foreach (WorldClient client in ClientSnapshot())
+            UInt32 myCharId = myself.playerData.getCharID();
+            List<WorldClient> recipients = RentClientSnapshot();
+            try
             {
-                if (client == null) continue;
-                if (NumericalUtils.ByteArrayToUint32(client.playerInstance.FactionID.getValue(), 1) == groupId)
+                for (int i = 0; i < recipients.Count; i++)
                 {
-                    if (client.playerData.getCharID() != myself.playerData.getCharID() || ShouldSendToMyself)
+                    WorldClient client = recipients[i];
+                    if (client == null) continue;
+                    if (NumericalUtils.ByteArrayToUint32(client.playerInstance.FactionID.getValue(), 1) == groupId)
                     {
-                        // create the RPC Message
-                        client.messageQueue.addRpcMessage(data);
-                        client.FlushQueue();
+                        if (client.playerData.getCharID() != myCharId || ShouldSendToMyself)
+                        {
+                            client.messageQueue.addRpcMessage(data);
+                            client.FlushQueue();
+                        }
                     }
                 }
+            }
+            finally
+            {
+                ReturnClientSnapshot(recipients);
             }
         }
         
         public void SendRPCToMissionTeamMembers(UInt32 groupId, WorldClient myself, byte[] data, bool ShouldSendToMyself)
         {
-            // Send a global message to all connected Players (like shut down Server announce or something)
-            foreach (WorldClient client in ClientSnapshot())
+            UInt32 myCharId = myself.playerData.getCharID();
+            List<WorldClient> recipients = RentClientSnapshot();
+            try
             {
-                if (client == null) continue;
-                if (NumericalUtils.ByteArrayToUint32(client.playerInstance.MissionTeamID.getValue(), 1) == groupId)
+                for (int i = 0; i < recipients.Count; i++)
                 {
-                    if (client.playerData.getCharID() != myself.playerData.getCharID() || ShouldSendToMyself)
+                    WorldClient client = recipients[i];
+                    if (client == null) continue;
+                    if (NumericalUtils.ByteArrayToUint32(client.playerInstance.MissionTeamID.getValue(), 1) == groupId)
                     {
-                        // create the RPC Message
-                        client.messageQueue.addRpcMessage(data);
-                        client.FlushQueue();
+                        if (client.playerData.getCharID() != myCharId || ShouldSendToMyself)
+                        {
+                            client.messageQueue.addRpcMessage(data);
+                            client.FlushQueue();
+                        }
                     }
                 }
+            }
+            finally
+            {
+                ReturnClientSnapshot(recipients);
             }
         }
 
         public void SendRPCToPlayerList(ArrayList players, byte[] data)
         {
-            List<string> handles = new List<string>();
+            if (players == null || players.Count == 0) return;
+            HashSet<string> handles = new HashSet<string>(players.Count, StringComparer.Ordinal);
             foreach (Hashtable friend in players)
             {
-                handles.Add(friend["handle"].ToString());
+                object h = friend?["handle"];
+                if (h != null) handles.Add(h.ToString());
             }
+            if (handles.Count == 0) return;
 
-            foreach (WorldClient client in ClientSnapshot())
+            List<WorldClient> recipients = RentClientSnapshot();
+            try
             {
-                if (client == null) continue;
-                string handleRecipient =
-                    StringUtils.charBytesToString_NZ(client.playerInstance.CharacterName.getValue());
-                if (handles.Contains(handleRecipient))
+                for (int i = 0; i < recipients.Count; i++)
                 {
-                    // create the RPC Message
-                    client.messageQueue.addRpcMessage(data);
-                    client.FlushQueue();
+                    WorldClient client = recipients[i];
+                    if (client == null) continue;
+                    string handleRecipient =
+                        StringUtils.charBytesToString_NZ(client.playerInstance.CharacterName.getValue());
+                    if (handles.Contains(handleRecipient))
+                    {
+                        client.messageQueue.addRpcMessage(data);
+                        client.FlushQueue();
+                    }
                 }
+            }
+            finally
+            {
+                ReturnClientSnapshot(recipients);
             }
         }
         
@@ -551,12 +603,20 @@ namespace hds
         /// <param name="data"></param>
         public void sendRPCToAllPlayers(byte[] data)
         {
-            // Send a global message to all connected Players (like shut down Server announce or something)
-            foreach (WorldClient client in ClientSnapshot())
+            List<WorldClient> recipients = RentClientSnapshot();
+            try
             {
-                if (client == null) continue;
-                client.messageQueue.addRpcMessage(data);
-                client.FlushQueue();
+                for (int i = 0; i < recipients.Count; i++)
+                {
+                    WorldClient client = recipients[i];
+                    if (client == null) continue;
+                    client.messageQueue.addRpcMessage(data);
+                    client.FlushQueue();
+                }
+            }
+            finally
+            {
+                ReturnClientSnapshot(recipients);
             }
         }
 
@@ -679,6 +739,10 @@ namespace hds
 
         internal void SendMovementUpdateToAllPlayers(SelfViewUpdate state, UInt32 charId, UInt64 entityId)
         {
+            WorldClient current = Store.currentClient;
+            uint moverDistrict = current != null && current.playerData != null && current.playerData.getCharID() == charId
+                ? current.playerData.getDistrictId()
+                : 0u;
             List<WorldClient> recipients = RentClientSnapshot();
             try
             {
@@ -687,6 +751,11 @@ namespace hds
                 {
                     WorldClient client = recipients[i];
                     if (client == null || client.IsBot || client.playerData.getCharID() == charId)
+                    {
+                        continue;
+                    }
+
+                    if (moverDistrict != 0 && client.playerData.getDistrictId() != moverDistrict)
                     {
                         continue;
                     }
@@ -756,15 +825,25 @@ namespace hds
                 return;
             }
 
-            foreach (WorldClient target in ClientSnapshot())
+            List<WorldClient> recipients = RentClientSnapshot();
+            try
             {
-                if (target.playerData.getEntityId() == theView.entityId)
+                for (int i = 0; i < recipients.Count; i++)
                 {
-                    Output.WriteDebugLog("Update SelfViewState from Ability FX on OtherState Views from " + StringUtils.charBytesToString(currentClient.playerInstance.CharacterName.getValue()) + " to  " + StringUtils.charBytesToString(target.playerInstance.CharacterName.getValue()) + " HEX: " + StringUtils.bytesToString_NS(pak.ReturnFinalPacket()));
-                    target.messageQueue.addObjectMessage(pak.ReturnFinalPacket(), false);
-                    target.FlushQueue();
-                    return;
+                    WorldClient target = recipients[i];
+                    if (target != null && target.playerData.getEntityId() == theView.entityId)
+                    {
+                        byte[] payload = pak.ReturnFinalPacket();
+                        Output.WriteDebugLog("Update SelfViewState from Ability FX on OtherState Views from " + StringUtils.charBytesToString(currentClient.playerInstance.CharacterName.getValue()) + " to  " + StringUtils.charBytesToString(target.playerInstance.CharacterName.getValue()) + " HEX: " + StringUtils.bytesToString_NS(payload));
+                        target.messageQueue.addObjectMessage(payload, false);
+                        target.FlushQueue();
+                        return;
+                    }
                 }
+            }
+            finally
+            {
+                ReturnClientSnapshot(recipients);
             }
         }
 
