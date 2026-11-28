@@ -1451,6 +1451,7 @@ namespace hds
                 try
                 {
                 TradeHandler.Abort(deadClient);
+                SubwayHandler.OnDisconnect(deadClient);
                 CombatManager.RemoveClient(deadClient);
                 MissionPersistence.Suspend(deadClient);
                 TutorialMission.Of(deadClient)?.Abandon();

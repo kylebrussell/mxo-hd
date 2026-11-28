@@ -559,17 +559,79 @@ namespace hds
             DuelBot.OnDuelOver(other);
         }
 
-        private static void ExpireChallenges()
+        internal static int DeclinedCooldownCount
+        {
+            get { lock (Sync) return DeclinedAt.Count; }
+        }
+
+        internal static void RecordDeclineForTesting(UInt32 challengerId, UInt32 targetId, double at)
+        {
+            lock (Sync) DeclinedAt[(challengerId, targetId)] = at;
+        }
+
+        internal static void PruneExpiredDeclinesForTesting(double now)
+        {
+            lock (Sync) PruneExpiredDeclinesLocked(now);
+        }
+
+        private static void PruneExpiredDeclinesLocked(double now)
+        {
+            if (DeclinedAt.Count == 0) return;
+            List<(UInt32, UInt32)> expired = null;
+            foreach (KeyValuePair<(UInt32, UInt32), double> kv in DeclinedAt)
+            {
+                if (now - kv.Value >= RechallengeSeconds)
+                {
+                    expired ??= new List<(UInt32, UInt32)>();
+                    expired.Add(kv.Key);
+                }
+            }
+            if (expired != null)
+            {
+                for (int i = 0; i < expired.Count; i++)
+                {
+                    DeclinedAt.Remove(expired[i]);
+                }
+            }
+        }
+
+        private static List<Challenge> CollectExpiredChallengesLocked()
         {
             double now = Now;
-            foreach (Challenge c in Challenges.Where(c => now - c.At > ChallengeSeconds).ToList())
+            PruneExpiredDeclinesLocked(now);
+            if (Challenges.Count == 0) return null;
+
+            List<Challenge> expired = null;
+            for (int i = Challenges.Count - 1; i >= 0; i--)
             {
-                Challenges.Remove(c);
-                // Unanswered counts as declined, as the client's own timeout does
-                DeclinedAt[(c.Challenger.playerData.getCharID(), c.Target.playerData.getCharID())] = now;
+                Challenge c = Challenges[i];
+                if (now - c.At > ChallengeSeconds)
+                {
+                    Challenges.RemoveAt(i);
+                    // Unanswered counts as declined, as the client's own timeout does
+                    DeclinedAt[(c.Challenger.playerData.getCharID(), c.Target.playerData.getCharID())] = now;
+                    expired ??= new List<Challenge>();
+                    expired.Add(c);
+                }
+            }
+            return expired;
+        }
+
+        private static void NotifyExpiredChallenges(List<Challenge> expired)
+        {
+            if (expired == null) return;
+            for (int i = 0; i < expired.Count; i++)
+            {
+                Challenge c = expired[i];
                 Send(c.Challenger, DuelPackets.BuildRequestFailed(DuelPackets.FailUnknownOrDeclined, true,
                     PvpCombat.HandleOf(c.Challenger, c.Target), PvpFlag.Name(c.Target)));
             }
+        }
+
+        private static void ExpireChallenges()
+        {
+            // Called inside lock (Sync) by interactive request paths; notify immediately for compatibility.
+            NotifyExpiredChallenges(CollectExpiredChallengesLocked());
         }
 
         private static void EnsureWatchdog()
@@ -592,15 +654,17 @@ namespace hds
 
             try
             {
+                List<Challenge> expired;
                 List<Duel> open = null;
                 lock (Sync)
                 {
-                    ExpireChallenges();
+                    expired = CollectExpiredChallengesLocked();
                     if (Duels.Count > 0)
                     {
                         open = Duels.Values.Distinct().ToList();
                     }
                 }
+                NotifyExpiredChallenges(expired);
                 if (open == null)
                 {
                     return;

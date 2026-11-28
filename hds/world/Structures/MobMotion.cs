@@ -230,6 +230,12 @@ namespace hds
                         }
                         continue;
                     }
+                    // Fast exit for idle standing mobs that are neither chasing, walking, nor ready to wander:
+                    // avoids allocating a Position double[3] on every 500 ms visibility pass.
+                    if (state.Target == null && state.Goal == null && (!Mob.WanderEnabled || now < state.WaitUntil))
+                    {
+                        continue;
+                    }
                     var from=Position(mob);double speed=WalkSpeed;
                     if(state.Target!=null)
                     {

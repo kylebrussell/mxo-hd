@@ -75,6 +75,31 @@ namespace hds
         private static readonly object Sync = new object();
         private static readonly Dictionary<WorldClient, Ride> Rides = new Dictionary<WorldClient, Ride>();
 
+        internal static int ActiveRideCount
+        {
+            get
+            {
+                lock (Sync)
+                {
+                    return Rides.Count;
+                }
+            }
+        }
+
+        /// <summary>Releases any open subway map / countdown state when a player disconnects.</summary>
+        public static void OnDisconnect(WorldClient client)
+        {
+            if (client == null)
+            {
+                return;
+            }
+
+            lock (Sync)
+            {
+                Rides.Remove(client);
+            }
+        }
+
         private static double Now() => TimeUtils.GetSimTimeSeconds();
 
         private static void Send(WorldClient client, byte[] record)
@@ -116,19 +141,32 @@ namespace hds
         /// <summary>Client 81 3d: the map is open. Count down to the departure.</summary>
         public static void OnMapOpen(WorldClient client)
         {
+            Ride ride;
             lock (Sync)
             {
-                if (!Rides.TryGetValue(client, out Ride ride) || ride.Counting)
+                if (!Rides.TryGetValue(client, out ride) || ride.Counting)
                 {
                     return;
                 }
                 ride.Counting = true;
-                Tick(client, ride, DepartureSeconds);
             }
+            Tick(client, ride, DepartureSeconds);
         }
 
         private static void Tick(WorldClient client, Ride ride, int seconds)
         {
+            if (client == null || !client.Alive || !client.playerData.getOnWorld())
+            {
+                lock (Sync)
+                {
+                    if (client != null && Rides.TryGetValue(client, out Ride current) && ReferenceEquals(current, ride))
+                    {
+                        Rides.Remove(client);
+                    }
+                }
+                return;
+            }
+
             Send(client, SubwayPackets.BuildCountdown((byte)seconds));
             if (seconds <= 0)
             {
@@ -136,12 +174,14 @@ namespace hds
             }
             DelayedActions.After(1, () =>
             {
+                bool active;
                 lock (Sync)
                 {
-                    if (Rides.TryGetValue(client, out Ride current) && current == ride)
-                    {
-                        Tick(client, ride, seconds - 1);
-                    }
+                    active = Rides.TryGetValue(client, out Ride current) && ReferenceEquals(current, ride);
+                }
+                if (active)
+                {
+                    Tick(client, ride, seconds - 1);
                 }
             });
         }
