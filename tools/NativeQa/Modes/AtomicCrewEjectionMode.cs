@@ -22,7 +22,7 @@ public sealed class AtomicCrewEjectionMode : NativeQaMode
         environmentOverrides: new() { ["MXO_AGGRO"] = "0", ["MXO_MOB_WANDER"] = "0" },
         readyMessages: new[] {
             "CSR and QAFriend start on open Mara NAV at (17000,495,6400) and (17120,495,6400). No teleport, world selection or dev command. CSR captains QACrew in QAFaction. QAFriend is on the Crew roster and the bank has 200 Info.",
-            "Open Crew from the people icon above chat. Right-click QAFriend in the member roster and choose Remove. Confirm if asked. A disclosed disposable SQL CHECK rejects the character update after the roster delete. Expect [SOCIAL] Crew member removal rolled back, 'The roster was kept.' in chat, no server 72 02, and QAFriend still in the list.",
+            "Open Crew from the people icon above chat. Right-click QAFriend in the member roster and choose Remove. Confirm if asked. A disclosed disposable SQL CHECK rejects the character update after the roster delete. Expect [SOCIAL] Crew member removal rolled back, server 72 02 00 00 00 00, 'The roster was kept.' in chat, and QAFriend still in the list. Verify the same row's context menu opens again before retrying.",
             """Send {"actor":"QAFriend","action":"crew-removal-retry"} and wait for "QAFriend deposited 1 Info (999 remains)". The bank becomes 201 and the fixture now allows the update.""",
             "Remove QAFriend again in the same session. Expect server 72 02 with QAFriend's ID and exactly that row disappears. CSR stays captain in the same faction. Reopen Crew after relog and check QAFriend is still absent and the bank is 201."
         });
