@@ -9,53 +9,74 @@ namespace hds
 	
 	public class StringUtils
 	{
-		
+		private const string HexChars = "0123456789abcdef";
+		private static readonly Regex WhitespaceRegex = new Regex(@"\s", RegexOptions.Compiled);
+
 		public StringUtils()
 		{}
 		
 		// If we want just N bytes from the array
 		static public string bytesToString(byte[] data,int length){
-			string ret = "";
-			for (int i = 0; i <length; i++)
-				ret += data[i].ToString("x2")+" ";
-			return ret;
+			if (data == null || length <= 0) return string.Empty;
+			int count = length <= data.Length ? length : data.Length;
+			char[] chars = new char[count * 3];
+			for (int i = 0; i < count; i++)
+			{
+				byte b = data[i];
+				int o = i * 3;
+				chars[o] = HexChars[b >> 4];
+				chars[o + 1] = HexChars[b & 0xF];
+				chars[o + 2] = ' ';
+			}
+			return new string(chars);
 		}
 		
 		// If we want all bytes from the array
 		static public string bytesToString(byte[] data){
-			string ret = "";
-			for (int i = 0; i < data.Length; i++)
-				ret += data[i].ToString("x2")+" ";
-			return ret;
+			if (data == null || data.Length == 0) return string.Empty;
+			return bytesToString(data, data.Length);
 		}
 		
 		// If we want all bytes from the array but no spaces
 		static public string bytesToString_NS(byte[] data){
-			string ret = "";
-			for (int i = 0; i < data.Length; i++)
-				ret += data[i].ToString("x2");
-			return ret;
+			if (data == null || data.Length == 0) return string.Empty;
+			int len = data.Length;
+			char[] chars = new char[len * 2];
+			for (int i = 0; i < len; i++)
+			{
+				byte b = data[i];
+				int o = i * 2;
+				chars[o] = HexChars[b >> 4];
+				chars[o + 1] = HexChars[b & 0xF];
+			}
+			return new string(chars);
 		}
 		
 		
 		// If we want an array of characters (from bytes) to be a string
 		static public string charBytesToString(byte[] data){
-			string ret = "";
-			for (int i = 0; i < data.Length; i++)
-				ret += (char)data[i];
-			return ret;
+			if (data == null || data.Length == 0) return string.Empty;
+			int len = data.Length;
+			char[] chars = new char[len];
+			for (int i = 0; i < len; i++)
+			{
+				chars[i] = (char)data[i];
+			}
+			return new string(chars);
 		}
 		
 		// If we want an array of characters (from bytes) to be a string
 		static public string charBytesToString_NZ(byte[] data){
-			string ret = "";
-			for (int i = 0; i < data.Length; i++){
-				if (data[i]==0){
-					break;
-				}
-				ret += (char)data[i];
+			if (data == null || data.Length == 0) return string.Empty;
+			int len = Array.IndexOf<byte>(data, 0);
+			if (len < 0) len = data.Length;
+			if (len == 0) return string.Empty;
+			char[] chars = new char[len];
+			for (int i = 0; i < len; i++)
+			{
+				chars[i] = (char)data[i];
 			}
-			return ret;
+			return new string(chars);
 		}
 		
 		static public byte[] stringToBytes(string data){
@@ -80,21 +101,15 @@ namespace hds
 
 		
 		static public byte[] hexStringToBytes(string hexString){
-            int NumberChars = hexString.Length;
-            byte[] bytes = new byte[NumberChars / 2];
-            for (int i = 0; i < NumberChars; i += 2)
-            {
-            	bytes[i / 2] = Convert.ToByte(hexString.Substring(i, 2), 16);
-
-            }
-            return bytes;
+            if (string.IsNullOrEmpty(hexString)) return Array.Empty<byte>();
+            return Convert.FromHexString(hexString);
 		}
 
 		
 		
 		
 		static public string removeWhitespaceChars(string data){
-			return Regex.Replace( data, @"\s", "" );
+			return WhitespaceRegex.Replace( data, "" );
 		}
 		
 	}

@@ -1,22 +1,45 @@
 using System;
 using System.Buffers.Binary;
-using System.Collections;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.IO;
-using System.Linq;
-using Microsoft.SqlServer.Server;
+using System.Text;
+using System.Threading;
 
 namespace hds
 {
 	public class Output{
-		
+
+		private const string HexChars = "0123456789abcdef";
+		private const int MaxQueuedLogEntries = 16_384;
+		private const int FileRetryAttempts = 8;
+		private const int FileRetryDelayMs = 10;
+
+		private readonly struct QueuedLogEntry
+		{
+			public readonly string FullPath;
+			public readonly string Text;
+			public readonly long Sequence;
+
+			public QueuedLogEntry(string fullPath, string text, long sequence)
+			{
+				FullPath = fullPath;
+				Text = text;
+				Sequence = sequence;
+			}
+		}
+
+		private static readonly object LogQueueLock = new object();
+		private static readonly Queue<QueuedLogEntry> LogQueue = new Queue<QueuedLogEntry>(256);
+		private static Thread LogWriterThread;
+		private static long NextLogSequence;
+		private static long FlushedLogSequence;
+		private static bool ProcessExitRegistered;
+
 		static int verbose = 0;
 		// Environment-variable toggles to avoid per-packet disk I/O in production.
 		private static readonly bool EnablePacketLogs = GetEnvFlag("MXO_PACKET_LOG", false);
 		public static bool PacketLogsEnabled => EnablePacketLogs;
 		private static readonly bool EnableDebugLogs = GetEnvFlag("MXO_DEBUG_LOG", false);
-		private static readonly object DebugLogLock = new object();
 		private static readonly bool EnableRpcLogs = GetEnvFlag("MXO_RPC_LOG", false);
 		private static readonly bool EnableClientViewRequestLog = GetEnvFlag("MXO_CLIENT_VIEW_LOG", false);
 		private static readonly bool EnableServerLog = GetEnvFlag("MXO_SERVER_LOG", true);
@@ -25,7 +48,7 @@ namespace hds
 		// requests, and the hundreds of resulting chat messages coincided with the client stopping to
 		// act on server RPCs.
 		public static readonly bool ChatDebugEnabled = GetEnvFlag("MXO_CHAT_DEBUG", false);
-		
+
 		public Output (){}
 
 		private static bool GetEnvFlag(string name, bool defaultValue)
@@ -52,18 +75,160 @@ namespace hds
 					return defaultValue;
 			}
 		}
-		
+
+		internal static void EnqueueFileAppend(string filePath, string text)
+		{
+			if (string.IsNullOrEmpty(filePath) || text == null) return;
+			string fullPath;
+			try
+			{
+				fullPath = Path.GetFullPath(filePath);
+			}
+			catch
+			{
+				return;
+			}
+
+			lock (LogQueueLock)
+			{
+				if (LogQueue.Count >= MaxQueuedLogEntries)
+				{
+					// Bounded queue prevents runaway logging from exhausting server memory.
+					return;
+				}
+
+				if (LogWriterThread == null)
+				{
+					if (!ProcessExitRegistered)
+					{
+						ProcessExitRegistered = true;
+						AppDomain.CurrentDomain.ProcessExit += (sender, args) => FlushLogs(2000);
+					}
+					LogWriterThread = new Thread(RunLogWriterLoop)
+					{
+						IsBackground = true,
+						Name = "HdsFileLogWriter"
+					};
+					LogWriterThread.Start();
+				}
+
+				long seq = ++NextLogSequence;
+				LogQueue.Enqueue(new QueuedLogEntry(fullPath, text, seq));
+				Monitor.Pulse(LogQueueLock);
+			}
+		}
+
+		internal static bool FlushLogs(int timeoutMs = 5000)
+		{
+			long targetSeq;
+			lock (LogQueueLock)
+			{
+				targetSeq = NextLogSequence;
+				if (FlushedLogSequence >= targetSeq)
+				{
+					return true;
+				}
+				Monitor.Pulse(LogQueueLock);
+				long deadline = Environment.TickCount64 + Math.Max(1, timeoutMs);
+				while (FlushedLogSequence < targetSeq)
+				{
+					long remaining = deadline - Environment.TickCount64;
+					if (remaining <= 0)
+					{
+						return false;
+					}
+					Monitor.Wait(LogQueueLock, (int)Math.Min(remaining, 250));
+				}
+				return true;
+			}
+		}
+
+		private static void RunLogWriterLoop()
+		{
+			var batch = new List<QueuedLogEntry>(256);
+			var grouped = new Dictionary<string, StringBuilder>(StringComparer.OrdinalIgnoreCase);
+
+			while (true)
+			{
+				batch.Clear();
+				lock (LogQueueLock)
+				{
+					while (LogQueue.Count == 0)
+					{
+						Monitor.Wait(LogQueueLock);
+					}
+					while (LogQueue.Count > 0 && batch.Count < 1024)
+					{
+						batch.Add(LogQueue.Dequeue());
+					}
+				}
+
+				grouped.Clear();
+				long maxSeq = 0;
+				for (int i = 0; i < batch.Count; i++)
+				{
+					QueuedLogEntry entry = batch[i];
+					if (entry.Sequence > maxSeq) maxSeq = entry.Sequence;
+					if (!grouped.TryGetValue(entry.FullPath, out StringBuilder sb))
+					{
+						sb = new StringBuilder(entry.Text.Length + 64);
+						grouped[entry.FullPath] = sb;
+					}
+					sb.Append(entry.Text);
+				}
+
+				foreach (KeyValuePair<string, StringBuilder> kv in grouped)
+				{
+					WriteBatchWithRetry(kv.Key, kv.Value.ToString());
+				}
+
+				lock (LogQueueLock)
+				{
+					if (maxSeq > FlushedLogSequence)
+					{
+						FlushedLogSequence = maxSeq;
+					}
+					Monitor.PulseAll(LogQueueLock);
+				}
+			}
+		}
+
+		private static void WriteBatchWithRetry(string fullPath, string payload)
+		{
+			for (int attempt = 0; attempt < FileRetryAttempts; attempt++)
+			{
+				try
+				{
+					using (var stream = new FileStream(fullPath, FileMode.Append, FileAccess.Write, FileShare.ReadWrite | FileShare.Delete))
+					using (var writer = new StreamWriter(stream, Encoding.UTF8))
+					{
+						writer.Write(payload);
+						writer.Flush();
+					}
+					return;
+				}
+				catch (IOException) when (attempt + 1 < FileRetryAttempts)
+				{
+					Thread.Sleep(FileRetryDelayMs);
+				}
+				catch
+				{
+					return;
+				}
+			}
+		}
+
 		static public void OptWriteLine(Object obj){
 			if (verbose==1)
 				Console.WriteLine(obj);
 		}
-		
+
 		static public void WriteLine(Object obj){
 				Console.WriteLine(obj);
                 writeToLogForConsole(obj);
 		}
 
-		
+
 		static public void WriteClientViewRequestLog(Object obj)
 		{
 			if (!EnableClientViewRequestLog)
@@ -71,18 +236,7 @@ namespace hds
 				return;
 			}
 
-			try
-			{
-				StreamWriter w = File.AppendText("UnknownClient03Request.txt");
-				w.Write(obj);
-				w.WriteLine();
-				w.Flush();
-				w.Close();
-			}
-			catch
-			{
-				// just pass
-			}
+			EnqueueFileAppend("UnknownClient03Request.txt", (obj?.ToString() ?? "") + Environment.NewLine);
 		}
 
         static public void WriteRpcLog(Object obj)
@@ -92,20 +246,10 @@ namespace hds
 				return;
 			}
 
-            try
-            {
-                StreamWriter w = File.AppendText("UnknownRPC.txt");
-                w.WriteLine(obj);
-                w.Flush();
-                w.Close();
-            }
-            catch
-            {
-                // just pass
-            }
+            EnqueueFileAppend("UnknownRPC.txt", (obj?.ToString() ?? "") + Environment.NewLine);
         }
 
-		
+
         static public void WriteDebugLog(Object obj)
         {
 			if (!EnableDebugLogs)
@@ -113,21 +257,10 @@ namespace hds
 				return;
 			}
 
-            try
-            {
-                lock (DebugLogLock)
-                {
-                    using var writer = File.AppendText("DebugLog.txt");
-                    writer.WriteLine(obj);
-                }
-            }
-            catch
-            {
-                // just pass
-            }
+            EnqueueFileAppend("DebugLog.txt", (obj?.ToString() ?? "") + Environment.NewLine);
         }
 
-		
+
         internal static void WriteBonusDebugLog(uint characterId, ReadOnlySpan<byte> rpc)
         {
             // The queued RPC includes its one-byte length prefix. Locator kind zero is an individual modifier.
@@ -148,55 +281,30 @@ namespace hds
 
 		static public string ConvertByteToReadablePacket(byte[] packet)
 		{
-			
-			ArrayList hexStrings = new ArrayList();
-			ArrayList readablePacketStrings = new ArrayList();
-			
-			PacketReader reader = new PacketReader(packet);
-			
-			while (reader.GetOffset() < packet.Length)
+			if (packet == null || packet.Length == 0)
 			{
-				int offsetCount = reader.GetOffset();
-				int lengofPak = packet.Length;
-				string lineHex = "";
-				string lineHuman = "";
-				if (packet.Length - reader.GetOffset() >= 32)
-				{
-					byte[] lineData = reader.ReadBytes(32);
-					lineHex = StringUtils.bytesToString(lineData);
-					lineHuman = StringUtils.charBytesToString_NZ(lineData);
-				}
-				else
-				{
-					byte[] lineData = reader.ReadBytes(packet.Length - reader.GetOffset());
-					lineHex = StringUtils.bytesToString(lineData);
-					lineHuman = StringUtils.charBytesToString_NZ(lineData);
-				}
-				hexStrings.Add(lineHex);
-				readablePacketStrings.Add(lineHuman);
-			}
-			
-			// Now build final packet
-			string returnPacketString = "";
-			foreach (string hexString in hexStrings)
-			{
-				returnPacketString += hexString + "\r\n";
+				return "\r\n";
 			}
 
-			returnPacketString += "\r\n";
-			
-			/*
-			foreach (string readablePacketLine in readablePacketStrings)
+			int len = packet.Length;
+			int rows = (len + 31) / 32;
+			var sb = new StringBuilder(len * 3 + rows * 2 + 2);
+			for (int offset = 0; offset < len; offset += 32)
 			{
-				string line = readablePacketLine.Replace(" ", ".");
-				returnPacketString += line + "\r\n";
+				int end = Math.Min(offset + 32, len);
+				for (int i = offset; i < end; i++)
+				{
+					byte b = packet[i];
+					sb.Append(HexChars[b >> 4]);
+					sb.Append(HexChars[b & 0xF]);
+					sb.Append(' ');
+				}
+				sb.Append("\r\n");
 			}
-			*/
-		
-			return returnPacketString;
-
+			sb.Append("\r\n");
+			return sb.ToString();
 		}
-		
+
 	    static public void WritePacketLog(WorldClient client, byte[] obj, string type, string pss, string cseq, string sseq,
 	        string timeConsuming, string cryptType)
 	    {
@@ -211,18 +319,15 @@ namespace hds
 		    if (client != null)
 		    {
 			    charId = client.playerData.getCharID();
-			    if (client.playerInstance.CharacterName.getValue().Length > 0)
+			    byte[] rawName = client.playerInstance.CharacterName.getValue();
+			    if (rawName.Length > 0)
 			    {
-				    charName = StringUtils.charBytesToString_NZ(client.playerInstance.CharacterName.getValue());
+				    charName = StringUtils.charBytesToString_NZ(rawName);
 			    }
-			    
 		    }
 
 		    string messageConverted = ConvertByteToReadablePacket(obj);
-		    
-	        string header = "";
-		    string timeHeader = cryptType + " Mode : " + timeConsuming + " Milliseconds";
-
+		    string header = "";
 	        switch (type)
 	        {
 	            case "CLIENT":
@@ -233,34 +338,27 @@ namespace hds
 	                header = "Server -> Client";
 	                break;
 	        }
-            
-            
-	        try{
-	            StreamWriter w = File.AppendText("PacketLog.txt");
-	            if (type == "CLIENT" || type == "SERVER")
-	            {
-	                w.WriteLine("[" + header + " {0} {1} PSS :{2} CSEQ: {3} SSEQ: {4} ]", DateTime.Now.ToLongTimeString(), DateTime.Now.ToLongDateString(), pss, cseq, sseq);
-	                if (charId > 0)
-	                {
-		                w.WriteLine("[Receiver |CharId: " + charId + "| Handle: " + charName + " ]");
-	                }
-	            }
 
-	            if (type == "MARGINSERVER" || type == "MARGINCLIENT")
-	            {
-	                w.WriteLine(header + "[{0} {1} ]", DateTime.Now.ToLongTimeString(), DateTime.Now.ToLongDateString());
-	            }
-                
-		        w.Write(messageConverted);
-		        w.WriteLine();
-		        w.Flush();
-		        w.Close();
-	        }
-	        catch (Exception exception)
+	        DateTime now = DateTime.Now;
+	        var sb = new StringBuilder(messageConverted.Length + 128);
+	        if (type == "CLIENT" || type == "SERVER")
 	        {
-	            // just pass
-		        string message = exception.Message;
+	            sb.Append('[').Append(header).Append(' ').Append(now.ToLongTimeString()).Append(' ').Append(now.ToLongDateString())
+	              .Append(" PSS :").Append(pss).Append(" CSEQ: ").Append(cseq).Append(" SSEQ: ").Append(sseq).AppendLine(" ]");
+	            if (charId > 0)
+	            {
+	                sb.Append("[Receiver |CharId: ").Append(charId).Append("| Handle: ").Append(charName).AppendLine(" ]");
+	            }
 	        }
+
+	        if (type == "MARGINSERVER" || type == "MARGINCLIENT")
+	        {
+	            sb.Append(header).Append('[').Append(now.ToLongTimeString()).Append(' ').Append(now.ToLongDateString()).AppendLine(" ]");
+	        }
+
+	        sb.Append(messageConverted);
+	        sb.AppendLine();
+	        EnqueueFileAppend("PacketLog.txt", sb.ToString());
 	    }
 
 
@@ -292,40 +390,32 @@ namespace hds
 					header = "MarginClient -> MarginServer";
 					break;
 			}
-			
-			try{
-				StreamWriter w = File.AppendText("PacketLog.txt");
-				if (type == "CLIENT" || type == "SERVER")
-				{
-					w.WriteLine(header + "[{0} {1} UNENCRYPTED PACKET]", DateTime.Now.ToLongTimeString(), DateTime.Now.ToLongDateString());
-				}
 
-				if (type == "MARGINSERVER" || type == "MARGINCLIENT")
-				{
-					w.WriteLine(header + "[{0} {1} ]", DateTime.Now.ToLongTimeString(), DateTime.Now.ToLongDateString());
-				}
-				
-				w.Write(messageConverted);
-				w.WriteLine();
-				w.Flush();
-				w.Close();
-			}
-			catch (Exception exception)
+			DateTime now = DateTime.Now;
+			var sb = new StringBuilder(messageConverted.Length + 96);
+			if (type == "CLIENT" || type == "SERVER")
 			{
-				// just pass
-				string message = exception.Message;
+				sb.Append(header).Append('[').Append(now.ToLongTimeString()).Append(' ').Append(now.ToLongDateString()).AppendLine(" UNENCRYPTED PACKET]");
 			}
+
+			if (type == "MARGINSERVER" || type == "MARGINCLIENT")
+			{
+				sb.Append(header).Append('[').Append(now.ToLongTimeString()).Append(' ').Append(now.ToLongDateString()).AppendLine(" ]");
+			}
+
+			sb.Append(messageConverted);
+			sb.AppendLine();
+			EnqueueFileAppend("PacketLog.txt", sb.ToString());
 		}
-		
-	    
+
+
         static public void WritePacketLog(byte[] obj, string type, string pss, string cseq, string sseq){
 	        if (!EnablePacketLogs)
 	        {
 		        return;
 	        }
-	        
-	        // Format Packet Data
 
+	        // Format Packet Data
 	        string messageConverted = ConvertByteToReadablePacket(obj);
             string header = "";
 
@@ -347,33 +437,26 @@ namespace hds
                     header = "MarginClient -> MarginServer";
                     break;
             }
-            
-            
-            try{
-                StreamWriter w = File.AppendText("PacketLog.txt");
-                if (type == "CLIENT" || type == "SERVER")
-                {
-                    w.WriteLine(header + "[{0} {1} PSS :{2} CSEQ: {3} SSEQ: {4}]", DateTime.Now.ToLongTimeString(), DateTime.Now.ToLongDateString(), pss, cseq, sseq);
-                }
 
-                if (type == "MARGINSERVER" || type == "MARGINCLIENT")
-                {
-                    w.WriteLine(header + "[{0} {1} ]", DateTime.Now.ToLongTimeString(), DateTime.Now.ToLongDateString());
-                }
-
-                w.Write(messageConverted);
-	            w.WriteLine();
-                w.Flush();
-                w.Close();
-            }
-            catch (Exception exception)
+            DateTime now = DateTime.Now;
+            var sb = new StringBuilder(messageConverted.Length + 96);
+            if (type == "CLIENT" || type == "SERVER")
             {
-                // just pass
-	            string message = exception.Message;
+                sb.Append(header).Append('[').Append(now.ToLongTimeString()).Append(' ').Append(now.ToLongDateString())
+                  .Append(" PSS :").Append(pss).Append(" CSEQ: ").Append(cseq).Append(" SSEQ: ").Append(sseq).AppendLine("]");
             }
+
+            if (type == "MARGINSERVER" || type == "MARGINCLIENT")
+            {
+                sb.Append(header).Append('[').Append(now.ToLongTimeString()).Append(' ').Append(now.ToLongDateString()).AppendLine(" ]");
+            }
+
+            sb.Append(messageConverted);
+            sb.AppendLine();
+            EnqueueFileAppend("PacketLog.txt", sb.ToString());
         }
-	    
-		
+
+
 		static public void Write(Object obj){
 				Console.Write(obj);
 		}
@@ -384,20 +467,12 @@ namespace hds
 			{
 				return;
 			}
-            try
-            {
-                StreamWriter w = File.AppendText("ServerLog.txt");
-                w.WriteLine("[{0} {1}] ", DateTime.Now.ToLongTimeString(), DateTime.Now.ToLongDateString());
-                w.WriteLine(obj);
-                w.WriteLine("");
-                w.Flush();
-                w.Close();
-            }
-            catch
-            {
-                // just pass
-            }
+            DateTime now = DateTime.Now;
+            var sb = new StringBuilder(96);
+            sb.Append('[').Append(now.ToLongTimeString()).Append(' ').Append(now.ToLongDateString()).AppendLine("] ");
+            sb.AppendLine(obj?.ToString() ?? "");
+            sb.AppendLine();
+            EnqueueFileAppend("ServerLog.txt", sb.ToString());
         }
 	}
 }
-
