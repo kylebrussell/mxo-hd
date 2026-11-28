@@ -16,25 +16,52 @@ namespace hds
 {
     public class MarginServer
     {
+        public const int DefaultMaxActiveClients = 512;
+
         private readonly object listLock = new object();
         List<MarginClient> clientList;
         List<Thread> threadList;
         private Func<UInt32, bool> activeWorldCharacterCheck;
+        private Func<UInt32, int?> accountStatusCheck;
+        private int maxActiveClients;
 
         private TcpListener tcpListener;
         private Thread listenThread;
-        private bool mainThreadWorking;
+        private volatile bool mainThreadWorking;
 
-        public MarginServer()
+        public MarginServer() : this(NetworkBind.Address, NetworkBind.MarginPort, DefaultMaxActiveClients)
         {
+        }
+
+        internal MarginServer(IPAddress bindAddress, int port, int maxActiveClients = DefaultMaxActiveClients)
+        {
+            if (maxActiveClients < 1)
+            {
+                throw new ArgumentOutOfRangeException(nameof(maxActiveClients));
+            }
             // Threads storage
             mainThreadWorking = true;
+            this.maxActiveClients = maxActiveClients;
             clientList = new List<MarginClient>();
             threadList = new List<Thread>();
             activeWorldCharacterCheck = WorldServer.HasActiveCharacter;
-            tcpListener = new TcpListener(NetworkBind.Address, NetworkBind.MarginPort);
-            Output.WriteLine("Margin server set and ready at port " + NetworkBind.MarginPort);
-            listenThread = new Thread(new ThreadStart(ListenForClients));
+            tcpListener = new TcpListener(bindAddress ?? NetworkBind.Address, port);
+            Output.WriteLine("Margin server set and ready at port " + port);
+            listenThread = new Thread(new ThreadStart(ListenForClients))
+            {
+                IsBackground = true
+            };
+        }
+
+        internal int BoundPort => ((IPEndPoint)tcpListener.LocalEndpoint).Port;
+
+        internal void SetMaxActiveClientsForTesting(int max)
+        {
+            if (max < 1) throw new ArgumentOutOfRangeException(nameof(max));
+            lock (listLock)
+            {
+                maxActiveClients = max;
+            }
         }
 
         internal void SetActiveWorldCharacterCheckForTesting(Func<UInt32, bool> check)
@@ -42,8 +69,14 @@ namespace hds
             activeWorldCharacterCheck = check ?? WorldServer.HasActiveCharacter;
         }
 
+        internal void SetAccountStatusCheckForTesting(Func<UInt32, int?> check)
+        {
+            accountStatusCheck = check;
+        }
+
         public void StartServer()
         {
+            this.tcpListener.Start(hds.auth.AuthServer.DefaultAcceptorBacklog);
             listenThread.Start();
         }
 
@@ -85,8 +118,6 @@ namespace hds
 
         private void ListenForClients()
         {
-            this.tcpListener.Start(hds.auth.AuthServer.DefaultAcceptorBacklog);
-
             while (mainThreadWorking)
             {
                 // Create a new object when a client arrives
@@ -137,6 +168,18 @@ namespace hds
                 }
 
                 MarginClient marClient = new MarginClient(client.GetHashCode());
+                if (accountStatusCheck != null)
+                {
+                    marClient.SetAccountStatusCheckForTesting(accountStatusCheck);
+                }
+
+                // Enforce the active connection cap BEFORE allocating an OS thread so floods cannot exhaust threads.
+                if (!TryRegisterClient(marClient))
+                {
+                    Output.WriteLine("Margin: rejected connection (active limit " + maxActiveClients + " reached)");
+                    try { client.Close(); } catch { }
+                    continue;
+                }
 
                 // Define a new thread with the handling method as main loop and start it
                 Thread clientThread = new Thread(new ParameterizedThreadStart(marClient.HandleClientComm))
@@ -144,9 +187,18 @@ namespace hds
                     IsBackground = true
                 };
                 marClient.marginThreadId = clientThread.ManagedThreadId;
-
-                RegisterClient(marClient, clientThread);
-                clientThread.Start(client);
+                AttachClientThread(clientThread);
+                try
+                {
+                    clientThread.Start(client);
+                }
+                catch (Exception ex)
+                {
+                    marClient.passiveClose();
+                    UnregisterClient(marClient);
+                    try { client.Close(); } catch { }
+                    Output.WriteLine("Margin: failed to start client thread (" + ex.GetType().Name + "): " + ex.Message);
+                }
             }
         }
 
@@ -158,6 +210,42 @@ namespace hds
                 {
                     return clientList.Count;
                 }
+            }
+        }
+
+        internal bool TryRegisterClient(MarginClient marClient, Thread clientThread = null)
+        {
+            if (marClient == null) return false;
+            lock (listLock)
+            {
+                if (clientThread != null)
+                {
+                    threadList.RemoveAll(t => t == null || !t.IsAlive);
+                }
+
+                clientList.RemoveAll(c => c == null || !c.isWorking());
+                if (clientList.Count >= maxActiveClients)
+                {
+                    return false;
+                }
+
+                marClient.AttachOwner(this);
+                if (clientThread != null)
+                {
+                    threadList.Add(clientThread);
+                }
+                clientList.Add(marClient);
+                return true;
+            }
+        }
+
+        private void AttachClientThread(Thread clientThread)
+        {
+            if (clientThread == null) return;
+            lock (listLock)
+            {
+                threadList.RemoveAll(t => t == null || !t.IsAlive);
+                threadList.Add(clientThread);
             }
         }
 

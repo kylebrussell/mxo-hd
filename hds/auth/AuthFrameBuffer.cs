@@ -15,9 +15,22 @@ namespace hds.auth
     {
         public const int MaxFrameLength = 4096;
 
+        private readonly int _maxFrameLength;
         private byte[] _buffer = Array.Empty<byte>();
         private int _count;
 
+        public AuthFrameBuffer() : this(MaxFrameLength)
+        {
+        }
+
+        public AuthFrameBuffer(int maxFrameLength)
+        {
+            if (maxFrameLength < 2)
+                throw new ArgumentOutOfRangeException(nameof(maxFrameLength));
+            _maxFrameLength = maxFrameLength;
+        }
+
+        public int MaxAllowedFrameLength => _maxFrameLength;
         public int BufferedBytes => _count;
 
         public void Append(byte[] source, int offset, int size, List<byte[]> frames)
@@ -28,8 +41,8 @@ namespace hds.auth
             if (offset < 0 || offset + size > source.Length)
                 throw new ArgumentOutOfRangeException(nameof(offset));
 
-            if (_count + size > MaxFrameLength * 2)
-                throw new InvalidDataException("Auth stream buffer limit exceeded.");
+            if (_count + size > _maxFrameLength * 2)
+                throw new InvalidDataException("Stream buffer limit exceeded.");
 
             EnsureCapacity(_count + size);
             Buffer.BlockCopy(source, offset, _buffer, _count, size);
@@ -60,8 +73,8 @@ namespace hds.auth
                 }
 
                 int totalLen = headerLen + bodyLen;
-                if (totalLen > MaxFrameLength)
-                    throw new InvalidDataException("Auth frame exceeds maximum allowed length (" + totalLen + ").");
+                if (totalLen > _maxFrameLength)
+                    throw new InvalidDataException("Frame exceeds maximum allowed length (" + totalLen + ").");
 
                 if (_count - consumed < totalLen) break;
 

@@ -82,11 +82,16 @@ namespace hds
         internal void ObserveObjectReceipts(ushort ack,ushort bits)
         {
             if (Volatile.Read(ref activeReceiptCount) == 0) return;
-            var exact=SequencedMessage.AckedSequences(ack,bits);
+            var ackWindow = new SequencedMessage.AckWindow(ack, bits);
+            ObserveObjectReceipts(in ackWindow);
+        }
+        internal void ObserveObjectReceipts(in SequencedMessage.AckWindow ackWindow)
+        {
+            if (Volatile.Read(ref activeReceiptCount) == 0) return;
             lock(receiptSync)
             {
                 if(receipts.Count==0){Volatile.Write(ref activeReceiptCount, 0);return;}
-                foreach(var receipt in receipts)receipt.Observe(exact);
+                foreach(var receipt in receipts)receipt.Observe(in ackWindow);
                 receipts.RemoveWhere(r=>r.Finished);
                 Volatile.Write(ref activeReceiptCount, receipts.Count);
             }

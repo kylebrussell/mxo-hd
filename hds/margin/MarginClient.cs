@@ -26,6 +26,7 @@ namespace hds{
         private static readonly byte[] KnownContactsBlock = StringUtils.hexStringToBytes("0700000001000800000000000a00000003000d00000000001c0000000100");
         internal const int PreAuthReceiveTimeoutMs = 30_000;
         internal const int SendTimeoutMs = 30_000;
+        public const int MaxFrameLength = 8192;
 		
 		private int hashID;
 		private TcpClient tcpClient;
@@ -37,6 +38,7 @@ namespace hds{
         private ushort numCharacterReplies;
         private bool isNewCreatedChar;
         private MarginServer ownerServer;
+        private Func<UInt32, int?> accountStatusCheckForTesting;
         private readonly object sendLock = new object();
         public List<MarginAbilityItem> Abilities;
 		
@@ -60,6 +62,11 @@ namespace hds{
         internal void AttachOwner(MarginServer server)
         {
             ownerServer = server;
+        }
+
+        internal void SetAccountStatusCheckForTesting(Func<UInt32, int?> check)
+        {
+            accountStatusCheckForTesting = check;
         }
 
         internal void SetClaimedCharId(UInt32 charId)
@@ -95,6 +102,7 @@ namespace hds{
 		}
 		
 		public void forceClose(){
+			working = false;
 			try { tcpClient?.Close(); } catch { }
 			try { clientStream?.Close(); } catch { }
 		}
@@ -111,6 +119,7 @@ namespace hds{
             try
             {
                 tcpClient = (TcpClient)client;
+                if (!working) return;
                 if (tcpClient.ReceiveTimeout == 0)
                 {
                     try { tcpClient.ReceiveTimeout = PreAuthReceiveTimeoutMs; } catch { }
@@ -121,18 +130,21 @@ namespace hds{
                 }
                 clientStream = tcpClient.GetStream();
 
-                // Define an auth server processor per thread
-                byte[] message = new byte[2048];
+                // Reassemble variable-length TCP frames across arbitrary TCP read boundaries (fragmented or coalesced),
+                // and allow frames up to MaxFrameLength (covering 4092-byte encrypted character creation payloads).
+                byte[] message = new byte[4096];
+                AuthFrameBuffer frameBuffer = new AuthFrameBuffer(MaxFrameLength);
+                List<byte[]> frames = new List<byte[]>(2);
                 int bytesRead;
 
                 Output.WriteLine("Margin client Connected.");
 
-                // Receive TCP auth packets from the connected client.
+                // Receive TCP margin packets from the connected client.
                 while (working){
                     bytesRead = 0;
 
-                    try{ 
-                        bytesRead = clientStream.Read(message, 0, 2048);
+                    try{
+                        bytesRead = clientStream.Read(message, 0, message.Length);
                     }
                     catch{ break; }
 
@@ -141,11 +153,15 @@ namespace hds{
                         break;
                     }
 
-                    // Parse the received packet data
+                    // Reassemble and dispatch each complete Margin frame in arrival order.
                     try{
-                        byte[] packet = new byte[bytesRead];
-                        ArrayUtils.copy(message,0,packet,0,bytesRead);
-                        packetHandler(packet,clientStream);
+                        frames.Clear();
+                        frameBuffer.Append(message, 0, bytesRead, frames);
+                        for (int i = 0; i < frames.Count && working; i++)
+                        {
+                            packetHandler(frames[i], clientStream);
+                        }
+                        frames.Clear();
                     }catch(MarginException marEx){
                         Output.WriteLine(marEx);
                         break;
@@ -182,17 +198,13 @@ namespace hds{
             byte[] data = { };
 			byte pointer = packet[0];
 			
-            if (opcode == 0x01){
-                // Packet is unencrypted
+            // Only the initial pre-auth CertConnectRequest (0x01, 2-byte length 0x81xx) is unencrypted.
+            // Checking userID == 0 prevents a 1-in-256 random-IV collision on 256..511 byte encrypted frames.
+            if (userID == 0 && pointer == 0x81 && opcode == 0x01)
+            {
                 encrypted = false;
                 data = packet;
             }
-			
-			// This overrides the above IF for packets where 3rd position is a "01"
-			// Happened someday, and screwed login... yeah, really
-			if(pointer!=0x81){
-				encrypted=true;
-			}
 
             if (encrypted)
             {
@@ -815,7 +827,7 @@ namespace hds{
             int? accountStatus;
             try
             {
-                accountStatus = AccountStore.FromConfig().GetStatus(ticket.UserId);
+                accountStatus = accountStatusCheckForTesting != null ? accountStatusCheckForTesting(ticket.UserId) : AccountStore.FromConfig().GetStatus(ticket.UserId);
             }
             catch (Exception e)
             {
