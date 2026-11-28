@@ -11,7 +11,7 @@ Steps run in this order, each only when its switch or parameter is given:
   -SetPosition / -SetRotation  With -Handle: set the character's saved position/facing before logging in.
   -Login        Log in (username + placeholder password; needs MXO_DEV_ANY_PASSWORD=1 on the server),
                 then CONTINUE, select the character row, SELECT.
-  -WaitWorld    Wait until the server log shows the client answered the self-spawn (RPC 80 be, header 190).
+  -WaitWorld    Wait for a client reply to world entry in the server or debug log.
   -Teleport     "?gotopos x y z" (the server multiplies by 100).
   -Chat         Type a chat line and press Enter.
   -Walk         Hold movement keys in turn, KEY:seconds each, e.g. -Walk W:2,A:0.5,Space:0.2.
@@ -322,6 +322,7 @@ public static class MxoInput
 
 $summary = [ordered]@{}
 $ok = $true
+$spawnsBefore = $null
 
 function Get-ClientProcess {
     if ($ClientPid) { return Get-Process -Id $ClientPid -ErrorAction SilentlyContinue }
@@ -333,11 +334,18 @@ function Count-LogMatches([string]$pattern) {
     return @(Select-String -Path $ServerLog -Pattern $pattern -SimpleMatch).Count
 }
 
-# The client answers the self-spawn with RPC 80 be (logged as header 190), sometimes together with a
-# sub-view 02 update ("[MPM] Parsing 02 View"). Count either; only the increase matters.
+# Cold entry can send 80 be, 3e (combat selection) or 0c (loading complete). The decimal RPC
+# trace is Debug-build-only. Release fixtures record the same inbound headers in DebugLog.txt.
 function Count-WorldReplies {
-    if (-not (Test-Path $ServerLog)) { return 0 }
-    return @(Select-String -Path $ServerLog -Pattern '\[MPM\] Parsing 02 View|RPC \(Header 190 ').Count
+    $count = 0
+    if (Test-Path -LiteralPath $ServerLog) {
+        $count += @(Select-String -LiteralPath $ServerLog -Pattern '\[MPM\] Parsing 02 View|RPC \(Header (?:190|62|12) ').Count
+    }
+    $debugLog = [IO.Path]::Combine([IO.Path]::GetDirectoryName($ServerLog), 'DebugLog.txt')
+    if (Test-Path -LiteralPath $debugLog) {
+        $count += @(Select-String -LiteralPath $debugLog -Pattern 'Handle RPC Client Request Header 000000(?:be|3e|0c)\s*$').Count
+    }
+    return $count
 }
 
 # All input is posted as window messages to the client's own window, so it works whatever is in
@@ -461,7 +469,7 @@ if ($Login -and $ok -and $StopAtSelect) {
 }
 
 if ($WaitWorld -and $ok) {
-    if (-not $spawnsBefore) { $spawnsBefore = Count-WorldReplies }
+    if ($null -eq $spawnsBefore) { $spawnsBefore = Count-WorldReplies }
     $t0 = Get-Date
     while (((Get-Date) - $t0).TotalSeconds -lt $WorldTimeoutSeconds -and (Count-WorldReplies) -le $spawnsBefore) { Start-Sleep 2 }
     $summary.inWorld = (Count-WorldReplies) -gt $spawnsBefore
