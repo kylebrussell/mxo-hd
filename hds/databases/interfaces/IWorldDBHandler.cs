@@ -34,10 +34,7 @@ namespace hds.databases.interfaces{
         bool IsFactionnameAvailable(string factionname);
         bool IsHandleCaptainOfACrew(string handle);
         UInt32 createFaction(string factionname, Crew masterCrew, Crew secondCrew);
-        void IncreaseCrewMoney(UInt32 crewId, UInt32 amount);
-        void DecreaseCrewMoney(UInt32 crewId, UInt32 amount);
-        void IncreaseFactionMoney(UInt32 crewId, UInt32 amount);
-        void DecreaseFactionMoney(UInt32 crewId, UInt32 amount);
+        (uint Cash, string Refusal) TransferGroupMoney(uint character, byte type, uint groupId, uint amount, bool deposit);
         Crew GetCrewData(UInt32 crewId);
         List<CrewMember> GetCrewMembersForCrewId(UInt32 crewId);
         void AddMemberToCrew(UInt32 charId, UInt32 crewId, UInt32 factionId, ushort isCaptain, ushort isFirstMate);

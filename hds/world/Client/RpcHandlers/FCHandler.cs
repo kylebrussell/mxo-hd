@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Data.Common;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -85,61 +86,51 @@ namespace hds
         /// Client 78 &lt;type 1=faction 2=crew&gt; &lt;amount u32&gt; &lt;1=deposit 0=withdraw&gt;, answered with 79 to every
         /// online member (two-person capture 09:43:35: "78 02 64 00 00 00 01" then "79 02 64 00 00 00 &lt;char&gt; 01").
         /// </summary>
-        private static readonly object BankLock = new object();
-
         public void ProcessDepositMoney(ref byte[] rpcData)
         {
-            if (rpcData.Length < 6)
-            {
-                return;
-            }
-
+            if (rpcData == null || rpcData.Length != 6 || rpcData[5] > 1) return;
             byte type = rpcData[0];
-            UInt32 amount = BitConverter.ToUInt32(rpcData, 1);
+            if (type != SocialPackets.GroupFaction && type != SocialPackets.GroupCrew) return;
+            uint amount = BitConverter.ToUInt32(rpcData, 1);
             bool deposit = rpcData[5] == 1;
             WorldClient client = Store.currentClient;
-            var db = Store.dbManager.WorldDbHandler;
 
-            UInt32 groupId = NumericalUtils.ByteArrayToUint32(
-                (type == SocialPackets.GroupFaction ? client.playerInstance.FactionID : client.playerInstance.CrewID).getValue(), 1);
-            if (groupId == 0 || (type != SocialPackets.GroupFaction && type != SocialPackets.GroupCrew))
+            lock (client.playerData.craftingSync)
             {
-                return;
-            }
-
-            // Check and move under one lock: two members withdrawing at once both passed the balance check.
-            long newInfo;
-            lock (BankLock)
-            {
-                long bank = type == SocialPackets.GroupFaction ? db.FetchFaction(groupId).money : db.GetCrewData(groupId).money;
-                long info = client.playerData.getInfo();
-                if (!CanMoveMoney(deposit, info, bank, amount))
+                var publication = new AbilityAcquisition.Publication(client);
+                uint group = GroupId(client, type);
+                (uint Cash, string Refusal) result;
+                try
                 {
-                    // The client has LTTRGS_ codes for this (e.g. CREWBANKINSUFFICIENTFUNDS) but no capture shows how they
-                    // were delivered, so say it in plain text; nothing is moved.
-                    new ServerPackets().sendSystemChatMessage(client,
-                        deposit ? "You do not have that much information." : "The bank does not hold that much information.", "SYSTEM");
+                    result = Store.dbManager.WorldDbHandler.TransferGroupMoney(publication.Character, type, group, amount, deposit);
+                }
+                catch (DbException error)
+                {
+                    Output.WriteDebugLog($"[GROUP BANK] Transfer rolled back char={publication.Character} type={type} " +
+                        $"group={group} amount={amount} deposit={deposit}: {error.Message}");
+                    result = (0, "The transfer could not be saved. Your information was kept.");
+                }
+                if (result.Refusal != null)
+                {
+                    if (publication.Publish(client, ServerPackets.BuildSystemChatMessage(result.Refusal, "BROADCAST")))
+                        client.FlushQueue();
                     return;
                 }
 
-                newInfo = deposit ? info - amount : info + amount;
-                if (type == SocialPackets.GroupFaction)
-                {
-                    if (deposit) db.IncreaseFactionMoney(groupId, amount); else db.DecreaseFactionMoney(groupId, amount);
-                }
-                else
-                {
-                    if (deposit) db.IncreaseCrewMoney(groupId, amount); else db.DecreaseCrewMoney(groupId, amount);
-                }
+                byte[] ledger = ServerPackets.BuildGroupBankUpdate(publication.Character, type, amount, deposit);
+                byte[] wallet = ServerPackets.BuildInfoCurrent(result.Cash, ServerPackets.InfoReasonLoad);
+                bool published = GroupId(client, type) == group ? publication.PublishPurchase(client, result.Cash, ledger, wallet)
+                    : publication.PublishPurchase(client, result.Cash, wallet);
+                if (published) client.FlushQueue();
+                foreach (WorldClient member in SocialHandler.OnlineWhere(other => !ReferenceEquals(other, client) && GroupId(other, type) == group))
+                    SocialHandler.Send(member, ledger);
+                Output.WriteDebugLog($"[GROUP BANK] Transfer committed char={publication.Character} type={type} " +
+                    $"group={group} amount={amount} deposit={deposit} cash={result.Cash}");
             }
-
-            db.SaveInfo(client, newInfo);
-            client.playerData.setInfo(newInfo);
-
-            ServerPackets packet = new ServerPackets();
-            packet.SendMoneyUpdateFactionCrew(client, type, amount, (ushort) (deposit ? 1 : 0));
-            packet.SendInfoCurrent(client, (UInt32) newInfo);
         }
+
+        private static uint GroupId(WorldClient client, byte type) => NumericalUtils.ByteArrayToUint32(
+            (type == SocialPackets.GroupFaction ? client.playerInstance.FactionID : client.playerInstance.CrewID).getValue(), 1);
 
         /// <summary>A deposit needs that much information on the player, a withdrawal that much in the bank.</summary>
         internal static bool CanMoveMoney(bool deposit, long playerInfo, long bank, UInt32 amount)
