@@ -395,6 +395,7 @@ public static partial class Scenarios
         new Scenario("email-recipient-world", EmailValidatesRecipientWorld, StillNpcs),
         new Scenario("ignore-list-add-remove-and-relog", IgnoreListAddRemoveAndRelog),
         new Scenario("ignore-list-write-refusal", IgnoreListWriteRefusal, StillNpcs),
+        new Scenario("buddy-list-write-refusal", BuddyListWriteRefusal, StillNpcs),
         new Scenario("chat-rooms-create-talk-moderate-and-find", ChatRoomsCreateTalkModerateAndFind),
         new Scenario("socialbot-in-a-chat-room", SocialBotInAChatRoom),
         new Scenario("subway-ride-by-car", SubwayRideByCar),

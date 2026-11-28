@@ -447,6 +447,8 @@ try
                     result = await NativeQa.Modes.MailIgnoreSenderMode.SendActionAsync(actor, q, database);
                 else if (fixtureMode is NativeQa.Modes.IgnoreListWriteRefusalMode && action == "ignore-save")
                     result = await NativeQa.Modes.IgnoreListWriteRefusalMode.SendActionAsync(actor, q, helpers, database);
+                else if (fixtureMode is NativeQa.Modes.BuddyListWriteRefusalMode && action == "buddy-save")
+                    result = await NativeQa.Modes.BuddyListWriteRefusalMode.SendActionAsync(actor, q, database);
                 else if (fixtureMode is NativeQa.Modes.MailReadRecoveryMode && action is "mail-read-retry" or "mail-read-verify")
                     result = await NativeQa.Modes.MailReadRecoveryMode.CheckReadAsync(actor, database, action == "mail-read-retry");
                 else if (fixtureMode is NativeQa.Modes.MailRecipientWorldMode && action is "mail-address-refused" or "mail-address-delivered")
