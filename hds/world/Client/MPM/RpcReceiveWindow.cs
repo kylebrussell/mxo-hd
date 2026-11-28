@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace hds
 {
@@ -16,37 +15,86 @@ namespace hds
         /// <summary>RPCs remembered; far more than can be waiting for an ack at once.</summary>
         public const int Capacity = 2048;
 
-        private readonly Dictionary<UInt16, byte[]> seen = new Dictionary<UInt16, byte[]>();
-        private readonly Queue<UInt16> order = new Queue<UInt16>();
+        private readonly struct Entry
+        {
+            public readonly int Header;
+            public readonly byte[] Values;
+            public readonly ulong Ticket;
+
+            public Entry(int header, byte[] values, ulong ticket)
+            {
+                Header = header;
+                Values = values;
+                Ticket = ticket;
+            }
+        }
+
+        private readonly Dictionary<UInt16, Entry> seen = new Dictionary<UInt16, Entry>();
+        private readonly Queue<(UInt16 Sequence, ulong Ticket)> order = new Queue<(UInt16 Sequence, ulong Ticket)>();
+        private ulong nextTicket;
 
         /// <summary>True when this RPC was already handled; otherwise remembers it.</summary>
         public bool IsResend(UInt16 sequence, int header, byte[] values)
         {
-            byte[] record = new byte[values.Length + 2];
-            record[0] = (byte)(header >> 8);
-            record[1] = (byte)header;
-            Array.Copy(values, 0, record, 2, values.Length);
+            ReadOnlySpan<byte> payload = values != null ? values.AsSpan() : ReadOnlySpan<byte>.Empty;
 
             lock (seen)
             {
-                if (seen.TryGetValue(sequence, out byte[] earlier))
+                if (seen.TryGetValue(sequence, out Entry earlier))
                 {
-                    if (earlier.SequenceEqual(record))
+                    if (earlier.Header == header && earlier.Values.AsSpan().SequenceEqual(payload))
                     {
                         return true;
                     }
-                    seen[sequence] = record; // the numbering restarted: this one is new
+
+                    // The numbering restarted: replace with a fresh ticket so stale queue entries
+                    // do not prematurely evict this newly accepted RPC.
+                    ulong replacedTicket = ++nextTicket;
+                    seen[sequence] = new Entry(header, ClonePayload(payload), replacedTicket);
+                    order.Enqueue((sequence, replacedTicket));
+                    TrimExpiredOrderEntriesLocked();
                     return false;
                 }
 
-                seen[sequence] = record;
-                order.Enqueue(sequence);
-                if (order.Count > Capacity)
+                ulong ticket = ++nextTicket;
+                seen[sequence] = new Entry(header, ClonePayload(payload), ticket);
+                order.Enqueue((sequence, ticket));
+
+                while (seen.Count > Capacity && order.Count > 0)
                 {
-                    seen.Remove(order.Dequeue());
+                    var oldest = order.Dequeue();
+                    if (seen.TryGetValue(oldest.Sequence, out Entry current) && current.Ticket == oldest.Ticket)
+                    {
+                        seen.Remove(oldest.Sequence);
+                    }
                 }
+                TrimExpiredOrderEntriesLocked();
                 return false;
             }
+        }
+
+        private void TrimExpiredOrderEntriesLocked()
+        {
+            while (order.Count > Capacity * 2)
+            {
+                var head = order.Peek();
+                if (seen.TryGetValue(head.Sequence, out Entry current) && current.Ticket == head.Ticket)
+                {
+                    break;
+                }
+                order.Dequeue();
+            }
+        }
+
+        private static byte[] ClonePayload(ReadOnlySpan<byte> payload)
+        {
+            if (payload.Length == 0)
+            {
+                return Array.Empty<byte>();
+            }
+            byte[] copy = new byte[payload.Length];
+            payload.CopyTo(copy);
+            return copy;
         }
 
         public void Reset()
@@ -55,6 +103,7 @@ namespace hds
             {
                 seen.Clear();
                 order.Clear();
+                nextTicket = 0;
             }
         }
     }

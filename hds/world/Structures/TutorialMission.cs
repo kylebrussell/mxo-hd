@@ -468,7 +468,7 @@ namespace hds
         private Mob Spawn(ushort id, string name, double x, double y, double z, string rsi, ushort level, ushort hp, bool friendly, bool attacksOnSight)
         {
             Mob mob = new Mob();
-            mob.setEntityId(WorldServer.entityIdCounter++);
+            mob.setEntityId(WorldServer.NextEntityId());
             mob.setDistrict((ushort)MxOLocations.TUTORIAL);
             mob.setDistrictName(client.playerData.getDistrict());
             mob.setName(name);

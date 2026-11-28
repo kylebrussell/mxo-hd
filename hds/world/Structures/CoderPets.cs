@@ -455,7 +455,7 @@ namespace hds
             }
 
             var mob = new Mob();
-            mob.setEntityId(WorldServer.entityIdCounter++);
+            mob.setEntityId(WorldServer.NextEntityId());
             mob.setGoId(new byte[] { (byte)(SimulacraGoId & 0xff), (byte)(SimulacraGoId >> 8) });
             mob.setDistrict(district);
             mob.setDistrictName(owner.playerData.getDistrict());
@@ -1587,7 +1587,7 @@ namespace hds
             NumericalUtils.LtVector3dToDoubles(client.playerInstance.Position.getValue(), ref x, ref y, ref z);
             int lvl = level > 0 ? Math.Min(level, 99) : client.playerInstance.Level.getValue()[0];
             var mob = new Mob();
-            mob.setEntityId(WorldServer.entityIdCounter++);
+            mob.setEntityId(WorldServer.NextEntityId());
             mob.setDistrict((UInt16)client.playerData.getDistrictId());
             mob.setDistrictName(client.playerData.getDistrict());
             mob.setName("Simulacra Dummy");

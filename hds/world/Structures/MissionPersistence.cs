@@ -228,7 +228,7 @@ namespace hds
                 }
                 foreach(var record in saved.Mobs)
                 {
-                    var mob=new Mob();mob.setEntityId(WorldServer.entityIdCounter++);mob.setDistrict(mission.district);mob.setDistrictName(mission.districtName);
+                    var mob=new Mob();mob.setEntityId(WorldServer.NextEntityId());mob.setDistrict(mission.district);mob.setDistrictName(mission.districtName);
                     mob.setName(record.Name);mob.setRsiHex(record.Rsi);mob.setLevel(record.Level);mob.setHealthM(record.MaxHealth);mob.setHealthC(record.Health);
                     mob.setWeapon(record.Weapon);mob.setRotation(record.Rotation);mob.setXPos(record.X);mob.setYPos(record.Y);mob.setZPos(record.Z);
                     mob.xBase=record.X;mob.yBase=record.Y;mob.zBase=record.Z;mob.setIsDead(record.Dead);mob.setIsLootable(record.Lootable);

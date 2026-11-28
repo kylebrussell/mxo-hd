@@ -776,8 +776,7 @@ namespace hds
             ilCombatHandler.Position.setValue(client.playerInstance.Position.getValue());
             currentSession.CombatHandlerObject = ilCombatHandler;
 
-            UInt64 currentEntityId = WorldServer.entityIdCounter;
-            WorldServer.entityIdCounter++;
+            UInt64 currentEntityId = WorldServer.NextEntityId();
             WorldServer.gameServerEntities.Add(ilCombatHandler);
 
             packets.SendSpawnGameObject(client, ilCombatHandler, currentEntityId);

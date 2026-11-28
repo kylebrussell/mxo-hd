@@ -878,6 +878,11 @@ namespace hds
             return processedPacket;
         }
 
+        /// <summary>Per-client UDP ingress queue cap protecting against single-client packet floods.</summary>
+        public const int MaxQueuedPackets = 512;
+        private long droppedIngressPackets;
+        internal long DroppedIngressPackets => Interlocked.Read(ref droppedIngressPackets);
+
         /// <summary>Called by the socket receiver before it arms the next receive, preserving datagram arrival order.</summary>
         internal void QueuePacket(byte[] packet)
         {
@@ -886,6 +891,17 @@ namespace hds
             if(!NoteIngress())return;
             lock (receivedPackets)
             {
+                if (receivedPackets.Count >= MaxQueuedPackets)
+                {
+                    long dropped = Interlocked.Increment(ref droppedIngressPackets);
+                    if (dropped == 1 || (dropped & (dropped - 1)) == 0)
+                    {
+                        Output.WriteLine("[CLIENT] Dropped ingress datagram for charId " +
+                                         (playerData != null ? playerData.getCharID() : 0u) +
+                                         " (queue limit " + MaxQueuedPackets + " reached, dropped=" + dropped + ")");
+                    }
+                    return;
+                }
                 receivedPackets.Enqueue(packet);
                 if (receivedPacketLengths != null) receivedPacketLengths.Enqueue(-1);
                 if (packetWorkerRunning)
@@ -905,20 +921,40 @@ namespace hds
                 if (packet != null) ArrayPool<byte>.Shared.Return(packet);
                 return;
             }
+            bool droppedForOverflow = false;
             lock (receivedPackets)
             {
-                if (receivedPacketLengths == null)
+                if (receivedPackets.Count >= MaxQueuedPackets)
                 {
-                    receivedPacketLengths = new Queue<int>(Math.Max(4, receivedPackets.Count + 1));
-                    for (int i = 0; i < receivedPackets.Count; i++) receivedPacketLengths.Enqueue(-1);
+                    droppedForOverflow = true;
                 }
-                receivedPackets.Enqueue(packet);
-                receivedPacketLengths.Enqueue(length);
-                if (packetWorkerRunning)
+                else
                 {
-                    return;
+                    if (receivedPacketLengths == null)
+                    {
+                        receivedPacketLengths = new Queue<int>(Math.Max(4, receivedPackets.Count + 1));
+                        for (int i = 0; i < receivedPackets.Count; i++) receivedPacketLengths.Enqueue(-1);
+                    }
+                    receivedPackets.Enqueue(packet);
+                    receivedPacketLengths.Enqueue(length);
+                    if (packetWorkerRunning)
+                    {
+                        return;
+                    }
+                    packetWorkerRunning = true;
                 }
-                packetWorkerRunning = true;
+            }
+            if (droppedForOverflow)
+            {
+                if (packet != null) ArrayPool<byte>.Shared.Return(packet);
+                long dropped = Interlocked.Increment(ref droppedIngressPackets);
+                if (dropped == 1 || (dropped & (dropped - 1)) == 0)
+                {
+                    Output.WriteLine("[CLIENT] Dropped pooled ingress datagram for charId " +
+                                     (playerData != null ? playerData.getCharID() : 0u) +
+                                     " (queue limit " + MaxQueuedPackets + " reached, dropped=" + dropped + ")");
+                }
+                return;
             }
             ThreadPool.UnsafeQueueUserWorkItem(ProcessQueuedPacketsCallback, this);
         }
@@ -964,6 +1000,13 @@ namespace hds
                 try
                 {
                     ProcessPacketCore(packet, length);
+                }
+                catch (Exception ex)
+                {
+                    // Defensive containment on the ThreadPool worker so an unexpected failure never
+                    // terminates the server process or leaves packetWorkerRunning wedged true.
+                    Output.WriteLine("[CLIENT] Queued packet worker failed for charId " +
+                                     (playerData != null ? playerData.getCharID() : 0u) + ": " + ex);
                 }
                 finally
                 {
@@ -1076,36 +1119,13 @@ namespace hds
 
         public bool HasPendingMessages()
         {
-            if (messageQueue.ackOnlyCount > 0)
-            {
-                return true;
-            }
-
-            lock (messageQueue.rawMessages.SyncRoot)
-            {
-                if (messageQueue.rawMessages.Count > 0)
-                {
-                    return true;
-                }
-            }
-
-            lock (messageQueue.ObjectMessagesQueue.SyncRoot)
-            {
-                if (messageQueue.ObjectMessagesQueue.Count > 0)
-                {
-                    return true;
-                }
-            }
-
-            lock (messageQueue.RPCMessagesQueue.SyncRoot)
-            {
-                if (messageQueue.RPCMessagesQueue.Count > 0)
-                {
-                    return true;
-                }
-            }
-
-            return false;
+            // Lock-free fast check for FlushThread/TimersThread polling; actual draining acquires queue locks.
+            MessageQueue mq = messageQueue;
+            return mq != null &&
+                   (mq.ackOnlyCount > 0 ||
+                    mq.rawMessages.Count > 0 ||
+                    mq.ObjectMessagesQueue.Count > 0 ||
+                    mq.RPCMessagesQueue.Count > 0);
         }
 
         public void TickFlush()

@@ -116,7 +116,7 @@ namespace hds
 
             lock (WorldServer.Clients)
             {
-                data.setEntityId(WorldServer.entityIdCounter++);
+                data.setEntityId(WorldServer.NextEntityId());
                 WorldServer.Clients.Add("bot:duel:" + n, bot);
             }
             data.setOnWorld(true);
