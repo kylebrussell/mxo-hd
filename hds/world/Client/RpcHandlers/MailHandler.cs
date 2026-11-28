@@ -177,21 +177,9 @@ namespace hds
             catch (DbException error)
             {
                 Output.WriteDebugLog($"[MAIL] Status change rolled back char={charId} id={id} status={status}: {error.Message}");
-                byte[] failure = MailPackets.BuildStatus(0xf5, MailPackets.BadData);
-                MailMessage saved = null;
-                try
-                {
-                    saved = store.Get(charId, id);
-                }
-                catch (DbException refreshError)
-                {
-                    Output.WriteDebugLog($"[MAIL] Status refresh failed char={charId} id={id}: {refreshError.Message}");
-                }
-
-                // The stock UI sets the new status in its cache before sending 81 f4.
-                // The full message replaces that optimistic state and redraws the row.
-                if (saved != null) host.Send(charId, failure, MailPackets.BuildMessage(saved));
-                else host.Send(charId, failure);
+                // Failed 81 f5 makes the stock client clear its cached headers and send 81 ea.
+                // An extra 81 f3 during that rebuild can seed a row ahead of the fresh list.
+                host.Send(charId, MailPackets.BuildStatus(0xf5, MailPackets.BadData));
                 Notice(charId, "The mail status could not be changed. The message was kept.");
                 return;
             }
@@ -392,7 +380,8 @@ namespace hds
                 if (recipients.Count == 0 && !toBot) throw new Refusal(MailPackets.RecipientUnknown);
 
                 uint now = clock();
-                string sender = AddressOf(character);
+                string senderHandle = host.HandleOf(character);
+                string sender = MailPackets.Address(serverName(), senderHandle);
                 string bot = toBot ? MailPackets.Address(serverName(), BotHandle) : null;
                 bool attachments = oob.Info > 0 || oob.Items.Count > 0;
                 if (attachments && (recipients.Count + (toBot ? 1 : 0) != 1 || host.IsDead(character) ||
@@ -411,8 +400,13 @@ namespace hds
                     cash.Add(id, balance);
                 }
                 foreach (uint recipient in recipients)
+                {
+                    if (recipient != character && transfer.RecipientIgnores(recipient, senderHandle))
+                        throw new Refusal(MailPackets.Ignoring,
+                            "A recipient is ignoring you. Your items and information were kept.");
                     if (send.EnforceInboxLimit && transfer.InboxCount(recipient) >= MailPackets.InboxLimit)
                         throw new Refusal(MailPackets.InboxFull);
+                }
 
                 var items = new List<MailItem>();
                 if (oob.Items.Count > 0)
@@ -450,8 +444,10 @@ namespace hds
             }
             catch (Refusal error)
             {
-                if (error.Status == MailPackets.BadData)
-                    Notice(character, error.Notice ?? "Mail could not be sent. Check the attached items and information.");
+                if (error.Notice != null)
+                    Notice(character, error.Notice);
+                else if (error.Status == MailPackets.BadData)
+                    Notice(character, "Mail could not be sent. Check the attached items and information.");
                 host.Send(character, MailPackets.BuildSendResult(0, error.Status));
                 if (error.Status == MailPackets.RecipientUnknown)
                 {

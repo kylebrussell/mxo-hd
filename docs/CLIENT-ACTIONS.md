@@ -339,10 +339,11 @@ All layouts are client.dll's; the values are retail's. Strings are `<u16 length 
 ### Atomic mail status changes
 
 The stock Delete and Undelete sender at `621f91e0` updates the cached
-status before sending `81 f4`. On a refused write, the server returns a
-failed `81 f5` followed by `81 f3` carrying the saved status and
-attachment grid. The `81 f3` consumer updates the cached status and
-redraws the row. Closing the inbox sends `81 f6` for deleted-to-purged
+status before sending `81 f4`. A refused write returns failed `81 f5`.
+Its stock handler at `621f8300` clears the header cache and sends `81 ea`.
+The normal header response restores the saved status and inbox count.
+The message body and attachments are available on reselection. Closing
+the inbox sends `81 f6` for deleted-to-purged
 and new-to-seen. Each request uses one owner-and-status-scoped SQL
 statement. If one row fails, the batch stays unchanged and `81 f7`
 reports the failure.
@@ -356,6 +357,23 @@ CHECK from the disposable database. Retry Delete in the same inbox, then
 Undelete and verify the pill remains. Delete the disposable message again
 and Close. Reopen Email and check that Delete Check was purged while
 Inbox Control still opens.
+
+### Mail and ignores
+
+The stock mail header handler can discard messages from ignored senders.
+The server now checks each recipient's saved ignore list inside the send
+transaction. It returns IGNORING (`81 e6 00 00 00 00 54 00 00 0e`)
+before any message, item or Info transfer. All recipients must pass the
+check, including offline recipients.
+
+Use `mail-ignore-sender` at Mara Central (17000,495,2300). Compose to
+QAFriend with subject **Ignore Check**, a nonempty body, 200 Info and
+the bag-slot-3 Health Pill attached through **Email this item**. The
+first attempt keeps 500 Info and the pill. Send
+`{"actor":"QAFriend","action":"mail-ignore","step":"retry"}` to verify the
+assets and remove the ignore using `80 e2`. Retry the same mail, then
+send the same helper action with `"step":"verify"` to confirm that
+QAFriend got one message with one pill and now has 250 Info.
 
 ### Native mail transaction check
 
@@ -402,7 +420,7 @@ an unsolicited header or message refresh after `81 fd`.
 
 ## Ignore list in detail
 
-`80 e0` / `80 e2`: `<name offset u16>` and the name, like the friend list's `80 d6`. The answers `80 e1` / `80 e3` are `08 00 <Status u32> <name>`. client.dll (0x62255bb0) adds the name and prints "Ignoring %s." for a success code and "Failed to ignore %s." otherwise. The server answers SUCCESS (`0x8e000084`), DESTAVATARDOESNTEXIST for a handle nobody has, IGNORENOTFOUND (`0x0e000058`) for removing someone not on the list. At world entry it sends each stored name with `LTOBJSRV_CONTACT_LIST_SETUP_PLAYER_IGNORED` (`0x8e00003d`); that this is what retail sent at login is a guess (the handler compares against that code, and the friend list uses its neighbours 3b/3c the same way). The client also filters chat and mail to and from ignored players itself. The server keeps each online player's list in memory, loaded at world entry and updated by `80 e0`/`80 e2`. It does not deliver area, crew, faction, team or room lines from an ignored handle to that listener. A tell to a player who ignores the sender is not delivered; the sender gets `2c <counter>` with LTOBJSRV_SOECHAT_IGNORING (`0x0e000054`). That status is the 23rd name in client.dll's `0x3d + n` chat result table, which is evidence that the original chat service refused such tells. Ignoring is one-way. Mail is unchanged.
+`80 e0` / `80 e2`: `<name offset u16>` and the name, like the friend list's `80 d6`. The answers `80 e1` / `80 e3` are `08 00 <Status u32> <name>`. client.dll (0x62255bb0) adds the name and prints "Ignoring %s." for a success code and "Failed to ignore %s." otherwise. The server answers SUCCESS (`0x8e000084`), DESTAVATARDOESNTEXIST for a handle nobody has, IGNORENOTFOUND (`0x0e000058`) for removing someone not on the list. At world entry it sends each stored name with `LTOBJSRV_CONTACT_LIST_SETUP_PLAYER_IGNORED` (`0x8e00003d`); that this is what retail sent at login is a guess (the handler compares against that code, and the friend list uses its neighbours 3b/3c the same way). The client also filters chat and mail to and from ignored players itself. The server keeps each online player's list in memory, loaded at world entry and updated by `80 e0`/`80 e2`. It does not deliver area, crew, faction, team or room lines from an ignored handle to that listener. A tell to a player who ignores the sender is not delivered; the sender gets `2c <counter>` with LTOBJSRV_SOECHAT_IGNORING (`0x0e000054`). That status is the 23rd name in client.dll's `0x3d + n` chat result table, which is evidence that the original chat service refused such tells. Ignoring is one-way. [Mail checks saved recipient ignores](#mail-and-ignores), including while the recipient is offline.
 
 ## Subway in detail
 

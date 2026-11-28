@@ -64,12 +64,19 @@ public static partial class Scenarios
         string owned = $"ownerCharId={reader.CharId} AND id={id}";
         reader.SendRpc(delete);
         await reader.WaitForRpcAsync($"81 f5 {MailBadData}");
+        await reader.WaitForTextAsync("The mail status could not be changed. The message was kept.");
+        Check.Equal(0, reader.Received("81 f3").Count, "The failure sends no full message ahead of the stock inbox rebuild");
+
+        // The stock 81 f5 failure consumer clears its cached headers and requests the list again.
+        reader.SendRpc($"81 ea 0d 00 {Le(50u)} {Le(0x7ffffffeu)} 01 01 00 00");
+        await reader.WaitForRpcAsync($"81 ef 0c 00 {Le(2u)} {MailSuccess}");
+        var header = await reader.WaitForRpcAsync($"81 ed 19 00 ?? ?? ?? ?? {Le(id)}");
+        Check.Equal(3u, BitConverter.ToUInt32(header.Bytes, 16), "The fresh inbox restores the saved status");
+        reader.SendRpc($"81 f0 {Le(id)}");
         var restored = await reader.WaitForRpcAsync($"81 f3 19 00 ?? ?? ?? ?? {Le(id)}");
-        Check.Equal(3u, BitConverter.ToUInt32(restored.Bytes, 16), "The refusal refresh replaces the optimistic deleted status");
         var chunks = MessageChunks(restored.Bytes);
         Check.Equal(MailDeleteSubject, chunks[0], "The restored row is the selected message");
         Check.That(chunks[2].Contains("ClassData=\"2399\""), "The restored message still shows its attached pill");
-        await reader.WaitForTextAsync("The mail status could not be changed. The message was kept.");
         await CheckStoredMessageAsync(3);
 
         // An inbox close after a refused delete cannot purge the persisted message.

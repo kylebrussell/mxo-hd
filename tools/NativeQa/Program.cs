@@ -443,6 +443,8 @@ try
                     result = await market.SendActionAsync(actor, q, helpers, database);
                 else if (fixtureMode is NativeQa.Modes.MailAtomicTransfersMode mail && action == "mail-verify")
                     result = await mail.VerifyAsync(actor, q, database);
+                else if (fixtureMode is NativeQa.Modes.MailIgnoreSenderMode && action == "mail-ignore")
+                    result = await NativeQa.Modes.MailIgnoreSenderMode.SendActionAsync(actor, q, database);
                 else if (fixtureMode is NativeQa.Modes.MailAtomicStatusMode && action == "mail-status-retry" && actor.Handle == "QAFriend")
                 {
                     await Scenarios.ReleaseMailStatusFaultAsync(database);

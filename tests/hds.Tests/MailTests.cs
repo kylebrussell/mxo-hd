@@ -135,6 +135,7 @@ public class MailTests
         public void RemoveItem(uint charId, ushort slot) => Bags.Remove((charId, slot));
         public void AddItem(uint charId, ushort slot, MailItem item) => Bags.Add((charId, slot), item);
         public int InboxCount(uint charId) => store.Count(charId);
+        public bool RecipientIgnores(uint recipient, string senderHandle) => false;
         public void AddMessage(MailMessage message) => store.Add(message);
         public MailMessage ReadMessage(uint charId, uint id) => store.Get(charId, id)!;
         public void SetAttachments(MailMessage message) => store.SetAttachments(message);
