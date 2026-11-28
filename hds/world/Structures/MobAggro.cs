@@ -229,16 +229,23 @@ namespace hds
         internal static void EnragePulse(Mob mob, TimedEffects.Active control)
         {
             if (!CanStartEnrage(mob, control)) return;
-            List<WorldClient> players;
-            lock (WorldServer.Clients) players = new List<WorldClient>(WorldServer.Clients.Values);
             WorldClient nearest = null;
             double nearestDistance = double.MaxValue;
-            foreach (WorldClient player in players)
+            List<WorldClient> players = WorldServer.RentClientSnapshot();
+            try
             {
-                if (!TryEnrageTarget(mob, player, out _, out _, out double distance) || distance >= nearestDistance)
-                    continue;
-                nearest = player;
-                nearestDistance = distance;
+                for (int i = 0; i < players.Count; i++)
+                {
+                    WorldClient player = players[i];
+                    if (!TryEnrageTarget(mob, player, out _, out _, out double distance) || distance >= nearestDistance)
+                        continue;
+                    nearest = player;
+                    nearestDistance = distance;
+                }
+            }
+            finally
+            {
+                WorldServer.ReturnClientSnapshot(players);
             }
             if (nearest == null) return;
 

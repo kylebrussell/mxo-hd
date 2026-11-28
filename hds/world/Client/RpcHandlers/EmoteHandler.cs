@@ -93,26 +93,30 @@ namespace hds
                 subject.FlushQueue();
             }
 
-            var clients = WorldServer.Clients;
-            if (clients == null) return;
-            List<WorldClient> others;
-            lock (clients)
+            if (WorldServer.Clients == null) return;
+            List<WorldClient> recipients = WorldServer.RentClientSnapshot();
+            try
             {
-                others = clients.Values.Where(c => c != null && c != subject && !c.IsBot).ToList();
-            }
-
-            foreach (WorldClient viewer in others)
-            {
-                ClientView view = viewer.viewMan?.FindViewForEntity(subject.playerData.getEntityId());
-                if (view == null || !view.viewCreated || respectStealth &&
-                    (view.viewNeedsToBeDeleted || Stealth.HiddenFrom(viewer, subject)))
+                ulong subjectEntityId = subject.playerData.getEntityId();
+                for (int i = 0; i < recipients.Count; i++)
                 {
-                    continue;
-                }
+                    WorldClient viewer = recipients[i];
+                    if (viewer == null || viewer == subject || viewer.IsBot) continue;
+                    ClientView view = viewer.viewMan?.FindViewForEntity(subjectEntityId);
+                    if (view == null || !view.viewCreated || respectStealth &&
+                        (view.viewNeedsToBeDeleted || Stealth.HiddenFrom(viewer, subject)))
+                    {
+                        continue;
+                    }
 
-                viewer.messageQueue.addObjectMessage(WorldServer.BuildViewUpdate(view.ViewID,
-                    AnimationPackets.Other(a, Seen(viewer, partner), flags)), false);
-                viewer.FlushQueue();
+                    viewer.messageQueue.addObjectMessage(WorldServer.BuildViewUpdate(view.ViewID,
+                        AnimationPackets.Other(a, Seen(viewer, partner), flags)), false);
+                    viewer.FlushQueue();
+                }
+            }
+            finally
+            {
+                WorldServer.ReturnClientSnapshot(recipients);
             }
         }
 

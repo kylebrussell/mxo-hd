@@ -15,11 +15,43 @@ namespace hds
         /// <summary>The views in creation order, indexed by entity and view id: the visibility pass looks up a view for
         /// every pair of nearby players each pass, and a linear Find made that quadratic in the view count.</summary>
         public readonly ViewList views = new ViewList();
-        UInt16 currentViewID = 3; // We start from 3 to increment
+        internal const UInt16 FirstDynamicViewId = 4; // 0 = Protocol-03 end sentinel, 1..3 = system/self views
+        UInt16 currentViewID = 3; // We start from 3 to increment (first allocated is 4)
         private long reconcileStamp;
 
 
         public ViewManager(){
+        }
+
+        internal void SetCurrentViewIdForTesting(UInt16 value)
+        {
+            lock (views)
+            {
+                currentViewID = value;
+            }
+        }
+
+        private UInt16 AllocateViewIdLocked()
+        {
+            const int maxDynamicIds = UInt16.MaxValue - FirstDynamicViewId + 1;
+            UInt16 candidate = currentViewID;
+            for (int attempts = 0; attempts < maxDynamicIds; attempts++)
+            {
+                candidate = candidate == UInt16.MaxValue || candidate < 3
+                    ? FirstDynamicViewId
+                    : (UInt16)(candidate + 1);
+                if (views.FirstWithViewId(candidate) == null)
+                {
+                    currentViewID = candidate;
+                    return candidate;
+                }
+            }
+
+            // All 65,532 dynamic IDs are live; still never hand out reserved 0..3.
+            currentViewID = currentViewID == UInt16.MaxValue || currentViewID < 3
+                ? FirstDynamicViewId
+                : (UInt16)(currentViewID + 1);
+            return currentViewID;
         }
 
         public ClientView addView(UInt64 entityId, UInt32 goId)
@@ -27,8 +59,8 @@ namespace hds
             lock (views)
             {
                 // Add the Object to the client View List
-                currentViewID++;
-                ClientView newView = new ClientView(goId, currentViewID, entityId);
+                UInt16 nextId = AllocateViewIdLocked();
+                ClientView newView = new ClientView(goId, nextId, entityId);
                 views.Add(newView);
                 return newView;
             }
@@ -474,7 +506,8 @@ namespace hds
         private readonly Dictionary<UInt64, ClientView> directByEntity = new Dictionary<UInt64, ClientView>();
         private Dictionary<UInt64, List<ClientView>> multiByEntity;
         private readonly ConcurrentDictionary<UInt64, ClientView> firstByEntity = new ConcurrentDictionary<UInt64, ClientView>();
-        private readonly Dictionary<UInt16, List<ClientView>> byViewId = new Dictionary<UInt16, List<ClientView>>();
+        private readonly Dictionary<UInt16, ClientView> directByViewId = new Dictionary<UInt16, ClientView>();
+        private Dictionary<UInt16, List<ClientView>> multiByViewId;
         private readonly Dictionary<UInt32, List<ClientView>> byGoId = new Dictionary<UInt32, List<ClientView>>();
         private readonly List<ClientView> nonPlayerViews = new List<ClientView>();
 
@@ -506,7 +539,7 @@ namespace hds
             byGoId.TryGetValue(goId, out var list) ? list : null;
 
         public ClientView FirstWithViewId(UInt16 viewId) =>
-            byViewId.TryGetValue(viewId, out var list) && list.Count > 0 ? list[0] : null;
+            directByViewId.TryGetValue(viewId, out ClientView view) ? view : null;
 
         protected override void InsertItem(int index, ClientView item)
         {
@@ -516,7 +549,7 @@ namespace hds
             if (index == Count - 1)
             {
                 AppendEntity(item.entityId, item);
-                Append(byViewId, item.ViewID, item);
+                AppendViewId(item.ViewID, item);
                 Append(byGoId, item.GoID, item);
                 if (item.GoID != PlayerGoId) nonPlayerViews.Add(item);
             }
@@ -530,7 +563,7 @@ namespace hds
             Version++;
             if (item == null) return;
             UnindexEntity(item.entityId, item);
-            Unindex(byViewId, item.ViewID, item);
+            UnindexViewId(item.ViewID, item);
             Unindex(byGoId, item.GoID, item);
             if (item.GoID != PlayerGoId) nonPlayerViews.Remove(item);
         }
@@ -549,7 +582,8 @@ namespace hds
             directByEntity.Clear();
             multiByEntity?.Clear();
             firstByEntity.Clear();
-            byViewId.Clear();
+            directByViewId.Clear();
+            multiByViewId?.Clear();
             byGoId.Clear();
             nonPlayerViews.Clear();
         }
@@ -558,14 +592,15 @@ namespace hds
         {
             directByEntity.Clear();
             multiByEntity?.Clear();
-            byViewId.Clear();
+            directByViewId.Clear();
+            multiByViewId?.Clear();
             byGoId.Clear();
             nonPlayerViews.Clear();
             foreach (ClientView view in this)
             {
                 if (view == null) continue;
                 AppendEntityDirectOnly(view.entityId, view);
-                Append(byViewId, view.ViewID, view);
+                AppendViewId(view.ViewID, view);
                 Append(byGoId, view.GoID, view);
                 if (view.GoID != PlayerGoId) nonPlayerViews.Add(view);
             }
@@ -646,6 +681,50 @@ namespace hds
             {
                 directByEntity.Remove(entityId);
                 firstByEntity.TryRemove(entityId, out _);
+            }
+        }
+
+        private void AppendViewId(UInt16 viewId, ClientView item)
+        {
+            if (!directByViewId.TryGetValue(viewId, out ClientView first))
+            {
+                directByViewId[viewId] = item;
+                return;
+            }
+
+            if (multiByViewId == null) multiByViewId = new Dictionary<UInt16, List<ClientView>>();
+            if (!multiByViewId.TryGetValue(viewId, out List<ClientView> list))
+            {
+                list = new List<ClientView>(2) { first };
+                multiByViewId[viewId] = list;
+            }
+            list.Add(item);
+        }
+
+        private void UnindexViewId(UInt16 viewId, ClientView item)
+        {
+            if (multiByViewId != null && multiByViewId.TryGetValue(viewId, out List<ClientView> list))
+            {
+                list.Remove(item);
+                if (list.Count == 0)
+                {
+                    multiByViewId.Remove(viewId);
+                    directByViewId.Remove(viewId);
+                }
+                else
+                {
+                    directByViewId[viewId] = list[0];
+                    if (list.Count == 1)
+                    {
+                        multiByViewId.Remove(viewId);
+                    }
+                }
+                return;
+            }
+
+            if (directByViewId.TryGetValue(viewId, out ClientView current) && ReferenceEquals(current, item))
+            {
+                directByViewId.Remove(viewId);
             }
         }
 
