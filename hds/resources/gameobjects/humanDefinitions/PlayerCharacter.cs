@@ -77,11 +77,10 @@ namespace hds
 				if (state.HasPosition)
 				{
 					WorldClient client = Store.currentClient;
-					byte[] nextPosition = NumericalUtils.doublesToLtVector3d(state.X, state.Y, state.Z);
 					// Retail closes the Writer on an accepted position change, before the client sends 81 1a.
-					if (client.playerData.craftingSession != null && !Position.getValue().AsSpan().SequenceEqual(nextPosition))
+					if (client.playerData.craftingSession != null && !Position.EqualsVector3d(state.X, state.Y, state.Z))
 						CraftingSession.End(client);
-					Position.setValue(nextPosition);
+					Position.SetVector3d(state.X, state.Y, state.Z);
                     MovementSampleQa.Record(client, state.X, state.Y, state.Z);
                     MissionProxyIntroduction.AcceptedPosition(Store.currentClient,state.X,state.Y,state.Z);
 				}
@@ -136,67 +135,7 @@ namespace hds
         }
 
 		public byte[] GetSelfUpdateAttributes(List<Attribute> attributesNeedsUpdate, bool addAttributeLen){
-			
-			DynamicArray din = new DynamicArray();
-			bool lastGroupEmpty = true;
-			int attribCounter = 0;
-			
-			for (int i = (selfViewGroups-1);i>=0;i--){
-				int attribOffset = i*7;
-				bool anyAttribEnabled = false;
-				byte tempHeader = 0x00;
-				
-				for (int j = 6;j>=0;j--){
-					int position = attribOffset+j;
-					// This verifies that the attribute is in a group but groups has not 7 attributes
-					if (position<attributesSelfView.Length){ 
-						Attribute temp = attributesSelfView[attribOffset+j];
-
-						if (temp.isActive())
-						{
-							foreach (Attribute attribute in attributesNeedsUpdate)
-							{
-								if (attribute.getName().Equals(temp.getName()))
-								{
-									anyAttribEnabled = true;
-									attribCounter++;
-									tempHeader = (byte) (tempHeader + (1<<j)); // Displacement
-									din.insertBefore(temp.getValue());									
-								}
-							}
-						}
-					}
-				}
-
-				// Updating last attribute group, set it as 0b0XXXXXXX
-				if (i == (selfViewGroups-1)){
-					if (anyAttribEnabled){
-						din.insertBefore(tempHeader);
-						lastGroupEmpty = false;
-					}
-				}
-				// Updating other than last attribute group
-				else{
-					if (!lastGroupEmpty){
-						tempHeader = (byte) (tempHeader+0x80);
-						din.insertBefore(tempHeader);
-					}else{
-						if(anyAttribEnabled){
-							din.insertBefore(tempHeader);
-							lastGroupEmpty = false;
-						}
-					}				
-				}
-
-			}
-			
-			//add the counter of attributes sent
-			if (addAttributeLen)
-			{
-				din.insertBefore((byte)attribCounter);	
-			}
-			
-			return din.getBytes();
+			return EncodeSelectedAttributes(attributesSelfView, selfViewGroups, attributesNeedsUpdate, addAttributeLen);
 		}
 		
 	}

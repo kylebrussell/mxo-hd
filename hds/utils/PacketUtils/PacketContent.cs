@@ -1,12 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Buffers.Binary;
 using System.Text;
 
 namespace hds
 {
     public class PacketContent
     {
-        private DynamicArray packet = new DynamicArray();
+        private readonly DynamicArray packet = new DynamicArray();
 
         public void AddHexBytes(String hexbytes)
         {
@@ -15,26 +15,43 @@ namespace hds
 
         public void AddInt16(Int16 value, int reversed)
         {
-            packet.append(NumericalUtils.int16ToByteArray(value, reversed));
+            Span<byte> dest = packet.GetAppendSpan(2);
+            if (reversed == 1)
+                BinaryPrimitives.WriteInt16LittleEndian(dest, value);
+            else
+                BinaryPrimitives.WriteInt16BigEndian(dest, value);
         }
 
         public void AddInt32(Int32 value, int reversed)
         {
-            packet.append(NumericalUtils.int32ToByteArray(value, reversed));
+            Span<byte> dest = packet.GetAppendSpan(4);
+            if (reversed == 1)
+                BinaryPrimitives.WriteInt32LittleEndian(dest, value);
+            else
+                BinaryPrimitives.WriteInt32BigEndian(dest, value);
         }
-        public void AddUint32(UInt32 value,int reversed)
+
+        public void AddUint32(UInt32 value, int reversed)
         {
-            packet.append(NumericalUtils.uint32ToByteArray(value, reversed));
+            Span<byte> dest = packet.GetAppendSpan(4);
+            if (reversed == 1)
+                BinaryPrimitives.WriteUInt32LittleEndian(dest, value);
+            else
+                BinaryPrimitives.WriteUInt32BigEndian(dest, value);
         }
 
         public void AddUint16(UInt16 value, int reversed)
         {
-            packet.append(NumericalUtils.uint16ToByteArray(value, reversed));
+            Span<byte> dest = packet.GetAppendSpan(2);
+            if (reversed == 1)
+                BinaryPrimitives.WriteUInt16LittleEndian(dest, value);
+            else
+                BinaryPrimitives.WriteUInt16BigEndian(dest, value);
         }
 
         public void AddUShort(UInt16 value)
         {
-            packet.append(NumericalUtils.uint16ToByteArrayShort(value));
+            packet.append((byte)value);
         }
 
         public void AddByteArray(byte[] array)
@@ -49,22 +66,36 @@ namespace hds
 
         public void AddFloat(float value, int reversed)
         {
-            packet.append(NumericalUtils.floatToByteArray(value, reversed));
+            Span<byte> dest = packet.GetAppendSpan(4);
+            if (reversed == 1)
+                BinaryPrimitives.WriteSingleLittleEndian(dest, value);
+            else
+                BinaryPrimitives.WriteSingleBigEndian(dest, value);
         }
 
         public void AddDouble(double value, int reversed)
         {
-            packet.append(NumericalUtils.doubleToByteArray(value, reversed));
+            Span<byte> dest = packet.GetAppendSpan(8);
+            if (reversed == 1)
+                BinaryPrimitives.WriteDoubleLittleEndian(dest, value);
+            else
+                BinaryPrimitives.WriteDoubleBigEndian(dest, value);
         }
 
         public void AddFloatLtVector3f(float x, float y, float z)
         {
-            packet.append(NumericalUtils.floatsToLtVector3f(x, y, z));
+            Span<byte> dest = packet.GetAppendSpan(12);
+            BinaryPrimitives.WriteSingleLittleEndian(dest.Slice(0, 4), x);
+            BinaryPrimitives.WriteSingleLittleEndian(dest.Slice(4, 4), y);
+            BinaryPrimitives.WriteSingleLittleEndian(dest.Slice(8, 4), z);
         }
 
         public void AddDoubleLtVector3d(double x, double y, double z)
         {
-            packet.append(NumericalUtils.doublesToLtVector3d(x, y, z));
+            Span<byte> dest = packet.GetAppendSpan(24);
+            BinaryPrimitives.WriteDoubleLittleEndian(dest.Slice(0, 8), x);
+            BinaryPrimitives.WriteDoubleLittleEndian(dest.Slice(8, 8), y);
+            BinaryPrimitives.WriteDoubleLittleEndian(dest.Slice(16, 8), z);
         }
 
         public byte[] ReturnFinalPacket()
@@ -74,41 +105,38 @@ namespace hds
 
         public void AddString(string value)
         {
-            packet.append(StringUtils.stringToBytes(value));
+            if (value == null) throw new ArgumentNullException(nameof(value));
+            if (value.Length == 0) return;
+            int byteCount = Encoding.ASCII.GetByteCount(value);
+            Encoding.ASCII.GetBytes(value.AsSpan(), packet.GetAppendSpan(byteCount));
         }
 
         public void AddSizedTerminatedString(string value)
         {
+            if (value == null) throw new ArgumentNullException(nameof(value));
             int size = value.Length + 1;
-            packet.append(NumericalUtils.uint16ToByteArray((UInt16)size, 1));
-            packet.append(StringUtils.stringToBytes(value));
+            AddUint16((UInt16)size, 1);
+            AddString(value);
             packet.append(0x00);
         }
 
-        public void AddStringWithFixedSized(string value,int size)
+        public void AddStringWithFixedSized(string value, int size)
         {
-            packet.append(StringUtils.stringToBytes(value));
+            AddString(value);
             int paddingSize = size - value.Length;
-            int currentSize = value.Length;
             if (paddingSize > 0)
             {
-                // we need to add "0x00" bytes until its full
-                while (currentSize <= paddingSize + value.Length)
-                {
-                    packet.append(0x00);
-                    currentSize++;
-                }
-
-                int len = packet.getSize();
+                // Preserve exact legacy wire count: (size - value.Length + 1) trailing null bytes
+                // when value.Length < size (total size + 1 bytes).
+                packet.AppendZeros(paddingSize + 1);
             }
         }
 
         public void AddSizedString(string value)
         {
-            packet.append(NumericalUtils.uint16ToByteArray((UInt16)value.Length, 1));
-            packet.append(StringUtils.stringToBytes(value));
-
+            if (value == null) throw new ArgumentNullException(nameof(value));
+            AddUint16((UInt16)value.Length, 1);
+            AddString(value);
         }
-       
     }
 }

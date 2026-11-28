@@ -1,5 +1,6 @@
 
 using System;
+using System.Buffers.Binary;
 using System.Collections;
 
 namespace hds
@@ -28,191 +29,91 @@ namespace hds
 		
 		
 		static public byte[] uint32ToByteArray(UInt32 data, int reversed){
-			byte [] res = BitConverter.GetBytes(data);
-            
-			
-			if(reversed==1)
-				return res;
+			byte[] res = new byte[4];
+			if (reversed == 1)
+				BinaryPrimitives.WriteUInt32LittleEndian(res, data);
 			else
-				reverse4ByteArray(res);
-			
+				BinaryPrimitives.WriteUInt32BigEndian(res, data);
 			return res;
 		}
 
         static public byte[] int16ToByteArray(Int16 data, int reversed)
         {
-
-            byte[] res = BitConverter.GetBytes(data);
-
+            byte[] res = new byte[2];
             if (reversed == 1)
-                return res;
+                BinaryPrimitives.WriteInt16LittleEndian(res, data);
             else
-                reverse2ByteArray(res);
-
+                BinaryPrimitives.WriteInt16BigEndian(res, data);
             return res;
         }
 
         static public byte[] int32ToByteArray(Int32 data, int reversed){
-
-            byte[] res = BitConverter.GetBytes(data);
-
+            byte[] res = new byte[4];
             if (reversed == 1)
-                return res;
+                BinaryPrimitives.WriteInt32LittleEndian(res, data);
             else
-                reverse4ByteArray(res);
-
+                BinaryPrimitives.WriteInt32BigEndian(res, data);
             return res;
         }
 		
 		static public byte[] uint16ToByteArray(UInt16 data,int reversed){
-			byte [] tempRes = BitConverter.GetBytes(data);
-			byte [] res = new byte[2];
-			
-			res[0] = tempRes[0];
-			res[1] = tempRes[1];
-			
-			if(reversed==1)
-				return res;
+			byte[] res = new byte[2];
+			if (reversed == 1)
+				BinaryPrimitives.WriteUInt16LittleEndian(res, data);
 			else
-				reverse2ByteArray(res);
-			
+				BinaryPrimitives.WriteUInt16BigEndian(res, data);
 			return res;
 		}
 		
 		//TODO: change this code to uint8 to byte array
 		static public byte[] uint16ToByteArrayShort(UInt16 data){
-			byte [] tempRes = BitConverter.GetBytes(data);
-			byte [] res = new byte[1];
-			
-			res[0] = tempRes[0];
-			
-			return res;
+			return new byte[] { (byte)data };
 		}
 		
 		static public UInt16 ByteArrayToUint16(byte[] data, int reversed){
-			
-			UInt16 result;
-			byte[] buffer = new byte[2];
-			
-			if(reversed==1){
-				buffer[0] = data[1];
-				buffer[1] = data[0];
-			}
-			else{
-				buffer[0] = data[0];
-				buffer[1] = data[1];
-			}
-			
-			result = (UInt16) ((buffer[0] << 8) + buffer[1]);
-			
-			return result;
-			
+			return reversed == 1
+				? BinaryPrimitives.ReadUInt16LittleEndian(data)
+				: BinaryPrimitives.ReadUInt16BigEndian(data);
 		}
 		
 		
 		static public UInt32 ByteArrayToUint32(byte[] data, int reversed){
-			UInt32 result;
-			byte[] buffer = new byte[4];
-			
-			if(reversed==1){
-				buffer[0] = data[3];
-				buffer[1] = data[2];
-				buffer[2] = data[1];
-				buffer[3] = data[0];
-			}
-			else{
-				
-				buffer[0] = data[0];
-				buffer[1] = data[1];
-				buffer[2] = data[2];
-				buffer[3] = data[3];
-			}
-			
-			result = (UInt32) ((buffer[0] << 24) + (buffer[1] << 16) + (buffer[2] << 8)
-			+ buffer[3]);
-			
-			return result;
-			
+			return reversed == 1
+				? BinaryPrimitives.ReadUInt32LittleEndian(data)
+				: BinaryPrimitives.ReadUInt32BigEndian(data);
 		}
 		
 		static public float byteArrayToFloat(byte[] array, int reversed){
-			
-			byte[] copy = new byte[4];
-			
-			if(reversed==1)
-			{
-				return BitConverter.ToSingle(array,0);
-			}
-			else{
-				copy[0]=array[3];
-				copy[1]=array[2];
-				copy[2]=array[1];
-				copy[3]=array[0];
-				return BitConverter.ToSingle(copy,0);
-			}
-			
-			
+			return reversed == 1
+				? BinaryPrimitives.ReadSingleLittleEndian(array)
+				: BinaryPrimitives.ReadSingleBigEndian(array);
 		}
 		
 		static public double byteArrayToDouble(byte[] array, int reversed){
-			
-			byte[] copy = new byte[8];
-			
-			if(reversed==1)
-			{
-				return BitConverter.ToDouble(array,0);
-			}
-			else{
-				copy[0]=array[7];
-				copy[1]=array[6];
-				copy[2]=array[5];
-				copy[3]=array[4];
-				copy[4]=array[3];
-				copy[5]=array[2];
-				copy[6]=array[1];
-				copy[7]=array[0];
-				return BitConverter.ToDouble(copy,0);
-			}
-			
-			
+			return reversed == 1
+				? BinaryPrimitives.ReadDoubleLittleEndian(array)
+				: BinaryPrimitives.ReadDoubleBigEndian(array);
 		}
 		
 		
 		//It does reversed by default (Bitconverter)
 		static public byte[] floatToByteArray(float n,int reversed){
-			
-			byte[] buffer =  BitConverter.GetBytes(n);
-			
-			if(reversed==1)
-				return buffer;
-			else{
-				byte[] rev = new byte[4];
-				rev[0] = buffer[3];
-				rev[1] = buffer[2];
-				rev[2] = buffer[1];
-				rev[3] = buffer[0];
-				return rev;
-			}
+			byte[] res = new byte[4];
+			if (reversed == 1)
+				BinaryPrimitives.WriteSingleLittleEndian(res, n);
+			else
+				BinaryPrimitives.WriteSingleBigEndian(res, n);
+			return res;
 		}
 		
 		//It does reversed by default (Bitconverter)
 		static public byte[] doubleToByteArray(double n,int reversed){
-			byte[] buffer =  BitConverter.GetBytes(n);
-			
-			if(reversed==1)
-				return buffer;
-			else{
-				byte[] rev = new byte[8];
-				rev[0] = buffer[7];
-				rev[1] = buffer[6];
-				rev[2] = buffer[5];
-				rev[3] = buffer[4];
-				rev[4] = buffer[3];
-				rev[5] = buffer[2];
-				rev[6] = buffer[1];
-				rev[7] = buffer[0];
-				return rev;
-			}
+			byte[] res = new byte[8];
+			if (reversed == 1)
+				BinaryPrimitives.WriteDoubleLittleEndian(res, n);
+			else
+				BinaryPrimitives.WriteDoubleBigEndian(res, n);
+			return res;
 		}
 		
 		

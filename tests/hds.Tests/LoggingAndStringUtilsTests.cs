@@ -30,6 +30,12 @@ public class LoggingAndStringUtilsTests
 
             string[] lines = await File.ReadAllLinesAsync(tempFile);
             Assert.Equal(threads * linesPerThread, lines.Length);
+
+            // Newly created log files must be plain UTF-8 without a BOM (EF BB BF).
+            byte[] raw = await File.ReadAllBytesAsync(tempFile);
+            Assert.True(raw.Length >= 3);
+            Assert.False(raw[0] == 0xEF && raw[1] == 0xBB && raw[2] == 0xBF);
+            Assert.Equal((byte)'t', raw[0]);
         }
         finally
         {

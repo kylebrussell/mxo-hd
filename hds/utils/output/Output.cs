@@ -28,6 +28,7 @@ namespace hds
 			}
 		}
 
+		private static readonly Encoding Utf8NoBom = new UTF8Encoding(false);
 		private static readonly object LogQueueLock = new object();
 		private static readonly Queue<QueuedLogEntry> LogQueue = new Queue<QueuedLogEntry>(256);
 		private static Thread LogWriterThread;
@@ -200,7 +201,7 @@ namespace hds
 				try
 				{
 					using (var stream = new FileStream(fullPath, FileMode.Append, FileAccess.Write, FileShare.ReadWrite | FileShare.Delete))
-					using (var writer = new StreamWriter(stream, Encoding.UTF8))
+					using (var writer = new StreamWriter(stream, Utf8NoBom))
 					{
 						writer.Write(payload);
 						writer.Flush();

@@ -75,114 +75,139 @@ namespace hds
 		}
 
 		public byte[] GetCreationAttributes(){
-			DynamicArray din = new DynamicArray();
-			bool lastGroupEmpty = true;
+			int lastActiveGroup = -1;
 			int attribCounter = 0;
-			
-			for (int i = (creationGroups-1);i>=0;i--){
-				int attribOffset = i*7;
-				bool anyAttribEnabled = false;
-				byte tempHeader = 0x00;
-				
-				for (int j = 6;j>=0;j--){
-					int position = attribOffset+j;
-					// This verifies that the attribute is in a group but groups has not 7 attributes
-					if (position<attributesCreation.Length){ 
-						Attribute temp = attributesCreation[attribOffset+j];
-						if (temp.isActive()){
-							anyAttribEnabled = true;
-							attribCounter++;
-							tempHeader = (byte) (tempHeader + (1<<j)); // Displacement
-							din.insertBefore(temp.getValue());
-						}
+			int payloadBytes = 0;
+
+			for (int i = 0; i < creationGroups; i++){
+				int attribOffset = i * 7;
+				int groupEnd = Math.Min(attribOffset + 7, attributesCreation.Length);
+				bool anyInGroup = false;
+
+				for (int pos = attribOffset; pos < groupEnd; pos++){
+					Attribute temp = attributesCreation[pos];
+					if (temp.isActive()){
+						anyInGroup = true;
+						attribCounter++;
+						payloadBytes += temp.getValue().Length;
 					}
 				}
 
-				// Updating last attribute group, set it as 0b0XXXXXXX
-				if (i == (creationGroups-1)){
-					if (anyAttribEnabled){
-						din.insertBefore(tempHeader);
-						lastGroupEmpty = false;
-					}
+				if (anyInGroup){
+					lastActiveGroup = i;
 				}
-				// Updating other than last attribute group
-				else{
-					if (!lastGroupEmpty){
-						tempHeader = (byte) (tempHeader+0x80);
-						din.insertBefore(tempHeader);
-					}else{
-						if(anyAttribEnabled){
-							din.insertBefore(tempHeader);
-							lastGroupEmpty = false;
-						}
-					}				
-				}
-
 			}
-			
-			//add the counter of attributes sent
-			din.insertBefore((byte)attribCounter);
-			return din.getBytes();
+
+			if (lastActiveGroup < 0){
+				return new byte[] { 0x00 };
+			}
+
+			byte[] result = new byte[1 + (lastActiveGroup + 1) + payloadBytes];
+			result[0] = (byte)attribCounter;
+			int writeOffset = 1;
+
+			for (int i = 0; i <= lastActiveGroup; i++){
+				int attribOffset = i * 7;
+				int groupEnd = Math.Min(attribOffset + 7, attributesCreation.Length);
+				int headerPos = writeOffset++;
+				byte tempHeader = i < lastActiveGroup ? (byte)0x80 : (byte)0x00;
+
+				for (int j = 0; attribOffset + j < groupEnd; j++){
+					Attribute temp = attributesCreation[attribOffset + j];
+					if (temp.isActive()){
+						tempHeader = (byte)(tempHeader + (1 << j));
+						byte[] val = temp.getValue();
+						if (val.Length > 0){
+							Buffer.BlockCopy(val, 0, result, writeOffset, val.Length);
+							writeOffset += val.Length;
+						}
+					}
+				}
+
+				result[headerPos] = tempHeader;
+			}
+
+			return result;
 		}
 		
 		public byte[] GetUpdateAttributes(List<Attribute> attributesNeedsUpdate){
-			
-			DynamicArray din = new DynamicArray();
-			bool lastGroupEmpty = true;
-			int attribCounter = 0;
-			
-			for (int i = (updateGroups-1);i>=0;i--){
-				int attribOffset = i*7;
-				bool anyAttribEnabled = false;
-				byte tempHeader = 0x00;
-				
-				for (int j = 6;j>=0;j--){
-					int position = attribOffset+j;
-					// This verifies that the attribute is in a group but groups has not 7 attributes
-					if (position<attributesUpdate.Length){ 
-						Attribute temp = attributesUpdate[attribOffset+j];
+			return EncodeSelectedAttributes(attributesUpdate, updateGroups, attributesNeedsUpdate, true);
+		}
 
-						if (temp.isActive())
-						{
-							foreach (Attribute attribute in attributesNeedsUpdate)
-							{
-								if (attribute.getName().Equals(temp.getName()))
-								{
-									anyAttribEnabled = true;
-									attribCounter++;
-									tempHeader = (byte) (tempHeader + (1<<j)); // Displacement
-									din.insertBefore(temp.getValue());									
-								}
+		internal static byte[] EncodeSelectedAttributes(Attribute[] table, int groups, List<Attribute> attributesNeedsUpdate, bool includeCountPrefix){
+			int lastActiveGroup = -1;
+			int attribCounter = 0;
+			int payloadBytes = 0;
+			int requestedCount = attributesNeedsUpdate != null ? attributesNeedsUpdate.Count : 0;
+
+			if (table != null && requestedCount > 0){
+				for (int i = 0; i < groups; i++){
+					int attribOffset = i * 7;
+					int groupEnd = Math.Min(attribOffset + 7, table.Length);
+					bool anyInGroup = false;
+
+					for (int pos = attribOffset; pos < groupEnd; pos++){
+						Attribute temp = table[pos];
+						if (!temp.isActive()){
+							continue;
+						}
+
+						string tempName = temp.getName();
+						for (int k = 0; k < requestedCount; k++){
+							if (attributesNeedsUpdate[k].getName().Equals(tempName)){
+								anyInGroup = true;
+								attribCounter++;
+								payloadBytes += temp.getValue().Length;
+							}
+						}
+					}
+
+					if (anyInGroup){
+						lastActiveGroup = i;
+					}
+				}
+			}
+
+			if (lastActiveGroup < 0){
+				return includeCountPrefix ? new byte[] { 0x00 } : Array.Empty<byte>();
+			}
+
+			int prefixLen = includeCountPrefix ? 1 : 0;
+			byte[] result = new byte[prefixLen + (lastActiveGroup + 1) + payloadBytes];
+			int writeOffset = 0;
+			if (includeCountPrefix){
+				result[writeOffset++] = (byte)attribCounter;
+			}
+
+			for (int i = 0; i <= lastActiveGroup; i++){
+				int attribOffset = i * 7;
+				int groupEnd = Math.Min(attribOffset + 7, table.Length);
+				int headerPos = writeOffset++;
+				byte tempHeader = i < lastActiveGroup ? (byte)0x80 : (byte)0x00;
+
+				for (int j = 0; attribOffset + j < groupEnd; j++){
+					Attribute temp = table[attribOffset + j];
+					if (!temp.isActive()){
+						continue;
+					}
+
+					string tempName = temp.getName();
+					for (int k = 0; k < requestedCount; k++){
+						if (attributesNeedsUpdate[k].getName().Equals(tempName)){
+							tempHeader = (byte)(tempHeader + (1 << j));
+							byte[] val = temp.getValue();
+							if (val.Length > 0){
+								Buffer.BlockCopy(val, 0, result, writeOffset, val.Length);
+								writeOffset += val.Length;
 							}
 						}
 					}
 				}
 
-				// Updating last attribute group, set it as 0b0XXXXXXX
-				if (i == (updateGroups-1)){
-					if (anyAttribEnabled){
-						din.insertBefore(tempHeader);
-						lastGroupEmpty = false;
-					}
-				}
-				// Updating other than last attribute group
-				else{
-					if (!lastGroupEmpty){
-						tempHeader = (byte) (tempHeader+0x80);
-						din.insertBefore(tempHeader);
-					}else{
-						if(anyAttribEnabled){
-							din.insertBefore(tempHeader);
-							lastGroupEmpty = false;
-						}
-					}				
-				}
-
+				result[headerPos] = tempHeader;
 			}
-			
-			//add the counter of attributes sent
-			din.insertBefore((byte)attribCounter);
-			return din.getBytes();
+
+			return result;
 		}
 		
 		public void Debug(){
