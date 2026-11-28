@@ -336,6 +336,27 @@ All layouts are client.dll's; the values are retail's. Strings are `<u16 length 
 - No postage: the client has MailInfoCost and MailItemCost settings, whose values and use were not traced.
 - Not done: mail to several recipients with attachments (the client refuses it anyway), folders other than storing the name, and items forwarded to mail when the bag is full (`MailService.SystemMessage` and `Deliver` are there for it).
 
+### Mail recipient world
+
+The stock Compose window normalizes `World.Handle` into
+`SOE+MXO+World+Handle` (client.dll `0x620c9052` calls `0x6224f880`)
+and includes the qualified recipients in its out-of-band XML. The server
+validates the full address against the auth world's name before looking up the
+handle. It also accepts bare local handles. A foreign or malformed address
+refuses the entire send with `81 e6` DESTAVATARDOESNTEXIST followed by a System
+**Message Undeliverable** that asks for a local address. The original body, items and Info are never
+delivered to a same-named local character.
+
+Use `mail-recipient-world` at Mara Central (17000,495,2300). In **Phone >
+Email > New**, send a text-only **Address Check** to **Vector.QAFriend**.
+Verify the refusal, dismiss any Mail popup, then send
+`{"actor":"QAFriend","action":"mail-address-refused"}` to verify the empty
+local inbox and unchanged items and Info. Send **Address Check** to
+**QAFriend** and use `{"actor":"QAFriend","action":"mail-address-delivered"}`
+to verify exactly one local delivery. The headless regression also tests a
+foreign address carrying a pill and 200 Info, a mixed-world recipient list
+and invalid address prefixes.
+
 ### Mail read recovery
 
 Selecting an inbox row sends `81 f0` for the message ID. The server
