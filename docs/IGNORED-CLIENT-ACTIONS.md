@@ -74,7 +74,7 @@ some requests incorrectly.
 
 | Rank | Player impact | Stock action | Evidence and disposition |
 |---|---|---|---|
-| 1 | High | Vendor Buy `81 0e` | The ordinary purchase used to debit Info even when inventory placement failed. The vendor charge and item update now commit together. Full bags get the existing vendor refusal response. |
+| 1 | High | Vendor Buy `81 0e` | The vendor charge and item update commit together. [Refusals](ABILITY-ACQUISITION.md#vendor-buy-refusal) return the existing Buy failure response for both inventory items and ability codes. |
 | 2 | High | Marketplace List `81 2b` | The stock Lock Pick code trace uses container 0, slot 396. Source removal, posting and the [listing fee](#marketplace-listing-fee) commit together. A [refused listing](#marketplace-listing-refusal) returns `81 2c` with the original source and UI data. |
 | 3 | High | Marketplace Buy or De-list `81 26` | Checkout used to write the listing, bag, and wallets separately and could only deliver to the bag. Now it commits delivery, sale state and payment together. An ordinary item code returns through a known-abilities `5e` record. |
 | 3a | High | Secure Trade Accept `81 85` | Both accepted offers now [settle inventory and Info in one transaction](SECURE-TRADE.md#atomic-settlement). A failed final write closes the trade and keeps both participants' assets. |

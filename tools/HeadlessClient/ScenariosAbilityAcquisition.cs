@@ -20,7 +20,7 @@ public static partial class Scenarios
             async Task Buy(uint id,bool accept)
             {
                 int cursor=p.World.RpcSnapshot().Count;p.SkipReceived();p.SendRpc("81 0e "+Le(id)+" 00");
-                if(accept)await p.WaitForRpcAsync("81 0f");else{await p.WaitForTextAsync("purchase could not be completed");await Barrier();}
+                if(accept)await p.WaitForRpcAsync("81 0f");else{await p.WaitForTextAsync("purchase could not be completed");await p.WaitForRpcAsync("81 10 00 00 00 00 00");}
                 var raw=p.World.RpcSnapshot().Skip(cursor).ToArray();operations.Add(new{Step=step,Cursor=cursor,Records=raw.Select(r=>r.Hex).ToArray()});
                 if(accept)
                 {
