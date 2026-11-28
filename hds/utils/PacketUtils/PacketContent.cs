@@ -10,7 +10,19 @@ namespace hds
 
         public void AddHexBytes(String hexbytes)
         {
-            packet.append(StringUtils.hexStringToBytes(hexbytes));
+            if (string.IsNullOrEmpty(hexbytes)) return;
+            if ((hexbytes.Length & 1) != 0)
+            {
+                throw new FormatException("The input is not a valid hex string as its length is not a multiple of 2.");
+            }
+            int byteCount = hexbytes.Length >> 1;
+            int savedLength = packet.getSize();
+            Span<byte> dest = packet.GetAppendSpan(byteCount);
+            if (!StringUtils.TryDecodeHex(hexbytes, dest))
+            {
+                packet.Truncate(savedLength);
+                throw new FormatException("The input is not a valid hex string as it contains a non-hex character.");
+            }
         }
 
         public void AddInt16(Int16 value, int reversed)

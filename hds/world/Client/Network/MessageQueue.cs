@@ -311,11 +311,21 @@ namespace hds
             lock(RPCMessagesQueue.SyncRoot)
             {
                 bool anyRemaining = false;
-                for(int i=RPCMessagesQueue.Count-1;i>=0;i--)
+                int write = 0;
+                for (int i = 0; i < RPCMessagesQueue.Count; i++)
                 {
                     SequencedMessage msg = (SequencedMessage)RPCMessagesQueue[i];
-                    if(msg.DiscardUnassignedWorldRpc(world,transport)) RPCMessagesQueue.RemoveAt(i);
-                    else if(msg.RpcWorldGeneration.HasValue && msg.rpcNumber < 0) anyRemaining = true;
+                    if (msg.DiscardUnassignedWorldRpc(world, transport))
+                    {
+                        continue;
+                    }
+                    if (msg.RpcWorldGeneration.HasValue && msg.rpcNumber < 0) anyRemaining = true;
+                    if (write != i) RPCMessagesQueue[write] = msg;
+                    write++;
+                }
+                if (write < RPCMessagesQueue.Count)
+                {
+                    RPCMessagesQueue.RemoveRange(write, RPCMessagesQueue.Count - write);
                 }
                 if(!anyRemaining) Volatile.Write(ref hasUnassignedWorldRpcs, 0);
             }
@@ -390,12 +400,25 @@ namespace hds
         {
             lock (RPCMessagesQueue.SyncRoot)
             {
-                for (int i = RPCMessagesQueue.Count - 1; i >= 0; i--)
+                if (enteringLoadingArea)
                 {
-                    if (enteringLoadingArea || ((SequencedMessage)RPCMessagesQueue[i]).rpcNumber >= 0)
+                    RPCMessagesQueue.Clear();
+                    return;
+                }
+                int write = 0;
+                for (int i = 0; i < RPCMessagesQueue.Count; i++)
+                {
+                    SequencedMessage msg = (SequencedMessage)RPCMessagesQueue[i];
+                    if (msg.rpcNumber >= 0)
                     {
-                        RPCMessagesQueue.RemoveAt(i);
+                        continue;
                     }
+                    if (write != i) RPCMessagesQueue[write] = msg;
+                    write++;
+                }
+                if (write < RPCMessagesQueue.Count)
+                {
+                    RPCMessagesQueue.RemoveRange(write, RPCMessagesQueue.Count - write);
                 }
             }
         }
@@ -556,9 +579,19 @@ namespace hds
             ReliableObjectCount = 0;
         }
 
+        public const int MaxRawMessages = 64;
+
         public void addRawMessage(byte[] messageBlock)
         {
-            rawMessages.Add(messageBlock);
+            if (messageBlock == null || messageBlock.Length == 0) return;
+            lock (rawMessages.SyncRoot)
+            {
+                if (rawMessages.Count >= MaxRawMessages)
+                {
+                    return;
+                }
+                rawMessages.Add(messageBlock);
+            }
         }
 
     }

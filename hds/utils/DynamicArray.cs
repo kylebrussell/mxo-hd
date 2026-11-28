@@ -93,6 +93,14 @@ namespace hds
 			_length += count;
 		}
 
+		internal void Truncate(int newLength)
+		{
+			if (newLength >= 0 && newLength < _length)
+			{
+				_length = newLength;
+			}
+		}
+
 		public void insertBefore(byte data)
 		{
 			EnsureCapacity(_length + 1);

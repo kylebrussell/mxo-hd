@@ -172,19 +172,21 @@ namespace hds{
             // else it resends the unencrypted packet 
             // 
 
-            // UDP Session is not established and packet is not encrypted - so its the first packet we know
+            // UDP Session is not established and packet is not encrypted - only a verified >=15-byte init is accepted.
             if (!Store.currentClient.playerData.getUDPSEssionEstablished() && !encryptedPacket){
+	            Output.WriteUnencryptedPacketLog(packetData,"CLIENT");
 	            if (packetData.Length >= 15)
 	            {
 		            var tempIniHelper = new PlayerHandler();
-		            tempIniHelper.processInitUDPSession(ref packetData);
-		            Output.WriteUnencryptedPacketLog(packetData,"CLIENT");
+		            if (!tempIniHelper.processInitUDPSession(ref packetData))
+		            {
+			            return;
+		            }
 		            Store.currentClient.playerData.setUDPSessionEstablished(true);
 		            Store.currentClient.playerData.setPss(0x00);
 		            QueueWorldSetup(tempIniHelper, attributesFirst: false);
-		            return;    
 	            }
-                
+	            return;
             }
 
             if (!encryptedPacket){

@@ -257,7 +257,7 @@ namespace hds
             SocialHandler.SendCrewInfo(client, crewId);
         }
 
-        public void processInitUDPSession(ref byte[] packetData)
+        public bool processInitUDPSession(ref byte[] packetData)
         {
             PacketReader reader = new PacketReader(packetData);
             reader.SetOffsetOverrideValue(11);
@@ -269,7 +269,7 @@ namespace hds
             if (sessionKey == null)
             {
                 Output.WriteLine("World: refused a UDP session for character " + requestedCharId + " (no verified margin session holds it)");
-                return;
+                return false;
             }
             // From here on this session is encrypted with the key margin sent this login, not a key everyone knows.
             Store.currentClient.UseSessionKey(sessionKey);
@@ -283,11 +283,12 @@ namespace hds
             byte[] response = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x05 };
             for (int i = 0; i < 5; i++)
             {
-                Store.currentClient.messageQueue.addRawMessage(response);    
+                Store.currentClient.messageQueue.addRawMessage(response);
             }
-            
+
             Store.currentClient.FlushQueue();
             Store.margin.SendUDPSessionReply(Store.currentClient.playerData.getCharID());
+            return true;
         }
 
         public void processGetBackgroundRequest(ref byte[] packetData)
