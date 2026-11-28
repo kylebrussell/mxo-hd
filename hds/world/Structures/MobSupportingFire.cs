@@ -7,7 +7,7 @@ namespace hds
     internal static class MobSupportingFire
     {
         internal static bool CanFireAt(Mob mob, double distance) =>
-            MobAggro.OpensFire(mob.getWeapon(), distance) && ControlActions.CanUseWeapons(TimedEffects.ForMob(mob).Effects);
+            MobAggro.OpensFire(mob.getWeapon(), distance) && ControlActions.CanUseWeapons(mob);
 
         // True while the NPC has a clear, in-range firing position, including between shots.
         internal static bool TryFire(WorldClient player, Mob mob, double distance, double now)

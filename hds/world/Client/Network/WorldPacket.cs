@@ -154,13 +154,26 @@ namespace hds
 
         internal void PruneUnassignedWorldRpcs(int world,long transport)
         {
-            RPCMessages.RemoveAll(message =>
+            int count = RPCMessages.Count;
+            if (count == 0) return;
+
+            int write = 0;
+            for (int i = 0; i < count; i++)
             {
-                if (!message.DiscardUnassignedWorldRpc(world, transport)) return false;
-                if (IsModifierRpc(message)) modifierRpcCount--;
-                if (message.TimedViewWithRpc is { } view) ObjectMessages.Remove(view);
-                return true;
-            });
+                SequencedMessage message = RPCMessages[i];
+                if (message.DiscardUnassignedWorldRpc(world, transport))
+                {
+                    if (IsModifierRpc(message)) modifierRpcCount--;
+                    if (message.TimedViewWithRpc is { } view) ObjectMessages.Remove(view);
+                    continue;
+                }
+                if (write != i) RPCMessages[write] = message;
+                write++;
+            }
+            if (write < count)
+            {
+                RPCMessages.RemoveRange(write, count - write);
+            }
         }
 
         internal int EstimateMaxPlaintextSize()

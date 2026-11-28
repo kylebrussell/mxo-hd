@@ -5,18 +5,23 @@ namespace hds
     /// <summary>Action gates in tempmods.py PowerlessInit, StunMezCommonInit, DisarmedInit and EnrageInit.</summary>
     public static class ControlActions
     {
-        private static bool Has(TimedEffects.Holder holder, UInt16 state) => holder.HasAt(state, TimeUtils.GetSimTimeSeconds());
-        public static bool Incapacitated(TimedEffects.Holder holder) => Has(holder, TempMods.StunAbility) || Has(holder, TempMods.MezAbility);
-        public static bool CanMove(TimedEffects.Holder holder) => !Incapacitated(holder) && !Has(holder, TempMods.RootedAbility);
-        public static bool CanUseAbilities(TimedEffects.Holder holder) => !Incapacitated(holder) && !Has(holder, TempMods.PowerlessAbility);
-        public static bool CanUseWeapons(TimedEffects.Holder holder) => !Incapacitated(holder) && !Has(holder, TempMods.DisarmedAbility);
+        private static bool Has(TimedEffects.Holder holder, UInt16 state) =>
+            holder.HasActiveEffects && holder.HasAt(state, TimeUtils.GetSimTimeSeconds());
+        public static bool Incapacitated(TimedEffects.Holder holder) =>
+            holder.HasActiveEffects && holder.HasAnyStateAt(TempMods.StunAbility, TempMods.MezAbility, TimeUtils.GetSimTimeSeconds());
+        public static bool CanMove(TimedEffects.Holder holder) =>
+            !holder.HasActiveEffects || !holder.HasAnyStateAt(TempMods.StunAbility, TempMods.MezAbility, TempMods.RootedAbility, TimeUtils.GetSimTimeSeconds());
+        public static bool CanUseAbilities(TimedEffects.Holder holder) =>
+            !holder.HasActiveEffects || !holder.HasAnyStateAt(TempMods.StunAbility, TempMods.MezAbility, TempMods.PowerlessAbility, TimeUtils.GetSimTimeSeconds());
+        public static bool CanUseWeapons(TimedEffects.Holder holder) =>
+            !holder.HasActiveEffects || !holder.HasAnyStateAt(TempMods.StunAbility, TempMods.MezAbility, TempMods.DisarmedAbility, TimeUtils.GetSimTimeSeconds());
         // ConfuseInit in tempmods.py locks these three interlock inputs. Free casts still use CanUseAbilities.
         public static bool CanChangeTactic(TimedEffects.Holder holder) => !Has(holder, TempMods.ConfuseAbility);
         internal static bool CanPerformSpecialMove(TimedEffects.Holder holder, UInt16 ability) =>
             !Has(holder, TempMods.ConfuseAbility) || !CombatStyles.IsSpecialMove(ability);
 
         public static bool CanPerformSpecialMove(WorldClient client, UInt16 ability) =>
-            CanPerformSpecialMove(TimedEffects.ForPlayer(client).Effects, ability);
+            !TimedEffects.TryGetPlayerEffects(client, out var subject) || CanPerformSpecialMove(subject.Effects, ability);
 
         internal static bool CanChangeInterlockTarget(TimedEffects.Holder holder) => !Has(holder, TempMods.EnrageAbility);
 
@@ -25,9 +30,19 @@ namespace hds
         internal static bool CanGainBlockInnerStrength(TimedEffects.Holder holder) => !Has(holder, TempMods.EnrageAbility);
 
         public static bool CanWithdraw(TimedEffects.Holder holder) =>
-            !Incapacitated(holder) && !Has(holder, TempMods.EnrageAbility) && !Has(holder, TempMods.ConfuseAbility);
-        public static bool CanUseAbilities(WorldClient client) => !client.playerData.isDead && !client.playerData.duelDeath && CanUseAbilities(TimedEffects.ForPlayer(client).Effects);
-        public static bool CanMove(WorldClient client) => !client.playerData.isDead && !client.playerData.duelDeath && CanMove(TimedEffects.ForPlayer(client).Effects);
+            !holder.HasActiveEffects || (!holder.HasAnyStateAt(TempMods.StunAbility, TempMods.MezAbility, TempMods.EnrageAbility, TimeUtils.GetSimTimeSeconds()) && !Has(holder, TempMods.ConfuseAbility));
+        public static bool CanUseAbilities(WorldClient client) =>
+            !client.playerData.isDead && !client.playerData.duelDeath &&
+            (!TimedEffects.TryGetPlayerEffects(client, out var subject) || CanUseAbilities(subject.Effects));
+        public static bool CanMove(WorldClient client) =>
+            !client.playerData.isDead && !client.playerData.duelDeath &&
+            (!TimedEffects.TryGetPlayerEffects(client, out var subject) || CanMove(subject.Effects));
+        internal static bool Incapacitated(Mob mob) =>
+            TimedEffects.TryGetMobEffects(mob, out var subject) && Incapacitated(subject.Effects);
+        internal static bool CanMove(Mob mob) =>
+            !TimedEffects.TryGetMobEffects(mob, out var subject) || CanMove(subject.Effects);
+        internal static bool CanUseWeapons(Mob mob) =>
+            !TimedEffects.TryGetMobEffects(mob, out var subject) || CanUseWeapons(subject.Effects);
 
         public static void CorrectPosition(WorldClient client)
         {
