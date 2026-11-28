@@ -133,6 +133,23 @@ kept.”, both crews and 500 Info still in the Faction bank. Send
 QAPeerCrew's bank and release the fixture fault. Repeat Disband, then
 relog. The faction is gone and QACrew is still present.
 
+### Atomic crew member removal
+
+The crew roster's **Remove** action sends `72 02 <character id u32>`.
+The server checks the active captain and commits the member deletion and
+the character's crew and faction resets together. The roster update is
+sent after commit. A failed write keeps the member in both groups and
+reports “The roster was kept.” in chat.
+
+Use `crew-member-removal-atomic` on Mara NAV. From the people icon
+open **Crew**, right-click QAFriend in the roster and choose **Remove**.
+The disposable SQL check blocks the character write. QAFriend stays in
+the roster and the bank stays at 200. Submit
+`{"actor":"QAFriend","action":"crew-removal-retry"}` and wait for the
+deposit confirmation. Remove QAFriend again in the same session. Expect
+`72 02`, QAFriend gone, and CSR still captain in QAFaction. Relog and
+verify the member is still absent and the crew bank is 201.
+
 ## Marketplace
 
 Use the `marketplace-breadth` mode. QAFriend lists a Code Bit 1 for 300

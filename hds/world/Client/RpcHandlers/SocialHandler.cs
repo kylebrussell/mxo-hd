@@ -844,26 +844,44 @@ namespace hds
                 {
                     var db = Store.dbManager.WorldDbHandler;
                     UInt32 crewId = CrewIdOf(client);
-                    if (!IsCaptain(client, crewId))
+                    if (crewId == 0)
                     {
                         return;
                     }
 
                     List<CrewMember> members = CrewMembersOf(crewId);
-                    if (!members.Any(m => m.charId == target))
+                    WorldClient gone = FindOnlineByCharId(target);
+                    if (SocialBot.IsBot(gone))
                     {
-                        return;
+                        if (!IsCaptain(client, crewId) || !members.Any(m => m.charId == target))
+                            return;
+                        SocialBot.SetCrew(gone, 0);
+                    }
+                    else
+                    {
+                        try
+                        {
+                            if (!db.EjectCrewMember(me, crewId, target))
+                            {
+                                Send(client, ServerPackets.BuildSystemChatMessage("Only the crew captain can remove a current crew member.", "BROADCAST"));
+                                return;
+                            }
+                        }
+                        catch (DbException error)
+                        {
+                            Output.WriteDebugLog($"[SOCIAL] Crew member removal rolled back crew={crewId} member={target}: {error.Message}");
+                            Send(client, ServerPackets.BuildSystemChatMessage(
+                                "The crew member could not be removed. The roster was kept.", "BROADCAST"));
+                            return;
+                        }
                     }
 
-                    db.RemoveMemberFromCrew(target, crewId);
-                    SocialBot.SetCrew(FindOnlineByCharId(target), 0);
                     byte[] removed = SocialPackets.LeftGroup(type, target);
                     foreach (CrewMember member in members)
                     {
                         Send(FindOnlineByCharId(member.charId), removed);
                     }
 
-                    WorldClient gone = FindOnlineByCharId(target);
                     if (gone != null)
                     {
                         SetOwnGroupIds(gone, 0, 0, null);
