@@ -1,12 +1,13 @@
 using System.Text;
 using System.Text.Json;
+using hds;
 using HeadlessClient;
 
 namespace NativeQa.Modes;
 
 public class SocialBreadthMode : NativeQaMode
 {
-    private const uint CaptainCrew = 9101;
+    protected const uint CaptainCrew = 9101;
     private const uint PeerCrew = 9102;
     private const uint FactionId = 9103;
     private const string Captain = "CSR_Tester";
@@ -21,7 +22,7 @@ public class SocialBreadthMode : NativeQaMode
 
     public SocialBreadthMode() : this(seedFaction: true) { }
 
-    protected SocialBreadthMode(bool seedFaction)
+    protected SocialBreadthMode(bool seedFaction, bool atomicFounding = false)
     {
         this.seedFaction = seedFaction;
         uint faction = seedFaction ? FactionId : 0;
@@ -33,20 +34,37 @@ public class SocialBreadthMode : NativeQaMode
         string instructions = seedFaction
             ? "CSR_Tester captains QACrew, the leading crew of the pre-seeded QAFaction. QAOther captains QAPeerCrew at rank 5."
             : "CSR_Tester and QAOther captain unaffiliated crews. Target QAOther, open Organization → Faction, use Name, then Recruit.";
-        Plan = new(new ushort[] { 2 }, 17000, 2300,
+        int z = atomicFounding ? 6400 : 2300;
+        string[] atomicSteps = {
+            "CSR and QAOther face one another on open Mara NAV at (17000,495,6400) and (17220,495,6400). Use /target QAOther. Open the people icon above chat, then Organization > Faction.",
+            "Use Modify to enter QARetryFaction. Click Recruit with QAOther targeted. The disposable SQL CHECK refuses the character membership write. Expect [SOCIAL] Faction founding rolled back, visible 'Your crew was kept.', creation error 7b and no invite. Dismiss the error and verify Modify and Recruit become active in the same session.",
+            "Open Crew from the people icon. Deposit 1 Info to move from 1000 to 999 and clear the fixture's fault predicate. Crew bank is now 1.",
+            "Retarget QAOther if needed, open Faction, set the same name QARetryFaction and click Recruit again. Expect a 7c faction status for CSR and 6e 01 to QAOther.",
+            """After the retry, send {"actor":"QAOther","action":"social","step":"faction-answer","accept":true}. Choose More in Faction. Expect QACrew at rank 1 and QAPeerCrew at rank 5. Check the roster after relog."""
+        };
+        var membership = new[] { $"""
+            {factionInsert}
+            INSERT INTO crews (id,crew_name,master_player_handle,money,org,faction_id,faction_rank) VALUES
+                ({CaptainCrew},'QACrew','{Captain}',0,1,{faction},{captainRank}),
+                ({PeerCrew},'QAPeerCrew','{PeerCaptain}',0,1,{faction},{peerRank});
+            UPDATE characters SET crewId={CaptainCrew},factionId={faction} WHERE charId=110;
+            UPDATE characters SET x=17120,y=495,z={z} WHERE handle='{Member}';
+            UPDATE characters SET x=17220,y=495,z={z},crewId={PeerCrew},factionId={faction} WHERE handle='{PeerCaptain}';
+            INSERT INTO crew_members (crew_id,char_id,is_captain,is_first_mate,created_at)
+                SELECT crewId,charId,1,0,NOW() FROM characters WHERE charId=110 OR handle='{PeerCaptain}';
+            """ };
+        if (atomicFounding)
+            membership = membership.Append("""
+                UPDATE characters SET cash=1000,rotation=64 WHERE charId=110;
+                UPDATE characters SET rotation=192 WHERE handle='QAOther';
+                UPDATE characters SET x=16880 WHERE handle='QAFriend';
+                """)
+                .Append(Scenarios.FactionFoundingFaultSql(CaptainCrew)).ToArray();
+        Plan = new(new ushort[] { 2 }, 17000, z,
             Array.Empty<string>(), new[] { "UPDATE characters SET y=495 WHERE charId=110;" },
-            new[] { $"""
-                {factionInsert}
-                INSERT INTO crews (id,crew_name,master_player_handle,money,org,faction_id,faction_rank) VALUES
-                    ({CaptainCrew},'QACrew','{Captain}',0,1,{faction},{captainRank}),
-                    ({PeerCrew},'QAPeerCrew','{PeerCaptain}',0,1,{faction},{peerRank});
-                UPDATE characters SET crewId={CaptainCrew},factionId={faction} WHERE charId=110;
-                UPDATE characters SET x=17120,y=495,z=2300 WHERE handle='{Member}';
-                UPDATE characters SET x=17220,y=495,z=2300,crewId={PeerCrew},factionId={faction} WHERE handle='{PeerCaptain}';
-                INSERT INTO crew_members (crew_id,char_id,is_captain,is_first_mate,created_at)
-                    SELECT crewId,charId,1,0,NOW() FROM characters WHERE charId=110 OR handle='{PeerCaptain}';
-                """ },
-            readyMessages: new[] { instructions + " See docs/GAMEPLAY-BREADTH-PEERS.md." });
+            membership,
+            environmentOverrides: atomicFounding ? new() { ["MXO_AGGRO"] = "0", ["MXO_MOB_WANDER"] = "0" } : null,
+            readyMessages: atomicFounding ? atomicSteps : new[] { instructions + " See docs/GAMEPLAY-BREADTH-PEERS.md." });
     }
 
     public override async Task<byte[]> AfterStartAsync(NativeQaBootstrapContext context)
@@ -167,4 +185,30 @@ public sealed class FactionFoundingMode : SocialBreadthMode
     public FactionFoundingMode() : base(seedFaction: false) { }
 
     public override string Name => "faction-founding";
+}
+
+public sealed class AtomicFactionFoundingMode : SocialBreadthMode
+{
+    public AtomicFactionFoundingMode() : base(seedFaction: false, atomicFounding: true) { }
+
+    public override string Name => "faction-founding-atomic";
+
+    public override async Task<byte[]> AfterStartAsync(NativeQaBootstrapContext context)
+    {
+        await base.AfterStartAsync(context);
+        NavMesh.UseDirectory(Path.Combine(context.RepositoryRoot!, "data", "navmesh"));
+        foreach (int x in new[] { Plan.X, 16880, 17220 })
+            Check.That(NavMesh.Locate(1, x, 495, Plan.Z, out var stand) && !stand.indoors && stand.floorY + 95 == 495,
+                "CSR and the helpers start on open NAV");
+        var db = context.OwnedDatabase!;
+        Check.Equal(1L, await db.LongAsync("SELECT COUNT(*) FROM information_schema.TABLE_CONSTRAINTS " +
+            "WHERE CONSTRAINT_SCHEMA=DATABASE() AND TABLE_NAME='characters' AND CONSTRAINT_NAME='qa_faction_founder_update'"),
+            "The disclosed membership write fault is installed");
+        if (context.StockProbe is not { } actor) return Array.Empty<byte>();
+        await actor.EnterWorldAsync();
+        NativeQaReadiness.RequireNoAmbientAggro(context.ActualServer!, actor);
+        await actor.WaitForViewNamedAsync("QAOther");
+        await Scenarios.ProveAtomicFactionFoundingAsync(actor, context.Helpers["QAOther"], db, CaptainCrew);
+        return Array.Empty<byte>();
+    }
 }

@@ -30,6 +30,13 @@ public class FactionPacketTests
     }
 
     [Fact]
+    public void FactionCreateErrorCarriesTheNameOffsetAndPositiveStatus()
+    {
+        Assert.Equal("7B070001000000040051414600",
+            ToHex(ServerPackets.BuildFactionCreateError("QAF")));
+    }
+
+    [Fact]
     public void FactionInfoLayoutMatchesDecodedFieldOrder()
     {
         uint charId = 0x11223344;
