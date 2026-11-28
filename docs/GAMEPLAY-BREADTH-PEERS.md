@@ -272,6 +272,23 @@ After the deposit, repeat Leave in the same session. Verify QACrew and
 its bank of 201 still appear in Crew, and Faction stays unaffiliated
 after relog.
 
+### Atomic faction rank changes
+
+Promote and Demote (`80 80`) now read the captain, both crews, and their
+current ranks under locks and save the new rank before broadcasting `7f`.
+A stale roster entry or a change in captain cannot override the persisted
+faction membership. A database refusal uses the stock generic rank error
+(`80 81` with an unmapped status) and reports in chat that the roster was kept.
+
+Use `faction-rank-atomic` at the verified Mara stand (17000,495,6400).
+In **Faction > More**, right-click **QAPeerCrew** and choose **Promote**.
+The disclosed disposable CHECK blocks rank 4 at peer crew bank 0.
+Dismiss the rank error if modal and verify that QAPeerCrew remains rank 5.
+Send `{"actor":"QAOther","action":"faction-rank-retry"}` and wait for the
+deposit to raise the peer crew bank to 1. Repeat Promote in the same
+session. QAPeerCrew should reach rank 4 and retain it after relog.
+Choose **Demote** on the same crew and check that it returns to rank 5.
+
 ## Marketplace
 
 Use the `marketplace-breadth` mode. QAFriend lists a Code Bit 1 for 300

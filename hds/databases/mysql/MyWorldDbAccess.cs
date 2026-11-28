@@ -1170,12 +1170,6 @@ namespace hds.databases{
 		        P("@char", charId), P("@crew", crewId));
         }
 
-        /// <summary>The crew's rank in its faction, 1 (leading) to 5.</summary>
-        public void SetCrewFactionRank(UInt32 crewId, ushort rank)
-        {
-	        NonQuery("UPDATE crews SET faction_rank = @rank WHERE id = @crew", P("@rank", (int) rank), P("@crew", crewId));
-        }
-
         public bool IsOnFriendList(UInt32 charId, UInt32 friendId)
         {
 	        object found = ScalarQuery("SELECT id FROM buddylist WHERE charId = @char AND friendId = @friend LIMIT 1",

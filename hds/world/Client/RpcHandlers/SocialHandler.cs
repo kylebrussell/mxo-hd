@@ -1185,11 +1185,6 @@ namespace hds
 
         // ---- faction ranks and removing a crew (80 80, 73) --------------------------------------------------------
 
-        /// <summary>The crew's rank in its faction (see <see cref="FactionRanks.Effective"/>).</summary>
-        private static ushort RankOf(Faction faction, Crew crew) =>
-            FactionRanks.Effective(crew.factionRank,
-                string.Equals(crew.characterMasterName, faction.masterPlayerHandle, StringComparison.OrdinalIgnoreCase));
-
         /// <summary>
         /// Client 80 80 &lt;crewId&gt; &lt;bPromote&gt;: a captain promotes or demotes another crew of the faction (faction
         /// members window, 0x620b2720 / 0x620b26a0). Success goes to every online member of the faction as 7f; a refusal
@@ -1204,26 +1199,22 @@ namespace hds
 
             UInt32 targetCrewId = BitConverter.ToUInt32(rpcData, 0);
             bool promote = rpcData[4] != 0;
-            var db = Store.dbManager.WorldDbHandler;
-            UInt32 factionId = FactionIdOf(client);
-            UInt32 myCrewId = CrewIdOf(client);
-            Faction faction = factionId != 0 ? db.FetchFaction(factionId) : null;
-            Crew mine = faction?.crews.FirstOrDefault(c => c.crewId == myCrewId);
-            Crew target = faction?.crews.FirstOrDefault(c => c.crewId == targetCrewId);
-
+            uint factionId = FactionIdOf(client);
+            uint myCrewId = CrewIdOf(client);
             uint status;
-            ushort newRank = 0;
-            if (mine == null || !IsCaptain(client, myCrewId))
+            ushort newRank;
+            try
             {
-                status = SocialPackets.FactionPromoterNotFound;
+                (status, newRank) = Store.dbManager.WorldDbHandler.ChangeFactionRank(
+                    client.playerData.getCharID(), myCrewId, factionId, targetCrewId, promote);
             }
-            else if (target == null)
+            catch (DbException error)
             {
-                status = SocialPackets.FactionPromoteeNotFound;
-            }
-            else
-            {
-                status = FactionRanks.Change(RankOf(faction, mine), RankOf(faction, target), promote, out newRank);
+                Output.WriteDebugLog($"[SOCIAL] Faction rank change rolled back crew={targetCrewId} faction={factionId}: {error.Message}");
+                // The stock 80 81 handler uses its generic rank error for an unmapped status.
+                Send(client, SocialPackets.FactionRankFailed(targetCrewId, promote, 0));
+                Send(client, ServerPackets.BuildSystemChatMessage("The faction rank change could not be saved. The roster was kept.", "BROADCAST"));
+                return;
             }
 
             if (status != SocialPackets.ResultOk)
@@ -1232,7 +1223,6 @@ namespace hds
                 return;
             }
 
-            db.SetCrewFactionRank(targetCrewId, newRank);
             SendToAll(OnlineWhere(c => FactionIdOf(c) == factionId), SocialPackets.FactionRank(targetCrewId, (byte) newRank));
             Output.WriteDebugLog("[SOCIAL] Crew " + targetCrewId + " is now rank " + newRank + " in faction " + factionId);
         }

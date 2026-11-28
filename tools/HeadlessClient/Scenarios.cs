@@ -297,6 +297,7 @@ public static partial class Scenarios
         new Scenario("crew-disband-atomic", AtomicCrewDisband, StillNpcs),
         new Scenario("crew-leave-atomic", AtomicCrewLeave, StillNpcs),
         new Scenario("faction-leave-atomic", AtomicFactionLeave, StillNpcs),
+        new Scenario("faction-rank-atomic", AtomicFactionRank, StillNpcs),
         new Scenario("datamine-tap-transfer-rules", DatamineTapTransferRules, StillNpcs),
         new Scenario("sati-partial-world", SatiPartialWorld, StillNpcs),
         new Scenario("sati-door-diagnostic", SatiDoorDiagnostic, StillNpcs),

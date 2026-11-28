@@ -51,7 +51,7 @@ public sealed class AtomicFactionEjectionMode : SocialBreadthMode
 
     internal static async Task<string> ReleaseFaultAsync(HeadlessPlayer actor)
     {
-        if (actor.Handle != Target) throw new ArgumentException("Use QAOther for the faction ejection retry.");
+        if (actor.Handle != Target) throw new ArgumentException("Use QAOther for the retry deposit.");
         await Scenarios.DepositOneCrewInfoAsync(actor);
         return "QAOther deposited 1 Info (999 remains)";
     }
