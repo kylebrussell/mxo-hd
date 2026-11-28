@@ -15,7 +15,9 @@ namespace hds
         private readonly AuthHandler _handler;
         private readonly AuthFrameBuffer _frameBuffer = new AuthFrameBuffer();
         private readonly Queue<byte[]> _pendingFrames = new Queue<byte[]>();
+        private readonly List<byte[]> _extractedScratch = new List<byte[]>(1);
         private readonly object _sessionLock = new object();
+        private long _lastActivityTick;
         private bool _processingFrame;
         private volatile bool _disconnected;
 
@@ -23,6 +25,20 @@ namespace hds
         {
             _authServer = server as AuthServer;
             _handler = new AuthHandler(this);
+            _lastActivityTick = Environment.TickCount64;
+        }
+
+        internal bool IsIdleExpired(long nowTick, int idleTimeoutMs)
+        {
+            if (_disconnected || IsDisposed || !IsConnected) return false;
+            lock (_sessionLock)
+            {
+                if (_disconnected || _processingFrame || _pendingFrames.Count > 0)
+                {
+                    return false;
+                }
+                return nowTick - _lastActivityTick >= idleTimeoutMs;
+            }
         }
 
         protected override void OnConnected()
@@ -30,6 +46,10 @@ namespace hds
             // Don't make a new handler here: the session can already have received its first packet when this runs (it
             // happens under load), and replacing the handler then lost the challenge, so the client's answer crashed the
             // server (found by tools/HeadlessClient). The constructor's handler is the only one.
+            lock (_sessionLock)
+            {
+                _lastActivityTick = Environment.TickCount64;
+            }
             Console.WriteLine($"AuthClient with Id {Id} connected!");
         }
 
@@ -39,6 +59,7 @@ namespace hds
             lock (_sessionLock)
             {
                 _pendingFrames.Clear();
+                _extractedScratch.Clear();
             }
 
             Console.WriteLine($"AuthClient with Id {Id} disconnected!");
@@ -48,7 +69,6 @@ namespace hds
         {
             if (size <= 0 || _disconnected) return;
 
-            List<byte[]> extracted = new List<byte[]>(1);
             byte[] firstToDispatch = null;
             bool dropSession = false;
             string dropReason = null;
@@ -56,10 +76,12 @@ namespace hds
             lock (_sessionLock)
             {
                 if (_disconnected) return;
+                _lastActivityTick = Environment.TickCount64;
+                _extractedScratch.Clear();
 
                 try
                 {
-                    _frameBuffer.Append(packet, (int)offset, (int)size, extracted);
+                    _frameBuffer.Append(packet, (int)offset, (int)size, _extractedScratch);
                 }
                 catch (Exception ex)
                 {
@@ -67,18 +89,18 @@ namespace hds
                     dropReason = ex.Message;
                 }
 
-                if (!dropSession && extracted.Count > 0)
+                if (!dropSession && _extractedScratch.Count > 0)
                 {
-                    if (_pendingFrames.Count + extracted.Count > MaxPendingFramesPerSession)
+                    if (_pendingFrames.Count + _extractedScratch.Count > MaxPendingFramesPerSession)
                     {
                         dropSession = true;
                         dropReason = "too many pipelined auth frames";
                     }
                     else
                     {
-                        for (int i = 0; i < extracted.Count; i++)
+                        for (int i = 0; i < _extractedScratch.Count; i++)
                         {
-                            _pendingFrames.Enqueue(extracted[i]);
+                            _pendingFrames.Enqueue(_extractedScratch[i]);
                         }
 
                         if (!_processingFrame && _pendingFrames.Count > 0)
@@ -88,6 +110,7 @@ namespace hds
                         }
                     }
                 }
+                _extractedScratch.Clear();
             }
 
             if (dropSession)
@@ -166,6 +189,7 @@ namespace hds
         {
             lock (_sessionLock)
             {
+                _lastActivityTick = Environment.TickCount64;
                 if (_disconnected || _pendingFrames.Count == 0)
                 {
                     _processingFrame = false;

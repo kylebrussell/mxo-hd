@@ -399,6 +399,9 @@ if ($Relaunch -or $NewInstance) {
         # Every later step in this run drives the instance just started.
         $ClientPid = $new.Id
         $summary.clientPid = $new.Id
+        $affinityHex = try { '0x' + ([Int64]$new.ProcessorAffinity).ToString('X') } catch { 'unknown' }
+        $summary.clientAffinity = $affinityHex
+        Write-Verbose "[NativeQa] Launched matrix.exe pid=$($new.Id) affinity=$affinityHex"
     } else { $ok = $false }
 }
 

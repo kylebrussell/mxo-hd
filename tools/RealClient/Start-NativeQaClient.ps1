@@ -138,9 +138,11 @@ try {
         throw 'The launcher did not start a matrix client.'
     }
     $client = Get-Process -Id $child.ProcessId
+    $affinityHex = try { '0x' + ([Int64]$client.ProcessorAffinity).ToString('X') } catch { 'unknown' }
+    Write-Host "[NativeQa] Launched matrix.exe pid=$($client.Id) affinity=$affinityHex"
     $announced = $false
     try {
-        $launch = [pscustomobject]@{ Pid = $client.Id; StartTicks = $client.StartTime.ToUniversalTime().Ticks;
+        $launch = [pscustomobject]@{ Pid = $client.Id; ProcessorAffinity = $affinityHex; StartTicks = $client.StartTime.ToUniversalTime().Ticks;
             ClientDir = $privateClient; Server = $endpoint; Account = $state.Account; DefenderBaseline = $baseline }
         $launch | Select-Object Pid, StartTicks | ConvertTo-Json | Set-Content -LiteralPath $ownerPath
         $launch | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath $manifestPath
