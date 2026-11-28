@@ -15,6 +15,7 @@ namespace hds
         public const UInt32 CodeBit1 = 7332; // Code Bit 1 .. Code Bit 8 are 7332 .. 7339
         public const UInt32 HealthPill1 = 2399;
         internal const string AtomicFixture = "MXO_CORPSE_TAKE_ALL_QA";
+        private const double ReplacementCloseWaitSeconds = 2;
 
         /// <summary>
         /// Retail never auto-pushed 81 19 on NPC death (82/82 retail 81 19 replies answered client 80 c7).
@@ -95,10 +96,10 @@ namespace hds
             IEnumerable<UInt32> items, bool deferPresentation)
         {
             if (Environment.GetEnvironmentVariable(AtomicFixture) == "1" && client.playerData.getCharID() == 110 &&
-                source.getName() == "Loot Test Dummy" &&
+                (source.getName() == "Loot Test Dummy" || source.getName() == "Loot Spare Dummy") &&
                 (Store.config?.dbParams?.DatabaseName?.StartsWith("mxotest_", StringComparison.Ordinal) ?? false))
             {
-                info = 25;
+                info = source.getName() == "Loot Test Dummy" ? 25u : 35u;
                 items = new[] { CodeBit1, HealthPill1 };
             }
             lock (client.playerData.loot)
@@ -162,6 +163,57 @@ namespace hds
 
         private static void SendWindow(WorldClient client, NpcLootCache.Corpse corpse)
         {
+            var loot = client.playerData.loot;
+            if (loot.Replacement is NpcLootCache.PendingPresentation waiting)
+            {
+                waiting.Corpse = corpse;
+                return;
+            }
+            if (!loot.HasPresentedWindow)
+            {
+                SendWindowContents(client, corpse, clearCache: true);
+                return;
+            }
+
+            // The native client echoes 81 1a when it actually closes the previous visible window.
+            // Expose the new selection only after that echo, so the old close cannot clear it.
+            var pending = new NpcLootCache.PendingPresentation(client, corpse);
+            loot.Replacement = pending;
+            loot.HasPresentedWindow = false;
+            client.messageQueue.addRpcMessage(ServerPackets.BuildLootClosed());
+            // A client whose old window was already hidden can clear its cache without echoing the close.
+            DelayedActions.AfterFor(client, ReplacementCloseWaitSeconds, () => CompleteReplacement(client, pending, echoed: false));
+        }
+
+        internal static bool AcknowledgeWindowClose(WorldClient client)
+        {
+            var loot = client.playerData.loot;
+            NpcLootCache.PendingPresentation pending;
+            lock (loot) pending = loot.Replacement;
+            if (pending == null) return false;
+            CompleteReplacement(client, pending, echoed: true);
+            return true;
+        }
+
+        private static void CompleteReplacement(WorldClient client, NpcLootCache.PendingPresentation pending, bool echoed)
+        {
+            var data = client.playerData;
+            var loot = data.loot;
+            lock (loot)
+            {
+                if (!ReferenceEquals(loot.Replacement, pending)) return;
+                loot.Replacement = null;
+                if (!client.Alive || !data.getOnWorld() || data.worldChangePending ||
+                    data.worldGeneration != pending.World || !client.TransportFence.IsCurrent(pending.Transport) ||
+                    !loot.WindowOpen || !ReferenceEquals(loot.Current, pending.Corpse)) return;
+                SendWindowContents(client, pending.Corpse);
+                Output.WriteDebugLog($"[LOOT] Replacement window opened char={data.getCharID()} closeEcho={echoed}");
+            }
+            client.FlushQueue(false, true);
+        }
+
+        private static void SendWindowContents(WorldClient client, NpcLootCache.Corpse corpse, bool clearCache = false)
+        {
             List<UInt32> items = new List<UInt32>();
             List<byte> flags = new List<byte>();
             if (corpse != null)
@@ -178,8 +230,12 @@ namespace hds
                     flags.Add(0);
                 }
             }
-            foreach(var rpc in BuildLootPresentation(corpse?.Info ?? 0,items,flags))
-                client.messageQueue.addRpcMessage(rpc);
+            client.playerData.loot.HasPresentedWindow = true;
+            if (clearCache)
+                foreach (var reply in BuildLootPresentation(corpse?.Info ?? 0, items, flags))
+                    client.messageQueue.addRpcMessage(reply);
+            else
+                client.messageQueue.addRpcMessage(BuildLootWindow(corpse?.Info ?? 0, items, flags));
         }
 
         // Client6202088b returns a cached container without showing it. Close the previous UI
@@ -209,6 +265,7 @@ namespace hds
                 {
                     return false;
                 }
+                if (client.playerData.loot.Replacement != null) return true; // The request belongs to the old window.
                 NpcLootCache.Corpse corpse = client.playerData.loot.Current;
                 if (corpse == null)
                 {
@@ -272,10 +329,12 @@ namespace hds
             }
             if (result.Items == null)
             {
-                var retry = BuildLootPresentation(corpse.Info, corpse.Items, new byte[corpse.Items.Count]);
                 if (publication.Publish(client, ServerPackets.BuildSystemChatMessage(
-                        "The loot could not be saved. The items and information were kept.", "BROADCAST"), retry[0], retry[1]))
+                        "The loot could not be saved. The items and information were kept.", "BROADCAST")))
+                {
+                    SendWindow(client, corpse);
                     client.FlushQueue();
+                }
                 return false;
             }
 
@@ -324,6 +383,7 @@ namespace hds
             lock (client.playerData.loot)
             {
                 if (!client.playerData.loot.WindowOpen) return false;
+                if (client.playerData.loot.Replacement != null) return true;
                 NpcLootCache.Corpse corpse = client.playerData.loot.Current;
                 var claimed = new List<(byte[] Data, UInt32 Item)>();
                 if (corpse != null)

@@ -1,0 +1,3 @@
+district_id;district;handle;level;hpM;hpC;rsi;x_pos;y_pos;z_pos;rotation;is_defeated;is_lootable
+1;slums;Loot Test Dummy;1;1;1;B3010058;17200;495;6400;192;false;false
+1;slums;Loot Spare Dummy;1;1;1;B3010058;17160;495;6530;192;false;false

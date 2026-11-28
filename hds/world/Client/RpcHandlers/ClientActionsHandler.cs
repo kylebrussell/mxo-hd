@@ -91,6 +91,7 @@ namespace hds
         public static void CloseContainer(WorldClient client, byte[] body)
         {
             if (body?.Length != 0) return;
+            if (NpcLoot.AcknowledgeWindowClose(client)) return;
             //62087e20 writer-close also emits empty811a; never closes an unrelated compiler session.
             CraftingSession.End(client, ability: CraftingSession.WriterAbility);
             TutorialMission.Of(client)?.CloseContainer();

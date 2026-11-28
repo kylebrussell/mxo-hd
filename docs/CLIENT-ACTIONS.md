@@ -499,6 +499,19 @@ one Code Bit and one Antibiotic. The disposable SQL constraint blocks
 the Antibiotic in bag 4 after writing the wallet and the Bit stack.
 Move the item in bag 2 to bag 5, then retry to put the pill into bag 2.
 
+### Replacing an open corpse window
+
+The stock client sends an empty `81 1a` when a server close dismisses a
+visible corpse window. When replacing one, the server now sends the close
+first and waits for that echo before publishing `81 19`. Take All becomes
+available with the new window. A client whose old window was already
+hidden can open the replacement after a two-second fallback.
+
+In **corpse-window-replacement**, leave the first dummy's 25 Info and
+items unclaimed, then kill the second dummy. Take All should give only
+the second dummy's 35 Info and its two items. Close the window and use
+Search on the first corpse to collect its separate drops.
+
 ## Looting single items
 
 The 7.6005 client can't take one item from a corpse or container. Its container window (`viewcontainer.cpp`) handles three events: `CTAl` (Take All: `81 1f`), `CCls` (close: `81 1a`) and `MLUp` (a bag item dropped onto the window: `81 21 <slot>`). The single-item request `81 1b` and the take-the-information request `81 1d` are compiled in, but nothing in client.dll constructs or sends them: their constructors and senders have no calls, jumps, or pointers in code or data. The stock client therefore loots only through Take All. For other clients (the browser client) the server also accepts `81 1b` (`NpcLoot.TryTakeOne`, OURS): ObjectID is read as the item's GOID and InstanceData as the window row's leading u32, whose `0x08` top byte marks the mission item. One matching item is granted if it fits and answered with the same `81 20` claimed identity Take All uses; the corpse's Information stays for Take All, as `81 1d` is unhandled.

@@ -86,7 +86,7 @@ public static class NativeQaBootstrapChecks
                     Modes.DatamineTapTransferRulesMode or Modes.AtomicSecureTradeMode or Modes.AtomicBagStacksMode or
                     Modes.AtomicCentralStorageMode or Modes.AtomicBagSlotSwapMode or Modes.AtomicWeaponEquipmentMode or
                     Modes.AtomicClothingEquipmentMode or Modes.ShotgunEdgeMode or Modes.AtomicLuggableTransfersMode or
-                    Modes.AtomicGroupBankMode)
+                    Modes.AtomicGroupBankMode or Modes.CorpseWindowReplacementMode)
             {
                 probe = await HeadlessPlayer.LoginAsync(server.Address, "CSR_AbilityQA", "CSR_Tester", stockCharacterLoad: true);
                 Check.Equal(110u, probe.CharId, "Ability-sweep UI seed is delivered only to the owned CSR");
