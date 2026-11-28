@@ -465,6 +465,23 @@ an unsolicited header or message refresh after `81 fd`.
 
 `80 e0` / `80 e2`: `<name offset u16>` and the name, like the friend list's `80 d6`. The answers `80 e1` / `80 e3` are `08 00 <Status u32> <name>`. client.dll (0x62255bb0) adds the name and prints "Ignoring %s." for a success code and "Failed to ignore %s." otherwise. The server answers SUCCESS (`0x8e000084`), DESTAVATARDOESNTEXIST for a handle nobody has, IGNORENOTFOUND (`0x0e000058`) for removing someone not on the list. At world entry it sends each stored name with `LTOBJSRV_CONTACT_LIST_SETUP_PLAYER_IGNORED` (`0x8e00003d`); that this is what retail sent at login is a guess (the handler compares against that code, and the friend list uses its neighbours 3b/3c the same way). The client also filters chat and mail to and from ignored players itself. The server keeps each online player's list in memory, loaded at world entry and updated by `80 e0`/`80 e2`. It does not deliver area, crew, faction, team or room lines from an ignored handle to that listener. A tell to a player who ignores the sender is not delivered; the sender gets `2c <counter>` with LTOBJSRV_SOECHAT_IGNORING (`0x0e000054`). That status is the 23rd name in client.dll's `0x3d + n` chat result table, which is evidence that the original chat service refused such tells. Ignoring is one-way. [Mail checks saved recipient ignores](#mail-and-ignores), including while the recipient is offline.
 
+### Ignore list write refusal
+
+Adding an existing ignore is idempotent. A refused add or remove sends
+`80 e1` or `80 e3` with status `0x0e000068` and the requested name.
+The saved list and the online tell filter keep their previous entries.
+Successful operations use the existing success and absent-entry results.
+
+Use `ignore-list-write-refusal` at Mara (17000,495,6400). The disposable
+CHECK refuses adding QAFriend and a fixture foreign key refuses removing
+QAOther. Try **/ignore QAFriend**, then **Buddy List > Ignore > QAOther >
+Remove**. QAFriend stays absent and QAOther stays listed. Send
+`{"actor":"QAFriend","action":"ignore-save","step":"retry"}`. The helper
+checks the saved rows and both tell outcomes, then releases the faults.
+Repeat both edits and send
+`{"actor":"QAFriend","action":"ignore-save","step":"verify"}`. Only QAOther's
+tell should arrive. Relog and verify the saved list has only QAFriend.
+
 ## Subway in detail
 
 No retail capture has a subway ride, so the records are client.dll's and the rest is ours. The stations are the client's own (`data/subway_network.csv`, docs/WORLD-DATA.md "Subway network").

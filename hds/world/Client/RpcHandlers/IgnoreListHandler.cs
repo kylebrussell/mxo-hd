@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Data.Common;
 using System.IO;
 using System.Text;
 using hds.databases;
@@ -23,6 +24,7 @@ namespace hds
         public const UInt32 NoSuchPlayer = 0x0e000041;            // LTOBJSRV_SOECHAT_DESTAVATARDOESNTEXIST
         public const UInt32 NotIgnored = 0x0e000058;              // LTOBJSRV_SOECHAT_IGNORENOTFOUND
         public const UInt32 Ignoring = 0x0e000054;                // LTOBJSRV_SOECHAT_IGNORING (23rd name: 0x3d + index)
+        public const UInt32 SaveFailed = 0x0e000068;              // LTOBJSRV_SOECHAT_SUCCESSBADDATA (success bit clear)
 
         private static byte[] Record(byte opcode, string name, UInt32 status)
         {
@@ -73,9 +75,17 @@ namespace hds
                                            ";Database=" + config.dbParams.DatabaseName + ";User ID=" +
                                            config.dbParams.Username + ";Password=" + config.dbParams.Password +
                                            ";Pooling=true;");
-            conn.Open();
-            EnsureTable(conn);
-            return conn;
+            try
+            {
+                conn.Open();
+                EnsureTable(conn);
+                return conn;
+            }
+            catch
+            {
+                conn.Dispose();
+                throw;
+            }
         }
 
         internal static void EnsureTable(MySqlConnection conn)
@@ -123,18 +133,18 @@ namespace hds
 
         public virtual void Add(UInt32 charId, string handle)
         {
-            using (var conn = Open())
-            {
-                Cmd(conn, "INSERT IGNORE INTO ignorelist (charId, handle) VALUES (@c, @h)", charId, handle).ExecuteNonQuery();
-            }
+            using var conn = Open();
+            // Adding an existing ignore is idempotent. Every other database error must reach the caller.
+            using var cmd = Cmd(conn, "INSERT INTO ignorelist (charId, handle) VALUES (@c, @h) " +
+                "ON DUPLICATE KEY UPDATE handle = ignorelist.handle", charId, handle);
+            cmd.ExecuteNonQuery();
         }
 
         public virtual bool Remove(UInt32 charId, string handle)
         {
-            using (var conn = Open())
-            {
-                return Cmd(conn, "DELETE FROM ignorelist WHERE charId = @c AND handle = @h", charId, handle).ExecuteNonQuery() > 0;
-            }
+            using var conn = Open();
+            using var cmd = Cmd(conn, "DELETE FROM ignorelist WHERE charId = @c AND handle = @h", charId, handle);
+            return cmd.ExecuteNonQuery() > 0;
         }
     }
 
@@ -211,15 +221,26 @@ namespace hds
             {
                 return;
             }
-            string handle = MailPackets.HandleOf(name);
-            string known = handle.Length > 0 ? CanonicalHandle(handle) : null;
+            uint character = client.playerData.getCharID();
+            string known;
+            try
+            {
+                string handle = MailPackets.HandleOf(name);
+                known = handle.Length > 0 ? CanonicalHandle(handle) : null;
+                if (known != null) Db.Add(character, known);
+            }
+            catch (DbException error)
+            {
+                Output.WriteDebugLog($"[IGNORE] Add could not be saved char={character}: {error.Message}");
+                SocialHandler.Send(client, IgnoreListPackets.BuildAdded(name, IgnoreListPackets.SaveFailed));
+                return;
+            }
             if (known == null)
             {
                 SocialHandler.Send(client, IgnoreListPackets.BuildAdded(name, IgnoreListPackets.NoSuchPlayer));
                 return;
             }
-            Db.Add(client.playerData.getCharID(), known);
-            IgnoreFilter.Add(client.playerData.getCharID(), known);
+            IgnoreFilter.Add(character, known);
             SocialHandler.Send(client, IgnoreListPackets.BuildAdded(Prefix + known, IgnoreListPackets.Success));
         }
 
@@ -231,8 +252,19 @@ namespace hds
                 return;
             }
             string handle = MailPackets.HandleOf(name);
-            bool removed = Db.Remove(client.playerData.getCharID(), handle);
-            IgnoreFilter.Remove(client.playerData.getCharID(), handle);
+            uint character = client.playerData.getCharID();
+            bool removed;
+            try
+            {
+                removed = Db.Remove(character, handle);
+            }
+            catch (DbException error)
+            {
+                Output.WriteDebugLog($"[IGNORE] Remove could not be saved char={character}: {error.Message}");
+                SocialHandler.Send(client, IgnoreListPackets.BuildRemoved(name, IgnoreListPackets.SaveFailed));
+                return;
+            }
+            IgnoreFilter.Remove(character, handle);
             SocialHandler.Send(client, IgnoreListPackets.BuildRemoved(name, removed ? IgnoreListPackets.Success : IgnoreListPackets.NotIgnored));
         }
 
