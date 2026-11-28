@@ -895,7 +895,9 @@ namespace hds
                 Output.WriteDebugLog("[SOCIAL] Team cleanup failed: " + e.Message);
             }
 
-            Groups.RemoveSeeker(client.playerData.getCharID());
+            UInt32 leftCharId = client.playerData.getCharID();
+            Groups.RemoveSeeker(leftCharId);
+            IgnoreFilter.RemovePlayer(leftCharId);
             EmoteHandler.PlayerLeftWorld(client);
             try
             {
