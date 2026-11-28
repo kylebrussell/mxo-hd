@@ -660,18 +660,18 @@ namespace hds
             }
         }
 
-        private void TakeItem(UInt32 goId)
+        private bool TakeItem(UInt32 goId)
         {
-            if (itemSlots.TryGetValue(goId, out UInt16 slot))
-            {
-                UInt32 charId = client.playerData.getCharID();
-                if (Store.dbManager.WorldDbHandler.GetInventoryItems(charId).Any(item => item.Slot == slot && item.Goid == goId))
-                {
-                    Store.dbManager.WorldDbHandler.RemoveItemAtInventorySlot(slot, charId);
-                    new ServerPackets().sendInventoryItemDelete(slot, client);
-                }
-                itemSlots.Remove(goId);
-            }
+            if (!itemSlots.TryGetValue(goId, out UInt16 slot)) return false;
+
+            UInt32 charId = client.playerData.getCharID();
+            if (!Store.dbManager.WorldDbHandler.GetInventoryItems(charId).Any(item => item.Slot == slot && item.Goid == goId))
+                return false;
+
+            Store.dbManager.WorldDbHandler.RemoveItemAtInventorySlot(slot, charId);
+            new ServerPackets().sendInventoryItemDelete(slot, client);
+            itemSlots.Remove(goId);
+            return true;
         }
 
         private void Finish()
@@ -732,16 +732,17 @@ namespace hds
             }
         }
 
-        public bool OnGive(Mob npc)
+        public bool OnGive(Mob npc, UInt16? sourceSlot = null)
         {
             lock (sync)
             {
-                if (npc == null || npc.missionNpcId != ScarlettId || !npcs.Contains(npc) || !itemSlots.ContainsKey(DoorKey))
+                if (npc == null || npc.missionNpcId != ScarlettId || !npcs.Contains(npc) ||
+                    !itemSlots.TryGetValue(DoorKey, out UInt16 slot) || (sourceSlot.HasValue && sourceSlot.Value != slot) ||
+                    !TakeItem(DoorKey))
                 {
                     return false;
                 }
 
-                TakeItem(DoorKey);
                 CompleteGoal(GIVE_GOAL);
                 Say("Scarlett", "Thanks! You may pass.");
                 client.FlushQueue();

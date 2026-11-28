@@ -2,11 +2,26 @@ namespace HeadlessClient;
 
 public static partial class Scenarios
 {
-    /// <summary>A mission item dragged onto the NPC that wants it (client 66) completes the Give goal like the menu's
-    /// Give; dragged onto anyone else it stays in the bag.</summary>
+    public const uint GiveItemFixtureMission = 399903, GiveItemFixtureDisk = 6831;
+    private const ushort MovedDiskSlot = 6;
+
     private static async Task GiveMissionItemByDragging(ScenarioContext context)
     {
-        HeadlessPlayer player = (await context.AddPlayersInWorldAsync(new CharacterSeed("Giver") { Level = 50 }))[0];
+        var players = await context.AddPlayersInWorldAsync(
+            new CharacterSeed("Giver") { Level = 50, Organization = 3, X = TeamMissionFixture.HolderX, Y = TeamMissionFixture.Y, Z = TeamMissionFixture.Z },
+            new CharacterSeed("MenuGiver") { Level = 50, Organization = 3, X = TeamMissionFixture.HolderX, Y = TeamMissionFixture.Y, Z = TeamMissionFixture.Z });
+        await ProveGiveItemAsync(players[0], context.Database);
+        await ProveGiveItemAsync(players[1], context.Database, menu: true);
+    }
+
+    /// <summary>Take the disk from Courier and deliver the actual owned bag slot to Receiver.</summary>
+    public static async Task ProveGiveItemAsync(HeadlessPlayer player, ThrowawayDatabase db, bool menu = false)
+    {
+        string disk = $"FROM inventory WHERE charId={player.CharId} AND goid={GiveItemFixtureDisk}";
+        Task<long> DiskCount() => db.LongAsync($"SELECT COUNT(*) {disk}");
+        Task<long> DiskSlot() => db.LongAsync($"SELECT slot {disk}");
+        Task<long> Receipts() => db.LongAsync($"SELECT COUNT(*) FROM char_missions WHERE charId={player.CharId} AND missionId={GiveItemFixtureMission}");
+
         player.SendRpc("80 94 05 00 03");
         await player.WaitForTextAsync("Give Item Fixture");
         await player.WaitForRpcAsync("80 97 05 00");
@@ -14,22 +29,40 @@ public static partial class Scenarios
         await player.WaitForRpcAsync("80 99");
         player.SendRpc("80 9b 07 00 01");
         await player.WaitForRpcAsync("80 9c");
-        await player.WaitForRpcAsync("80 9e 00");
-        await EnterMissionArea(context, player);
 
         ViewCreation courier = await player.WaitForViewNamedAsync("Courier");
         ViewCreation receiver = await player.WaitForViewNamedAsync("Receiver");
         player.SendRpc($"80 c7 {MissionNpcId(courier)} 0d 00");
-        await WaitForDatabaseAsync(context, $"SELECT COUNT(*) FROM inventory WHERE charId={player.CharId} AND goid=6831", "1", "The disk in the bag");
-        long slot = await context.Database.LongAsync($"SELECT slot FROM inventory WHERE charId={player.CharId} AND goid=6831");
+        await player.WaitForRpcAsync("80 a0 01 06 00 01");
+        Check.Equal(1L, await DiskCount(), "Get grants exactly one tracked disk");
+        ushort source = checked((ushort)await DiskSlot());
 
-        // Onto the wrong NPC: refused, the disk stays
-        player.SendRpc($"66 {slot:x2} {Le(courier.ViewId)} {courier.SpawnId:x2} 00");
-        await player.WaitForTextAsync("They don't want that.");
+        async Task Refused(ushort slot, string target, ushort expectedSlot)
+        {
+            player.SendRpc($"66 {slot:x2} {target}");
+            await player.WaitForTextAsync("They don't want that.");
+            Check.Equal((long)expectedSlot, await DiskSlot(), "Refusal keeps the tracked disk in its current slot");
+            Check.Equal(0L, await Receipts(), "Refusal does not complete the mission");
+        }
 
-        // Onto the receiver: the goal is done and the disk goes
-        player.SendRpc($"66 {slot:x2} {Le(receiver.ViewId)} {receiver.SpawnId:x2} 00");
-        await WaitForDatabaseAsync(context, $"SELECT COUNT(*) FROM inventory WHERE charId={player.CharId} AND goid=6831", "0", "The disk handed over");
+        if (menu)
+            player.SendRpc($"80 c7 {MissionNpcId(receiver)} 0e 00");
+        else
+        {
+            Check.That(source != MovedDiskSlot, "The disk arrives before the reserved empty destination");
+            await Refused(source, MissionNpcId(courier), source);
+            await Refused(MovedDiskSlot, MissionNpcId(receiver), source);
+            string staleReceiver = $"{Le(receiver.ViewId)} {Le((ushort)(receiver.SpawnId ^ 1))}";
+            await Refused(source, staleReceiver, source);
+            player.SendRpc($"65 {Le(source)} {Le(MovedDiskSlot)} 00");
+            await player.WaitForRpcAsync($"65 {Le(source)} {Le(MovedDiskSlot)} 00");
+            await Refused(source, MissionNpcId(receiver), MovedDiskSlot);
+            player.SendRpc($"66 {MovedDiskSlot:x2} {MissionNpcId(receiver)}");
+            source = MovedDiskSlot;
+        }
+        await player.WaitForRpcAsync($"5f {Le(source)} 01");
         await player.WaitForTextAsync("Give item fixture completed.", TimeSpan.FromSeconds(15));
+        Check.Equal(0L, await DiskCount(), "Give consumes the requested disk");
+        Check.Equal(1L, await Receipts(), "Give awards exactly one receipt");
     }
 }

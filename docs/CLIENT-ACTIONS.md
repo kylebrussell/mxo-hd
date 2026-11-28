@@ -917,9 +917,9 @@ The 339 retail captures contain none of `5b`, `5c`, `60`, `61`, `66` or `80 c6`.
 - If the checks pass, the client prints "You hand over the %s." and sends `66`, leaving the slot alone. If they fail, it prints "The NPC will not accept your trade request." and sends nothing.
 - TargetID is `<view u16> <spawn id> 00`, as for trades.
 
-**What the server does with `66`.** It runs the NPC menu's Give (`80 c7 ... 0e`) for that NPC: the mission's Give goal takes the item (`5f`) and completes (`80 a0`). For the menu's Give, retail sent `5f 07 00 01`, `81 22`, then the goal.
+**What the server does with `66`.** The view and spawn must identify the current NPC, and the sent slot must hold the item tracked by the open Give goal. Successful hand-in uses the existing `5f` and `80 a0` flow. Right-click Give (`80 c7 ... 0e`) looks up the tracked slot because that request names only the NPC. For the menu's Give, retail sent `5f 07 00 01`, `81 22`, then the goal.
 
-If no Give goal wants the item from that NPC, the server says "They don't want that." That text is ours: the client has already said it handed the item over, and the item is still in the bag.
+A stale spawn, an unrelated slot or the wrong NPC leaves the item in the bag and the goal open. The server reports "They don't want that." when the request reached it. In `mission-give-drag-slot`, accept **Give Item Fixture** from Flood, Get the disk from Courier, move it to bag slot 6 and drag it onto Receiver. Bootstrap exercises the real item-move packet, rejects the old slot and stale spawn, and verifies one consumption and receipt. The separate headless menu control covers right-click Give.
 
 **`60`: compile.** The server serves owned uploaded bits/fragments and supported ordinary item codes with atomic source, bag and Info changes. See [the policy and gates](IGNORED-CLIENT-ACTIONS.md#round-2-priorities).
 - Layout: `60 <ObjectID u32> <Slot u16> <PersonalInventoryItem u8> <InvSlotOfToolUsed u8> <FromCrafting u8>`, 10 bytes.
