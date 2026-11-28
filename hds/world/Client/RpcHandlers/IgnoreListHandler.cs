@@ -142,8 +142,25 @@ namespace hds
     {
         private static readonly ConcurrentDictionary<UInt32, HashSet<string>> lists = new ConcurrentDictionary<UInt32, HashSet<string>>();
 
-        internal static void Load(UInt32 charId, IEnumerable<string> handles) =>
-            lists[charId] = new HashSet<string>(handles ?? Array.Empty<string>(), StringComparer.OrdinalIgnoreCase);
+        internal static int TrackedCharacterCount => lists.Count;
+
+        internal static void Load(UInt32 charId, IEnumerable<string> handles)
+        {
+            if (handles == null)
+            {
+                lists.TryRemove(charId, out _);
+                return;
+            }
+            var set = new HashSet<string>(handles, StringComparer.OrdinalIgnoreCase);
+            if (set.Count == 0)
+            {
+                lists.TryRemove(charId, out _);
+                return;
+            }
+            lists[charId] = set;
+        }
+
+        internal static void RemovePlayer(UInt32 charId) => lists.TryRemove(charId, out _);
 
         internal static void Add(UInt32 charId, string handle)
         {
@@ -175,8 +192,10 @@ namespace hds
 
         /// <summary>Resolves a handle to its spelling in the database, or null when nobody has it.</summary>
         internal static Func<string, string> CanonicalHandle = handle =>
-            Store.dbManager.WorldDbHandler.GetCharIdByHandle(handle) == 0 ? null : MySqlMailStore.HandleByCharId(
-                Store.dbManager.WorldDbHandler.GetCharIdByHandle(handle));
+        {
+            UInt32 charId = Store.dbManager.WorldDbHandler.GetCharIdByHandle(handle);
+            return charId == 0 ? null : MySqlMailStore.HandleByCharId(charId);
+        };
 
         private static string Prefix => ChatAddress.Prefix;
 
