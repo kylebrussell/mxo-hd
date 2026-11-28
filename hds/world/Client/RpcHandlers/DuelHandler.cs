@@ -580,16 +580,30 @@ namespace hds
             }
         }
 
+        private static int watchInFlight;
+
         /// <summary>Every two seconds: unanswered challenges run out, and duelists who drifted apart or lost each other stop.</summary>
         private static void Watch()
         {
+            if (System.Threading.Interlocked.Exchange(ref watchInFlight, 1) != 0)
+            {
+                return;
+            }
+
             try
             {
-                List<Duel> open;
+                List<Duel> open = null;
                 lock (Sync)
                 {
                     ExpireChallenges();
-                    open = Duels.Values.Distinct().ToList();
+                    if (Duels.Count > 0)
+                    {
+                        open = Duels.Values.Distinct().ToList();
+                    }
+                }
+                if (open == null)
+                {
+                    return;
                 }
                 foreach (Duel duel in open)
                 {
@@ -620,6 +634,10 @@ namespace hds
             catch (Exception ex)
             {
                 Output.WriteLine("[DUEL] Watch failed: " + ex);
+            }
+            finally
+            {
+                System.Threading.Volatile.Write(ref watchInFlight, 0);
             }
         }
 

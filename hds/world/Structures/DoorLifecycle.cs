@@ -161,76 +161,121 @@ namespace hds
             }
         }
 
+        private static int tickInFlight;
+
         private static void TickAll()
         {
-            List<WorldClient> clients;
-            lock (WorldServer.Clients)
+            if (Interlocked.Exchange(ref tickInFlight, 1) != 0)
             {
-                clients = new List<WorldClient>(WorldServer.Clients.Values);
+                return;
             }
 
-            foreach (WorldClient client in clients)
+            try
             {
+                if (WorldServer.Clients == null)
+                {
+                    return;
+                }
+
+                List<WorldClient> clients = WorldServer.RentClientSnapshot();
                 try
                 {
-                    if (client != null)
+                    double now = TimeUtils.GetSimTimeSeconds();
+                    for (int i = 0; i < clients.Count; i++)
                     {
-                        Tick(client, TimeUtils.GetSimTimeSeconds());
+                        WorldClient client = clients[i];
+                        try
+                        {
+                            if (client != null)
+                            {
+                                Tick(client, now);
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            Output.WriteLine("[DOOR] Tick failed: " + ex.Message);
+                        }
                     }
                 }
-                catch (Exception ex)
+                finally
                 {
-                    Output.WriteLine("[DOOR] Tick failed: " + ex.Message);
+                    WorldServer.ReturnClientSnapshot(clients);
                 }
+            }
+            catch (Exception ex)
+            {
+                Output.WriteLine("[DOOR] TickAll failed: " + ex.Message);
+            }
+            finally
+            {
+                Volatile.Write(ref tickInFlight, 0);
             }
         }
 
         public static void Tick(WorldClient client, double now)
         {
-            List<OpenDoor> remove = new List<OpenDoor>();
-            List<KeyValuePair<UInt16, UInt32>> stateChanges = new List<KeyValuePair<UInt16, UInt32>>();
+            List<OpenDoor> remove = null;
+            List<KeyValuePair<UInt16, UInt32>> stateChanges = null;
 
             lock (client.playerData.openDoors)
             {
+                if (client.playerData.openDoors.Count == 0)
+                {
+                    return;
+                }
+
                 foreach (OpenDoor door in client.playerData.openDoors)
                 {
                     DoorStage? next = NextStage(door, now);
                     if (next.HasValue)
                     {
                         door.Stage = next.Value;
+                        if (stateChanges == null) stateChanges = new List<KeyValuePair<UInt16, UInt32>>(4);
                         stateChanges.Add(new KeyValuePair<UInt16, UInt32>(door.ViewId,
                             next.Value == DoorStage.Closing ? StateClosing : StateClosed));
                     }
                     else if (ShouldRemove(door, now))
                     {
+                        if (remove == null) remove = new List<OpenDoor>(4);
                         remove.Add(door);
                     }
                 }
 
-                foreach (OpenDoor door in remove)
+                if (remove != null)
                 {
-                    client.playerData.openDoors.Remove(door);
+                    for (int i = 0; i < remove.Count; i++)
+                    {
+                        client.playerData.openDoors.Remove(remove[i]);
+                    }
                 }
             }
 
-            if (stateChanges.Count == 0 && remove.Count == 0)
+            if (stateChanges == null && remove == null)
             {
                 return;
             }
 
             ServerPackets packets = new ServerPackets();
-            foreach (KeyValuePair<UInt16, UInt32> change in stateChanges)
+            if (stateChanges != null)
             {
-                packets.SendUpdateViewStatePacket(client, change.Key, BuildStateUpdate(change.Value));
+                for (int i = 0; i < stateChanges.Count; i++)
+                {
+                    KeyValuePair<UInt16, UInt32> change = stateChanges[i];
+                    packets.SendUpdateViewStatePacket(client, change.Key, BuildStateUpdate(change.Value));
+                }
             }
 
-            foreach (OpenDoor door in remove)
+            if (remove != null)
             {
-                packets.SendUpdateViewStatePacket(client, door.ViewId, BuildResetUpdate());
-                client.FlushQueue();
-                packets.sendDeleteViewPacket(client, door.ViewId);
-                // Dropping the view lets the next use spawn the door again.
-                client.viewMan.removeViewByViewId(door.ViewId);
+                for (int i = 0; i < remove.Count; i++)
+                {
+                    OpenDoor door = remove[i];
+                    packets.SendUpdateViewStatePacket(client, door.ViewId, BuildResetUpdate());
+                    client.FlushQueue();
+                    packets.sendDeleteViewPacket(client, door.ViewId);
+                    // Dropping the view lets the next use spawn the door again.
+                    client.viewMan.removeViewByViewId(door.ViewId);
+                }
             }
 
             client.FlushQueue();

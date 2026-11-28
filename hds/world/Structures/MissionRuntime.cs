@@ -1341,35 +1341,61 @@ namespace hds
             }
         }
 
+        private static int tickInFlight;
+
         private static void TickAll()
         {
-            List<WorldClient> clients;
-            lock (WorldServer.Clients)
+            if (Interlocked.Exchange(ref tickInFlight, 1) != 0)
             {
-                clients = new List<WorldClient>(WorldServer.Clients.Values);
+                return;
             }
 
-            foreach (WorldClient client in clients)
+            try
             {
-                // Store.currentClient is per thread: the inventory and database code a tick reaches (a searched item going into
-                // the bag) reads it, so it's this client for the tick, as DelayedActions.AfterFor does
-                WorldClient previous = Store.currentClient;
+                if (WorldServer.Clients == null)
+                {
+                    return;
+                }
+
+                List<WorldClient> clients = WorldServer.RentClientSnapshot();
                 try
                 {
-                    if (client?.playerData?.missionProgress != null)
+                    for (int i = 0; i < clients.Count; i++)
                     {
-                        Store.currentClient = client;
-                        Tick(client);
+                        WorldClient client = clients[i];
+                        // Store.currentClient is per thread: the inventory and database code a tick reaches (a searched item going into
+                        // the bag) reads it, so it's this client for the tick, as DelayedActions.AfterFor does
+                        WorldClient previous = Store.currentClient;
+                        try
+                        {
+                            if (client?.playerData?.missionProgress != null)
+                            {
+                                Store.currentClient = client;
+                                Tick(client);
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            Output.WriteLine("[MISSION] Tick failed: " + ex.Message + " " + ex.StackTrace?.Split('\n').FirstOrDefault());
+                        }
+                        finally
+                        {
+                            Store.currentClient = previous;
+                        }
                     }
-                }
-                catch (Exception ex)
-                {
-                    Output.WriteLine("[MISSION] Tick failed: " + ex.Message + " " + ex.StackTrace?.Split('\n').FirstOrDefault());
                 }
                 finally
                 {
-                    Store.currentClient = previous;
+                    WorldServer.ReturnClientSnapshot(clients);
                 }
+            }
+            catch (Exception ex)
+            {
+                Output.WriteLine("[MISSION] TickAll failed: " + ex.Message);
+            }
+            finally
+            {
+                Volatile.Write(ref tickInFlight, 0);
             }
         }
 

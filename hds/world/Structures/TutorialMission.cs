@@ -112,24 +112,47 @@ namespace hds
             Output.WriteDebugLog("[TUTORIAL] Begins for charId " + client.playerData.getCharID());
         }
 
+        private static int tickInFlight;
+
         private static void TickAll()
         {
-            List<TutorialMission> missions;
-            lock (running)
+            if (Interlocked.Exchange(ref tickInFlight, 1) != 0)
             {
-                missions = new List<TutorialMission>(running);
+                return;
             }
 
-            foreach (TutorialMission mission in missions)
+            try
             {
-                try
+                List<TutorialMission> missions;
+                lock (running)
                 {
-                    mission.Tick(TimeUtils.GetSimTimeSeconds());
+                    if (running.Count == 0)
+                    {
+                        return;
+                    }
+                    missions = new List<TutorialMission>(running);
                 }
-                catch (Exception ex)
+
+                double now = TimeUtils.GetSimTimeSeconds();
+                for (int i = 0; i < missions.Count; i++)
                 {
-                    Output.WriteLine("[TUTORIAL] Tick failed: " + ex.Message);
+                    try
+                    {
+                        missions[i].Tick(now);
+                    }
+                    catch (Exception ex)
+                    {
+                        Output.WriteLine("[TUTORIAL] Tick failed: " + ex.Message);
+                    }
                 }
+            }
+            catch (Exception ex)
+            {
+                Output.WriteLine("[TUTORIAL] TickAll failed: " + ex.Message);
+            }
+            finally
+            {
+                Volatile.Write(ref tickInFlight, 0);
             }
         }
 

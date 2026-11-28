@@ -7,19 +7,31 @@ namespace hds{
 
 	public class ConsoleSocket{
 		
-		private TcpListener tcpListener;	 
-    	private Thread listenThread;
-		private bool mainThreadWorking;
-        private readonly int consoleport = NetworkBind.ConsolePort;
+		private readonly TcpListener tcpListener;	 
+    	private readonly Thread listenThread;
+		private volatile bool mainThreadWorking;
+        private readonly int consoleport;
 
 
-        public ConsoleSocket (){
+        public ConsoleSocket() : this(NetworkBind.ConsolePort)
+        {
+        }
+
+        internal ConsoleSocket(int port){
+			this.consoleport = port;
 			this.mainThreadWorking = true;
 			 
       		this.tcpListener = new TcpListener(NetworkBind.Address, consoleport);
 			Output.WriteLine("[Console] Server console operating on port " + consoleport);
-      		this.listenThread = new Thread(new ThreadStart(ListenForClients));
+      		this.listenThread = new Thread(new ThreadStart(ListenForClients))
+			{
+				IsBackground = true,
+				Name = "HdsConsoleSocket"
+			};
 		}
+
+		internal int BoundPort => ((IPEndPoint)this.tcpListener.LocalEndpoint).Port;
+		internal bool IsListenerAlive => this.listenThread.IsAlive;
 		
 		public void startServer(){
 			this.listenThread.Start();
@@ -27,58 +39,102 @@ namespace hds{
 		
 		public void stopServer(){
 			this.mainThreadWorking = false;
-			this.tcpListener.Stop();
+			try
+			{
+				this.tcpListener.Stop();
+			}
+			catch (Exception)
+			{
+				// Listener may already be stopped or never started.
+			}
 		}
 		
-		private  void ListenForClients(){
-  			this.tcpListener.Start();
+		private void ListenForClients(){
+			try
+			{
+				this.tcpListener.Start();
+			}
+			catch (Exception ex)
+			{
+				Output.WriteLine("[Console] Failed to start listener on port " + consoleport + ": " + ex.Message);
+				return;
+			}
 
-  			while (mainThreadWorking){
-    			// Create a new thread per connected client	
-    			TcpClient client = this.tcpListener.AcceptTcpClient();
-    		
-	  			NetworkStream clientStream = client.GetStream();
-				bool working = true;
-				
-	  			byte[] message = new byte[2048];
-	  			int bytesRead;
-				
-				Output.WriteLine("[Console] Console client Connected.");
-	  			
-				
-				// Receive TCP auth packets from the connected client.
-				while (working){
-	    			bytesRead = 0;
-	
-		    		try{ 
-						bytesRead = clientStream.Read(message, 0, 2048);
-					}
-					catch{break;}
-		
-		    		if (bytesRead == 0)
-		            	break;
-					
-					// Parse the received packet data
-					try{
-	    				
-						byte[] response = parseCommand(message,bytesRead);
-						
-						if(response.Length == 1 && response[0]==0x00)
-							break;
-						else
-							clientStream.Write(response,0,response.Length);
-						
-					}catch(Exception e){
-						Output.WriteLine("[Console] Server console Error\nDebug:"+e);
+			byte[] message = new byte[2048];
+			while (mainThreadWorking){
+				TcpClient client;
+				try
+				{
+					client = this.tcpListener.AcceptTcpClient();
+				}
+				catch (SocketException ex)
+				{
+					if (!mainThreadWorking)
+					{
 						break;
 					}
-	  			}
-	
-	  			Output.WriteLine("[Console] Console client closing");
-	  			client.Close();
-				clientStream.Close();
-					
-	  		}
+					Output.WriteLine("[Console] Accept socket error: " + ex.SocketErrorCode + " " + ex.Message);
+					continue;
+				}
+				catch (ObjectDisposedException)
+				{
+					break;
+				}
+				catch (Exception ex)
+				{
+					if (!mainThreadWorking)
+					{
+						break;
+					}
+					Output.WriteLine("[Console] Accept error: " + ex.Message);
+					continue;
+				}
+
+				if (!mainThreadWorking)
+				{
+					try { client.Close(); } catch { }
+					break;
+				}
+
+				using (client)
+				using (NetworkStream clientStream = client.GetStream())
+				{
+					Output.WriteLine("[Console] Console client Connected.");
+					while (mainThreadWorking)
+					{
+						int bytesRead;
+						try
+						{
+							bytesRead = clientStream.Read(message, 0, message.Length);
+						}
+						catch
+						{
+							break;
+						}
+
+						if (bytesRead == 0)
+						{
+							break;
+						}
+
+						try
+						{
+							byte[] response = parseCommand(message, bytesRead);
+							if (response.Length == 1 && response[0] == 0x00)
+							{
+								break;
+							}
+							clientStream.Write(response, 0, response.Length);
+						}
+						catch (Exception e)
+						{
+							Output.WriteLine("[Console] Server console Error\nDebug:" + e);
+							break;
+						}
+					}
+					Output.WriteLine("[Console] Console client closing");
+				}
+			}
 		}	
 		
 		private byte[] parseCommand(byte[] command,int length){

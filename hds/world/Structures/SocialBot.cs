@@ -429,30 +429,53 @@ namespace hds
             Output.WriteDebugLog("[SOCIALBOT] Removed");
         }
 
+        private static int watchInFlight;
+
         /// <summary>A bot whose owner is gone, or in another district, leaves too.</summary>
         private static void Watch()
         {
+            if (System.Threading.Interlocked.Exchange(ref watchInFlight, 1) != 0)
+            {
+                return;
+            }
+
             try
             {
-                List<Bot> orphans;
+                List<Bot> orphans = null;
                 lock (Sync)
                 {
-                    orphans = Bots.Where(b => !b.Owner.Alive || !b.Owner.playerData.getOnWorld() ||
-                                              b.Owner.playerData.getDistrictId() != b.Client.playerData.getDistrictId()).ToList();
-                    foreach (Bot b in orphans)
+                    if (Bots.Count == 0)
                     {
-                        Bots.Remove(b);
+                        return;
+                    }
+                    for (int i = Bots.Count - 1; i >= 0; i--)
+                    {
+                        Bot b = Bots[i];
+                        if (!b.Owner.Alive || !b.Owner.playerData.getOnWorld() ||
+                            b.Owner.playerData.getDistrictId() != b.Client.playerData.getDistrictId())
+                        {
+                            if (orphans == null) orphans = new List<Bot>();
+                            orphans.Add(b);
+                            Bots.RemoveAt(i);
+                        }
                     }
                 }
 
-                foreach (Bot b in orphans)
+                if (orphans != null)
                 {
-                    Remove(b.Client, b.Owner);
+                    for (int i = 0; i < orphans.Count; i++)
+                    {
+                        Remove(orphans[i].Client, orphans[i].Owner);
+                    }
                 }
             }
             catch (Exception ex)
             {
                 Output.WriteLine("[SOCIALBOT] Watch failed: " + ex);
+            }
+            finally
+            {
+                System.Threading.Volatile.Write(ref watchInFlight, 0);
             }
         }
     }
