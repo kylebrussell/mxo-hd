@@ -75,7 +75,7 @@ some requests incorrectly.
 | Rank | Player impact | Stock action | Evidence and disposition |
 |---|---|---|---|
 | 1 | High | Vendor Buy `81 0e` | The ordinary purchase used to debit Info even when inventory placement failed. The vendor charge and item update now commit together. Full bags get the existing vendor refusal response. |
-| 2 | High | Marketplace List `81 2b` | The stock Lock Pick code trace uses container 0, slot 396. The captured `5f 8c 01 00` and `81 2c` follow an atomic archive removal and posting. A [refused listing](#marketplace-listing-refusal) returns `81 2c` with the original source and UI data. |
+| 2 | High | Marketplace List `81 2b` | The stock Lock Pick code trace uses container 0, slot 396. Source removal, posting and the [listing fee](#marketplace-listing-fee) commit together. A [refused listing](#marketplace-listing-refusal) returns `81 2c` with the original source and UI data. |
 | 3 | High | Marketplace Buy or De-list `81 26` | Checkout used to write the listing, bag, and wallets separately and could only deliver to the bag. Now it commits delivery, sale state and payment together. An ordinary item code returns through a known-abilities `5e` record. |
 | 3a | High | Secure Trade Accept `81 85` | Both accepted offers now [settle inventory and Info in one transaction](SECURE-TRADE.md#atomic-settlement). A failed final write closes the trade and keeps both participants' assets. |
 | 3b | High | Bag Merge and Split `67`/`68` | [Personal bag moves](CLIENT-ACTIONS.md#atomic-personal-bag-moves) now commit both slots together and send a visible refusal on rollback. |
@@ -124,10 +124,28 @@ Use `marketplace-listing-refusal` from the Mara Central booth
 (17000,495,2300). Go to the Loading Area and drag the one-charge Lock
 Pick code from Possessions into Selling. List for 1,100 Info. The
 disposable database CHECK refuses this price. Verify the `81 2c`
-refusal, the retained code and the unchanged balance of 2,000. Dismiss
-any popup and list the same code for 1,200 in the same session. Expect
-`5f 8c 01 00` then `81 2c` with status zero. Reopen Marketplace and
-verify one listing at 1,200.
+refusal, the retained code and the unchanged balance of 2,000. The
+100,000 price also exercises an unaffordable fee of 3,000.
+
+### Marketplace listing fee
+
+The stock Sell dialog multiplies the entered price by the float32
+constant 0.03 and rounds up with `ceil` (client.dll `0x620cf9d3–0x620cf9fa`,
+constant `0x62878ae8`). Both retail listings at 1,000 returned 30 in
+the `81 2c` Fee field at offset `0x12`. The server uses its existing
+marketplace payment records for the posting debit.
+
+New listings use the stock quote for the immediate Fee and the persisted
+Fee read back in `81 2a`. One transaction locks the source and wallet,
+charges the fee, removes the source and saves the listing. The debit
+and resulting wallet go out after commit (`80 e7`, `80 e4`, reason 5).
+Manual withdrawal still charges the recorded fee. Existing listings keep
+their stored value, including older 5% entries.
+
+In `marketplace-listing-refusal`, retry the one-charge Lock Pick code at
+1,200. Expect the dialog quote and both listing views to show 36, Info
+to go from 2,000 to 1,964, and one listing after reopen. De-listing
+returns the code and takes Info to 1,928.
 
 ### Marketplace archive codes
 
@@ -141,10 +159,10 @@ echoes the requested byte slot and keeps the marketplace descriptor.
 
 Use `vendor-purchase-full-bag` at Mara Central to attempt a Lock Pick purchase
 at 5,000 Info, recycle one shirt for 340, then buy for 1,000. Use
-`marketplace-archive-code` from the same booth to list CSR's code for 1,200,
-then buy QAFriend's pre-posted code for 1,000. Compile the bought code in the
-archive. Expect `61 00`, a Lock Pick in the bag, and 880 Info after the
-120 Info compile. De-list and re-list CSR's code to check the return path. The
+`marketplace-archive-code` from the same booth to list CSR's code for 1,200
+(36 Info fee), then buy QAFriend's pre-posted code for 1,000. Compile the bought
+code in the archive. Expect `61 00`, a Lock Pick in the bag, and 844 Info
+after the 120 Info compile. De-list and re-list CSR's code for 36 each. The
 fixtures print the stands and steps.
 
 The vendor refusal's `81 10` carries a zero StringID, which bypasses the

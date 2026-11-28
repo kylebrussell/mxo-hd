@@ -8,7 +8,7 @@ using hds.shared;
 namespace hds{
 
     /// <summary>
-    /// The marketplace: open (81 29 -> 81 2a, my listings), search (81 24 -> 81 25), list an item (81 2b -> 5f, 81 2c)
+    /// The marketplace: open (81 29 -> 81 2a, my listings), search (81 24 -> 81 25), list an item (81 2b -> 5f, fee, 81 2c)
     /// and buy (81 26 -> 5e, 80 e7, 80 e4, 81 27), in the order retail sent them (see MarketplacePackets). The seller
     /// is paid when the item sells: at once if online (80 e7 / 80 e4 like the buyer), otherwise in the database.
     /// </summary>
@@ -16,7 +16,8 @@ namespace hds{
 
         internal static MarketplaceDb Db = new MarketplaceDb();
 
-        private static readonly object BuyLock = new object();
+        // Keep market wallet publication in the same order as listing and checkout commits.
+        private static readonly object TransactionLock = new object();
 
         /// <summary>
         /// The connected client of this character, in the world or not: the Loading Area, where the marketplace is used,
@@ -73,7 +74,11 @@ namespace hds{
                 return;
             }
 
-            WorldClient client = Store.currentClient;
+            lock (TransactionLock) PlaceItem(Store.currentClient, placement);
+        }
+
+        private static void PlaceItem(WorldClient client, MarketplaceRequests.Placement placement)
+        {
             var publication = new AbilityAcquisition.Publication(client);
             if (placement.Container == 0 && !client.playerData.DistrictIsLA())
             {
@@ -84,18 +89,18 @@ namespace hds{
             {
                 Category = placement.Category,
                 Price = placement.Price,
-                DelistPrice = MarketplacePackets.DelistPriceFor(placement.Price),
                 SellerCharId = publication.Character,
                 SellerRep = client.playerInstance.OrganizationID.getValue()[0],
                 Created = TimeUtils.getUnixTimeUint32()
             };
 
             string refusal;
+            uint cash = 0;
             lock (client.playerData.craftingSync)
             {
                 try
                 {
-                    refusal = Db.Place(listing, placement);
+                    refusal = Db.Place(listing, placement, out cash);
                 }
                 catch (Exception ex) when (ex is DbException || ex is InvalidOperationException)
                 {
@@ -111,9 +116,11 @@ namespace hds{
 
             byte[] remove = placement.Container == 0 ? CodeStorage.BuildRemove(placement.Slot)
                 : ServerPackets.BuildInventoryItemDelete(placement.Slot);
+            const uint reason = MarketplacePackets.InfoReasonMarketplace;
             Output.WriteDebugLog($"[MARKET] {publication.Character} listed class={listing.GoId} descriptor={listing.Descriptor:x8} " +
-                $"container={placement.Container} slot={placement.Slot} price={listing.Price} id={listing.Id}");
-            if (publication.Publish(client, remove,
+                $"container={placement.Container} slot={placement.Slot} price={listing.Price} fee={listing.DelistPrice} cash={cash} id={listing.Id}");
+            if (publication.PublishPurchase(client, cash, remove,
+                ServerPackets.BuildInfoDelta(-(long)listing.DelistPrice, reason), ServerPackets.BuildInfoCurrent(cash, reason),
                 MarketplacePackets.Listed(listing, placement.Container, placement.Slot, placement.ClientUiData)))
                 client.FlushQueue();
         }
@@ -133,7 +140,7 @@ namespace hds{
 
             WorldClient buyer = Store.currentClient;
             var publication = new AbilityAcquisition.Publication(buyer);
-            lock (BuyLock)
+            lock (TransactionLock)
             {
                 MarketplaceDb.Purchase purchase;
                 try

@@ -94,9 +94,9 @@ public static partial class Scenarios
 
         seller.SendRpc($"81 26 {Le(listing)} 07");
         await seller.WaitForRpcAsync("5e 80 01 00 00 00 00 00 02 00 84 00");
-        await seller.WaitForRpcAsync($"81 27 {Le(listing)} 07 2e 00 00 00 01 02 00 00 32 00 00 00 00 00 00 00");
+        await seller.WaitForRpcAsync($"81 27 {Le(listing)} 07 2e 00 00 00 01 02 00 00 1e 00 00 00 00 00 00 00");
         await RequireCode(seller, 384, 0, "De-list returns the flagged code with one charge in the delivery range");
-        Check.Equal(950L, await db.LongAsync($"SELECT cash FROM characters WHERE charId={seller.CharId}"), "De-list charges 50 Info");
+        Check.Equal(940L, await db.LongAsync($"SELECT cash FROM characters WHERE charId={seller.CharId}"), "List and De-list charge 30 Info each");
         seller.SendRpc("81 2b 49 54 4c f0 e8 03 00 00 00 80 01 00 00 00 00");
         await seller.WaitForRpcAsync("5f 80 01 00");
         listed = await seller.WaitForRpcAsync("81 2c ?? ?? ?? ?? 2e 00 00 00 01 02 00 00 e8 03 00 00 1e 00 00 00 00 80 01");
@@ -116,12 +116,12 @@ public static partial class Scenarios
         await buyer.WaitForRpcAsync("5e 81 01 00 00 00 00 00 02 00 84 00");
         await buyer.WaitForRpcAsync("80 e4 e8 03 00 00");
         await buyer.WaitForRpcAsync($"81 27 {Le(listing)} 07 2e 00 00 00 01 02 00 00 e8 03 00 00 00 00 00 00");
-        await seller.WaitForRpcAsync("80 e4 9e 07 00 00");
+        await seller.WaitForRpcAsync("80 e4 76 07 00 00");
         await RequireCode(buyer, 385, 0, "Buy returns a flagged code with one charge and skips the occupied slot");
         Check.Equal(0L, await db.LongAsync($"SELECT COUNT(*) FROM inventory WHERE charId={buyer.CharId} AND goid=46"),
             "Archive delivery creates no bag entry");
         Check.Equal(1000L, await db.LongAsync($"SELECT cash FROM characters WHERE charId={buyer.CharId}"), "Buyer paid the asking price");
-        Check.Equal(1950L, await db.LongAsync($"SELECT cash FROM characters WHERE charId={seller.CharId}"), "Seller received the asking price");
+        Check.Equal(1910L, await db.LongAsync($"SELECT cash FROM characters WHERE charId={seller.CharId}"), "Seller received the asking price after three 30 Info fees");
 
         buyer.SendRpc(buy);
         await buyer.WaitForRpcAsync($"81 27 {Le(listing)} 07 00 00 00 00 00 00 00 00 00 00 00 00 98 02 00 0c");

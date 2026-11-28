@@ -239,7 +239,7 @@ Open the stock inbox from Phone > Email. Retail also sent system mail for loot o
 | `81 29` | Marketplace: my listings / next page (MarketplaceID, SearchForward) | D, C 7 | handled | medium |
 | `81 24` | Marketplace search | D, C 84 | handled | medium |
 | `81 26` | Marketplace buy or de-list | D, C 14 | handled: atomic sale/delivery; ordinary item codes go to the archive | medium |
-| `81 2b` | Marketplace: list an item | D, C 2 | handled: container 1 reads the bag; container 0 reads ordinary item codes in the archive; both return a correlated `81 2c` on refusal | medium |
+| `81 2b` | Marketplace: list an item | D, C 2 | handled: bag items and ordinary archive codes, with an [atomic listing fee](IGNORED-CLIENT-ACTIONS.md#marketplace-listing-fee) and a correlated `81 2c` result | medium |
 | `81 82` | Secure trade request | D | handled (docs/SECURE-TRADE.md) | high |
 | `81 85` | Secure trade action | D | handled | high |
 

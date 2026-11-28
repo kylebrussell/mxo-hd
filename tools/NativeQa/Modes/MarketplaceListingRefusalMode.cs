@@ -16,8 +16,10 @@ public sealed class MarketplaceListingRefusalMode : NativeQaMode
         environmentOverrides: new() { ["MXO_AGGRO"] = "0", ["MXO_MOB_WANDER"] = "0" },
         readyMessages: new[] {
             "CSR stands at verified Mara Central NAV (17000,495,2300). Use the booth radial > Loading Area. Open Marketplace. The Lock Pick code in Possessions has one charge, archive slot 396.",
+            $"Drag the code into Selling and enter {Scenarios.UnaffordableListingPrice}. The dialog should quote 3,000 Info. Try to list. Expect 81 2c refusal and chat about insufficient Info. The code and 2,000 Info remain.",
             $"Drag that code into Selling and list for {Scenarios.RefusedListingPrice} Info. The disclosed disposable SQL CHECK refuses this price. Expect [MARKET] Listing transaction rolled back, 81 2c with status 9c 02 00 0c, and 'The listing could not be posted. Your item was kept.' The code remains, Selling has no posted row and Info stays 2,000.",
-            $"Dismiss any popup. In the same Marketplace session, use the same source to list for {Scenarios.RetryListingPrice} Info. Drag it from Possessions again if the source selection cleared. Expect 5f 8c 01 00 then 81 2c with status zero. The code leaves Possessions, one listing shows at {Scenarios.RetryListingPrice}, and Info remains 2,000. Close and reopen Marketplace to check the listing persists."
+            $"Dismiss any popup. In the same session list the same source for {Scenarios.RetryListingPrice} Info. Verify a 36 Info quote. Expect 5f 8c 01 00, 80 e7 -36, 80 e4 1964, then 81 2c with status zero and Fee 36. Close and reopen Marketplace. The one posted row still shows Fee 36 and Info stays 1,964.",
+            "De-list that row. The stored 36 fee is charged for withdrawal. Expect the code back in Possessions and Info 1,928."
         });
 
     public override async Task<byte[]> AfterStartAsync(NativeQaBootstrapContext context)
