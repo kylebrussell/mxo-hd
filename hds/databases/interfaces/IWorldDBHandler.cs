@@ -36,7 +36,8 @@ namespace hds.databases.interfaces{
         (uint Cash, string Refusal) TransferGroupMoney(uint character, byte type, uint groupId, uint amount, bool deposit);
         Crew GetCrewData(UInt32 crewId);
         List<CrewMember> GetCrewMembersForCrewId(UInt32 crewId);
-        void AddMemberToCrew(UInt32 charId, UInt32 crewId, UInt32 factionId, ushort isCaptain, ushort isFirstMate);
+        (uint FactionId, uint Refusal) AdmitCrewMember(uint crew, uint inviter, uint invitee,
+            bool inviterIsBot, bool inviteeIsBot, string foundingName);
         void RemoveMemberFromCrew(UInt32 charId, UInt32 crewId);
         bool EjectCrewMember(uint captain, uint crew, uint member);
         (uint FactionId, bool ClearedFirstMate)? TransferCrewCaptain(uint crew, uint captain, uint replacement,

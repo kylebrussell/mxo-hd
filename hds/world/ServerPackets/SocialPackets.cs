@@ -440,7 +440,7 @@ namespace hds
         public const uint CrewCreateInProgress = 0x0d00001f;     // "... Previous crew creation or invitation request in progress."
         public const uint CrewCreateAlreadyMember = 0x0d000020;  // "... You are already a member of a crew."
         public const uint CrewCreateInvalidName = 0x0d000021;    // "... The crew name is not valid."
-        internal const uint CrewCreateServerError = 0x020000b4; // "Unknown Error", used by the stock generic failure branch.
+        internal const uint CrewRequestError = 1; // LT_ERROR, registered at client.dll 627bfb10.
 
         /// <summary>80 85 &lt;crewId&gt; 0d 00 &lt;org u8&gt; &lt;Status&gt; &lt;sized name&gt;: the answer to the crew creation
         /// window's 80 84. Status 0: "Crew created." and the creator is the captain of a one-member crew.</summary>

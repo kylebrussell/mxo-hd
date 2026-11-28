@@ -181,20 +181,37 @@ On acceptance of a founding invitation (`6f 02`), the server rechecks
 both characters and the crew name under transaction locks. The new
 crew, captain and member roster rows, and character affiliations commit
 together. The crew creation window receives `80 85` with status
-`0x020000b4` on a write failure. The stock handler at `621a9520` clears
-the pending state and uses its generic failure text with the shipped
-“Unknown Error” resource. The server also gives both players a specific
+`0x00000001` on a write failure. The stock handler at `621a9520` clears
+the pending state and uses its generic failure text with `LT_ERROR`,
+registered by the client at `627bfb10`. The server gives both players a specific
 chat refusal. Success sends `80 85` and the committed roster.
 
-Use `crew-founding-atomic`. From **Crew > Create Crew**, enter
-**QARetryCrew**, choose Zion and invite QAFriend. Send
+Use `crew-founding-atomic`. From **Crew > Modify**, enter
+**QARetryCrew**, tick Zion, use `/target QAFriend` and click Recruit. Send
 `{"actor":"QAFriend","action":"crew-founding-accept"}`.
 The disclosed disposable check blocks QAFriend's affiliation write.
-Verify the failure result and that CSR remains unaffiliated. Reopen
-creation right away and use the same name and organization with QAOther.
+Verify the failure result and that CSR remains unaffiliated. Use
+`/target QAOther` and click Recruit with the same name and organization.
 Send `{"actor":"QAOther","action":"crew-founding-accept"}`.
 Expect success and a two-member roster with CSR as captain. Verify
 the name and roster after relog.
+
+### Atomic crew admission
+
+An invitation to an existing crew remembers the crew ID at the time
+of the offer. On `6f 02` acceptance the server checks that the crew
+is active and the inviter still belongs to it. The crew roster entry
+and the invitee's crew and faction affiliations then commit together.
+After commit the invitee receives the roster and faction status and
+the crew receives `70 02`. A refused acceptance sends `6f 02` with
+a failure status to the inviter and a visible refusal to both players.
+
+In `crew-admission-atomic`, send
+`{"actor":"QAFriend","action":"crew-admission-invite"}` and accept.
+The disposable check rejects CSR's affiliation with QACrew, keeping
+CSR unaffiliated. In the same session send
+`{"actor":"QAOther","action":"crew-admission-invite"}` and accept.
+Verify QAPeerCrew and QAFaction in the stock panels and after relog.
 
 ## Marketplace
 
