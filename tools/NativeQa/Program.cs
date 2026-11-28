@@ -339,7 +339,8 @@ try
                     result = await NativeQa.Modes.SocialBreadthMode.SendActionAsync(actor, q);
                 else if (fixtureMode is NativeQa.Modes.AtomicFactionAdmissionMode && action == "faction-admission")
                     result = NativeQa.Modes.AtomicFactionAdmissionMode.OfferInvitation(actor);
-                else if (fixtureMode is NativeQa.Modes.AtomicFactionEjectionMode && action == "faction-ejection-retry")
+                else if ((fixtureMode is NativeQa.Modes.AtomicFactionEjectionMode && action == "faction-ejection-retry") ||
+                         (fixtureMode is NativeQa.Modes.AtomicFactionRankMode && action == "faction-rank-retry"))
                     result = await NativeQa.Modes.AtomicFactionEjectionMode.ReleaseFaultAsync(actor);
                 else if (fixtureMode is NativeQa.Modes.AtomicFactionDisbandMode && action == "faction-disband-retry")
                     result = await NativeQa.Modes.AtomicFactionDisbandMode.ReleaseFaultAsync(actor);
