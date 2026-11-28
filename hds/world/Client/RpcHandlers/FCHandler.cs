@@ -46,27 +46,27 @@ namespace hds
                 return;
             }
 
-            var db = Store.dbManager.WorldDbHandler;
-            UInt32 crewId = NumericalUtils.ByteArrayToUint32(client.playerInstance.CrewID.getValue(), 1);
-            Crew crew = crewId != 0 ? db.GetCrewData(crewId) : null;
+            uint crewId = GroupId(client, SocialPackets.GroupCrew);
             factionName = factionName.Trim();
-            if (crew == null || crew.factionId != 0 ||
-                !string.Equals(crew.characterMasterName, handle, StringComparison.OrdinalIgnoreCase))
+            (uint FactionId, uint Refusal) result;
+            try
             {
-                SocialHandler.Send(client, SocialPackets.InviteAnswer(SocialPackets.GroupFaction, SocialPackets.FactionInvalidFounder, inviteeHandle));
+                result = Store.dbManager.WorldDbHandler.FoundFaction(client.playerData.getCharID(), crewId, factionName);
+            }
+            catch (DbException error)
+            {
+                Output.WriteDebugLog($"[SOCIAL] Faction founding rolled back for {handle} crew={crewId}: {error.Message}");
+                SocialHandler.Send(client, ServerPackets.BuildSystemChatMessage(
+                    "The faction could not be created. Your crew was kept.", "BROADCAST"));
+                result = (0, SocialPackets.FactionInvalidFounder);
+            }
+            if (result.Refusal != SocialPackets.ResultOk)
+            {
+                SocialHandler.Send(client, SocialPackets.InviteAnswer(SocialPackets.GroupFaction, result.Refusal, inviteeHandle));
                 return;
             }
 
-            if (factionName.Length == 0 || factionName.Length > 41 || !db.IsFactionnameAvailable(factionName))
-            {
-                SocialHandler.Send(client, SocialPackets.InviteAnswer(SocialPackets.GroupFaction, SocialPackets.FactionInvalidTeamName, inviteeHandle));
-                return;
-            }
-
-            UInt32 factionId = db.CreateFaction(factionName, handle);
-            db.AddCrewToFaction(factionId, crewId);
-            db.SetFactionOfCrewMembers(crewId, factionId);
-            db.SetCrewFactionRank(crewId, SocialPackets.TopFactionRank); // the founder's crew leads (ours)
+            uint factionId = result.FactionId;
             Output.WriteDebugLog("[SOCIAL] " + handle + " founded faction '" + factionName + "' (" + factionId + ")");
             foreach (WorldClient member in SocialHandler.OnlineWhere(c =>
                          NumericalUtils.ByteArrayToUint32(c.playerInstance.CrewID.getValue(), 1) == crewId))

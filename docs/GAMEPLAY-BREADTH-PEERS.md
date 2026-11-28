@@ -52,6 +52,29 @@ The client enables the Faction menu after receiving faction state. A zero-factio
 `7c` record initializes that state and lets the menu open the founding panel.
 The panel's Recruit action sends `7a` for the named faction and selected captain.
 
+### Atomic faction founding
+
+The faction row, leading crew at rank 1 and the affiliations of that crew's
+characters commit together. The founder must still captain an unaffiliated
+crew when the server locks the persisted rows. A failed write returns the
+existing `6f 01` failure with a chat explanation. Crew state and the
+invitation are published after commit.
+
+Use `faction-founding-atomic`. CSR is at (17000,495,6400) and QAOther stands
+east at (17220,495,6400), both on Mara NAV. Select QAOther with
+`/target QAOther`. Open the people icon above chat, choose **Organization ›
+Faction**, then use **Modify** to enter `QARetryFaction`.
+
+1. Choose **Recruit**. The disposable fixture rejects the character
+   affiliation write with CSR at 1,000 Info. Expect “Your crew was kept,”
+   an unaffiliated crew and no invitation for QAOther. Dismiss the refusal.
+2. Open **Crew**, deposit 1 Info, and verify Crew 1 and personal Info 999.
+   This releases the fixture's SQL check. Select QAOther again if needed.
+3. Return to **Faction**, use the same name and choose **Recruit**. Expect
+   the new faction status and one invitation to QAOther. Accept with
+   `{"actor":"QAOther","action":"social","step":"faction-answer","accept":true}`.
+   Use **More** to verify ranks 1 and 5, then check them again after relog.
+
 ## Marketplace
 
 Use the `marketplace-breadth` mode. QAFriend lists a Code Bit 1 for 300

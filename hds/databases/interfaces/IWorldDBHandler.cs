@@ -31,7 +31,6 @@ namespace hds.databases.interfaces{
         ArrayList FetchPlayersWhoAddedMeToBuddylist(UInt32 charId);
         ArrayList FetchFriendList(UInt32 charId);
         Faction FetchFaction(UInt32 factionId);
-        bool IsFactionnameAvailable(string factionname);
         bool IsHandleCaptainOfACrew(string handle);
         UInt32 createFaction(string factionname, Crew masterCrew, Crew secondCrew);
         (uint Cash, string Refusal) TransferGroupMoney(uint character, byte type, uint groupId, uint amount, bool deposit);
@@ -139,7 +138,7 @@ namespace hds.databases.interfaces{
         void DisbandCrew(UInt32 crewId);
         void SetFactionOfCrewMembers(UInt32 crewId, UInt32 factionId);
         void DisbandFaction(UInt32 factionId);
-        UInt32 CreateFaction(string factionName, string masterHandle);
+        (uint FactionId, uint Refusal) FoundFaction(uint founder, uint crew, string name);
         void SetCrewFirstMate(UInt32 crewId, UInt32 charId);
         void SetCrewFactionRank(UInt32 crewId, ushort rank);
         void SetFactionMaster(UInt32 factionId, string handle);

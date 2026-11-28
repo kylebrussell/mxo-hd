@@ -160,13 +160,7 @@ INSERT INTO crew_members (crew_id, char_id, is_captain, is_first_mate, created_a
         }
 
         // Alice founds a faction with her crew and invites Bob's (7a, then 6e 01 / 6f 01)
-        byte[] factionName = Sized("Union");
-        List<byte> found = new() { 0x7a };
-        found.AddRange(BitConverter.GetBytes((ushort)(5 + factionName.Length)));
-        found.AddRange(BitConverter.GetBytes((ushort)5));
-        found.AddRange(factionName);
-        found.AddRange(Sized("Bob"));
-        alice.SendRpc(found.ToArray());
+        alice.SendRpc(FactionFoundRequest("Union", "Bob"));
         await bob.WaitForRpcAsync("6e 01 06 00");
         bob.SendRpc(InviteAnswer(1, 0, "Alice"));
         await bob.WaitForRpcAsync("7c ?? ?? ?? ?? ?? ?? ?? ?? 02");

@@ -305,14 +305,6 @@ namespace hds.databases{
 	        return factionData;
         }
 
-        public bool IsFactionnameAvailable(string factionname)
-        {
-	        // Parameterized: faction names may contain quotes (retail had "'Dark Mavericks'").
-	        object found = ScalarQuery("SELECT id FROM factions WHERE name = @name AND deleted_at IS NULL LIMIT 1",
-		        P("@name", factionname.Trim()));
-	        return found == null || found == DBNull.Value;
-        }
-
         public bool IsHandleCaptainOfACrew(string handle)
         {
 	        bool isCaptainOfCrew = false;
@@ -1223,14 +1215,6 @@ namespace hds.databases{
 	        NonQuery("UPDATE factions SET deleted_at = NOW() WHERE id = @faction", P("@faction", factionId));
 	        NonQuery("UPDATE crews SET faction_id = 0 WHERE faction_id = @faction", P("@faction", factionId));
 	        NonQuery("UPDATE characters SET factionId = 0 WHERE factionId = @faction", P("@faction", factionId));
-        }
-
-        public UInt32 CreateFaction(string factionName, string masterHandle)
-        {
-	        object id = ScalarQuery(
-		        "INSERT INTO factions (name, master_player_handle, money, created_at, deleted_at) VALUES (@name, @master, 0, NOW(), NULL); SELECT LAST_INSERT_ID();",
-		        P("@name", factionName.Trim()), P("@master", masterHandle));
-	        return Convert.ToUInt32(id);
         }
 
         /// <summary>Makes the member the crew's first mate (0: nobody).</summary>
