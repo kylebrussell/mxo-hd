@@ -36,9 +36,10 @@ namespace hds.databases
             return command;
         }
 
-        /// <summary>Move the exact requested bag item or archive entry into a listing.</summary>
-        internal string Place(MarketListing listing, MarketplaceRequests.Placement request)
+        /// <summary>Commit the exact source removal, listing fee and new listing together.</summary>
+        internal string Place(MarketListing listing, MarketplaceRequests.Placement request, out uint sellerCash)
         {
+            sellerCash = 0;
             if (request.Container > 1 || (request.Container == 0 ? request.Slot >= CentralStorage.Slots : request.Slot > MyWorldDbAccess.LastBagSlot))
                 return "That marketplace source slot is unavailable.";
             if (listing.Price == 0 || listing.Price > int.MaxValue)
@@ -86,11 +87,17 @@ namespace hds.databases
                     }
                     if (rows.Read()) return "That marketplace source slot is ambiguous.";
                 }
+                listing.DelistPrice = MarketplacePackets.ListingFeeFor(listing.Price);
+                long balance = ReadBalance(transaction, listing.SellerCharId);
+                if (balance < listing.DelistPrice)
+                    return "You do not have enough information to pay the listing fee. Your item was kept.";
+                uint cash = (uint)(balance - listing.DelistPrice);
                 string remove = archive ? "DELETE FROM char_abilities WHERE char_id=@character AND slot=@slot"
                     : "DELETE FROM inventory WHERE charId=@character AND slot=@slot";
                 using (var command = TransactionCommand(transaction, remove, keys))
                     if (command.ExecuteNonQuery() != 1) return "That marketplace source changed. Try again.";
 
+                WriteBalance(transaction, listing.SellerCharId, cash);
                 using (var command = TransactionCommand(transaction, "SELECT COALESCE(MAX(id), 0) FROM marketplace"))
                     listing.Id = Convert.ToUInt32(command.ExecuteScalar()) + 1;
                 using (var command = TransactionCommand(transaction, @"
@@ -101,6 +108,7 @@ namespace hds.databases
                     "@character", listing.SellerCharId, "@rep", listing.SellerRep, "@created", listing.Created))
                     if (command.ExecuteNonQuery() != 1) return "The marketplace could not save the listing.";
                 transaction.Commit();
+                sellerCash = cash;
                 return null;
             }
         }

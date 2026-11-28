@@ -19,9 +19,9 @@ public sealed class MarketplaceArchiveCodeMode : NativeQaMode
             """ },
         environmentOverrides: new() { ["MXO_AGGRO"] = "0", ["MXO_MOB_WANDER"] = "0" },
         readyMessages: new[] {
-            "From Mara Central (17000,495,2300), use the booth radial > Loading Area. In Marketplace, drag the Lock Pick code from Possessions into Selling, then list it for 1,200 Info. Confirm it leaves the archive. The listing starts 81 2b 49 54 4c f0, source container 0, slot 396.",
-            "Search Codes > Item Codes > Tools > Lockpicks. Buy QAFriend's 1,000 Info listing. Expect 1,000 Info left and a one-charge Lock Pick code in the archive. Equipment > Code Archive > Compile should give 61 00, one Lock Pick in the bag, and 880 Info. [MARKET] logs archive=True, slot=384. [COMPILE60] logs item=4 cost=120 remaining=0.",
-            "Return to Marketplace and De-list CSR's 1,200 Info listing for 60. Expect a one-charge archive entry and 820 Info. Re-list it at 1,200 to verify the returned code is accepted from slot 384."
+            "From Mara Central (17000,495,2300), use the booth radial > Loading Area. Drag the Lock Pick code from Marketplace Possessions into Selling and list for 1,200 Info. The code leaves the archive and Fee 36 takes Info to 1,964. The listing starts 81 2b 49 54 4c f0, source container 0, slot 396.",
+            "Search Codes > Item Codes > Tools > Lockpicks. Buy QAFriend's 1,000 Info listing. Expect 964 Info left and a one-charge code. Equipment > Code Archive > Compile should give 61 00, one Lock Pick in the bag and 844 Info. [MARKET] logs archive=True, slot=384. [COMPILE60] logs item=4 cost=120 remaining=0.",
+            "Return to Marketplace and De-list CSR's 1,200 Info listing for its recorded fee of 36. Expect a one-charge archive entry and 808 Info. Re-list at 1,200 from slot 384 and expect 772 Info."
         });
 
     public override async Task<byte[]> AfterStartAsync(NativeQaBootstrapContext context)
@@ -45,7 +45,7 @@ public sealed class MarketplaceArchiveCodeMode : NativeQaMode
         await seller.WaitForRpcAsync("5f 8c 01 00");
         var reply = await seller.WaitForRpcAsync("81 2c ?? ?? ?? ?? 2e 00 00 00 01 02 00 00");
         uint listing = BitConverter.ToUInt32(reply.Bytes, 2);
-        Check.Equal(1L, await db.LongAsync($"SELECT COUNT(*) FROM marketplace WHERE id={listing} AND is_sold=0 AND itemID=46 AND purity=513 AND price=1000"),
+        Check.Equal(1L, await db.LongAsync($"SELECT COUNT(*) FROM marketplace WHERE id={listing} AND is_sold=0 AND itemID=46 AND purity=513 AND price=1000 AND delistPrice=30"),
             "The helper listed an actual archive code through the captured request");
         Console.WriteLine($"QAFriend's Lock Pick code listing {listing} is available for 1,000 Info before CSR lists their code.");
         return Array.Empty<byte>();

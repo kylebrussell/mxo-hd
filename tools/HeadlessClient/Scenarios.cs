@@ -1244,12 +1244,12 @@ VALUES (9000,1001,1,0,NOW()),(9000,999999,0,0,NOW());");
         await buyer.WaitForRpcAsync($"81 27 {Le(listing)} 07 {Le(NpcLoot.CodeBit1)}");
 
         // Seller is paid, live and in the database
-        await seller.WaitForRpcAsync($"80 e4 {Le(1300u)}");
+        await seller.WaitForRpcAsync($"80 e4 {Le(1291u)}");
         await seller.WaitForTextAsync("sold for 300");
         Check.Equal(1L, await context.Database.LongAsync($"SELECT is_sold FROM marketplace WHERE id={listing}"), "Listing sold");
         Check.Equal((long)NpcLoot.CodeBit1, await context.Database.LongAsync($"SELECT goid FROM inventory WHERE charId={buyer.CharId} AND slot=7"), "Buyer's item");
         Check.Equal(700L, await context.Database.LongAsync($"SELECT cash FROM characters WHERE charId={buyer.CharId}"), "Buyer's information");
-        Check.Equal(1300L, await context.Database.LongAsync($"SELECT cash FROM characters WHERE charId={seller.CharId}"), "Seller's information");
+        Check.Equal(1291L, await context.Database.LongAsync($"SELECT cash FROM characters WHERE charId={seller.CharId}"), "Seller's information after paying 9 Info to list");
         Check.Equal(10L, await context.Database.LongAsync($"SELECT cash FROM characters WHERE charId={poor.CharId}"), "Poor buyer's information");
 
         // The same connection can search again immediately after a refused stale Buy.
@@ -1289,8 +1289,8 @@ VALUES (9000,1001,1,0,NOW()),(9000,999999,0,0,NOW());");
 
         buyer.SendRpc($"81 26 {Le(listing)} 07");
         await buyer.WaitForRpcAsync($"81 27 {Le(listing)}");
-        await seller.WaitForRpcAsync($"80 e4 {Le(1300u)}");
-        Check.Equal(1300L, await context.Database.LongAsync($"SELECT cash FROM characters WHERE charId={seller.CharId}"), "Seller's information");
+        await seller.WaitForRpcAsync($"80 e4 {Le(1291u)}");
+        Check.Equal(1291L, await context.Database.LongAsync($"SELECT cash FROM characters WHERE charId={seller.CharId}"), "Seller's information after paying 9 Info to list");
     }
 
     /// <summary>

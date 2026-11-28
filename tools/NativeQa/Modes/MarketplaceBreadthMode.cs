@@ -12,6 +12,7 @@ public sealed class MarketplaceBreadthMode : NativeQaMode
     private const uint ItemCategory = 0x30424346; // FCB0, the native Code Bit search category
     private const uint FirstItem = 7332, SecondItem = 7333;
     private const uint FirstPrice = 300, SecondPrice = 420;
+    private const uint FirstFee = 9, SecondFee = 13;
     private const uint StartingCash = 1000;
     private const byte SecondBuyerSlot = 20;
     private uint firstListing, secondListing;
@@ -66,9 +67,12 @@ public sealed class MarketplaceBreadthMode : NativeQaMode
         loadingAreaSeller = seller;
         Check.Equal(2L, await database.LongAsync($"""
             SELECT COUNT(*) FROM marketplace WHERE charID={seller.CharId} AND category='{MarketplaceDb.CategoryKey(ItemCategory)}' AND is_sold=0 AND
-              ((id={firstListing} AND itemID={FirstItem} AND price={FirstPrice} AND delistPrice={FirstPrice / 20}) OR
-               (id={secondListing} AND itemID={SecondItem} AND price={SecondPrice} AND delistPrice={SecondPrice / 20}));
+              ((id={firstListing} AND itemID={FirstItem} AND price={FirstPrice} AND delistPrice={FirstFee}) OR
+               (id={secondListing} AND itemID={SecondItem} AND price={SecondPrice} AND delistPrice={SecondFee}));
             """), "Both native-format listings have the expected price and delist fee");
+        Check.Equal((long)(StartingCash - FirstFee - SecondFee),
+            await database.LongAsync($"SELECT cash FROM characters WHERE charId={seller.CharId}"),
+            "Both listing fees were paid");
         Check.Equal(0L, await database.LongAsync($"""
             SELECT COUNT(*) FROM inventory WHERE charId={seller.CharId} AND slot IN (5,6);
             """), "Listing removed both items from the seller bag");
@@ -96,7 +100,7 @@ public sealed class MarketplaceBreadthMode : NativeQaMode
         if (step != "verify-sales" || actor.Handle != Seller)
             throw new ArgumentException("Use buy-stale with QAOther or verify-sales with QAFriend.");
 
-        uint sellerCash = StartingCash + FirstPrice + SecondPrice;
+        uint sellerCash = StartingCash - FirstFee - SecondFee + FirstPrice + SecondPrice;
         await actor.WaitForRpcAsync($"80 e4 {Le(sellerCash)}");
         await actor.WaitForTextAsync("sold for 420");
         Check.Equal(2L, await database.LongAsync($"SELECT COUNT(*) FROM marketplace WHERE id IN ({firstListing},{secondListing}) AND is_sold=1"),

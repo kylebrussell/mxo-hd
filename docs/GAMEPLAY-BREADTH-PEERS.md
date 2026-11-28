@@ -338,7 +338,7 @@ and membership in Crew.
 
 Use the `marketplace-breadth` mode. QAFriend lists a Code Bit 1 for 300
 information and a Code Bit 2 for 420 from Loading Area. Startup verifies the
-listings, the seller's emptied slots, the recorded delist fees of 15 and 21,
+listings, the seller's emptied slots, the recorded and paid fees of 9 and 13,
 and an ordinary search result. The fixture writes the IDs to
 `marketplace-listings.json`.
 
@@ -351,7 +351,7 @@ and an ordinary search result. The fixture writes the IDs to
    bag and cash. In the same session, verify the controls respond and a fresh
    search drops the sold listing.
 3. Submit the seller verification below. The fixture checks a live sale notice,
-   the seller's balance of 1,720 in Loading Area and both buyers' inventories
+   the seller's balance of 1,698 in Loading Area and both buyers' inventories
    and balances in the disposable database.
 
 | Helper | Request |

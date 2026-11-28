@@ -48,17 +48,28 @@ public class MarketplacePacketTests
         var listing = new MarketListing {Id = 0x0012d186, GoId = 0x9af0, Descriptor = 0x04000000, Price = 2000000, DelistPrice = 100000, Created = 0x4a6e0830};
         Assert.Equal(H("81 2a 09 00 00 00 00 00 00 18 00 f0 9a 00 00 00 00 00 04 86 d1 12 00 80 84 1e 00 a0 86 01 00 30 08 6e 4a"),
             H(MarketplacePackets.MyListings(new List<MarketListing> {listing})));
-        Assert.Equal(100000u, MarketplacePackets.DelistPriceFor(2000000));
     }
 
     [Fact]
     public void ListedMatchesRetailSwatDisguise()
     {
         // marketplace_place_swat_disguise_to_sell_for_1000_info.
-        var listing = new MarketListing {Id = 0x0012d247, GoId = 0x04f4, Descriptor = 0x24000000, Price = 1000};
+        var listing = new MarketListing {Id = 0x0012d247, GoId = 0x04f4, Descriptor = 0x24000000, Price = 1000, DelistPrice = 30};
         Assert.Equal(H("81 2c 47 d2 12 00 f4 04 00 00 00 00 00 24 e8 03 00 00 1e 00 00 00 01 1a 00 00 00 00 00 00 00 00 00"),
             H(MarketplacePackets.Listed(listing, 1, 26)));
     }
+
+    [Theory]
+    [InlineData(1u, 1u)]
+    [InlineData(33u, 1u)]
+    [InlineData(34u, 2u)]
+    [InlineData(1000u, 30u)]
+    [InlineData(1200u, 36u)]
+    [InlineData(1201u, 37u)]
+    [InlineData(50000001u, 1500000u)]
+    [InlineData(2147483647u, 64424508u)]
+    public void ListingFeeMatchesTheStockSellDialog(uint price, uint fee) =>
+        Assert.Equal(fee, MarketplacePackets.ListingFeeFor(price));
 
     [Fact]
     public void ListingRefusalEchoesSourceAndClientUiData()

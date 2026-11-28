@@ -14,6 +14,7 @@ namespace hds
         /// <summary>The item's four-byte descriptor (as in 5e: 00 00 &lt;amount&gt; &lt;type&gt;), little-endian.</summary>
         public UInt32 Descriptor;
         public UInt32 Price;
+        /// <summary>The displayed fee for this listing, stored as delistPrice and used on withdrawal.</summary>
         public UInt32 DelistPrice;
         public UInt32 SellerCharId;
         public byte SellerRep;
@@ -37,18 +38,15 @@ namespace hds
     /// </summary>
     internal static class MarketplacePackets
     {
-        /// <summary>Info change reason retail used for a marketplace purchase (80 e7 / 80 e4 ... 05 00 00 00).</summary>
+        /// <summary>Marketplace Info change reason (80 e7 / 80 e4 ... 05 00 00 00).</summary>
         public const UInt32 InfoReasonMarketplace = 5;
         // Client Status string IDs registered by client.dll (LTPS_SP*).
         public const UInt32 ItemNotInMarketplace = 0x0c000298;
         public const UInt32 NotEnoughInformation = 0x0c00029a;
         public const UInt32 InventoryFull = 0x0c0002ca;
 
-        /// <summary>Retail's listing length field in 81 2c (1e 00 00 00); read as days on the market.</summary>
-        public const UInt32 ListingDays = 30;
-
-        /// <summary>Retail's delist price was 5% of the asking price (100,000 for 2,000,000).</summary>
-        public static UInt32 DelistPriceFor(UInt32 price) => price / 20;
+        /// <summary>The stock listing dialog uses ceil(price * 0.03f), with single precision at input and output.</summary>
+        public static UInt32 ListingFeeFor(UInt32 price) => (UInt32)(float)Math.Ceiling((double)(float)price * 0.03f);
 
         /// <summary>81 25 09 00 &lt;more pages u32&gt; 00 &lt;length u16&gt; then 22 bytes per listing:
         /// goid, descriptor, listing id, price, seller rep (u8), listed time, 00. Retail answered a 25-per-page
@@ -92,12 +90,12 @@ namespace hds
 
         /// <summary>81 2c: listing result with the source container, slot, client UI data and status.</summary>
         public static byte[] Listed(MarketListing listing, byte container, UInt16 slot, uint clientUiData = 0) =>
-            PlaceResult(listing.Id, listing.GoId, listing.Descriptor, listing.Price, ListingDays, container, slot, clientUiData, 0);
+            PlaceResult(listing.Id, listing.GoId, listing.Descriptor, listing.Price, listing.DelistPrice, container, slot, clientUiData, 0);
 
         public static byte[] PlaceRefused(MarketplaceRequests.Placement request, uint status) =>
             PlaceResult(0, 0, 0, 0, 0, request.Container, request.Slot, request.ClientUiData, status);
 
-        private static byte[] PlaceResult(uint listingId, uint goid, uint descriptor, uint price, uint days,
+        private static byte[] PlaceResult(uint listingId, uint goid, uint descriptor, uint price, uint fee,
             byte container, UInt16 slot, uint clientUiData, uint status)
         {
             PacketContent pak = new PacketContent();
@@ -106,7 +104,7 @@ namespace hds
             pak.AddUint32(goid, 1);
             pak.AddUint32(descriptor, 1);
             pak.AddUint32(price, 1);
-            pak.AddUint32(days, 1);
+            pak.AddUint32(fee, 1);
             pak.AddByte(container);
             pak.AddUint16(slot, 1);
             pak.AddUint32(clientUiData, 1);
