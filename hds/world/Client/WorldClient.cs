@@ -724,15 +724,17 @@ namespace hds
         {
             lock (messageQueue.rawMessages.SyncRoot)
             {
-                if (messageQueue.rawMessages.Count > 0)
+                ArrayList raw = messageQueue.rawMessages;
+                if (raw.Count > 0)
                 {
-                    foreach (byte[] message in messageQueue.rawMessages)
+                    for (int i = 0; i < raw.Count; i++)
                     {
+                        byte[] message = (byte[])raw[i];
                         Output.WriteUnencryptedPacketLog(message, "SERVER");
                         sendPacket(message);
                     }
+                    raw.Clear();
                 }
-                messageQueue.rawMessages.Clear();
             }
         }
 
