@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Data.Common;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -234,6 +235,11 @@ namespace hds
             string context = "[DATA-MINING] pickup char="+c.playerData.getCharID()+" view="+v.ViewID+" spawn="+(receivedSpawn ?? v.spawnId)+
                 " expectedSpawn="+v.spawnId+" entity="+v.entityId+" goid="+v.GoID+" use="+action;
             void Log(string outcome) => Output.WriteDebugLog(context+" "+outcome);
+            void RefuseTransfer(string reason)
+            {
+                new ServerPackets().sendSystemChatMessage(c, reason, "BROADCAST");
+                c.FlushQueue();
+            }
             if (receivedSpawn.HasValue && receivedSpawn.Value != v.spawnId) { Log("outcome=denied_handle db=unchanged"); return true; }
             ushort pickedGoid;
             lock (sync)
@@ -248,8 +254,18 @@ namespace hds
                 if (refusal != null) { Log("outcome=denied_requirement reason="+refusal+" db=unchanged"); Say(c, refusal); return true; }
                 ushort slot;
                 try { slot = WorldLuggablesDb.Pickup(c.playerData.getCharID(),g); }
-                catch (Exception ex) { Log("outcome=db_exception type="+ex.GetType().Name); throw; }
-                if (slot == 0) { Log("outcome=no_bag_slot_or_missing_ground db=not_committed"); Say(c,"Your inventory is full."); return true; }
+                catch (DbException ex)
+                {
+                    Log("outcome=pickup_rolled_back db=not_committed type=" + ex.GetType().Name);
+                    RefuseTransfer("The pickup could not be saved. The luggable is still on the ground.");
+                    return true;
+                }
+                if (slot == 0)
+                {
+                    Log("outcome=no_bag_slot_or_missing_ground db=not_committed");
+                    RefuseTransfer("Your inventory is full.");
+                    return true;
+                }
                 Log("outcome=success db=committed ground="+g.Id+" bagSlot="+slot);
                 pickedGoid = g.Goid;
                 ground.Remove(g);
@@ -270,14 +286,39 @@ namespace hds
         {
             if (body == null || body.Length != 3 || body[2] != 1 || c.playerData.isDead || !c.playerData.getOnWorld()) return;
             ushort slot = BitConverter.ToUInt16(body,0); if (slot < 1 || slot > 96) return;
+            var publication = new AbilityAcquisition.Publication(c);
             lock (sync)
             {
-                Load(); var item = Store.dbManager.WorldDbHandler.GetInventoryItems(c.playerData.getCharID()).FirstOrDefault(i => i.Slot == slot);
-                if (item.Goid > ushort.MaxValue || !IsLight((ushort)item.Goid) || item.Count != 1) return;
+                var item = Store.dbManager.WorldDbHandler.GetInventoryItems(publication.Character).FirstOrDefault(i => i.Slot == slot);
+                if (item.Goid > ushort.MaxValue || !IsLight((ushort)item.Goid) || item.Count != 1)
+                {
+                    InventoryHandler.RefuseSlotMove(c, publication, slot, "Only a single light luggable can be dropped.");
+                    return;
+                }
                 Position(c,out double x,out double y,out double z); ushort district = (ushort)c.playerData.getDistrictId();
-                if (!NavMesh.Project(district,x,y,z,out NavPoint floor,150) || Math.Abs(floor.y-y)>150) { Say(c,"No nearby floor for the luggable."); return; }
+                if (!NavMesh.Project(district, x, y, z, out NavPoint floor, 150) || Math.Abs(floor.y - y) > 150)
+                {
+                    InventoryHandler.RefuseSlotMove(c, publication, slot, "No nearby floor for the luggable.");
+                    return;
+                }
                 var g = new Ground {Goid=(ushort)item.Goid,District=district,X=floor.x,Y=floor.y,Z=floor.z};
-                if (!WorldLuggablesDb.Drop(c.playerData.getCharID(),slot,g)) return;
+                bool committed;
+                try
+                {
+                    Load();
+                    committed = WorldLuggablesDb.Drop(publication.Character, slot, g);
+                }
+                catch (DbException ex)
+                {
+                    Output.WriteDebugLog($"[DATA-MINING] drop char={publication.Character} bagSlot={slot} goid={g.Goid} " +
+                        $"outcome=drop_rolled_back db=not_committed type={ex.GetType().Name}");
+                    committed = false;
+                }
+                if (!committed)
+                {
+                    InventoryHandler.RefuseSlotMove(c, publication, slot, "The drop could not be saved. Your item was kept.");
+                    return;
+                }
                 Output.WriteDebugLog("[DATA-MINING] drop char="+c.playerData.getCharID()+" bagSlot="+slot+" goid="+g.Goid+" ground="+g.Id+" outcome=success db=committed");
                 ground.Add(g); new ServerPackets().sendInventoryItemDelete(slot,c); Spawn(c,g); c.FlushQueue();
             }
@@ -314,7 +355,7 @@ namespace hds
                         return false;
                     }
                 }
-                catch (System.Data.Common.DbException ex)
+                catch (DbException ex)
                 {
                     Output.WriteDebugLog($"[DATA-MINING] archive drop rollback char={character} type={ex.GetType().Name}");
                     Say(client, "Your luggables could not be dropped. Archive travel was cancelled.");

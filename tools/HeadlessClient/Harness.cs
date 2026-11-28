@@ -97,6 +97,28 @@ public sealed class ThrowawayDatabase : IDisposable
     public Task<string> RemovePrisonMoveFailureAsync() => RunInContainerAsync(
         "MYSQL_PWD=\"$MYSQL_ROOT_PASSWORD\" exec mysql -uroot \"$1\"",Name,"DROP TRIGGER prison_move_rollback");
 
+    public Task<string> InstallLuggableTransferFailuresAsync(uint character)
+    {
+        if (character <= 2) throw new ArgumentException("Luggable faults require an owned fixture character.");
+        return RunInContainerAsync("MYSQL_PWD=\"$MYSQL_ROOT_PASSWORD\" exec mysql -uroot \"$1\"", Name, $"""
+            CREATE TABLE IF NOT EXISTS world_luggables (
+                id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY, goid SMALLINT UNSIGNED NOT NULL,
+                district SMALLINT UNSIGNED NOT NULL, x DOUBLE NOT NULL, y DOUBLE NOT NULL, z DOUBLE NOT NULL
+            ) ENGINE=InnoDB;
+            ALTER TABLE world_luggables ADD CONSTRAINT qa_luggable_drop CHECK (goid<>596);
+            DELIMITER $$
+            CREATE TRIGGER qa_luggable_take BEFORE DELETE ON world_luggables FOR EACH ROW
+            BEGIN
+                IF OLD.goid=47276 AND EXISTS (
+                    SELECT 1 FROM inventory WHERE charId={character} AND slot=1 AND goid=47276
+                ) THEN
+                    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='QA late luggable pickup refusal';
+                END IF;
+            END$$
+            DELIMITER ;
+            """);
+    }
+
     /// <summary>Fixed late ability-insert failure inside this owned mxotest database; no table rebuild or mode change.</summary>
     public Task<string> InstallAcquisitionRollbackTriggerAsync(uint character,int descriptor)
     {
