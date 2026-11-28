@@ -15,13 +15,19 @@ public static partial class Scenarios
         await db.ExecuteAsync($"""
             INSERT INTO factions(id,name,master_player_handle,money) VALUES ({faction},'QAFaction','EjectionLeader',0);
             INSERT INTO crews(id,crew_name,master_player_handle,money,org,faction_id,faction_rank)
-            VALUES ({leaderCrew},'QACrew','EjectionLeader',0,1,{faction},0),
-                ({targetCrew},'QAPeerCrew','EjectionTarget',0,1,{faction},5);
+            VALUES ({leaderCrew},'QACrew','EjectionLeader',0,1,{faction},0);
             """);
         var leader = await context.AddPlayerAsync(new CharacterSeed("EjectionLeader")
         {
             X = 17000, Y = 495, Z = 6400, CrewId = (int)leaderCrew, FactionId = (int)faction
         });
+        await leader.EnterWorldAsync();
+        await leader.WaitForRpcAsync($"7c {Le(leader.CharId)} {Le(faction)} 02");
+        // The first login reads the faction roster. Add the next crew just before its captain logs in.
+        await db.ExecuteAsync($"""
+            INSERT INTO crews(id,crew_name,master_player_handle,money,org,faction_id,faction_rank)
+            VALUES ({targetCrew},'QAPeerCrew','EjectionTarget',0,1,{faction},5);
+            """);
         var captain = await context.AddPlayerAsync(new CharacterSeed("EjectionTarget")
         {
             X = 17220, Y = 495, Z = 6400, CrewId = (int)targetCrew, FactionId = (int)faction
@@ -36,7 +42,6 @@ public static partial class Scenarios
                 ({targetCrew},{member.CharId},0,0,NOW());
             """);
         await db.ExecuteAsync(FactionEjectionFaultSql(targetCrew));
-        await leader.EnterWorldAsync();
         await captain.EnterWorldAsync();
         await member.EnterWorldAsync();
 
