@@ -336,6 +336,24 @@ All layouts are client.dll's; the values are retail's. Strings are `<u16 length 
 - No postage: the client has MailInfoCost and MailItemCost settings, whose values and use were not traced.
 - Not done: mail to several recipients with attachments (the client refuses it anyway), folders other than storing the name, and items forwarded to mail when the bag is full (`MailService.SystemMessage` and `Deliver` are there for it).
 
+### Mail read recovery
+
+Selecting an inbox row sends `81 f0` for the message ID. The server
+marks owned new or unread mail as Read with a conditional status-only
+write. If that write is refused, the server still sends the retrieved
+body and attachments in `81 f3` and reports the unsaved marker in chat.
+The client may show the row as Read locally until a fresh login. If the
+message itself cannot be retrieved, the server returns `81 f2`.
+
+Use `mail-read-recovery` at Mara Central (17000,495,2300). Select
+**Read Save Check** in **Phone > Email**. The disclosed disposable CHECK
+blocks the status write. Verify that the body and pill open, then select
+**Read Control** to verify the inbox responds. Close Email and send
+`{"actor":"QAFriend","action":"mail-read-retry"}`. The helper checks the
+saved Unread status and pill, then removes the CHECK. Relog, select
+**Read Save Check**, and send `{"actor":"QAFriend","action":"mail-read-verify"}`
+to check the persisted Read marker and pill.
+
 ### Atomic mail status changes
 
 The stock Delete and Undelete sender at `621f91e0` updates the cached

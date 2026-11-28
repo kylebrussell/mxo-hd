@@ -144,20 +144,50 @@ namespace hds
         }
 
         /// <summary>Client 81 f0: open a message. A new or unread one becomes read.</summary>
-        public void OnRead(UInt32 charId, UInt32 id)
+        public void OnRead(uint charId, uint id)
         {
-            MailMessage message = store.Get(charId, id);
+            MailMessage message;
+            try
+            {
+                message = store.Get(charId, id);
+                if (message != null && (message.Status == MailPackets.StatusNew || message.Status == MailPackets.StatusUnread))
+                    message = MarkRead(message);
+            }
+            catch (DbException error)
+            {
+                Output.WriteDebugLog($"[MAIL] Message read failed char={charId} id={id}: {error.Message}");
+                host.Send(charId, MailPackets.BuildReadFailed(MailPackets.BadData));
+                Notice(charId, "The message could not be opened. Please try again.");
+                return;
+            }
+
             if (message == null || message.Status == MailPackets.StatusPurged)
             {
                 host.Send(charId, MailPackets.BuildReadFailed(MailPackets.MessageNotFound));
                 return;
             }
-            if (message.Status == MailPackets.StatusNew || message.Status == MailPackets.StatusUnread)
-            {
-                message.Status = MailPackets.StatusRead;
-                store.Update(message);
-            }
             host.Send(charId, MailPackets.BuildMessage(message));
+        }
+
+        private MailMessage MarkRead(MailMessage message)
+        {
+            bool marked;
+            try
+            {
+                marked = store.TryMarkRead(message.OwnerCharId, message.Id);
+            }
+            catch (DbException error)
+            {
+                // The body is already loaded. Send it even if the read marker cannot be saved.
+                Output.WriteDebugLog($"[MAIL] Read status could not be saved char={message.OwnerCharId} id={message.Id}: {error.Message}");
+                Notice(message.OwnerCharId, "The message opened, but its read status could not be saved.");
+                return message;
+            }
+
+            // A concurrent change may have marked, deleted, or purged it.
+            if (!marked) return store.Get(message.OwnerCharId, message.Id);
+            message.Status = MailPackets.StatusRead;
+            return message;
         }
 
         /// <summary>Client 81 f4: Delete (4) / Undelete (3) one message; 5 removes it.</summary>
