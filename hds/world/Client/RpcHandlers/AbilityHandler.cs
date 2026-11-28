@@ -1973,29 +1973,59 @@ namespace hds
                 maybeTimeBasedValue = maybeTimeBasedValue + 100;
             }
 
-            hyperjumpTimer = new Timer(ProcessJumpStep, this, 0, 0);
+            hyperjumpTimer?.Dispose();
+            hyperjumpTimer = new Timer(ProcessJumpStep, this, 0, Timeout.Infinite);
         }
 
         private void ProcessJumpStep(Object e)
         {
-            JumpStep Step = Steps[0];
-            Steps.RemoveAt(0);
-            ServerPackets packets = new ServerPackets();
-
-            bool isLastStep = Steps.Count == 0;
-
-            packets.SendHyperJumpStepUpdate(Step.FromPos, Step.ToPos.x, Step.ToPos.y, Step.ToPos.z, Step.JumpHeight,
-                Step.endTime, Step.jumpId, Step.maybeTimeBasedValue, isLastStep);
-
-            if (Steps.Count > 0)
+            try
             {
-                hyperjumpTimer = new Timer(ProcessJumpStep, this, 50, 0);
+                if (Steps == null || Steps.Count == 0)
+                {
+                    hyperjumpTimer?.Dispose();
+                    hyperjumpTimer = null;
+                    return;
+                }
+
+                JumpStep Step = Steps[0];
+                Steps.RemoveAt(0);
+                ServerPackets packets = new ServerPackets();
+
+                bool isLastStep = Steps.Count == 0;
+
+                packets.SendHyperJumpStepUpdate(Step.FromPos, Step.ToPos.x, Step.ToPos.y, Step.ToPos.z, Step.JumpHeight,
+                    Step.endTime, Step.jumpId, Step.maybeTimeBasedValue, isLastStep);
+
+                if (Steps.Count > 0)
+                {
+                    Timer existing = hyperjumpTimer;
+                    if (existing != null)
+                    {
+                        existing.Change(50, Timeout.Infinite);
+                    }
+                    else
+                    {
+                        hyperjumpTimer = new Timer(ProcessJumpStep, this, 50, Timeout.Infinite);
+                    }
+                }
+                else
+                {
+                    hyperjumpTimer?.Dispose();
+                    hyperjumpTimer = null;
+                    if (Store.currentClient?.playerData != null)
+                    {
+                        Store.currentClient.playerData.isJumping = false;
+                    }
+                    // ToDo: Check if we need to send some Message for the Clientview
+                }
             }
-            else
+            catch (Exception ex)
             {
-                Store.currentClient.playerData.isJumping = false;
-                // ToDo: Check if we need to send some Message for the Clientview
-            }    
+                hyperjumpTimer?.Dispose();
+                hyperjumpTimer = null;
+                Output.WriteDebugLog("[HYPERJUMP] Step failed: " + ex.Message);
+            }
         }
 
         public void processHyperJumpCancel(ref byte[] rpcData)
