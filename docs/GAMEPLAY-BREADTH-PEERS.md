@@ -182,9 +182,10 @@ both characters and the crew name under transaction locks. The new
 crew, captain and member roster rows, and character affiliations commit
 together. The crew creation window receives `80 85` with status
 `0x00000001` on a write failure. The stock handler at `621a9520` clears
-the pending state and uses its generic failure text with `LT_ERROR`,
-registered by the client at `627bfb10`. The server gives both players a specific
-chat refusal. Success sends `80 85` and the committed roster.
+the pending state and displays “Crew could not be created (error =
+ERROR).” for the `LT_ERROR` value registered at `627bfb10`. The server
+gives both players a specific chat refusal. Success sends `80 85` and
+the committed roster.
 
 Use `crew-founding-atomic`. From **Crew > Modify**, enter
 **QARetryCrew**, tick Zion, use `/target QAFriend` and click Recruit. Send
@@ -212,6 +213,24 @@ The disposable check rejects CSR's affiliation with QACrew, keeping
 CSR unaffiliated. In the same session send
 `{"actor":"QAOther","action":"crew-admission-invite"}` and accept.
 Verify QAPeerCrew and QAFaction in the stock panels and after relog.
+
+### Atomic crew disband
+
+The stock **Disband** confirmation in Crew sends `77 02` at
+`6208ef30`. The server checks the persisted captain and commits the
+crew archive, roster deletion and member affiliation resets together.
+It keeps the archived bank balance. If the crew contains the active
+faction leader, the faction must be disbanded first.
+
+Use `crew-disband-atomic`. CSR captains QACrew at rank 5 and
+QAOther's crew leads QAFaction. Open **Crew > Disband** and confirm.
+The disposable SQL check blocks the final affiliation write. Expect
+“The roster and bank were kept.” and both members still in QACrew.
+Submit `{"actor":"QAFriend","action":"crew-disband-retry"}` to deposit
+1 Info and release the check. Retry Disband in the same session.
+The crew receives `77 02`. QAOther receives `73 8d 23 00 00` to
+remove QACrew from the faction roster. Relog and verify CSR stays
+unaffiliated.
 
 ## Marketplace
 
