@@ -85,12 +85,15 @@ public static partial class Scenarios
         p.SendRpc("81 4d 78 56 34 12");await p.WaitForRpcAsync("81 4d 78 56 34 12");
         p.SendRpc("80 c6 03 00");await p.WaitForRpcAsync("5f 03 00 01");
         p.SendRpc("80 c8 62 00 00 00 02 00");await p.WaitForRpcAsync("81 0d"); // fixture vendor98, tools
-        p.SendRpc($"81 0e {Le(4u)}");await p.WaitForRpcAsync("81 0f");
+        p.SendRpc($"81 0e {Le(4u)} 00");await p.WaitForRpcAsync("81 0f");
         p.SendRpc("81 10 00 00 00 00 00"); // CloseUI=false must preserve valid session
-        p.SendRpc($"81 0e {Le(4u)}");await p.WaitForRpcAsync("81 0f");
-        p.SendRpc($"81 0e {Le(2399u)}");await p.WaitForTextAsync("does not sell");
-        p.SendRpc("81 10 00 00 00 00 01");p.SendRpc($"81 0e {Le(4u)}");await p.WaitForTextAsync("Open a vendor");
-        p.SendRpc("80 c8 ff ff ff 7f 02 00");p.SendRpc($"81 0e {Le(4u)}");await p.WaitForTextAsync("Open a vendor");
+        p.SendRpc($"81 0e {Le(4u)} 00");await p.WaitForRpcAsync("81 0f");
+        p.SendRpc($"81 0e {Le(2399u)} 00");await p.WaitForTextAsync("does not sell");
+        await p.WaitForRpcAsync("81 10 00 00 00 00 00");
+        p.SendRpc("81 10 00 00 00 00 01");p.SendRpc($"81 0e {Le(4u)} 00");await p.WaitForTextAsync("Open a vendor");
+        await p.WaitForRpcAsync("81 10 00 00 00 00 00");
+        p.SendRpc("80 c8 ff ff ff 7f 02 00");p.SendRpc($"81 0e {Le(4u)} 00");await p.WaitForTextAsync("Open a vendor");
+        await p.WaitForRpcAsync("81 10 00 00 00 00 00");
         Check.Equal(2L,await context.Database.LongAsync($"SELECT COUNT(*) FROM inventory WHERE charId={p.CharId} AND goid=4"),"Only two listed purchases succeeded");
         // Native60: city request without a compile session cannot touch the archive.
         await context.Database.ExecuteAsync($"INSERT INTO char_abilities(char_id,slot,ability_id,level,is_loaded) VALUES({p.CharId},400,{CodeStorage.BaseValue(7332)},0,0)");

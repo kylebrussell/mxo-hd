@@ -20,6 +20,21 @@ The hardline's unchanged Code Bit plan reserves its pending new slots while the 
 
 Handlers serialize acquisition through the existing per-player crafting lock. SQL transactions contain no mission, player-life, transport or packet callbacks. Successful receipts are returned after commit. A scalar publication stamp captures the client-data reference, character, world, life, transport epoch and district state before database reads. Success packets are encoded outside the transport fence; only matching scalar checks, the optional committed wallet-cache scalar update and direct world-bound enqueues occur inside it. Output requires a live connection, no shutdown and no pending world change. Stale character or epoch publication cannot overwrite the reused client-data wallet cache. The same captured Loading Area state is permitted without imposing a new on-world requirement. Existing pruning drops stale unassigned acquisition records after reset while ordinary reliable messages remain unchanged. A successful transaction can persist while a reset suppresses its UI response; relog recovers the durable state, rather than pretending the commit rolled back. Already-numbered reliable delivery keeps the existing policy. Mixed-upload Code Bit records and shared bulk completion remain legacy publication; this is not a broad queue rewrite. Failed SQL operations return ordinary UI notices and the existing Central Storage failure result where that route needs one; no fabricated purchase opcode or error code is added. The existing one-live-world-session model still governs handler publication order.
 
+## Vendor Buy refusal
+
+A stock Buy sends `81 0e <ItemTypeID u32> 00`. A refused buy now
+includes the existing `81 10 00 00 00 00 00` response and visible
+chat for an ability-code failure, missing vendor session, unlisted item
+or unsupported request. The transaction preserves the bag and wallet
+on failure. Successful buys keep their ordinary `81 0f` result.
+
+Use `vendor-ability-buy-refusal` at Mara Central (17000,495,2300). Type
+`?abvendor` to open the existing ability vendor through the same
+disposable-only opener. With 40,000 Info and a full bag, buy **Calm Mind
+Calm Body** and verify the refusal. Close the vendor, recycle the shirt
+in raw bag slot 11 for 340, reopen with `?abvendor`, and buy again.
+Verify one code in slot 11 and a final balance of 340.
+
 ## Native one-pass checklist (Claude only)
 
 Use discovered mode `ability-acquisition`. It owns only ordinary abilities 2 and 17, removes any copied real archive ownership of 1 and 5, provides 200,000 information and an empty bag, and retains the framework's consistent level-50 profile.

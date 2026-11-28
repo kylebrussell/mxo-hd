@@ -1,6 +1,5 @@
 ﻿using System;
-using System.Collections;
-using System.Text;
+using System.Data.Common;
 using System.Linq;
 using hds.shared;
 
@@ -13,7 +12,6 @@ namespace hds{
             if (data.activeVendor != null && data.activeVendor.metrId == data.getDistrictId() &&
                 data.activeVendorGeneration == data.worldGeneration && data.getOnWorld() && !data.worldChangePending) return true;
             data.activeVendor = null;
-            ClientActionsHandler.Notice(client, "Open a vendor before trading.");
             return false;
         }
 
@@ -22,56 +20,63 @@ namespace hds{
 
         public void processBuyItem(ref byte[] packet)
         {
-            lock(Store.currentClient.playerData.craftingSync) BuyItem(ref packet);
+            WorldClient client = Store.currentClient;
+            lock (client.playerData.craftingSync) BuyItem(client, packet);
         }
-        private void BuyItem(ref byte[] packet){
-            if (!HasSession(Store.currentClient)) return;
+        private static void BuyItem(WorldClient client, byte[] packet)
+        {
+            var stamp = new AbilityAcquisition.Publication(client);
+            if (!HasSession(client))
+            {
+                RefuseBuy(client, stamp, "Open a vendor before trading.");
+                return;
+            }
             if (VendorBuyback.TryBuyback(packet))
             {
-                VendorBuyback.Handle(Store.currentClient,true);return;
+                VendorBuyback.Handle(client, true);
+                return;
             }
             if (packet.Length != 5 || packet[4] != 0)
             {
-                ClientActionsHandler.Notice(Store.currentClient,"This vendor purchase request is not supported.");return;
+                RefuseBuy(client, stamp, "This vendor purchase request is not supported.");
+                return;
             }
-            byte[] goByteID = {packet[0],packet[1],packet[2],packet[3]};
-            UInt32 itemGoID = NumericalUtils.ByteArrayToUint32(goByteID,1);
-            if (Array.IndexOf(Store.currentClient.playerData.activeVendor.items, itemGoID) < 0)
+            UInt32 itemGoID = BitConverter.ToUInt32(packet, 0);
+            if (Array.IndexOf(client.playerData.activeVendor.items, itemGoID) < 0)
             {
-                ClientActionsHandler.Notice(Store.currentClient, "This vendor does not sell that item.");
+                RefuseBuy(client, stamp, "This vendor does not sell that item.");
                 return;
             }
 
-            if(AbilityProgression.IsAbilityCode(itemGoID))
+            if (AbilityProgression.IsAbilityCode(itemGoID))
             {
-                var publication=new AbilityAcquisition.Publication(Store.currentClient);
                 AbilityAcquisition.Receipt receipt;
-                try { receipt=Store.dbManager.WorldDbHandler.AcquireAbility(Store.currentClient.playerData.getCharID(),itemGoID,VendorPricing.GetBuyPrice(itemGoID)); }
-                catch(Exception error)
+                try
                 {
-                    Output.WriteDebugLog("[ABILITY ACQUISITION] Purchase refused/rolled back: "+error.Message);
-                    publication.Notice(Store.currentClient,error is AbilityAcquisition.Refusal?error.Message:"The purchase could not be completed. Your information was kept.");return;
+                    receipt = Store.dbManager.WorldDbHandler.AcquireAbility(stamp.Character, itemGoID, VendorPricing.GetBuyPrice(itemGoID));
+                }
+                catch (Exception error)
+                {
+                    Output.WriteDebugLog("[ABILITY ACQUISITION] Purchase refused/rolled back: " + error.Message);
+                    RefuseBuy(client, stamp, PurchaseRefusal(error));
+                    return;
                 }
                 byte[][] acquiredPackets={ServerPackets.BuildAbilityCodeAdd(receipt.BagSlot,itemGoID),
                     ServerPackets.BuildInfoDelta((long)receipt.Cash-receipt.BeforeCash,ServerPackets.InfoReasonVendorBuy),
                     ServerPackets.BuildInfoCurrent(receipt.Cash,ServerPackets.InfoReasonVendorBuy),
                     ServerPackets.BuildAbilityCodeBuyAck(itemGoID,receipt.Price)};
-                publication.PublishPurchase(Store.currentClient,receipt.Cash,acquiredPackets);
+                if (stamp.PublishPurchase(client, receipt.Cash, acquiredPackets)) client.FlushQueue();
                 return;
             }
-            var client = Store.currentClient;
-            var stamp = new AbilityAcquisition.Publication(client);
             (ushort Slot, int Count, uint Cash, uint Price) receiptItem;
             try
             {
                 receiptItem = Store.dbManager.WorldDbHandler.PurchaseVendorItem(stamp.Character, itemGoID);
             }
-            catch (Exception error) when (error is AbilityAcquisition.Refusal || error is System.Data.Common.DbException || error is InvalidOperationException)
+            catch (Exception error) when (error is AbilityAcquisition.Refusal || error is DbException || error is InvalidOperationException)
             {
-                string text = error is AbilityAcquisition.Refusal ? error.Message : "The purchase could not be completed. Your information was kept.";
                 Output.WriteDebugLog($"[VENDOR] Purchase refused char={stamp.Character} item={itemGoID}: {error.Message}");
-                if (stamp.Publish(client, ServerPackets.BuildSystemChatMessage(text, "BROADCAST"), VendorBuyback.RefusalAck()))
-                    client.FlushQueue();
+                RefuseBuy(client, stamp, PurchaseRefusal(error));
                 return;
             }
             var (slot, count, cash, price) = receiptItem;
@@ -83,12 +88,25 @@ namespace hds{
                 client.FlushQueue();
         }
 
+        private static string PurchaseRefusal(Exception error) => error is AbilityAcquisition.Refusal ? error.Message :
+            "The purchase could not be completed. Your information was kept.";
+
+        private static void RefuseBuy(WorldClient client, AbilityAcquisition.Publication stamp, string message)
+        {
+            if (stamp.Publish(client, ServerPackets.BuildSystemChatMessage(message, "BROADCAST"), VendorBuyback.RefusalAck()))
+                client.FlushQueue();
+        }
+
         public void processSellItem(ref byte[] packet)
         {
             WorldClient client=Store.currentClient;
             lock(client.playerData.craftingSync)
             {
-                if(!HasSession(client))return;
+                if (!HasSession(client))
+                {
+                    ClientActionsHandler.Notice(client, "Open a vendor before trading.");
+                    return;
+                }
                 if(!VendorTrading.TrySellRequest(packet,out bool appraise,out byte slot))return;
                 if(!appraise){VendorBuyback.Handle(client,false,slot);return;}
                 var db=Store.dbManager.WorldDbHandler;

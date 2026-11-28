@@ -20,7 +20,7 @@ public static partial class Scenarios
             async Task Buy(uint id,bool accept)
             {
                 int cursor=p.World.RpcSnapshot().Count;p.SkipReceived();p.SendRpc("81 0e "+Le(id)+" 00");
-                if(accept)await p.WaitForRpcAsync("81 0f");else{await p.WaitForTextAsync("purchase could not be completed");await Barrier();}
+                if(accept)await p.WaitForRpcAsync("81 0f");else{await p.WaitForTextAsync("purchase could not be completed");await p.WaitForRpcAsync("81 10 00 00 00 00 00");}
                 var raw=p.World.RpcSnapshot().Skip(cursor).ToArray();operations.Add(new{Step=step,Cursor=cursor,Records=raw.Select(r=>r.Hex).ToArray()});
                 if(accept)
                 {
@@ -88,7 +88,8 @@ public static partial class Scenarios
             Check.Equal(1L,await context.Database.LongAsync($"SELECT COUNT(*) FROM char_abilities WHERE char_id={p.CharId} AND ability_id={unchecked((int)other)} AND level=1 AND is_loaded=0"),"LA same genuine archive entry");
             step="two-connection-race-and-capacity";
             operations.Add(new{Isolation=await context.Database.ScalarAsync("SELECT @@session.transaction_isolation"),Engines=await context.Database.ExecuteAsync("SELECT TABLE_NAME,ENGINE FROM information_schema.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME IN ('characters','inventory','char_abilities')")});
-            var config=new ServerConfig(Path.Combine(context.RepositoryRoot,"hds","bin","Debug","net8.0","Config.xml.dist"));config.LoadDbParams();Check.That(context.Database.Name.StartsWith("mxotest_",StringComparison.Ordinal),"Owned race DB");config.dbParams.DatabaseName=context.Database.Name;
+            var config=new ServerConfig(Path.Combine(Path.GetDirectoryName(context.Server.SourceAssembly)!,"Config.xml.dist"));
+            config.LoadDbParams();Check.That(context.Database.Name.StartsWith("mxotest_",StringComparison.Ordinal),"Owned race DB");config.dbParams.DatabaseName=context.Database.Name;
             var old=hds.shared.Store.config;hds.shared.Store.config=config;
             try
             {
