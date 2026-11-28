@@ -435,29 +435,44 @@ namespace hds
         {
             var db = Store.dbManager.WorldDbHandler;
             UInt32 crewId = inviter != null ? CrewIdOf(inviter) : db.GetCrewIdByInviterHandle(invite.InviterHandle);
-            bool founded = false;
-            if (crewId == 0)
+            bool founded = invite.FromCrewCreation || crewId == 0;
+            bool inviteeIsBot = SocialBot.IsBot(invitee);
+            UInt32 charId = invitee.playerData.getCharID();
+            if (founded)
             {
-                if (inviter == null || db.CrewNameExists(invite.GroupName))
+                const string refused = "The crew could not be created. Both memberships were kept.";
+                if (inviter == null || crewId != 0 || CrewIdOf(invitee) != 0)
                 {
-                    Notice(invitee, "That crew could not be created.");
+                    RefuseCrewFounding(invitee, inviter, invite, SocialPackets.CrewCreateAlreadyMember, refused);
                     return;
                 }
 
                 byte org = invite.FromCrewCreation ? invite.Org : inviter.playerInstance.OrganizationID.getValue()[0];
-                crewId = db.CreateCrew(invite.GroupName, invite.InviterHandle, org);
-                db.AddMemberToCrew(invite.InviterCharId, crewId, 0, 1, 0);
-                founded = true;
+                try
+                {
+                    var result = db.FoundCrew(invite.InviterCharId, charId, inviteeIsBot, invite.GroupName, org);
+                    if (result.CrewId == 0)
+                    {
+                        RefuseCrewFounding(invitee, inviter, invite, result.Refusal, refused);
+                        return;
+                    }
+                    crewId = result.CrewId;
+                }
+                catch (DbException error)
+                {
+                    Output.WriteDebugLog($"[SOCIAL] Crew founding rolled back founder={invite.InviterCharId} invitee={charId}: {error.Message}");
+                    RefuseCrewFounding(invitee, inviter, invite, SocialPackets.CrewCreateServerError, refused);
+                    return;
+                }
                 Output.WriteDebugLog("[SOCIAL] " + invite.InviterHandle + " founded crew '" + invite.GroupName + "' (" + crewId + ")");
             }
 
             Crew crew = db.GetCrewData(crewId);
-            UInt32 charId = invitee.playerData.getCharID();
-            if (SocialBot.IsBot(invitee))
+            if (inviteeIsBot)
             {
                 SocialBot.SetCrew(invitee, crewId); // a bot has no character row: its membership lives in memory
             }
-            else
+            else if (!founded)
             {
                 db.AddMemberToCrew(charId, crewId, crew.factionId, 0, 0);
             }
@@ -485,6 +500,18 @@ namespace hds
 
             byte[] joined = SocialPackets.JoinedGroup(SocialPackets.GroupCrew, charId, 0, HandleOf(invitee));
             SendToAll(OnlineWhere(c => CrewIdOf(c) == crewId && c != invitee), joined);
+        }
+
+        private static void RefuseCrewFounding(WorldClient invitee, WorldClient inviter, PendingInvite invite, uint status, string message)
+        {
+            if (invite.FromCrewCreation)
+                Send(inviter, SocialPackets.CrewCreated(0, invite.GroupName, invite.Org, status));
+            else
+                Send(inviter, SocialPackets.InviteAnswer(SocialPackets.GroupCrew,
+                    status == SocialPackets.CrewCreateInvalidName ? SocialPackets.CrewInvalidTeamName : status, HandleOf(invitee)));
+            byte[] notice = ServerPackets.BuildSystemChatMessage(message, "BROADCAST");
+            Send(inviter, notice);
+            Send(invitee, notice);
         }
 
         private static void JoinFaction(WorldClient captain, WorldClient inviter, PendingInvite invite)

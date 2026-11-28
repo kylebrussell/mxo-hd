@@ -681,6 +681,7 @@ Arrays are `<u16 count>` followed by the elements, at the offset given.
 - On acceptance the creator gets `80 85` with the new crew id and status 0, then the member list. A decline gives `80 85` with 0x0d00001e.
 - The creator must have no crew, the name must be new and 1 to 31 characters, and the invitee must be online and without a crew. Otherwise `80 85` comes back at once with the matching code.
 - The organisation the window picked is stored with the crew.
+- [Crew founding](GAMEPLAY-BREADTH-PEERS.md#atomic-crew-founding) commits the new crew, the roster and character affiliations together. On a write failure, `80 85` releases the creation window and the name stays available.
 
 **Looking for team.**
 - `80 91` puts the player on the list or takes them off. Leaving the world takes them off too.
