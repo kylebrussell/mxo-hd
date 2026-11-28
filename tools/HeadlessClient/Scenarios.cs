@@ -283,6 +283,7 @@ public static partial class Scenarios
         new Scenario("data-mining-luggable-persistence", DataMiningLuggables, StillNpcs),
         new Scenario("datamine-tap-shadow", DatamineTapShadow, StillNpcs),
         new Scenario("datamine-tap-carry-fx", DatamineTapCarryFx, StillNpcs),
+        new Scenario("luggable-transfer-rollback", AtomicLuggableTransfers, StillNpcs),
         new Scenario("datamine-tap-transfer-rules", DatamineTapTransferRules, StillNpcs),
         new Scenario("sati-partial-world", SatiPartialWorld, StillNpcs),
         new Scenario("sati-door-diagnostic", SatiDoorDiagnostic, StillNpcs),

@@ -58,6 +58,20 @@ PR334 observed the green/cyan goggles aura and pickup cleanup. During PR448's st
 
 Still absent: heavy-luggable attachments/Hyper-Strength carrying, faction/crew binding and ownership, Unbind/UniqueID, luggable stat buffs/forced PvP, automatic drop on death, timed recovery/respawn and quest-specific luggable mechanics. Heavy carrying is explicitly refused. No full retail parity is claimed for these items.
 
+### Manual transfer refusal
+
+A failed manual drop shows a reason and sends `65 <slot> <same slot> 00`
+to release the stock inventory cursor. The item stays in its bag slot.
+A failed Take shows a reason and leaves the existing ground object and
+its view available for retry. Both replies use existing client records.
+
+NativeQa mode **luggable-transfer-rollback** uses two disclosed faults in
+its disposable database. It refuses the ordinary light luggable's ground
+insert after the bag delete, and refuses the tap's ground delete after
+inserting it into bag 1. Filling bag 1 with the Code Analyser lets the
+same Take succeed into bag 2. The headless replay also verifies the
+observer view, the exact Drop retry, and stale-handle rejection.
+
 ### Datamine taps and Master Shadow
 
 All four shipped Datamine taps (47276 through 47279) call

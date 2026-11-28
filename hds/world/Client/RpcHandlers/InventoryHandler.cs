@@ -83,7 +83,7 @@ namespace hds
             }
         }
 
-        private static void RefuseSlotMove(WorldClient client, AbilityAcquisition.Publication publication,
+        internal static void RefuseSlotMove(WorldClient client, AbilityAcquisition.Publication publication,
             ushort source, string reason)
         {
             if (source > PvpArchives.BookSlot) source = 0;

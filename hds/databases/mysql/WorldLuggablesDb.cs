@@ -80,8 +80,10 @@ namespace hds.databases
             using (var r = q.ExecuteReader()) while (r.Read()) used.Add(r.GetUInt16(0));
             ushort slot = 1; while (slot <= 96 && used.Contains(slot)) slot++;
             if (slot > 96) return 0;
-            using (var q = Cmd(c, t, "INSERT INTO inventory(charId,slot,goid,count) VALUES(@c,@s,@g,1)", "@c", character, "@s", slot, "@g", g.Goid)) q.ExecuteNonQuery();
-            using (var q = Cmd(c, t, "DELETE FROM world_luggables WHERE id=@id", "@id", g.Id)) q.ExecuteNonQuery();
+            using (var q = Cmd(c, t, "INSERT INTO inventory(charId,slot,goid,count) VALUES(@c,@s,@g,1)", "@c", character, "@s", slot, "@g", g.Goid))
+                if (q.ExecuteNonQuery() != 1) return 0;
+            using (var q = Cmd(c, t, "DELETE FROM world_luggables WHERE id=@id", "@id", g.Id))
+                if (q.ExecuteNonQuery() != 1) return 0;
             t.Commit(); return slot;
         }
     }
