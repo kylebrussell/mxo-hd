@@ -164,6 +164,7 @@ namespace hds
         private static void SendWindow(WorldClient client, NpcLootCache.Corpse corpse)
         {
             var loot = client.playerData.loot;
+            if (corpse != null) corpse.Presented = true; // Manual Search also reserves a pending presentation.
             if (loot.Replacement is NpcLootCache.PendingPresentation waiting)
             {
                 waiting.Corpse = corpse;
@@ -218,7 +219,6 @@ namespace hds
             List<byte> flags = new List<byte>();
             if (corpse != null)
             {
-                corpse.Presented = true;
                 if (corpse.MissionItem != 0)
                 {
                     items.Add(corpse.MissionItem);
