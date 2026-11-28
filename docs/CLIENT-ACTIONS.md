@@ -326,7 +326,7 @@ All layouts are client.dll's; the values are retail's. Strings are `<u16 length 
 
 ### What the server does (ours, not retail's)
 
-- Mail lives in table `mail` (made on first use; also in `SQL/reality_hd.sql`). Status 5 deletes the row.
+- Mail lives in table `mail` (made on first use; also in `SQL/reality_hd.sql`). Status 5 deletes the row. See [atomic mail status changes](#atomic-mail-status-changes) for Delete, Undelete and close.
 - A send locks the participating character rows in ID order. One SQL transaction removes the selected bag entries, moves the attached Info between the wallets, and inserts the inbox mail. The server publishes notifications, bag changes and wallet changes after commit. An unknown recipient gets DESTAVATARDOESNTEXIST and a System "Message Undeliverable" mail. A full inbox (300) gets INBOXLIMITEXCEEDED.
 - `81 fc` locks the owned message and recipient bag. Removing attachments from the message and adding them to the bag commit together. Full bags get `LTPS_SPPERSONALINVENTORYFULL` (`0x0c0002ca`) and a chat explanation. The attachments remain in the message and can be claimed after making room. Read, folder and status changes write metadata only.
 - The stock Take All action disables the inbox controls after sending `81 fc` (client.dll `0x620ca1b0`). The `81 fd` handler (`0x621f88b0`) displays the claim result. The `81 f3` handler (`0x621f92d0`) updates the cached message and calls the inbox to rebuild its attachment grid and re-enable controls (`0x620cba40`). The server now resends the owned message after the claim result, using the committed attachment list on success and the original list on refusal or rollback. The retained retail mail captures establish list and read behavior and contain no framed claim exchange.
@@ -335,6 +335,27 @@ All layouts are client.dll's; the values are retail's. Strings are `<u16 length 
 - Reading a new or seen message marks it read. The new-mail notice is `81 ed` with Notification 1 to an online recipient. Nothing is said at login about mail that arrived while offline (no evidence of what retail did).
 - No postage: the client has MailInfoCost and MailItemCost settings, whose values and use were not traced.
 - Not done: mail to several recipients with attachments (the client refuses it anyway), folders other than storing the name, and items forwarded to mail when the bag is full (`MailService.SystemMessage` and `Deliver` are there for it).
+
+### Atomic mail status changes
+
+The stock Delete and Undelete sender at `621f91e0` updates the cached
+status before sending `81 f4`. On a refused write, the server returns a
+failed `81 f5` followed by `81 f3` carrying the saved status and
+attachment grid. The `81 f3` consumer updates the cached status and
+redraws the row. Closing the inbox sends `81 f6` for deleted-to-purged
+and new-to-seen. Each request uses one owner-and-status-scoped SQL
+statement. If one row fails, the batch stays unchanged and `81 f7`
+reports the failure.
+
+Use `mail-status-atomic` at Mara Central (17000,495,2300). Open
+**Phone > Email > Delete Check** and verify its Health Pill attachment.
+Choose **Delete** and check the refusal, saved row and pill. If the control
+still shows Undelete, reselect the row. Send
+`{"actor":"QAFriend","action":"mail-status-retry"}` to remove the disclosed
+CHECK from the disposable database. Retry Delete in the same inbox, then
+Undelete and verify the pill remains. Delete the disposable message again
+and Close. Reopen Email and check that Delete Check was purged while
+Inbox Control still opens.
 
 ### Native mail transaction check
 
