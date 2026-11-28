@@ -313,6 +313,27 @@ through QARank8. Their captains are offline fixture characters.
 The headless bootstrap verifies the full stock-shaped roster and both
 rank deltas against the persisted population at rank 4.
 
+### Atomic crew first mate changes
+
+Make First Mate and Demote use `80 87 <charId>` and `80 87 00 00 00 00`.
+The stock confirm handlers at `6208e610` and `6208e590` send the requested
+ID without changing the local role. The `80 87` reply updates the role.
+
+The server locks the crew and checks the persisted captain and target
+membership before changing the role. The old first mate is cleared and
+the replacement is written in one transaction. If the write fails, chat
+explains the refusal and the original first mate stays on the roster.
+
+Use `crew-first-mate-atomic` at (17000,495,6400). Open **Crew** from the
+people icon above chat. Right-click **QAOther > Make First Mate > Yes**.
+The disclosed disposable CHECK refuses the new flag. QAFriend should
+stay FM with no server `80 87`. Send
+`{"actor":"QAOther","action":"first-mate-retry"}` and wait for the
+fixture CHECK removal. Repeat **Make First Mate** in the same session.
+QAOther becomes the only FM and keeps the tag after relog. Right-click
+**QAOther > Demote > Yes** to clear the role. Check the unchanged captain
+and membership in Crew.
+
 ## Marketplace
 
 Use the `marketplace-breadth` mode. QAFriend lists a Code Bit 1 for 300

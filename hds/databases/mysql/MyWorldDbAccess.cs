@@ -1163,13 +1163,6 @@ namespace hds.databases{
 		        P("@handle", handle), P("@crew", crewId));
         }
 
-        /// <summary>Makes the member the crew's first mate (0: nobody).</summary>
-        public void SetCrewFirstMate(UInt32 crewId, UInt32 charId)
-        {
-	        NonQuery("UPDATE crew_members SET is_first_mate = (char_id = @char) WHERE crew_id = @crew",
-		        P("@char", charId), P("@crew", crewId));
-        }
-
         public bool IsOnFriendList(UInt32 charId, UInt32 friendId)
         {
 	        object found = ScalarQuery("SELECT id FROM buddylist WHERE charId = @char AND friendId = @friend LIMIT 1",

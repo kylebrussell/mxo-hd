@@ -1138,30 +1138,31 @@ namespace hds
                 return;
             }
 
-            UInt32 target = BitConverter.ToUInt32(rpcData, 0);
-            var db = Store.dbManager.WorldDbHandler;
-            UInt32 crewId = CrewIdOf(client);
-            if (!IsCaptain(client, crewId))
+            const string refused = "Only the crew captain can appoint another current crew member as first mate or clear the role.";
+            uint target = BitConverter.ToUInt32(rpcData, 0);
+            uint crewId = CrewIdOf(client);
+            var selected = FindOnlineByCharId(target);
+            bool targetIsBot = SocialBot.IsBot(selected);
+            try
             {
+                if ((targetIsBot && CrewIdOf(selected) != crewId) ||
+                    !Store.dbManager.WorldDbHandler.ChangeCrewFirstMate(crewId, client.playerData.getCharID(),
+                        target, SocialBot.IsBot(client), targetIsBot))
+                {
+                    Send(client, ServerPackets.BuildSystemChatMessage(refused, "BROADCAST"));
+                    return;
+                }
+            }
+            catch (DbException error)
+            {
+                Output.WriteDebugLog($"[SOCIAL] Crew first mate change rolled back crew={crewId} member={target}: {error.Message}");
+                Send(client, ServerPackets.BuildSystemChatMessage("The first mate could not be changed. The roster was kept.", "BROADCAST"));
                 return;
             }
 
-            List<CrewMember> members = CrewMembersOf(crewId);
-            CrewMember mate = members.FirstOrDefault(m => m.charId == target);
-            if (target != 0 && (mate == null || mate.isCaptain))
-            {
-                return;
-            }
-
-            db.SetCrewFirstMate(crewId, target);
             SocialBot.SetFirstMate(crewId, target);
-            byte[] record = SocialPackets.FirstMate(target);
-            foreach (CrewMember member in members)
-            {
-                Send(FindOnlineByCharId(member.charId), record);
-            }
-
-            Output.WriteDebugLog("[SOCIAL] Crew " + crewId + " first mate: " + (mate != null ? mate.handle : "nobody"));
+            SendToAll(OnlineWhere(c => CrewIdOf(c) == crewId), SocialPackets.FirstMate(target));
+            Output.WriteDebugLog($"[SOCIAL] Crew {crewId} first mate: {target}");
         }
 
         /// <summary>The crew's members: the database's, and SocialBot when it is in the crew.</summary>
