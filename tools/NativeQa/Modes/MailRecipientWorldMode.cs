@@ -21,7 +21,7 @@ public sealed class MailRecipientWorldMode : NativeQaMode
         environmentOverrides: new() { ["MXO_AGGRO"] = "0", ["MXO_MOB_WANDER"] = "0" },
         readyMessages: new[] {
             "Mara Central NAV CSR (17000,495,2300), QAFriend (17120,495,2300). No teleport, world targeting or dev commands. QAFriend is the local same-name control.",
-            $"Phone > Email > New. To {Scenarios.MailForeignWorld}.QAFriend, Subject {Scenarios.MailRecipientSubject}, body Foreign check, no attachments. Send. Expect 81 e6 00 00 00 00 41 00 00 0e, refusal in chat and a System Message Undeliverable. Dismiss any Mail popup.",
+            $"Phone > Email > New. To {Scenarios.MailForeignWorld}.QAFriend, Subject {Scenarios.MailRecipientSubject}, body Foreign check, no attachments. Send. Expect 81 e6 00 00 00 00 41 00 00 0e and a System Message Undeliverable that asks for a valid local address. Dismiss any Mail popup.",
             """Send {"actor":"QAFriend","action":"mail-address-refused"}. Expect "Local inbox empty; pill and both wallets kept".""",
             """
             Reopen Compose if needed. To QAFriend, subject Address Check, body Local check, no attachments. Expect 81 e6 success. Send {"actor":"QAFriend","action":"mail-address-delivered"} and expect "Local inbox received one message; pill and both wallets kept".

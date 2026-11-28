@@ -409,8 +409,7 @@ namespace hds
                     if (!MailPackets.TryLocalRecipient(address, world, out string handle))
                     {
                         undeliverable = "Use a valid recipient address on " + world + ".";
-                        throw new Refusal(MailPackets.RecipientUnknown,
-                            "That address is invalid or on another world. Your items and information were kept.");
+                        throw new Refusal(MailPackets.RecipientUnknown);
                     }
                     if (BotEnabled && string.Equals(handle, BotHandle, StringComparison.OrdinalIgnoreCase))
                     {

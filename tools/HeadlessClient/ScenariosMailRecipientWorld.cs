@@ -24,10 +24,13 @@ public static partial class Scenarios
 
         async Task Refused()
         {
-            await sender.WaitForTextAsync("That address is invalid or on another world.");
             await sender.WaitForRpcAsync("81 e6 00 00 00 00 41 00 00 0e");
             var bounce = await sender.WaitForRpcAsync("81 ed 19 00");
             Check.Equal("Message Undeliverable", StringAtOffset(bounce.Bytes, 0x16), "Foreign address bounce");
+            uint id = BitConverter.ToUInt32(bounce.Bytes, 8);
+            string reason = await db.ScalarAsync($"SELECT body FROM mail WHERE id={id} AND ownerCharId={sender.CharId}");
+            Check.That(reason.Contains($"Use a valid recipient address on {world}.", StringComparison.Ordinal),
+                "The bounce explains that the address must be local");
             Check.Equal(0, recipient.Received("81 ed").Count, "The local namesake gets no notification");
             await CheckMailRecipientDeliveryAsync(db, sender.CharId, recipient.CharId, delivered: false);
         }

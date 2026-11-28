@@ -343,8 +343,8 @@ The stock Compose window normalizes `World.Handle` into
 and includes the qualified recipients in its out-of-band XML. The server
 validates the full address against the auth world's name before looking up the
 handle. It also accepts bare local handles. A foreign or malformed address
-refuses the entire send with `81 e6` DESTAVATARDOESNTEXIST, chat and a System
-**Message Undeliverable**. The original body, items and Info are never
+refuses the entire send with `81 e6` DESTAVATARDOESNTEXIST followed by a System
+**Message Undeliverable** that asks for a local address. The original body, items and Info are never
 delivered to a same-named local character.
 
 Use `mail-recipient-world` at Mara Central (17000,495,2300). In **Phone >
