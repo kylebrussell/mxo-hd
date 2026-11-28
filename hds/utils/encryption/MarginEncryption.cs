@@ -1,5 +1,6 @@
 
 using System;
+using System.Buffers.Binary;
 using System.Security.Cryptography;
 
 
@@ -13,6 +14,7 @@ namespace hds
 		public static readonly byte[] LegacyKey = { 0x6C, 0xAB, 0x8E, 0xCC, 0xE7, 0x3C, 0x22, 0x47, 0xDB, 0xEB, 0xDE, 0x1A, 0xA8, 0xE7, 0x5F, 0xB8 };
 		private byte[] TF_Key = (byte[])LegacyKey.Clone();
         private byte[] IV = { 0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30 };
+		private readonly object cipherLock = new object();
 
 		private const string xmlKeys = "<RSAKeyValue><Modulus>qMIfEkrXWpRr44ecWMzJHV7Hjg9bnru2PZv3NydzOZ6uab52wET+RoHhIzv+zJb3zBhmETAtsrmNnBXiW7tfqPK0xf6lb9RbvupfnfYSHO5WaEcWEi0JjQRBevg9d8qlETo9Hrfy9PEfpeK1T2WF+xxx73chvBTB12Paa7yT+Ik=</Modulus><Exponent>EQ==</Exponent><P>y1biPGcMKGk2VRKuHJZBvge0A/8YLTM5+gvdiZn2+2sC09iz/zjWa26ARP9ENMA687B6vo9asGtHovQCizWNgw==</P><Q>1HaPHEY726MwhSXUOl9l3Roon/hxOdfEE4ooMSe0z8WYW3+IDXTAbYCpJHMZNIvrTLSEuReuDdNL8W91Kq5wAw==</Q><DP>v2DU7Y4pj3IVBMZJhFEu0Pgw9LPahOTrRbDQgYHZZRlsEq3WldskKOB4uWi4qh5Vmg+ClTugpgqdxotNsDJnEQ==</DP><DQ>V3wcz2g2w9nIr0vP28zttWUfyWZMvXb2YmYQjLX/KGBr6XC/jRH04cuQ8OQZb/1g41lj07502IQuVFsSIKIuHw==</DQ><InverseQ>CnkbOBzROWVuJMlB8YIwswZSkBmhckoz+EjEKqIUSE8cYPnhOr2KNfUnTVFTFLlOzWc4jrrOQPi94rrDae8yPw==</InverseQ><D>RX0b2lsNYYhoqPuauycloq6OZ6v4jKelZKmiB6bVF7nPWLfWi2ez/uovhvqWGAHtkEZIJTH0swEcMTYwB6eBvV5fQPkL1CiZJELi7UGEME9v/UMqsMn/aAs3iqDYn0sR1kC4mZHRRNzIq7l16yufV6XnNaVuwlDMo3OLVWwqWE0=</D></RSAKeyValue>";
         private byte[] userModulus = { };
@@ -25,6 +27,7 @@ namespace hds
 		public MarginEncryption(){
 			tf = new MxoTwofish();
 			crc32 = new Crc32();
+			tf.SetKey(TF_Key);
 		}
 
 		/// <summary>
@@ -34,7 +37,7 @@ namespace hds
 		public static MarginEncryption ForNewSession()
 		{
 			var session = new MarginEncryption();
-			session.TF_Key = RandomNumberGenerator.GetBytes(16);
+			session.SetSessionKey(RandomNumberGenerator.GetBytes(16));
 			return session;
 		}
 
@@ -42,26 +45,35 @@ namespace hds
 		public void SetSessionKey(byte[] key)
 		{
 			if (key == null || key.Length != 16) throw new ArgumentException("A session key is 16 bytes.", nameof(key));
-			TF_Key = (byte[])key.Clone();
+			lock (cipherLock)
+			{
+				TF_Key = (byte[])key.Clone();
+				tf.SetKey(TF_Key);
+			}
 		}
 		
 		public byte[] getTFKey(){
-			return (byte[])TF_Key.Clone();
+			lock (cipherLock)
+			{
+				return (byte[])TF_Key.Clone();
+			}
 		}
 		
 		public byte[] getIV(){
-			return IV;
+			lock (cipherLock)
+			{
+				return (byte[])IV.Clone();
+			}
 		}
 		
 		
 		public byte[] encryptUsersPublic(byte[] plain)
         {
-
-            RSACryptoServiceProvider rsa = new RSACryptoServiceProvider();
-            rsa.ImportParameters(rsaparam);
-            byte[] encrypted = rsa.Encrypt(plain, true);
-            return encrypted;
-
+            using (RSACryptoServiceProvider rsa = new RSACryptoServiceProvider())
+            {
+                rsa.ImportParameters(rsaparam);
+                return rsa.Encrypt(plain, true);
+            }
         }
 		
 		
@@ -75,67 +87,28 @@ namespace hds
         }
 		
 		public byte[] encrypt(byte[] packet){
-			
-			// Get timestamp 
-			byte[] timestamp = TimeUtils.getUnixTime();
-
-
-			// get size
 			int psize = packet.Length;
-			byte[] size = NumericalUtils.uint16ToByteArray((UInt16)psize,1);
+			int bodyLen = 6 + psize;
+			int totalLength = 4 + bodyLen;
+			int padding = 16 - (totalLength & 15);
+			int paddedLen = totalLength + padding;
 
-			//showPacket(size, " Size ");
+			byte[] plainBuf = new byte[paddedLen];
+			BinaryPrimitives.WriteUInt16LittleEndian(plainBuf.AsSpan(4, 2), (UInt16)psize);
+			BinaryPrimitives.WriteUInt32LittleEndian(plainBuf.AsSpan(6, 4), TimeUtils.getUnixTimeUint32());
+			Buffer.BlockCopy(packet, 0, plainBuf, 10, psize);
 
-			// final Packet
-			
-			DynamicArray temp = new DynamicArray();
-			temp.append(size);
-			temp.append(timestamp);
-			temp.append(packet);
-			
-            
-			// compute CRC32
-			byte[] crc32pax = crc32.checksumB(temp.getBytes(),1);         
+			uint crc = crc32.checksum(plainBuf, 4, bodyLen);
+			BinaryPrimitives.WriteUInt32LittleEndian(plainBuf.AsSpan(0, 4), crc);
+			plainBuf.AsSpan(totalLength, padding).Fill((byte)padding);
 
-
-			// Padding
-			int totalLength = temp.getSize() + 4;
-			int padding = 16 - (totalLength % 16);
-			
-			byte[] paddingBytes = new byte[padding];
-
-			for (int i = 0; i < padding; i++)
+			byte[] response = new byte[16 + paddedLen];
+			lock (cipherLock)
 			{
-				paddingBytes[i] = (byte)padding;
+				Buffer.BlockCopy(IV, 0, response, 0, 16);
+				tf.Encrypt(response, 0, plainBuf, 0, response, 16, paddedLen);
 			}
-			
-			temp.append(paddingBytes);
-			tf.SetIV(IV);
-			tf.SetKey(TF_Key);
-
-			// We init with 2 more than needed, so no memory reservation is done on dyn array
-			DynamicArray finalPlainData = new DynamicArray();
-			
-			finalPlainData.append(crc32pax);
-			finalPlainData.append(temp.getBytes());
-			
-			temp = null; // Cleaning the house
-           
-			
-			byte[] encryptedData = new byte[finalPlainData.getSize()];
-			tf.Encrypt(finalPlainData.getBytes(),encryptedData);
-			
-            
-			finalPlainData = null; // Cleaning the house (2)
-			
-			// add IV before the results
-            
-			DynamicArray response = new DynamicArray();
-			response.append(IV);
-			response.append(encryptedData);
-
-			// Display HEX Values after Encryption
-			return response.getBytes();
+			return response;
 		}
 		
 		
@@ -144,54 +117,40 @@ namespace hds
         {
             body=null;
             if(packet==null||packet.Length<33||(packet.Length-17)%16!=0)return false;
-            var iv=new byte[16];Array.Copy(packet,1,iv,0,16);
-            var encrypted=new byte[packet.Length-17];Array.Copy(packet,17,encrypted,0,encrypted.Length);
-            var plain=new byte[encrypted.Length];tf.SetIV(iv);tf.SetKey(TF_Key);tf.Decrypt(encrypted,plain);
+            int cipherLen = packet.Length - 17;
+            var plain=new byte[cipherLen];
+            lock (cipherLock)
+            {
+                tf.Decrypt(packet, 1, packet, 17, plain, 0, cipherLen);
+            }
             if(plain.Length<16)return false;
             int size=plain[4]|plain[5]<<8;int end=10+size,padding=plain.Length-end;
             if(size<1||end>plain.Length||padding<1||padding>16)return false;
             for(int i=end;i<plain.Length;i++)if(plain[i]!=padding)return false;
-            var checkedBytes=new byte[6+size];Array.Copy(plain,4,checkedBytes,0,checkedBytes.Length);
-            byte[] crc=crc32.checksumB(checkedBytes,1);
-            for(int i=0;i<4;i++)if(plain[i]!=crc[i])return false;
+            uint expectedCrc = crc32.checksum(plain, 4, 6 + size);
+            uint packetCrc = BinaryPrimitives.ReadUInt32LittleEndian(plain.AsSpan(0, 4));
+            if(packetCrc != expectedCrc)return false;
             if(plain[10]!=0x0a&&plain[10]!=0x0c)return false;
             body=new byte[size];Array.Copy(plain,10,body,0,size);return true;
         }
 
 		public byte[] decryptMargin(byte[] packet)
         {
-
-	        if (packet.Length < 17)
+	        if (packet == null || packet.Length < 33 || ((packet.Length - 17) & 15) != 0)
 	        {
-		        // This happens - but shouldnt happen. 
+		        // Short or non-block-aligned ciphertext would throw inside Twofish or slicing.
 		        return null; 
 	        }
-			ArrayUtils.copy(packet,1,IV,0,16);
-			
-            int decryptBuffer = packet.Length - 17;
-
-            byte[] packetToDecrypt = new byte[decryptBuffer];
-            
-			ArrayUtils.copy (packet,17,packetToDecrypt,0,packet.Length-17);
-			
-			tf.SetIV(IV);
-			tf.SetKey(TF_Key);
-			
-			byte[] decryptedBytes = new byte[packetToDecrypt.Length];
-			tf.Decrypt(packetToDecrypt,decryptedBytes);
-
-            byte[] decryptedPacket;
-            if (decryptedBytes.Length > 10)
+            int cipherLen = packet.Length - 17;
+            byte[] decryptedBytes = new byte[cipherLen];
+            lock (cipherLock)
             {
-                decryptedPacket = new byte[decryptedBytes.Length - 10];
+                Buffer.BlockCopy(packet, 1, IV, 0, 16);
+                tf.Decrypt(packet, 1, packet, 17, decryptedBytes, 0, cipherLen);
             }
-            else
-            {
-                decryptedPacket = new byte[decryptedBytes.Length];
-            }
-            
-            
-			ArrayUtils.copy(decryptedBytes,10,decryptedPacket,0,decryptedBytes.Length-10);
+
+            byte[] decryptedPacket = new byte[decryptedBytes.Length - 10];
+			Buffer.BlockCopy(decryptedBytes, 10, decryptedPacket, 0, decryptedPacket.Length);
 			
 			return decryptedPacket;
         }
