@@ -654,7 +654,7 @@ namespace hds
                     List<CrewMember> remaining = db.GetCrewMembersForCrewId(crewId);
                     if (remaining.Count == 0)
                     {
-                        db.DisbandCrew(crewId);
+                        db.DisbandCrew(crewId, null);
                     }
                     else if (!remaining.Any(m => m.isCaptain))
                     {
@@ -746,21 +746,37 @@ namespace hds
 
                 case SocialPackets.GroupCrew:
                 {
-                    // Crew_Button_Disband. No retail capture: same pattern as the team, plus the faction id goes.
                     UInt32 crewId = CrewIdOf(client);
-                    Crew crew = crewId != 0 ? db.GetCrewData(crewId) : null;
-                    if (crew == null || !string.Equals(crew.characterMasterName, handle, StringComparison.OrdinalIgnoreCase))
+                    UInt32 factionId;
+                    try
                     {
+                        var result = db.DisbandCrew(crewId, client.playerData.getCharID());
+                        if (result.Refusal != null)
+                        {
+                            Send(client, ServerPackets.BuildSystemChatMessage(result.Refusal, "BROADCAST"));
+                            return;
+                        }
+                        factionId = result.FactionId;
+                    }
+                    catch (DbException error)
+                    {
+                        Output.WriteDebugLog($"[SOCIAL] Crew disband rolled back crew={crewId}: {error.Message}");
+                        Send(client, ServerPackets.BuildSystemChatMessage(
+                            "The crew could not be disbanded. The roster and bank were kept.", "BROADCAST"));
                         return;
                     }
 
                     List<WorldClient> members = OnlineWhere(c => CrewIdOf(c) == crewId);
-                    db.DisbandCrew(crewId);
                     foreach (WorldClient member in members)
                     {
                         Send(member, SocialPackets.GroupDisbanded(type));
                         SetOwnGroupIds(member, 0, 0, null);
+                        SocialBot.SetCrew(member, 0);
                     }
+                    if (factionId != 0)
+                        SendToAll(OnlineWhere(c => FactionIdOf(c) == factionId),
+                            SocialPackets.FactionCrewRemoved(crewId));
+                    Output.WriteDebugLog($"[SOCIAL] {handle} disbanded crew {crewId}");
 
                     break;
                 }

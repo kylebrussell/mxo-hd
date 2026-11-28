@@ -19,7 +19,7 @@ public sealed class AtomicCrewFoundingMode : NativeQaMode
         readyMessages: new[] {
             "Open Mara NAV: CSR (17000,495,6400), QAFriend (17120,495,6400), QAOther (17220,495,6400). All are unaffiliated. No teleport or dev command.",
             "People icon > Crew > Modify QARetryCrew, tick Zion, /target QAFriend, then Recruit.",
-            """Send {"actor":"QAFriend","action":"crew-founding-accept"} and wait for the reply. The disclosed disposable CHECK refuses assigning QAFriend to a crew. Expect [SOCIAL] Crew founding rolled back, creator result 80 85 with crewID 0/status 1, stock 'Crew could not be created (error = LT_ERROR).' and 'Both memberships were kept.' in chat. Recruit remains active.""",
+            """Send {"actor":"QAFriend","action":"crew-founding-accept"} and wait for the reply. The disclosed disposable CHECK refuses assigning QAFriend to a crew. Expect [SOCIAL] Crew founding rolled back, creator result 80 85 with crewID 0/status 1, stock 'Crew could not be created (error = ERROR).' and 'Both memberships were kept.' in chat. Recruit remains active.""",
             """In the same session keep QARetryCrew and Zion, /target QAOther and click Recruit. Send {"actor":"QAOther","action":"crew-founding-accept"}. Expect 80 85 with a nonzero crewID/status 0 and the QARetryCrew roster with CSR as captain and QAOther as member. Relog and verify it persists."""
         });
 

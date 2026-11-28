@@ -140,7 +140,7 @@ namespace hds.databases.interfaces{
         bool CrewNameExists(string crewName);
         (uint CrewId, uint Refusal) FoundCrew(uint founder, uint invitee, bool inviteeIsBot, string name, byte org);
         void SetCrewCaptain(UInt32 crewId, UInt32 charId, string handle);
-        void DisbandCrew(UInt32 crewId);
+        (uint FactionId, string Refusal) DisbandCrew(uint crew, uint? captain);
         void SetFactionOfCrewMembers(UInt32 crewId, UInt32 factionId);
         bool DisbandFaction(uint leader, uint faction);
         (uint FactionId, uint Refusal) FoundFaction(uint founder, uint crew, string name);

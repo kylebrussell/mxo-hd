@@ -1174,14 +1174,6 @@ namespace hds.databases{
 		        P("@handle", handle), P("@crew", crewId));
         }
 
-        /// <summary>Marks the crew deleted and clears crew and faction of its members.</summary>
-        public void DisbandCrew(UInt32 crewId)
-        {
-	        NonQuery("UPDATE crews SET deleted_at = NOW(), faction_id = 0 WHERE id = @crew", P("@crew", crewId));
-	        NonQuery("UPDATE characters SET crewId = 0, factionId = 0 WHERE crewId = @crew", P("@crew", crewId));
-	        NonQuery("DELETE FROM crew_members WHERE crew_id = @crew", P("@crew", crewId));
-        }
-
         public void SetFactionOfCrewMembers(UInt32 crewId, UInt32 factionId)
         {
 	        NonQuery("UPDATE characters SET factionId = @faction WHERE crewId = @crew",
