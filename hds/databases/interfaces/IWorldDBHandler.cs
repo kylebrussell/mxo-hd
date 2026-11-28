@@ -143,7 +143,7 @@ namespace hds.databases.interfaces{
         (uint FactionId, string Refusal) DisbandCrew(uint crew, uint captain);
         bool DisbandFaction(uint leader, uint faction);
         (uint FactionId, uint Refusal) FoundFaction(uint founder, uint crew, string name);
-        void SetCrewFirstMate(UInt32 crewId, UInt32 charId);
+        bool ChangeCrewFirstMate(uint crew, uint captain, uint target, bool captainIsBot, bool targetIsBot);
         (uint Status, ushort Rank) ChangeFactionRank(uint captain, uint crew, uint faction, uint targetCrew, bool promote);
         bool IsOnFriendList(UInt32 charId, UInt32 friendId);
     }

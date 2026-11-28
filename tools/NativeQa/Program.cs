@@ -346,6 +346,11 @@ try
                     result = await NativeQa.Modes.AtomicFactionDisbandMode.ReleaseFaultAsync(actor);
                 else if (fixtureMode is NativeQa.Modes.AtomicCrewEjectionMode && action == "crew-removal-retry")
                     result = await NativeQa.Modes.AtomicCrewEjectionMode.ReleaseFaultAsync(actor);
+                else if (fixtureMode is NativeQa.Modes.AtomicCrewFirstMateMode && action == "first-mate-retry" && actor.Handle == "QAOther")
+                {
+                    await Scenarios.ReleaseFirstMateFaultAsync(database);
+                    result = "First-mate fixture CHECK removed";
+                }
                 else if (fixtureMode is NativeQa.Modes.AtomicCrewFoundingMode && action == "crew-founding-accept")
                     result = await NativeQa.Modes.AtomicCrewFoundingMode.AcceptAsync(actor);
                 else if (fixtureMode is NativeQa.Modes.AtomicCrewAdmissionMode && action == "crew-admission-invite")

@@ -292,6 +292,7 @@ public static partial class Scenarios
         new Scenario("faction-disband-atomic", AtomicFactionDisband, StillNpcs),
         new Scenario("crew-member-removal-atomic", AtomicCrewEjection, StillNpcs),
         new Scenario("crew-captain-transfer-atomic", AtomicCrewCaptainTransfer, StillNpcs),
+        new Scenario("crew-first-mate-atomic", AtomicCrewFirstMate, StillNpcs),
         new Scenario("crew-founding-atomic", AtomicCrewFounding, StillNpcs),
         new Scenario("crew-admission-atomic", AtomicCrewAdmission, StillNpcs),
         new Scenario("crew-disband-atomic", AtomicCrewDisband, StillNpcs),
