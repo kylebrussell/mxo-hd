@@ -24,6 +24,12 @@ namespace hds{
             {
                 Output.WriteDebugLog(handleNote);
             }
+            var player = Store.currentClient?.playerData;
+            if (player?.PendingBackground != null &&
+                header != (int)RPCRequestHeader.CLIENT_LONG_STRING_CHUNK &&
+                header != (int)RPCRequestHeader.CLIENT_PLAYER_SET_BACKGROUND)
+                player.PendingBackground = null;
+
 		    switch (header)
 		    {
                 case 0x60: ClientActionsHandler.StoredCompile(Store.currentClient, rpcData); break;
@@ -429,9 +435,20 @@ namespace hds{
 		            Store.currentClient.messageQueue.addRpcMessage(ServerPackets.BuildFeatureList());
 		            break;
 
-		        // Email
+		        // Stock narrow single-string transfers precede the background envelope.
 		        case (int) RPCRequestHeader.CLIENT_LONG_STRING_HEADER:
+                    player.PendingBackground = BackgroundChunkUpload.Start(rpcData, player.worldGeneration);
+                    if (player.PendingBackground == null)
+                        MailHandler.Handle(Store.currentClient, header, rpcData);
+                    break;
 		        case (int) RPCRequestHeader.CLIENT_LONG_STRING_CHUNK:
+                    if (player.PendingBackground is { } upload)
+                        upload.Append(rpcData, player.worldGeneration);
+                    else
+                        MailHandler.Handle(Store.currentClient, header, rpcData);
+                    break;
+
+		        // Email
 		        case (int) RPCRequestHeader.CLIENT_MAIL_SEND:
 		        case (int) RPCRequestHeader.CLIENT_MAIL_GET_HEADERS:
 		        case (int) RPCRequestHeader.CLIENT_MAIL_READ:

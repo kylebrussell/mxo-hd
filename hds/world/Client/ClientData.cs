@@ -142,6 +142,7 @@ namespace hds
 		public System.Collections.Generic.HashSet<int> completedMissions;
 		public readonly System.Collections.Generic.List<Mob> missionMobs = new System.Collections.Generic.List<Mob>();
         public StaticWorldObject activeCollector;
+        internal BackgroundChunkUpload PendingBackground;
         public Vendor activeVendor;
         public int activeVendorGeneration;
 

@@ -147,7 +147,7 @@ server policy. [Room packet details](#chat-rooms-in-detail)
 | `81 54` | `/whereami` | C 58 | handled | low |
 | `81 92` | Player details (CharacterID, CharacterName) | D, C 7 | handled | medium |
 | `81 94` | Get background (`vieweditbackground.cpp`) | D, C 1 | handled | low |
-| `81 96` | Set background (ChunkString, IsChunked) | D | partial: inline saves return `81 97` | low |
+| `81 96` | Set background (ChunkString, IsChunked) | D | handled: inline and bounded chunked saves return `81 97` | low |
 | `81 57` | Inspect a target (TargetHandle, GetAbilities, GetInventory, GetTempMods). Guess: the GM `/snooploadout` | D, S | partial: server-allowlisted GM current-view loadout text report; native chunk viewer unimplemented | low |
 | `81 59` | Snoop a crew (SnoopManager, CrewName): GM `/snoopcrew` | D, S | partial: server-allowlisted GM crew text report; native chunk viewer unimplemented | low |
 | `81 5b` | Snoop a faction: GM `/snoopfaction` | D, S | partial: server-allowlisted GM faction text report; native chunk viewer unimplemented | low |
@@ -472,10 +472,16 @@ encoding when reading back the saved text.
 
 The server returns `81 97` with 32-bit status 0 after a saved update and
 1 for refused writes and invalid requests. The client branches on that
-status at `0x621782e5` to display the success or failure line. The stock
-editor uses chunks at 300 bytes (`0x620ac4c7`, `0x6258e0a0`). The
-server currently accepts inline saves and explicitly refuses chunked
-background updates, preserving the prior text.
+status at `0x621782e5` to display the success or failure line.
+
+At 300 bytes, the stock editor sends the long-string header `81 ab`.
+Its fields are the total byte count, chunk size 300 and flags `00 00 00`
+(`0x620ac4a0`, `0x6258e780`). It sends `81 ac 04 00 <count u16> <bytes>`
+in order, followed by `81 96 00 00 01`. The chunk count excludes the
+terminator (`0x62459631`). The save consumes one complete upload on the
+same client and world, up to the saved column limit of 1024 bytes. A new
+request, timeout, or invalid fragment invalidates the pending upload. The
+stock mail sender uses its wide/multi flags and retains its own path.
 
 Use `background-save-result` at Mara (17000,495,6400). Open
 `/setbackground` and replace **Saved profile** with **Mara trial**.
@@ -483,6 +489,12 @@ The disclosed disposable CHECK refuses the update. Reopen and confirm
 the old text. Send `{"actor":"QAFriend","action":"profile-save","step":"retry"}`
 to check the saved text and release the fault. Save **Mara trial** again
 in the same session, then relog and reopen to verify persistence.
+
+For `background-chunked-save`, open the seeded 619-byte profile,
+append `!` to its final `END`, and save. Expect fragments of 300,
+300 and 20 bytes and a successful `81 97`. The helper request
+`{"actor":"QAFriend","action":"profile-long-verify"}` checks all 620
+saved bytes. Relog and reopen the editor to check the displayed text.
 
 ## Buddy List write refusal
 
