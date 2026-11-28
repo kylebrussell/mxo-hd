@@ -1829,7 +1829,7 @@ namespace hds
             }
 
             Mob mob = new Mob();
-            mob.setEntityId(WorldServer.entityIdCounter++);
+            mob.setEntityId(WorldServer.NextEntityId());
             mob.setDistrict(mission.district);
             mob.setDistrictName(mission.districtName);
             mob.setName(npc.handle);

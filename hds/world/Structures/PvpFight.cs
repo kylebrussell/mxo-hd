@@ -259,7 +259,7 @@ namespace hds
             handlerObject = handler;
             lock (WorldServer.gameServerEntities.SyncRoot)
             {
-                handlerEntity = WorldServer.entityIdCounter++;
+                handlerEntity = WorldServer.NextEntityId();
                 WorldServer.gameServerEntities.Add(handler);
             }
 

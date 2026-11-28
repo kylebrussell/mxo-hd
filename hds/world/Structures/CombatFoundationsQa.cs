@@ -147,7 +147,7 @@ namespace hds
                     if (existing.getName() == name) return existing;
 
                 var mob = new Mob { PassiveTarget = true };
-                mob.setEntityId(WorldServer.entityIdCounter++);
+                mob.setEntityId(WorldServer.NextEntityId());
                 mob.setDistrict(1);
                 mob.setDistrictName("slums");
                 mob.setName(name);

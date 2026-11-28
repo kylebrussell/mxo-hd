@@ -22,6 +22,8 @@ namespace hds
         private Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
             
         public const int SIO_UDP_CONNRESET = -1744830452;
+        public const int DefaultMaxClients = 2048;
+        public const int DefaultMaxUnauthenticatedClients = 512;
 
         public static Dictionary<string, WorldClient> Clients { get; set; }
 
@@ -31,11 +33,43 @@ namespace hds
         public static UInt64 entityIdCounter = 1;
         public static ArrayList gameServerEntities = ArrayList.Synchronized(new ArrayList()); // should hold all GameObject Entities where a view can be created (static, dynamic etc.)
         private byte[] buffer;
+        private volatile bool stopping;
+        private long rejectedEndpoints;
         // Single-receive-thread endpoint cache avoiding Remote.ToString() and lock(Clients) on steady-state UDP packets.
         private readonly Dictionary<EndPoint, WorldClient> clientsByEndpoint = new Dictionary<EndPoint, WorldClient>();
         private readonly List<EndPoint> staleEndpointScratch = new List<EndPoint>();
         private Dictionary<string, WorldClient> endpointCacheSource;
         private const int EndpointCachePruneSlack = 64;
+
+        /// <summary>Thread-safe entity ID allocator shared across UDP ingress, combat, missions, pets, and loaders.</summary>
+        public static UInt64 NextEntityId()
+        {
+            return Interlocked.Increment(ref entityIdCounter) - 1;
+        }
+
+        internal static bool CanAdmitNewEndpointLocked(
+            Dictionary<string, WorldClient> registry,
+            int maxClients = DefaultMaxClients,
+            int maxUnauthenticated = DefaultMaxUnauthenticatedClients)
+        {
+            if (registry == null) return false;
+            if (registry.Count >= maxClients) return false;
+            if (registry.Count < maxUnauthenticated) return true;
+
+            int unauthenticated = 0;
+            foreach (WorldClient existing in registry.Values)
+            {
+                if (existing != null && (existing.playerData == null || existing.playerData.getCharID() == 0))
+                {
+                    unauthenticated++;
+                    if (unauthenticated >= maxUnauthenticated)
+                    {
+                        return false;
+                    }
+                }
+            }
+            return true;
+        }
 
         internal int EndpointCacheCount => clientsByEndpoint.Count;
 
@@ -95,6 +129,14 @@ namespace hds
 
         public void StopServer()
         {
+            stopping = true;
+            try
+            {
+                socket?.Close();
+            }
+            catch
+            {
+            }
         }
         
         
@@ -105,7 +147,7 @@ namespace hds
         /// </summary>
         private void ReceiveNext()
         {
-            while (true)
+            while (!stopping)
             {
                 // Queue each datagram before receiving another. Concurrent callbacks racing for processLock can reorder RPCs.
                 EndPoint nextClient = new IPEndPoint(IPAddress.Any, 0);
@@ -117,7 +159,10 @@ namespace hds
                 }
                 catch (SocketException ex)
                 {
-                    Output.WriteLine("[WORLD] Receive failed: " + ex.SocketErrorCode + " " + ex.Message);
+                    if (!stopping)
+                    {
+                        Output.WriteLine("[WORLD] Receive failed: " + ex.SocketErrorCode + " " + ex.Message);
+                    }
                     return;
                 }
                 catch (ObjectDisposedException)
@@ -174,14 +219,31 @@ namespace hds
                     {
                         if (!registry.TryGetValue(remoteKey, out currentClient))
                         {
-                            objMan.PushClient(remoteKey); // Push first, then create it
-                            currentClient = new WorldClient(Remote, socket, remoteKey);
-                            gameServerEntities.Add(objMan.GetAssignedObject(remoteKey));
-                            currentClient.playerData.setEntityId(entityIdCounter++);
+                            if (!CanAdmitNewEndpointLocked(registry))
+                            {
+                                long dropped = Interlocked.Increment(ref rejectedEndpoints);
+                                if (dropped == 1 || (dropped & (dropped - 1)) == 0)
+                                {
+                                    Output.WriteLine("[WORLD] Dropped unknown UDP endpoint " + remoteKey +
+                                                     " (client/unauth cap reached, total rejected=" + dropped + ")");
+                                }
+                                activeCount = registry.Count;
+                            }
+                            else
+                            {
+                                objMan.PushClient(remoteKey); // Push first, then create it
+                                currentClient = new WorldClient(Remote, socket, remoteKey);
+                                gameServerEntities.Add(objMan.GetAssignedObject(remoteKey));
+                                currentClient.playerData.setEntityId(NextEntityId());
 
-                            registry.Add(remoteKey, currentClient);
+                                registry.Add(remoteKey, currentClient);
+                                activeCount = registry.Count;
+                            }
                         }
-                        activeCount = registry.Count;
+                        else
+                        {
+                            activeCount = registry.Count;
+                        }
                     }
 
                     if (currentClient != null)

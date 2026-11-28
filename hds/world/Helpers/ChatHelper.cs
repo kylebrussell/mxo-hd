@@ -91,8 +91,7 @@ namespace hds
 
                     if (hasFieldsEnabled)
                     {
-                        UInt64 currentEntityId = WorldServer.entityIdCounter;
-                        WorldServer.entityIdCounter++;
+                        UInt64 currentEntityId = WorldServer.NextEntityId();
                         WorldServer.gameServerEntities.Add(instance);
                         packets.SendSpawnGameObject(Store.currentClient, instance, currentEntityId);
                     }
@@ -236,7 +235,7 @@ namespace hds
                         }
 
                         client.messageQueue.addObjectMessage(ServerPackets.BuildMissionKeyUpdate(instance), false);
-                        UInt64 entity = WorldServer.entityIdCounter++;
+                        UInt64 entity = WorldServer.NextEntityId();
                         new ServerPackets().SendSpawnGameObject(client, obj, entity);
                         new ServerPackets().sendSystemChatMessage(client, "Object " + goid + ", instance " + instance, "BROADCAST");
                     }
@@ -774,8 +773,7 @@ namespace hds
                     byte[] yPos = NumericalUtils.floatToByteArray((float) y, 1);
                     byte[] zPos = NumericalUtils.floatToByteArray((float) z, 1);
 
-                    UInt64 currentEntityId = WorldServer.entityIdCounter;
-                    WorldServer.entityIdCounter++;
+                    UInt64 currentEntityId = WorldServer.NextEntityId();
                     uint rotation = 0;
 
                     Mob theMob = new Mob();

@@ -80,7 +80,7 @@ namespace hds
             ulong entity;
             lock (WorldServer.gameServerEntities.SyncRoot)
             {
-                entity = WorldServer.entityIdCounter++;
+                entity = WorldServer.NextEntityId();
                 WorldServer.gameServerEntities.Add(handler);
             }
             var presentation = new CombatPresentation(caster, target, mob, handler, entity);

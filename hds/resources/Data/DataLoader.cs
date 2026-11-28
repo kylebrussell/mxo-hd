@@ -318,8 +318,7 @@ namespace hds
                 //Output.WriteLine("Show Colums for Line : " + linecount.ToString() + " GOID:  " + data[1].ToString() + " Name " + data[0].ToString());
                 if (linecount > 1)
                 {
-                    UInt64 currentEntityId = WorldServer.entityIdCounter;
-                    WorldServer.entityIdCounter++;
+                    UInt64 currentEntityId = WorldServer.NextEntityId();
                     uint rotation = 0;
                     if (data[10].Length > 0)
                     {

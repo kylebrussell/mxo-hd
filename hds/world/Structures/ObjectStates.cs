@@ -533,7 +533,7 @@ namespace hds
             }
 
             client.messageQueue.addObjectMessage(ServerPackets.BuildMissionKeyUpdate(instance), false);
-            UInt64 entity = WorldServer.entityIdCounter++;
+            UInt64 entity = WorldServer.NextEntityId();
             new ServerPackets().SendSpawnGameObject(client, obj, entity);
             Track(client, entity, objGoid, spawnState);
             last.Value = entity;
