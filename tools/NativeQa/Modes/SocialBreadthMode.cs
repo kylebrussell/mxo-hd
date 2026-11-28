@@ -16,15 +16,17 @@ public class SocialBreadthMode : NativeQaMode
     private const string Hug = "fd 0d 00 58";
     private const byte Crew = 2, Faction = 1;
     private readonly bool seedFaction;
+    private readonly int factionCrewCount;
 
     public override string Name => "social-breadth";
     public override NativeQaModePlan Plan { get; }
 
     public SocialBreadthMode() : this(seedFaction: true) { }
 
-    protected SocialBreadthMode(bool seedFaction, bool atomicFounding = false)
+    protected SocialBreadthMode(bool seedFaction, bool atomicFounding = false, int extraFactionCrews = 0)
     {
         this.seedFaction = seedFaction;
+        factionCrewCount = 2 + extraFactionCrews;
         uint faction = seedFaction ? FactionId : 0;
         int captainRank = seedFaction ? 1 : 0;
         int peerRank = seedFaction ? 5 : 0;
@@ -104,14 +106,19 @@ public class SocialBreadthMode : NativeQaMode
         return Array.Empty<byte>();
     }
 
-    private static async Task CheckSeededFactionAsync(ThrowawayDatabase database, HeadlessPlayer captain)
+    protected static async Task<Dictionary<uint, byte>> ReadFactionRanksAsync(HeadlessPlayer player, int crewCount)
+    {
+        var roster = await player.WaitForRpcAsync($"7c {Le(player.CharId)} {Le(FactionId)} 02");
+        const int rosterHeader = 17, crewSize = 81;
+        Check.Equal(rosterHeader + crewCount * crewSize, roster.Bytes.Length, "The faction roster contains every seeded crew");
+        return Enumerable.Range(0, crewCount).Select(row => rosterHeader + row * crewSize)
+            .ToDictionary(offset => BitConverter.ToUInt32(roster.Bytes, offset), offset => roster.Bytes[offset + crewSize - 1]);
+    }
+
+    private async Task CheckSeededFactionAsync(ThrowawayDatabase database, HeadlessPlayer captain)
     {
         await captain.WaitForRpcAsync($"7c {Le(captain.CharId)} {Le(FactionId)} 01");
-        var roster = await captain.WaitForRpcAsync($"7c {Le(captain.CharId)} {Le(FactionId)} 02");
-        const int rosterHeader = 17, crewSize = 81;
-        Check.Equal(rosterHeader + 2 * crewSize, roster.Bytes.Length, "QAOther received a two-crew faction roster");
-        var ranks = Enumerable.Range(0, 2).Select(row => rosterHeader + row * crewSize)
-            .ToDictionary(offset => BitConverter.ToUInt32(roster.Bytes, offset), offset => roster.Bytes[offset + crewSize - 1]);
+        var ranks = await ReadFactionRanksAsync(captain, factionCrewCount);
         Check.That(ranks.GetValueOrDefault(CaptainCrew) == 1 && ranks.GetValueOrDefault(PeerCrew) == 5,
             "QAOther received both starting ranks at login");
         Check.Equal(2L, await database.LongAsync($"""
@@ -177,7 +184,7 @@ public class SocialBreadthMode : NativeQaMode
 
     private static string ViewHandle(ViewCreation view) =>
         $"{WireFormat.ToHex(BitConverter.GetBytes(view.ViewId))} {view.SpawnId:x2} 00";
-    private static string Le(uint value) => WireFormat.ToHex(BitConverter.GetBytes(value));
+    protected static string Le(uint value) => WireFormat.ToHex(BitConverter.GetBytes(value));
 }
 
 public sealed class FactionFoundingMode : SocialBreadthMode

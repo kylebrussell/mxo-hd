@@ -23,7 +23,7 @@ public sealed class AtomicFactionRankMode : SocialBreadthMode
                 "Open Mara NAV CSR (17000,495,6400), QAFriend (17120,495,6400) and QAOther (17220,495,6400). No teleport, world target or dev command. CSR leads QACrew at rank 1. QAOther captains QAPeerCrew at rank 5.",
                 "People icon > Faction > More. Right-click QAPeerCrew and choose Promote. Confirm if asked. The disclosed disposable SQL CHECK rejects rank 4 with the peer crew bank at 0. Expect 80 81, a generic rank error, 'The roster was kept.' in chat and QAPeerCrew still at rank 5. Dismiss the error if modal.",
                 """Send {"actor":"QAOther","action":"faction-rank-retry"} and wait for "QAOther deposited 1 Info (999 remains)". This raises the peer crew bank to 1 and releases the CHECK.""",
-                "Promote QAPeerCrew again in the same session. Expect 7f 8e 23 00 00 04 and rank 4. Relog to check both ranks. Right-click QAPeerCrew and choose Demote. Expect 7f 8e 23 00 00 05 and rank 5 again."
+                "Promote QAPeerCrew again in the same session. Expect 7f 8e 23 00 00 04 and rank 4. Relog to check both ranks. Use faction-demote-stock for the stock Demote menu."
             });
     }
 
