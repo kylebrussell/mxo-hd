@@ -741,70 +741,54 @@ namespace hds
             ushort pss = playerData.getPss();
             var ackWindow = new SequencedMessage.AckWindow(ackSeq, pss);
             messageQueue.ObserveObjectReceipts(in ackWindow);
-            lock (messageQueue.ObjectMessagesQueue.SyncRoot)
-            {
-                ArrayList q = messageQueue.ObjectMessagesQueue;
-                int write = 0;
-                for (int i = 0; i < q.Count; i++)
-                {
-                    SequencedMessage message = (SequencedMessage)q[i];
-                    if (message.ReliableObject)
-                    {
-                        bool prerequisiteAcked = message.ReliableObjectPrerequisite == null ||
-                                                 message.ReliableObjectPrerequisite.ReliableObjectAcked;
-                        bool sequenceAcked = message.IsReliableObjectAckedBy(in ackWindow);
-                        if (prerequisiteAcked && sequenceAcked)
-                        {
-                            message.ReliableObjectAcked = true;
-                            messageQueue.ReliableObjectCount--;
-                            continue;
-                        }
-                        if (!prerequisiteAcked && sequenceAcked)
-                        {
-                            // This spawn-critical update arrived before its prerequisite (e.g. own-view nav position
-                            // arrived while self ViewCreate was lost and discarded by the client). Clear the premature
-                            // SSEQ record so it resends behind its prerequisite rather than retiring early.
-                            message.ClearReliableObjectPackets();
-                            message.ReliableObjectGapObserved = true;
-                        }
-                        else if (message.IsAckedBy(ackSeq))
-                        {
-                            // Client ACKed past this SSEQ without setting its PSS bit; trigger the faster retry cadence.
-                            message.ReliableObjectGapObserved = true;
-                        }
-                    }
-                    else if (message.IsAckedBy(ackSeq))
-                    {
-                        // Only a message that has gone out can be acked. A queued-but-unsent message
-                        // still has neededAck 0, so without the sendCounter check any client ack that
-                        // arrived before the next flush deleted it unsent. That dropped the self-spawn
-                        // about half the time and left the client at "Negotiating with Servers...".
-                        messageQueue.RecycleMovementMessageLocked(message);
-                        continue;
-                    }
-                    if (write != i) q[write] = message;
-                    write++;
-                }
-                if (write < q.Count)
-                {
-                    q.RemoveRange(write, q.Count - write);
-                    messageQueue.FirstUnsentObjectIndex = 0;
-                }
-            }
 
-            lock (messageQueue.RPCMessagesQueue.SyncRoot)
+            if (messageQueue.ObjectMessagesQueue.Count > 0)
             {
-                ArrayList q = messageQueue.RPCMessagesQueue;
-                if (q.Count > 0)
+                lock (messageQueue.ObjectMessagesQueue.SyncRoot)
                 {
+                    ArrayList q = messageQueue.ObjectMessagesQueue;
                     int write = 0;
+                    int firstUnsentWrite = -1;
                     for (int i = 0; i < q.Count; i++)
                     {
                         SequencedMessage message = (SequencedMessage)q[i];
-                        // Gone once the client acks a packet it was in; until then FlushQueue sends it again
-                        if (message.rpcNumber >= 0 && message.IsRpcAckedBy(in ackWindow))
+                        if (message.ReliableObject)
                         {
+                            bool prerequisiteAcked = message.ReliableObjectPrerequisite == null ||
+                                                     message.ReliableObjectPrerequisite.ReliableObjectAcked;
+                            bool sequenceAcked = message.IsReliableObjectAckedBy(in ackWindow);
+                            if (prerequisiteAcked && sequenceAcked)
+                            {
+                                message.ReliableObjectAcked = true;
+                                messageQueue.ReliableObjectCount--;
+                                continue;
+                            }
+                            if (!prerequisiteAcked && sequenceAcked)
+                            {
+                                // This spawn-critical update arrived before its prerequisite (e.g. own-view nav position
+                                // arrived while self ViewCreate was lost and discarded by the client). Clear the premature
+                                // SSEQ record so it resends behind its prerequisite rather than retiring early.
+                                message.ClearReliableObjectPackets();
+                                message.ReliableObjectGapObserved = true;
+                            }
+                            else if (message.IsAckedBy(ackSeq))
+                            {
+                                // Client ACKed past this SSEQ without setting its PSS bit; trigger the faster retry cadence.
+                                message.ReliableObjectGapObserved = true;
+                            }
+                        }
+                        else if (message.IsAckedBy(ackSeq))
+                        {
+                            // Only a message that has gone out can be acked. A queued-but-unsent message
+                            // still has neededAck 0, so without the sendCounter check any client ack that
+                            // arrived before the next flush deleted it unsent. That dropped the self-spawn
+                            // about half the time and left the client at "Negotiating with Servers...".
+                            messageQueue.RecycleMovementMessageLocked(message);
                             continue;
+                        }
+                        if (firstUnsentWrite < 0 && !message.isSent)
+                        {
+                            firstUnsentWrite = write;
                         }
                         if (write != i) q[write] = message;
                         write++;
@@ -812,6 +796,34 @@ namespace hds
                     if (write < q.Count)
                     {
                         q.RemoveRange(write, q.Count - write);
+                        messageQueue.FirstUnsentObjectIndex = firstUnsentWrite >= 0 ? firstUnsentWrite : write;
+                    }
+                }
+            }
+
+            if (messageQueue.RPCMessagesQueue.Count > 0)
+            {
+                lock (messageQueue.RPCMessagesQueue.SyncRoot)
+                {
+                    ArrayList q = messageQueue.RPCMessagesQueue;
+                    if (q.Count > 0)
+                    {
+                        int write = 0;
+                        for (int i = 0; i < q.Count; i++)
+                        {
+                            SequencedMessage message = (SequencedMessage)q[i];
+                            // Gone once the client acks a packet it was in; until then FlushQueue sends it again
+                            if (message.rpcNumber >= 0 && message.IsRpcAckedBy(in ackWindow))
+                            {
+                                continue;
+                            }
+                            if (write != i) q[write] = message;
+                            write++;
+                        }
+                        if (write < q.Count)
+                        {
+                            q.RemoveRange(write, q.Count - write);
+                        }
                     }
                 }
             }

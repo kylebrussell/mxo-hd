@@ -518,80 +518,94 @@ namespace hds.databases{
 		
 		public void SetPlayerValues()
 		{
-            IDataReader reader = null;
-            try
-            {
-			OpenConnection();
-            UInt32 charID = Store.currentClient.playerData.getCharID();
-			// Promote FLOAT positions before text-protocol conversion so loading preserves their stored binary values.
-			string sqlQuery="Select handle,x+0e0 AS x,y+0e0 AS y,z+0e0 AS z,rotation,healthC,healthM,innerStrC,innerStrM,level,profession,alignment,pvpflag,firstName,lastName,exp,cash,district,districtId,factionId,crewId, repMero, repMachine, repNiobe, repEPN, repCYPH, repGM, repZion from characters where charId='"+charID+"'";
-			queryExecuter= conn.CreateCommand();
-			queryExecuter.CommandText = sqlQuery;					
-			reader= queryExecuter.ExecuteReader();
-			
-			while(reader.Read()){
-				
-				Store.currentClient.playerInstance.CharacterID.setValue(charID);
-				Store.currentClient.playerInstance.CharacterName.setValue(reader.GetString(0));
+			IDataReader reader = null;
+			try
+			{
+				OpenConnection();
+				UInt32 charID = Store.currentClient.playerData.getCharID();
+				// Promote FLOAT positions before text-protocol conversion so loading preserves their stored binary values.
+				const string baseQuery =
+					"SELECT handle,x+0e0 AS x,y+0e0 AS y,z+0e0 AS z,rotation,healthC,healthM,innerStrC,innerStrM,level,profession,alignment,pvpflag,firstName,lastName,exp,cash,district,districtId,factionId,crewId, repMero, repMachine, repNiobe, repEPN, repCYPH, repGM, repZion FROM characters WHERE charId = ";
+				using (IDbCommand cmd = conn.CreateCommand())
+				{
+					queryExecuter = cmd;
+					IDbDataParameter charParam = cmd.CreateParameter();
+					IDataParameterCollection paramCollection = charParam != null ? cmd.Parameters : null;
+					if (charParam != null && paramCollection != null)
+					{
+						cmd.CommandText = baseQuery + "@charId";
+						charParam.ParameterName = "@charId";
+						charParam.Value = charID;
+						paramCollection.Add(charParam);
+					}
+					else
+					{
+						cmd.CommandText = baseQuery + charID;
+					}
+					reader = cmd.ExecuteReader();
 
-				double x = reader.GetDouble(1);
-				double y = reader.GetDouble(2);
-				double z = reader.GetDouble(3);
+					while (reader.Read())
+					{
+						Store.currentClient.playerInstance.CharacterID.setValue(charID);
+						Store.currentClient.playerInstance.CharacterName.setValue(reader.GetString(0));
 
-				Store.currentClient.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(x,y,z));
-				Store.currentClient.playerInstance.YawInterval.setValue(PersistedYawInterval(reader.GetValue(4)));
-				Store.currentClient.playerInstance.Health.setValue((UInt16)Convert.ToDecimal(reader.GetValue(5)));
-				Store.currentClient.playerInstance.MaxHealth.setValue((UInt16)Convert.ToDecimal(reader.GetValue(6)));
-				
-				Store.currentClient.playerInstance.InnerStrengthAvailable.setValue((UInt16)Convert.ToDecimal(reader.GetValue(7)));
-				Store.currentClient.playerInstance.InnerStrengthMax.setValue((UInt16)Convert.ToDecimal(reader.GetValue(8)));
-				
-				Store.currentClient.playerInstance.Level.setValue((byte)Convert.ToDecimal(reader.GetValue(9)));
-				
-				Store.currentClient.playerInstance.TitleAbility.setValue((UInt32) Convert.ToDecimal(reader.GetValue(10)));
-				Store.currentClient.playerInstance.OrganizationID.setValue((byte)Convert.ToDecimal(reader.GetValue(11)));
+						double x = reader.GetDouble(1);
+						double y = reader.GetDouble(2);
+						double z = reader.GetDouble(3);
 
-				// pvpflag: non-zero is flagged (PvpFlag); a hostile server overrides it at world entry
-				Store.currentClient.playerData.pvpFlag = Convert.ToDecimal(reader.GetValue(12)) != 0;
-				Store.currentClient.playerInstance.RealFirstName.setValue(reader.GetString(13));
-				Store.currentClient.playerInstance.RealLastName.setValue(reader.GetString(14));
+						Store.currentClient.playerInstance.Position.setValue(NumericalUtils.doublesToLtVector3d(x, y, z));
+						Store.currentClient.playerInstance.YawInterval.setValue(PersistedYawInterval(reader.GetValue(4)));
+						Store.currentClient.playerInstance.Health.setValue((UInt16)Convert.ToDecimal(reader.GetValue(5)));
+						Store.currentClient.playerInstance.MaxHealth.setValue((UInt16)Convert.ToDecimal(reader.GetValue(6)));
 
-				Store.currentClient.playerData.setExperience((long)Convert.ToDecimal(reader.GetValue(15)));
-				Store.currentClient.playerData.setInfo((long)Convert.ToDecimal(reader.GetValue(16)));
-				Store.currentClient.playerData.setDistrict(reader.GetString(17));
-                Store.currentClient.playerData.setDistrictId((uint)reader.GetInt16(18));
-                
-                
-                
-				UInt32 factionId = (uint) reader.GetInt16(19);
-				UInt32 crewId = (uint) reader.GetInt16(20);
+						Store.currentClient.playerInstance.InnerStrengthAvailable.setValue((UInt16)Convert.ToDecimal(reader.GetValue(7)));
+						Store.currentClient.playerInstance.InnerStrengthMax.setValue((UInt16)Convert.ToDecimal(reader.GetValue(8)));
 
-				Store.currentClient.playerInstance.FactionID.enable();
-				Store.currentClient.playerInstance.FactionID.setValue(factionId);
-				
-				Store.currentClient.playerInstance.CrewID.enable();
-				Store.currentClient.playerInstance.CrewID.setValue(crewId);
+						Store.currentClient.playerInstance.Level.setValue((byte)Convert.ToDecimal(reader.GetValue(9)));
 
-				// Reputation attributes carry the two's-complement bytes of the signed standings.
-				Store.currentClient.playerInstance.ReputationMerovingian.setValue(unchecked((UInt16)reader.GetInt32(21)));
-				Store.currentClient.playerInstance.ReputationMachines.setValue(unchecked((UInt16)reader.GetInt32(22)));
-				Store.currentClient.playerInstance.ReputationNiobe.setValue(unchecked((UInt16)reader.GetInt32(23)));
-				Store.currentClient.playerInstance.ReputationPluribusNeo.setValue(unchecked((UInt16)reader.GetInt32(24)));
-				Store.currentClient.playerInstance.ReputationCypherites.setValue(unchecked((UInt16)reader.GetInt32(25)));
-				Store.currentClient.playerInstance.ReputationGMOrganization.setValue(unchecked((UInt16)reader.GetInt32(26)));
-				Store.currentClient.playerInstance.ReputationZionMilitary.setValue(unchecked((UInt16)reader.GetInt32(27)));
-				
+						Store.currentClient.playerInstance.TitleAbility.setValue((UInt32)Convert.ToDecimal(reader.GetValue(10)));
+						Store.currentClient.playerInstance.OrganizationID.setValue((byte)Convert.ToDecimal(reader.GetValue(11)));
 
+						// pvpflag: non-zero is flagged (PvpFlag); a hostile server overrides it at world entry
+						Store.currentClient.playerData.pvpFlag = Convert.ToDecimal(reader.GetValue(12)) != 0;
+						Store.currentClient.playerInstance.RealFirstName.setValue(reader.GetString(13));
+						Store.currentClient.playerInstance.RealLastName.setValue(reader.GetString(14));
+
+						Store.currentClient.playerData.setExperience((long)Convert.ToDecimal(reader.GetValue(15)));
+						Store.currentClient.playerData.setInfo((long)Convert.ToDecimal(reader.GetValue(16)));
+						Store.currentClient.playerData.setDistrict(reader.GetString(17));
+						Store.currentClient.playerData.setDistrictId((uint)reader.GetInt16(18));
+
+						UInt32 factionId = (uint)reader.GetInt16(19);
+						UInt32 crewId = (uint)reader.GetInt16(20);
+
+						Store.currentClient.playerInstance.FactionID.enable();
+						Store.currentClient.playerInstance.FactionID.setValue(factionId);
+
+						Store.currentClient.playerInstance.CrewID.enable();
+						Store.currentClient.playerInstance.CrewID.setValue(crewId);
+
+						// Reputation attributes carry the two's-complement bytes of the signed standings.
+						Store.currentClient.playerInstance.ReputationMerovingian.setValue(unchecked((UInt16)reader.GetInt32(21)));
+						Store.currentClient.playerInstance.ReputationMachines.setValue(unchecked((UInt16)reader.GetInt32(22)));
+						Store.currentClient.playerInstance.ReputationNiobe.setValue(unchecked((UInt16)reader.GetInt32(23)));
+						Store.currentClient.playerInstance.ReputationPluribusNeo.setValue(unchecked((UInt16)reader.GetInt32(24)));
+						Store.currentClient.playerInstance.ReputationCypherites.setValue(unchecked((UInt16)reader.GetInt32(25)));
+						Store.currentClient.playerInstance.ReputationGMOrganization.setValue(unchecked((UInt16)reader.GetInt32(26)));
+						Store.currentClient.playerInstance.ReputationZionMilitary.setValue(unchecked((UInt16)reader.GetInt32(27)));
+					}
+				}
 			}
-			
-            }
-            finally
-            {
-                // Conversion/query failures must not poison this thread's next login.
-                try { reader?.Close(); }
-                finally { CloseConnection(); }
-            }
-			
+			finally
+			{
+				// Conversion/query failures must not poison this thread's next login.
+				try { reader?.Close(); }
+				finally
+				{
+					try { reader?.Dispose(); }
+					finally { CloseConnection(); }
+				}
+			}
 		}
 
 
@@ -690,18 +704,17 @@ namespace hds.databases{
             var data = Store.currentClient.playerData;
             lock (data.rsiSync)
             {
-                OpenConnection();
-                try
-                {
-                    using var command = conn.CreateCommand();
-                    command.CommandText = "SELECT " + RsiColumns + " FROM rsivalues WHERE charId=" + data.getCharID();
-                    using var row = command.ExecuteReader();
-                    int[] values = new int[22];
-                    if (row.Read())
+                int[] values = new int[22];
+                bool loaded = false;
+                QueryRows("SELECT " + RsiColumns + " FROM rsivalues WHERE charId = @charId LIMIT 1",
+                    row =>
+                    {
+                        if (loaded) return;
                         for (int i = 0; i < values.Length; i++) values[i] = row.GetInt16(i);
-                    data.setRsiValues(values);
-                }
-                finally { CloseConnection(); }
+                        loaded = true;
+                    },
+                    P("@charId", data.getCharID()));
+                data.setRsiValues(values);
             }
         }
 

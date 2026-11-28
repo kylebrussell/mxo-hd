@@ -7,26 +7,29 @@ namespace hds.databases
 {
     public partial class MyWorldDbAccess
     {
+        private readonly object recipesTableLock = new object();
+        private volatile bool recipesTableEnsured;
+
         private void EnsureRecipes()
         {
-            ExecuteNonResultQuery("CREATE TABLE IF NOT EXISTS char_recipes (charId INT UNSIGNED NOT NULL, " +
-                "goid BIGINT UNSIGNED NOT NULL, PRIMARY KEY (charId,goid)) ENGINE=InnoDB");
+            if (recipesTableEnsured) return;
+            lock (recipesTableLock)
+            {
+                if (recipesTableEnsured) return;
+                NonQuery("CREATE TABLE IF NOT EXISTS char_recipes (charId INT UNSIGNED NOT NULL, " +
+                    "goid BIGINT UNSIGNED NOT NULL, PRIMARY KEY (charId,goid)) ENGINE=InnoDB");
+                recipesTableEnsured = true;
+            }
         }
 
         public HashSet<UInt32> GetLearnedRecipes(UInt32 charId)
         {
             EnsureRecipes();
-            OpenConnection();
-            try
-            {
-                using var command = conn.CreateCommand();
-                command.CommandText = "SELECT goid FROM char_recipes WHERE charId=" + charId;
-                using var reader = command.ExecuteReader();
-                var result = new HashSet<UInt32>();
-                while (reader.Read()) result.Add(Convert.ToUInt32(reader.GetValue(0)));
-                return result;
-            }
-            finally { CloseConnection(); }
+            var result = new HashSet<UInt32>();
+            QueryRows("SELECT goid FROM char_recipes WHERE charId = @charId",
+                reader => result.Add(Convert.ToUInt32(reader.GetValue(0))),
+                P("@charId", charId));
+            return result;
         }
 
         /// <summary>Consumes an owned source and either learns its recipe or places recovered fragments in one transaction.</summary>

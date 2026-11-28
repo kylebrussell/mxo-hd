@@ -12,24 +12,40 @@ namespace hds.databases
                 new KeyValuePair<string, object>("@name", name));
             return id == null || id == DBNull.Value ? 0 : Convert.ToUInt32(id);
         }
-        private void EnsureLocalSupport() => ExecuteNonResultQuery("CREATE TABLE IF NOT EXISTS local_support_tickets (" +
-            "id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,charId INT UNSIGNED NOT NULL,handle VARCHAR(128) NOT NULL," +
-            "body TEXT NOT NULL,created INT UNSIGNED NOT NULL,modified INT UNSIGNED NOT NULL,cancelled TINYINT NOT NULL DEFAULT 0," +
-            "INDEX owner_idx(charId)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+        private readonly object localSupportTableLock = new object();
+        private volatile bool localSupportTableEnsured;
+
+        private void EnsureLocalSupport()
+        {
+            if (localSupportTableEnsured) return;
+            lock (localSupportTableLock)
+            {
+                if (localSupportTableEnsured) return;
+                NonQuery("CREATE TABLE IF NOT EXISTS local_support_tickets (" +
+                    "id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,charId INT UNSIGNED NOT NULL,handle VARCHAR(128) NOT NULL," +
+                    "body TEXT NOT NULL,created INT UNSIGNED NOT NULL,modified INT UNSIGNED NOT NULL,cancelled TINYINT NOT NULL DEFAULT 0," +
+                    "INDEX owner_idx(charId)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+                localSupportTableEnsured = true;
+            }
+        }
 
         public List<LocalSupport.Ticket> SupportTickets(uint character)
         {
-            EnsureLocalSupport(); OpenConnection();
-            try
-            {
-                using var c = conn.CreateCommand(); c.CommandText = "SELECT id,handle,body,created,modified,cancelled FROM local_support_tickets WHERE charId=" + character + " ORDER BY id DESC LIMIT 100";
-                using var r = c.ExecuteReader(); var tickets = new List<LocalSupport.Ticket>();
-                while (r.Read()) tickets.Add(new LocalSupport.Ticket { Id = Convert.ToUInt32(r[0]), Character = character,
-                    Handle = Convert.ToString(r[1]), Text = Convert.ToString(r[2]), Created = Convert.ToUInt32(r[3]),
-                    Modified = Convert.ToUInt32(r[4]), Cancelled = Convert.ToBoolean(r[5]) });
-                return tickets;
-            }
-            finally { CloseConnection(); }
+            EnsureLocalSupport();
+            var tickets = new List<LocalSupport.Ticket>();
+            QueryRows("SELECT id,handle,body,created,modified,cancelled FROM local_support_tickets WHERE charId = @charId ORDER BY id DESC LIMIT 100",
+                r => tickets.Add(new LocalSupport.Ticket
+                {
+                    Id = Convert.ToUInt32(r[0]),
+                    Character = character,
+                    Handle = Convert.ToString(r[1]),
+                    Text = Convert.ToString(r[2]),
+                    Created = Convert.ToUInt32(r[3]),
+                    Modified = Convert.ToUInt32(r[4]),
+                    Cancelled = Convert.ToBoolean(r[5])
+                }),
+                P("@charId", character));
+            return tickets;
         }
 
         public uint SaveSupportTicket(uint character, string handle, uint ticket, string text, bool cancel)
