@@ -232,6 +232,26 @@ The crew receives `77 02`. QAOther receives `73 8d 23 00 00` to
 remove QACrew from the faction roster. Relog and verify CSR stays
 unaffiliated.
 
+### Atomic crew leave
+
+The stock **Leave** button sends `71 02` and immediately clears the
+local crew panel. The handler at `621a6fb0` rebuilds the crew from
+`80 86`. On refusal the server resends the saved roster and current
+faction status so the player can reopen Crew and retry.
+
+The departure, successor, and any faction-leader transfer now commit
+in one transaction. A departing captain is succeeded by the first
+mate when available. An empty crew is archived in the same transaction.
+The final member of a crew that contains the active faction leader
+must disband the faction before leaving.
+
+Use `crew-leave-atomic`. CSR leads QACrew and QAFaction. In
+**Crew > Leave**, confirm once. The disposable check blocks writing
+QAFriend as faction leader. Verify CSR remains captain, QAFriend
+remains first mate and both panels reopen. Deposit 1 in the faction
+bank and retry in the same session. CSR leaves and QAFriend becomes
+crew captain and faction leader. Relog and verify CSR stays unaffiliated.
+
 ## Marketplace
 
 Use the `marketplace-breadth` mode. QAFriend lists a Code Bit 1 for 300

@@ -38,7 +38,7 @@ namespace hds.databases.interfaces{
         List<CrewMember> GetCrewMembersForCrewId(UInt32 crewId);
         (uint FactionId, uint Refusal) AdmitCrewMember(uint crew, uint inviter, uint invitee,
             bool inviterIsBot, bool inviteeIsBot, string foundingName);
-        void RemoveMemberFromCrew(UInt32 charId, UInt32 crewId);
+        (uint FactionId, CrewMember Successor, bool FactionLeaderChanged, bool Archived, string Refusal) LeaveCrew(uint crew, uint member);
         bool EjectCrewMember(uint captain, uint crew, uint member);
         (uint FactionId, bool ClearedFirstMate)? TransferCrewCaptain(uint crew, uint captain, uint replacement,
             bool captainIsBot, CrewMember botReplacement);
@@ -140,7 +140,7 @@ namespace hds.databases.interfaces{
         bool CrewNameExists(string crewName);
         (uint CrewId, uint Refusal) FoundCrew(uint founder, uint invitee, bool inviteeIsBot, string name, byte org);
         void SetCrewCaptain(UInt32 crewId, UInt32 charId, string handle);
-        (uint FactionId, string Refusal) DisbandCrew(uint crew, uint? captain);
+        (uint FactionId, string Refusal) DisbandCrew(uint crew, uint captain);
         void SetFactionOfCrewMembers(UInt32 crewId, UInt32 factionId);
         bool DisbandFaction(uint leader, uint faction);
         (uint FactionId, uint Refusal) FoundFaction(uint founder, uint crew, string name);

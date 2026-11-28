@@ -57,24 +57,32 @@ namespace hds.databases
                 if (row.Read()) return null;
             }
 
+            if (!WriteCrewCaptain(command, nextHandle, clearFirstMate)) return null;
+            TransferFactionMaster(command, faction, master, nextHandle);
+            transaction.Commit();
+            return (faction, clearFirstMate);
+        }
+
+        private static bool WriteCrewCaptain(MySqlCommand command, string nextHandle, bool clearFirstMate)
+        {
             command.Parameters.AddWithValue("@next", nextHandle);
             command.Parameters.AddWithValue("@clearFirstMate", clearFirstMate);
             command.CommandText = "UPDATE crew_members SET is_captain=(char_id=@replacement)," +
                 "is_first_mate=IF(@clearFirstMate,0,is_first_mate) WHERE crew_id=@crew";
             command.ExecuteNonQuery();
             command.CommandText = "UPDATE crews SET master_player_handle=@next WHERE id=@crew";
-            if (command.ExecuteNonQuery() != 1) return null;
+            return command.ExecuteNonQuery() == 1;
+        }
 
-            if (faction != 0)
-            {
-                command.Parameters.AddWithValue("@faction", faction);
-                command.CommandText = "UPDATE factions SET master_player_handle=@next WHERE id=@faction " +
-                    "AND master_player_handle=@master AND (deleted_at IS NULL OR deleted_at < '1971-01-01')";
-                command.ExecuteNonQuery();
-            }
-
-            transaction.Commit();
-            return (faction, clearFirstMate);
+        private static bool TransferFactionMaster(MySqlCommand command, uint faction, string previous, string next)
+        {
+            if (faction == 0) return false;
+            command.Parameters.AddWithValue("@faction", faction);
+            command.Parameters.AddWithValue("@previousFactionMaster", previous);
+            command.Parameters.AddWithValue("@nextFactionMaster", next);
+            command.CommandText = "UPDATE factions SET master_player_handle=@nextFactionMaster WHERE id=@faction " +
+                "AND master_player_handle=@previousFactionMaster AND (deleted_at IS NULL OR deleted_at < '1971-01-01')";
+            return command.ExecuteNonQuery() == 1;
         }
     }
 }
