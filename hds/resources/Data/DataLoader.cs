@@ -43,7 +43,7 @@ namespace hds
 
         // Lock-free published O(1) lookup tables preserving exact first-match List<T>.Find semantics.
         // Rebuilt automatically if tests mutate the underlying public lists after load.
-        private readonly object catalogIndexLock = new object();
+        private static readonly object CatalogIndexLock = new object();
         private volatile Dictionary<UInt16, AbilityItem> abilityById;
         private int abilityIndexCount = -1;
         private volatile Dictionary<int, GameObjectItem> gameObjectById;
@@ -1075,6 +1075,7 @@ namespace hds
 
         private Dictionary<UInt32, byte> EnsureEmoteIndex()
         {
+            if (Emotes == null) return null;
             Dictionary<UInt32, byte> index = emoteByLongId;
             if (index != null && Volatile.Read(ref emoteIndexCount) == Emotes.Count)
             {
@@ -1085,8 +1086,9 @@ namespace hds
 
         private Dictionary<UInt32, byte> RebuildEmoteIndex()
         {
-            lock (catalogIndexLock)
+            lock (CatalogIndexLock)
             {
+                if (Emotes == null) return null;
                 int count = Emotes.Count;
                 var next = new Dictionary<UInt32, byte>(count);
                 for (int i = 0; i < count; i++)
@@ -1105,6 +1107,7 @@ namespace hds
 
         private Dictionary<UInt16, AbilityItem> EnsureAbilityIndex()
         {
+            if (AbilityDB == null) return null;
             Dictionary<UInt16, AbilityItem> index = abilityById;
             if (index != null && Volatile.Read(ref abilityIndexCount) == AbilityDB.Count)
             {
@@ -1115,8 +1118,9 @@ namespace hds
 
         private Dictionary<UInt16, AbilityItem> RebuildAbilityIndex()
         {
-            lock (catalogIndexLock)
+            lock (CatalogIndexLock)
             {
+                if (AbilityDB == null) return null;
                 int count = AbilityDB.Count;
                 var next = new Dictionary<UInt16, AbilityItem>(count);
                 for (int i = 0; i < count; i++)
@@ -1135,6 +1139,7 @@ namespace hds
 
         private Dictionary<int, GameObjectItem> EnsureGameObjectIndex()
         {
+            if (GODB == null) return null;
             Dictionary<int, GameObjectItem> index = gameObjectById;
             if (index != null && Volatile.Read(ref gameObjectIndexCount) == GODB.Count)
             {
@@ -1145,8 +1150,9 @@ namespace hds
 
         private Dictionary<int, GameObjectItem> RebuildGameObjectIndex()
         {
-            lock (catalogIndexLock)
+            lock (CatalogIndexLock)
             {
+                if (GODB == null) return null;
                 int count = GODB.Count;
                 var next = new Dictionary<int, GameObjectItem>(count);
                 for (int i = 0; i < count; i++)
@@ -1165,6 +1171,7 @@ namespace hds
 
         private Dictionary<UInt32, ClothingItem> EnsureClothingIndex()
         {
+            if (ClothingRSIDB == null) return null;
             Dictionary<UInt32, ClothingItem> index = clothingByGoid;
             if (index != null && Volatile.Read(ref clothingIndexCount) == ClothingRSIDB.Count)
             {
@@ -1175,8 +1182,9 @@ namespace hds
 
         private Dictionary<UInt32, ClothingItem> RebuildClothingIndex()
         {
-            lock (catalogIndexLock)
+            lock (CatalogIndexLock)
             {
+                if (ClothingRSIDB == null) return null;
                 int count = ClothingRSIDB.Count;
                 var next = new Dictionary<UInt32, ClothingItem>(count);
                 for (int i = 0; i < count; i++)
@@ -1195,7 +1203,8 @@ namespace hds
 
         public byte findEmoteByLongId(UInt32 _emoteLongId)
         {
-            return EnsureEmoteIndex().TryGetValue(_emoteLongId, out byte emoteIdShort) ? emoteIdShort : (byte)0x00;
+            Dictionary<UInt32, byte> index = EnsureEmoteIndex();
+            return index != null && index.TryGetValue(_emoteLongId, out byte emoteIdShort) ? emoteIdShort : (byte)0x00;
         }
 
         public List<StaticWorldObject> findObjectsBySectorWorldRangeAndType(float x, float z, uint metrId,
@@ -1227,12 +1236,14 @@ namespace hds
 
         public AbilityItem getAbilityByID(UInt16 id)
         {
-            return EnsureAbilityIndex().TryGetValue(id, out AbilityItem abTemp) ? abTemp : null;
+            Dictionary<UInt16, AbilityItem> index = EnsureAbilityIndex();
+            return index != null && index.TryGetValue(id, out AbilityItem abTemp) ? abTemp : null;
         }
 
         public GameObjectItem getGameObjectItemById(UInt16 id)
         {
-            return EnsureGameObjectIndex().TryGetValue(id, out GameObjectItem goItem) ? goItem : null;
+            Dictionary<int, GameObjectItem> index = EnsureGameObjectIndex();
+            return index != null && index.TryGetValue(id, out GameObjectItem goItem) ? goItem : null;
         }
 
         /// <summary>A row keyed by this static id wins; otherwise the merchant static resolved for a row
@@ -1250,7 +1261,8 @@ namespace hds
 
         public ClothingItem getItemValues(UInt32 itemID)
         {
-            if (EnsureClothingIndex().TryGetValue(itemID, out ClothingItem clothingTemp))
+            Dictionary<UInt32, ClothingItem> index = EnsureClothingIndex();
+            if (index != null && index.TryGetValue(itemID, out ClothingItem clothingTemp))
             {
                 return clothingTemp;
             }

@@ -273,4 +273,20 @@ public class MarginFramingAndDataLoaderTests
         byte[] actual = WorldServer.BuildCombinedViewUpdate(0x1234, a, b);
         Assert.Equal(expected, actual);
     }
+
+    [Fact]
+    public void DataLoader_O1_catalog_indexes_work_on_uninitialized_test_instances()
+    {
+        var uninit = (DataLoader)System.Runtime.CompilerServices.RuntimeHelpers.GetUninitializedObject(typeof(DataLoader));
+        Assert.Null(uninit.getAbilityByID(17));
+        Assert.Null(uninit.getGameObjectItemById(12));
+        Assert.Equal((byte)0x00, uninit.findEmoteByLongId(1));
+        Assert.Equal(0u, uninit.getItemValues(1).getGoidDecimal());
+
+        var ab = new AbilityItem();
+        ab.setAbilityID(17);
+        ab.setAbilityName("UninitAbility");
+        uninit.AbilityDB = new List<AbilityItem> { ab };
+        Assert.Same(ab, uninit.getAbilityByID(17));
+    }
 }
