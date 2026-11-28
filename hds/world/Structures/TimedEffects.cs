@@ -82,14 +82,15 @@ namespace hds
         public sealed class Holder
         {
             private readonly List<Active> active = new List<Active>();
+            private int activeCount;
 
-            public bool IsEmpty
-            {
-                get { lock (active) { return active.Count == 0; } }
-            }
+            internal bool HasActiveEffects => Volatile.Read(ref activeCount) > 0;
+
+            public bool IsEmpty => Volatile.Read(ref activeCount) == 0;
 
             public List<Active> Snapshot()
             {
+                if (Volatile.Read(ref activeCount) == 0) return new List<Active>(0);
                 lock (active)
                 {
                     return new List<Active>(active);
@@ -98,6 +99,7 @@ namespace hds
 
             internal bool IsCurrent(Active state, double now)
             {
+                if (Volatile.Read(ref activeCount) == 0 || now >= state.Expires) return false;
                 lock (active)
                     return now < state.Expires && active.Contains(state);
             }
@@ -122,6 +124,7 @@ namespace hds
                         m.Ticks = 0;
                         active.Add(m);
                     }
+                    Volatile.Write(ref activeCount, active.Count);
                     return replaced;
                 }
             }
@@ -136,6 +139,7 @@ namespace hds
                     var previous=active.FindAll(a=>a.Parent==parent && a.Target==candidate.Target);
                     replaced=previous;active.RemoveAll(a=>previous.Contains(a));
                     candidate.Parent=parent;candidate.Start=now;candidate.Expires=now+candidate.Seconds;candidate.Ticks=0;active.Add(candidate);
+                    Volatile.Write(ref activeCount, active.Count);
                     if(current())return true;
                     RollbackCallback(candidate,replaced,now);
                     return false;
@@ -148,6 +152,7 @@ namespace hds
                     // A clear/newer replacement wins. Never resurrect records after ours disappeared.
                     if(!active.Remove(candidate))return;
                     if(!active.Any(a=>a.Parent==candidate.Parent && a.Target==candidate.Target))active.AddRange(replaced.Where(old=>old.Expires>now));
+                    Volatile.Write(ref activeCount, active.Count);
                 }
             }
 
@@ -166,9 +171,14 @@ namespace hds
                 lock(active)
                 {
                     // Another apply/clear may already have retired this exact unpublished child.
-                    if(!active.Remove(child)||!active.Contains(owner))return;
+                    if(!active.Remove(child)||!active.Contains(owner))
+                    {
+                        Volatile.Write(ref activeCount, active.Count);
+                        return;
+                    }
                     foreach(var old in replaced)
                         if(old.Expires>now&&!active.Any(a=>a.Parent==old.Parent&&a.Target==old.Target))active.Add(old);
+                    Volatile.Write(ref activeCount, active.Count);
                 }
             }
             public List<Active> RemoveParent(UInt16 parent)
@@ -178,6 +188,7 @@ namespace hds
                     if (parent == MobiusCode.Ability) MobiusCode.Removed(this);
                     List<Active> removed = active.FindAll(a => a.Parent == parent);
                     active.RemoveAll(a => a.Parent == parent);
+                    Volatile.Write(ref activeCount, active.Count);
                     return removed;
                 }
             }
@@ -186,7 +197,9 @@ namespace hds
             {
                 lock (active)
                 {
-                    return active.Remove(mod);
+                    bool removed = active.Remove(mod);
+                    if (removed) Volatile.Write(ref activeCount, active.Count);
+                    return removed;
                 }
             }
 
@@ -197,6 +210,7 @@ namespace hds
                     MobiusCode.Removed(this);
                     List<Active> removed = new List<Active>(active);
                     active.Clear();
+                    Volatile.Write(ref activeCount, 0);
                     return removed;
                 }
             }
@@ -207,6 +221,7 @@ namespace hds
             /// </summary>
             public void Advance(double now, List<Active> ticks, List<Active> expired)
             {
+                if (Volatile.Read(ref activeCount) == 0) return;
                 lock (active)
                 {
                     foreach (Active a in active)
@@ -222,17 +237,20 @@ namespace hds
                         }
                     }
                     active.RemoveAll(a => now >= a.Expires);
+                    Volatile.Write(ref activeCount, active.Count);
                 }
             }
 
             /// <summary>The sum of the stat tempmods on a target ability (the modifier the server would apply).</summary>
             public int Total(UInt16 target)
             {
+                if (Volatile.Read(ref activeCount) == 0) return 0;
                 lock (active)
                 {
                     int sum = 0;
-                    foreach (Active a in active)
+                    for (int i = 0; i < active.Count; i++)
                     {
+                        Active a = active[i];
                         if (a.Proc == TempMods.Proc.Stat && a.Target == target)
                         {
                             sum += a.Value;
@@ -245,39 +263,109 @@ namespace hds
             /// <summary>Whether a tempmod on the target ability is on (a state, ControlImmunityTimer's ISDrainTarget ...).</summary>
             public bool Has(UInt16 target)
             {
+                if (Volatile.Read(ref activeCount) == 0) return false;
                 lock (active)
                 {
-                    return active.Exists(a => a.Target == target && a.Proc != TempMods.Proc.Stat);
+                    for (int i = 0; i < active.Count; i++)
+                    {
+                        Active a = active[i];
+                        if (a.Target == target && a.Proc != TempMods.Proc.Stat) return true;
+                    }
+                    return false;
                 }
             }
 
             /// <summary>The timer callback checks the parent and target tuple at the time of application.</summary>
             internal bool HasControlImmunity(double now, Active except = null)
             {
-                lock (active) return active.Exists(a => !ReferenceEquals(a, except) && a.Parent == TempMods.ControlImmunityTimerAbility &&
-                    a.Target == TempMods.ISDrainTargetAbility && now < a.Expires);
+                if (Volatile.Read(ref activeCount) == 0) return false;
+                lock (active)
+                {
+                    for (int i = 0; i < active.Count; i++)
+                    {
+                        Active a = active[i];
+                        if (!ReferenceEquals(a, except) && a.Parent == TempMods.ControlImmunityTimerAbility &&
+                            a.Target == TempMods.ISDrainTargetAbility && now < a.Expires)
+                        {
+                            return true;
+                        }
+                    }
+                    return false;
+                }
             }
 
             public bool HasParent(UInt16 parent)
             {
+                if (Volatile.Read(ref activeCount) == 0) return false;
                 lock (active)
                 {
-                    return active.Exists(a => a.Parent == parent);
+                    for (int i = 0; i < active.Count; i++)
+                    {
+                        if (active[i].Parent == parent) return true;
+                    }
+                    return false;
                 }
             }
 
             public bool HasAt(UInt16 target, double now)
             {
-                lock (active) return active.Exists(a => a.Target == target && a.Proc == TempMods.Proc.State && now < a.Expires);
+                if (Volatile.Read(ref activeCount) == 0) return false;
+                lock (active)
+                {
+                    for (int i = 0; i < active.Count; i++)
+                    {
+                        Active a = active[i];
+                        if (a.Target == target && a.Proc == TempMods.Proc.State && now < a.Expires) return true;
+                    }
+                    return false;
+                }
+            }
+
+            internal bool HasAnyStateAt(UInt16 stateA, UInt16 stateB, double now)
+            {
+                if (Volatile.Read(ref activeCount) == 0) return false;
+                lock (active)
+                {
+                    for (int i = 0; i < active.Count; i++)
+                    {
+                        Active a = active[i];
+                        if (a.Proc == TempMods.Proc.State && now < a.Expires &&
+                            (a.Target == stateA || a.Target == stateB))
+                        {
+                            return true;
+                        }
+                    }
+                    return false;
+                }
+            }
+
+            internal bool HasAnyStateAt(UInt16 stateA, UInt16 stateB, UInt16 stateC, double now)
+            {
+                if (Volatile.Read(ref activeCount) == 0) return false;
+                lock (active)
+                {
+                    for (int i = 0; i < active.Count; i++)
+                    {
+                        Active a = active[i];
+                        if (a.Proc == TempMods.Proc.State && now < a.Expires &&
+                            (a.Target == stateA || a.Target == stateB || a.Target == stateC))
+                        {
+                            return true;
+                        }
+                    }
+                    return false;
+                }
             }
 
             internal uint TacticStateFlags(double now)
             {
+                if (Volatile.Read(ref activeCount) == 0) return 0;
                 lock (active)
                 {
                     uint flags = 0;
-                    foreach (Active mod in active)
+                    for (int i = 0; i < active.Count; i++)
                     {
+                        Active mod = active[i];
                         if (mod.Proc == TempMods.Proc.State && now < mod.Expires)
                             flags |= CombatInterlock.TacticStateFlag(mod.Target);
                     }
@@ -288,8 +376,10 @@ namespace hds
             /// <summary>Script health procs deactivate the whole parent ability, not just its state record.</summary>
             public List<Active> HealthChanged(int damageTaken, bool belowMaximum, Random rng)
             {
+                if (Volatile.Read(ref activeCount) == 0) return new List<Active>(0);
                 lock (active)
                 {
+                    if (active.Count == 0) return new List<Active>(0);
                     var parents = new HashSet<UInt16>();
                     foreach (Active a in active)
                     {
@@ -303,8 +393,10 @@ namespace hds
                         }
                         if (breaks) parents.Add(a.Parent);
                     }
+                    if (parents.Count == 0) return new List<Active>(0);
                     List<Active> removed = active.FindAll(a => parents.Contains(a.Parent));
                     active.RemoveAll(a => parents.Contains(a.Parent));
+                    Volatile.Write(ref activeCount, active.Count);
                     return removed;
                 }
             }
@@ -671,6 +763,12 @@ namespace hds
             return players.GetValue(client, c => new PlayerEffects(c));
         }
 
+        internal static bool TryGetPlayerEffects(WorldClient client, out PlayerEffects effects)
+        {
+            if (client == null) { effects = null; return false; }
+            return players.TryGetValue(client, out effects);
+        }
+
         internal static uint PlayerTacticStateFlags(WorldClient client) =>
             players.TryGetValue(client, out PlayerEffects subject) && subject.Alive
                 ? subject.Effects.TacticStateFlags(TimeUtils.GetSimTimeSeconds()) : 0u;
@@ -678,6 +776,12 @@ namespace hds
         public static MobEffects ForMob(Mob mob)
         {
             return mobs.GetValue(mob, m => new MobEffects(m));
+        }
+
+        internal static bool TryGetMobEffects(Mob mob, out MobEffects effects)
+        {
+            if (mob == null) { effects = null; return false; }
+            return mobs.TryGetValue(mob, out effects);
         }
 
         /// <summary>The ability lands on an NPC: its tempmods go on (<see cref="TempMods.Retail"/>). False when it has none.</summary>

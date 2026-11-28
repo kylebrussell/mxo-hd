@@ -119,8 +119,8 @@ namespace hds
                 return;
             }
 
-            if (Environment.GetEnvironmentVariable("MXO_SIMULACRUM_QA_HOLD_IS") == "1" &&
-                thisclient.playerData.getCharID() == 110 &&
+            if (thisclient.playerData.getCharID() == 110 &&
+                Environment.GetEnvironmentVariable("MXO_SIMULACRUM_QA_HOLD_IS") == "1" &&
                 QaLoadout.Allowed(Environment.GetEnvironmentVariable("MXO_DEV_COMMANDS"),
                     Store.config?.dbParams?.DatabaseName, 110, thisclient.playerData.getOnWorld(), thisclient.playerData.isDead))
             {

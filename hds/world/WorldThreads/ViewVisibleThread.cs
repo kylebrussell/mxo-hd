@@ -579,6 +579,13 @@ namespace hds
 
         private static UInt64 GetSubwayEntityId(Subway subway) => Subway.EntityId(subway.worldObject);
 
+        [ThreadStatic] private static HashSet<ulong> subwayNearbyScratch;
+        [ThreadStatic] private static List<List<Subway>> subwayNeighborScratch;
+        [ThreadStatic] private static List<ClientView> subwayDeleteScratch;
+        [ThreadStatic] private static HashSet<ulong> staticBoothNearbyScratch;
+        [ThreadStatic] private static List<List<StaticWorldObject>> staticNeighborScratch;
+        [ThreadStatic] private static List<ClientView> staticDeleteScratch;
+
         public static void CheckForStaticSubways(List<WorldClient> clients, List<Subway> subways)
         {
             EnsureSubwayIndex(subways);
@@ -587,10 +594,12 @@ namespace hds
                 return;
             }
 
-            Maths mathUtils = new Maths();
-            var nearbySubwayEntities = new HashSet<ulong>();
-            var neighborCells = new List<List<Subway>>(9);
-            var viewsToDelete = new List<ClientView>();
+            const double viewRangeSq = (double)ViewRange * ViewRange;
+            HashSet<ulong> nearbySubwayEntities = subwayNearbyScratch ?? (subwayNearbyScratch = new HashSet<ulong>());
+            List<List<Subway>> neighborCells = subwayNeighborScratch ?? (subwayNeighborScratch = new List<List<Subway>>(9));
+            List<ClientView> viewsToDelete = subwayDeleteScratch ?? (subwayDeleteScratch = new List<ClientView>());
+            try
+            {
             foreach (WorldClient thisclient in clients)
             {
                 if (thisclient == null || thisclient.Alive == false)
@@ -629,9 +638,9 @@ namespace hds
                             continue;
                         }
 
-                        bool objectInCircle = mathUtils.IsInCircle((float)playerX, (float)playerZ,
-                            (float)thisSubway.worldObject.pos_x, (float)thisSubway.worldObject.pos_z, ViewRange);
-                        if (!objectInCircle)
+                        double dx = (double)(float)playerX - (float)thisSubway.worldObject.pos_x;
+                        double dz = (double)(float)playerZ - (float)thisSubway.worldObject.pos_z;
+                        if (dx * dx + dz * dz > viewRangeSq)
                         {
                             continue;
                         }
@@ -664,6 +673,13 @@ namespace hds
                     thisclient.viewMan.removeViewByViewId(view.ViewID);
                 }
             }
+            }
+            finally
+            {
+                nearbySubwayEntities.Clear();
+                neighborCells.Clear();
+                viewsToDelete.Clear();
+            }
         }
 
         private static void CheckForStaticObjectsViewsInRange(List<WorldClient> clients)
@@ -674,10 +690,12 @@ namespace hds
                 return;
             }
 
-            Maths mathUtils = new Maths();
-            var nearbyBooths = new HashSet<ulong>();
-            var neighborCells = new List<List<StaticWorldObject>>(9);
-            var viewsToDelete = new List<ClientView>();
+            const double viewRangeSq = (double)ViewRange * ViewRange;
+            HashSet<ulong> nearbyBooths = staticBoothNearbyScratch ?? (staticBoothNearbyScratch = new HashSet<ulong>());
+            List<List<StaticWorldObject>> neighborCells = staticNeighborScratch ?? (staticNeighborScratch = new List<List<StaticWorldObject>>(9));
+            List<ClientView> viewsToDelete = staticDeleteScratch ?? (staticDeleteScratch = new List<ClientView>());
+            try
+            {
             foreach (WorldClient thisclient in clients)
             {
                 if (thisclient == null || thisclient.Alive == false)
@@ -708,8 +726,9 @@ namespace hds
                         for (int s = 0; s < cell.Count; s++)
                         {
                             StaticWorldObject staticWorldObject = cell[s];
-                            if (!mathUtils.IsInCircle((float)playerX, (float)playerZ,
-                                    (float)staticWorldObject.pos_x, (float)staticWorldObject.pos_z, ViewRange))
+                            double dx = (double)(float)playerX - (float)staticWorldObject.pos_x;
+                            double dz = (double)(float)playerZ - (float)staticWorldObject.pos_z;
+                            if (dx * dx + dz * dz > viewRangeSq)
                             {
                                 continue;
                             }
@@ -775,6 +794,13 @@ namespace hds
                         thisclient.viewMan.removeViewByViewId(view.ViewID);
                     }
                 }
+            }
+            }
+            finally
+            {
+                nearbyBooths.Clear();
+                neighborCells.Clear();
+                viewsToDelete.Clear();
             }
         }
 
@@ -1417,9 +1443,16 @@ namespace hds
             lock(registry)
             {
                 if(!ReferenceEquals(registry,WorldServer.Clients))return false;
-                var owners=registry.Where(p=>ReferenceEquals(p.Value,client)).Take(2).ToArray();
-                if(owners.Length!=1||!client.TryClaimInactive())return false;
-                key=owners[0].Key;return true;
+                string ownerKey = null;
+                foreach (KeyValuePair<string, WorldClient> pair in registry)
+                {
+                    if (!ReferenceEquals(pair.Value, client)) continue;
+                    if (ownerKey != null) return false;
+                    ownerKey = pair.Key;
+                }
+                if (ownerKey == null || !client.TryClaimInactive()) return false;
+                key = ownerKey;
+                return true;
             }
         }
         internal static bool RemoveClaimedClient(string key,WorldClient client)

@@ -28,6 +28,7 @@ namespace hds
         /// <summary>How far from the player (units) the NPC stops: arm's length.</summary>
         public const double MeleeDistanceUnits = 150;
         private const double MeleeArrivalDistance = MeleeDistanceUnits + .01;
+        [ThreadStatic] private static List<List<Mob>> aggroCellScratch;
 
         // StopPoint can round just outside arm's length, too close for a further movement step.
         internal static bool ReachedMeleeDistance(double squaredDistance) =>
@@ -159,10 +160,15 @@ namespace hds
             Mob attacker = null;
             ClientView attackerView = null;
             double best = double.MaxValue;
-            foreach (List<Mob> cell in grid.GetNeighborCells((float)px, (float)pz, (float)RangeUnits))
+            List<List<Mob>> cells = aggroCellScratch;
+            if (cells == null) aggroCellScratch = cells = new List<List<Mob>>(9);
+            grid.CollectNeighborCells((float)px, (float)pz, (float)RangeUnits, cells);
+            for (int ci = 0; ci < cells.Count; ci++)
             {
-                foreach (Mob mob in cell)
+                List<Mob> cell = cells[ci];
+                for (int mi = 0; mi < cell.Count; mi++)
                 {
+                    Mob mob = cell[mi];
                     double dx = mob.getXPos() - px;
                     double dz = mob.getZPos() - pz;
                     double distance = Math.Sqrt(dx * dx + dz * dz);
@@ -181,10 +187,10 @@ namespace hds
 
                     if (supporting)
                     {
-                        if (MobMotion.Ordinary(mob) && !ControlActions.Incapacitated(TimedEffects.ForMob(mob).Effects))
+                        if (MobMotion.Ordinary(mob) && !ControlActions.Incapacitated(mob))
                         {
                             bool firing = MobSupportingFire.TryFire(client, mob, distance, now);
-                            if ((firing || ControlActions.CanMove(TimedEffects.ForMob(mob).Effects) && !MobiusCode.PreventsNpcInterlock(client)) &&
+                            if ((firing || ControlActions.CanMove(mob) && !MobiusCode.PreventsNpcInterlock(client)) &&
                                 MobMotion.BeginChase(client, mob) && !firing)
                                 Output.WriteDebugLog($"[AGGRO] {mob.getName()} pursues {data.getCharID()} as a second aggressor");
                         }
@@ -216,7 +222,7 @@ namespace hds
         public static void Retaliate(WorldClient client, Mob mob)
         {
             if (client == null || mob.PassiveTarget || mob.getIsDead() || mob.isFriendly || client.playerData.isDead ||
-                CombatManager.GetHandler(client).isCombatRunning || ControlActions.Incapacitated(TimedEffects.ForMob(mob).Effects)) return;
+                CombatManager.GetHandler(client).isCombatRunning || ControlActions.Incapacitated(mob)) return;
             ClientView view = client.viewMan.FindViewForEntity(mob.getEntityId());
             if (view == null || !view.viewCreated) return;
             double x = 0, y = 0, z = 0;

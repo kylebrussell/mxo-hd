@@ -163,7 +163,7 @@ namespace hds
                     if(!(MobAggro.ReachedMeleeDistance(distanceSquared)||MobSupportingFire.CanFireAt(mob,Math.Sqrt(distanceSquared)))||
                         !MobAggro.SameFloor(to[1],mob.getYPos())||
                         !NavMesh.HasSightPath(mob.getDistrict(),mob.getXPos(),mob.getYPos(),mob.getZPos(),to[0],to[1],to[2])||
-                        ControlActions.Incapacitated(TimedEffects.ForMob(mob).Effects))
+                        ControlActions.Incapacitated(mob))
                         return;
                     Stop(mob,state,now);
                     MobAggro.Attack(target,mob,view,to[0],to[1],to[2]);
@@ -220,7 +220,7 @@ namespace hds
                         state.WaitUntil=Math.Max(state.WaitUntil,now+SelectionGraceSeconds);
                         continue;
                     }
-                    if(!ControlActions.CanMove(TimedEffects.ForMob(mob).Effects))
+                    if(!ControlActions.CanMove(mob))
                     {
                         if(state.Walking)
                         {

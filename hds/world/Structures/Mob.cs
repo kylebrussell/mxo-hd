@@ -102,8 +102,9 @@ namespace hds
 
         public bool IsStunned(double now)
         {
-            return now < stunnedUntil || TimedEffects.ForMob(this).Effects.HasAt(TempMods.StunAbility, now) ||
-                TimedEffects.ForMob(this).Effects.HasAt(TempMods.MezAbility, now);
+            return now < stunnedUntil ||
+                (TimedEffects.TryGetMobEffects(this, out var mobEffects) &&
+                 mobEffects.Effects.HasAnyStateAt(TempMods.StunAbility, TempMods.MezAbility, now));
         }
 
         // ConditionStateFlags on this NPC's view: in combat, plus the tactic conditions it suffers
@@ -733,7 +734,8 @@ namespace hds
                 else
                     healthC -= hitValue;
                 hitCounter++;
-                if (before != healthC) TimedEffects.HealthChanged(TimedEffects.ForMob(this), before - healthC, healthC < healthM);
+                if (before != healthC && TimedEffects.TryGetMobEffects(this, out var mobEffects) && mobEffects.Effects.HasActiveEffects)
+                    TimedEffects.HealthChanged(mobEffects, before - healthC, healthC < healthM);
 
                 var hitPacket = new PacketContent();
                 hitPacket.AddByteArray(BuildHitUpdate(healthC, hitFxId, (byte)hitCounter));

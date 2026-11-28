@@ -454,6 +454,7 @@ namespace hds
             HashSet<Mob> visible,
             HashSet<Mob> selected)
         {
+            if (mobs == null || mobs.Count == 0) return;
             lock (views)
             {
                 List<ClientView> nonPlayers = views.NonPlayerViews;
@@ -461,6 +462,9 @@ namespace hds
                 {
                     ClientView view = nonPlayers[i];
                     if (view == null || !view.viewCreated || view.viewNeedsToBeDeleted) continue;
+                    // Skip static booth, subway, and signpost views before probing the 7,000-entry mob dictionary.
+                    if (view.staticObject != null || view.GoID == HardlineBooths.PhoneBoothType ||
+                        view.GoID == 6568 || view.GoID == 8400) continue;
                     if (!mobs.TryGetValue(view.entityId, out Mob mob)) continue;
                     if (!MobMotion.Ordinary(mob) || mob.getDistrict() != districtId) continue;
                     visible.Add(mob);
