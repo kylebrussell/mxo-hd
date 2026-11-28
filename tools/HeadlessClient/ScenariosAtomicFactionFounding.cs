@@ -56,8 +56,9 @@ public static partial class Scenarios
             "The invite still brings in a second crew at rank 5");
         founder.SkipReceived();
         founder.SendRpc(FactionFoundRequest("AnotherFaction", peer.Handle));
-        await founder.WaitForRpcAsync($"7c {Le(founder.CharId)} {Le(faction)} 02 00 01 02");
-        await founder.WaitForTextAsync("Only the captain of an unaffiliated crew can found a faction.");
+        await WaitForFoundingRefusal(founder, "Only the captain of an unaffiliated crew can found a faction.", "AnotherFaction");
+        Check.Equal((long)faction, await db.LongAsync($"SELECT factionId FROM characters WHERE charId={founder.CharId}"),
+            "Refusing a second faction leaves the existing affiliation in place");
     }
 
     public static async Task<uint> ProveAtomicFactionFoundingAsync(HeadlessPlayer founder, HeadlessPlayer peer,
@@ -101,10 +102,10 @@ public static partial class Scenarios
         return faction;
     }
 
-    private static async Task WaitForFoundingRefusal(HeadlessPlayer player, string notice)
+    private static async Task WaitForFoundingRefusal(HeadlessPlayer player, string notice, string name = AtomicFactionName)
     {
-        var status = await player.WaitForRpcAsync($"7c {Le(player.CharId)} 00 00 00 00 01 00 01 00 00 00");
-        Check.Equal(15, status.Bytes.Length, "The final unaffiliated status carries no faction payload");
+        var status = await player.WaitForRpcAsync("7b 07 00 01 00 00 00");
+        Check.That(status.Bytes.Skip(7).SequenceEqual(Sized(name)), "The creation error identifies the rejected faction name");
         await player.WaitForTextAsync(notice);
         Check.Equal(0, player.Received("6f 01").Count, "A founding refusal is not a declined invitation");
     }

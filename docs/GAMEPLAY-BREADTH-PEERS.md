@@ -56,8 +56,13 @@ The panel's Recruit action sends `7a` for the named faction and selected captain
 
 The faction row, leading crew at rank 1 and the affiliations of that crew's
 characters commit together. The founder must still captain an unaffiliated
-crew when the server locks the persisted rows. Each refusal returns a final
-`7c` with the founder's current faction status and a chat explanation.
+crew when the server locks the persisted rows. Each refusal sends
+`7b <name offset u16> <status u32> <sized name>` and a chat explanation.
+The stock dispatcher at `621790b1` calls `621ba2e0`. The name getter at
+`62127650` reads the offset at +1. A positive Status at +3 reaches
+`621ba373`, which clears the pending creation state. Status 1 uses the
+client's generic “Faction could not be created” dialog. Native runs showed
+that both `6f` and an empty final `7c` left the pending state active.
 Crew state and the invitation are published after commit.
 
 Use `faction-founding-atomic`. CSR is at (17000,495,6400) and QAOther stands
@@ -67,8 +72,9 @@ Faction**, then use **Modify** to enter `QARetryFaction`.
 
 1. Choose **Recruit**. The disposable fixture rejects the character
    affiliation write with CSR at 1,000 Info. Expect “Your crew was kept,”
-   an unaffiliated crew and no invitation for QAOther. Verify Modify and
-   Recruit are available again. Continue in the same session.
+   `7b`, an unaffiliated crew and no invitation for QAOther. Dismiss the
+   dialog, verify Modify and Recruit are available, then continue in the
+   same session.
 2. Open **Crew**, deposit 1 Info, and verify Crew 1 and personal Info 999.
    This releases the fixture's SQL check. Select QAOther again if needed.
 3. Return to **Faction**, use the same name and choose **Recruit**. Expect

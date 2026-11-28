@@ -140,16 +140,27 @@ namespace hds
 
         }
 
+        // client.dll 62127650 reads the name offset at +1. The 7b handler 621ba2e0
+        // treats a positive status at +3 as failure and clears the pending creation state.
+        internal static byte[] BuildFactionCreateError(string name)
+        {
+            PacketContent packet = new PacketContent();
+            packet.AddUShort((ushort)RPCResponseHeaders.SERVER_FACTION_CREATE_ERROR);
+            packet.AddUint16(7, 1);
+            packet.AddUint32(1, 1); // Generic creation failure.
+            packet.AddSizedTerminatedString(name);
+            return packet.ReturnFinalPacket();
+        }
+
         // The client uses a zero faction ID to initialize its unaffiliated state and enable the Faction menu.
-        internal static byte[] BuildEmptyFactionInfoPacket(uint charId, bool final = false)
+        internal static byte[] BuildEmptyFactionInfoPacket(uint charId)
         {
             PacketContent packet = new PacketContent();
             packet.AddUShort((ushort)RPCResponseHeaders.SERVER_FACTION_PLAYER_INFO);
             packet.AddUint32(charId, 1);
             packet.AddUint32(0, 1); // No faction.
             packet.AddUint16(1, 1); // Message number.
-            packet.AddByte(final ? (byte)1 : (byte)0);
-            packet.AddHexBytes("000000"); // No data type or data array.
+            packet.AddHexBytes("00000000"); // Final flag, data type, and absent data-array offset.
             return packet.ReturnFinalPacket();
         }
 

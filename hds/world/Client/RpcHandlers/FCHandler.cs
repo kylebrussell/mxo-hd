@@ -56,12 +56,12 @@ namespace hds
             catch (DbException error)
             {
                 Output.WriteDebugLog($"[SOCIAL] Faction founding rolled back for {handle} crew={crewId}: {error.Message}");
-                RefuseFounding(client, "The faction could not be created. Your crew was kept.");
+                RefuseFounding(client, factionName, "The faction could not be created. Your crew was kept.");
                 return;
             }
             if (result.Refusal != SocialPackets.ResultOk)
             {
-                RefuseFounding(client, result.Refusal == SocialPackets.FactionInvalidTeamName
+                RefuseFounding(client, factionName, result.Refusal == SocialPackets.FactionInvalidTeamName
                     ? "That faction name is invalid or already in use."
                     : "Only the captain of an unaffiliated crew can found a faction.");
                 return;
@@ -83,14 +83,9 @@ namespace hds
             }
         }
 
-        private static void RefuseFounding(WorldClient client, string text)
+        private static void RefuseFounding(WorldClient client, string name, string text)
         {
-            // 6f answers an invitation. A pending 7a needs a final 7c status to release the founding panel.
-            uint faction = GroupId(client, SocialPackets.GroupFaction);
-            if (faction == 0)
-                SocialHandler.Send(client, ServerPackets.BuildEmptyFactionInfoPacket(client.playerData.getCharID(), final: true));
-            else
-                SocialHandler.SendFactionInfo(client, faction);
+            SocialHandler.Send(client, ServerPackets.BuildFactionCreateError(name.Length <= 41 ? name : string.Empty));
             SocialHandler.Send(client, ServerPackets.BuildSystemChatMessage(text, "BROADCAST"));
         }
 

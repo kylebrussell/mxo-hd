@@ -30,10 +30,10 @@ public class FactionPacketTests
     }
 
     [Fact]
-    public void EmptyFactionInfoCanTerminateAFactionReply()
+    public void FactionCreateErrorCarriesTheNameOffsetAndPositiveStatus()
     {
-        Assert.Equal("7C7856341200000000010001000000",
-            ToHex(ServerPackets.BuildEmptyFactionInfoPacket(0x12345678, final: true)));
+        Assert.Equal("7B070001000000040051414600",
+            ToHex(ServerPackets.BuildFactionCreateError("QAF")));
     }
 
     [Fact]
