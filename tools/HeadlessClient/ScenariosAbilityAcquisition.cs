@@ -88,7 +88,8 @@ public static partial class Scenarios
             Check.Equal(1L,await context.Database.LongAsync($"SELECT COUNT(*) FROM char_abilities WHERE char_id={p.CharId} AND ability_id={unchecked((int)other)} AND level=1 AND is_loaded=0"),"LA same genuine archive entry");
             step="two-connection-race-and-capacity";
             operations.Add(new{Isolation=await context.Database.ScalarAsync("SELECT @@session.transaction_isolation"),Engines=await context.Database.ExecuteAsync("SELECT TABLE_NAME,ENGINE FROM information_schema.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME IN ('characters','inventory','char_abilities')")});
-            var config=new ServerConfig(Path.Combine(context.RepositoryRoot,"hds","bin","Debug","net8.0","Config.xml.dist"));config.LoadDbParams();Check.That(context.Database.Name.StartsWith("mxotest_",StringComparison.Ordinal),"Owned race DB");config.dbParams.DatabaseName=context.Database.Name;
+            var config=new ServerConfig(Path.Combine(Path.GetDirectoryName(context.Server.SourceAssembly)!,"Config.xml.dist"));
+            config.LoadDbParams();Check.That(context.Database.Name.StartsWith("mxotest_",StringComparison.Ordinal),"Owned race DB");config.dbParams.DatabaseName=context.Database.Name;
             var old=hds.shared.Store.config;hds.shared.Store.config=config;
             try
             {
