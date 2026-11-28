@@ -4,7 +4,7 @@ public static partial class Scenarios
 {
     private const string AtomicFactionName = "QARetryFaction";
 
-    public static string FactionFoundingFaultSql(uint crew) => $"""
+    public static string FactionAffiliationFaultSql(uint crew) => $"""
         SET SESSION sql_mode='';
         ALTER TABLE characters ADD CONSTRAINT qa_faction_founder_update
             CHECK (crewId<>{crew} OR cash<>1000 OR factionId=0);
@@ -38,7 +38,7 @@ public static partial class Scenarios
             VALUES ({founderCrew},{founder.CharId},1,0,NOW()),({founderCrew},{member.CharId},0,0,NOW()),
                 ({peerCrew},{peer.CharId},1,0,NOW());
             """);
-        await db.ExecuteAsync(FactionFoundingFaultSql(founderCrew));
+        await db.ExecuteAsync(FactionAffiliationFaultSql(founderCrew));
         await founder.EnterWorldAsync();
         await peer.EnterWorldAsync();
         await member.EnterWorldAsync();

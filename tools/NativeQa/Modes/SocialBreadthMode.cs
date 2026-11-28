@@ -37,7 +37,7 @@ public class SocialBreadthMode : NativeQaMode
         int z = atomicFounding ? 6400 : 2300;
         string[] atomicSteps = {
             "CSR and QAOther face one another on open Mara NAV at (17000,495,6400) and (17220,495,6400). Use /target QAOther. Open the people icon above chat, then Organization > Faction.",
-            "Use Modify to enter QARetryFaction. Click Recruit with QAOther targeted. The disposable SQL CHECK refuses the character membership write. Expect [SOCIAL] Faction founding rolled back, visible 'Your crew was kept.', creation error 7b and no invite. Dismiss the error and verify Modify and Recruit become active in the same session.",
+            "Use Modify to enter QARetryFaction. Click Recruit with QAOther targeted. The disposable SQL CHECK refuses the character membership write. Expect [SOCIAL] Faction founding rolled back, 'Faction could not be created.' and 'Your crew was kept.' in chat, creation error 7b and no invite. Verify Modify and Recruit become active in the same session.",
             "Open Crew from the people icon. Deposit 1 Info to move from 1000 to 999 and clear the fixture's fault predicate. Crew bank is now 1.",
             "Retarget QAOther if needed, open Faction, set the same name QARetryFaction and click Recruit again. Expect a 7c faction status for CSR and 6e 01 to QAOther.",
             """After the retry, send {"actor":"QAOther","action":"social","step":"faction-answer","accept":true}. Choose More in Faction. Expect QACrew at rank 1 and QAPeerCrew at rank 5. Check the roster after relog."""
@@ -59,7 +59,7 @@ public class SocialBreadthMode : NativeQaMode
                 UPDATE characters SET rotation=192 WHERE handle='QAOther';
                 UPDATE characters SET x=16880 WHERE handle='QAFriend';
                 """)
-                .Append(Scenarios.FactionFoundingFaultSql(CaptainCrew)).ToArray();
+                .Append(Scenarios.FactionAffiliationFaultSql(CaptainCrew)).ToArray();
         Plan = new(new ushort[] { 2 }, 17000, z,
             Array.Empty<string>(), new[] { "UPDATE characters SET y=495 WHERE charId=110;" },
             membership,

@@ -480,11 +480,6 @@ namespace hds.databases{
 	        ExecuteNonResultQuery("UPDATE characters SET crewId = 0, factionId = 0 WHERE charId='" + charId + "' ");
         }
 
-        public void AddCrewToFaction(uint factionId, uint crewId)
-        {
-	        ExecuteNonResultQuery("UPDATE crews SET faction_id = '" + factionId + "' WHERE id='" + crewId + "' ");
-        }
-
         public void RemoveCrewFromFaction(uint factionId, uint crewId)
         {
 	        ExecuteNonResultQuery("UPDATE crews SET faction_id = '0' WHERE id='" + crewId + "' AND faction_id = '" + factionId + "' ");

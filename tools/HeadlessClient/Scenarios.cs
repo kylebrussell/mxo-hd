@@ -287,6 +287,7 @@ public static partial class Scenarios
         new Scenario("luggable-transfer-rollback", AtomicLuggableTransfers, StillNpcs),
         new Scenario("group-bank-atomic", AtomicGroupBank, StillNpcs),
         new Scenario("faction-founding-atomic", AtomicFactionFounding, StillNpcs),
+        new Scenario("faction-admission-atomic", AtomicFactionAdmission, StillNpcs),
         new Scenario("datamine-tap-transfer-rules", DatamineTapTransferRules, StillNpcs),
         new Scenario("sati-partial-world", SatiPartialWorld, StillNpcs),
         new Scenario("sati-door-diagnostic", SatiDoorDiagnostic, StillNpcs),
